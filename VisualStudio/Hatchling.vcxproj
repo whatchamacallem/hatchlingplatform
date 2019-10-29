@@ -32,7 +32,6 @@
     <ClCompile Include="..\hxConsole.cpp" />
     <ClCompile Include="..\hxConsoleTest.cpp" />
     <ClCompile Include="..\hxCUtils.c" />
-    <ClCompile Include="..\hxDeterministicReplayTest.cpp" />
     <ClCompile Include="..\hxDma.cpp" />
     <ClCompile Include="..\hxDmaTest.cpp" />
     <ClCompile Include="..\hxFile.cpp" />
@@ -54,7 +53,6 @@
     <ClInclude Include="..\hxAllocator.h" />
     <ClInclude Include="..\hxArray.h" />
     <ClInclude Include="..\hxConsole.h" />
-    <ClInclude Include="..\hxDeterministicReplay.h" />
     <ClInclude Include="..\hxDma.h" />
     <ClInclude Include="..\hxFile.h" />
     <ClInclude Include="..\hxHashTable.h" />
@@ -73,9 +71,9 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{90404E16-6D17-4659-80C3-D73519CA8126}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>EmbeddedPlatformDayOne</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <RootNamespace>HatchlingPlatform</RootNamespace>
     <ProjectName>Hatchling</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

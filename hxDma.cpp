@@ -49,7 +49,7 @@ void hxDmaAddSyncPoint(struct hxDmaSyncPoint& barrier) {
 }
 
 void hxDmaStartLabeled(void* dst, const void* src, size_t bytes, const char* labelStaticString) {
-	hxAssertRelease(src != null && dst != null && bytes != 0, "dma illegal args: %s 0x%x, 0x%x, 0x%x", (labelStaticString ? hxBasename(labelStaticString) : "hxDmaStart"), (unsigned int)(ptrdiff_t)dst, (unsigned int)(ptrdiff_t)src, (unsigned int)(ptrdiff_t)bytes);
+	hxAssertMsg(src != null && dst != null && bytes != 0, "dma illegal args: %s 0x%x, 0x%x, 0x%x", (labelStaticString ? hxBasename(labelStaticString) : "hxDmaStart"), (unsigned int)(ptrdiff_t)dst, (unsigned int)(ptrdiff_t)src, (unsigned int)(ptrdiff_t)bytes);
 #if HX_HAS_DMA
 	static_assert(!HX_HAS_DMA, "TODO");
 #else

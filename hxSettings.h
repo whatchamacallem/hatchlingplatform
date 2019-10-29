@@ -2,7 +2,9 @@
 // Copyright 2017 Adrian Johnston
 // Copyright 2017 Leap Motion
 
-#include "hatchling.h"
+#ifndef HATCHLING_H
+#error "include hatchling.h"
+#endif
 
 // ----------------------------------------------------------------------------
 // Compiler detection and some C++11 polyfill.
@@ -127,7 +129,7 @@ struct hxSettings {
 public:
 	void construct();
 
-	uint32_t static const c_settingsIntegrityCheck = 0xe28575c3u;
+	static const uint32_t c_settingsIntegrityCheck = 0xe28575c3u;
 	uint32_t settingsIntegrityCheck;
 
 	int32_t logLevelConsole;

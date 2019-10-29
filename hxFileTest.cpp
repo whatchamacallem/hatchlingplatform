@@ -3,7 +3,7 @@
 #include "hxFile.h"
 #include "hxTest.h"
 
-// hxDeterministicReplayTest.cpp and ConsoleTest.cpp provide basic coverage.
+// ConsoleTest.cpp provides coverage for normal operation.
 
 // ----------------------------------------------------------------------------------
 

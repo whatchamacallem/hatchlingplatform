@@ -60,7 +60,7 @@ private:
 	hxTaskQueue(const hxTaskQueue&); // = delete
 	void operator=(const hxTaskQueue&); // = delete
 
-	uint32_t static const c_runningQueueCheck = 0xc710b034u;
+	static const uint32_t c_runningQueueCheck = 0xc710b034u;
 
 	Task* m_nextWaitingTask;
 	uint32_t m_runningQueueCheck;

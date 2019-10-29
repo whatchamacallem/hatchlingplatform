@@ -20,9 +20,7 @@
 // disastrous results.
 HX_INLINE static void* hxMallocChecked(size_t size) {
 	void* t = ::malloc(size);
-	if (!t) {
-		hxExit("malloc fail: %lu bytes\n", (unsigned long)size);
-	}
+	hxAssertRelease(t, "malloc fail: %lu bytes\n", (unsigned long)size);
 	return t;
 }
 
@@ -55,7 +53,7 @@ struct hxMemoryAllocationHeader {
 	uintptr_t actual; // address actually returned by malloc.
 
 #if (HX_RELEASE) < 2
-	uint32_t static const c_guard = 0xc811b135u;
+	static const uint32_t c_guard = 0xc811b135u;
 	uint32_t guard;
 #endif
 };
@@ -402,9 +400,9 @@ public:
 	virtual void* onAlloc(size_t size, uintptr_t alignmentMask) override {
 		hxAssert(m_currentSection < c_nSections);
 		Section& section = m_sections[m_currentSection];
+		hxAssertMsg(section.m_current != 0u, "no open scope for scratchpad allocator %d", (int)m_currentSection);
 		uintptr_t aligned = (section.m_current + alignmentMask) & ~alignmentMask;
 
-		hxAssertRelease(section.m_current != 0u, "no open scope for scratchpad allocator %d", (int)m_currentSection);
 		if ((aligned + size) > section.m_end) {
 			hxWarn("%s overflow allocating %d bytes in section %d with %d bytes available", m_label, (int)size, (int)m_currentSection, (int)(section.m_end - section.m_current));
 			return 0;
@@ -554,12 +552,12 @@ void* hxMemoryManager::AllocateExtended(size_t size, hxMemoryManagerId id, uintp
 	hxAssert((unsigned int)id < (unsigned int)hxMemoryManagerId_MAX);
 
 	void* ptr = m_memoryAllocators[id]->allocate(size, alignmentMask);
-	hxAssertRelease(((uintptr_t)ptr & alignmentMask) == 0, "alignment wrong %x from %d", (unsigned int)(uintptr_t)ptr, (int)id);
+	hxAssertMsg(((uintptr_t)ptr & alignmentMask) == 0, "alignment wrong %x from %d", (unsigned int)(uintptr_t)ptr, (int)id);
 	if (ptr) { return ptr; }
 	hxWarn("%s is overflowing to heap, size %d", m_memoryAllocators[id]->label(), (int)size);
 	ptr = m_memoryAllocatorHeap.allocate(size, alignmentMask); // May not be null.
 	hxAssertRelease(ptr, "out of memory");
-	hxAssertRelease(((uintptr_t)ptr & HX_ALIGNMENT_MASK) == 0, "heap alignment wrong %x", (unsigned int)(uintptr_t)ptr);
+	hxAssertMsg(((uintptr_t)ptr & HX_ALIGNMENT_MASK) == 0, "heap alignment wrong %x", (unsigned int)(uintptr_t)ptr);
 	return ptr;
 }
 

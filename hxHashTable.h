@@ -5,7 +5,7 @@
 #include "hxHashTableInternal.h"
 
 // hxHashTable - This header implements a hash table that can operate without 
-// allocating memory or shuffling around data.  It can be used as either a map
+// allocating memory or copying around data.  It can be used as either a map
 // or a set and has operations that allow for unique or duplicate keys.  While
 // this interface is designed to be familiar, changes will be required to
 // switch over code using standard containers.  In particular, all modification
@@ -211,7 +211,7 @@ public:
 			}
 			next = (Node**)&n->m_next;
 		}
-		return 0;
+		return null;
 	}
 
 	// Release all Nodes matching key and call deleter() on every node.

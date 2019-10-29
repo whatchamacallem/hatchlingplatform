@@ -267,8 +267,8 @@ TEST_F(hxConsoleTest, RegisterVariable) {
 // hxConsoleTest::hxConsoleTestFileTest
 
 namespace {
-	float s_hxConsoleTestFileVar1 = 0.0f;
-	float s_hxConsoleTestFileVar2 = 0.0f;
+	volatile float s_hxConsoleTestFileVar1 = 0.0f;
+	volatile float s_hxConsoleTestFileVar2 = 0.0f;
 
 	void hxConsoleTestFileFn(float f) {
 		s_hxConsoleTestFileVar2 = f;

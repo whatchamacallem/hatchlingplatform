@@ -55,7 +55,7 @@ struct hxConsoleConstructor {
 };
 
 // Non-printing low-ascii characters including null.
-HX_INLINE static bool hxIsDelimiter(char c) { return c <= 0x20; }
+HX_INLINE static bool hxIsDelimiter(char c) { return c <= 32; }
 
 // Checks for printing characters.
 HX_INLINE static bool hxIsEndOfLine(const char* str) {
@@ -181,7 +181,7 @@ template<> struct hxArg<bool> {
 			*next = (char*)str; // reject input.
 		}
 	}
-	HX_INLINE static const char* getLabel() { return "0 or 1"; }
+	HX_INLINE static const char* getLabel() { return "bool (0 or 1)"; }
 	bool val;
 };
 
@@ -317,7 +317,7 @@ struct hxFunction4 : public hxCommand {
 
 template<typename T>
 struct hxVariable : public hxCommand {
-	hxVariable(T* var) : m_var(var) { }
+	hxVariable(volatile T* var) : m_var(var) { }
 	virtual bool execute(const char* str) override {
 		char* ptr = null;
 		hxArg<T> x(str, &ptr);
@@ -337,41 +337,42 @@ struct hxVariable : public hxCommand {
 			hxLogRelease("%s %s (%lf)\n", id, hxArg<T>::getLabel(), (double)*m_var);
 		}
 	}
-	T* m_var;
+	volatile T* m_var;
 };
 
 template<typename R>
 HX_INLINE hxCommand* hxCommandFactory(R(*fn)()) {
-	return hxNewExt<hxFunction0<R>, hxMemoryManagerId_Heap>(fn);
+	return hxNewExt<hxFunction0<R>, hxMemoryManagerId_Console>(fn);
 }
 
 template<typename R, typename A1>
 HX_INLINE hxCommand* hxCommandFactory(R(*fn)(A1)) {
-	return hxNewExt<hxFunction1<R, A1>, hxMemoryManagerId_Heap>(fn);
+	return hxNewExt<hxFunction1<R, A1>, hxMemoryManagerId_Console>(fn);
 }
 
 template<typename R, typename A1, typename A2>
 HX_INLINE hxCommand* hxCommandFactory(R(*fn)(A1, A2)) {
-	return hxNewExt<hxFunction2<R, A1, A2>, hxMemoryManagerId_Heap>(fn);
+	return hxNewExt<hxFunction2<R, A1, A2>, hxMemoryManagerId_Console>(fn);
 }
 
 template<typename R, typename A1, typename A2, typename A3>
 HX_INLINE hxCommand* hxCommandFactory(R(*fn)(A1, A2, A3)) {
-	return hxNewExt<hxFunction3<R, A1, A2, A3>, hxMemoryManagerId_Heap>(fn);
+	return hxNewExt<hxFunction3<R, A1, A2, A3>, hxMemoryManagerId_Console>(fn);
 }
 
 template<typename R, typename A1, typename A2, typename A3, typename A4>
 HX_INLINE hxCommand* hxCommandFactory(R(*fn)(A1, A2, A3, A4)) {
-	return hxNewExt<hxFunction4<R, A1, A2, A3, A4>, hxMemoryManagerId_Heap>(fn);
+	return hxNewExt<hxFunction4<R, A1, A2, A3, A4>, hxMemoryManagerId_Console>(fn);
 }
 
 template<typename T>
-HX_INLINE hxCommand* hxVariableFactory(T* var) {
-	return hxNew<hxVariable<T> >(var);
+HX_INLINE hxCommand* hxVariableFactory(volatile T* var) {
+    // Warning: Whole program optimization was breaking with this: return hxNew<hxVariable<T> >(var);
+	return ::new(hxMallocExt(sizeof(hxVariable<T>), hxMemoryManagerId_Console, HX_ALIGNMENT_MASK)) hxVariable<T>(var);
 }
 
 // ERROR: Pointers cannot be console variables.
 template<typename T>
-inline hxCommand* hxVariableFactory(T** var); // = delete
+inline hxCommand* hxVariableFactory(volatile T** var); // = delete
 template<typename T>
-inline hxCommand* hxVariableFactory(const T** var); // = delete
+inline hxCommand* hxVariableFactory(const volatile T** var); // = delete

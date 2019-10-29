@@ -2,6 +2,10 @@
 // Copyright 2017 Adrian Johnston
 // Copyright 2017 Leap Motion
 
+#ifndef HATCHLING_H
+#error "include hatchling.h"
+#endif
+
 #ifdef __cplusplus
 #include <new>
 extern "C" {
@@ -25,7 +29,8 @@ enum hxMemoryManagerId {
 	hxMemoryManagerId_ScratchTemp,
 	hxMemoryManagerId_ScratchAll,     // Must be last Scratch id
 	hxMemoryManagerId_MAX,
-	hxMemoryManagerId_Current = -1
+	hxMemoryManagerId_Current = -1,
+	hxMemoryManagerId_Console = hxMemoryManagerId_Heap
 };
 
 // C API for hxMemoryManager:

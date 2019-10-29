@@ -10,24 +10,16 @@
 
 #include <stdio.h>
 
-#define HX_LOG_MAX 280
-
 // ----------------------------------------------------------------------------
 
 static const char* s_hxInitFile = ""; // For trapping code running before hxMain.
 static uint32_t s_hxInitLine = 0;
 
-// Wrapped to ensure correct construction order.
-static hxFile& hxLogFile() {
-	static hxFile f(hxFile::out, "%s", g_hxSettings.logFile);
-	return f;
-}
-
 // ----------------------------------------------------------------------------
 
 extern "C"
 void hxInitAt(const char* file, uint32_t line) {
-	hxAssert(!g_hxIsInit);
+	hxAssertRelease(!g_hxIsInit, "internal error");
 	g_hxIsInit = 1;
 
 	if (file) { s_hxInitFile = file; }
@@ -36,7 +28,7 @@ void hxInitAt(const char* file, uint32_t line) {
 	g_hxSettings.construct();
 
 	hxLog("Hatchling Platform\n");
-	hxLogHandler(hxLogLevel_Release, "HX_RELEASE %d.  HX_PROFILE %d.  Last full build: " __DATE__ " " __TIME__ "\n", HX_RELEASE, HX_PROFILE);
+	hxConsolePrint("HX_RELEASE %d.  HX_PROFILE %d.  Last full build: " __DATE__ " " __TIME__ "\n", HX_RELEASE, HX_PROFILE);
 
 	hxMemoryManagerInit();
 	hxDmaInit();
@@ -52,19 +44,21 @@ void hxInitAt(const char* file, uint32_t line) {
 #endif
 }
 
+#if (HX_RELEASE) < 3
+// Wrapped to ensure correct construction order.
+static hxFile& hxLogFile() {
+	static hxFile f(hxFile::out | hxFile::fallible, "%s", g_hxSettings.logFile);
+	return f;
+}
+
 extern "C"
 void hxShutdown() {
-	if(!g_hxIsInit) {
-		hxExit("hxShutdown unexpected\n");
-	}
-
+	hxAssertRelease(g_hxIsInit, "hxShutdown unexpected\n");
 	hxLogRelease("hxShutdown...\n");
 
 	hxProfilerShutdown();
-
 	hxDmaShutDown();
 
-	// This is only for tests.
 	g_hxSettings.isShuttingDown = true;
 	hxConsoleDeregisterAll(); // Free console allocations.
 	hxMemoryManagerShutDown();
@@ -75,12 +69,12 @@ void hxShutdown() {
 
 extern "C"
 void hxExit(const char* format, ...) {
-	char buf[HX_LOG_MAX];
+	char buf[HX_MAX_LINE];
 	int sz = -1;
 	if (format != null) {
 		va_list args;
 		va_start(args, format);
-		sz = ::vsnprintf(buf, HX_LOG_MAX, format, args);
+		sz = ::vsnprintf(buf, HX_MAX_LINE, format, args);
 		va_end(args);
 	}
 
@@ -89,14 +83,15 @@ void hxExit(const char* format, ...) {
 		::fwrite("exit format error\n", 1, sizeof "exit format error\n" - 1, stdout);
 	}
 	else {
-		::fwrite(buf, 1, (size_t)((sz < HX_LOG_MAX) ? sz : HX_LOG_MAX), stdout);
+		::fwrite(buf, 1, (size_t)((sz < HX_MAX_LINE) ? sz : HX_MAX_LINE), stdout);
 	}
 	::fflush(stdout); 
 #endif
 
-	if (hxLogFile().is_open()) {
-		hxLogFile().print("%s", (sz < 0) ? "exit format error\n" : buf);
-		hxLogFile().close();
+	hxFile& f = hxLogFile();
+	if (f.is_open()) {
+		f.print("%s", (sz < 0) ? "exit format error\n" : buf);
+		f.close();
 	}
 
 	// Stop here before the callstack gets lost inside _Exit.  This is not for
@@ -124,29 +119,19 @@ void hxAssertHandler(const char* file, uint32_t line) {
 }
 
 extern "C"
-void hxLogHandler(enum hxLogLevel level, const char* format, ...) {
-	hxAssertRelease(format, "null format");
-	va_list args;
-	va_start(args, format);
-	hxLogHandlerV(level, format, args);
-	va_end(args);
-}
-
-extern "C"
 void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 	hxInit();
-	hxAssertRelease(format, "null format");
 	if (level < g_hxSettings.logLevelConsole && level < g_hxSettings.logLevelFile) {
 		return;
 	}
 
-	char buf[HX_LOG_MAX+1];
-	int sz = ::vsnprintf(buf, HX_LOG_MAX, format, args);
-	hxAssertRelease(sz >= 0, "format error: %s", format);
+	char buf[HX_MAX_LINE+1];
+	int sz = format ? ::vsnprintf(buf, HX_MAX_LINE, format, args) : 0;
+	hxAssertMsg(sz >= 0, "format error: %s", format ? format : "<null>");
 	if (sz <= 0) {
 		return;
 	}
-	sz = hxMin(sz, HX_LOG_MAX);
+	sz = hxMin(sz, HX_MAX_LINE);
 	if (level == hxLogLevel_Warning || level == hxLogLevel_Assert) {
 		buf[sz++] = '\n';
 	}
@@ -181,3 +166,19 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 }
 
 
+#else // #if (HX_RELEASE) >= 3
+
+extern "C"
+void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
+	::vfprintf(stdout, format, args);
+}
+
+#endif
+
+extern "C"
+void hxLogHandler(enum hxLogLevel level, const char* format, ...) {
+	va_list args;
+	va_start(args, format);
+	hxLogHandlerV(level, format, args);
+	va_end(args);
+}

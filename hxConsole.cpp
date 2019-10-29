@@ -120,7 +120,7 @@ bool hxConsoleExecLine(const char* command) {
 }
 
 bool hxConsoleExecFile(hxFile& file) {
-	char buf[hxFile::c_MaxLine];
+	char buf[HX_MAX_LINE];
 	bool result = true;
 	while (file.getline(buf)) {
 		hxLog("CONSOLE: %s", buf);

@@ -48,12 +48,8 @@ public:
 
 	void setFilterStaticString(const char* className) { mFilterClassName = className; }
 	void addTest(FactoryBase* fn) {
-		if (mNumFactories < MAX_TESTS) {
-			mFactories[mNumFactories++] = fn;
-		}
-		else {
-			hxExit("MAX_TESTS overflow\n");
-		}
+		hxAssertRelease(mNumFactories < MAX_TESTS, "MAX_TESTS overflow\n");
+		mFactories[mNumFactories++] = fn;
 	}
 
 	// format is required to end with an \n.
@@ -62,17 +58,17 @@ public:
 		if (!condition) {
 			if(++mAssertFailCount >= MAX_FAIL_MESSAGES) {
 				if (mAssertFailCount == MAX_FAIL_MESSAGES) {
-					hxLogHandler(hxLogLevel_Assert, "Remaining asserts will fail silently...");
+					hxConsolePrint("Remaining asserts will fail silently...\n");
 				}
 				return;
 			}
 
-			hxLogHandler(hxLogLevel_Assert, "%s.%s", mCurrentTest->hxTest_ClassName(), mCurrentTest->hxTest_FunctionName());
-			hxLogHandler(hxLogLevel_Release, "%s(%d): ", file, (int)line);
+			hxConsolePrint("%s.%s", mCurrentTest->hxTest_ClassName(), mCurrentTest->hxTest_FunctionName());
+			hxConsolePrint("%s(%d): ", file, (int)line);
 
 			va_list args;
 			va_start(args, format);
-			hxLogHandlerV(hxLogLevel_Release, format, args);
+			hxLogHandlerV(hxLogLevel_Console, format, args);
 			va_end(args);
 		}
 	}
@@ -118,11 +114,11 @@ public:
 		hxLogRelease("--------\n");
 		hxProfilerShutdown();
 		if (mPassCount > 0 && mFailCount == 0) {
-			hxLogHandler(hxLogLevel_Release, "TESTS_PASSED: All %d tests successful.\n", (int)mPassCount);
+			hxLogHandler(hxLogLevel_Console, "TESTS_PASSED: All %d tests successful.\n", (int)mPassCount);
 			return true;
 		}
 		else {
-			hxLogHandler(hxLogLevel_Release, "TEST_FAILED: %d tests failed out of %d.\n", (int)mFailCount, (int)(mFailCount + mPassCount));
+			hxLogHandler(hxLogLevel_Console, "TEST_FAILED: %d tests failed out of %d.\n", (int)mFailCount, (int)(mFailCount + mPassCount));
 			return false;
 		}
 	}

@@ -16,7 +16,6 @@ public:
 		binary = 0u, // always binary
 		reserved_ = (uint16_t)~((1u << 3) - 1u) // reserved flags
 	};
-	static const size_t c_MaxLine = 280;
 
 	hxFile();
 	hxFile(uint16_t mode, const char* filename, ...) HX_ATTR_FORMAT(3, 4);
@@ -27,25 +26,31 @@ public:
 
 	// std::basic_fstream interface
 	HX_INLINE bool is_open() const { return m_filePImpl != null; }
-	HX_INLINE bool good() const { hxAssert(m_filePImpl || !m_good); return m_good; }
-	HX_INLINE bool eof() const { hxAssert(m_filePImpl || !m_eof); return m_eof; }
+	HX_INLINE bool good() const { return m_good; } // Check for failure or EOF.
+	HX_INLINE bool eof() const { return m_eof; }   // Check for EOF only.
 	HX_INLINE void clear() {
 		m_good = m_filePImpl != null;
 		m_eof = false;
 	}
 
-	size_t read(void* bytes, size_t byteCount);
-	size_t write(const void* bytes, size_t byteCount);
+	size_t read(void* bytes, size_t count);
+	size_t write(const void* bytes, size_t count);
 
 	// Reads an \n or EOF terminated character sequence.  Allowed to fail on
 	// EOF without needing to be openmode::fallible.  
-	template<size_t Size>
-	HX_INLINE bool getline(char(&buffer)[Size]) { return getline(buffer, Size); }
+	template<size_t BufferSize>
+	HX_INLINE bool getline(char(&buffer)[BufferSize]) { return getline(buffer, BufferSize); }
 
-	bool getline(char* buffer, size_t size);
+	bool getline(char* buffer, size_t bufferSize);
 
-	// Formatted write.  Must be less than c_MaxLine characters.
+	// Formatted write.  Must be less than HX_MAX_LINE characters.
 	bool print(const char* format, ...) HX_ATTR_FORMAT(2, 3); // gcc considers "this" argument 1.
+
+	template<typename T>
+	HX_INLINE size_t read1(T& t) { return read(&t, sizeof t); }
+
+	template<typename T>
+	HX_INLINE size_t write1(const T& t) { return write(&t, sizeof t); }
 
 	// Unformatted binary stream read.  Expects little endian data.
 	template<typename T>
