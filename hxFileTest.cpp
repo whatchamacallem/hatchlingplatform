@@ -3,7 +3,7 @@
 #include "hxFile.h"
 #include "hxTest.h"
 
-HX_REGISTER_FILENAME_HASH;
+HX_REGISTER_FILENAME_HASH
 
 // ConsoleTest.cpp provides coverage for normal operation.
 
@@ -24,14 +24,13 @@ public:
 // ----------------------------------------------------------------------------------
 
 TEST_F(hxFileTest, NotExist) {
-	hxWarn("TEST_EXPECTING_WARNINGS:");
-	hxFile f((hxFile::in | hxFile::fallible), "TEST_FILE_DOES_NOT_EXIST");
+	hxFile f(hxFile::in | hxFile::fallible, "TEST_FILE_DOES_NOT_EXIST");
 	ASSERT_EQ(f.good(), false);
 	ASSERT_EQ(f.is_open(), false);
 }
 
 TEST_F(hxFileTest, Operators) {
-	hxFile f((hxFile::out | hxFile::fallible), "hx_filetest_ops.bin");
+	hxFile f(hxFile::out | hxFile::fallible, "hx_filetest_ops.bin");
 	X x;
 	int a = -3;
 	x.a = 77777u;
@@ -43,7 +42,7 @@ TEST_F(hxFileTest, Operators) {
 	ASSERT_FALSE(f.eof());
 	f.close();
 
-	f.open((hxFile::in | hxFile::fallible), "hx_filetest_ops.bin");
+	f.open(hxFile::in | hxFile::fallible, "hx_filetest_ops.bin");
 	X y;
 	int b;
 	ASSERT_TRUE(f.good());

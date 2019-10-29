@@ -1,24 +1,21 @@
 // Copyright 2017 Adrian Johnston
 
-#include "hxRadixSort.h"
+#include "hxSort.h"
 
-#include <algorithm>
-
-HX_REGISTER_FILENAME_HASH;
+HX_REGISTER_FILENAME_HASH
 
 HX_STATIC_ASSERT(HX_RADIX_SORT_BITS == 8 || HX_RADIX_SORT_BITS == 11, "Unsupported HX_RADIX_SORT_BITS");
 
 void hxRadixSortBase::sort(hxMemoryManagerId tempMemory) {
 	if (m_array.size() < HX_RADIX_SORT_MIN_SIZE) {
-		// Reasonable locality of reference at least.
-		std::sort(m_array.begin(), m_array.end());
+		hxInsertionSort(m_array.begin(), m_array.end());
 		return;
 	}
 
 	hxMemoryManagerScope allocator(tempMemory);
 
 	if (HX_RADIX_SORT_BITS == 8) {
-		// Working buffers
+		// 2 Working buffers
 		KeyValuePair* HX_RESTRICT buf0 = m_array.data();
 		KeyValuePair* buf0End = buf0 + m_array.size();
 		KeyValuePair* HX_RESTRICT buf1 = (KeyValuePair*)hxMalloc(m_array.size() * sizeof(KeyValuePair));
@@ -28,8 +25,8 @@ void hxRadixSortBase::sort(hxMemoryManagerId tempMemory) {
 		::memset(histograms, 0x00, 256u * 4u * sizeof(uint32_t)); // 4k
 
 		// Build histograms
-		uint32_t* HX_RESTRICT hist0 = histograms;
-		uint32_t* HX_RESTRICT hist1 = histograms + 256;
+		uint32_t* HX_RESTRICT hist0 = histograms + (256 * 0);
+		uint32_t* HX_RESTRICT hist1 = histograms + (256 * 1);
 		uint32_t* HX_RESTRICT hist2 = histograms + (256 * 2);
 		uint32_t* HX_RESTRICT hist3 = histograms + (256 * 3);
 
@@ -68,10 +65,9 @@ void hxRadixSortBase::sort(hxMemoryManagerId tempMemory) {
 
 		hxFree(histograms);
 		hxFree(buf1);
-
 	}
 	else if (HX_RADIX_SORT_BITS == 11) {
-		// Working buffers
+		// 3 Working buffers
 		KeyValuePair* HX_RESTRICT buf0 = m_array.data();
 		KeyValuePair* buf0End = buf0 + m_array.size();
 		KeyValuePair* HX_RESTRICT buf1 = (KeyValuePair*)hxMalloc(m_array.size() * sizeof(KeyValuePair) * 2u);
@@ -82,9 +78,9 @@ void hxRadixSortBase::sort(hxMemoryManagerId tempMemory) {
 		uint32_t* histograms = (uint32_t*)hxMalloc(5120u * sizeof(uint32_t)); // 5120: 2048*2.5
 		::memset(histograms, 0x00, 5120u * sizeof(uint32_t));
 
-		uint32_t* HX_RESTRICT hist0 = histograms;               // 2048 values
-		uint32_t* HX_RESTRICT hist1 = histograms + 2048u;       // 2048 values
-		uint32_t* HX_RESTRICT hist2 = histograms + (2048u * 2u); // 1024 values
+		uint32_t* HX_RESTRICT hist0 = histograms +    0u; // 2048 values
+		uint32_t* HX_RESTRICT hist1 = histograms + 2048u; // 2048 values
+		uint32_t* HX_RESTRICT hist2 = histograms + 4096u; // 1024 values
 
 		for (const KeyValuePair* HX_RESTRICT it = buf0; it != buf0End; ++it) {
 			uint32_t x = it->m_key;

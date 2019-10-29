@@ -3,12 +3,12 @@
 #include "hxTaskQueue.h"
 #include "hxProfiler.h"
 
-HX_REGISTER_FILENAME_HASH;
+HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------
 
 hxTaskQueue::hxTaskQueue(int32_t threadPoolSize)
-	: m_nextWaitingTask(hx_null)
+	: m_nextWaitingTask(hxnull)
 	, m_runningQueueCheck(c_runningQueueCheck)
 
 {
@@ -35,7 +35,7 @@ hxTaskQueue::~hxTaskQueue() {
 			m_threads[i].~thread();
 		}
 		hxFree(m_threads);
-		m_threads = hx_null;
+		m_threads = hxnull;
 	}
 	else
 #endif
@@ -77,8 +77,8 @@ void hxTaskQueue::waitForAll() {
 		while (m_nextWaitingTask) {
 			Task* task = m_nextWaitingTask;
 			m_nextWaitingTask = task->m_nextWaitingTask;
-			task->m_queue = hx_null;
-			task->m_nextWaitingTask = hx_null;
+			task->m_queue = hxnull;
+			task->m_nextWaitingTask = hxnull;
 
 			// Last time this object is touched.  It may delete or re-enqueue itself.
 			hxProfileScope(task->getLabel());
@@ -89,14 +89,14 @@ void hxTaskQueue::waitForAll() {
 
 #if HX_HAS_CPP11_THREADS
 void hxTaskQueue::executorThread(hxTaskQueue* q, ExecutorMode mode) {
-	Task* task = hx_null;
+	Task* task = hxnull;
 	for (;;) {
 		{
 			std::unique_lock<std::mutex> lk(q->m_mutex);
 
 			if (task) {
 				// Waited to reacquire critical section to decrement counter for previous task.
-				task = hx_null;
+				task = hxnull;
 				hxAssert(q->m_executingCount > 0);
 				if (--q->m_executingCount == 0 && !q->m_nextWaitingTask) {
 					q->m_condVarWaiting.notify_all();
@@ -133,8 +133,8 @@ void hxTaskQueue::executorThread(hxTaskQueue* q, ExecutorMode mode) {
 			}
 		}
 
-		task->m_nextWaitingTask = hx_null;
-		task->m_queue = hx_null;
+		task->m_nextWaitingTask = hxnull;
+		task->m_queue = hxnull;
 		hxProfileScope(task->getLabel());
 		// Last time this object is touched.  It may delete or re-enqueue itself.
 		task->execute(q);

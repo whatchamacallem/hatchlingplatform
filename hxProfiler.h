@@ -19,9 +19,13 @@
 // hxProfileScope declares an RAII-style profiling sample.
 // WARNING: A pointer to labelStaticString is kept.
 // c_hxProfilerDefaultSamplingCutoff is provided below as a recommended MinCycles cutoff.
-// Macro signature is: hxProfileScope(const char* labelStaticString, uint32_t MinCycles = 0u);
-#define hxProfileScope(labelStaticString, ...)  \
-	hxProfilerScopeInternal<__VA_ARGS__> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStaticString)
+// Macro signatures are: hxProfileScope(const char* labelStaticString) and
+// hxProfileScopeMin(const char* labelStaticString, uint32_t MinCycles = 0u);
+#define hxProfileScope(labelStaticString)  \
+	hxProfilerScopeInternal<> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStaticString)
+
+#define hxProfileScopeMin(labelStaticString, Min)  \
+	hxProfilerScopeInternal<Min> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStaticString)
 
 #define hxProfilerStart() g_hxProfiler.start()
 #define hxProfilerStop() g_hxProfiler.stop()
@@ -43,7 +47,7 @@ enum { c_hxProfilerDefaultSamplingCutoff = 1000 };
 #endif
 
 // ----------------------------------------------------------------------------------
-// hxProfiler internals
+// hxProfiler internals, do not use directly.
 
 #if HX_HAS_CPP11_TIME
 extern std::chrono::high_resolution_clock::time_point g_hxStart;
@@ -74,6 +78,20 @@ public:
 	// For testing
 	HX_INLINE uint32_t recordsSize() { return m_records.size(); }
 	HX_INLINE void recordsClear() { m_records.clear(); }
+
+#if HX_HAS_CPP11_TIME
+	HX_INLINE static uint32_t sampleCycles() {
+		return (uint32_t)(std::chrono::high_resolution_clock::now() - g_hxStart).count();
+	}
+#else
+	// TODO: read cycle counter register for target.  This version is a Linux fallback.
+	HX_INLINE static uint32_t sampleCycles() {
+		timespec ts;
+		clock_gettime(CLOCK_MONOTONIC, &ts);
+		return (uint32_t)ts.tv_nsec;
+	}
+#endif // !HX_HAS_CPP11_TIME
+
 private:
 	template<uint32_t MinCycles> friend class hxProfilerScopeInternal;
 	bool m_isStarted;
@@ -90,12 +108,12 @@ public:
 	HX_INLINE hxProfilerScopeInternal(const char* labelStaticString)
 		: m_label(labelStaticString)
 	{
-		m_t0 = g_hxProfiler.m_isStarted ? sampleCycles() : 0u;
+		m_t0 = g_hxProfiler.m_isStarted ? hxProfiler::sampleCycles() : ~0u;
 	}
 
 	HX_INLINE ~hxProfilerScopeInternal() {
-		if (m_t0 != 0u) {
-			uint32_t t1 = sampleCycles();
+		if (m_t0 != ~0u) {
+			uint32_t t1 = hxProfiler::sampleCycles();
 			if ((t1 - m_t0) >= MinCycles) {
 				void* rec = g_hxProfiler.m_records.emplace_back_atomic();
 				if (rec) {
@@ -104,19 +122,6 @@ public:
 			}
 		}
 	}
-
-#if HX_HAS_CPP11_TIME
-	HX_INLINE static uint32_t sampleCycles() {
-		return (uint32_t)(std::chrono::high_resolution_clock::now() - g_hxStart).count();
-	}
-#else
-	// TODO: read cycle counter register for target.  This version is a Linux fallback.
-	HX_INLINE static uint32_t sampleCycles() {
-		timespec ts;
-		clock_gettime(CLOCK_MONOTONIC, &ts);
-		return (uint32_t)ts.tv_nsec;
-	}
-#endif // !HX_HAS_CPP11_TIME
 
 private:
 	hxProfilerScopeInternal(); // = delete
@@ -129,6 +134,7 @@ private:
 // ----------------------------------------------------------------------------------
 #else // !HX_PROFILE
 #define hxProfileScope(...) ((void)0)
+#define hxProfileScopeMin(...) ((void)0)
 #define hxProfilerStart() ((void)0)
 #define hxProfilerStop() ((void)0)
 #define hxProfilerLog() ((void)0)

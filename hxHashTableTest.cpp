@@ -5,7 +5,7 @@
 #include "hxHashTableNodes.h"
 #include "hxTest.h"
 
-HX_REGISTER_FILENAME_HASH;
+HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------------
 
@@ -50,7 +50,7 @@ public:
 	};
 
 	hxHashTableTest() {
-		hxAssert(s_hxTestCurrent == hx_null);
+		hxAssert(s_hxTestCurrent == hxnull);
 		m_constructed = 0;
 		m_destructed = 0;
 		m_nextId = 0;
@@ -112,9 +112,9 @@ TEST_F(hxHashTableTest, Single) {
 		ASSERT_TRUE(table[k].value.id == node->value.id);
 		ASSERT_TRUE(table.insert_unique(k).value.id == node->value.id);
 		ASSERT_TRUE(table.find(k) == node);
-		ASSERT_TRUE(table.find(k, node) == hx_null);
+		ASSERT_TRUE(table.find(k, node) == hxnull);
 		ASSERT_TRUE(((const Table&)table).find(k) == node);
-		ASSERT_TRUE(((const Table&)table).find(k, node) == hx_null);
+		ASSERT_TRUE(((const Table&)table).find(k, node) == hxnull);
 
 		// MODIFIES TABLE
 		ASSERT_TRUE(table.extract(k) == node);
@@ -122,8 +122,8 @@ TEST_F(hxHashTableTest, Single) {
 		// Operations after single node was removed
 		ASSERT_EQ(table.size(), 0u);
 		ASSERT_EQ(table.count(k), 0u);
-		ASSERT_TRUE(table.find(k) == hx_null);
-		ASSERT_TRUE(((const Table&)table).find(k) == hx_null);
+		ASSERT_TRUE(table.find(k) == hxnull);
+		ASSERT_TRUE(((const Table&)table).find(k) == hxnull);
 
 		// MODIFIES TABLE
 		ASSERT_TRUE(table[k].key == k);
@@ -162,7 +162,7 @@ TEST_F(hxHashTableTest, Multiple) {
 		for (int i = 0; i < N; ++i) {
 			TestInteger* ti = table.find(i);
 			ASSERT_EQ(ti->value, i);
-			ASSERT_TRUE(table.find(i, ti) == hx_null);
+			ASSERT_TRUE(table.find(i, ti) == hxnull);
 
 			// Iteration over.
 			ASSERT_TRUE(it != table.end());
@@ -198,7 +198,7 @@ TEST_F(hxHashTableTest, Multiple) {
 			ASSERT_EQ(ti->key, i);
 			const TestInteger* ti2 = ((const hxHashTable<TestInteger>&)table).find(i, ti); // test const version
 			ASSERT_EQ(ti2->key, i);
-			ASSERT_TRUE(table.find(i, ti2) == hx_null);
+			ASSERT_TRUE(table.find(i, ti2) == hxnull);
 
 			ASSERT_EQ(table.count(i), 2u);
 
@@ -237,12 +237,12 @@ TEST_F(hxHashTableTest, Multiple) {
 		// Check properties of N/2 remaining keys.
 		for (int i = 0; i < (N/2); ++i) {
 			ASSERT_EQ(table.release_key(i), 0);
-			ASSERT_TRUE(table.find(i) == hx_null);
+			ASSERT_TRUE(table.find(i) == hxnull);
 		}
 		for (int i = (N/2); i < N; ++i) {
 			TestInteger* ti = table.find(i);
 			ASSERT_EQ(ti->key, i);
-			ASSERT_TRUE(table.find(i, ti) == hx_null);
+			ASSERT_TRUE(table.find(i, ti) == hxnull);
 			ASSERT_EQ(table.count(i), 1u);
 		}
 
@@ -273,8 +273,8 @@ TEST_F(hxHashTableTest, Strings) {
 		for (int i = sz; i--;) {
 			ASSERT_TRUE(::strcmp(table[colors[i]].key, colors[i]) == 0);
 		}
-		ASSERT_TRUE(table.find("Cyan") != hx_null);
-		ASSERT_TRUE(table.find("Sangoire") == hx_null);
+		ASSERT_TRUE(table.find("Cyan") != hxnull);
+		ASSERT_TRUE(table.find("Sangoire") == hxnull);
 
 	}
 	ASSERT_EQ(m_constructed, sz);

@@ -6,17 +6,23 @@
 #error #include "hatchling.h"
 #endif
 
-#ifdef __cplusplus
+#if __cplusplus
 #include <new>
+
 extern "C" {
 #endif
 
 // ----------------------------------------------------------------------------
 // Memory Manager C API
+//
+// Memory allocators are selected using an id.
+//
+// Alignment is specified using a mask of those LSB bits that must be 0.  Which
+// is a value 1 less than the actual power of two alignment.  
 
-#define HX_ALIGNMENT_MASK ((uintptr_t)(sizeof(char*) - 1u)) // HX_ALIGNMENT-1
-#define hxIsAligned(x) (((uintptr_t)(x) & HX_ALIGNMENT_MASK) == 0)
-#define hxAssertAligned(x) hxAssert(hxIsAligned(x))
+// The default alignment HX_ALIGNMENT_MASK allows for storing char pointers.
+// This alignment should work for most types except SIMD vectors.
+#define HX_ALIGNMENT_MASK ((uintptr_t)(sizeof(char*)-1u)) // HX_ALIGNMENT-1
 
 // hxMemoryManagerId. (See hxMemoryManager.cpp)
 // hxMemoryManagerId_Scratch* are tightly coupled with hxMemoryAllocatorScratchpad.
@@ -37,11 +43,17 @@ enum hxMemoryManagerId {
 };
 
 void* hxMalloc(size_t size);
+
 void* hxMallocExt(size_t size, enum hxMemoryManagerId memoryAllocatorId, uintptr_t alignmentMask/*=HX_ALIGNMENT_MASK*/);
+
 void hxFree(void* ptr);
+
+// Allocates a copy of a string using the provided allocator.
+char* hxStringDuplicate(const char* string, enum hxMemoryManagerId allocatorId /*=hxMemoryManagerId_Heap*/);
+
 uint32_t hxIsScratchpad(void* ptr); // returns bool as int.
 
-#ifdef __cplusplus
+#if __cplusplus
 } // extern "C"
 
 // ----------------------------------------------------------------------------
@@ -79,12 +91,9 @@ void hxMemoryManagerInit();
 void hxMemoryManagerShutDown();
 uint32_t hxMemoryManagerAllocationCount();
 
-// Add default parameters to C calls.
-void* hxMallocExt(size_t size, hxMemoryManagerId memoryAllocatorId);
-char* hxStringDuplicate(const char* s);
-
-// hxNew.  An extended new().  hxMemoryManagerId_Current is the default.
-// C++11 perfect argument forwarding would be less of an eyesore.
+// hxNew.  An extended new().  hxMemoryManagerId_Current is the default.  C++11
+// perfect argument forwarding would be less of an eyesore.  Use hxArray to manage
+// a dynamically-allocated array of objects if you need automatic destruction.
 
 // hxNew<T>(...)
 template <typename T>
@@ -123,17 +132,28 @@ HX_INLINE void hxDelete(T* t) {
 	if (t) {
 		t->~T();
 		if ((HX_RELEASE) < 1) {
+			// Mark as released to memory manager.
 			::memset((void*)t, 0xdd, sizeof *t);
 		}
 		hxFree(t);
 	}
 }
 
-// Functor deletes T*.  implements std::default_delete.
+// A functor that deletes T*.  Implements std::default_delete.
 struct hxDeleter {
 	template <typename T>
 	HX_INLINE void operator()(T* t) const { hxDelete(t); }
 	HX_INLINE operator bool() const { return true; }
 };
+
+// Add default args to C++ interface: alignmentMask=HX_ALIGNMENT_MASK.
+HX_INLINE void* hxMallocExt(size_t size, hxMemoryManagerId memoryAllocatorId) {
+	return hxMallocExt(size, memoryAllocatorId, HX_ALIGNMENT_MASK);
+}
+
+// Add default args to C++ interface: allocatorId=hxMemoryManagerId_Heap
+HX_INLINE char* hxStringDuplicate(const char* s) {
+	return hxStringDuplicate(s, hxMemoryManagerId_Heap);
+}
 
 #endif // __cplusplus

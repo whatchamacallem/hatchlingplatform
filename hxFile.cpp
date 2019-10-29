@@ -1,25 +1,32 @@
 // Copyright 2017 Adrian Johnston
 
 #include "hxFile.h"
-#include <stdio.h>
 
-HX_REGISTER_FILENAME_HASH;
+#if HX_HAS_C_FILE
+#include <stdio.h>
+#endif
+
+
+HX_REGISTER_FILENAME_HASH
 
 // Target will require an implementation of fopen(), fclose(), fread(), fwrite(),
 // fgets() and feof().
 
-hxFile::hxFile() {
-	m_filePImpl = hx_null;
-	m_openMode = 0u;
+// Wrapped to ensure correct construction order.
+hxFile& hxLogFile() {
+	static hxFile f(hxFile::out | hxFile::fallible | hxFile::echo, "%s", g_hxSettings.logFile ? g_hxSettings.logFile : "");
+	return f;
+}
+
+hxFile::hxFile(uint16_t mode) {
+	m_filePImpl = hxnull;
+	m_openMode = mode;
 	m_good = false;
 	m_eof = false;
 }
 
 hxFile::hxFile(uint16_t mode, const char* filename, ...) {
-	m_filePImpl = hx_null;
-	m_openMode = 0u;
-	m_good = false;
-	m_eof = false;
+	m_filePImpl = hxnull;
 	va_list args;
 	va_start(args, filename);
 	openV(mode, filename, args);
@@ -41,12 +48,21 @@ bool hxFile::open(uint16_t mode, const char* filename, ...) {
 #if HX_HAS_C_FILE
 
 bool hxFile::openV(uint16_t mode, const char* filename, va_list args) {
-	hxAssertMsg((mode & hxFile::reserved_) == 0, "using reserved file mode");
+	hxAssertMsg((mode & ~(uint16_t)((1u << 5) - 1u)) == 0, "using reserved file mode");
 	close();
 
+	m_openMode = mode;
+
+	if (mode == 0 || filename == hxnull) {
+		return false;
+	}
+
 	char buf[HX_MAX_LINE] = "";
-	int sz = filename ? ::vsnprintf(buf, HX_MAX_LINE, filename, args) : 0; // C99
-	hxAssertMsg(sz > 0, "hxFile filename error: %s", filename ? filename : "<null>"); (void)sz;
+	::vsnprintf(buf, HX_MAX_LINE, filename, args); // C99
+
+	if (buf[0] == '\0') {
+		return false;
+	}
 
 	const char* m = "";
 	switch (mode & (hxFile::in | hxFile::out)) {
@@ -57,20 +73,19 @@ bool hxFile::openV(uint16_t mode, const char* filename, va_list args) {
 		m = "wb";
 		break;
 	default:
-		hxAssertMsg(false, "file mode invalid, %d for %s", (int)mode, buf);
+		m = "rb+";
 	}
 
-	m_openMode = mode;
 	m_filePImpl = (char*)::fopen(buf, m);
 	hxAssertRelease(m_filePImpl || (mode & hxFile::fallible), "failed to open file: %s", buf);
-	m_good = m_filePImpl != hx_null;
+	m_good = m_filePImpl != hxnull;
 	return m_good;
 }
 
 void hxFile::close() {
 	if (m_filePImpl) {
 		::fclose((FILE*)m_filePImpl);
-		m_filePImpl = hx_null;
+		m_filePImpl = hxnull;
 	}
 	m_openMode = 0u;
 	m_good = false;
@@ -90,18 +105,24 @@ size_t hxFile::read(void* bytes, size_t byteCount) {
 }
 
 size_t hxFile::write(const void* bytes, size_t byteCount) {
+#if HX_HAS_C_FILE
+	if (m_openMode & echo) {
+		::fwrite(bytes, 1, byteCount, stdout);
+	}
+#endif
+
 	hxAssertMsg(bytes, "null i/o buffer");
 	hxAssertMsg((m_openMode & hxFile::out) && (m_filePImpl || (m_openMode & hxFile::fallible)), "file not writable");
 	size_t bytesWritten = (bytes && m_filePImpl) ? ::fwrite(bytes, 1, byteCount, (FILE*)m_filePImpl) : 0u;
 	hxAssertRelease((byteCount == bytesWritten) || (m_openMode & hxFile::fallible), "write bytes %d != actual %d", (int)byteCount, (int)bytesWritten); (void)bytesWritten;
-	m_good = m_good && byteCount == bytesWritten;
+	m_good = byteCount == bytesWritten; // Can restore goodness.
 	return bytesWritten;
 }
 
 bool hxFile::getline(char* buffer, size_t bufferSize) {
 	hxAssertMsg(buffer, "null i/o buffer");
 	hxAssertMsg((m_openMode & hxFile::in) && (m_filePImpl || (m_openMode & hxFile::fallible)), "invalid file");
-	char* result = (buffer && m_filePImpl) ? ::fgets(buffer, (int)bufferSize, (FILE*)m_filePImpl) : hx_null;
+	char* result = (buffer && bufferSize && m_filePImpl) ? ::fgets(buffer, (int)bufferSize, (FILE*)m_filePImpl) : hxnull;
 	if (!result) {
 		if (buffer && bufferSize) {
 			buffer[0] = '\0';
@@ -111,8 +132,6 @@ bool hxFile::getline(char* buffer, size_t bufferSize) {
 		hxAssertRelease(m_eof || (m_openMode & hxFile::fallible), "getline error");
 		return false; // EOF or error
 	}
-	// This is a potential data corruption issue, do not mask with fallible.
-	hxAssertRelease(::strlen(result) < bufferSize, "getline overflow"); // Using the last available byte is bad.
 	return true;
 }
 
@@ -121,15 +140,22 @@ bool hxFile::getline(char* buffer, size_t bufferSize) {
 #endif
 
 bool hxFile::print(const char* format, ...) {
-	char buf[HX_MAX_LINE] = "";
+	hxAssert(format);
 
+	char str[HX_MAX_LINE] = "";
 	va_list args;
 	va_start(args, format);
-	int sz = ::vsnprintf(buf, HX_MAX_LINE, format ? format : "<null>", args); // C99
+	int len = ::vsnprintf(str, HX_MAX_LINE, format, args); // C99
 	va_end(args);
 
-	// These are potential data corruption issues, not fallible I/O.
-	hxAssertRelease(sz >= 0 && sz < (int)HX_MAX_LINE, "file print error: %s", format);
+#if HX_HAS_C_FILE
+	if (m_openMode & echo) {
+		::fwrite(str, 1, len, stdout);
+	}
+#endif
 
-	return (sz >= 0) ? write(buf, (sz < (int)HX_MAX_LINE) ? (size_t)sz : (size_t)HX_MAX_LINE) : false;
+	// These are potential data corruption issues, not fallible I/O.
+	hxAssertRelease(len >= 0 && len < (int)HX_MAX_LINE, "file print error: %s", format);
+	return write(str, len);
 }
+

@@ -4,7 +4,7 @@
 #include "hxDma.h"
 #include "hxTest.h"
 
-HX_REGISTER_FILENAME_HASH;
+HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------------
 
@@ -18,12 +18,12 @@ public:
 	}
 
 	~hxDmaTest() {
-		hxDmaAwaitAll();
+		hxDmaAwaitAll("end test");
 		hxDmaEndFrame();
 		checkBuf(); // Don't trash test buffer
 	}
 
-	void setBuf(uint8_t* buf=hx_null) {
+	void setBuf(uint8_t* buf=hxnull) {
 		buf = buf ? buf : m_buf;
 		for (uint32_t i = BufSize; i--;) {
 			buf[i] = (uint8_t)i;
@@ -46,8 +46,8 @@ public:
 TEST_F(hxDmaTest, Single) {
 	uint8_t dst[BufSize];
 	::memset(dst, 0x33, sizeof dst);
-	hxDmaStart(dst, m_buf, BufSize);
-	hxDmaAwaitAll();
+	hxDmaStart(dst, m_buf, BufSize, "start");
+	hxDmaAwaitAll("await");
 	checkBuf(dst);
 }
 
@@ -57,9 +57,9 @@ TEST_F(hxDmaTest, Multiple) {
 
 	::memset(dst, 0x33, sizeof dst);
 	for (uint32_t i = OPS; i--;) {
-		hxDmaStart(dst[i], m_buf, BufSize);
+		hxDmaStart(dst[i], m_buf, BufSize, "start");
 	}
-	hxDmaAwaitAll();
+	hxDmaAwaitAll("await");
 	for (uint32_t i = OPS; i--;) {
 		checkBuf(dst[i]);
 	}
@@ -74,11 +74,11 @@ TEST_F(hxDmaTest, Simultaneous) {
 	for (uint32_t j = REPS; j--;) {
 		::memset(dst, 0x33, sizeof dst);
 		for (uint32_t i = OPS; i--;) {
-			hxDmaStart(dst[i], m_buf, BufSize);
+			hxDmaStart(dst[i], m_buf, BufSize, "start");
 			hxDmaAddSyncPoint(sp[i]);
 		}
 		for (uint32_t i = OPS; i--;) {
-			hxDmaAwaitSyncPoint(sp[i]);
+			hxDmaAwaitSyncPoint(sp[i], "sync point");
 			checkBuf(dst[i]);
 		}
 	}

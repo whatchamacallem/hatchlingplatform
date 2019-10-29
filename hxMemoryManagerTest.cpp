@@ -5,7 +5,7 @@
 #include "hxTest.h"
 #include "hxMemoryManager.h"
 
-HX_REGISTER_FILENAME_HASH;
+HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------------
 
@@ -76,7 +76,7 @@ public:
 #if (HX_RELEASE) < 1
 		uintptr_t startCount = 0;
 		uintptr_t startBytes = 0;
-		void* ptr2 = hx_null;
+		void* ptr2 = hxnull;
 		int32_t assertsAllowed = g_hxSettings.assertsToBeSkipped;
 
 		{
@@ -120,6 +120,8 @@ TEST_F(hxMemoryManagerTest, Execute) {
 		return; // Test fails because the hxMemoryManager code is disabled.
 	}
 #endif
+	hxLog("TEST_EXPECTING_ASSERTS:\n");
+
 	for (int32_t i = 0; i < hxMemoryManagerId_MAX; ++i) {
 		TestMemoryAllocatorNormal((hxMemoryManagerId)i);
 	}

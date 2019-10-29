@@ -6,11 +6,11 @@
 #include "hxUniquePtr.h"
 #include "hxTest.h"
 
-HX_REGISTER_FILENAME_HASH;
+HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------------
 
-static class hxArrayTest* s_hxTestCurrent = hx_null;
+static class hxArrayTest* s_hxTestCurrent = hxnull;
 
 class hxArrayTest :
 	public testing::test
@@ -59,14 +59,12 @@ public:
 		bool operator==(const TestObject& rhs) const { return id == rhs.id; }
 		bool operator==(int32_t x) const { return id == x; }
 
-		operator float() const { return (float)id; }
-
 		int32_t id;
 		int32_t constructor;
 	};
 
 	hxArrayTest() {
-		hxAssert(s_hxTestCurrent == hx_null);
+		hxAssert(s_hxTestCurrent == hxnull);
 		m_constructed = 0;
 		m_destructed = 0;
 		m_nextId = -1;
@@ -284,9 +282,9 @@ TEST_F(hxArrayTest, UniquePtr) {
 		objs.get_allocator().reserveStorageExt(10u, hxMemoryManagerId_Current, HX_ALIGNMENT_MASK);
 		objs.resize(5u);
 
-		void* a0 = hx_null;
-		char* a1 = hx_null;
-		int*  a2 = hx_null;
+		void* a0 = hxnull;
+		char* a1 = hxnull;
+		int*  a2 = hxnull;
 
 		objs[2].reset(hxNew<TestObject>()); // Compile test, free will not be called.
 		ASSERT_TRUE(objs[2]->constructor == 0);

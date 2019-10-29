@@ -21,14 +21,8 @@ public:
 	HX_INLINE explicit hxStockpile() { m_size = 0u; }
 	HX_INLINE ~hxStockpile() { destruct(); }
 
-	HX_INLINE const T& operator[](uint32_t index) const {
-		hxAssert(index < hxMin((uint32_t)m_size, Capacity));
-		return this->getStorage()[index];
-	}
-	HX_INLINE       T& operator[](uint32_t index) {
-		hxAssert(index < hxMin((uint32_t)m_size, Capacity));
-		return this->getStorage()[index];
-	}
+	HX_INLINE const T& operator[](uint32_t index) const { hxAssert(index < hxMin((uint32_t)m_size, Capacity)); return this->getStorage()[index]; }
+	HX_INLINE       T& operator[](uint32_t index)       { hxAssert(index < hxMin((uint32_t)m_size, Capacity)); return this->getStorage()[index]; }
 
 	HX_INLINE uint32_t size() const { return hxMin((uint32_t)m_size, Capacity); }
 	HX_INLINE uint32_t capacity() const { return Capacity; }
@@ -56,7 +50,7 @@ public:
 			return this->getStorage() + index;
 		}
 		m_size = Capacity;
-		return hx_null;
+		return hxnull;
 	}
 
 	HX_INLINE void clear() {
@@ -66,10 +60,10 @@ public:
 
 private:
 	HX_INLINE void destruct() {
-		T* begin = this->getStorage();
-		uint32_t size = hxMin((uint32_t)m_size, Capacity);
-		while (size--) {
-			(begin++)->~T();
+		T* t = this->getStorage();
+		uint32_t sz = hxMin((uint32_t)m_size, Capacity);
+		while (sz--) {
+			t++->~T();
 		}
 	}
 

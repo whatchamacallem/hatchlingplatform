@@ -9,29 +9,40 @@
 // ----------------------------------------------------------------------------
 // hxAllocator<1+>
 //
-// Static instantiation for known capacities.
+// Provides static allocation when capacity is greater than zero.
 
 template<typename T, uint32_t Capacity>
 class hxAllocator {
 public:
+	// Template specialization below should have been selected.
 	HX_STATIC_ASSERT(Capacity > 0u, "Capacity > 0");
+
+	// Initializes memory to 0xCD when HX_RELEASE < 1.
 	HX_INLINE hxAllocator() {
 		if ((HX_RELEASE) < 1) {
 			::memset(m_allocator, 0xcd, sizeof m_allocator);
 		}
 	}
 
-	// Because reserveStorage() will not actually reallocate it is also used to ensure initial capacity.
+	// Used to ensure initial capacity as reserveStorage() will not reallocate.
 	HX_INLINE void reserveStorage(uint32_t size) { hxAssertRelease(size <= Capacity, "allocator overflowing fixed capacity."); }
+
+	// Returns the number of elements of T allocated.
 	HX_INLINE uint32_t getCapacity() const { return Capacity; }
+
+	// Returns const array of T.
 	HX_INLINE const T* getStorage() const { return reinterpret_cast<const T*>(m_allocator + 0); }
+
+	// Returns array of T.
 	HX_INLINE T* getStorage() { return reinterpret_cast<T*>(m_allocator + 0); }
 
 private:
-	enum { m_capacity = Capacity };
+	enum { m_capacity = Capacity }; // Consistently show m_capacity in debugger.
+	// Using union to implement alignas(char *).
 	union {
-		char m_allocator[Capacity * sizeof(T)];
-		char* m_align;
+		// Char arrays are the least likely to encounter undefined behavior.
+		char m_allocator[m_capacity * sizeof(T)];
+		char* m_charPointerAlign; // char pointers have the strictest alignment requirement.
 	};
 };
 
@@ -39,16 +50,19 @@ private:
 // hxAllocator<0>
 //
 // Capacity is set by first call to reserveStorage() and may not be extended.
+
 #define hxAllocatorDynamicCapacity 0u
 
 template<typename T>
 class hxAllocator<T, hxAllocatorDynamicCapacity> {
 public:
+	// Does not allocate until reserveStorage() is called.
 	HX_INLINE hxAllocator() {
 		m_allocator = 0;
 		m_capacity = 0;
 	}
 
+	// Calls hxFree() with any allocated memory.
 	HX_INLINE ~hxAllocator() {
 		if (m_allocator) {
 			m_capacity = 0;
@@ -81,8 +95,13 @@ public:
 		}
 	}
 
+	// Returns the number of elements of T allocated.
 	HX_INLINE uint32_t getCapacity() const { return m_capacity; }
+
+	// Returns const array of T.
 	HX_INLINE const T* getStorage() const { return m_allocator; }
+
+	// Returns array of T.
 	HX_INLINE T* getStorage() { return m_allocator; }
 
 private:

@@ -4,7 +4,53 @@
 #include "hatchling.h"
 #include "hxArray.h"
 
-// hxRadixSort.  See hxRadixSort.cpp for tuning.
+// ----------------------------------------------------------------------------
+// hxLess
+//
+// Function object for performing comparisons. Invokes operator <.  This is C++14's
+// std::less<void>.
+
+struct hxLess {
+	template<typename T1, typename T2>
+	HX_INLINE bool operator()(const T1& lhs, const T2& rhs) const { return lhs < rhs; }
+};
+
+// ----------------------------------------------------------------------------
+// hxInsertionSort
+//
+// Sorts the elements in the range [first, last) in ascending order using the
+// insertion sort algorithm.
+//
+// The compare parameter is a function object that returns true if the first
+// argument is ordered before (i.e. is less than) the second.  See hxLess.
+
+template<typename T, typename Compare>
+HX_INLINE void hxInsertionSort(T* first, T* last, const Compare& compare) {
+	for (T* i = first + 1, *j = first; i < last; j = i++) {
+		if (compare(*i, *j)) {
+			T t = *i;
+			*i = *j;
+			while (j > first) {
+				T* k = j - 1;
+				if (compare(t, *k)) {
+					*j = *k;
+					j = k;
+				}
+				else {
+					break;
+				}
+			}
+			*j = t;
+		}
+	}
+}
+
+// ----------------------------------------------------------------------------
+// A specialization of hxInsertionSort using hxLess.
+template<typename T>
+HX_INLINE void hxInsertionSort(T* first, T* last) {
+	hxInsertionSort(first, last, hxLess());
+}
 
 // ----------------------------------------------------------------------------
 // hxRadixSortBase.  Operations that are independent of hxRadixSort type.
@@ -50,7 +96,7 @@ protected:
 // hxRadixSort.  Sorts an array of Value* by Keys.
 //
 // Nota bene: Keys of double, int64_t and uint64_t are not supported.  Keys
-// are not stored in source format.
+// are stored as uint32_t.
 
 template<typename K, class V>
 class hxRadixSort : public hxRadixSortBase {
@@ -64,7 +110,7 @@ public:
 	{
 	public:
 		HX_INLINE const_iterator(hxArray<KeyValuePair>::const_iterator it) : m_ptr(it) { }
-		HX_INLINE const_iterator() : m_ptr(hx_null) { } // invalid
+		HX_INLINE const_iterator() : m_ptr(hxnull) { } // invalid
 		HX_INLINE const_iterator& operator++() { ++m_ptr; return *this; }
 		HX_INLINE const_iterator operator++(int) { const_iterator t(*this); operator++(); return t; }
 		HX_INLINE bool operator==(const const_iterator& rhs) const { return m_ptr == rhs.m_ptr; }

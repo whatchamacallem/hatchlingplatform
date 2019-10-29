@@ -7,14 +7,14 @@
 #include "hxTaskQueue.h"
 #include "hxConsole.h"
 
-HX_REGISTER_FILENAME_HASH;
+HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------------
 #if HX_PROFILE
 
 static const char* s_hxTestLabels[] = {
 	"Alpha",   "Beta",     "Gamma",
-	"Delta",   "hxsilon",  "Zeta",
+	"Delta",   "Epsilon",  "Zeta",
 	"Eta",     "Theta",    "Iota",
 	"Kappa",   "Lambda",   "Mu",
 	"Nu",       "Xi",      "Omicron",
@@ -42,7 +42,7 @@ public:
 		}
 
 		virtual void generateScopes(float targetMs) {
-			uint32_t startCycles = hxProfilerScopeInternal<0u>::sampleCycles();
+			uint32_t startCycles = hxProfiler::sampleCycles();
 			uint32_t delta = 0u;
 
 			// Open up a sub-scope if time allows.
@@ -61,7 +61,7 @@ public:
 				}
 
 				// Unsigned arithmetic handles clock wrapping correctly.
-				delta = hxProfilerScopeInternal<0u>::sampleCycles() - startCycles;
+				delta = hxProfiler::sampleCycles() - startCycles;
 			}
 		}
 
@@ -74,15 +74,19 @@ public:
 // ----------------------------------------------------------------------------------
 
 TEST_F(hxProfilerTest, Single1ms) {
+	hxProfilerStart();
+
 	uint32_t startRecords = g_hxProfiler.recordsSize();
 	{
 		hxProfileScope("1 ms");
 		hxProfilerTaskTest one;
 		one.construct("1 ms", 1.0f);
-		one.execute(hx_null);
+		one.execute(hxnull);
 	}
 
 	ASSERT_TRUE(1u == (g_hxProfiler.recordsSize() - startRecords));
+
+	hxProfilerLog();
 }
 
 TEST_F(hxProfilerTest, writeToChromeTracing) {
@@ -101,6 +105,7 @@ TEST_F(hxProfilerTest, writeToChromeTracing) {
 	ASSERT_TRUE(90u == g_hxProfiler.recordsSize());
 
 	hxConsoleExecLine("profileToChrome profile.json");
+	hxProfilerLog();
 }
 
 #endif // HX_PROFILE

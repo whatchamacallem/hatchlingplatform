@@ -1,13 +1,14 @@
 
-The Hatchling Platform is designed to facilitate C++98/11 embedded systems
-development on a target too constrained to provide traditional operating
-system services.  This is a narrowly defined platform intended to be developed
-against in a modern desktop development environment before cross compiling
-to an embedded system.  An approach intended to limit debugging on the target.
+The Hatchling Platform is designed to facilitate C++ embedded systems development
+on a target too constrained to provide traditional operating system services.
+This is a narrowly defined platform intended to be developed against in a modern
+desktop development environment before cross compiling to an embedded system.  An
+approach intended to limit debugging on the target.  It is also a replacement C++
+runtime, intended to largely replace the use of the standard C++ libraries.
 
  * Test Driver.  A lightweight reimplementation of GoogleTest.
 
- * Profiling.  Captures a hierarchical timeline view with a minimum of overhead.
+ * Profiling.  Captures a hierarchical time-line view with a minimum of overhead.
    View the example profile.json file in Chrome's about://tracing view.
 
  * Memory Management.  Hides a range of allocation strategies behind a simple
@@ -18,22 +19,21 @@ to an embedded system.  An approach intended to limit debugging on the target.
  * Container Support.  Provides a small non-reallocating subset of std::vector,
    std::allocator and std::unordered_{map,multimap,set,multiset}.
 
- * Command line based console with simple C++ bindings.
+ * Command line based console with simple C++ function binding.
  
  * Task Queue.  Simple object oriented interface to multi-threading.
 
  * 64-bit clean.  Intended for but not limited to use with a 32-bit target.
+   Memory allocation, DMA and File I/O use size_t, everything else is 32-bit.
 
  * Does not use exceptions or std::type_info.
 
  * Uses standard C99 headers as required.  With the exception of host
-   implementations where threading and time headers are included.  And <new>
-   and <algorithm>...  Back porting to C95 headers should not be too hard.
+   implementations where threading and time headers are included.  And <new>.
 
  * Logging and memory management available in plain C.  See hatchling.h.
 
-Tested with test.sh using:
- * Microsoft Visual Studio Community 2017 Version 15.8.9
+Tested with ./test.sh using:
+ * Microsoft Visual Studio Community 2017 Version 15.9.8+28307.481
  * gcc (Ubuntu 5.4.0-6ubuntu1~16.04.10) 5.4.0 20160609
- * clang version 3.8.0-2ubuntu4 (tags/RELEASE_380/final)
-
+ * clang version 3.8.0-2ubuntu4

@@ -3,7 +3,7 @@
 #include "hxTaskQueue.h"
 #include "hxTest.h"
 
-HX_REGISTER_FILENAME_HASH;
+HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------
 

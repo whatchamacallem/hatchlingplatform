@@ -10,6 +10,11 @@
 // Compiler detection and some C++11 polyfill.
 
 #ifdef _MSC_VER
+
+#if !defined(__cpp_exceptions) && !defined(_HAS_EXCEPTIONS)
+#define _HAS_EXCEPTIONS 0 // must be included before standard headers
+#endif
+
 // MSVC doesn't support C++ feature test macros, and sets __cplusplus wrong by default
 #define HX_HAS_C_FILE 1
 #define HX_HAS_CPP11_THREADS 1
@@ -21,10 +26,10 @@
 #define HX_LINK_SCRATCHPAD
 #define HX_ATTR_FORMAT(pos, start)
 #define HX_DEBUG_BREAK __debugbreak()
-#define HX_STATIC_ASSERT(x,...) static_assert(((bool)(x) == true), __VA_ARGS__)
+#define HX_STATIC_ASSERT(x,...) static_assert((bool)(x), __VA_ARGS__)
 #define HX_OVERRIDE override
 
-#ifdef __cplusplus
+#if __cplusplus
 #define HX_ATTR_NORETURN [[noreturn]]
 #else // !__cplusplus
 #define HX_ATTR_NORETURN
@@ -59,13 +64,15 @@
 #define HX_DEBUG_BREAK ((void)0) // TODO
 
 #if defined(__cplusplus) && __cplusplus < 201103L // C++98
-#define HX_STATIC_ASSERT(x,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [(x) ? 1 : -1]
+#define HX_STATIC_ASSERT(x,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [(bool)(x) ? 1 : -1]
 #define HX_OVERRIDE
 #else // !C++98
 #define HX_STATIC_ASSERT(x,...) static_assert(x, __VA_ARGS__)
 #define HX_OVERRIDE override
 #endif
 #endif // !_MSC_VER
+
+// ----------------------------------------------------------------------------
 
 #if HX_HAS_CPP11_THREADS
 #define HX_THREAD_LOCAL thread_local
@@ -109,6 +116,9 @@
 #define HX_DEBUG_DMA (HX_RELEASE) < 1
 #endif
 
+// Number of DMA operations tracked.
+#define HX_DEBUG_DMA_RECORDS 16
+
 // ----------------------------------------------------------------------------
 // HX_GOOGLE_TEST:  In case you need to use GoogleTest.
 #ifndef HX_GOOGLE_TEST
@@ -121,17 +131,22 @@
 // bit version tries to be memory efficient, the 11-bit version optimizes for
 // speed over memory.
 #define HX_RADIX_SORT_BITS 8 // either 8 or 11.
-#define HX_RADIX_SORT_MIN_SIZE 50u // uses std::sort() below this.
+#define HX_RADIX_SORT_MIN_SIZE 50u // uses hxInsertionSort() below this.
 
 // ----------------------------------------------------------------------------
-// Default undetected HX_HAS_* features to 0.
+// Default undetected HX_HAS_* features.
 
 #ifndef HX_TARGET
 #define HX_TARGET 0
 #endif
 
 #ifndef HX_HAS_C_FILE
-#define HX_HAS_C_FILE 0
+#define HX_HAS_C_FILE 1
+#endif
+
+// size_t is used regardless because it is expected to be 32-bit on the target.
+#ifndef HX_HAS_64_BIT_TYPES
+#define HX_HAS_64_BIT_TYPES 1
 #endif
 
 // ----------------------------------------------------------------------------
@@ -139,26 +154,18 @@
 // before the memory allocator constructs.
 //
 // See also hxConsoleVariable().
-#ifdef __cplusplus
 struct hxSettings {
-public:
-	void construct();
-
-	static const uint32_t c_settingsIntegrityCheck = 0xe28575c3u;
-	uint32_t settingsIntegrityCheck;
-
-	int32_t logLevelConsole;
-	int32_t logLevelFile; // logFile
 	const char* logFile;
-	bool isShuttingDown; // Allows destruction of permanent resources.
-#if (HX_RELEASE) < 1
-	int32_t assertsToBeSkipped; // Allows testing asserts.
+	uint8_t logLevel; // logFile
+	uint8_t isShuttingDown; // Allows destruction of permanent resources.
+
+#if (HX_MEM_DIAGNOSTIC_LEVEL) > 0
+	uint8_t disableMemoryManager;
 #endif
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	bool disableMemoryManager;
+#if (HX_RELEASE) < 1
+	uint32_t assertsToBeSkipped; // Allows testing asserts.
 #endif
 };
 
 // Constructed by hxInit().
-extern hxSettings g_hxSettings;
-#endif // __cpp_exceptions
+extern struct hxSettings g_hxSettings;

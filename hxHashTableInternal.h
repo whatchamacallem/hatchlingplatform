@@ -5,7 +5,7 @@
 #include "hxAllocator.h"
 
 // ----------------------------------------------------------------------------
-// hxHashTable implementation details
+// hxHashTable implementation details.  Hash table specific version of hxAllocator.
 //
 // C++98 requires these to be declared outside hxHashTable.
 

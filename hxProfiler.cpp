@@ -8,7 +8,7 @@
 
 #if HX_PROFILE
 
-HX_REGISTER_FILENAME_HASH;
+HX_REGISTER_FILENAME_HASH
 
 hxProfiler g_hxProfiler;
 
@@ -45,7 +45,7 @@ void hxProfiler::start() {
 	m_isStarted = true;
 
 	// Logging may easily be off at this point.
-	hxLogRelease("hxProfilerStart... %u cycles\n", (unsigned int)hxProfilerScopeInternal<0u>::sampleCycles());
+	hxLogRelease("hxProfilerStart... %u cycles\n", (unsigned int)hxProfiler::sampleCycles());
 #if HX_HAS_CPP11_TIME
 	g_hxStart = std::chrono::high_resolution_clock::now();
 #endif
@@ -53,7 +53,7 @@ void hxProfiler::start() {
 
 void hxProfiler::stop() {
 	if (m_isStarted) {
-		hxLogRelease("hxProfilerStop... %u cycles\n", (unsigned int)hxProfilerScopeInternal<0u>::sampleCycles());
+		hxLogRelease("hxProfilerStop... %u cycles\n", (unsigned int)hxProfiler::sampleCycles());
 	}
 	m_isStarted = false;
 }
@@ -67,8 +67,8 @@ void hxProfiler::log() {
 		const hxProfiler::Record& rec = m_records[i];
 
 		uint32_t delta = rec.m_end - rec.m_begin;
-		hxLogRelease("hxProfiler %s: thread %x cycles %u %lfms\n", hxBasename(rec.m_label),
-			(unsigned int)rec.m_threadId, (unsigned int)delta, (double)delta * (double)g_hxProfilerMillisecondsPerCycle);
+		hxLogRelease("hxProfiler %s: thread %x cycles %u %fms\n", hxBasename(rec.m_label),
+			(unsigned int)rec.m_threadId, (unsigned int)delta, delta * (double)g_hxProfilerMillisecondsPerCycle);
 	}
 }
 
@@ -77,7 +77,7 @@ void hxProfiler::writeToChromeTracing(const char* filename) {
 
 	if (m_records.empty()) {
 		f.print("[]\n");
-		hxLogRelease("Trace has no samples: %s...\n", filename);
+		hxLogConsole("Trace has no samples: %s...\n", filename);
 		return;
 	}
 
@@ -97,7 +97,7 @@ void hxProfiler::writeToChromeTracing(const char* filename) {
 	}
 	f.print("\n]\n");
 
-	hxLogRelease("Wrote trace to: %s...\n", filename);
+	hxLogConsole("Wrote trace to: %s...\n", filename);
 }
 
 #endif // HX_PROFILE

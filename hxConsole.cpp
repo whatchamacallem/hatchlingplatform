@@ -4,19 +4,9 @@
 #include "hxHashTable.h"
 #include "hxFile.h"
 #include "hxArray.h"
+#include "hxSort.h"
 
-#include <algorithm>
-
-HX_REGISTER_FILENAME_HASH;
-
-// ----------------------------------------------------------------------------------
-// Console commands
-
-// Lists all variables and commands
-hxConsoleCommandNamed(hxConsoleHelp, help);
-
-// Executes commands and settings in file.  usage: "exec <filename>"
-hxConsoleCommandNamed(hxConsoleExecFilename, exec);
+HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------------
 // hxConsoleHashTableNode
@@ -124,30 +114,32 @@ bool hxConsoleExecLine(const char* command) {
 bool hxConsoleExecFile(hxFile& file) {
 	char buf[HX_MAX_LINE];
 	bool result = true;
-	while (file.getline(buf)) {
+	while ((result || file.is_fallible()) && file.getline(buf)) {
 		hxLog("CONSOLE: %s", buf);
-		bool rv = hxConsoleExecLine(buf);
-		result = result && rv; // Don't stop on errors.
+		result = hxConsoleExecLine(buf) && result;
 	}
 	return result;
 }
 
-void hxConsoleExecFilename(const char* filename) {
-	hxFile file(hxFile::in, "%s", filename);
-	hxWarnCheck(file.is_open(), "Cannot open: %s", filename);
-	if (file.is_open()) {
-		bool isOk = hxConsoleExecFile(file);
-		hxWarnCheck(isOk, "Cannot execute: %s", filename); (void)isOk;
-	}
-}
-
-struct hxConsoleLT {
+struct hxConsoleLess {
 	HX_INLINE bool operator()(const hxConsoleHashTableNode* lhs, const hxConsoleHashTableNode* rhs) const {
 		return ::strcmp(lhs->key, rhs->key) < 0;
 	}
 };
 
-// List commands in sorted order.
+void hxConsoleExecFilename(const char* filename) {
+	hxFile file(hxFile::in | hxFile::fallible, "%s", filename);
+	hxWarnCheck(file.is_open(), "Cannot open: %s", filename);
+	if (file.is_open()) {
+		bool isOk = hxConsoleExecFile(file);
+		hxWarnCheck(isOk, "Encountering errors: %s", filename); (void)isOk;
+	}
+}
+
+// ----------------------------------------------------------------------------------
+// Built-in console commands
+
+// Lists variables and commands in order.
 void hxConsoleHelp() {
 	if ((HX_RELEASE) < 2) {
 		hxMemoryManagerScope allocator(hxMemoryManagerId_Heap);
@@ -161,12 +153,45 @@ void hxConsoleHelp() {
 			cmds.push_back(&*it);
 		}
 
-		std::sort(cmds.begin(), cmds.end(), hxConsoleLT());
+		hxInsertionSort(cmds.begin(), cmds.end(), hxConsoleLess());
 
-		hxLogRelease("CONSOLE_SYMBOLS:\n");
+		hxLogConsole("CONSOLE_SYMBOLS\n");
 		for (hxArray<const hxConsoleHashTableNode*>::iterator it = cmds.begin(); it != cmds.end(); ++it) {
 			(*it)->m_cmd->log((*it)->key);
 		}
-		hxLogRelease("--------\n");
 	}
 }
+
+#if (HX_RELEASE) < 2
+
+static void hxConsolePeek(size_t address, uint32_t bytes) {
+	hxHexDump((const void*)address, bytes, 0);
+}
+
+static void hxConsolePoke(size_t address, uint8_t bytes, uint32_t littleEndianWord) {
+	volatile uint8_t* t = (uint8_t*)address;
+	while (bytes--) {
+		*t++ = (uint8_t)littleEndianWord;
+		littleEndianWord >>= 8;
+	}
+}
+
+static void hxConsoleHexDump(size_t address, uint32_t bytes) {
+	hxHexDump((const void*)address, bytes, 1);
+}
+
+// List console commands and argument types.
+hxConsoleCommandNamed(hxConsoleHelp, help);
+
+// Write bytes to console.
+hxConsoleCommandNamed(hxConsolePeek, peek);
+
+// Write bytes to memory.
+hxConsoleCommandNamed(hxConsolePoke, poke);
+
+// Write bytes to console with pretty formatting.
+hxConsoleCommandNamed(hxConsoleHexDump, hex);
+#endif
+
+// Executes commands and settings in file.  usage: "exec <filename>"
+hxConsoleCommandNamed(hxConsoleExecFilename, exec);

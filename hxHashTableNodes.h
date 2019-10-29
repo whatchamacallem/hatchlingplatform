@@ -7,6 +7,7 @@
 
 // ----------------------------------------------------------------------------
 // hxHashTableNodeInteger. Specialization of hxHashTableNodeBase for integer types.
+// See documentation of hxHashTableNodeBase for interface documentation.
 
 template<typename Key>
 class hxHashTableNodeInteger : public hxHashTableNodeBase<Key> {
@@ -22,7 +23,8 @@ public:
 
 // ----------------------------------------------------------------------------
 // hxHashTableNodeStaticString. Specialization of hxHashTableNodeBase for
-// static C strings.  Intended for use with string literals.
+// static C strings.  Intended for use with string literals. See documentation of
+// hxHashTableNodeBase for interface documentation.
 
 class hxHashTableNodeStaticString : public hxHashTableNodeBase<const char*> {
 public:
@@ -48,7 +50,8 @@ private:
 
 // ----------------------------------------------------------------------------
 // hxHashTableNodeString. Specialization of hxHashTableNodeBase for C strings.
-// Allocates a copy, resulting in a string pool per-hash table.
+// Allocates a copy, resulting in a string pool per-hash table.  See documentation
+// of hxHashTableNodeBase for interface documentation.
 
 template <hxMemoryManagerId id=hxMemoryManagerId_Heap>
 class hxHashTableNodeString : public hxHashTableNodeStaticString {
