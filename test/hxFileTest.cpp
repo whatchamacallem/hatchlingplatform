@@ -22,7 +22,7 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-#if __GNUC__
+#if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
 #endif
@@ -33,7 +33,7 @@ TEST(hxFileTest, EmptyName) {
 	ASSERT_EQ(f.is_open(), false);
 }
 
-#if __GNUC__
+#if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
 

@@ -12,7 +12,7 @@
 
 // ----------------------------------------------------------------------------
 // hxTaskQueue.  Execute supplied tasks in arbitrary order without cancellation
-// using an optional thread pool.
+// using an optional thread pool.  See <hx/hxTask.h>.
 
 class hxTaskQueue {
 public:

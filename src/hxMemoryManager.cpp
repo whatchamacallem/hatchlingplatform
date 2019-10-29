@@ -146,6 +146,10 @@ public:
 	}
 
 	void onFreeNonVirtual(void* p) {
+		if (p == hxnull) {
+			return;
+		}
+
 		hxAssert(m_allocationCount > 0u);
 		--m_allocationCount;
 		hxMemoryAllocationHeader& hdr = ((hxMemoryAllocationHeader*)p)[-1];

@@ -31,7 +31,7 @@ public:
 	}
 
 	HX_INLINE uint32_t size() const { return hxMin((uint32_t)m_size, Capacity); }
-	HX_CONSTEXPR uint32_t capacity() const { return Capacity; }
+	HX_CONSTEXPR_FN uint32_t capacity() const { return Capacity; }
 
 	HX_INLINE bool empty() const { return m_size == 0u; }
 	HX_INLINE bool full() { return m_size >= Capacity; }

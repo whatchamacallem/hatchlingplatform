@@ -7,7 +7,7 @@
 #endif
 
 // ----------------------------------------------------------------------------
-// Compiler detection and some C++11 polyfill.
+// Compiler detection and target specific C++11/C++14 polyfill.
 
 #if defined(_MSC_VER)
 
@@ -28,7 +28,7 @@
 #define HX_ATTR_FORMAT(pos, start)
 #define HX_DEBUG_BREAK __debugbreak()
 
-#if __cplusplus >= 201103L
+#if defined(__cplusplus) && __cplusplus >= 201103L
 #define HX_STATIC_ASSERT(x,...) static_assert((bool)(x), __VA_ARGS__)
 #define HX_OVERRIDE override
 #define HX_ATTR_NORETURN [[noreturn]]
@@ -37,9 +37,6 @@
 #define HX_OVERRIDE
 #define HX_ATTR_NORETURN
 #endif
-
-// Allow use of fopen and strncpy.  fopen_s and strncpy_s are not C99.
-#pragma warning(disable: 4996)
 
 #else // target settings
 // This is configured for gcc and clang.  Other compilers will require customization.
@@ -67,7 +64,7 @@
 #define HX_ATTR_NORETURN __attribute__((noreturn))
 #define HX_DEBUG_BREAK __builtin_trap()
 
-#if __cplusplus >= 201103L
+#if defined(__cplusplus) && __cplusplus >= 201103L
 #define HX_STATIC_ASSERT(x,...) static_assert(x, __VA_ARGS__)
 #define HX_OVERRIDE override
 #else // !C++98
@@ -76,10 +73,26 @@
 #endif
 #endif // target settings
 
+// ----------------------------------------------------------------------------
+// Target independent C++11/C++14 polyfill.
+
+// HX_CONSTEXPR_FN indicates that a function is intended to be a C++14 constexpr
+// function when available and inlined otherwise.  The expectation here is that
+// by inlining a compiler will be able to perform similar optimizations when
+// C++14 is not present and that having the rules for C++14's constexpr checked
+// when available is useful.  Always check your generated assembly.
 #if HX_USE_CPP14_CONSTEXPR
-#define HX_CONSTEXPR constexpr
+#define HX_CONSTEXPR_FN constexpr
 #else
-#define HX_CONSTEXPR HX_INLINE
+#define HX_CONSTEXPR_FN HX_INLINE
+#endif
+
+// HX_THREAD_LOCAL.  A version of thread_local that compiles out when there is
+// no threading.
+#if HX_USE_CPP11_THREADS
+#define HX_THREAD_LOCAL thread_local
+#else
+#define HX_THREAD_LOCAL // single threaded operation can ignore thread_local
 #endif
 
 // ----------------------------------------------------------------------------
@@ -186,10 +199,10 @@ struct hxSettings {
 };
 
 // Constructed by hxInit().
-#if __cplusplus
+#if defined(__cplusplus)
 extern "C" {
 #endif
 extern struct hxSettings g_hxSettings;
-#if __cplusplus
+#if defined(__cplusplus)
 }
 #endif

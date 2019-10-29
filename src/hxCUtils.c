@@ -8,7 +8,7 @@
 
 int g_hxIsInit; // Do not initialize to 0.  MSVC actually handles that differently.
 
-#if __clang__
+#if defined(__clang__)
 __attribute__((no_sanitize("address")))
 #endif
 void hxHexDump(const void* address, uint32_t bytes, int pretty) {
@@ -35,7 +35,7 @@ void hxHexDump(const void* address, uint32_t bytes, int pretty) {
 	}
 }
 
-#if __clang__
+#if defined(__clang__)
 __attribute__((no_sanitize("address")))
 #endif
 void hxFloatDump(const float* address, uint32_t count) {

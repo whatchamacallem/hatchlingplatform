@@ -10,13 +10,12 @@
 // Import the printf module into an anonymous namespace.  printf.h requires
 // _putchar to be defined even when not used. 
 namespace {
-#if HX_USE_STDIO_H
-#define _putchar putchar
-#endif
+	extern "C"
+	void _putchar(char c) { (void)c; }
 
-#include "../printf/printf.h"
-#include "../printf/printf.c"
-}
+	#include "../printf/printf.h"
+	#include "../printf/printf.c"
+} // namespace
 
 // vsnprintf_ is the only symbol used from printf.h.
 extern "C"

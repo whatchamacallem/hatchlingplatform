@@ -310,7 +310,7 @@ namespace {
 hxConsoleVariableNamed(s_hxConsoleTestFileVar1, hxConsoleTestFileVar);
 hxConsoleCommandNamed(hxConsoleTestFileFn, hxConsoleTestFileFnName);
 
-#if __GNUC__
+#if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
 #endif
@@ -325,7 +325,7 @@ TEST(hxConsoleTest, NullTest) {
 	SUCCEED();
 }
 
-#if __GNUC__
+#if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
 

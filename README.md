@@ -45,7 +45,7 @@ myself to have on hand for bare metal projects but welcome feedback and patches.
  * Does not use exceptions or `std::type_info.`
 
 Tested using:
- * Microsoft Visual Studio Community 2017 Version 15.9.8+28307.481
+ * Microsoft Visual Studio Community 2017 Version 15.9.12
  * gcc (Ubuntu 5.4.0-6ubuntu1~16.04.10) 5.4.0 20160609
  * clang version 3.8.0-2ubuntu4
  * See `test.sh` 

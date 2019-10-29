@@ -1,6 +1,6 @@
 #pragma once
 
-// Hatchling Platform.  hx/hatchling.h is both C and C++.
+// Hatchling Platform.  <hx/hatchling.h> is both C and C++.
 //
 // Copyright 2017-2019 Adrian Johnston
 // Copyright 2017 Leap Motion
@@ -13,8 +13,8 @@
 #include <string.h>
 
 // Major, minor and patch versions.
-#define HATCHLING_VER 0x20106
-#define HATCHLING_TAG "v2.1.6"
+#define HATCHLING_VER 0x20107
+#define HATCHLING_TAG "v2.1.7"
 
 // HX_RELEASE: 0 is a debug build with all asserts and verbose strings.
 //             1 is a release build with critical asserts and verbose warnings.
@@ -48,8 +48,8 @@ extern "C" {
 enum hxLogLevel {
 	hxLogLevel_Log,     // Verbose informative messages. No automatic newline.
 	hxLogLevel_Console, // Responses to console commands. No automatic newline.
-	hxLogLevel_Warning, // Warnings about serious problems
-	hxLogLevel_Assert   // Reason for abnormal termination.
+	hxLogLevel_Warning, // Warnings about serious problems.
+	hxLogLevel_Assert   // Reason for abnormal termination or test failure.
 };
 
 // The null pointer value for a given pointer type represented by the numeric
@@ -171,34 +171,26 @@ uint32_t hxStringLiteralHashDebug(const char* string);
 #if __cplusplus
 } // extern "C"
 
-// HX_THREAD_LOCAL.  A version of thread_local that compiles out when there is
-// no threading.
-#if HX_USE_CPP11_THREADS
-#define HX_THREAD_LOCAL thread_local
-#else
-#define HX_THREAD_LOCAL // single threaded operation can ignore thread_local
-#endif
-
-// More portable versions of min(), max(), abs() and clamp().
-
-// Returns the absolute value of x using a < comparison.
-template<typename T> HX_CONSTEXPR const T hxAbs(const T& x) { return (x < (T)0) ? ((T)0 - x) : x; }
-
-// Returns the maximum value of x and y using a < comparison.
-template<typename T> HX_CONSTEXPR const T& hxMax(const T& x, const T& y) { return (y < x) ? x : y; }
+// More portable versions of min(), max(), abs() and clamp() using the < operator.
 
 // Returns the minimum value of x and y using a < comparison.
-template<typename T> HX_CONSTEXPR const T& hxMin(const T& x, const T& y) { return (x < y) ? x : y; }
+template<typename T> HX_CONSTEXPR_FN const T& hxMin(const T& x, const T& y) { return (x < y) ? x : y; }
+
+// Returns the maximum value of x and y using a < comparison.
+template<typename T> HX_CONSTEXPR_FN const T& hxMax(const T& x, const T& y) { return (y < x) ? x : y; }
+
+// Returns the absolute value of x using a < comparison.
+template<typename T> HX_CONSTEXPR_FN const T hxAbs(const T& x) { return (x < (T)0) ? ((T)0 - x) : x; }
 
 // Returns x clamped between the minimum and maximum using < comparisons.
-template<typename T> HX_CONSTEXPR const T& hxClamp(const T& x, const T& minimum, const T& maximum) {
+template<typename T> HX_CONSTEXPR_FN const T& hxClamp(const T& x, const T& minimum, const T& maximum) {
 	hxAssert(minimum <= maximum);
 	return (x < minimum) ? minimum : ((maximum < x) ? maximum : x);
 }
 
 #else
-#define hxAbs(x) (((x) < 0) ? (0 - (x)) : (x))
-#define hxMax(x, y) (((y) < (x)) ? (x) : (y))
 #define hxMin(x, y) (((x) < (y)) ? (x) : (y))
+#define hxMax(x, y) (((y) < (x)) ? (x) : (y))
+#define hxAbs(x) (((x) < 0) ? (0 - (x)) : (x))
 #define hxClamp(x, minimum, maximum) (((x) < (minimum)) ? (minimum) : (((maximum) < (x)) ? (maximum) : (x)))
 #endif

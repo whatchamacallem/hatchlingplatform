@@ -24,7 +24,7 @@ TEST(hxDeathTest, Fail) {
 	hxLog("TEST_EXPECTING_ASSERTS:\n");
 	SUCCEED();
 	for (int i = 10; i--;) {
-		FAIL();
+		FAIL() << "this message is logged on failure.\n";
 	}
 }
 TEST(hxDeathTest, NothingAsserted) {
@@ -36,10 +36,9 @@ int32_t hxTestMain() {
 	hxInit();
 
 	hxLogConsole("hatchling platform " HATCHLING_TAG "\n");
-	hxLogConsole("release %d profile %d flags %d%d%d build: " __DATE__ " " __TIME__ "\n",
+	hxLogConsole("release %d profile %d flags %d%d%d%d build: " __DATE__ " " __TIME__ "\n",
 		(int)(HX_RELEASE), (int)(HX_PROFILE), (int)(HX_USE_CPP11_THREADS),
-		(int)(HX_USE_CPP11_TIME), (int)(HX_USE_CPP14_CONSTEXPR));
-
+		(int)(HX_USE_CPP11_TIME), (int)(HX_USE_CPP14_CONSTEXPR), (int)(HX_MEM_DIAGNOSTIC_LEVEL));
 
 	char bytes[48] = { };
 	hxsnprintf(bytes, 48, "%s", "The quick brown fox jumps over the lazy dog....");

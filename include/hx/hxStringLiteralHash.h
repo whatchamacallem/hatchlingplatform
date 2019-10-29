@@ -37,7 +37,7 @@ constexpr uint32_t hxStringLiteralHash(const char(&s)[len]) {
 //
 // Registers hash of __FILE__ to be logged in a debug build.
 
-#if __cplusplus && (HX_RELEASE) < 1
+#if defined(__cplusplus) && (HX_RELEASE) < 1
 // Do not use, implementation of HX_REGISTER_FILENAME_HASH.
 struct hxRegisterFileConstructor { hxRegisterFileConstructor(const char* s); };
 

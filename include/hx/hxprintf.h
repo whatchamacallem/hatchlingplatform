@@ -13,7 +13,7 @@
 #include <stdio.h>
 #endif
 
-#if __cplusplus
+#if defined(__cplusplus)
 extern "C" {
 #endif
 
@@ -23,6 +23,6 @@ int hxvsnprintf(char* buffer, size_t count, const char* format, va_list va);
 
 int hxsnprintf(char* buffer, size_t count, const char* format, ...);
 
-#if __cplusplus
+#if defined(__cplusplus)
 }
 #endif

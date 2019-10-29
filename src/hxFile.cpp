@@ -6,6 +6,10 @@
 #include <stdio.h>
 #endif
 
+#if defined(_MSC_VER)
+#pragma warning(disable: 4996) // Allow use of fopen as fopen_s is not C99.
+#endif
+
 HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------

@@ -8,6 +8,30 @@ HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------
 
+TEST(hxMemoryManagerTest, ZeroBytes) {
+	void* p = hxMalloc(0u);
+	ASSERT_TRUE(p != hxnull);
+	hxFree(p);
+}
+
+TEST(hxMemoryManagerTest, StringDuplicateNull) {
+	// duplicating a null string is null.
+	void* p = hxStringDuplicate(hxnull);
+	ASSERT_TRUE(p == hxnull);
+	hxFree(hxnull);
+}
+
+TEST(hxMemoryManagerTest, StringDuplicate) {
+	char* p = hxStringDuplicate("str");
+	ASSERT_TRUE(p != hxnull);
+	ASSERT_TRUE(::strcmp(p, "str") == 0);
+	hxFree(p);
+}
+
+// ----------------------------------------------------------------------------
+
+#if (HX_MEM_DIAGNOSTIC_LEVEL) != -1
+
 class hxMemoryManagerTest :
 	public testing::Test
 {
@@ -112,18 +136,20 @@ public:
 	}
 };
 
-// ----------------------------------------------------------------------------
+TEST_F(hxMemoryManagerTest, Execute) {
+#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
+	if (g_hxSettings.disableMemoryManager) {
+		return; // Test fails because the hxMemoryManager code is disabled.
+	}
+#endif
+	hxLog("TEST_EXPECTING_ASSERTS:\n");
 
-TEST(hxMemoryManagerTest, ZeroBytes) {
-	void* p = hxMalloc(0u);
-	ASSERT_TRUE(p != hxnull);
-	hxFree(p);
-}
+	for (int32_t i = 0; i < hxMemoryManagerId_MAX; ++i) {
+		TestMemoryAllocatorNormal((hxMemoryManagerId)i);
+	}
 
-TEST(hxMemoryManagerTest, StringDuplicateNull) {
-	// do some dumb stuff
-	void* p = hxStringDuplicate(hxnull);
-	ASSERT_TRUE(p == hxnull);
+	// Only the TemporaryStack expects all allocations to be free()'d.
+	TestMemoryAllocatorLeak(hxMemoryManagerId_TemporaryStack);
 }
 
 TEST(hxMemoryManagerTest, TempOverflow) {
@@ -152,18 +178,4 @@ TEST(hxMemoryManagerTest, ScratchOverflow) {
 }
 #endif // HX_USE_MEMORY_SCRATCH
 
-TEST_F(hxMemoryManagerTest, Execute) {
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	if (g_hxSettings.disableMemoryManager) {
-		return; // Test fails because the hxMemoryManager code is disabled.
-	}
-#endif
-	hxLog("TEST_EXPECTING_ASSERTS:\n");
-
-	for (int32_t i = 0; i < hxMemoryManagerId_MAX; ++i) {
-		TestMemoryAllocatorNormal((hxMemoryManagerId)i);
-	}
-
-	// Only the TemporaryStack expects all allocations to be free()'d.
-	TestMemoryAllocatorLeak(hxMemoryManagerId_TemporaryStack);
-}
+#endif // HX_MEM_DIAGNOSTIC_LEVEL == -1

@@ -7,11 +7,16 @@
 class hxTaskQueue;
 
 // ----------------------------------------------------------------------------
+// hxTask.  Base class for operations to be performed on a different thread or
+// at a later time.  Nota bene: While the current allocator is a thread local
+// attribute, the memory manager does not support concurrent access to the
+// same allocator.  Either preallocate working buffers or arrange for locking
+// around shared allocators.  
 
 class hxTask {
 public:
 	// Construct task.  staticLabel must be a static string.
-	HX_INLINE explicit hxTask(const char* staticLabel = hxnull)
+	HX_INLINE explicit hxTask(const char* staticLabel=hxnull)
 		: m_nextTask(hxnull), m_label(staticLabel), m_owner(hxnull) {
 	}
 

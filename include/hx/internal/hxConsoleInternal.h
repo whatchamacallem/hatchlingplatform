@@ -4,11 +4,11 @@
 #include <hx/hatchling.h>
 
 // ----------------------------------------------------------------------------
-// hxConsole internals.  See hxConsole.h instead
+// hxConsole internals.  See hxConsole.h instead.
 
 struct hxCommand {
 	virtual bool execute(const char* str) = 0; // Return false for parse errors.
-	virtual void usage(const char* id=hxnull) = 0;
+	virtual void usage(const char* id=hxnull) = 0; // Expects command name.
 };
 
 // Explicit registration, takes ownership of fn, id expected to be a string literal.
@@ -18,7 +18,8 @@ struct hxConsoleConstructor {
 	HX_INLINE hxConsoleConstructor(hxCommand* fn, const char* id) { hxConsoleRegister(fn, id); }
 };
 
-// Console tokens are delimited by any whitespace and non-printing low-ASCII characters including null.
+// Console tokens are delimited by any whitespace and non-printing low-ASCII
+// characters.  nul must be checked for separately and UTF-8 is not supported.
 HX_INLINE static bool hxIsDelimiter(char c) { return c <= 32; }
 
 // Checks for printing characters.
@@ -29,27 +30,30 @@ HX_INLINE static bool hxIsEndOfLine(const char* str) {
 	return *str == 0 || *str == '#'; // Skip comments
 }
 
-// Yes, re-implementing std:min/max is a bit much.  But it makes this freestanding.
+// Unsigned min<T>()/max<T>().  Yes, re-implementing std::min<T>()/max<T>() is
+// a bit much.  But it makes this freestanding.
 template<bool Signed, typename T> struct hxLimitsSelect {
-	// Unsigned min/max.
-	static HX_CONSTEXPR T minVal() { return T(0); }
-	static HX_CONSTEXPR T maxVal() { return ~T(0); }
+	static HX_CONSTEXPR_FN T minVal() { return T(0); }
+	static HX_CONSTEXPR_FN T maxVal() { return ~T(0); }
 };
 
+// Signed min<T>()/max<T>().  Does silly things to avoid overflowing a signed
+// integer type.
 template<typename T> struct hxLimitsSelect<true, T> {
-	// Signed min/max.  Does silly things to avoid overflowing a signed integer type.
-	static HX_CONSTEXPR T minVal() { return T(-1) - maxVal(); }
-	static HX_CONSTEXPR T maxVal() { return msb1() | (msb1() - T(1)); }
-	static HX_CONSTEXPR T msb1() { return (T)(T(1) << (sizeof(T) * 8 - 2)); }
+	static HX_CONSTEXPR_FN T minVal() { return T(-1) - maxVal(); }
+	static HX_CONSTEXPR_FN T maxVal() { return msb1() | (msb1() - T(1)); }
+	// Using CHAR_BIT would require <limits.h> and this code assumes <stdint.h>
+	// types are being used anyway.
+	static HX_CONSTEXPR_FN T msb1() { return (T)(T(1) << (sizeof(T) * 8 - 2)); }
 };
 
-// select an implementation depending on whether T is signed.
+// select an implementation of min<T>()/max<T>() depending on whether T is signed.
 template<typename T> struct hxLimits : public hxLimitsSelect<(T)~T(0) < T(0), T> { };
 
 template <typename T, typename R>
 HX_INLINE void hxArgParse(T& val, const char* str, char** next, R(*parser)(char const*, char**, int)) {
 	R r = parser(str, next, 10);
-	// These compares should be optimized away when not needed.
+	// These compares are optimized away when not needed.
 	if (r < hxLimits<T>::minVal() || r > hxLimits<T>::maxVal()) {
 		hxWarn("overflow");
 		*next = const_cast<char*>(str); // reject input.
@@ -60,7 +64,7 @@ HX_INLINE void hxArgParse(T& val, const char* str, char** next, R(*parser)(char 
 	return;
 }
 
-// hxArg. Binds string parsing operations to function args.  Invalid arguments are
+// hxArg<T>. Binds string parsing operations to function args.  Invalid arguments are
 // set to 0, arguments out of range result in the maximum representable values.
 
 template<typename T> struct hxArg; // Undefined. Specialization required.

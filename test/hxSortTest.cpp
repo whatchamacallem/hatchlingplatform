@@ -127,7 +127,20 @@ static int hxSortCompareTest(const int a, const int b) {
 }
 
 TEST(hxInsertionSortTest, SortCompareCCase) {
-	int ints[2] = { 1, 0 };
+	int ints[3] = { 2, 1, 0 };
+
+	hxInsertionSort<int, int(*)(int a, int b)>(ints, ints, hxSortCompareTest);
+	const int ints1[3] = { 2, 1, 0 };
+	ASSERT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // nothing changed
+
+	hxInsertionSort<int, int(*)(int a, int b)>(ints, ints + 1, hxSortCompareTest);
+	ASSERT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // still nothing changed
+
 	hxInsertionSort<int, int (*)(int a, int b)>(ints, ints + 2, hxSortCompareTest);
-	ASSERT_LT(ints[0], ints[1]) << "messages like these are logged on failure.\n";
+	const int ints2[3] = { 1, 2, 0 };
+	ASSERT_TRUE(::memcmp(ints, ints2, sizeof ints) == 0); // first 2 sorted
+
+	hxInsertionSort<int, int(*)(int a, int b)>(ints, ints + 3, hxSortCompareTest);
+	const int ints3[3] = { 0, 1, 2 };
+	ASSERT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0); // sorted
 }
