@@ -62,6 +62,7 @@ void hxShutdown() {
 	g_hxSettings.isShuttingDown = true;
 	hxConsoleDeregisterAll(); // Free console allocations.
 	hxMemoryManagerShutDown();
+	hxLogFile().close();
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	g_hxSettings.disableMemoryManager = true;
 #endif
@@ -170,7 +171,11 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 
 extern "C"
 void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
+#if HX_HAS_C_FILE
 	::vfprintf(stdout, format, args);
+#else // !HX_HAS_C_FILE
+#error "TODO: file I/O"
+#endif
 }
 
 #endif

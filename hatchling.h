@@ -14,7 +14,7 @@
 //               E.g. for CMake's "RelWithDebInfo".
 //             2 is a release build with only critical asserts using minimal
 //               strings.  E.g. for CMake's "MinSizeRel".
-//             3 additionally removes asserts, teardown and minimizes logging.
+//             3 no asserts or teardown and very minimal logging.
 //
 
 #ifndef HX_RELEASE
