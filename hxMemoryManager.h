@@ -11,6 +11,9 @@
 extern "C" {
 #endif
 
+// ----------------------------------------------------------------------------
+// C API
+
 #define HX_ALIGNMENT_MASK ((uintptr_t)(sizeof(char*) - 1u)) // HX_ALIGNMENT-1
 #define hxIsAligned(x) (((uintptr_t)(x) & HX_ALIGNMENT_MASK) == 0)
 #define hxAssertAligned(x) hxAssert(hxIsAligned(x))
@@ -40,6 +43,7 @@ void hxFree(void* ptr);
 uint32_t hxIsScratchpad(void* ptr); // returns bool as int.
 
 // ----------------------------------------------------------------------------
+// C++ API
 #ifdef __cplusplus
 } // extern "C"
 

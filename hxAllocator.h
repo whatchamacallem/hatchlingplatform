@@ -69,7 +69,9 @@ public:
 	}
 
 	// Use hxArray::get_allocator() to access extended allocation semantics.
-	HX_INLINE void reserveStorageExt(uint32_t sz, hxMemoryManagerId alId=hxMemoryManagerId_Current, uintptr_t alignmentMask=HX_ALIGNMENT_MASK) {
+	HX_INLINE void reserveStorageExt(uint32_t sz,
+			hxMemoryManagerId alId=hxMemoryManagerId_Current,
+			uintptr_t alignmentMask=HX_ALIGNMENT_MASK) {
 		if (sz <= m_capacity) { return; }
 		hxAssertRelease(m_capacity == 0, "allocator reallocation disallowed.");
 		m_allocator = (T*)hxMallocExt(sizeof(T) * sz, alId, alignmentMask);

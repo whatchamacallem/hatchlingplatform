@@ -7,9 +7,6 @@
 #include "hxConsole.h"
 
 #if HX_PROFILE
-#if HX_HAS_CPP11_THREADS
-#include <mutex>
-#endif
 
 HX_REGISTER_FILENAME_HASH;
 
@@ -28,19 +25,16 @@ static void hxProfileToChrome(const char* filename) { g_hxProfiler.writeToChrome
 hxConsoleCommandNamed(hxProfileToChrome, profileToChrome);
 
 // ----------------------------------------------------------------------------------
-#if HX_HAS_CPP11_THREADS
 // Use the address of a thread local variable as a unique thread id.
-thread_local uint8_t s_hxProfilerThreadIdAddress = 0;
-std::mutex s_hxProfilerMutex;
-#endif
+HX_THREAD_LOCAL uint8_t s_hxProfilerThreadIdAddress = 0;
 
 // ----------------------------------------------------------------------------------
 #if HX_HAS_CPP11_TIME
-const float g_hxProfilerMillisecondsPerCycle = ((float)c_hxProfilerPeriod::num * 1.0e+3f) / (float)c_hxProfilerPeriod::den;
+float g_hxProfilerMillisecondsPerCycle = ((float)c_hxProfilerPeriod::num * 1.0e+3f) / (float)c_hxProfilerPeriod::den;
 std::chrono::high_resolution_clock::time_point g_hxStart;
 #else
 // TODO: Use target settings.
-const float g_hxProfilerMillisecondsPerCycle = 1.0e-6f; // Also 1.e+6 cycles/ms, a 1 GHz chip.
+float g_hxProfilerMillisecondsPerCycle = 1.0e-6f; // Also 1.e+6 cycles/ms, a 1 GHz chip.
 #endif // !HX_HAS_CPP11_TIME
 
 // ----------------------------------------------------------------------------------
@@ -52,13 +46,12 @@ void hxProfiler::init() {
 	}
 
 	m_isEnabled = true;
-	m_records.get_allocator().reserveStorageExt(HX_PROFILER_MAX_RECORDS, hxMemoryManagerId_Heap);
-	m_records.reserve(HX_PROFILER_MAX_RECORDS);
 
 #if HX_HAS_CPP11_TIME
 	g_hxStart = std::chrono::high_resolution_clock::now();
 #endif
-	hxLogRelease("hxProfilerInit... %u cycles\n", (unsigned int)hxProfilerScopeInternal<0u>::sampleCycles()); // Logging may easily be off at this point.
+	// Logging may easily be off at this point.
+	hxLogRelease("hxProfilerInit... %u cycles\n", (unsigned int)hxProfilerScopeInternal<0u>::sampleCycles());
 }
 
 void hxProfiler::shutdown() {
@@ -66,10 +59,7 @@ void hxProfiler::shutdown() {
 		hxLogRelease("hxProfilerShutdown... %u cycles\n", (unsigned int)hxProfilerScopeInternal<0u>::sampleCycles());
 	}
 	m_isEnabled = false;
-
-	// Force free-ing buffer.  Otherwise the destructor will crash the memory manager.
-	m_records.~hxArray();
-	::new(&m_records) hxArray<Record>();
+	m_records.clear();
 }
 
 void hxProfiler::start() {
@@ -90,7 +80,8 @@ void hxProfiler::log() {
 		const hxProfiler::Record& rec = m_records[i];
 
 		uint32_t delta = rec.m_end - rec.m_begin;
-		hxLogRelease("hxProfiler %s: thread %x cycles %u %fms\n", hxBasename(rec.m_label), (unsigned int)rec.m_threadId, (unsigned int)delta, (float)delta * g_hxProfilerMillisecondsPerCycle);
+		hxLogRelease("hxProfiler %s: thread %x cycles %u %fms\n", hxBasename(rec.m_label),
+			(unsigned int)rec.m_threadId, (unsigned int)delta, (float)delta * g_hxProfilerMillisecondsPerCycle);
 	}
 
 	m_records.clear();

@@ -63,6 +63,13 @@
 #endif // C++98
 #endif // !HX_HOST
 
+#if HX_HAS_CPP11_THREADS
+#define HX_THREAD_LOCAL thread_local
+#else
+// single threaded operation can ignore thread_local
+#define HX_THREAD_LOCAL
+#endif
+
 // This is the one namespace violation, you don't have to keep it.
 #define null 0
 

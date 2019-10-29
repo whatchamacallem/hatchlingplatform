@@ -66,6 +66,7 @@
     <ClInclude Include="..\hxProfiler.h" />
     <ClInclude Include="..\hxRadixSort.h" />
     <ClInclude Include="..\hxSettings.h" />
+    <ClInclude Include="..\hxStockpile.h" />
     <ClInclude Include="..\hxTaskQueue.h" />
     <ClInclude Include="..\hxTest.h" />
     <ClInclude Include="..\hxTestPRNG.h" />

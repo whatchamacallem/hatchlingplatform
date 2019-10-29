@@ -18,7 +18,8 @@ public:
 };
 
 template<typename Node>
-class hxHashTableInternalAllocator<Node, hxAllocatorDynamicCapacity> : public hxAllocator<Node*, hxAllocatorDynamicCapacity> {
+class hxHashTableInternalAllocator<Node, hxAllocatorDynamicCapacity>
+	: public hxAllocator<Node*, hxAllocatorDynamicCapacity> {
 public:
 	HX_INLINE hxHashTableInternalAllocator() : m_hashBits(0u) { }
 

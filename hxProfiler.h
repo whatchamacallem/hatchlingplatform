@@ -3,7 +3,7 @@
 // Copyright 2017 Leap Motion
 
 #include "hatchling.h"
-#include "hxArray.h"
+#include "hxStockpile.h"
 
 #if HX_PROFILE
 
@@ -13,17 +13,15 @@
 #include <time.h>
 #endif
 
-#if HX_HAS_CPP11_THREADS
-#include <mutex>
-#endif
-
 // ----------------------------------------------------------------------------------
+// hxProfiler API
 
 // hxProfileScope declares an RAII-style profiling sample.
 // WARNING: A pointer to labelStaticString is kept.
-// g_hxProfilerDefaultSamplingCutoff is provided below as a recommended minCycles cutoff.
-// Macro signature is: hxProfileScope(const char* labelStaticString, uint32_t minCycles = 0u);
-#define hxProfileScope(labelStaticString, ...)  hxProfilerScopeInternal<__VA_ARGS__> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStaticString)
+// c_hxProfilerDefaultSamplingCutoff is provided below as a recommended MinCycles cutoff.
+// Macro signature is: hxProfileScope(const char* labelStaticString, uint32_t MinCycles = 0u);
+#define hxProfileScope(labelStaticString, ...)  \
+	hxProfilerScopeInternal<__VA_ARGS__> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStaticString)
 
 #define hxProfilerInit() g_hxProfiler.init()
 #define hxProfilerShutdown() g_hxProfiler.shutdown()
@@ -34,26 +32,22 @@
 // Format: https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview
 #define hxProfilerWriteToChromeTracing(filename) g_hxProfiler.writeToChromeTracing(filename)
 
-extern const float g_hxProfilerMillisecondsPerCycle;     // Scales cycles to ms.
+extern float g_hxProfilerMillisecondsPerCycle;     // Scales cycles to ms.
+
+// c_hxProfilerDefaultSamplingCutoff is 1 microsecond.
+#if HX_HAS_CPP11_TIME
+extern std::chrono::high_resolution_clock::time_point g_hxStart;
+using c_hxProfilerPeriod = std::chrono::high_resolution_clock::period;
+static constexpr uint32_t c_hxProfilerDefaultSamplingCutoff = (uint32_t)(c_hxProfilerPeriod::den / (c_hxProfilerPeriod::num * 1000000));
+#else
+enum { c_hxProfilerDefaultSamplingCutoff = 1000 };
+#endif
 
 // ----------------------------------------------------------------------------------
+// hxProfiler internals
 
-#if HX_HAS_CPP11_TIME
-using c_hxProfilerPeriod = std::chrono::high_resolution_clock::period;
-extern std::chrono::high_resolution_clock::time_point g_hxStart;
-
-enum { g_hxProfilerDefaultSamplingCutoff = (c_hxProfilerPeriod::den / (c_hxProfilerPeriod::num * 1000000)) };
-#else
-enum { g_hxProfilerDefaultSamplingCutoff = 1000 }; // ~1 microsecond.
-#endif
-
-#if HX_HAS_CPP11_THREADS
 // address of s_hxProfilerThreadIdAddress used to uniquely identify thread.
-extern thread_local uint8_t s_hxProfilerThreadIdAddress;
-extern std::mutex s_hxProfilerMutex;
-#endif
-
-template<uint32_t minCycles> class hxProfilerScopeInternal;
+extern HX_THREAD_LOCAL uint8_t s_hxProfilerThreadIdAddress;
 
 class hxProfiler {
 public:
@@ -79,15 +73,15 @@ public:
 	HX_INLINE uint32_t recordsSize() { return m_records.size(); }
 	HX_INLINE void recordsClear() { m_records.clear(); }
 private:
-	template<uint32_t minCycles> friend class hxProfilerScopeInternal;
+	template<uint32_t MinCycles> friend class hxProfilerScopeInternal;
 	bool m_isEnabled;
-	hxArray<Record> m_records;
+	hxStockpile<Record, HX_PROFILER_MAX_RECORDS> m_records;
 };
 
 // Use direct access to an object with static linkage for speed.
 extern hxProfiler g_hxProfiler;
 
-template<uint32_t minCycles=0u>
+template<uint32_t MinCycles=0u>
 class hxProfilerScopeInternal {
 public:
 	// See hxProfileScope() below.
@@ -97,36 +91,25 @@ public:
 		m_t0 = sampleCycles();
 	}
 
-#if HX_HAS_CPP11_THREADS
 	HX_INLINE ~hxProfilerScopeInternal() {
 		uint32_t t1 = sampleCycles();
 		uint32_t delta = (t1 - m_t0);
 		hxProfiler& data = g_hxProfiler;
-		if (data.m_isEnabled && delta >= minCycles) {
-			std::unique_lock<std::mutex> lk(s_hxProfilerMutex);
-			if (!data.m_records.full()) {
-				::new (data.m_records.emplace_back_unconstructed()) hxProfiler::Record(m_t0, t1, m_label, (uint32_t)(ptrdiff_t)&s_hxProfilerThreadIdAddress);
+		if (data.m_isEnabled && delta >= MinCycles) {
+			void* rec = data.m_records.emplace_back_unconstructed_atomic();
+			if (rec) {
+				::new (rec) hxProfiler::Record(m_t0, t1, m_label, (uint32_t)(ptrdiff_t)&s_hxProfilerThreadIdAddress);
 			}
 		}
 	}
-#else
-	// TODO, WARNING: Single threaded implementation.
-	HX_INLINE ~hxProfilerScopeInternal() {
-		uint32_t t1 = sampleCycles();
-		uint32_t delta = t1 - m_t0;
-		if (g_hxProfiler.m_isEnabled && !g_hxProfiler.m_records.full() && delta >= minCycles) {
-			::new (g_hxProfiler.m_records.emplace_back_unconstructed()) hxProfiler::Record(m_t0, t1, m_label, 0);
-		}
-	}
-#endif // !HX_HAS_CPP11_THREADS
 
 #if HX_HAS_CPP11_TIME
-	static uint32_t sampleCycles() {
+	HX_INLINE static uint32_t sampleCycles() {
 		return (uint32_t)(std::chrono::high_resolution_clock::now() - g_hxStart).count();
 	}
 #else
 	// TODO: read cycle counter register for target.  This version is a Linux fallback.
-	static HX_INLINE uint32_t sampleCycles() {
+	HX_INLINE static uint32_t sampleCycles() {
 		timespec ts;
 		clock_gettime(CLOCK_MONOTONIC, &ts);
 		return (uint32_t)ts.tv_nsec;

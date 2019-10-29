@@ -33,9 +33,9 @@ void hxTestMain() {
 	uint32_t hash2 = hxHashStringLiteral("abc");
 	uint32_t hash3 = hxHashStringLiteral(bytes);
 
-	hxAssertRelease(hash1 == hxHashString(""), "hxHashStringLiteral mismatch"); (void)hash1;
-	hxAssertRelease(hash2 == hxHashString("abc"), "hxHashStringLiteral mismatch"); (void)hash2;
-	hxAssertRelease(hash3 == hxHashString(bytes), "hxHashStringLiteral mismatch"); (void)hash3;
+	hxAssertRelease(hash1 == hxHashStringLiteralDebug(""), "hxHashStringLiteral mismatch"); (void)hash1;
+	hxAssertRelease(hash2 == hxHashStringLiteralDebug("abc"), "hxHashStringLiteral mismatch"); (void)hash2;
+	hxAssertRelease(hash3 == hxHashStringLiteralDebug(bytes), "hxHashStringLiteral mismatch"); (void)hash3;
 
 	hxHexDump(bytes, 64, "hex dumping string");
 

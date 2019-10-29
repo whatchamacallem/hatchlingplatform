@@ -63,7 +63,7 @@ void hxDmaStartLabeled(void* dst, const void* src, size_t bytes, const char* lab
 }
 
 void hxDmaAwaitSyncPointLabeled(struct hxDmaSyncPoint& barrier, const char* label) {
-	hxProfileScope((label ? label : "hxDmaAwait"), g_hxProfilerDefaultSamplingCutoff);
+	hxProfileScope((label ? label : "hxDmaAwait"), c_hxProfilerDefaultSamplingCutoff);
 	static_assert(!HX_HAS_DMA, "TODO");
 #if HX_DEBUG_DMA
 	hxAssertRelease(barrier.debug < s_hxDmaBarrierCounter, "dma barrier unexpected: %s", hxBasename(label));

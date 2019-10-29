@@ -68,7 +68,7 @@ void hxHexDump(const void* p, uint32_t bytes, const char* label);
 void hxFloatDump(const float* ptr, uint32_t count, const char* label);
 const char* hxBasename(const char* path);
 char* hxStringDuplicate(const char* s, enum hxMemoryManagerId allocatorId /*=hxMemoryManagerId_Heap*/);
-uint32_t hxHashString(const char* s);
+uint32_t hxHashStringLiteralDebug(const char* s);
 
 #define hxConsolePrint(...) hxLogHandler(hxLogLevel_Console, __VA_ARGS__)
 
@@ -140,7 +140,7 @@ struct hxRegisterFileConstructor { hxRegisterFileConstructor(const char* s); };
 template<size_t len>
 HX_INLINE constexpr uint32_t hxHashStringLiteral(const char(&s)[len]) {
 	uint32_t x = 0u;
-	size_t i = (len <= 192u) ? len : 192u;
+	size_t i = (len <= (size_t)192u) ? len : (size_t)192u;
 	while (i--) {
 		x = (uint32_t)0x61C88647 * x ^ (uint32_t)s[i];
 	}
@@ -154,6 +154,6 @@ HX_INLINE constexpr uint32_t hxHashStringLiteral(const char(&s)[len]) {
 #define HX_64(s,i,x)  HX_16(s,i,HX_16(s,i+16,HX_16(s,i+32,HX_16(s,i+48,x))))
 #define hxHashStringLiteral(s) (uint32_t)HX_64(s,0,HX_64(s,64,HX_64(s,128,(uint32_t)0)))
 #else
-#define hxHashStringLiteral hxHashString
+#define hxHashStringLiteral hxHashStringLiteralDebug
 #endif
 

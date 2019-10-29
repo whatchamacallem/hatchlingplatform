@@ -120,9 +120,6 @@ public:
 		m_end = it;
 	}
 
-	// --------------------------------------------------------------------------
-	// C++11 because we can
-
 	HX_INLINE const T* data() const { return this->getStorage(); }
 	HX_INLINE       T* data() { return this->getStorage(); }
 
