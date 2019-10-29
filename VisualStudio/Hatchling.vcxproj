@@ -19,63 +19,63 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\hx\hatchling.h" />
+    <ClInclude Include="..\include\hx\hxAllocator.h" />
+    <ClInclude Include="..\include\hx\hxArray.h" />
+    <ClInclude Include="..\include\hx\hxConsole.h" />
+    <ClInclude Include="..\include\hx\hxDma.h" />
+    <ClInclude Include="..\include\hx\hxFile.h" />
+    <ClInclude Include="..\include\hx\hxHashTable.h" />
+    <ClInclude Include="..\include\hx\hxHashTableNodes.h" />
+    <ClInclude Include="..\include\hx\hxMemoryManager.h" />
+    <ClInclude Include="..\include\hx\hxProfiler.h" />
+    <ClInclude Include="..\include\hx\hxSettings.h" />
+    <ClInclude Include="..\include\hx\hxSort.h" />
+    <ClInclude Include="..\include\hx\hxStockpile.h" />
+    <ClInclude Include="..\include\hx\hxStringHash.h" />
+    <ClInclude Include="..\include\hx\hxTaskQueue.h" />
+    <ClInclude Include="..\include\hx\hxUniquePtr.h" />
+    <ClInclude Include="..\include\hx\internal\hxConsoleInternal.h" />
+    <ClInclude Include="..\include\hx\internal\hxHashTableInternal.h" />
+    <ClInclude Include="..\include\hx\internal\hxProfilerInternal.h" />
+    <ClInclude Include="..\test\hxTest.h" />
+    <ClInclude Include="..\test\hxTestPRNG.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\hatchling.cpp" />
+    <ClCompile Include="..\src\hxConsole.cpp" />
+    <ClCompile Include="..\src\hxCUtils.c" />
+    <ClCompile Include="..\src\hxDma.cpp" />
+    <ClCompile Include="..\src\hxFile.cpp" />
+    <ClCompile Include="..\src\hxMemoryManager.cpp" />
+    <ClCompile Include="..\src\hxProfiler.cpp" />
+    <ClCompile Include="..\src\hxSettings.cpp" />
+    <ClCompile Include="..\src\hxSort.cpp" />
+    <ClCompile Include="..\src\hxStringHash.cpp" />
+    <ClCompile Include="..\src\hxTaskQueue.cpp" />
+    <ClCompile Include="..\test\hxArrayTest.cpp" />
+    <ClCompile Include="..\test\hxConsoleTest.cpp" />
+    <ClCompile Include="..\test\hxDmaTest.cpp" />
+    <ClCompile Include="..\test\hxFileTest.cpp" />
+    <ClCompile Include="..\test\hxHashTableTest.cpp" />
+    <ClCompile Include="..\test\hxMemoryManagerTest.cpp" />
+    <ClCompile Include="..\test\hxProfilerTest.cpp" />
+    <ClCompile Include="..\test\hxSortTest.cpp" />
+    <ClCompile Include="..\test\hxStringHashTest.cpp" />
+    <ClCompile Include="..\test\hxTaskQueueTest.cpp" />
+    <ClCompile Include="..\test\hxTestMain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\etc\CONTRIBUTORS.txt" />
+    <Text Include="..\etc\LICENSE.txt" />
+    <Text Include="..\README.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\.editorconfig" />
     <None Include="..\.gitattributes" />
     <None Include="..\.gitignore" />
-    <None Include="..\test.sh" />
-    <None Include="profile.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\CONTRIBUTORS.txt" />
-    <Text Include="..\LICENSE.txt" />
-    <Text Include="..\README.txt" />
-    <Text Include="log.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\hatchling.cpp" />
-    <ClCompile Include="..\hxArrayTest.cpp" />
-    <ClCompile Include="..\hxConsole.cpp" />
-    <ClCompile Include="..\hxConsoleTest.cpp" />
-    <ClCompile Include="..\hxCUtils.c" />
-    <ClCompile Include="..\hxDma.cpp" />
-    <ClCompile Include="..\hxDmaTest.cpp" />
-    <ClCompile Include="..\hxFile.cpp" />
-    <ClCompile Include="..\hxFileTest.cpp" />
-    <ClCompile Include="..\hxHashTableTest.cpp" />
-    <ClCompile Include="..\hxStringHash.cpp" />
-    <ClCompile Include="..\hxStringHashTest.cpp" />
-    <ClCompile Include="..\hxTestMain.cpp" />
-    <ClCompile Include="..\hxMemoryManager.cpp" />
-    <ClCompile Include="..\hxMemoryManagerTest.cpp" />
-    <ClCompile Include="..\hxProfiler.cpp" />
-    <ClCompile Include="..\hxProfilerTest.cpp" />
-    <ClCompile Include="..\hxSort.cpp" />
-    <ClCompile Include="..\hxSortTest.cpp" />
-    <ClCompile Include="..\hxSettings.cpp" />
-    <ClCompile Include="..\hxTaskQueue.cpp" />
-    <ClCompile Include="..\hxTaskQueueTest.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\hatchling.h" />
-    <ClInclude Include="..\hxAllocator.h" />
-    <ClInclude Include="..\hxArray.h" />
-    <ClInclude Include="..\hxConsole.h" />
-    <ClInclude Include="..\hxConsoleInternal.h" />
-    <ClInclude Include="..\hxDma.h" />
-    <ClInclude Include="..\hxFile.h" />
-    <ClInclude Include="..\hxHashTable.h" />
-    <ClInclude Include="..\hxHashTableInternal.h" />
-    <ClInclude Include="..\hxHashTableNodes.h" />
-    <ClInclude Include="..\hxMemoryManager.h" />
-    <ClInclude Include="..\hxProfiler.h" />
-    <ClInclude Include="..\hxSort.h" />
-    <ClInclude Include="..\hxSettings.h" />
-    <ClInclude Include="..\hxStockpile.h" />
-    <ClInclude Include="..\hxStringHash.h" />
-    <ClInclude Include="..\hxTaskQueue.h" />
-    <ClInclude Include="..\hxTest.h" />
-    <ClInclude Include="..\hxTestPRNG.h" />
-    <ClInclude Include="..\hxUniquePtr.h" />
+    <None Include="..\etc\profile.json" />
+    <None Include="..\etc\test.sh" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -132,15 +132,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(ProjectDir)..\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(ProjectDir)..\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(ProjectDir)..\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(ProjectDir)..\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

@@ -9,7 +9,7 @@ runtime, intended to largely replace the use of the standard C++ libraries.
  * Test Driver.  A lightweight reimplementation of GoogleTest.
 
  * Profiling.  Captures a hierarchical time-line view with a minimum of overhead.
-   View the example profile.json file in Chrome's about://tracing view.
+   View the example etc/profile.json file in Chrome's about://tracing view.
 
  * Memory Management.  Hides a range of allocation strategies behind a simple
    RAII interface.
@@ -33,7 +33,11 @@ runtime, intended to largely replace the use of the standard C++ libraries.
 
  * Logging and memory management available in plain C.  See hatchling.h.
 
-Tested with ./test.sh using:
+Tested with ./etc/test.sh using:
  * Microsoft Visual Studio Community 2017 Version 15.9.8+28307.481
  * gcc (Ubuntu 5.4.0-6ubuntu1~16.04.10) 5.4.0 20160609
  * clang version 3.8.0-2ubuntu4
+
+Licensed under Apache License Version 2.0, January 2004.
+ * http://www.apache.org/licenses/
+ * See etc/LICENSE.txt for license terms.
