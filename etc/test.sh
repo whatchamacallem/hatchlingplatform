@@ -9,33 +9,14 @@
 #
 # will run the tests with HX_TEST_DIE_AT_THE_END defined to be 1.
 
-echo "
-$(tput rev)                                                                              
-    ██╗  ██╗ █████╗ ████████╗ ██████╗██╗  ██╗██╗     ██╗███╗   ██╗ ██████╗    
-    ██║  ██║██╔══██╗╚══██╔══╝██╔════╝██║  ██║██║     ██║████╗  ██║██╔════╝    
-    ███████║███████║   ██║   ██║     ███████║██║     ██║██╔██╗ ██║██║  ███╗   
-    ██╔══██║██╔══██║   ██║   ██║     ██╔══██║██║     ██║██║╚██╗██║██║   ██║   
-    ██║  ██║██║  ██║   ██║   ╚██████╗██║  ██║███████╗██║██║ ╚████║╚██████╔╝   
-    ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝╚═╝  ╚═══╝ ╚═════╝    
-     ██████╗ ██╗      █████╗ ████████╗███████╗ ██████╗ ██████╗ ███╗   ███╗    
-     ██╔══██╗██║     ██╔══██╗╚══██╔══╝██╔════╝██╔═══██╗██╔══██╗████╗ ████║    
-     ██████╔╝██║     ███████║   ██║   █████╗  ██║   ██║██████╔╝██╔████╔██║    
-     ██╔═══╝ ██║     ██╔══██║   ██║   ██╔══╝  ██║   ██║██╔══██╗██║╚██╔╝██║    
-     ██║     ███████╗██║  ██║   ██║   ██║     ╚██████╔╝██║  ██║██║ ╚═╝ ██║    
-     ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝      ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝    
-$(tput sgr 0)                                                                              
-$(tput bold)Hatchling Platform$(tput sgr 0)
-"
-
 #set -o xtrace
 set -o errexit
 
-# Will re-run failing tests without grep and then exit.
-export GREP_COLOR='0;32'
+export GREP_COLOR='0;32' # green
 
 # c++ warning flags.  preceded by -pedantic-errors except with c++98.
 WARNINGS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
-	-Wwrite-strings -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter"
+	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter"
 
 # Test gcc with both -std=c++98 and -std=c++14.  Not using -pedantic-errors with
 # c++98 as "anonymous variadic macros were introduced in c++11."  (This code base

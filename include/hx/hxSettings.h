@@ -9,7 +9,7 @@
 // ----------------------------------------------------------------------------
 // Compiler detection and some C++11 polyfill.
 
-#if _MSC_VER
+#if defined(_MSC_VER)
 
 #if !defined(__cpp_exceptions) && !defined(_HAS_EXCEPTIONS)
 #define _HAS_EXCEPTIONS 0 // must be included before standard headers
@@ -107,6 +107,11 @@
 #define HX_MEMORY_BUDGET_SCRATCH_PAGE    10u * HX_KB
 #define HX_MEMORY_BUDGET_SCRATCH_TEMP    60u * HX_KB
 
+// When set to 0 HX_USE_MEMORY_SCRATCH will disable the scratchpad code.
+#if !defined(HX_USE_MEMORY_SCRATCH)
+#define HX_USE_MEMORY_SCRATCH ((HX_MEMORY_BUDGET_SCRATCH_PAGE + HX_MEMORY_BUDGET_SCRATCH_TEMP) != 0u)
+#endif
+
 // ----------------------------------------------------------------------------
 // HX_PROFILE: 0 disables code for capturing profiling data
 //             1 compiles in code.  See hxProfileScope().
@@ -157,8 +162,8 @@
 #define HX_USE_64_BIT_TYPES 1
 #endif
 
-#if !defined(HX_USE_DMA)
-#define HX_USE_DMA 0
+#if !defined(HX_USE_DMA_HARDWARE)
+#define HX_USE_DMA_HARDWARE 0
 #endif
 
 // ----------------------------------------------------------------------------

@@ -18,7 +18,7 @@
 //
 // hxProfileScope declares an RAII-style profiling sample.  WARNING: A pointer
 // to labelStringLiteral is kept.  c_hxProfilerDefaultSamplingCutoff is provided
-// below as a recommended MinCycles cutoff.
+// in hxTime.h as a recommended MinCycles cutoff.
 
 // hxProfileScope(const char* labelStringLiteral)
 #define hxProfileScope(labelStringLiteral) \

@@ -17,11 +17,11 @@
 // Implements HX_IS_DEBUGGER_PRESENT().  
 
 #if (HX_RELEASE) < 3
-#if _MSC_VER && !(HX_TEST_DIE_AT_THE_END)
+#if defined(_MSC_VER) && !(HX_TEST_DIE_AT_THE_END)
 #include <Windows.h>
 
 #define HX_IS_DEBUGGER_PRESENT IsDebuggerPresent
-#elif __linux__ && !(HX_TEST_DIE_AT_THE_END)
+#elif defined(__linux__) && !(HX_TEST_DIE_AT_THE_END)
 #include <sys/ptrace.h>
 
 static bool HX_IS_DEBUGGER_PRESENT() {
@@ -76,7 +76,7 @@ void hxInitAt(const char* file, uint32_t line) {
 	hxMemoryManagerInit();
 	hxDmaInit();
 
-#if __cpp_exceptions
+#if defined(__cpp_exceptions)
 	hxout << "WARNING disable exceptions\n"; // Exceptions add unnecessary overhead.
 #endif
 }

@@ -16,8 +16,8 @@
 
 class hxTaskQueue {
 public:
-	// threadPoolSize -1 indicates using a hardware_concurrency()-1 size thread pool.
-	// threadPoolSize 0 does not use threading. 
+	// threadPoolSize -1 indicates using a hardware_concurrency()-1 size thread
+	// pool.  threadPoolSize 0 does not use threading. 
 	explicit hxTaskQueue(int32_t threadPoolSize = -1);
 
 	// Calls waitForAll before destructing.

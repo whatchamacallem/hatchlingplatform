@@ -163,6 +163,8 @@ void hxConsoleHelp() {
 
 #if (HX_RELEASE) < 2
 
+HX_STATIC_ASSERT(sizeof(size_t) == 4 || HX_USE_64_BIT_TYPES, "console support for 64-bit size_t requires 64-bit types");
+
 static void hxConsolePeek(size_t address, uint32_t bytes) {
 	hxHexDump((const void*)address, bytes, 0);
 }

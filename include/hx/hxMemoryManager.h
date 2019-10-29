@@ -33,11 +33,13 @@ enum hxMemoryManagerId {
 	hxMemoryManagerId_Heap = 0,
 	hxMemoryManagerId_Permanent,
 	hxMemoryManagerId_TemporaryStack, // Resets to previous depth at scope closure
+#if HX_USE_MEMORY_SCRATCH
 	hxMemoryManagerId_ScratchPage0,   // For triple buffered scratchpad algorithms
 	hxMemoryManagerId_ScratchPage1,
 	hxMemoryManagerId_ScratchPage2,
 	hxMemoryManagerId_ScratchTemp,
 	hxMemoryManagerId_ScratchAll,     // Must be last Scratch id
+#endif
 	hxMemoryManagerId_MAX,
 	hxMemoryManagerId_Current = -1,
 	hxMemoryManagerId_Console = hxMemoryManagerId_Heap

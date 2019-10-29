@@ -34,6 +34,7 @@ static class hxMemoryManager* s_hxMemoryManager = hxnull;
 // ----------------------------------------------------------------------------
 // hxScratchpad
 
+#if HX_USE_MEMORY_SCRATCH
 template<uint32_t Bytes>
 struct hxScratchpad {
 	HX_INLINE void* data() { return &*m_storage; }
@@ -45,6 +46,15 @@ struct hxScratchpad {
 
 HX_LINK_SCRATCHPAD hxScratchpad<((HX_MEMORY_BUDGET_SCRATCH_PAGE) * 3u
 	+ (HX_MEMORY_BUDGET_SCRATCH_TEMP))> g_hxScratchpadObject;
+
+extern "C"
+uint32_t hxIsScratchpad(void * ptr) {
+	return g_hxScratchpadObject.contains(ptr) ? 1 : 0;
+}
+#else
+extern "C"
+uint32_t hxIsScratchpad(void * ptr) { (void)ptr; return 0; }
+#endif // !HX_USE_MEMORY_SCRATCH
 
 // ----------------------------------------------------------------------------
 // hxMemoryAllocationHeader
@@ -279,7 +289,7 @@ protected:
 // hxMemoryAllocatorScratchpad: A stack allocator where allocations are expected
 // to leak.  This is a system for assigning intermediate locations in algorithms
 // that are aware of their temporary nature.
-
+#if HX_USE_MEMORY_SCRATCH
 class hxMemoryAllocatorScratchpad : public hxMemoryAllocatorBase {
 private:
 	struct Section {
@@ -425,6 +435,7 @@ private:
 	uint32_t m_currentSection;
 	Section m_sections[c_nSections];
 };
+#endif // HX_USE_MEMORY_SCRATCH
 
 // ----------------------------------------------------------------------------
 // hxMemoryManager
@@ -457,7 +468,9 @@ private:
 	hxMemoryAllocatorOsHeap     m_memoryAllocatorHeap;
 	hxMemoryAllocatorStack      m_memoryAllocatorPermanent;
 	hxMemoryAllocatorTempStack  m_memoryAllocatorTemporaryStack;
+#if HX_USE_MEMORY_SCRATCH
 	hxMemoryAllocatorScratchpad m_memoryAllocatorScratch;
+#endif // HX_USE_MEMORY_SCRATCH
 };
 
 HX_THREAD_LOCAL hxMemoryManagerId hxMemoryManager::s_hxCurrentMemoryAllocator = hxMemoryManagerId_Heap;
@@ -471,21 +484,25 @@ void hxMemoryManager::construct() {
 	m_memoryAllocators[hxMemoryManagerId_Permanent] = &m_memoryAllocatorPermanent;
 	m_memoryAllocators[hxMemoryManagerId_TemporaryStack] = &m_memoryAllocatorTemporaryStack;
 
-	for (int32_t i = hxMemoryManagerId_ScratchPage0; i <= hxMemoryManagerId_ScratchAll; ++i) {
-		m_memoryAllocators[i] = &m_memoryAllocatorScratch;
-	}
-
 	::new (&m_memoryAllocatorHeap) hxMemoryAllocatorOsHeap(); // set vtable ptr.
 	::new (&m_memoryAllocatorPermanent) hxMemoryAllocatorStack();
 	::new (&m_memoryAllocatorTemporaryStack) hxMemoryAllocatorTempStack();
-	::new (&m_memoryAllocatorScratch) hxMemoryAllocatorScratchpad();
 
 	m_memoryAllocatorHeap.construct("heap");
 	m_memoryAllocatorPermanent.construct(hxMallocChecked(HX_MEMORY_BUDGET_PERMANENT),
 		(HX_MEMORY_BUDGET_PERMANENT), "perm");
 	m_memoryAllocatorTemporaryStack.construct(hxMallocChecked(HX_MEMORY_BUDGET_TEMPORARY_STACK),
 		(HX_MEMORY_BUDGET_TEMPORARY_STACK), "temp");
+
+#if HX_USE_MEMORY_SCRATCH
+	for (int32_t i = hxMemoryManagerId_ScratchPage0; i <= hxMemoryManagerId_ScratchAll; ++i) {
+		m_memoryAllocators[i] = &m_memoryAllocatorScratch;
+	}
+
+	::new (&m_memoryAllocatorScratch) hxMemoryAllocatorScratchpad();
+
 	m_memoryAllocatorScratch.construct(g_hxScratchpadObject.data(), sizeof g_hxScratchpadObject, "scratchpad");
+#endif // HX_USE_MEMORY_SCRATCH
 }
 
 void hxMemoryManager::destruct() {
@@ -562,9 +579,12 @@ void hxMemoryManager::free(void* ptr) {
 		m_memoryAllocatorTemporaryStack.onFreeNonVirtual(ptr);
 		return;
 	}
+#if HX_USE_MEMORY_SCRATCH
 	if (m_memoryAllocatorScratch.contains(ptr)) {
 		return;
 	}
+#endif // HX_USE_MEMORY_SCRATCH
+
 	if (m_memoryAllocatorPermanent.contains(ptr)) {
 		hxWarnCheck(g_hxSettings.isShuttingDown, "ERROR: free from permanent");
 		m_memoryAllocatorPermanent.onFreeNonVirtual(ptr);
@@ -712,11 +732,6 @@ void hxFree(void *ptr) {
 	}
 }
 
-extern "C"
-uint32_t hxIsScratchpad(void * ptr) {
-	return g_hxScratchpadObject.contains(ptr) ? 1 : 0;
-}
-
 void hxMemoryManagerInit() {
 	hxInit(); // Safe to call again.
 	hxAssert(!s_hxMemoryManager);
@@ -776,7 +791,8 @@ void* hxMalloc(size_t size) {
 
 extern "C"
 void* hxMallocExt(size_t size, hxMemoryManagerId id, uintptr_t alignmentMask) {
-	hxAssert(alignmentMask <= HX_ALIGNMENT_MASK); // No support for alignment when disabled.
+	(void)id;
+	hxAssert(alignmentMask <= HX_ALIGNMENT_MASK); (void)alignmentMask; // No support for alignment when disabled.
 	return hxMallocChecked(size);
 }
 
@@ -786,7 +802,7 @@ void hxFree(void *ptr) {
 }
 
 extern "C"
-uint32_t hxIsScratchpad(void * ptr) { return 0; }
+uint32_t hxIsScratchpad(void * ptr) { (void)ptr; return 0; }
 
 void hxMemoryManagerInit() { }
 

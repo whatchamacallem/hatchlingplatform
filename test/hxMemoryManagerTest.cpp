@@ -139,6 +139,7 @@ TEST(hxMemoryManagerTest, TempOverflow) {
 	hxFree(p);
 }
 
+#if HX_USE_MEMORY_SCRATCH
 TEST(hxMemoryManagerTest, ScratchOverflow) {
 	hxMemoryManagerScope temp(hxMemoryManagerId_ScratchTemp);
 
@@ -149,6 +150,7 @@ TEST(hxMemoryManagerTest, ScratchOverflow) {
 	ASSERT_TRUE(!hxIsScratchpad(p)); // overflowed
 	hxFree(p);
 }
+#endif // HX_USE_MEMORY_SCRATCH
 
 TEST_F(hxMemoryManagerTest, Execute) {
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
