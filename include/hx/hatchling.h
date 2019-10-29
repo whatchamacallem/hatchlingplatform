@@ -143,7 +143,8 @@ extern int g_hxIsInit;
 // Does not clear g_hxIsInit, shutdown is final.
 void hxShutdown();
 
-// Stops execution with a formatted message.  HX_RELEASE < 3.
+// HX_RELEASE < 3.  Stops execution with a formatted message.  Format must end
+// with a \n.
 HX_ATTR_NORETURN void hxExit(const char* format_, ...);
 #endif
 
@@ -174,16 +175,20 @@ uint32_t hxStringLiteralHashDebug(const char* string_);
 // More portable versions of min(), max(), abs() and clamp() using the < operator.
 
 // Returns the minimum value of x and y using a < comparison.
-template<typename T_> HX_CONSTEXPR_FN const T_& hxMin(const T_& x_, const T_& y_) { return (x_ < y_) ? x_ : y_; }
+template<typename T_>
+HX_CONSTEXPR_FN const T_& hxMin(const T_& x_, const T_& y_) { return (x_ < y_) ? x_ : y_; }
 
 // Returns the maximum value of x and y using a < comparison.
-template<typename T_> HX_CONSTEXPR_FN const T_& hxMax(const T_& x_, const T_& y_) { return (y_ < x_) ? x_ : y_; }
+template<typename T_>
+HX_CONSTEXPR_FN const T_& hxMax(const T_& x_, const T_& y_) { return (y_ < x_) ? x_ : y_; }
 
 // Returns the absolute value of x using a < comparison.
-template<typename T_> HX_CONSTEXPR_FN const T_ hxAbs(const T_& x_) { return (x_ < (T_)0) ? ((T_)0 - x_) : x_; }
+template<typename T_>
+HX_CONSTEXPR_FN const T_ hxAbs(const T_& x_) { return (x_ < (T_)0) ? ((T_)0 - x_) : x_; }
 
 // Returns x clamped between the minimum and maximum using < comparisons.
-template<typename T_> HX_CONSTEXPR_FN const T_& hxClamp(const T_& x_, const T_& minimum_, const T_& maximum_) {
+template<typename T_>
+HX_CONSTEXPR_FN const T_& hxClamp(const T_& x_, const T_& minimum_, const T_& maximum_) {
 	hxAssert(!(maximum_ < minimum_));
 	return (x_ < minimum_) ? minimum_ : ((maximum_ < x_) ? maximum_ : x_);
 }

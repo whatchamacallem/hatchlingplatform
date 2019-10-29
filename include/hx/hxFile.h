@@ -92,16 +92,16 @@ public:
 	template<typename T_>
 	HX_INLINE bool write1(const T_& t_) { return write(&t_, sizeof t_) == sizeof t_; }
 
-	// Read a single unformatted native endian object from a stream.  Avoiding >>
-	// as that indicates formatting.
+	// Read a single unformatted native endian object from a stream.  The operator
+	// >= is being used instead of >> to indicate there is no formatting.
 	template<typename T_>
 	HX_INLINE hxFile& operator>=(T_& t_) {
 		read(&t_, sizeof t_);
 		return *this;
 	}
 
-	// Write a single unformatted native endian object to a stream.  Avoiding <<
-	// as that indicates formatting.
+	// Write a single unformatted native endian object to a stream.  The operator
+	// <= is being used instead of << to indicate there is no formatting.
 	template<typename T_>
 	HX_INLINE hxFile& operator<=(const T_& t_) {
 		write(&t_, sizeof t_);
@@ -116,6 +116,8 @@ public:
 		return *this;
 	}
 
+	// Write a null terminated string.  Supports Google Test style diagnostic
+	// messages.
 	template<size_t StringLength_>
 	HX_INLINE hxFile& operator<<(char(&str_)[StringLength_]) {
 		write(str_, ::strnlen(str_, StringLength_));
