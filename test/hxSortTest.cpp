@@ -2,15 +2,14 @@
 
 #include <hx/hatchling.h>
 #include <hx/hxSort.h>
-#include "hxTest.h"
-#include "hxTestPRNG.h"
+#include <hx/hxTest.h>
 
 HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------------
 
 class hxRadixSortTest :
-	public testing::test
+	public testing::Test
 {
 public:
 	template<typename Key>
@@ -39,7 +38,7 @@ public:
 
 	template<typename Key>
 	void test(uint32_t size, uint32_t mask, Key offset) {
-		hxMemoryManagerScope allocator(hxMemoryManagerId_TemporaryStack);
+		hxMemoryManagerScope temporaryStack(hxMemoryManagerId_TemporaryStack);
 
 		// Generate test data
 		hxArray<TestObject<Key> > a;
@@ -73,7 +72,7 @@ public:
 		ASSERT_EQ(cit, rs.cend());
 	}
 
-	hxTestPRNG m_prng;
+	hxTestRandom m_prng;
 };
 
 // ----------------------------------------------------------------------------
@@ -127,7 +126,7 @@ static int hxSortCompareTest(const int a, const int b) {
 	return a < b;
 }
 
-TEST(hxInsertionSortTest, SortCompareCFunction) {
+TEST(hxInsertionSortTest, SortCompareCCase) {
 	int ints[2] = { 1, 0 };
 	hxInsertionSort<int, int (*)(int a, int b)>(ints, ints + 2, hxSortCompareTest);
 	ASSERT_LT(ints[0], ints[1]) << "GoogleTest style messages like these are sent to the log on failure.\n";

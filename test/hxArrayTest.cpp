@@ -3,8 +3,7 @@
 
 #include <hx/hatchling.h>
 #include <hx/hxArray.h>
-#include <hx/hxUniquePtr.h>
-#include "hxTest.h"
+#include <hx/hxTest.h>
 
 HX_REGISTER_FILENAME_HASH
 
@@ -13,7 +12,7 @@ HX_REGISTER_FILENAME_HASH
 static class hxArrayTest* s_hxTestCurrent = hxnull;
 
 class hxArrayTest :
-	public testing::test
+	public testing::Test
 {
 public:
 	struct TestObject {
@@ -274,36 +273,4 @@ TEST_F(hxArrayTest, Assignment) {
 	}
 
 	ASSERT_TRUE(CheckTotals(6));
-}
-
-TEST_F(hxArrayTest, UniquePtr) {
-	{
-		hxArray<hxUniquePtr<TestObject> > objs;
-		objs.get_allocator().reserveStorageExt(10u, hxMemoryManagerId_Current, HX_ALIGNMENT_MASK);
-		objs.resize(5u);
-
-		void* a0 = hxnull;
-		char* a1 = hxnull;
-		int*  a2 = hxnull;
-
-		objs[2].reset(hxNew<TestObject>()); // Compile test, free will not be called.
-		ASSERT_TRUE(objs[2]->constructor == 0);
-		objs[4].reset(hxNewExt<TestObject, hxMemoryManagerId_Current>((void*)0));
-		ASSERT_TRUE(objs[4]->constructor == 1);
-
-		objs.resize(4u);
-		objs.erase_unordered(2);
-
-		ASSERT_TRUE(CheckTotals(2));
-
-		objs[0].reset(hxNew<TestObject>(a0, a1));
-		ASSERT_TRUE(objs[0]->constructor == 2);
-		objs[2].reset(hxNewExt<TestObject, hxMemoryManagerId_Current>(a0, a1, a2));
-		ASSERT_TRUE(objs[2]->constructor == 3);
-
-		hxArray<hxUniquePtr<TestObject> > objs2;
-		objs2.assign(objs.begin(), objs.end());
-	}
-
-	ASSERT_TRUE(CheckTotals(4));
 }

@@ -36,7 +36,6 @@ static class hxMemoryManager* s_hxMemoryManager = hxnull;
 
 // ----------------------------------------------------------------------------
 // hxScratchpad
-//
 
 template<uint32_t Bytes>
 struct hxScratchpad {
@@ -507,8 +506,6 @@ void hxMemoryManager::construct() {
 }
 
 void hxMemoryManager::destruct() {
-	hxWarnCheck(!HX_TARGET, "Shutting down memory manager on target");
-
 	hxAssertMsg(m_memoryAllocatorPermanent.getAllocationCount(hxMemoryManagerId_Permanent) == 0, "leaked permanent allocation");
 	hxAssertMsg(m_memoryAllocatorTemporaryStack.getAllocationCount(hxMemoryManagerId_TemporaryStack) == 0, "leaked temporary allocation");
 
@@ -695,7 +692,7 @@ void* hxMalloc(size_t size) {
 }
 
 extern "C"
-void* hxMallocExt(size_t size, hxMemoryManagerId memoryAllocatorId, uintptr_t alignmentMask) {
+void* hxMallocExt(size_t size, hxMemoryManagerId id, uintptr_t alignmentMask) {
 	hxInit();
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
@@ -704,7 +701,7 @@ void* hxMallocExt(size_t size, hxMemoryManagerId memoryAllocatorId, uintptr_t al
 		return hxMallocChecked(size);
 	}
 #endif
-	void* ptr = s_hxMemoryManager->AllocateExtended(size, (hxMemoryManagerId)memoryAllocatorId, alignmentMask);
+	void* ptr = s_hxMemoryManager->AllocateExtended(size, (hxMemoryManagerId)id, alignmentMask);
 	if ((HX_RELEASE) < 1) {
 		::memset(ptr, 0xab, size);
 	}
@@ -790,7 +787,7 @@ void* hxMalloc(size_t size) {
 }
 
 extern "C"
-void* hxMallocExt(size_t size, hxMemoryManagerId memoryAllocatorId, uintptr_t alignmentMask) {
+void* hxMallocExt(size_t size, hxMemoryManagerId id, uintptr_t alignmentMask) {
 	hxAssert(alignmentMask <= HX_ALIGNMENT_MASK); // No support for alignment when disabled.
 	return hxMallocChecked(size);
 }

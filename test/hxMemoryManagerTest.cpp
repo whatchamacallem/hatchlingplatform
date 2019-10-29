@@ -2,14 +2,14 @@
 // Copyright 2017 Leap Motion
 
 #include <hx/hatchling.h>
-#include "hxTest.h"
+#include <hx/hxTest.h>
 
 HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------------
 
 class hxMemoryManagerTest :
-	public testing::test
+	public testing::Test
 {
 public:
 	void TestMemoryAllocatorNormal(hxMemoryManagerId id) {
@@ -18,10 +18,10 @@ public:
 
 		{
 			hxLog("hxTestMemoryAllocatorNormal %d...\n", (int)id);
-			hxMemoryManagerScope resourceAllocator(id);
+			hxMemoryManagerScope allocatorScope(id);
 
-			startCount = resourceAllocator.getTotalAllocationCount();
-			startBytes = resourceAllocator.getTotalBytesAllocated();
+			startCount = allocatorScope.getTotalAllocationCount();
+			startBytes = allocatorScope.getTotalBytesAllocated();
 
 			void* ptr1 = hxMalloc(100);
 			void* ptr2 = hxMalloc(200);
@@ -31,12 +31,12 @@ public:
 			{
 				// GoogleTest spams new/delete with std::string operations:
 				hxMemoryManagerScope spamGuard(hxMemoryManagerId_Heap);
-				ASSERT_EQ(resourceAllocator.getScopeAllocationCount(), 2u);
-				ASSERT_EQ(resourceAllocator.getPreviousAllocationCount(), startCount);
-				ASSERT_EQ(resourceAllocator.getTotalAllocationCount(), 2u + startCount);
-				ASSERT_NEAR(resourceAllocator.getScopeBytesAllocated(), 300u, 2u * HX_ALIGNMENT_MASK);
-				ASSERT_NEAR(resourceAllocator.getTotalBytesAllocated(), startBytes + 300u, 2u * HX_ALIGNMENT_MASK);
-				ASSERT_EQ(resourceAllocator.getPreviousBytesAllocated(), startBytes);
+				ASSERT_EQ(allocatorScope.getScopeAllocationCount(), 2u);
+				ASSERT_EQ(allocatorScope.getPreviousAllocationCount(), startCount);
+				ASSERT_EQ(allocatorScope.getTotalAllocationCount(), 2u + startCount);
+				ASSERT_NEAR(allocatorScope.getScopeBytesAllocated(), 300u, 2u * HX_ALIGNMENT_MASK);
+				ASSERT_NEAR(allocatorScope.getTotalBytesAllocated(), startBytes + 300u, 2u * HX_ALIGNMENT_MASK);
+				ASSERT_EQ(allocatorScope.getPreviousBytesAllocated(), startBytes);
 			}
 
 			// Allow quiet deletion of a resource.
@@ -46,28 +46,28 @@ public:
 			g_hxSettings.isShuttingDown = false;
 
 			// Special case for heaps that do not track free.
-			if (resourceAllocator.getScopeBytesAllocated() != 0) {
+			if (allocatorScope.getScopeBytesAllocated() != 0) {
 				// GoogleTest spams new/delete with std::string operations:
 				hxMemoryManagerScope spamGuard(hxMemoryManagerId_Heap);
 
 				// The debug heap requires HX_ALLOCATIONS_LOG_LEVEL enabled to track bytes allocated.
-				ASSERT_NEAR(resourceAllocator.getScopeBytesAllocated(), 300, 2 * HX_ALIGNMENT_MASK);
+				ASSERT_NEAR(allocatorScope.getScopeBytesAllocated(), 300, 2 * HX_ALIGNMENT_MASK);
 			}
 			else {
 				hxMemoryManagerScope spamGuard(hxMemoryManagerId_Heap);
-				ASSERT_EQ(resourceAllocator.getScopeBytesAllocated(), 0u);
-				ASSERT_EQ(resourceAllocator.getTotalBytesAllocated(), startBytes);
+				ASSERT_EQ(allocatorScope.getScopeBytesAllocated(), 0u);
+				ASSERT_EQ(allocatorScope.getTotalBytesAllocated(), startBytes);
 			}
 		}
 
 		// hxMemoryManagerId_Permanent does not free.
 		if (id != hxMemoryManagerId_Permanent) {
-			hxMemoryManagerScope resourceAllocator(id);
+			hxMemoryManagerScope allocatorScope(id);
 
 			// GoogleTest spams new/delete with std::string operations:
 			hxMemoryManagerScope spamGuard(hxMemoryManagerId_Heap);
-			ASSERT_EQ(resourceAllocator.getPreviousAllocationCount(), startCount);
-			ASSERT_EQ(resourceAllocator.getPreviousBytesAllocated(), startBytes);
+			ASSERT_EQ(allocatorScope.getPreviousAllocationCount(), startCount);
+			ASSERT_EQ(allocatorScope.getPreviousBytesAllocated(), startBytes);
 		}
 	}
 
@@ -79,10 +79,10 @@ public:
 		int32_t assertsAllowed = g_hxSettings.assertsToBeSkipped;
 
 		{
-			hxMemoryManagerScope resourceAllocator(id);
+			hxMemoryManagerScope allocatorScope(id);
 
-			startCount = resourceAllocator.getScopeAllocationCount();
-			startBytes = resourceAllocator.getScopeBytesAllocated();
+			startCount = allocatorScope.getScopeAllocationCount();
+			startBytes = allocatorScope.getScopeBytesAllocated();
 
 			void* ptr1 = hxMalloc(100);
 			ptr2 = hxMalloc(200);
@@ -95,12 +95,12 @@ public:
 		}
 		ASSERT_EQ(g_hxSettings.assertsToBeSkipped, 0); // hxAssert was hit, leak in scope
 
-		hxMemoryManagerScope resourceAllocator(id);
+		hxMemoryManagerScope allocatorScope(id);
 		{
 			// GoogleTest spams new/delete with std::string operations:
 			hxMemoryManagerScope spamGuard(hxMemoryManagerId_Heap);
-			ASSERT_EQ(resourceAllocator.getPreviousAllocationCount(), startCount);
-			ASSERT_EQ(resourceAllocator.getPreviousBytesAllocated(), startBytes);
+			ASSERT_EQ(allocatorScope.getPreviousAllocationCount(), startCount);
+			ASSERT_EQ(allocatorScope.getPreviousBytesAllocated(), startBytes);
 		}
 
 		g_hxSettings.assertsToBeSkipped = 1;

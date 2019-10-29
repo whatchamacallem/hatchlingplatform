@@ -11,7 +11,7 @@ class hxFile;
 // Implements a simple console for remote use or to implement configuration files.  Output
 // is directed to the system log with hxLogLevel_Console.  A remote console will require
 // forwarding commands to the target and reporting the system log back.  Configuration
-// files only require file I/O.  Function calls with up to 4 args which are fundamental
+// files only require file I/O.  Case calls with up to 4 args which are fundamental
 // types are supported.  Setting variables of a fundamental type are also supported.
 
 // Registers a function.  Use in a global scope.

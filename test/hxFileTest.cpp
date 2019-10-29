@@ -1,7 +1,7 @@
 // Copyright 2018 Adrian Johnston
 
 #include <hx/hxFile.h>
-#include "hxTest.h"
+#include <hx/hxTest.h>
 
 HX_REGISTER_FILENAME_HASH
 
@@ -10,7 +10,7 @@ HX_REGISTER_FILENAME_HASH
 // ----------------------------------------------------------------------------------
 
 class hxFileTest :
-	public testing::test
+	public testing::Test
 {
 public:
 	struct X {
@@ -23,7 +23,7 @@ public:
 
 // ----------------------------------------------------------------------------------
 
-TEST_F(hxFileTest, NotExist) {
+TEST(hxFileTest, NotExist) {
 	hxFile f(hxFile::in | hxFile::fallible, "TEST_FILE_DOES_NOT_EXIST");
 	ASSERT_EQ(f.good(), false);
 	ASSERT_EQ(f.is_open(), false);

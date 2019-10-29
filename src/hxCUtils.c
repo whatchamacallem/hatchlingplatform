@@ -35,6 +35,9 @@ void hxHexDump(const void* address, uint32_t bytes, int pretty) {
 	}
 }
 
+#if defined(__clang__)
+__attribute__((no_sanitize("address")))
+#endif
 void hxFloatDump(const float* address, uint32_t count) {
 	if ((HX_RELEASE) < 2 && address != hxnull) {
 		for (uint32_t i = 0; i < count;) {
@@ -59,10 +62,10 @@ const char* hxBasename(const char* path) {
 	return result;
 }
 
-char* hxStringDuplicate(const char* string, enum hxMemoryManagerId allocatorId) {
+char* hxStringDuplicate(const char* string, enum hxMemoryManagerId id) {
 	if (string) {
 		size_t len = strlen(string);
-		char* temp = (char*)hxMallocExt(len + 1, allocatorId, 0u);
+		char* temp = (char*)hxMallocExt(len + 1, id, 0u);
 		memcpy(temp, string, len + 1);
 		return temp;
 	}

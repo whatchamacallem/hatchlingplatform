@@ -3,17 +3,9 @@
 
 #include <hx/hatchling.h>
 #include <hx/hxConsole.h>
-#include "hxTest.h"
+#include <hx/hxTest.h> // May include Google Test.
 
 HX_REGISTER_FILENAME_HASH
-
-#if !(HX_GOOGLE_TEST)
-
-// Ensures constructor runs before tests are registered by global constructors.
-hxTestRunner& hxTestRunner::get() {
-	static hxTestRunner s_hxTestRunner;
-	return s_hxTestRunner;
-}
 
 bool hxTestMain() {
 	hxInit();
@@ -26,9 +18,8 @@ bool hxTestMain() {
 
 	hxConsoleHelp();
 
-	// Filter using e.g. hxTestRunner::get().setFilterStaticString("hxArrayTest").
-	// All tests already registered by global constructors.
-	bool testsOk = hxTestRunner::get().executeAllTests();
+	// RUN_ALL_TESTS is a Google Test symbol.
+	bool testsOk = RUN_ALL_TESTS();
 
 #if (HX_RELEASE) < 3
 	hxShutdown();
@@ -38,8 +29,8 @@ bool hxTestMain() {
 
 extern "C"
 int main() {
+	::testing::InitGoogleTest();
+
 	bool testsOk = hxTestMain();
 	return testsOk ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
-#endif // !HX_GOOGLE_TEST

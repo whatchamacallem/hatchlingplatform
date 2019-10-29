@@ -3,7 +3,7 @@
 
 #include <hx/hxAllocator.h>
 
-#if HX_HAS_CPP11_THREADS
+#if HX_USE_CPP11_THREADS
 #include <atomic>
 #endif
 
@@ -70,7 +70,7 @@ private:
 	explicit hxStockpile(const hxStockpile& rhs); // = delete
 	void operator=(const hxStockpile& rhs); // = delete
 
-#if HX_HAS_CPP11_THREADS
+#if HX_USE_CPP11_THREADS
 	std::atomic<uint32_t> m_size;
 #else
 	uint32_t m_size;

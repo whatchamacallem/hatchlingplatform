@@ -39,9 +39,6 @@ class hxHashTableNodeBase {
 public:
 	typedef K Key;
 
-	// Well studied hash multiplier taken from Linux's hash.h
-	static const uint32_t c_hashMultiplier = 0x61C88647u;
-
 	// Base class allows hash value to either be stored or recalculated.
 	HX_INLINE hxHashTableNodeBase(const Key& k) : key(k), m_next(hxnull) { }
 
@@ -72,8 +69,8 @@ public:
 	typedef typename Node::Key Key;
 	typedef uint32_t size_type;
 
-	// A forward iterator.  Iteration is O(n + (1 << HashBits)).  Iterators
-	// are only invalidated by the removal of Node referenced.  Not bound to
+	// A forward iterator.  Iteration is O(n + (1 << HashBits)).  Iterators are
+	// only invalidated by the removal of the Node referenced.  Does not support
 	// std::iterator_traits or std::forward_iterator_tag. 
 	class const_iterator
 	{
@@ -155,7 +152,7 @@ public:
 
 	// Returns a node containing key if any or allocates and returns a new one.
 	HX_INLINE Node& insert_unique(const Key& key,
-								  hxMemoryManagerId allocatorId=hxMemoryManagerId_Current,
+								  hxMemoryManagerId id=hxMemoryManagerId_Current,
 								  uintptr_t alignmentMask=HX_ALIGNMENT_MASK) {
 		uint32_t hash = Node::hash(key);
 		Node** pos = getBucket(hash);
@@ -164,7 +161,7 @@ public:
 				return *n;
 			}
 		}
-		Node* n = ::new(hxMallocExt(sizeof(Node), allocatorId, alignmentMask))Node(key, hash);
+		Node* n = ::new(hxMallocExt(sizeof(Node), id, alignmentMask))Node(key, hash);
 		n->m_next = *pos;
 		*pos = n;
 		++m_size;

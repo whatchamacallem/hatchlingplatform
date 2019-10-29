@@ -11,13 +11,11 @@ struct hxCommand {
 	virtual void log(const char* id) = 0;
 };
 
-// Explicit registration, takes ownership of fn, id expected to be static.
+// Explicit registration, takes ownership of fn, id expected to be a string literal.
 void hxConsoleRegister(hxCommand* fn, const char* id);
 
 struct hxConsoleConstructor {
-	HX_INLINE hxConsoleConstructor(hxCommand* fn, const char* id) {
-		hxConsoleRegister(fn, id);
-	}
+	HX_INLINE hxConsoleConstructor(hxCommand* fn, const char* id) { hxConsoleRegister(fn, id); }
 };
 
 // Console IDs are delimited by any whitespace and non-printing low-ASCII characters including null.
@@ -65,7 +63,7 @@ template<> struct hxArg<int32_t> {
 	HX_INLINE static const char* getLabel() { return "s32"; }
 	int32_t val;
 };
-#if HX_HAS_64_BIT_TYPES
+#if HX_USE_64_BIT_TYPES
 template<> struct hxArg<int64_t> {
 	HX_INLINE hxArg(const char* str, char** next) : val(::strtoll(str, next, 10)) { }
 	HX_INLINE static const char* getLabel() { return "s64"; }
@@ -101,7 +99,7 @@ template<> struct hxArg<uint32_t> {
 	HX_INLINE static const char* getLabel() { return "u32"; }
 	uint32_t val;
 };
-#if HX_HAS_64_BIT_TYPES
+#if HX_USE_64_BIT_TYPES
 template<> struct hxArg<uint64_t> {
 	HX_INLINE hxArg(const char* str, char** next) : val(::strtoull(str, next, 10)) { }
 	HX_INLINE static const char* getLabel() { return "u64"; }
@@ -145,8 +143,8 @@ template<> struct hxArg<const char*> {
 };
 
 template<typename R>
-struct hxFunction0 : public hxCommand {
-	hxFunction0(R(*fn)()) : m_fn(fn) { }
+struct hxCase0 : public hxCommand {
+	hxCase0(R(*fn)()) : m_fn(fn) { }
 	virtual bool execute(const char* str) HX_OVERRIDE {
 		if(hxIsEndOfLine(str)) {
 			m_fn();
@@ -163,8 +161,8 @@ struct hxFunction0 : public hxCommand {
 };
 
 template<typename R, typename A>
-struct hxFunction1 : public hxCommand {
-	hxFunction1(R(*fn)(A)) : m_fn(fn) { }
+struct hxCase1 : public hxCommand {
+	hxCase1(R(*fn)(A)) : m_fn(fn) { }
 	virtual bool execute(const char* str) HX_OVERRIDE {
 		char* ptr = hxnull;
 		hxArg<A> arg1(str, &ptr);
@@ -182,8 +180,8 @@ struct hxFunction1 : public hxCommand {
 };
 
 template<typename R, typename A1, typename A2>
-struct hxFunction2 : public hxCommand {
-	hxFunction2(R(*fn)(A1, A2)) : m_fn(fn) { }
+struct hxCase2 : public hxCommand {
+	hxCase2(R(*fn)(A1, A2)) : m_fn(fn) { }
 	virtual bool execute(const char* p) HX_OVERRIDE {
 		char* pA = hxnull;
 		char* pB = hxnull;
@@ -205,8 +203,8 @@ struct hxFunction2 : public hxCommand {
 };
 
 template<typename R, typename A1, typename A2, typename A3>
-struct hxFunction3 : public hxCommand {
-	hxFunction3(R(*fn)(A1, A2, A3)) : m_fn(fn) { }
+struct hxCase3 : public hxCommand {
+	hxCase3(R(*fn)(A1, A2, A3)) : m_fn(fn) { }
 	virtual bool execute(const char* p) HX_OVERRIDE {
 		char* pA = hxnull;
 		char* pB = hxnull;
@@ -232,8 +230,8 @@ struct hxFunction3 : public hxCommand {
 };
 
 template<typename R, typename A1, typename A2, typename A3, typename A4>
-struct hxFunction4 : public hxCommand {
-	hxFunction4(R(*fn)(A1, A2, A3, A4)) : m_fn(fn) { }
+struct hxCase4 : public hxCommand {
+	hxCase4(R(*fn)(A1, A2, A3, A4)) : m_fn(fn) { }
 	virtual bool execute(const char* p) HX_OVERRIDE {
 		char* pA = hxnull;
 		char* pB = hxnull;
@@ -275,7 +273,7 @@ struct hxVariable : public hxCommand {
 		return false;
 	}
 	virtual void log(const char* id) HX_OVERRIDE {
-#if HX_HAS_64_BIT_TYPES
+#if HX_USE_64_BIT_TYPES
 		if (*m_var == (T)(int64_t)*m_var) {
 			// If the current value fits in a long long, use that.
 			hxLogConsole("%s %s (%lld)\n", id, hxArg<T>::getLabel(), (long long)*m_var);
@@ -300,27 +298,27 @@ struct hxVariable : public hxCommand {
 
 template<typename R>
 HX_INLINE hxCommand* hxCommandFactory(R(*fn)()) {
-	return hxNewExt<hxFunction0<R>, hxMemoryManagerId_Console>(fn);
+	return hxNewExt<hxCase0<R>, hxMemoryManagerId_Console>(fn);
 }
 
 template<typename R, typename A1>
 HX_INLINE hxCommand* hxCommandFactory(R(*fn)(A1)) {
-	return hxNewExt<hxFunction1<R, A1>, hxMemoryManagerId_Console>(fn);
+	return hxNewExt<hxCase1<R, A1>, hxMemoryManagerId_Console>(fn);
 }
 
 template<typename R, typename A1, typename A2>
 HX_INLINE hxCommand* hxCommandFactory(R(*fn)(A1, A2)) {
-	return hxNewExt<hxFunction2<R, A1, A2>, hxMemoryManagerId_Console>(fn);
+	return hxNewExt<hxCase2<R, A1, A2>, hxMemoryManagerId_Console>(fn);
 }
 
 template<typename R, typename A1, typename A2, typename A3>
 HX_INLINE hxCommand* hxCommandFactory(R(*fn)(A1, A2, A3)) {
-	return hxNewExt<hxFunction3<R, A1, A2, A3>, hxMemoryManagerId_Console>(fn);
+	return hxNewExt<hxCase3<R, A1, A2, A3>, hxMemoryManagerId_Console>(fn);
 }
 
 template<typename R, typename A1, typename A2, typename A3, typename A4>
 HX_INLINE hxCommand* hxCommandFactory(R(*fn)(A1, A2, A3, A4)) {
-	return hxNewExt<hxFunction4<R, A1, A2, A3, A4>, hxMemoryManagerId_Console>(fn);
+	return hxNewExt<hxCase4<R, A1, A2, A3, A4>, hxMemoryManagerId_Console>(fn);
 }
 
 template<typename T>

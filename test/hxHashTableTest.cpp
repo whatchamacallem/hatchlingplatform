@@ -3,7 +3,7 @@
 
 #include <hx/hatchling.h>
 #include <hx/hxHashTableNodes.h>
-#include "hxTest.h"
+#include <hx/hxTest.h>
 
 HX_REGISTER_FILENAME_HASH
 
@@ -12,7 +12,7 @@ HX_REGISTER_FILENAME_HASH
 static class hxHashTableTest* s_hxTestCurrent = 0;
 
 class hxHashTableTest :
-	public testing::test
+	public testing::Test
 {
 public:
 	struct TestObject {

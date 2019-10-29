@@ -2,7 +2,7 @@
 
 #include <hx/hxFile.h>
 
-#if HX_HAS_C_FILE
+#if HX_USE_C_FILE
 #include <stdio.h>
 #endif
 
@@ -47,7 +47,7 @@ bool hxFile::open(uint16_t mode, const char* filename, ...) {
 	return rv;
 }
 
-#if HX_HAS_C_FILE
+#if HX_USE_C_FILE
 
 bool hxFile::openV(uint16_t mode, const char* filename, va_list args) {
 	hxAssertMsg((mode & ~(uint16_t)((1u << 5) - 1u)) == 0, "using reserved file mode");
@@ -60,7 +60,7 @@ bool hxFile::openV(uint16_t mode, const char* filename, va_list args) {
 	}
 
 	char buf[HX_MAX_LINE] = "";
-	::vsnprintf(buf, HX_MAX_LINE, filename, args); // C99
+	::vsnprintf_(buf, HX_MAX_LINE, filename, args); // C99
 
 	if (buf[0] == '\0') {
 		return false;
@@ -107,7 +107,7 @@ size_t hxFile::read(void* bytes, size_t byteCount) {
 }
 
 size_t hxFile::write(const void* bytes, size_t byteCount) {
-#if HX_HAS_C_FILE
+#if HX_USE_C_FILE
 	if (m_openMode & echo) {
 		::fwrite(bytes, 1, byteCount, stdout);
 	}
@@ -137,7 +137,7 @@ bool hxFile::getline(char* buffer, size_t bufferSize) {
 	return true;
 }
 
-#else // !HX_HAS_C_FILE
+#else // !HX_USE_C_FILE
 #error "TODO: file I/O"
 #endif
 
@@ -147,7 +147,7 @@ bool hxFile::print(const char* format, ...) {
 	char str[HX_MAX_LINE] = "";
 	va_list args;
 	va_start(args, format);
-	int len = ::vsnprintf(str, HX_MAX_LINE, format, args); // C99
+	int len = ::vsnprintf_(str, HX_MAX_LINE, format, args); // C99
 	va_end(args);
 
 	// These are potential data corruption issues, not fallible I/O.

@@ -9,7 +9,9 @@ HX_REGISTER_FILENAME_HASH
 // ----------------------------------------------------------------------------
 // hxSettings
 
+extern "C" {
 hxSettings g_hxSettings;
+}
 
 hxConsoleVariableNamed(g_hxSettings.logLevel, loglevel);
 

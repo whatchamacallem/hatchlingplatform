@@ -4,7 +4,7 @@
 #include <hx/hxDma.h>
 #include <hx/hxArray.h>
 #include <hx/hxProfiler.h>
-#if HX_HAS_CPP11_THREADS
+#if HX_USE_CPP11_THREADS
 #include <mutex>
 #endif
 
@@ -13,25 +13,25 @@ HX_REGISTER_FILENAME_HASH
 // ----------------------------------------------------------------------------------
 // dma
 
-// TODO: Every instance of HX_HAS_DMA has to be hooked up for your target.
-#ifndef HX_HAS_DMA
-#define HX_HAS_DMA 0
+// TODO: Every instance of HX_USE_DMA has to be hooked up for your target.
+#ifndef HX_USE_DMA
+#define HX_USE_DMA 0
 #endif
 
 #if HX_DEBUG_DMA
 struct hxDmaDebugRecord {
 	hxDmaDebugRecord(const void* d, const void* s, size_t b, uint32_t c, const char* l) :
-		dst(d), src(s), bytes(b), barrierCounter(c), labelStaticString(l) { }
+		dst(d), src(s), bytes(b), barrierCounter(c), labelStringLiteral(l) { }
 	const void* dst;
 	const void* src;
 	size_t bytes;
 	uint32_t barrierCounter;
-	const char* labelStaticString;
+	const char* labelStringLiteral;
 };
 static hxArray<hxDmaDebugRecord, HX_DEBUG_DMA_RECORDS> s_hxDmaDebugRecords;
 static uint32_t s_hxDmaBarrierCounter = 0u;
 
-#if HX_HAS_CPP11_THREADS
+#if HX_USE_CPP11_THREADS
 static std::mutex s_hxDmaDebugMutex;
 #define HX_DMA_DEBUG_MUTEX_LOCK std::lock_guard<std::mutex> debugGuard(s_hxDmaDebugMutex)
 #else
@@ -40,18 +40,18 @@ static std::mutex s_hxDmaDebugMutex;
 #endif
 
 void hxDmaInit() {
-	HX_STATIC_ASSERT(!HX_HAS_DMA, "TODO");
+	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO");
 }
 
 #if (HX_RELEASE) < 3
 void hxDmaShutDown() {
-	HX_STATIC_ASSERT(!HX_HAS_DMA, "TODO");
+	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO");
 }
 #endif
 
 void hxDmaEndFrame() {
 	hxDmaAwaitAll("end frame");
-	HX_STATIC_ASSERT(!HX_HAS_DMA, "TODO");
+	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO");
 #if HX_DEBUG_DMA
 	HX_DMA_DEBUG_MUTEX_LOCK;
 	s_hxDmaBarrierCounter = 0u;
@@ -59,7 +59,7 @@ void hxDmaEndFrame() {
 }
 
 void hxDmaAddSyncPoint(struct hxDmaSyncPoint& syncPoint) {
-	HX_STATIC_ASSERT(!HX_HAS_DMA, "TODO");
+	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO");
 #if HX_DEBUG_DMA
 	HX_DMA_DEBUG_MUTEX_LOCK;
 	syncPoint.debugOnly = s_hxDmaBarrierCounter++;
@@ -67,10 +67,10 @@ void hxDmaAddSyncPoint(struct hxDmaSyncPoint& syncPoint) {
 #endif
 }
 
-void hxDmaStartLabeled(void* dst, const void* src, size_t bytes, const char* labelStaticString) {
-	hxAssertMsg(src != hxnull && dst != hxnull && bytes != 0, "dma illegal args: %s 0x%x, 0x%x, 0x%x", (labelStaticString ? labelStaticString : "dma start"), (unsigned int)(uintptr_t)dst, (unsigned int)(uintptr_t)src, (unsigned int)(uintptr_t)bytes);
-#if HX_HAS_DMA
-	HX_STATIC_ASSERT(!HX_HAS_DMA, "TODO");
+void hxDmaStartLabeled(void* dst, const void* src, size_t bytes, const char* labelStringLiteral) {
+	hxAssertMsg(src != hxnull && dst != hxnull && bytes != 0, "dma illegal args: %s 0x%x, 0x%x, 0x%x", (labelStringLiteral ? labelStringLiteral : "dma start"), (unsigned int)(uintptr_t)dst, (unsigned int)(uintptr_t)src, (unsigned int)(uintptr_t)bytes);
+#if HX_USE_DMA
+	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO");
 #else
 	::memcpy(dst, src, bytes);
 #endif
@@ -78,35 +78,35 @@ void hxDmaStartLabeled(void* dst, const void* src, size_t bytes, const char* lab
 	HX_DMA_DEBUG_MUTEX_LOCK;
 	hxAssert(!s_hxDmaDebugRecords.full());
 	if (!s_hxDmaDebugRecords.full()) {
-		s_hxDmaDebugRecords.push_back(hxDmaDebugRecord(dst, src, bytes, s_hxDmaBarrierCounter, (labelStaticString ? labelStaticString : "dma start")));
+		s_hxDmaDebugRecords.push_back(hxDmaDebugRecord(dst, src, bytes, s_hxDmaBarrierCounter, (labelStringLiteral ? labelStringLiteral : "dma start")));
 	}
 #endif
 }
 
-void hxDmaAwaitSyncPointLabeled(struct hxDmaSyncPoint& syncPoint, const char* labelStaticString) {
-	hxProfileScopeMin((labelStaticString ? labelStaticString : "dma await"), c_hxProfilerDefaultSamplingCutoff);
-	HX_STATIC_ASSERT(!HX_HAS_DMA, "TODO");
+void hxDmaAwaitSyncPointLabeled(struct hxDmaSyncPoint& syncPoint, const char* labelStringLiteral) {
+	hxProfileScopeMin((labelStringLiteral ? labelStringLiteral : "dma await"), c_hxProfilerDefaultSamplingCutoff);
+	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO");
 
 #if HX_DEBUG_DMA
 	HX_DMA_DEBUG_MUTEX_LOCK;
-	hxAssertRelease(syncPoint.debugOnly < s_hxDmaBarrierCounter, "dma sync point unexpected: %s", (labelStaticString ? labelStaticString : "dma await"));
+	hxAssertRelease(syncPoint.debugOnly < s_hxDmaBarrierCounter, "dma sync point unexpected: %s", (labelStringLiteral ? labelStringLiteral : "dma await"));
 	for (hxDmaDebugRecord* it = (s_hxDmaDebugRecords.end() - 1); it >= s_hxDmaDebugRecords.begin(); --it) {
 		// syncPoint.debugOnly is the value of s_hxDmaBarrierCounter for proceeding dma.
 		if (it->barrierCounter <= syncPoint.debugOnly) {
 			bool isOk = ::memcmp(it->dst, it->src, it->bytes) == 0;
-			hxAssertRelease(isOk, "dma corrupt %s, %s", it->labelStaticString, (labelStaticString ? labelStaticString : "dma await"));
+			hxAssertRelease(isOk, "dma corrupt %s, %s", it->labelStringLiteral, (labelStringLiteral ? labelStringLiteral : "dma await"));
 			s_hxDmaDebugRecords.erase_unordered(it);
 		}
 	}
 #endif
 }
 
-void hxDmaAwaitAllLabeled(const char* labelStaticString) {
+void hxDmaAwaitAllLabeled(const char* labelStringLiteral) {
 	hxDmaSyncPoint b;
 	hxDmaAddSyncPoint(b);
-	hxDmaAwaitSyncPointLabeled(b, labelStaticString);
+	hxDmaAwaitSyncPointLabeled(b, labelStringLiteral);
 #if HX_DEBUG_DMA
 	HX_DMA_DEBUG_MUTEX_LOCK;
-	hxAssertRelease(s_hxDmaDebugRecords.empty(), "dma await failed %s", (labelStaticString ? labelStaticString : ""));
+	hxAssertRelease(s_hxDmaDebugRecords.empty(), "dma await failed %s", (labelStringLiteral ? labelStringLiteral : ""));
 #endif
 }

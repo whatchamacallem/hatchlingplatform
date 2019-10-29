@@ -7,7 +7,7 @@
 // ----------------------------------------------------------------------------
 // hxLess
 //
-// Function object for performing comparisons. Invokes operator <.  This is C++14's
+// Case object for performing comparisons. Invokes operator <.  This is C++14's
 // std::less<void>.
 
 struct hxLess {

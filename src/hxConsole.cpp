@@ -12,6 +12,7 @@ HX_REGISTER_FILENAME_HASH
 // hxConsoleHashTableNode
 //
 // Compares command lines to static strings.  Hashing stops at first non-printing character.
+//
 
 class hxConsoleHashTableNode : public hxHashTableNodeBase<const char*> {
 public:
@@ -32,25 +33,18 @@ public:
 	// Hashing stops at first non-printing character.
 	HX_INLINE static uint32_t hash(const char*const& key) {
 		const char* k = key;
-		uint32_t x = (uint32_t)Base::c_hashMultiplier;
+		uint32_t x = (uint32_t)0x811c9dc5; // FNV-1a string hashing.
 		while (!hxIsDelimiter(*k)) {
 			x ^= (uint32_t)*k++;
-			x *= (uint32_t)Base::c_hashMultiplier;
+			x *= (uint32_t)0x01000193;
 		}
 		return x;
 	}
 
 	// Compare first whitespace delimited tokens.
 	HX_INLINE static bool keyEqual(const hxConsoleHashTableNode& lhs, const char*const& rhs, uint32_t rhsHash) {
-		if ((HX_RELEASE) < 1 && lhs.m_hash == rhsHash) {
-			const char* a = lhs.key;
-			const char* b = rhs;
-			while (*a == *b && !hxIsDelimiter(*a)) { // hxIsDelimiter('\0') is true
-				++a;
-				++b;
-			}
-			hxAssertMsg(hxIsDelimiter(*a) && hxIsDelimiter(*b), "console symbol hash collision");
-		}
+		hxAssertMsg(lhs.m_hash != rhsHash || ::strncmp(lhs.key, rhs, ::strlen(lhs.key)) == 0,
+			"console symbol hash collision: %s %s", lhs.key, rhs);
 		return lhs.m_hash == rhsHash;
 	}
 
@@ -62,10 +56,7 @@ private:
 typedef hxHashTable<hxConsoleHashTableNode, 6> hxCommandTable;
 
 // Wrapped to ensure correct construction order.
-static hxCommandTable& hxConsoleCommands() {
-	static hxCommandTable tbl;
-	return tbl;
-}
+static hxCommandTable& hxConsoleCommands() { static hxCommandTable tbl; return tbl; }
 
 // ----------------------------------------------------------------------------------
 // Console API
@@ -144,7 +135,7 @@ void hxConsoleExecFilename(const char* filename) {
 // Lists variables and commands in order.
 void hxConsoleHelp() {
 	if ((HX_RELEASE) < 2) {
-		hxMemoryManagerScope allocator(hxMemoryManagerId_Heap);
+		hxMemoryManagerScope heap(hxMemoryManagerId_Heap);
 
 		hxArray<const hxConsoleHashTableNode*> cmds;
 		cmds.reserve(hxConsoleCommands().size());

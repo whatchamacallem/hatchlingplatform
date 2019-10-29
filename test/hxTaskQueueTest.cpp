@@ -1,14 +1,14 @@
 // Copyright 2017-2019 Adrian Johnston
 
 #include <hx/hxTaskQueue.h>
-#include "hxTest.h"
+#include <hx/hxTest.h>
 
 HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------
 
 class hxTaskQueueTest :
-	public testing::test
+	public testing::Test
 {
 public:
 	enum {

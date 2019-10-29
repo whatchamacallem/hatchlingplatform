@@ -15,7 +15,8 @@ extern "C" {
 // ----------------------------------------------------------------------------
 // Memory Manager C API
 //
-// Memory allocators are selected using an id.
+// Memory allocators are selected using an id.  These are the large system-wide
+// allocators, not the per-object hxAllocator which allocates from here.
 //
 // Alignment is specified using a mask of those LSB bits that must be 0.  Which
 // is a value 1 less than the actual power of two alignment.  
@@ -44,12 +45,12 @@ enum hxMemoryManagerId {
 
 void* hxMalloc(size_t size);
 
-void* hxMallocExt(size_t size, enum hxMemoryManagerId memoryAllocatorId, uintptr_t alignmentMask/*=HX_ALIGNMENT_MASK*/);
+void* hxMallocExt(size_t size, enum hxMemoryManagerId id, uintptr_t alignmentMask/*=HX_ALIGNMENT_MASK*/);
 
 void hxFree(void* ptr);
 
 // Allocates a copy of a string using the provided allocator.
-char* hxStringDuplicate(const char* string, enum hxMemoryManagerId allocatorId /*=hxMemoryManagerId_Heap*/);
+char* hxStringDuplicate(const char* string, enum hxMemoryManagerId id /*=hxMemoryManagerId_Heap*/);
 
 uint32_t hxIsScratchpad(void* ptr); // returns bool as int.
 
@@ -147,11 +148,11 @@ struct hxDeleter {
 };
 
 // Add default args to C++ interface: alignmentMask=HX_ALIGNMENT_MASK.
-HX_INLINE void* hxMallocExt(size_t size, hxMemoryManagerId memoryAllocatorId) {
-	return hxMallocExt(size, memoryAllocatorId, HX_ALIGNMENT_MASK);
+HX_INLINE void* hxMallocExt(size_t size, hxMemoryManagerId id) {
+	return hxMallocExt(size, id, HX_ALIGNMENT_MASK);
 }
 
-// Add default args to C++ interface: allocatorId=hxMemoryManagerId_Heap
+// Add default args to C++ interface: id=hxMemoryManagerId_Heap
 HX_INLINE char* hxStringDuplicate(const char* s) {
 	return hxStringDuplicate(s, hxMemoryManagerId_Heap);
 }

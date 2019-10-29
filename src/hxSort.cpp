@@ -15,7 +15,7 @@ void hxRadixSortBase::sort(hxMemoryManagerId tempMemory) {
 		return;
 	}
 
-	hxMemoryManagerScope allocator(tempMemory);
+	hxMemoryManagerScope allocatorScope(tempMemory);
 
 	if (HX_RADIX_SORT_BITS == 8) {
 		// 2 Working buffers

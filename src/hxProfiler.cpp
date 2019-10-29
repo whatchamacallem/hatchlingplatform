@@ -13,13 +13,13 @@ HX_REGISTER_FILENAME_HASH
 // Console commands
 
 static void hxProfile() { g_hxProfiler.start(); }
-hxConsoleCommandNamed(hxProfile, profileStart);
+hxConsoleCommandNamed(hxProfile, profilestart);
 
 static void hxProfileLog() { g_hxProfiler.log(); }
-hxConsoleCommandNamed(hxProfileLog, profileLog);
+hxConsoleCommandNamed(hxProfileLog, profilelog);
 
 static void hxProfileToChrome(const char* filename) { g_hxProfiler.writeToChromeTracing(filename); }
-hxConsoleCommandNamed(hxProfileToChrome, profileToChrome);
+hxConsoleCommandNamed(hxProfileToChrome, profiletrace);
 
 // ----------------------------------------------------------------------------------
 // variables
@@ -29,7 +29,7 @@ HX_THREAD_LOCAL uint8_t s_hxProfilerThreadIdAddress = 0;
 
 hxProfiler g_hxProfiler;
 
-#if HX_HAS_CPP11_TIME
+#if HX_USE_CPP11_TIME
 std::chrono::high_resolution_clock::time_point hxProfiler::s_start;
 
 float g_hxProfilerMillisecondsPerCycle =
@@ -37,7 +37,7 @@ float g_hxProfilerMillisecondsPerCycle =
 #else
 // TODO: Use target settings.
 float g_hxProfilerMillisecondsPerCycle = 1.0e-6f; // Also 1.e+6 cycles/ms, a 1 GHz chip.
-#endif // !HX_HAS_CPP11_TIME
+#endif // !HX_USE_CPP11_TIME
 
 // ----------------------------------------------------------------------------------
 // hxProfiler
@@ -47,20 +47,18 @@ void hxProfiler::start() {
 	m_isStarted = true;
 
 	// Logging may easily be off at this point.
-	hxLogRelease("hxProfilerStart... %u cycles\n", (unsigned int)hxProfiler::sampleCycles());
-#if HX_HAS_CPP11_TIME
+#if HX_USE_CPP11_TIME
 	s_start = std::chrono::high_resolution_clock::now();
 #endif
 }
 
 void hxProfiler::stop() {
-	if (m_isStarted) {
-		hxLogRelease("hxProfilerStop... %u cycles\n", (unsigned int)hxProfiler::sampleCycles());
-	}
 	m_isStarted = false;
 }
 
 void hxProfiler::log() {
+	m_isStarted = false;
+
 	if (m_records.empty()) {
 		hxLogRelease("hxProfiler no samples\n");
 	}
@@ -75,6 +73,8 @@ void hxProfiler::log() {
 }
 
 void hxProfiler::writeToChromeTracing(const char* filename) {
+	m_isStarted = false;
+
 	hxFile f(hxFile::out, "%s", filename);
 
 	if (m_records.empty()) {

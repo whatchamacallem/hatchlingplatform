@@ -32,14 +32,14 @@
     <ClInclude Include="..\include\hx\hxSettings.h" />
     <ClInclude Include="..\include\hx\hxSort.h" />
     <ClInclude Include="..\include\hx\hxStockpile.h" />
-    <ClInclude Include="..\include\hx\hxStringHash.h" />
+    <ClInclude Include="..\include\hx\hxStringLiteralHash.h" />
     <ClInclude Include="..\include\hx\hxTaskQueue.h" />
-    <ClInclude Include="..\include\hx\hxUniquePtr.h" />
+    <ClInclude Include="..\include\hx\hxTest.h" />
     <ClInclude Include="..\include\hx\internal\hxConsoleInternal.h" />
     <ClInclude Include="..\include\hx\internal\hxHashTableInternal.h" />
     <ClInclude Include="..\include\hx\internal\hxProfilerInternal.h" />
-    <ClInclude Include="..\test\hxTest.h" />
-    <ClInclude Include="..\test\hxTestPRNG.h" />
+    <ClInclude Include="..\include\hx\internal\hxTestInternal.h" />
+    <ClInclude Include="..\include\hx\printf.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\hatchling.cpp" />
@@ -51,8 +51,10 @@
     <ClCompile Include="..\src\hxProfiler.cpp" />
     <ClCompile Include="..\src\hxSettings.cpp" />
     <ClCompile Include="..\src\hxSort.cpp" />
-    <ClCompile Include="..\src\hxStringHash.cpp" />
+    <ClCompile Include="..\src\hxStringLiteralHash.cpp" />
     <ClCompile Include="..\src\hxTaskQueue.cpp" />
+    <ClCompile Include="..\src\hxTestMain.cpp" />
+    <ClCompile Include="..\src\printf.c" />
     <ClCompile Include="..\test\hxArrayTest.cpp" />
     <ClCompile Include="..\test\hxConsoleTest.cpp" />
     <ClCompile Include="..\test\hxDmaTest.cpp" />
@@ -63,7 +65,6 @@
     <ClCompile Include="..\test\hxSortTest.cpp" />
     <ClCompile Include="..\test\hxStringHashTest.cpp" />
     <ClCompile Include="..\test\hxTaskQueueTest.cpp" />
-    <ClCompile Include="..\test\hxTestMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\etc\CONTRIBUTORS.txt" />
@@ -74,6 +75,8 @@
     <None Include="..\.editorconfig" />
     <None Include="..\.gitattributes" />
     <None Include="..\.gitignore" />
+    <None Include="..\.travis.yml" />
+    <None Include="..\etc\coverage.sh" />
     <None Include="..\etc\profile.json" />
     <None Include="..\etc\test.sh" />
   </ItemGroup>

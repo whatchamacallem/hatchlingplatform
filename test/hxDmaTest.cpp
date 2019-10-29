@@ -2,14 +2,14 @@
 // Copyright 2017 Leap Motion
 
 #include <hx/hxDma.h>
-#include "hxTest.h"
+#include <hx/hxTest.h>
 
 HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------------
 
 class hxDmaTest :
-	public testing::test
+	public testing::Test
 {
 public:
 	hxDmaTest() {

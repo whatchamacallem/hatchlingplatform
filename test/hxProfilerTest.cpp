@@ -5,8 +5,7 @@
 #include <hx/hxTaskQueue.h>
 #include <hx/hxConsole.h>
 
-#include "hxTest.h"
-#include "hxTestPRNG.h"
+#include <hx/hxTest.h>
 
 HX_REGISTER_FILENAME_HASH
 
@@ -26,7 +25,7 @@ static const char* s_hxTestLabels[] = {
 static const uint32_t s_hxTestNumLabels = sizeof s_hxTestLabels / sizeof *s_hxTestLabels;
 
 class hxProfilerTest :
-	public testing::test
+	public testing::Test
 {
 public:
 	struct hxProfilerTaskTest : public hxTaskQueue::Task {
@@ -56,7 +55,7 @@ public:
 
 			while ((float)delta * g_hxProfilerMillisecondsPerCycle < targetMs) {
 				// Perform work that might not be optimized away by the compiler.
-				int32_t ops = (m_accumulator & 0xff);
+				int32_t ops = (m_accumulator & 0xf) + 1;
 				for (int32_t i = 0; i < ops; ++i) {
 					m_accumulator ^= m_testPrng();
 				}
@@ -68,7 +67,7 @@ public:
 
 		float m_targetMs;
 		int32_t m_accumulator;
-		hxTestPRNG m_testPrng;
+		hxTestRandom m_testPrng;
 	};
 };
 
@@ -93,7 +92,7 @@ TEST_F(hxProfilerTest, Single1ms) {
 TEST_F(hxProfilerTest, writeToChromeTracing) {
 	// Shut down profiling and use console commands for next capture.
 	hxProfilerStop();
-	hxConsoleExecLine("profileStart");
+	hxConsoleExecLine("profilestart");
 
 	hxTaskQueue q;
 	hxProfilerTaskTest tasks[s_hxTestNumLabels];
@@ -105,7 +104,7 @@ TEST_F(hxProfilerTest, writeToChromeTracing) {
 
 	ASSERT_TRUE(90u == g_hxProfiler.recordsSize());
 
-	hxConsoleExecLine("profileToChrome profile.json");
+	hxConsoleExecLine("profiletrace profile.json");
 	hxProfilerLog();
 }
 

@@ -9,7 +9,7 @@
 #error #include <hx/hxProfiler.h>
 #endif
 
-#if HX_HAS_CPP11_TIME
+#if HX_USE_CPP11_TIME
 #include <chrono>
 #else
 #include <time.h>
@@ -52,7 +52,7 @@ public:
 	HX_INLINE uint32_t recordsSize() { return m_records.size(); }
 	HX_INLINE void recordsClear() { m_records.clear(); }
 
-#if HX_HAS_CPP11_TIME
+#if HX_USE_CPP11_TIME
 	static std::chrono::high_resolution_clock::time_point s_start;
 
 	HX_INLINE static uint32_t sampleCycles() {
@@ -65,7 +65,7 @@ public:
 		clock_gettime(CLOCK_MONOTONIC, &ts);
 		return (uint32_t)ts.tv_nsec;
 	}
-#endif // !HX_HAS_CPP11_TIME
+#endif // !HX_USE_CPP11_TIME
 
 private:
 	template<uint32_t MinCycles> friend class hxProfilerScopeInternal;
@@ -80,8 +80,8 @@ template<uint32_t MinCycles=0u>
 class hxProfilerScopeInternal {
 public:
 	// See hxProfileScope() below.
-	HX_INLINE hxProfilerScopeInternal(const char* labelStaticString)
-		: m_label(labelStaticString)
+	HX_INLINE hxProfilerScopeInternal(const char* labelStringLiteral)
+		: m_label(labelStringLiteral)
 	{
 		m_t0 = g_hxProfiler.m_isStarted ? hxProfiler::sampleCycles() : ~(uint32_t)0;
 	}

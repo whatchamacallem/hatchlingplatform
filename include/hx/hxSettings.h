@@ -16,10 +16,10 @@
 #endif
 
 // MSVC doesn't support C++ feature test macros, and sets __cplusplus wrong by default
-#define HX_HAS_C_FILE 1
-#define HX_HAS_CPP11_THREADS 1
-#define HX_HAS_CPP11_TIME 1
-#define HX_HAS_CPP14_CONSTEXPR 0 // silently generating horrible code as of MSVC 15.8.9.
+#define HX_USE_C_FILE 1
+#define HX_USE_CPP11_THREADS 1
+#define HX_USE_CPP11_TIME 1
+#define HX_USE_CPP14_CONSTEXPR 0 // silently generating horrible code as of MSVC 15.8.9.
 
 #define HX_RESTRICT __restrict
 #define HX_INLINE __forceinline
@@ -41,19 +41,18 @@
 #else // !_MSC_VER
 // "Some C++98 embedded compiler" (currently gcc.)
 
-#define HX_TARGET 1
-#define HX_HAS_C_FILE 1
+#define HX_USE_C_FILE 1
 
-#ifndef HX_HAS_CPP11_THREADS
-#define HX_HAS_CPP11_THREADS (__cplusplus >= 201103L)
+#ifndef HX_USE_CPP11_THREADS
+#define HX_USE_CPP11_THREADS (__cplusplus >= 201103L)
 #endif
 
-#ifndef HX_HAS_CPP11_TIME
-#define HX_HAS_CPP11_TIME (__cplusplus >= 201103L)
+#ifndef HX_USE_CPP11_TIME
+#define HX_USE_CPP11_TIME (__cplusplus >= 201103L)
 #endif
 
-#ifndef HX_HAS_CPP14_CONSTEXPR
-#define HX_HAS_CPP14_CONSTEXPR (__cplusplus >= 201402L) // "__cpp_constexpr >= 201304" may not compile as C++
+#ifndef HX_USE_CPP14_CONSTEXPR
+#define HX_USE_CPP14_CONSTEXPR (__cplusplus >= 201402L) // "__cpp_constexpr >= 201304" may not compile as C++
 #endif
 
 #define HX_RESTRICT __restrict
@@ -61,7 +60,7 @@
 #define HX_LINK_SCRATCHPAD // TODO
 #define HX_ATTR_FORMAT(pos, start) __attribute__((format(printf, pos, start)))
 #define HX_ATTR_NORETURN __attribute__((noreturn))
-#define HX_DEBUG_BREAK ((void)0) // TODO
+#define HX_DEBUG_BREAK __builtin_trap()
 
 #if defined(__cplusplus) && __cplusplus < 201103L // C++98
 #define HX_STATIC_ASSERT(x,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [(bool)(x) ? 1 : -1]
@@ -74,7 +73,7 @@
 
 // ----------------------------------------------------------------------------
 
-#if HX_HAS_CPP11_THREADS
+#if HX_USE_CPP11_THREADS
 #define HX_THREAD_LOCAL thread_local
 #else
 // single threaded operation can ignore thread_local
@@ -134,26 +133,40 @@
 #define HX_RADIX_SORT_MIN_SIZE 50u // uses hxInsertionSort() below this.
 
 // ----------------------------------------------------------------------------
-// Default undetected HX_HAS_* features.
+// PRINTF_* See <hx/printf.h>
 
-#ifndef HX_TARGET
-#define HX_TARGET 0
+// support for the floating point type (%f)
+#ifndef PRINTF_DISABLE_SUPPORT_FLOAT
+#define PRINTF_SUPPORT_FLOAT
 #endif
 
-#ifndef HX_HAS_C_FILE
-#define HX_HAS_C_FILE 1
+// support for the long long types (%llu or %p)
+#ifndef PRINTF_DISABLE_SUPPORT_LONG_LONG
+#define PRINTF_SUPPORT_LONG_LONG
+#endif
+
+// support for the ptrdiff_t type (%t)
+// ptrdiff_t is normally defined in <stddef.h> as long or long long type
+#ifndef PRINTF_DISABLE_SUPPORT_PTRDIFF_T
+#define PRINTF_SUPPORT_PTRDIFF_T
+#endif
+
+// ----------------------------------------------------------------------------
+// Default undetected HX_USE_* features.
+
+#ifndef HX_USE_C_FILE
+#define HX_USE_C_FILE 1
 #endif
 
 // size_t is used regardless because it is expected to be 32-bit on the target.
-#ifndef HX_HAS_64_BIT_TYPES
-#define HX_HAS_64_BIT_TYPES 1
+#ifndef HX_USE_64_BIT_TYPES
+#define HX_USE_64_BIT_TYPES 1
 #endif
 
 // ----------------------------------------------------------------------------
 // hxSettings.  Constructed by first call to hxInit() which happens when or
 // before the memory allocator constructs.
-//
-// See also hxConsoleVariable().
+
 struct hxSettings {
 	const char* logFile;
 	uint8_t logLevel; // logFile
@@ -168,4 +181,10 @@ struct hxSettings {
 };
 
 // Constructed by hxInit().
+#if __cplusplus
+extern "C" {
+#endif
 extern struct hxSettings g_hxSettings;
+#if __cplusplus
+}
+#endif

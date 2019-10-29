@@ -32,7 +32,8 @@
 
 #include <hx/hxSettings.h>
 #include <hx/hxMemoryManager.h>
-#include <hx/hxStringHash.h>
+#include <hx/hxStringLiteralHash.h>
+#include <hx/printf.h>
 
 #if __cplusplus
 extern "C" {
@@ -65,6 +66,7 @@ enum hxLogLevel {
 
 // Assert handler.  Do not call directly, signature changes and then is removed.  HX_RELEASE < 3
 void hxAssertHandler(const char* file, uint32_t line);
+
 #else // !(HX_RELEASE < 1)
 #define hxInit() (void)(g_hxIsInit || (hxInitAt(0, 0), 0))
 #define hxLog(...) ((void)0)
@@ -85,11 +87,12 @@ HX_ATTR_NORETURN void hxAssertHandler(uint32_t file, uint32_t line);
 
 // Enters formatted warnings in the system log when x is false.  HX_RELEASE < 2
 #define hxWarnCheck(x, ...) (void)(!!(x) || (hxLogHandler(hxLogLevel_Warning, __VA_ARGS__), 0))
+
 #if (HX_RELEASE) < 1
 // Logs an error and terminates execution if x is false up to release level 3.  HX_RELEASE < 4
 #define hxAssertRelease(x, ...) (void)(!!(x) || (hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), hxAssertHandler(__FILE__, __LINE__), 0))
 #else
-#define hxAssertRelease(x, ...) (void)(!!(x) || (hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), hxAssertHandler(hxHashStringLiteral(__FILE__), __LINE__), 0))
+#define hxAssertRelease(x, ...) (void)(!!(x) || (hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), hxAssertHandler(hxStringLiteralHash(__FILE__), __LINE__), 0))
 #endif
 #else // !(HX_RELEASE < 2)
 #define hxLogRelease(...) ((void)0)
@@ -97,7 +100,7 @@ HX_ATTR_NORETURN void hxAssertHandler(uint32_t file, uint32_t line);
 #define hxWarn(...) ((void)0)
 #define hxWarnCheck(x, ...) ((void)0)
 #if (HX_RELEASE) < 3
-#define hxAssertRelease(x, ...) (void)(!!(x) || (hxAssertHandler(hxHashStringLiteral(__FILE__), __LINE__), 0))
+#define hxAssertRelease(x, ...) (void)(!!(x) || (hxAssertHandler(hxStringLiteralHash(__FILE__), __LINE__), 0))
 #else
 #define hxAssertRelease(x, ...) ((void)0)
 #endif
@@ -149,8 +152,8 @@ void hxFloatDump(const float* address, uint32_t floats);
 // if those are not present.
 const char* hxBasename(const char* path);
 
-// Calculates a string hash at runtime that is the same as hxHashStringLiteral.
-uint32_t hxHashStringLiteralDebug(const char* string);
+// Calculates a string hash at runtime that is the same as hxStringLiteralHash.
+uint32_t hxStringLiteralHashDebug(const char* string);
 
 // ----------------------------------------------------------------------------
 #if __cplusplus
@@ -174,4 +177,3 @@ template<typename T> HX_INLINE T hxClamp(T x, T minimum, T maximum) {
 }
 
 #endif // __cplusplus
-

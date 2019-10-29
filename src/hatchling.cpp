@@ -17,8 +17,8 @@
 #if (HX_RELEASE) < 1
 HX_REGISTER_FILENAME_HASH
 
-hxHashTable<hxHashTableNodeStaticString, 7>& hxStringLiteralHashes() {
-	static hxHashTable<hxHashTableNodeStaticString, 7> s_hxStringLiteralHashes;
+hxHashTable<hxHashTableNodeStringLiteral, 7>& hxStringLiteralHashes() {
+	static hxHashTable<hxHashTableNodeStringLiteral, 7> s_hxStringLiteralHashes;
 	return s_hxStringLiteralHashes;
 }
 hxRegisterFileConstructor::hxRegisterFileConstructor(const char* s) {
@@ -46,7 +46,7 @@ void hxInitAt(const char* file, uint32_t line) {
 
 	hxLogConsole("Hatchling Platform\n");
 	hxLogConsole("Release %d Profile %d Flags %d%d%d Build: " __DATE__ " " __TIME__ "\n",
-		(int)(HX_RELEASE), (int)(HX_PROFILE), (int)(HX_HAS_CPP11_THREADS), (int)(HX_HAS_CPP11_TIME), (int)(HX_HAS_CPP14_CONSTEXPR));
+		(int)(HX_RELEASE), (int)(HX_PROFILE), (int)(HX_USE_CPP11_THREADS), (int)(HX_USE_CPP11_TIME), (int)(HX_USE_CPP14_CONSTEXPR));
 
 	hxMemoryManagerInit();
 	hxDmaInit();
@@ -57,8 +57,8 @@ void hxInitAt(const char* file, uint32_t line) {
 #ifdef __cpp_exceptions
 	hxout << "WARNING: Exceptions are enabled\n"; // Exceptions are not used.
 #endif
-#if !HX_HAS_CPP11_THREADS
-	hxout << "WARNING: Single threaded only\n"; // Audit HX_HAS_CPP11_THREADS if you need custom threading.
+#if !HX_USE_CPP11_THREADS
+	hxout << "WARNING: Single threaded only\n"; // Audit HX_USE_CPP11_THREADS if you need custom threading.
 #endif
 }
 
@@ -82,9 +82,9 @@ void hxShutdown() {
 
 #if (HX_RELEASE) < 1
 	hxLog("filename hash codes:\n");
-	for (hxHashTable<hxHashTableNodeStaticString, 7>::iterator it = hxStringLiteralHashes().begin();
+	for (hxHashTable<hxHashTableNodeStringLiteral, 7>::iterator it = hxStringLiteralHashes().begin();
 			it != hxStringLiteralHashes().end(); ++it) {
-		hxLog("  %08x %s\n", hxHashStringLiteralDebug(it->key), it->key);
+		hxLog("  %08x %s\n", hxStringLiteralHashDebug(it->key), it->key);
 	}
 	hxStringLiteralHashes().clear();
 #endif
@@ -108,7 +108,7 @@ void hxExit(const char* format, ...) {
 	if (format != hxnull) {
 		va_list args;
 		va_start(args, format);
-		sz = ::vsnprintf(buf, HX_MAX_LINE, format, args);
+		sz = ::vsnprintf_(buf, HX_MAX_LINE, format, args);
 		va_end(args);
 	}
 
@@ -130,10 +130,10 @@ void hxAssertHandler(const char* file, uint32_t line) {
 	hxInit();
 	const char* f = hxBasename(file);
 	if (g_hxSettings.assertsToBeSkipped-- > 0) {
-		hxLogHandler(hxLogLevel_Assert, "(skipped) %s(%u) hash %08x", f, (unsigned int)line, (unsigned int)hxHashStringLiteralDebug(file));
+		hxLogHandler(hxLogLevel_Assert, "(skipped) %s(%u) hash %08x", f, (unsigned int)line, (unsigned int)hxStringLiteralHashDebug(file));
 		return;
 	}
-	hxExit("ASSERT_FAIL: %s(%u) hash %08x\n", f, (unsigned int)line, (unsigned int)hxHashStringLiteralDebug(file));
+	hxExit("ASSERT_FAIL: %s(%u) hash %08x\n", f, (unsigned int)line, (unsigned int)hxStringLiteralHashDebug(file));
 }
 #else
 void hxAssertHandler(uint32_t file, uint32_t line) {
@@ -149,7 +149,7 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 	}
 
 	char buf[HX_MAX_LINE+1];
-	int sz = format ? ::vsnprintf(buf, HX_MAX_LINE, format, args) : 0;
+	int sz = format ? ::vsnprintf_(buf, HX_MAX_LINE, format, args) : 0;
 	hxAssertMsg(sz >= 0, "format error: %s", format ? format : "(null)");
 	if (sz <= 0) {
 		return;
@@ -171,7 +171,7 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 
 			f.write(buf, sz);
 		}
-#if HX_HAS_C_FILE
+#if HX_USE_C_FILE
 		else if (level >= hxLogLevel_Console) {
 			::fwrite(buf, sz, 1, stdout);
 		}
@@ -185,9 +185,9 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 
 extern "C"
 void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
-#if HX_HAS_C_FILE
+#if HX_USE_C_FILE
 	::vfprintf(stdout, format, args);
-#else // !HX_HAS_C_FILE
+#else // !HX_USE_C_FILE
 #error "TODO: file I/O"
 #endif
 }

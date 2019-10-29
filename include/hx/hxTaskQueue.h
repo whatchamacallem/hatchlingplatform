@@ -3,7 +3,7 @@
 
 #include <hx/hatchling.h>
 
-#if HX_HAS_CPP11_THREADS
+#if HX_USE_CPP11_THREADS
 #include <mutex>
 #include <condition_variable>
 #include <thread>
@@ -65,7 +65,7 @@ private:
 	Task* m_nextWaitingTask;
 	uint32_t m_runningQueueCheck;
 
-#if HX_HAS_CPP11_THREADS
+#if HX_USE_CPP11_THREADS
 	enum class ExecutorMode { Pool, Waiting, Stopping };
 	static void executorThread(hxTaskQueue* q, ExecutorMode mode);
 
