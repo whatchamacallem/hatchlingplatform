@@ -10,7 +10,7 @@ HX_REGISTER_FILENAME_HASH
 
 hxTaskQueue::hxTaskQueue(int32_t threadPoolSize)
 	: m_nextTask(hxnull)
-	, m_runningQueueCheck(c_runningQueueCheck)
+	, m_runningQueueCheck(RunningQueueCheck_)
 
 {
 	(void)threadPoolSize;
@@ -20,7 +20,7 @@ hxTaskQueue::hxTaskQueue(int32_t threadPoolSize)
 	if (m_threadPoolSize > 0) {
 		m_threads = (std::thread*)hxMalloc(m_threadPoolSize * sizeof(std::thread));
 		for (int32_t i = m_threadPoolSize; i--;) {
-			::new (m_threads + i) std::thread(executorThread, this, ExecutorMode::Pool);
+			::new (m_threads + i) std::thread(executorThread_, this, ExecutorMode_::Pool_);
 		}
 	}
 #endif
@@ -30,7 +30,7 @@ hxTaskQueue::~hxTaskQueue() {
 #if HX_USE_CPP11_THREADS
 	if (m_threadPoolSize > 0) {
 		// Contribute current thread, request waiting until completion and signal stopping.
-		executorThread(this, ExecutorMode::Stopping);
+		executorThread_(this, ExecutorMode_::Stopping_);
 		hxAssertRelease(m_runningQueueCheck == 0u, "Q");
 
 		for (int32_t i = m_threadPoolSize; i--;) {
@@ -55,7 +55,7 @@ void hxTaskQueue::enqueue(hxTask* task) {
 #if HX_USE_CPP11_THREADS
 	if (m_threadPoolSize > 0) {
 		std::unique_lock<std::mutex> lk(m_mutex);
-		hxAssertRelease(m_runningQueueCheck == c_runningQueueCheck, "enqueue to stopped queue");
+		hxAssertRelease(m_runningQueueCheck == RunningQueueCheck_, "enqueue to stopped queue");
 		task->setNextTask(m_nextTask);
 		m_nextTask = task;
 		m_condVarTasks.notify_one();
@@ -72,7 +72,7 @@ void hxTaskQueue::waitForAll() {
 #if HX_USE_CPP11_THREADS
 	if (m_threadPoolSize > 0) {
 		// Contribute current thread and request waiting until completion.
-		executorThread(this, ExecutorMode::Waiting);
+		executorThread_(this, ExecutorMode_::Waiting_);
 	}
 	else
 #endif
@@ -92,7 +92,7 @@ void hxTaskQueue::waitForAll() {
 }
 
 #if HX_USE_CPP11_THREADS
-void hxTaskQueue::executorThread(hxTaskQueue* q, ExecutorMode mode) {
+void hxTaskQueue::executorThread_(hxTaskQueue* q, ExecutorMode_ mode) {
 	hxTask* task = hxnull;
 	for (;;) {
 		{
@@ -108,26 +108,26 @@ void hxTaskQueue::executorThread(hxTaskQueue* q, ExecutorMode mode) {
 			}
 
 			// Either aquire a next task or meet stopping criteria.
-			if (mode == ExecutorMode::Pool) {
+			if (mode == ExecutorMode_::Pool_) {
 				q->m_condVarTasks.wait(lk, [q] {
-					return q->m_nextTask || q->m_runningQueueCheck != c_runningQueueCheck;
+					return q->m_nextTask || q->m_runningQueueCheck != RunningQueueCheck_;
 				});
 			}
 
 			if (q->m_nextTask) {
-				hxAssertRelease(q->m_runningQueueCheck == c_runningQueueCheck, "Q");
+				hxAssertRelease(q->m_runningQueueCheck == RunningQueueCheck_, "Q");
 				task = q->m_nextTask;
 				q->m_nextTask = task->getNextTask();
 				++q->m_executingCount;
 			}
 			else {
-				if (mode != ExecutorMode::Pool) {
+				if (mode != ExecutorMode_::Pool_) {
 					q->m_condVarWaiting.wait(lk, [q] {
 						return q->m_executingCount == 0 && !q->m_nextTask;
 					});
 
-					if (mode == ExecutorMode::Stopping) {
-						hxAssertRelease(q->m_runningQueueCheck == c_runningQueueCheck, "Q");
+					if (mode == ExecutorMode_::Stopping_) {
+						hxAssertRelease(q->m_runningQueueCheck == RunningQueueCheck_, "Q");
 						q->m_runningQueueCheck = 0u;
 						q->m_condVarTasks.notify_all();
 					}

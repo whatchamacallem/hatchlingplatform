@@ -13,7 +13,7 @@ uint32_t hxStringLiteralHashDebug(const char* s) {
 	size_t i = strlen(s);
 	i = (i <= 192u) ? i : 192u; // match limits of hxStringLiteralHash macro
 	while (i--) {
-		x = (uint32_t)0x01000193 * x ^ (uint32_t)s[i]; // FNV prime.
+		x = (uint32_t)0x01000193 * x ^ (uint32_t)s[i]; // FNV-a1 prime.
 	}
 	return x;
 }

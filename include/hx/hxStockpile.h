@@ -17,7 +17,7 @@ template<typename T_, uint32_t Capacity_>
 class hxStockpile : private hxAllocator<T_, Capacity_> {
 public:
 	typedef T_ T;
-	enum { Capacity = Capacity_ };
+	static const uint32_t Capacity = Capacity_;
 
 	HX_STATIC_ASSERT(Capacity > 0u, "fixed size only");
 

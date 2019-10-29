@@ -1,6 +1,6 @@
-[![Generic badge](https://img.shields.io/badge/hatchling-platform-blue.svg)](https://github.com/adrian3git/HatchlingPlatform)
-[![GitHub version](https://badge.fury.io/gh/adrian3git%2FHatchlingPlatform.svg)](http://badge.fury.io/gh/adrian3git%2FHatchlingPlatform)
-[![Build Status](https://travis-ci.org/adrian3git/HatchlingPlatform.svg?branch=master)](https://travis-ci.org/adrian3git/HatchlingPlatform)
+[![Generic badge](https://img.shields.io/badge/hatchling-platform-blue.svg)](https://github.com/whatchamacallem/hatchlingplatform)
+[![GitHub version](https://badge.fury.io/gh/whatchamacallem%2Fhatchlingplatform.svg)](http://badge.fury.io/gh/whatchamacallem%2Fhatchlingplatform)
+[![Build Status](https://travis-ci.org/whatchamacallem/hatchlingplatform.svg?branch=master)](https://travis-ci.org/whatchamacallem/hatchlingplatform)
 
 # Hatchling Platform
 
@@ -8,7 +8,7 @@ Small C++ run-time intended to be developed against on the desktop before cross
 compiling to an embedded target.  This is minimalist programming.  I wrote this for
 myself to have on hand for bare metal projects but welcome feedback and patches.
 
- * `#include` [`<hx/hatchling.h>`](https://github.com/adrian3git/HatchlingPlatform/blob/master/include/hx/hatchling.h)
+ * `#include` [`<hx/hatchling.h>`](https://github.com/whatchamacallem/hatchlingplatform/blob/master/include/hx/hatchling.h)
 
  * A lightweight streamlined reimplementation of Google Test.  This code base is
    exhaustively tested.

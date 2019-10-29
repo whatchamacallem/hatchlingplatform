@@ -13,17 +13,25 @@
 HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------
-// hxFile
-//
-// With HX_USE_STDIO_H target will require an implementation of fopen(), fclose(),
-// fread(), fwrite(), fgets() and feof().
+// This is hxout.
 
 // Wrapped to ensure correct construction order.
-hxFile& hxFileOut() {
+hxFile& hxOut() {
 	static hxFile f(hxFile::out | hxFile::fallible | hxFile::echo, "%s",
 		g_hxSettings.logFile ? g_hxSettings.logFile : "");
 	return f;
 }
+
+void hxCloseOut() {
+	// Allow assert messages to be written to stdout.
+	hxout.open(hxFile::out | hxFile::fallible | hxFile::echo, "%s", "");
+}
+
+// ----------------------------------------------------------------------------
+// hxFile
+//
+// With HX_USE_STDIO_H target will require an implementation of fopen(), fclose(),
+// fread(), fwrite(), fgets() and feof().
 
 hxFile::hxFile(uint16_t mode) {
 	m_filePImpl = hxnull;
@@ -37,7 +45,7 @@ hxFile::hxFile(uint16_t mode, const char* filename, ...) {
 	va_list args;
 	m_openMode = mode;
 	va_start(args, filename);
-	open_(mode, filename, args);
+	openv_(mode, filename, args);
 	va_end(args);
 }
 
@@ -48,7 +56,7 @@ hxFile::~hxFile() {
 bool hxFile::open(uint16_t mode, const char* filename, ...) {
 	va_list args;
 	va_start(args, filename);
-	bool rv = open_(mode, filename, args);
+	bool rv = openv_(mode, filename, args);
 	va_end(args);
 	return rv;
 }
@@ -56,17 +64,17 @@ bool hxFile::open(uint16_t mode, const char* filename, ...) {
 HX_STATIC_ASSERT(HX_USE_STDIO_H, "TODO: File I/O");
 #if HX_USE_STDIO_H
 
-bool hxFile::open_(uint16_t mode, const char* filename, va_list args) {
+bool hxFile::openv_(uint16_t mode, const char* filename, va_list args) {
 	hxInit();
 	hxAssertMsg((mode & ~(uint16_t)((1u << 5) - 1u)) == 0, "reserved file mode bits");
 	close();
 
-	m_openMode = mode; // keeps echo and fallible.
+	m_openMode = mode;
 
 	hxAssertRelease((mode & (hxFile::in | hxFile::out)) && filename, "missing file args");
 
 	char buf[HX_MAX_LINE] = "";
-	hxvsnprintf(buf, HX_MAX_LINE, filename, args); // C99
+	hxvsnprintf(buf, HX_MAX_LINE, filename, args);
 
 	if (buf[0] == '\0') {
 		return false;
@@ -95,7 +103,7 @@ void hxFile::close() {
 		::fclose((FILE*)m_filePImpl);
 		m_filePImpl = hxnull;
 	}
-	m_openMode = m_openMode & (uint16_t)(echo | fallible);
+	m_openMode = (uint16_t)0u;
 	m_good = false;
 	m_eof = false;
 }
@@ -152,7 +160,7 @@ bool hxFile::print(const char* format, ...) {
 	char str[HX_MAX_LINE] = "";
 	va_list args;
 	va_start(args, format);
-	int len = hxvsnprintf(str, HX_MAX_LINE, format, args); // C99
+	int len = hxvsnprintf(str, HX_MAX_LINE, format, args);
 	va_end(args);
 
 	// These are potential data corruption issues, not fallible I/O.

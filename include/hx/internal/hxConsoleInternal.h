@@ -34,7 +34,7 @@ HX_INLINE static bool hxIsEndOfLine(const char* str_) {
 
 // Unsigned min<T>()/max<T>().  Yes, re-implementing std::min<T>()/max<T>() is
 // a bit much.  But it makes this freestanding.
-template<bool Signed_, typename T_> struct hxLimitsSelect {
+template<bool IsSigned_, typename T_> struct hxLimitsSelect {
 	static HX_CONSTEXPR_FN T_ minVal() { return T_(0); }
 	static HX_CONSTEXPR_FN T_ maxVal() { return ~T_(0); }
 };
@@ -47,12 +47,13 @@ template<typename T_> struct hxLimitsSelect<true, T_> {
 private:
 	// Using CHAR_BIT would require <limits.h> and this code assumes <stdint.h>
 	// types are being used anyway.
-	static HX_CONSTEXPR_FN T_ msb1_() { return (T_)(T_(1) << (sizeof(T_) * 8 - 2)); }
+	static HX_CONSTEXPR_FN T_ msb1_() { return T_(1) << (sizeof(T_) * 8 - 2); }
 };
 
 // select an implementation of min<T>()/max<T>() depending on whether T is signed.
 template<typename T_> struct hxLimits : public hxLimitsSelect<(T_)~T_(0) < T_(0), T_> { };
 
+// Wrapper for strtol() style parser.  You may not want to force inlining of this.
 template <typename T_, typename R_>
 HX_INLINE void hxArgParse(T_& val_, const char* str_, char** next_, R_(*parser_)(char const*, char**, int)) {
 	R_ r_ = parser_(str_, next_, 10);
@@ -275,9 +276,9 @@ struct hxVariable : public hxCommand {
 			return true;
 		}
 		char* ptr_ = hxnull;
-		hxArg<T> x(str_, &ptr_);
+		hxArg<T> x_(str_, &ptr_);
 		if (ptr_ != str_ && hxIsEndOfLine(ptr_)) {
-			*m_var = x.value;
+			*m_var = x_.value;
 			return true;
 		}
 		usage("error with variable: ");

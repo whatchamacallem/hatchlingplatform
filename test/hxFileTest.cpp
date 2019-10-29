@@ -60,7 +60,7 @@ TEST_F(hxFileTest, Operators) {
 	x.b = -555;
 	x.c = 77u;
 	x.d = -55;
-	f << x << a;
+	f <= x <= a;
 	ASSERT_TRUE(f.good());
 	ASSERT_FALSE(f.eof());
 	f.close();
@@ -69,7 +69,7 @@ TEST_F(hxFileTest, Operators) {
 	X y;
 	int b;
 	ASSERT_TRUE(f.good());
-	f >> y >> b;
+	f >= y >= b;
 	ASSERT_EQ(y.a, 77777u);
 	ASSERT_EQ(y.b, -555);
 	ASSERT_EQ(y.c, 77u);

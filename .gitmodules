@@ -1,4 +1,4 @@
 [submodule "printf"]
 	path = printf
-	url = https://github.com/mpaland/printf.git
+	url = https://github.com/mpaland/printf
 	branch = master

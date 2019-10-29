@@ -60,16 +60,19 @@ static void hxPrintFileHashes() {
 	hxLog("filenames in hash order:\n");
 
 	typedef hxArray<const char*> Filenames;
-	Filenames filenames; filenames.reserve(hxStringLiteralHashes().size());
-	for (hxHashStringLiteral::iterator it = hxStringLiteralHashes().begin();
-		it != hxStringLiteralHashes().end(); ++it) {
+	Filenames filenames;
+	filenames.reserve(hxStringLiteralHashes().size());
+
+	hxHashStringLiteral::iterator it = hxStringLiteralHashes().begin();
+	hxHashStringLiteral::const_iterator end = hxStringLiteralHashes().cend();
+	for (; it != end; ++it) {
 		filenames.push_back(it->key);
 	}
 
 	hxInsertionSort(filenames.begin(), filenames.end(), hxFilenameLess());
 
-	for (Filenames::iterator it = filenames.begin(); it != filenames.end(); ++it) {
-		hxLog("  %08x %s\n", hxStringLiteralHashDebug(*it), *it);
+	for (Filenames::iterator f = filenames.begin(); f != filenames.end(); ++f) {
+		hxLog("  %08x %s\n", hxStringLiteralHashDebug(*f), *f);
 	}
 
 	hxStringLiteralHashes().clear();
@@ -133,8 +136,7 @@ void hxShutdown() {
 	g_hxSettings.isShuttingDown = true;
 	hxConsoleDeregisterAll(); // Free console allocations.
 	hxMemoryManagerShutDown();
-	hxout.close();
-
+	hxCloseOut(); // Assert messages will still be written to stdout.
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	g_hxSettings.disableMemoryManager = true;
 #endif
@@ -142,17 +144,19 @@ void hxShutdown() {
 
 extern "C"
 void hxExit(const char* format, ...) {
-	char buf[HX_MAX_LINE] = "\n";
-	if (format != hxnull) {
-		va_list args;
-		va_start(args, format);
-		hxvsnprintf(buf, HX_MAX_LINE, format, args);
-		va_end(args);
-	}
+	hxFile& f = hxout; // Calls hxInit().
+	if (f.is_open() || (f.is_echo() && f.is_fallible())) {
+		f << "EXIT ";
 
-	hxFile& f = hxout;
-	if (f.is_open() || f.is_echo()) {
-		f << "EXIT " << buf;
+		char buf[HX_MAX_LINE] = "\n";
+		if (format != hxnull) {
+			va_list args;
+			va_start(args, format);
+			hxvsnprintf(buf, HX_MAX_LINE, format, args);
+			va_end(args);
+		}
+
+		f << buf;
 	}
 
 	if (HX_IS_DEBUGGER_PRESENT()) {
@@ -202,50 +206,51 @@ void hxAssertHandler(uint32_t file, uint32_t line) {
 
 extern "C"
 void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
-	hxInit();
+	hxFile& f = hxout; // Calls hxInit().
+
 	if (level < g_hxSettings.logLevel) {
 		return;
 	}
 
-	char buf[HX_MAX_LINE+1];
-	int sz = format ? hxvsnprintf(buf, HX_MAX_LINE, format, args) : -1;
-	hxAssertMsg(sz >= 0, "format error: %s", format ? format : "(null)");
-	if (sz <= 0) {
-		return;
-	}
-	sz = hxMin(sz, HX_MAX_LINE);
-	if (level == hxLogLevel_Warning || level == hxLogLevel_Assert) {
-		buf[sz++] = '\n';
-	}
-
-	if (level >= g_hxSettings.logLevel) {
-		hxFile& f = hxout;
-		if (f.is_open() || f.is_echo()) {
-			if (level == hxLogLevel_Warning) {
-				f << "WARNING ";
-			}
-			else if (level == hxLogLevel_Assert) {
-				f << "ASSERT_FAIL ";
-			}
-			f.write(buf, sz);
+	if (f.is_open() || (f.is_echo() && f.is_fallible())) {
+		char buf[HX_MAX_LINE+1];
+		int sz = format ? hxvsnprintf(buf, HX_MAX_LINE, format, args) : -1;
+		hxAssertMsg(sz >= 0, "format error: %s", format ? format : "(null)");
+		if (sz <= 0) {
+			return;
 		}
+		sz = hxMin(sz, HX_MAX_LINE);
+		if (level == hxLogLevel_Warning || level == hxLogLevel_Assert) {
+			buf[sz++] = '\n';
+		}
+
+		if (level == hxLogLevel_Warning) {
+			f << "WARNING ";
+		}
+		else if (level == hxLogLevel_Assert) {
+			f << "ASSERT_FAIL ";
+		}
+		f.write(buf, sz);
 	}
 }
 
 #else // HX_RELEASE == 3
-HX_STATIC_ASSERT(HX_USE_STDIO_H, "TODO: Logging I/O");
 extern "C"
 void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
-	hxInit();
+	hxInit(); // no need to guard calls that may message.
 	if (!format || level < g_hxSettings.logLevel) {
 		return;
 	}
 	char buf[HX_MAX_LINE+1];
 	int sz = hxvsnprintf(buf, HX_MAX_LINE, format, args);
-	sz = hxMin(sz, HX_MAX_LINE);
-	if (level == hxLogLevel_Warning || level == hxLogLevel_Assert) {
-		buf[sz++] = '\n';
+	if (sz > 0) {
+		sz = hxMin(sz, HX_MAX_LINE);
+		if (level == hxLogLevel_Warning || level == hxLogLevel_Assert) {
+			buf[sz++] = '\n';
+		}
+
+		HX_STATIC_ASSERT(HX_USE_STDIO_H, "TODO: Logging I/O");
+		::fwrite(buf, 1, sz, stdout);
 	}
-	::fwrite(buf, 1, sz, stdout);
 }
 #endif

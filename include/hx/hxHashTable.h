@@ -68,10 +68,8 @@ public:
 	typedef Node_ Node;
 	typedef typename Node::Key Key;
 	typedef uint32_t size_type;
-	enum {
-		HashBits = HashBits_,
-		HashSize = 1u << HashBits
-	};
+
+	static const uint32_t HashBits = HashBits_;
 
 	// A forward iterator.  Iteration is O(n + (1 << HashBits)).  Iterators are
 	// only invalidated by the removal of the Node referenced.  Does not support
@@ -129,7 +127,7 @@ public:
 
 		// Standard interface.
 		HX_INLINE iterator& operator++() { const_iterator::operator++(); return *this; }
-		HX_INLINE iterator operator++(int) { iterator t_(*this); const_iterator::operator++(); return t_; }
+		HX_INLINE iterator operator++(int) { iterator cit_(*this); const_iterator::operator++(); return cit_; }
 		HX_INLINE Node& operator*() const { return *this->m_currentNode; }
 		HX_INLINE Node* operator->() const { return this->m_currentNode; }
 	};

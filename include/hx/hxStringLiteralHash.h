@@ -17,7 +17,7 @@ constexpr uint32_t hxStringLiteralHash(const char(&s_)[len_]) {
 	uint32_t x_ = 0u;
 	size_t i_ = (len_ <= (size_t)192u) ? len_ : (size_t)192u;
 	while (i_--) {
-		x_ = (uint32_t)0x01000193 * x_ ^ (uint32_t)s_[i_]; // FNV prime.
+		x_ = (uint32_t)0x01000193 * x_ ^ (uint32_t)s_[i_]; // FNV-1a prime.
 	}
 	return x_;
 }
