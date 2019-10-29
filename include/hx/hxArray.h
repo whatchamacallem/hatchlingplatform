@@ -21,17 +21,19 @@ public:
 	typedef const T* const_iterator; // Const random access iterator.
 	typedef hxAllocator<T, Capacity> allocator_type; 
 
-	// Constructs an empty array with a capacity of Capacity.  m_end will be 0 if Capacity is 0.
+	// Constructs an empty array with a capacity of Capacity.  m_end will be 0
+	// if Capacity is 0.
 	HX_INLINE explicit hxArray() { m_end = this->getStorage(); }
 
-	// Copy constructs an array.  Does not allow movement of hxUniquePtrs.  Use assign() for that.
+	// Copy constructs an array.  Does not allow movement of hxUniquePtrs.  Use
+	// assign() for that.
 	HX_INLINE explicit hxArray(const hxArray& rhs) {
 		m_end = this->getStorage();
 		assign(rhs.cbegin(), rhs.cend());
 	}
 
-	// Copy constructs an array from a container with begin() and end() methods and a
-	// random access iterator.
+	// Copy constructs an array from a container with begin() and end() methods and
+	// a random access iterator.
 	template <typename Rhs>
 	HX_INLINE explicit hxArray(const Rhs& rhs) {
 		m_end = this->getStorage();
@@ -73,8 +75,14 @@ public:
 	HX_INLINE const T& back() const { hxAssert(size()); return *(m_end - 1); }
 	HX_INLINE       T& back() { hxAssert(size()); return *(m_end - 1); }
 
-	HX_INLINE const T& operator[](uint32_t index) const { hxAssert(index < size()); return this->getStorage()[index]; }
-	HX_INLINE       T& operator[](uint32_t index) { hxAssert(index < size()); return this->getStorage()[index]; }
+	HX_INLINE const T& operator[](uint32_t index) const {
+		hxAssert(index < size());
+		return this->getStorage()[index];
+	}
+	HX_INLINE       T& operator[](uint32_t index) {
+		hxAssert(index < size());
+		return this->getStorage()[index];
+	}
 
 	HX_INLINE uint32_t size() const {
 		hxAssert(!m_end == !this->getStorage());

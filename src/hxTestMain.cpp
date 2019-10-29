@@ -2,16 +2,30 @@
 // Copyright 2017 Leap Motion
 
 #include <hx/hatchling.h>
-#include <hx/hxConsole.h>
 #include <hx/hxTest.h> // May include Google Test.
+
+// Include everything to catch conflicts.
+#include <hx/hxAllocator.h>
+#include <hx/hxArray.h>
+#include <hx/hxConsole.h>
+#include <hx/hxDma.h>
+#include <hx/hxFile.h>
+#include <hx/hxHashTable.h>
+#include <hx/hxHashTableNodes.h>
+#include <hx/hxProfiler.h>
+#include <hx/hxSort.h>
+#include <hx/hxStockpile.h>
+#include <hx/hxTaskQueue.h>
 
 HX_REGISTER_FILENAME_HASH
 
-#if (HX_RELEASE) < 1 && HX_TEST_DIE_AT_THE_END
+#if (HX_TEST_DIE_AT_THE_END) && (HX_RELEASE) < 1
 TEST(hxDeathTest, Fail) {
-	hxLog("TEST_EXPECTING_ASSERT:\n");
+	hxLog("TEST_EXPECTING_ASSERTS:\n");
 	SUCCEED();
-	FAIL();
+	for (int i = 10; i--;) {
+		FAIL();
+	}
 }
 TEST(hxDeathTest, NothingAsserted) {
 	hxLog("TEST_EXPECTING_ASSERT:\n");
@@ -20,6 +34,12 @@ TEST(hxDeathTest, NothingAsserted) {
 
 int32_t hxTestMain() {
 	hxInit();
+
+	hxLogConsole("hatchling platform " HATCHLING_STR "\n");
+	hxLogConsole("release %d profile %d flags %d%d%d build: " __DATE__ " " __TIME__ "\n",
+		(int)(HX_RELEASE), (int)(HX_PROFILE), (int)(HX_USE_CPP11_THREADS),
+		(int)(HX_USE_CPP11_TIME), (int)(HX_USE_CPP14_CONSTEXPR));
+
 
 	const char bytes[] = "The quick brown fox jumps over the lazy dog....";
 	hxHexDump(bytes, 48, 1);
@@ -44,11 +64,11 @@ int main() {
 
 	int32_t testsFailing = hxTestMain();
 
-#if (HX_RELEASE) < 1 && HX_TEST_DIE_AT_THE_END
-	// Will EXIT_SUCCESS.
+#if (HX_TEST_DIE_AT_THE_END) && (HX_RELEASE) < 1
 	hxAssertMsg(testsFailing == 2, "expected 2 tests to fail");
 	g_hxSettings.deathTest = 1;
-	hxAssertMsg(0, "HX_TEST_DIE_AT_THE_END");
+	hxAssertMsg(0, "HX_TEST_DIE_AT_THE_END"); // Will exit with EXIT_SUCCESS.
 #endif
+
 	return testsFailing == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }

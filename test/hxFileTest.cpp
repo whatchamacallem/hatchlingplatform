@@ -7,7 +7,7 @@ HX_REGISTER_FILENAME_HASH
 
 // ConsoleTest.cpp provides coverage for normal operation.
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 class hxFileTest :
 	public testing::Test
@@ -21,7 +21,7 @@ public:
 	};
 };
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 #if __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-zero-length"

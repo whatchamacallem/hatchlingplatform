@@ -1,24 +1,20 @@
 // Copyright 2017-2019 Adrian Johnston
 // Copyright 2017 Leap Motion
 
-#include <hx/hatchling.h>
-#include <hx/hxMemoryManager.h>
-
-HX_REGISTER_FILENAME_HASH
-
-// ----------------------------------------------------------------------------
-// Memory Manager
-
 // HX_RELEASE < 1 memory markings:
 //
 //   ab - Allocated to client code.
 //   cd - Allocated to hxAllocator.
 //   dd - Belongs to memory manager.
 //   ee - Freed to OS heap.
-//
 
-// Always check malloc and halt on failure.  This is extremely important
-// with hardware where 0 is a valid address and can be written to with
+#include <hx/hatchling.h>
+#include <hx/hxMemoryManager.h>
+
+HX_REGISTER_FILENAME_HASH
+
+// hxMallocChecked.  Always check malloc and halt on failure.  This is extremely
+// important with hardware where 0 is a valid address and can be written to with
 // disastrous results.
 HX_INLINE static void* hxMallocChecked(size_t size) {
 	void* t = ::malloc(size);
@@ -29,6 +25,7 @@ HX_INLINE static void* hxMallocChecked(size_t size) {
 	return t;
 }
 
+// HX_MEM_DIAGNOSTIC_LEVEL.  See hxSettings.h.
 #if (HX_MEM_DIAGNOSTIC_LEVEL) != -1
 
 // Needs to be a pointer to prevent a constructor running at a bad time.
@@ -46,7 +43,8 @@ struct hxScratchpad {
 	uintptr_t m_storage[Bytes / sizeof(uintptr_t)]; // C++98 hack to align to pointer size.
 };
 
-HX_LINK_SCRATCHPAD hxScratchpad<((HX_MEMORY_BUDGET_SCRATCH_PAGE) * 3u + (HX_MEMORY_BUDGET_SCRATCH_TEMP))> g_hxScratchpadObject;
+HX_LINK_SCRATCHPAD hxScratchpad<((HX_MEMORY_BUDGET_SCRATCH_PAGE) * 3u
+	+ (HX_MEMORY_BUDGET_SCRATCH_TEMP))> g_hxScratchpadObject;
 
 // ----------------------------------------------------------------------------
 // hxMemoryAllocationHeader
@@ -129,8 +127,10 @@ public:
 		hdr.guard = hxMemoryAllocationHeader::c_guard;
 #endif
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 3
-		// Record the size of the allocation in debug.  Cast via (uintptr_t) because %p is not portable.
-		hxLog("%s: %d at %x  (count %d, bytes %d)\n", m_label, (int)size, (unsigned int)aligned, (int)m_allocationCount, (int)m_bytesAllocated);
+		// Record the size of the allocation in debug.  Cast via (uintptr_t)
+		// because %p is not portable.
+		hxLog("%s: %d at %x  (count %d, bytes %d)\n", m_label, (int)size, (unsigned int)aligned,
+			(int)m_allocationCount, (int)m_bytesAllocated);
 #endif
 		return (void*)aligned;
 	}
@@ -146,8 +146,10 @@ public:
 		hxAssert(hdr.size != 0); // see hxMemoryAllocatorBase::allocate
 		m_bytesAllocated -= hdr.size;
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 3
-		// Record the size of the allocation in debug.  Cast via (uintptr_t) because Mac and supporting %p.
-		hxLog("%s: -%d at %x  (count %d, bytes %d)\n", m_label, (int)hdr.size, (unsigned int)(uintptr_t)p, (int)m_allocationCount, (int)m_bytesAllocated);
+		// Record the size of the allocation in debug.  Cast via (uintptr_t) because
+		// Mac and supporting %p.
+		hxLog("%s: -%d at %x  (count %d, bytes %d)\n", m_label, (int)hdr.size,
+			(unsigned int)(uintptr_t)p, (int)m_allocationCount, (int)m_bytesAllocated);
 #endif
 		uintptr_t actual = hdr.actual;
 		if ((HX_RELEASE) < 1) {
@@ -205,7 +207,8 @@ public:
 	}
 
 	void onFreeNonVirtual(void* ptr) {
-		hxAssertMsg(m_allocationCount > 0 && (uintptr_t)ptr >= m_begin && (uintptr_t)ptr < m_current, "unexpected free: %s", m_label);
+		hxAssertMsg(m_allocationCount > 0 && (uintptr_t)ptr >= m_begin
+			&& (uintptr_t)ptr < m_current, "unexpected free: %s", m_label);
 		if ((uintptr_t)ptr < m_current) {
 			--m_allocationCount;
 		}
@@ -246,14 +249,17 @@ public:
 	virtual void endAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId oldId) HX_OVERRIDE {
 		getHighWater(hxMemoryManagerId_Current);
 
-		hxAssertMsg(m_allocationCount == scope->getPreviousAllocationCount(), "%s leaked %d allocations", m_label, (int)(m_allocationCount - scope->getPreviousAllocationCount()));
+		hxAssertMsg(m_allocationCount == scope->getPreviousAllocationCount(),
+			"%s leaked %d allocations", m_label, (int)(m_allocationCount - scope->getPreviousAllocationCount()));
 		uintptr_t previousCurrent = m_begin + scope->getPreviousBytesAllocated();
 		if ((HX_RELEASE) < 1) {
 			::memset((void*)previousCurrent, 0xdd, (size_t)(m_current - previousCurrent));
 		}
 		m_allocationCount = scope->getPreviousAllocationCount();
 		m_current = previousCurrent;
-		hxAssertRelease(m_current <= m_end, "error resetting temp stack"); // Probably overwrote the stack trashing *scope.
+
+		// This assert indicates overwriting the stack trashing *scope.
+		hxAssertRelease(m_current <= m_end, "error resetting temp stack");
 	}
 
 	virtual uintptr_t getHighWater(hxMemoryManagerId id) HX_OVERRIDE {
@@ -316,7 +322,8 @@ public:
 		sectionAll.m_current = 0u;
 		sectionAll.m_allocationCount = 0u;
 		sectionAll.m_highWater = (uintptr_t)ptr;
-		sectionAll.m_end = (uintptr_t)ptr + (((HX_MEMORY_BUDGET_SCRATCH_PAGE) * 3u + (HX_MEMORY_BUDGET_SCRATCH_TEMP)));
+		sectionAll.m_end = (uintptr_t)ptr + (((HX_MEMORY_BUDGET_SCRATCH_PAGE) * 3u
+			+ (HX_MEMORY_BUDGET_SCRATCH_TEMP)));
 
 		m_currentSection = (uint32_t)0;
 		hxAssert((current - (uintptr_t)ptr) == (uintptr_t)size);
@@ -384,11 +391,13 @@ public:
 	virtual void* onAlloc(size_t size, uintptr_t alignmentMask) HX_OVERRIDE {
 		hxAssert(m_currentSection < c_nSections);
 		Section& section = m_sections[m_currentSection];
-		hxAssertMsg(section.m_current != 0u, "no open scope for scratchpad allocator %d", (int)m_currentSection);
+		hxAssertMsg(section.m_current != 0u, "no open scope for scratchpad allocator %d",
+			(int)m_currentSection);
 		uintptr_t aligned = (section.m_current + alignmentMask) & ~alignmentMask;
 
 		if ((aligned + size) > section.m_end) {
-			hxWarn("%s overflow allocating %d bytes in section %d with %d bytes available", m_label, (int)size, (int)m_currentSection, (int)(section.m_end - section.m_current));
+			hxWarn("%s overflow allocating %d bytes in section %d with %d bytes available",
+				m_label, (int)size, (int)m_currentSection, (int)(section.m_end - section.m_current));
 			return 0;
 		}
 
@@ -468,14 +477,18 @@ void hxMemoryManager::construct() {
 	::new (&m_memoryAllocatorScratch) hxMemoryAllocatorScratchpad();
 
 	m_memoryAllocatorHeap.construct("heap");
-	m_memoryAllocatorPermanent.construct(hxMallocChecked(HX_MEMORY_BUDGET_PERMANENT), (HX_MEMORY_BUDGET_PERMANENT), "perm");
-	m_memoryAllocatorTemporaryStack.construct(hxMallocChecked(HX_MEMORY_BUDGET_TEMPORARY_STACK), (HX_MEMORY_BUDGET_TEMPORARY_STACK), "temp");
+	m_memoryAllocatorPermanent.construct(hxMallocChecked(HX_MEMORY_BUDGET_PERMANENT),
+		(HX_MEMORY_BUDGET_PERMANENT), "perm");
+	m_memoryAllocatorTemporaryStack.construct(hxMallocChecked(HX_MEMORY_BUDGET_TEMPORARY_STACK),
+		(HX_MEMORY_BUDGET_TEMPORARY_STACK), "temp");
 	m_memoryAllocatorScratch.construct(g_hxScratchpadObject.data(), sizeof g_hxScratchpadObject, "scratchpad");
 }
 
 void hxMemoryManager::destruct() {
-	hxAssertMsg(m_memoryAllocatorPermanent.getAllocationCount(hxMemoryManagerId_Permanent) == 0, "leaked permanent allocation");
-	hxAssertMsg(m_memoryAllocatorTemporaryStack.getAllocationCount(hxMemoryManagerId_TemporaryStack) == 0, "leaked temporary allocation");
+	hxAssertMsg(m_memoryAllocatorPermanent.getAllocationCount(hxMemoryManagerId_Permanent) == 0,
+		"leaked permanent allocation");
+	hxAssertMsg(m_memoryAllocatorTemporaryStack.getAllocationCount(hxMemoryManagerId_TemporaryStack) == 0,
+		"leaked temporary allocation");
 
 	::free(m_memoryAllocatorPermanent.release());
 	::free(m_memoryAllocatorTemporaryStack.release());
@@ -515,7 +528,8 @@ void* hxMemoryManager::allocate(size_t size) {
 	hxAssert(s_hxCurrentMemoryAllocator >= 0 && s_hxCurrentMemoryAllocator < hxMemoryManagerId_MAX);
 	hxAssert(m_memoryAllocators[s_hxCurrentMemoryAllocator]->label());
 	void* ptr = m_memoryAllocators[s_hxCurrentMemoryAllocator]->allocate(size, HX_ALIGNMENT_MASK);
-	hxAssertMsg(((uintptr_t)ptr & HX_ALIGNMENT_MASK) == 0, "alignment wrong %x, %s", (unsigned int)(uintptr_t)ptr, m_memoryAllocators[s_hxCurrentMemoryAllocator]->label());
+	hxAssertMsg(((uintptr_t)ptr & HX_ALIGNMENT_MASK) == 0, "alignment wrong %x, %s",
+		(unsigned int)(uintptr_t)ptr, m_memoryAllocators[s_hxCurrentMemoryAllocator]->label());
 	if (ptr) { return ptr; }
 	hxWarn("%s is overflowing to heap, size %d", m_memoryAllocators[s_hxCurrentMemoryAllocator]->label(), (int)size);
 	return m_memoryAllocatorHeap.allocate(size, HX_ALIGNMENT_MASK);
@@ -530,7 +544,8 @@ void* hxMemoryManager::AllocateExtended(size_t size, hxMemoryManagerId id, uintp
 	hxAssert((unsigned int)id < (unsigned int)hxMemoryManagerId_MAX);
 
 	void* ptr = m_memoryAllocators[id]->allocate(size, alignmentMask);
-	hxAssertMsg(((uintptr_t)ptr & alignmentMask) == 0, "alignment wrong %x from %d", (unsigned int)(uintptr_t)ptr, (int)id);
+	hxAssertMsg(((uintptr_t)ptr & alignmentMask) == 0, "alignment wrong %x from %d",
+		(unsigned int)(uintptr_t)ptr, (int)id);
 	if (ptr) { return ptr; }
 	hxWarn("%s is overflowing to heap, size %d", m_memoryAllocators[id]->label(), (int)size);
 	return m_memoryAllocatorHeap.allocate(size, alignmentMask);
@@ -588,7 +603,9 @@ hxMemoryManagerScope::~hxMemoryManagerScope() {
 		return;
 	}
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 2
-	hxLog(" <= %s, count %d/%d, size %d/%d\n", s_hxMemoryManager->getAllocator(m_thisId).label(), (int)getScopeAllocationCount(), (int)getTotalAllocationCount(), (int)getScopeBytesAllocated(), (int)getTotalBytesAllocated());
+	hxLog(" <= %s, count %d/%d, size %d/%d\n", s_hxMemoryManager->getAllocator(m_thisId).label(),
+		(int)getScopeAllocationCount(), (int)getTotalAllocationCount(), (int)getScopeBytesAllocated(),
+		(int)getTotalBytesAllocated());
 #endif
 #endif
 	s_hxMemoryManager->endAllocationScope(this, m_previousId);
@@ -721,7 +738,8 @@ void hxMemoryManagerShutDown() {
 #endif
 	// Any allocations made while active will crash when free'd.
 	uint32_t allocationCount = hxMemoryManagerAllocationCount();
-	hxAssertRelease(allocationCount == 0, "memory leaks: %d", (int)allocationCount); (void)allocationCount;
+	hxAssertRelease(allocationCount == 0, "memory leaks: %d", (int)allocationCount);
+		(void)allocationCount;
 
 	s_hxMemoryManager->destruct();
 
@@ -736,7 +754,8 @@ void hxMemoryManagerShutDown() {
 uint32_t hxMemoryManagerAllocationCount() {
 	hxInit();
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
+	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager,
+		"disableMemoryManager inconsistent");
 	if (!s_hxMemoryManager) {
 		return 0u;
 	}

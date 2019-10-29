@@ -7,7 +7,8 @@ HX_REGISTER_FILENAME_HASH
 // ----------------------------------------------------------------------------
 // hxRadixSortBase
 
-HX_STATIC_ASSERT(HX_RADIX_SORT_BITS == 8 || HX_RADIX_SORT_BITS == 11, "Unsupported HX_RADIX_SORT_BITS");
+HX_STATIC_ASSERT(HX_RADIX_SORT_BITS == 8 || HX_RADIX_SORT_BITS == 11,
+	"Unsupported HX_RADIX_SORT_BITS");
 
 void hxRadixSortBase::sort(hxMemoryManagerId tempMemory) {
 	if (m_array.size() < HX_RADIX_SORT_MIN_SIZE) {

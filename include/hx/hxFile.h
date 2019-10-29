@@ -56,11 +56,11 @@ public:
 		m_eof = false;
 	}
 
-	// Returns whether operations may fail without asserting.  Non-standard, similar to
-	// checking if exceptions are enabled.
+	// Returns whether operations may fail without asserting.  Non-standard, similar
+	// to checking if exceptions are enabled.
 	HX_INLINE bool is_fallible() const { return (m_openMode & fallible) != 0; }
 
-	// Returns whether all writes will be echoed to stdout.  Non-standard, think xtrace.
+	// Returns whether all writes will be echoed to stdout.  Non-standard.
 	HX_INLINE bool is_echo() const { return (m_openMode & echo) != 0; }
 
 	size_t read(void* bytes, size_t count);

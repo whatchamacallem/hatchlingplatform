@@ -8,16 +8,17 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // hxConsoleHashTableNode
 //
-// Compares command lines to static strings.  Hashing stops at first non-printing character.
-//
+// Compares command lines to static strings.  Hashing stops at first non-printing
+// character.
 
 class hxConsoleHashTableNode : public hxHashTableNodeBase<const char*> {
 public:
 	typedef hxHashTableNodeBase<Key> Base;
-	HX_INLINE hxConsoleHashTableNode(const char* key_, uint32_t hash) : Base(key_), m_cmd(0), m_hash(hash) {
+	HX_INLINE hxConsoleHashTableNode(const char* key_, uint32_t hash)
+			: Base(key_), m_cmd(0), m_hash(hash) {
 		if ((HX_RELEASE) < 1) {
 			const char* k = key;
 			while (!hxIsDelimiter(*k)) {
@@ -55,12 +56,12 @@ private:
 	uint32_t m_hash;
 };
 
-typedef hxHashTable<hxConsoleHashTableNode, 6> hxCommandTable;
+typedef hxHashTable<hxConsoleHashTableNode, 4> hxCommandTable;
 
 // Wrapped to ensure correct construction order.
 static hxCommandTable& hxConsoleCommands() { static hxCommandTable tbl; return tbl; }
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Console API
 
 void hxConsoleRegister(hxCommand* fn, const char* id) {
@@ -117,7 +118,8 @@ bool hxConsoleExecFile(hxFile& file) {
 }
 
 struct hxConsoleLess {
-	HX_INLINE bool operator()(const hxConsoleHashTableNode* lhs, const hxConsoleHashTableNode* rhs) const {
+	HX_INLINE bool operator()(const hxConsoleHashTableNode* lhs,
+			const hxConsoleHashTableNode* rhs) const {
 		return ::strcmp(lhs->key, rhs->key) < 0;
 	}
 };
@@ -131,7 +133,7 @@ void hxConsoleExecFilename(const char* filename) {
 	}
 }
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Built-in console commands
 
 // Lists variables and commands in order.
@@ -141,8 +143,10 @@ void hxConsoleHelp() {
 
 		hxArray<const hxConsoleHashTableNode*> cmds;
 		cmds.reserve(hxConsoleCommands().size());
-		for (hxCommandTable::const_iterator it = hxConsoleCommands().cbegin(); it != hxConsoleCommands().cend(); ++it) {
-			if (::strncmp(it->key, "hxConsoleTest", 13) == 0 || ::strncmp(it->key, "s_hxConsoleTest", 15) == 0) {
+		for (hxCommandTable::const_iterator it = hxConsoleCommands().cbegin();
+				it != hxConsoleCommands().cend(); ++it) {
+			if (::strncmp(it->key, "hxConsoleTest", 13) == 0 ||
+					::strncmp(it->key, "s_hxConsoleTest", 15) == 0) {
 				continue;
 			}
 			cmds.push_back(&*it);
@@ -150,7 +154,8 @@ void hxConsoleHelp() {
 
 		hxInsertionSort(cmds.begin(), cmds.end(), hxConsoleLess());
 
-		for (hxArray<const hxConsoleHashTableNode*>::iterator it = cmds.begin(); it != cmds.end(); ++it) {
+		for (hxArray<const hxConsoleHashTableNode*>::iterator it = cmds.begin();
+				it != cmds.end(); ++it) {
 			(*it)->m_cmd->log((*it)->key);
 		}
 	}

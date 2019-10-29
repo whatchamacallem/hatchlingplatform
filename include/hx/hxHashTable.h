@@ -146,8 +146,8 @@ public:
 	HX_INLINE uint32_t size() const { return m_size; }
 	HX_INLINE bool empty() const { return m_size != 0u; }
 
-	// Returns Node& for key.  Any allocation required use hxMemoryManagerId_Current and
-	// HX_ALIGNMENT_MASK.
+	// Returns Node& for key.  Any allocation required use hxMemoryManagerId_Current
+	// and HX_ALIGNMENT_MASK.
 	HX_INLINE Node& operator[](const Key& key) { return insert_unique(key); }
 
 	// Returns a node containing key if any or allocates and returns a new one.
@@ -179,8 +179,8 @@ public:
 	}
 
 	// Returns a Node matching key if any.  If previous is non-null it must be
-	// a node previously returned from find() with the same key and that has
-	// not been removed.  Then find() will return a subsequent node if any.
+	// a node previously returned from find() with the same key and that has not
+	// been removed.  Then find() will return a subsequent node if any.
 	HX_INLINE Node* find(const Key& key, const Node* previous=hxnull) {
 		if (!previous) {
 			uint32_t hash = Node::hash(key);
@@ -235,9 +235,9 @@ public:
 		return hxnull;
 	}
 
-	// Releases all Nodes matching key and calls deleter() on every node.
-	// Returns the number of nodes released.  Deleter can be functions with signature
-	// "void deleter(Node*)" and functors supporting "operator()(Node*)" and with an
+	// Releases all Nodes matching key and calls deleter() on every node.  Returns
+	// the number of nodes released.  Deleter can be functions with signature "void
+	// deleter(Node*)" and functors supporting "operator()(Node*)" and with an
 	// "operator bool" returning true.
 	template<typename Deleter>
 	HX_INLINE uint32_t erase(const Key& key, const Deleter& deleter) {
@@ -329,7 +329,7 @@ public:
 private:
 	HX_STATIC_ASSERT(HashBits <= 31u, "hxHashTable: hash bits must be [0..31]");
 
-	hxHashTable(const hxHashTable&); // = delete.  Disable copy and assign.
+	hxHashTable(const hxHashTable&); // = delete.  Disables copy and assign.
 	void operator=(const hxHashTable&); // = delete
 
 	// Pointer to head of singly-linked list for key's hash value.

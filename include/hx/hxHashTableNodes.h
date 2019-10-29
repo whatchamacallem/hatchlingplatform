@@ -14,9 +14,12 @@ template<typename Key>
 class hxHashTableNodeInteger : public hxHashTableNodeBase<Key> {
 public:
 	typedef hxHashTableNodeBase<Key> Base;
-	HX_INLINE hxHashTableNodeInteger(const Key& k, uint32_t hash=0u) : Base(k) { (void)hash; }
+	HX_INLINE hxHashTableNodeInteger(const Key& k, uint32_t hash=0u)
+		: Base(k) { (void)hash; }
 	HX_INLINE uint32_t hash() const { return hash(this->key); }
-	HX_INLINE static uint32_t hash(const Key& key) { return (uint32_t)key * (uint32_t)0x61C88647u; }
+	HX_INLINE static uint32_t hash(const Key& key) {
+		return (uint32_t)key * (uint32_t)0x61C88647u;
+	}
 	HX_INLINE static bool keyEqual(const hxHashTableNodeInteger& lhs, const Key& rhs, uint32_t rhsHash) {
 		return lhs.key == rhs; (void)rhsHash;
 	}
@@ -30,8 +33,10 @@ public:
 class hxHashTableNodeStringLiteral : public hxHashTableNodeBase<const char*> {
 public:
 	typedef hxHashTableNodeBase<const char*> Base;
-	HX_INLINE hxHashTableNodeStringLiteral(const char* k) : Base(k), m_hash(hash(k)) { }
-	HX_INLINE hxHashTableNodeStringLiteral(const char* k, uint32_t hash) : Base(k), m_hash(hash) { }
+	HX_INLINE hxHashTableNodeStringLiteral(const char* k)
+		: Base(k), m_hash(hash(k)) { }
+	HX_INLINE hxHashTableNodeStringLiteral(const char* k, uint32_t hash)
+		: Base(k), m_hash(hash) { }
 	HX_INLINE uint32_t hash() const {
 		return m_hash;
 	}
@@ -59,7 +64,9 @@ private:
 template <hxMemoryManagerId id=hxMemoryManagerId_Heap>
 class hxHashTableNodeString : public hxHashTableNodeStringLiteral {
 public:
-	HX_INLINE hxHashTableNodeString(const char* k) : hxHashTableNodeStringLiteral(hxStringDuplicate(k, id)) { }
-	HX_INLINE hxHashTableNodeString(const char* k, uint32_t hash) : hxHashTableNodeStringLiteral(hxStringDuplicate(k, id), hash) { }
+	HX_INLINE hxHashTableNodeString(const char* k)
+		: hxHashTableNodeStringLiteral(hxStringDuplicate(k, id)) { }
+	HX_INLINE hxHashTableNodeString(const char* k, uint32_t hash)
+		: hxHashTableNodeStringLiteral(hxStringDuplicate(k, id), hash) { }
 	HX_INLINE ~hxHashTableNodeString() { hxFree((void*)key); }
 };

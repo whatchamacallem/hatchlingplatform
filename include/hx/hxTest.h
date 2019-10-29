@@ -63,7 +63,8 @@ HX_INLINE void InitGoogleTest() { }
 // Args are only evaluated once.
 #define ASSERT_TRUE(x) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (x), #x "\n")
 #define ASSERT_FALSE(x) hxTestRunner::get().assertCheck(__FILE__, __LINE__, !(x), "!" #x "\n")
-#define ASSERT_NEAR(expected, actual, absolute_range) hxTestRunner::get().assertCheck(__FILE__, __LINE__, hxAbs((expected)-(actual)) <= (absolute_range), "abs(" #expected "-" #actual ")<=" #absolute_range "\n")
+#define ASSERT_NEAR(expected, actual, absolute_range) hxTestRunner::get().assertCheck( \
+	__FILE__, __LINE__, hxAbs((expected)-(actual)) <= (absolute_range), "abs(" #expected "-" #actual ")<=" #absolute_range "\n")
 #define ASSERT_LT(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) < (rhs), #lhs "<" #rhs "\n")
 #define ASSERT_GT(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) > (rhs), #lhs ">" #rhs "\n")
 #define ASSERT_LE(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) <= (rhs), #lhs "<=" #rhs "\n")

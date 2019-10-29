@@ -9,7 +9,7 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Console commands
 
 static void hxProfileStartCommand() {
@@ -27,7 +27,7 @@ static void hxProfilerWriteToChromeTracingCommand(const char* filename) {
 }
 hxConsoleCommandNamed(hxProfilerWriteToChromeTracingCommand, profiletrace);
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // variables
 
 // Use the address of a thread local variable as a unique thread id.
@@ -39,13 +39,14 @@ hxProfiler g_hxProfiler;
 std::chrono::high_resolution_clock::time_point hxProfiler::s_start;
 
 float g_hxProfilerMillisecondsPerCycle =
-	((float)std::chrono::high_resolution_clock::period::num * 1.0e+3f) / (float)std::chrono::high_resolution_clock::period::den;
+	((float)std::chrono::high_resolution_clock::period::num * 1.0e+3f)
+		/ (float)std::chrono::high_resolution_clock::period::den;
 #else
 // TODO: Use target settings.
 float g_hxProfilerMillisecondsPerCycle = 1.0e-6f; // Also 1.e+6 cycles/ms, a 1 GHz chip.
 #endif // !HX_USE_CPP11_TIME
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // hxProfiler
 
 void hxProfiler::start() {
@@ -70,7 +71,8 @@ void hxProfiler::log() {
 
 		uint32_t delta = rec.m_end - rec.m_begin;
 		hxLogRelease("profile %s: %fms cycles %u thread %x\n", hxBasename(rec.m_label),
-			delta * (double)g_hxProfilerMillisecondsPerCycle, (unsigned int)delta, (unsigned int)rec.m_threadId);
+			delta * (double)g_hxProfilerMillisecondsPerCycle, (unsigned int)delta,
+			(unsigned int)rec.m_threadId);
 	}
 }
 

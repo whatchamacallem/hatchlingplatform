@@ -73,6 +73,7 @@
   <ItemGroup>
     <None Include="..\.editorconfig" />
     <None Include="..\.gitattributes" />
+    <None Include="..\.gitignore" />
     <None Include="..\.travis.yml" />
     <None Include="..\etc\coverage.md" />
     <None Include="..\etc\coverage.sh" />

@@ -14,7 +14,8 @@ hxTaskQueue::hxTaskQueue(int32_t threadPoolSize)
 
 {
 #if HX_USE_CPP11_THREADS
-	m_threadPoolSize = (threadPoolSize >= 0) ? threadPoolSize : ((int32_t)std::thread::hardware_concurrency() - 1);
+	m_threadPoolSize = (threadPoolSize >= 0) ? threadPoolSize
+		: ((int32_t)std::thread::hardware_concurrency() - 1);
 	if (m_threadPoolSize > 0) {
 		m_threads = (std::thread*)hxMalloc(m_threadPoolSize * sizeof(std::thread));
 		for (int32_t i = m_threadPoolSize; i--;) {

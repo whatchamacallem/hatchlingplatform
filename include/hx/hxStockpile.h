@@ -21,8 +21,14 @@ public:
 	HX_INLINE explicit hxStockpile() { m_size = 0u; }
 	HX_INLINE ~hxStockpile() { destruct(); }
 
-	HX_INLINE const T& operator[](uint32_t index) const { hxAssert(index < hxMin((uint32_t)m_size, Capacity)); return this->getStorage()[index]; }
-	HX_INLINE       T& operator[](uint32_t index)       { hxAssert(index < hxMin((uint32_t)m_size, Capacity)); return this->getStorage()[index]; }
+	HX_INLINE const T& operator[](uint32_t index) const {
+		hxAssert(index < hxMin((uint32_t)m_size, Capacity));
+		return this->getStorage()[index];
+	}
+	HX_INLINE       T& operator[](uint32_t index)       {
+		hxAssert(index < hxMin((uint32_t)m_size, Capacity));
+		return this->getStorage()[index];
+	}
 
 	HX_INLINE uint32_t size() const { return hxMin((uint32_t)m_size, Capacity); }
 	HX_INLINE uint32_t capacity() const { return Capacity; }

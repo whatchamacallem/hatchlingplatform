@@ -2,22 +2,23 @@
 // Copyright 2017-2019 Adrian Johnston
 // Copyright 2017 Leap Motion
 
-#ifndef HATCHLING_H
+#if !HATCHLING_VER
 #error #include <hx/hatchling.h>
 #endif
 
 // ----------------------------------------------------------------------------
 // Compiler detection and some C++11 polyfill.
 
-#ifdef _MSC_VER
+#if _MSC_VER
 
 #if !defined(__cpp_exceptions) && !defined(_HAS_EXCEPTIONS)
 #define _HAS_EXCEPTIONS 0 // must be included before standard headers
 #endif
 
-// MSVC doesn't support C++ feature test macros, and sets __cplusplus wrong by default
+// MSVC doesn't support C++ feature test macros, and sets __cplusplus wrong by
+// default
 #define HX_USE_C_FILE 1
-#define HX_USE_CPP11_THREADS 1
+#define HX_USE_CPP11_THREADS __STDCPP_THREADS__ 
 #define HX_USE_CPP11_TIME 1
 #define HX_USE_CPP14_CONSTEXPR 0 // silently generating horrible code as of MSVC 15.8.9.
 
@@ -26,12 +27,14 @@
 #define HX_LINK_SCRATCHPAD
 #define HX_ATTR_FORMAT(pos, start)
 #define HX_DEBUG_BREAK __debugbreak()
+
+#if __cplusplus >= 201103L
 #define HX_STATIC_ASSERT(x,...) static_assert((bool)(x), __VA_ARGS__)
 #define HX_OVERRIDE override
-
-#if __cplusplus
 #define HX_ATTR_NORETURN [[noreturn]]
 #else // !__cplusplus
+#define HX_STATIC_ASSERT(x,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [!!(x) ? 1 : -1]
+#define HX_OVERRIDE
 #define HX_ATTR_NORETURN
 #endif
 
@@ -52,7 +55,8 @@
 #endif
 
 #ifndef HX_USE_CPP14_CONSTEXPR
-#define HX_USE_CPP14_CONSTEXPR (__cplusplus >= 201402L) // "__cpp_constexpr >= 201304" may not compile as C++
+// "__cpp_constexpr >= 201304" may not compile as C++
+#define HX_USE_CPP14_CONSTEXPR (__cplusplus >= 201402L)
 #endif
 
 #define HX_RESTRICT __restrict
@@ -62,18 +66,24 @@
 #define HX_ATTR_NORETURN __attribute__((noreturn))
 #define HX_DEBUG_BREAK __builtin_trap()
 
-#if defined(__cplusplus) && __cplusplus < 201103L // C++98
-#define HX_STATIC_ASSERT(x,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [(bool)(x) ? 1 : -1]
-#define HX_OVERRIDE
-#else // !C++98
+#if __cplusplus >= 201103L
 #define HX_STATIC_ASSERT(x,...) static_assert(x, __VA_ARGS__)
 #define HX_OVERRIDE override
+#else // !C++98
+#define HX_STATIC_ASSERT(x,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [!!(x) ? 1 : -1]
+#define HX_OVERRIDE
 #endif
 #endif // target settings
 
+#if HX_USE_CPP14_CONSTEXPR
+#define HX_CONSTEXPR constexpr
+#else
+#define HX_CONSTEXPR
+#endif
+
 // ----------------------------------------------------------------------------
 // Maximum length for formatted messages printed with this platform.
-#define HX_MAX_LINE 280
+#define HX_MAX_LINE 180
 
 // ----------------------------------------------------------------------------
 // HX_MEM_DIAGNOSTIC_LEVEL.  Memory management debug mode.
@@ -163,6 +173,10 @@
 // size_t is used regardless because it is expected to be 32-bit on the target.
 #ifndef HX_USE_64_BIT_TYPES
 #define HX_USE_64_BIT_TYPES 1
+#endif
+
+#ifndef HX_USE_DMA
+#define HX_USE_DMA 0
 #endif
 
 // ----------------------------------------------------------------------------

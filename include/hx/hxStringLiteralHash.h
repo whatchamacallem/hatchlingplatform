@@ -1,7 +1,7 @@
 #pragma once
 // Copyright 2017-2019 Adrian Johnston
 
-#ifndef HATCHLING_H
+#if !HATCHLING_VER
 #error #include <hx/hatchling.h>
 #endif
 

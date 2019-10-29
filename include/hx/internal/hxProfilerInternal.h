@@ -2,7 +2,7 @@
 // Copyright 2017-2019 Adrian Johnston
 // Copyright 2017 Leap Motion
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // hxProfiler internals.  See hxProfiler.h instead
 
 #if !(HX_PROFILE)
@@ -15,7 +15,7 @@
 #include <time.h>
 #endif
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // variables
 
 // Use direct access to an object with static linkage for speed.
@@ -26,7 +26,7 @@ extern HX_THREAD_LOCAL uint8_t s_hxProfilerThreadIdAddress;
 
 extern float g_hxProfilerMillisecondsPerCycle; // Scales cycles to ms.
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // hxProfiler
 
 class hxProfiler {
@@ -73,7 +73,7 @@ private:
 	hxStockpile<Record, HX_PROFILER_MAX_RECORDS> m_records;
 };
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // hxProfilerScopeInternal
 
 template<uint32_t MinCycles=0u>
@@ -92,7 +92,8 @@ public:
 			if ((t1 - m_t0) >= MinCycles) {
 				void* rec = g_hxProfiler.m_records.emplace_back_atomic();
 				if (rec) {
-					::new (rec) hxProfiler::Record(m_t0, t1, m_label, (uint32_t)(uintptr_t)&s_hxProfilerThreadIdAddress);
+					::new (rec) hxProfiler::Record(m_t0, t1, m_label,
+						(uint32_t)(uintptr_t)&s_hxProfilerThreadIdAddress);
 				}
 			}
 		}

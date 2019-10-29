@@ -23,12 +23,11 @@
 
 // Modifications Copyright 2019 Adrian Johnston
 
-#pragma once
+#if !HATCHLING_VER
+#error #include <hx/hatchling.h>
+#endif
 
-#include <stdarg.h>
-#include <stddef.h>
-
-#ifdef __cplusplus
+#if __cplusplus
 extern "C" {
 #endif
 
@@ -42,6 +41,6 @@ int  snprintf_(char* buffer, size_t count, const char* format, ...);
 
 int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
 
-#ifdef __cplusplus
+#if __cplusplus
 }
 #endif

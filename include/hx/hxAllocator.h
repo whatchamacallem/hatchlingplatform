@@ -25,10 +25,12 @@ public:
 	}
 
 	// Used to ensure initial capacity as reserveStorage() will not reallocate.
-	HX_INLINE void reserveStorage(uint32_t size) { hxAssertRelease(size <= Capacity, "allocator overflowing fixed capacity."); }
+	HX_INLINE void reserveStorage(uint32_t size) {
+		hxAssertRelease(size <= Capacity, "allocator overflowing fixed capacity.");
+	}
 
 	// Returns the number of elements of T allocated.
-	HX_INLINE uint32_t getCapacity() const { return Capacity; }
+	HX_INLINE HX_CONSTEXPR uint32_t getCapacity() const { return Capacity; }
 
 	// Returns const array of T.
 	HX_INLINE const T* getStorage() const { return reinterpret_cast<const T*>(m_allocator + 0); }

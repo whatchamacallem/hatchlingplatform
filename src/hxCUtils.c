@@ -3,7 +3,7 @@
 
 #include <hx/hatchling.h>
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // C utils
 
 int g_hxIsInit; // Do not initialize to 0.  MSVC actually handles that differently.
@@ -21,7 +21,7 @@ void hxHexDump(const void* address, uint32_t bytes, int pretty) {
 			}
 			uint8_t* str = addr;
 			for (int32_t maximum = 4; i < bytes && maximum--; i += 4) {
-				hxLogConsole("%02x %02x %02x %02x  ", addr[0], addr[1], addr[2], addr[3]);
+				hxLogConsole("%02x%02x%02x%02x ", addr[0], addr[1], addr[2], addr[3]);
 				addr += 4;
 			}
 			if (pretty) {

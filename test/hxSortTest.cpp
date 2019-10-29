@@ -6,7 +6,7 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 class hxRadixSortTest :
 	public testing::Test
@@ -129,5 +129,5 @@ static int hxSortCompareTest(const int a, const int b) {
 TEST(hxInsertionSortTest, SortCompareCCase) {
 	int ints[2] = { 1, 0 };
 	hxInsertionSort<int, int (*)(int a, int b)>(ints, ints + 2, hxSortCompareTest);
-	ASSERT_LT(ints[0], ints[1]) << "Google Test style messages like these are sent to the log on failure.\n";
+	ASSERT_LT(ints[0], ints[1]) << "messages like these are logged on failure.\n";
 }

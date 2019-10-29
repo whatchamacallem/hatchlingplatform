@@ -2,7 +2,7 @@
 // Copyright 2017-2019 Adrian Johnston
 // Copyright 2017 Leap Motion
 
-#ifndef HATCHLING_H
+#if !HATCHLING_VER
 #error #include <hx/hatchling.h>
 #endif
 

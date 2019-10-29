@@ -8,7 +8,7 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 static class hxArrayTest* s_hxTestCurrent = hxnull;
 
@@ -155,7 +155,8 @@ TEST_F(hxArrayTest, Iteration) {
 		}
 
 		counter = 0;
-		for (hxArray<TestObject, 10u>::const_iterator it = cobjs.begin(); it != cobjs.end(); ++it) {
+		for (hxArray<TestObject, 10u>::const_iterator it = cobjs.begin();
+				it != cobjs.end(); ++it) {
 			ASSERT_EQ(it->id, objs[counter].id);
 			ASSERT_EQ(it->id, nums[counter]);
 			++counter;

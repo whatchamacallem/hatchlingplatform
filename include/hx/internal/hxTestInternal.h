@@ -31,18 +31,19 @@ public:
 	hxTestRunner() {
 		mNumFactories = 0;
 		mCurrentTest = hxnull;
-		mFilterSuiteName = hxnull;
+		mSearchTermStringLiteral = hxnull;
 		::memset(mFactories + 0, 0x00, sizeof mFactories);
 	}
 
-	void setFilterStringLiteral(const char* className) { mFilterSuiteName = className; }
+	void setSearchTerm(const char* searchTermStringLiteral) { searchTermStringLiteral = mSearchTermStringLiteral; }
 
 	void addTest(FactoryBase* fn) {
 		hxAssertRelease(mNumFactories < MAX_TESTS, "MAX_TESTS overflow\n");
 		mFactories[mNumFactories++] = fn;
 	}
 
-	// format is required to end with an \n.  Returns /dev/null on success and the system log otherwise.
+	// format is required to end with an \n.  Returns /dev/null on success and
+	// the system log otherwise.
 	hxFile& assertCheck(const char* file, int32_t line, bool condition, const char* format, ...) {
 		mTestState = (condition && mTestState != TEST_FAIL) ? TEST_PASS : TEST_FAIL;
 		if (!condition) {
@@ -67,12 +68,10 @@ public:
 	}
 
 	int32_t executeAllTests() {
-		hxWarnCheck((HX_RELEASE) <= 0, "running tests with HX_RELEASE > 0");
-
 		mPassCount = mFailCount = 0;
-		hxLogConsole("RUNNING_TESTS (%s)\n", (mFilterSuiteName ? mFilterSuiteName : "ALL"));
+		hxLogConsole("RUNNING_TESTS (%s)\n", (mSearchTermStringLiteral ? mSearchTermStringLiteral : "ALL"));
 		for (FactoryBase** it = mFactories; it != (mFactories + mNumFactories); ++it) {
-			if (!mFilterSuiteName || ::strcmp(mFilterSuiteName, (*it)->Suite()) == 0) {
+			if (!mSearchTermStringLiteral || ::strstr(mSearchTermStringLiteral, (*it)->Suite()) != hxnull) {
 				hxLogConsole("%s.%s...\n", (*it)->Suite(), (*it)->Case());
 
 				mTestState = TEST_NOTHING_ASSERTED;
@@ -80,13 +79,15 @@ public:
 				mCurrentTest = *it;
 
 				{
-					// Tests should have no side effects.  Therefore all allocations must be safe to reset.
+					// Tests should have no side effects.  Therefore all allocations must be
+					// safe to reset.
 					hxMemoryManagerScope temporaryStack(hxMemoryManagerId_TemporaryStack);
 					(*it)->Run();
 				}
 
 				if (mTestState == TEST_NOTHING_ASSERTED) {
-					assertCheck(hxBasename((*it)->File()), (*it)->Line(), false, "NOTHING ASSERTED");
+					assertCheck(hxBasename((*it)->File()), (*it)->Line(), false,
+						"NOTHING ASSERTED\n");
 					++mFailCount;
 				}
 				else if (mTestState == TEST_PASS) {
@@ -96,17 +97,18 @@ public:
 					++mFailCount;
 				}
 			}
-			else {
-				hxLogConsole("skipping %s.%s..\n", (*it)->Suite(), (*it)->Case());
-			}
 		}
+
+		hxLogConsole("skipped %d tests\n", (int)(mNumFactories - mPassCount - mFailCount));
+
 		hxProfilerStop();
 		if (mPassCount > 0 && mFailCount == 0) {
 			hxLogHandler(hxLogLevel_Console, "[  PASSED  ] %d tests.\n", (int)mPassCount);
 			return 0u; // success
 		}
 		else {
-			hxLogHandler(hxLogLevel_Console, " %d FAILED TEST%s\n", (int)mFailCount, ((mFailCount > 1) ? "S" : ""));
+			hxLogHandler(hxLogLevel_Console, " %d FAILED TEST%s\n", (int)mFailCount,
+				((mFailCount > 1) ? "S" : ""));
 			return hxMax(1, mFailCount);
 		}
 	}
@@ -126,6 +128,6 @@ private:
 	TestState mTestState;
 	int32_t mPassCount;
 	int32_t mFailCount;
-	const char* mFilterSuiteName;
+	const char* mSearchTermStringLiteral;
 	int32_t mAssertFailCount;
 };

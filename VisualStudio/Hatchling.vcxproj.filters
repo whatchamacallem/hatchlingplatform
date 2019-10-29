@@ -153,7 +153,10 @@
     <None Include="..\etc\coverage.md">
       <Filter>etc</Filter>
     </None>
-    <None Include=".gitignore" />
+    <None Include=".gitignore">
+      <Filter>visualstudio</Filter>
+    </None>
+    <None Include="..\.gitignore" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\etc\CONTRIBUTORS.txt">
@@ -178,6 +181,9 @@
     </Filter>
     <Filter Include="src">
       <UniqueIdentifier>{1d99ce56-607d-4056-9425-35f06bc7492c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="visualstudio">
+      <UniqueIdentifier>{8ef34652-adbc-4070-89c7-6e496d9fd230}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -8,12 +8,12 @@
 #if HX_PROFILE
 #include <hx/internal/hxProfilerInternal.h>
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // hxProfiler API
 //
-// hxProfileScope declares an RAII-style profiling sample.  WARNING: A pointer to
-// labelStringLiteral is kept.  c_hxProfilerDefaultSamplingCutoff is provided below as
-// a recommended MinCycles cutoff.
+// hxProfileScope declares an RAII-style profiling sample.  WARNING: A pointer
+// to labelStringLiteral is kept.  c_hxProfilerDefaultSamplingCutoff is provided
+// below as a recommended MinCycles cutoff.
 
 // hxProfileScope(const char* labelStringLiteral)
 #define hxProfileScope(labelStringLiteral) \
@@ -33,8 +33,8 @@
 #define hxProfilerLog() g_hxProfiler.log()
 
 // Writes profiling data in a format usable by Chrome's chrome://tracing view.
-// Usage: In Chrome go to "chrome://tracing/". Load the generated json file.  Use the W/A/S/D keys.
-// Format: https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview
+// Usage: In Chrome go to "chrome://tracing/". Load the generated json file.  Use
+// the W/A/S/D keys.  Format: https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview
 #define hxProfilerWriteToChromeTracing(filename) g_hxProfiler.writeToChromeTracing(filename)
 
 // c_hxProfilerDefaultSamplingCutoff is 1 microsecond.
@@ -45,7 +45,7 @@ static constexpr uint32_t c_hxProfilerDefaultSamplingCutoff =
 enum { c_hxProfilerDefaultSamplingCutoff = 1000 };
 #endif
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 #else // !HX_PROFILE
 #define hxProfileScope(...) ((void)0)
 #define hxProfileScopeMin(...) ((void)0)

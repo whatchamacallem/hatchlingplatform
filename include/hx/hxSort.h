@@ -36,9 +36,7 @@ HX_INLINE void hxInsertionSort(T* first, T* last, const Compare& compare) {
 					*j = *k;
 					j = k;
 				}
-				else {
-					break;
-				}
+				else { break; }
 			}
 			*j = t;
 		}
@@ -151,5 +149,7 @@ public:
 	HX_INLINE bool empty() const { return m_array.empty(); }
 
 	// Adds a key and value pointer.
-	HX_INLINE void insert(Key key, Value* val) { ::new(m_array.emplace_back_unconstructed()) KeyValuePair(key, (void*)val); }
+	HX_INLINE void insert(Key key, Value* val) {
+		::new(m_array.emplace_back_unconstructed()) KeyValuePair(key, (void*)val);
+	}
 };

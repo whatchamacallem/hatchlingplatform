@@ -6,7 +6,7 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // hxConsoleTest::CommandFactory
 
 namespace {
@@ -53,7 +53,8 @@ namespace {
 		ASSERT_EQ(t, expected);
 	}
 
-#define hxConsoleTestTypeCheck(T, t) hxConsoleTestTypeCheckT(t, HX_CONCATENATE(hxConsoleTestTypeID_, T), HX_CONCATENATE(c_hxConsoleTestExpected, T))
+#define hxConsoleTestTypeCheck(T, t) hxConsoleTestTypeCheckT(t, HX_CONCATENATE(hxConsoleTestTypeID_, T), \
+	HX_CONCATENATE(c_hxConsoleTestExpected, T))
 
 	void* hxConsoleTestFn0() {
 		c_hxConsoleTestCallFlags |= 1 << (int32_t)hxConsoleTestTypeID_Void;
@@ -133,7 +134,7 @@ TEST(hxConsoleTest, CommandFactory) {
 	g_hxSettings.isShuttingDown = false;
 }
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // hxConsoleTest::RegisterCommand
 
 namespace {
@@ -205,7 +206,7 @@ TEST(hxConsoleTest, RegisterCommand) {
 	ASSERT_FALSE(b6);
 }
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // hxConsoleTest::RegisterVariable
 
 namespace {
@@ -284,7 +285,7 @@ TEST(hxConsoleTest, RegisterVariable) {
 #endif
 }
 
-// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // hxConsoleTest::hxConsoleTestFileTest
 
 namespace {

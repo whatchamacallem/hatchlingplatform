@@ -19,7 +19,8 @@ public:
 	class Task {
 	public:
 		// staticLabel must be a static string.
-		explicit Task(const char* staticLabel = hxnull) : m_queue(hxnull), m_nextWaitingTask(hxnull), m_label(staticLabel) { }
+		explicit Task(const char* staticLabel = hxnull)
+			: m_queue(hxnull), m_nextWaitingTask(hxnull), m_label(staticLabel) { }
 
 		// Not called by queue. execute() may delete this _if allocator is thread safe_.
 		virtual ~Task() { hxAssertRelease(!m_queue, "deleting queued task: %s", getLabel()); }
