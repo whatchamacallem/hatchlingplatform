@@ -37,15 +37,15 @@ public:
 
 	class TestInteger : public hxHashTableNodeInteger<int32_t> {
 	public:
-		TestInteger(const int32_t& key) : hxHashTableNodeInteger(key) { }
-		TestInteger(const int32_t& key, uint32_t hash) : hxHashTableNodeInteger(key, hash) { }
+		TestInteger(const int32_t& k) : hxHashTableNodeInteger(k) { }
+		TestInteger(const int32_t& k, uint32_t hash) : hxHashTableNodeInteger(k, hash) { }
 		TestObject value;
 	};
 
 	class TestString : public hxHashTableNodeString<> {
 	public:
-		TestString(const char*const& key) : hxHashTableNodeString(key) { }
-		TestString(const char*const& key, uint32_t hash) : hxHashTableNodeString(key, hash) { }
+		TestString(const char*const& k) : hxHashTableNodeString(k) { }
+		TestString(const char*const& k, uint32_t hash) : hxHashTableNodeString(k, hash) { }
 		TestObject value;
 	};
 
@@ -85,7 +85,6 @@ TEST_F(hxHashTableTest, Null) {
 		ASSERT_FALSE(((const Table&)table).begin() != ((const Table&)table).cend());
 
 		table.clear();
-		table.release_all();
 		ASSERT_EQ(table.load_factor(), 0.0f);
 
 	}
@@ -118,6 +117,13 @@ TEST_F(hxHashTableTest, Single) {
 
 		// MODIFIES TABLE
 		ASSERT_TRUE(table.extract(k) == node);
+		ASSERT_TRUE(table.extract(k) == hxnull);
+
+		table.insert_node(node);
+		ASSERT_TRUE(table.find(k) == node);
+		table.release_all();
+		ASSERT_TRUE(table.find(k) == hxnull);
+		ASSERT_EQ(table.size(), 0u);
 
 		// Operations after single node was removed
 		ASSERT_EQ(table.size(), 0u);

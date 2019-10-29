@@ -13,7 +13,7 @@
 #if HX_USE_CPP14_CONSTEXPR
 // C++14 compile time hashing for string constants, used by hxAssertRelease().
 template<size_t len>
-HX_INLINE constexpr uint32_t hxStringLiteralHash(const char(&s)[len]) {
+constexpr uint32_t hxStringLiteralHash(const char(&s)[len]) {
 	uint32_t x = 0u;
 	size_t i = (len <= (size_t)192u) ? len : (size_t)192u;
 	while (i--) {

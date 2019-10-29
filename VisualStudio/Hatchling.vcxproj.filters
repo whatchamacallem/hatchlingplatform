@@ -61,13 +61,19 @@
     <ClCompile Include="..\test\hxArrayTest.cpp">
       <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\hxTestMain.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\printf.c">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\hxCUtils.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\hxTestMain.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\printf\printf.c">
+      <Filter>printf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\printf\test\test_suite.cpp">
+      <Filter>printf\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\hxprintf.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -132,8 +138,14 @@
     <ClInclude Include="..\include\hx\hxTest.h">
       <Filter>include/hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\printf.h">
+    <ClInclude Include="..\include\hx\hxprintf.h">
       <Filter>include/hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\printf\printf.h">
+      <Filter>printf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\printf\test\catch.hpp">
+      <Filter>printf\test</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -157,6 +169,36 @@
       <Filter>visualstudio</Filter>
     </None>
     <None Include="..\.gitignore" />
+    <None Include="hxFileTest_Operators.bin">
+      <Filter>visualstudio</Filter>
+    </None>
+    <None Include="profile.json">
+      <Filter>visualstudio</Filter>
+    </None>
+    <None Include="..\printf\.git">
+      <Filter>printf</Filter>
+    </None>
+    <None Include="..\printf\.gitattributes">
+      <Filter>printf</Filter>
+    </None>
+    <None Include="..\printf\.travis.yml">
+      <Filter>printf</Filter>
+    </None>
+    <None Include="..\printf\codecov.yml">
+      <Filter>printf</Filter>
+    </None>
+    <None Include="..\printf\LICENSE">
+      <Filter>printf</Filter>
+    </None>
+    <None Include="..\printf\Makefile">
+      <Filter>printf</Filter>
+    </None>
+    <None Include="..\printf\README.md">
+      <Filter>printf</Filter>
+    </None>
+    <None Include="..\etc\gittest.sh">
+      <Filter>etc</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\etc\CONTRIBUTORS.txt">
@@ -164,6 +206,15 @@
     </Text>
     <Text Include="..\etc\LICENSE.txt">
       <Filter>etc</Filter>
+    </Text>
+    <Text Include="hxConsoleTest_FileTest.txt">
+      <Filter>visualstudio</Filter>
+    </Text>
+    <Text Include="hxFileTest_ReadWrite.txt">
+      <Filter>visualstudio</Filter>
+    </Text>
+    <Text Include="log.txt">
+      <Filter>visualstudio</Filter>
     </Text>
   </ItemGroup>
   <ItemGroup>
@@ -184,6 +235,12 @@
     </Filter>
     <Filter Include="visualstudio">
       <UniqueIdentifier>{8ef34652-adbc-4070-89c7-6e496d9fd230}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="printf">
+      <UniqueIdentifier>{e32b420d-5c79-4509-a6fe-4e59c1e5035d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="printf\test">
+      <UniqueIdentifier>{f7f70262-c64d-4c22-aec6-200d4b09a1c0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -1,8 +1,7 @@
 #pragma once
 // Copyright 2017-2019 Adrian Johnston
 // Copyright 2017 Leap Motion
-
-// ----------------------------------------------------------------------------
+//
 // hxProfiler internals.  See hxProfiler.h instead
 
 #if !(HX_PROFILE)
@@ -15,16 +14,14 @@
 #include <time.h>
 #endif
 
-// ----------------------------------------------------------------------------
-// variables
-
 // Use direct access to an object with static linkage for speed.
 extern class hxProfiler g_hxProfiler;
 
-// address of s_hxProfilerThreadIdAddress used to uniquely identify thread.
+// Address of s_hxProfilerThreadIdAddress used to uniquely identify thread.
 extern HX_THREAD_LOCAL uint8_t s_hxProfilerThreadIdAddress;
 
-extern float g_hxProfilerMillisecondsPerCycle; // Scales cycles to ms.
+// Scales cycles to ms.  Clock rates may vary.
+extern float g_hxProfilerMillisecondsPerCycle;
 
 // ----------------------------------------------------------------------------
 // hxProfiler

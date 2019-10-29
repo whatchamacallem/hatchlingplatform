@@ -2,8 +2,8 @@
 // Copyright 2017 Leap Motion
 
 #include <hx/hxProfiler.h>
-#include <hx/hxFile.h>
 #include <hx/hxConsole.h>
+#include <hx/hxFile.h>
 
 #if HX_PROFILE
 

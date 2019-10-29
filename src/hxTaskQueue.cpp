@@ -30,7 +30,7 @@ hxTaskQueue::~hxTaskQueue() {
 	if (m_threadPoolSize > 0) {
 		// Contribute current thread, request waiting until completion and signal stopping.
 		executorThread(this, ExecutorMode::Stopping);
-		hxAssert(m_runningQueueCheck == 0u);
+		hxAssertRelease(m_runningQueueCheck == 0u, "Q");
 
 		for (int32_t i = m_threadPoolSize; i--;) {
 			m_threads[i].join();
@@ -48,7 +48,7 @@ hxTaskQueue::~hxTaskQueue() {
 }
 
 void hxTaskQueue::enqueue(Task* task) {
-	hxAssert(!task->m_queue && !task->m_nextWaitingTask);
+	hxAssert(task && !task->m_queue && !task->m_nextWaitingTask);
 	task->m_queue = this;
 
 #if HX_USE_CPP11_THREADS
@@ -82,7 +82,8 @@ void hxTaskQueue::waitForAll() {
 			task->m_queue = hxnull;
 			task->m_nextWaitingTask = hxnull;
 
-			// Last time this object is touched.  It may delete or re-enqueue itself.
+			// Last time this object is touched.  It may delete or re-enqueue itself, we
+			// don't care.
 			hxProfileScope(task->getLabel());
 			task->execute(this);
 		}
@@ -113,7 +114,7 @@ void hxTaskQueue::executorThread(hxTaskQueue* q, ExecutorMode mode) {
 			}
 
 			if (q->m_nextWaitingTask) {
-				hxAssert(q->m_runningQueueCheck == c_runningQueueCheck);
+				hxAssertRelease(q->m_runningQueueCheck == c_runningQueueCheck, "Q");
 				task = q->m_nextWaitingTask;
 				q->m_nextWaitingTask = task->m_nextWaitingTask;
 				++q->m_executingCount;
@@ -125,7 +126,7 @@ void hxTaskQueue::executorThread(hxTaskQueue* q, ExecutorMode mode) {
 					});
 
 					if (mode == ExecutorMode::Stopping) {
-						hxAssert(q->m_runningQueueCheck == c_runningQueueCheck);
+						hxAssertRelease(q->m_runningQueueCheck == c_runningQueueCheck, "Q");
 						q->m_runningQueueCheck = 0u;
 						q->m_condVarTasks.notify_all();
 					}

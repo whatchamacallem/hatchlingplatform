@@ -11,8 +11,8 @@ HX_REGISTER_FILENAME_HASH
 // ----------------------------------------------------------------------------
 // hxFile
 //
-// Target will require an implementation of fopen(), fclose(), fread(), fwrite(),
-// fgets() and feof().
+// With HX_USE_C_FILE target will require an implementation of fopen(), fclose(),
+// fread(), fwrite(), fgets() and feof().
 
 // Wrapped to ensure correct construction order.
 hxFile& hxFileOut() {
@@ -49,6 +49,7 @@ bool hxFile::open(uint16_t mode, const char* filename, ...) {
 	return rv;
 }
 
+HX_STATIC_ASSERT(HX_USE_C_FILE, "TODO: File I/O");
 #if HX_USE_C_FILE
 
 bool hxFile::openV(uint16_t mode, const char* filename, va_list args) {
@@ -56,12 +57,12 @@ bool hxFile::openV(uint16_t mode, const char* filename, va_list args) {
 	hxAssertMsg((mode & ~(uint16_t)((1u << 5) - 1u)) == 0, "reserved file mode bits");
 	close();
 
-	m_openMode |= mode; // keeps echo and fallible.
+	m_openMode = mode; // keeps echo and fallible.
 
 	hxAssertRelease((mode & (hxFile::in | hxFile::out)) && filename, "missing file args");
 
 	char buf[HX_MAX_LINE] = "";
-	::vsnprintf_(buf, HX_MAX_LINE, filename, args); // C99
+	hxvsnprintf(buf, HX_MAX_LINE, filename, args); // C99
 
 	if (buf[0] == '\0') {
 		return false;
@@ -85,12 +86,12 @@ bool hxFile::openV(uint16_t mode, const char* filename, va_list args) {
 	return m_good;
 }
 
-void hxFile::close(uint16_t keepModes) {
+void hxFile::close() {
 	if (m_filePImpl) {
 		::fclose((FILE*)m_filePImpl);
 		m_filePImpl = hxnull;
 	}
-	m_openMode = m_openMode & keepModes & (uint16_t)(echo | fallible);
+	m_openMode = m_openMode & (uint16_t)(echo | fallible);
 	m_good = false;
 	m_eof = false;
 }
@@ -110,11 +111,9 @@ size_t hxFile::read(void* bytes, size_t byteCount) {
 }
 
 size_t hxFile::write(const void* bytes, size_t byteCount) {
-#if HX_USE_C_FILE
 	if (m_openMode & echo) {
 		::fwrite(bytes, 1, byteCount, stdout);
 	}
-#endif
 
 	hxAssertMsg(bytes, "null i/o buffer");
 	hxAssertMsg((m_openMode & (hxFile::out | hxFile::echo)) && (m_filePImpl || (m_openMode & hxFile::fallible)),
@@ -141,9 +140,6 @@ bool hxFile::getline(char* buffer, size_t bufferSize) {
 	}
 	return true;
 }
-
-#else // !HX_USE_C_FILE
-#error "TODO: file I/O"
 #endif
 
 bool hxFile::print(const char* format, ...) {
@@ -152,7 +148,7 @@ bool hxFile::print(const char* format, ...) {
 	char str[HX_MAX_LINE] = "";
 	va_list args;
 	va_start(args, format);
-	int len = ::vsnprintf_(str, HX_MAX_LINE, format, args); // C99
+	int len = hxvsnprintf(str, HX_MAX_LINE, format, args); // C99
 	va_end(args);
 
 	// These are potential data corruption issues, not fallible I/O.

@@ -15,11 +15,10 @@ namespace {
 		hxConsoleTestTypeID_Char,
 		hxConsoleTestTypeID_Short,
 		hxConsoleTestTypeID_Int,
-		hxConsoleTestTypeID_Long,
+		hxConsoleTestTypeID_Bool,
 		hxConsoleTestTypeID_UChar,
 		hxConsoleTestTypeID_UShort,
 		hxConsoleTestTypeID_UInt,
-		hxConsoleTestTypeID_ULong,
 		hxConsoleTestTypeID_Float,
 #if HX_USE_64_BIT_TYPES
 		hxConsoleTestTypeID_LongLong,
@@ -34,11 +33,10 @@ namespace {
 	const int8_t c_hxConsoleTestExpectedChar = 123;
 	const int16_t c_hxConsoleTestExpectedShort = -234;
 	const int32_t c_hxConsoleTestExpectedInt = -345;
-	const int32_t c_hxConsoleTestExpectedLong = 456l;
+	const bool c_hxConsoleTestExpectedBool = true;
 	const uint8_t c_hxConsoleTestExpectedUChar = 12;
 	const uint16_t c_hxConsoleTestExpectedUShort = 2345;
 	const uint32_t c_hxConsoleTestExpectedUInt = 3456;
-	const uint32_t c_hxConsoleTestExpectedULong = 4567ul;
 	const float c_hxConsoleTestExpectedFloat = 6.78f;
 
 #if HX_USE_64_BIT_TYPES
@@ -72,8 +70,8 @@ namespace {
 		return 2;
 	}
 
-	int32_t hxConsoleTestFn3(const int32_t a0, const uint8_t a1) {
-		hxConsoleTestTypeCheck(Long, a0);
+	int32_t hxConsoleTestFn3(const bool a0, const uint8_t a1) {
+		hxConsoleTestTypeCheck(Bool, a0);
 		hxConsoleTestTypeCheck(UChar, a1);
 		return 3;
 	}
@@ -81,7 +79,7 @@ namespace {
 	int32_t hxConsoleTestFn4(uint16_t a0, const uint32_t a1, uint32_t a2, float a3) {
 		hxConsoleTestTypeCheck(UShort, a0);
 		hxConsoleTestTypeCheck(UInt, a1);
-		hxConsoleTestTypeCheck(ULong, a2);
+		hxConsoleTestTypeCheck(UInt, a2);
 		hxConsoleTestTypeCheck(Float, a3);
 		return 4;
 	}
@@ -100,23 +98,29 @@ TEST(hxConsoleTest, CommandFactory) {
 	c_hxConsoleTestCallFlags = 0;
 
 	hxCommand* f0 = hxCommandFactory(hxConsoleTestFn0);
-	f0->execute("");
+	ASSERT_TRUE(f0->execute(""));
+	ASSERT_FALSE(f0->execute("unexpected text"));
 
 	hxCommand* f1 = hxCommandFactory(hxConsoleTestFn1);
-	f1->execute("123");
+	ASSERT_TRUE(f1->execute("123"));
+	ASSERT_FALSE(f1->execute("256"));
 
 	hxCommand* f2 = hxCommandFactory(hxConsoleTestFn2);
-	f2->execute("-234 -345");
+	ASSERT_TRUE(f2->execute("-234 -345"));
+	ASSERT_FALSE(f2->execute("32768 -345"));
 
 	hxCommand* f3 = hxCommandFactory(hxConsoleTestFn3);
-	f3->execute("456 12");
+	ASSERT_TRUE(f3->execute("1 12"));
+	ASSERT_FALSE(f3->execute("2 12"));
 
 	hxCommand* f4 = hxCommandFactory(hxConsoleTestFn4);
-	f4->execute("2345 3456 4567 6.78");
+	ASSERT_TRUE(f4->execute("2345 3456 3456 6.78"));
+	ASSERT_FALSE(f4->execute("$*"));
 
 #if HX_USE_64_BIT_TYPES
 	hxCommand* ff = hxCommandFactory(hxConsoleTestFn8);
-	ff->execute("56789 67890 7.89");
+	ASSERT_TRUE(ff->execute("56789 67890 7.89"));
+	ASSERT_FALSE(ff->execute("56d789 67890 7.89"));
 	hxFree(ff);
 #endif
 
@@ -226,6 +230,7 @@ namespace {
 	int64_t s_hxConsoleTestLongLong = 0;
 	uint64_t s_hxConsoleTestULongLong = 0;
 	double s_hxConsoleTestDouble = 0;
+	double s_hxConsoleTestDoubleLarge = (double)(1ull << 63) * (double)(1ull << 63);
 #endif
 } // namespace {
 
@@ -245,26 +250,31 @@ hxConsoleVariable(s_hxConsoleTestBool1);
 hxConsoleVariable(s_hxConsoleTestLongLong);
 hxConsoleVariable(s_hxConsoleTestULongLong);
 hxConsoleVariable(s_hxConsoleTestDouble);
+hxConsoleVariable(s_hxConsoleTestDoubleLarge);
 #endif
 
 TEST(hxConsoleTest, RegisterVariable) {
-	hxConsoleExecLine("s_hxConsoleTestChar 123");
-	hxConsoleExecLine("s_hxConsoleTestShort 234");
-	hxConsoleExecLine("s_hxConsoleTestInt 345");
-	hxConsoleExecLine("s_hxConsoleTestLong 456");
-	hxConsoleExecLine("s_hxConsoleTestUChar 12");
-	hxConsoleExecLine("s_hxConsoleTestUShort 2345");
-	hxConsoleExecLine("s_hxConsoleTestUInt 3456");
-	hxConsoleExecLine("s_hxConsoleTestULong 4567");
-	hxConsoleExecLine("s_hxConsoleTestFloat 6.78");
-	hxConsoleExecLine("s_hxConsoleTestBool0 0");
-	hxConsoleExecLine("s_hxConsoleTestBool1 1");
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestChar 123"));
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestShort 234"));
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestInt 345"));
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestLong 456"));
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestUChar 12"));
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestUShort 2345"));
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestUInt 3456"));
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestULong 4567"));
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestFloat 6.78"));
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestBool0 0"));
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestBool1 1"));
 
 #if HX_USE_64_BIT_TYPES
-	hxConsoleExecLine("s_hxConsoleTestLongLong 567");
-	hxConsoleExecLine("s_hxConsoleTestULongLong 5678");
-	hxConsoleExecLine("s_hxConsoleTestDouble 7.89");
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestLongLong 567"));
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestULongLong 5678"));
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestDouble 7.89"));
 #endif
+
+	hxLogConsole("TEST_EXPECTING_WARNINGS:\n");
+	ASSERT_FALSE(hxConsoleExecLine("s_hxConsoleTestInt 3.5"));
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestInt"));
 
 	ASSERT_EQ(s_hxConsoleTestChar, 123);
 	ASSERT_EQ(s_hxConsoleTestShort, 234);
@@ -300,15 +310,34 @@ namespace {
 hxConsoleVariableNamed(s_hxConsoleTestFileVar1, hxConsoleTestFileVar);
 hxConsoleCommandNamed(hxConsoleTestFileFn, hxConsoleTestFileFnName);
 
+#if __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-zero-length"
+#endif
+
+TEST(hxConsoleTest, NullTest) {
+	uint8_t prev = g_hxSettings.logLevel;
+	g_hxSettings.logLevel = hxLogLevel_Warning;
+	hxLogHandler(hxLogLevel_Console, "hidden\n");
+	g_hxSettings.logLevel = prev;
+
+	hxLog("");
+	SUCCEED();
+}
+
+#if __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
 TEST(hxConsoleTest, FileTest) {
 	{
 		hxFile f(hxFile::out, "hxConsoleTest_FileTest.txt");
 		f << "hxConsoleTestFileVar 3\n"
-			 "  # comment!\n"
-			 "\n"
-			 "hxConsoleTestFileVar 78\n"
-			 "hxConsoleTestFileFnName 89\n"
-			 "\n";
+			"  # comment!\n"
+			"\n"
+			"hxConsoleTestFileVar 78\n"
+			"hxConsoleTestFileFnName 89\n"
+			"\n";
 	}
 	bool isok = hxConsoleExecLine("exec hxConsoleTest_FileTest.txt");
 	ASSERT_TRUE(isok);
@@ -322,9 +351,15 @@ TEST(hxConsoleTest, FilePeekPoke) {
 	int target[16] = { 137, 396 };
 	{
 		hxFile f(hxFile::out, "hxConsoleTest_FileTest.txt");
+#if HX_USE_64_BIT_TYPES
 		f.print("peek %lld 4\n", (unsigned long long int)(target + 0));
 		f.print("hex %lld 4\n", (unsigned long long int)(target + 0));
 		f.print("poke %lld 4 175\n", (unsigned long long int)(target + 0));
+#else
+		f.print("peek %ld 4\n", (unsigned long int)(target + 0));
+		f.print("hex %ld 4\n", (unsigned long int)(target + 0));
+		f.print("poke %ld 4 175\n", (unsigned long int)(target + 0));
+#endif
 	}
 	bool isok = hxConsoleExecLine("exec hxConsoleTest_FileTest.txt");
 	ASSERT_TRUE(isok);

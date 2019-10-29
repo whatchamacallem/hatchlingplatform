@@ -1,10 +1,9 @@
 // Copyright 2017-2019 Adrian Johnston
 
 #include <hx/hxConsole.h>
-#include <hx/hxArray.h>
+#include <hx/hxFile.h>
 #include <hx/hxHashTable.h>
 #include <hx/hxSort.h>
-#include <hx/hxFile.h>
 
 HX_REGISTER_FILENAME_HASH
 
@@ -46,9 +45,9 @@ public:
 
 	// Compare first whitespace delimited tokens.
 	HX_INLINE static bool keyEqual(const hxConsoleHashTableNode& lhs, const char*const& rhs, uint32_t rhsHash) {
-		hxAssertMsg(lhs.m_hash != rhsHash || ::strncmp(lhs.key, rhs, ::strlen(lhs.key)) == 0,
+		hxAssertMsg(lhs.hash() != rhsHash || ::strncmp(lhs.key, rhs, ::strlen(lhs.key)) == 0,
 			"console symbol hash collision: %s %s", lhs.key, rhs);
-		return lhs.m_hash == rhsHash;
+		return lhs.hash() == rhsHash;
 	}
 
 	hxCommand* m_cmd;
@@ -156,7 +155,7 @@ void hxConsoleHelp() {
 
 		for (hxArray<const hxConsoleHashTableNode*>::iterator it = cmds.begin();
 				it != cmds.end(); ++it) {
-			(*it)->m_cmd->log((*it)->key);
+			(*it)->m_cmd->usage((*it)->key);
 		}
 	}
 }

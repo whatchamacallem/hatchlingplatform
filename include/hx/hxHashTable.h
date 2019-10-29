@@ -75,9 +75,9 @@ public:
 	class const_iterator
 	{
 	public:
-		// Used to implement begin().
-		HX_INLINE const_iterator(const hxHashTable* tbl)
-			: m_hashTable((hxHashTable*)tbl), m_nextIndex(0u), m_currentNode(hxnull) { nextBucket(); }
+		// Used to implement begin().  (table will not be modfied.)
+		HX_INLINE const_iterator(const hxHashTable* table)
+			: m_hashTable(const_cast<hxHashTable*>(table)), m_nextIndex(0u), m_currentNode(hxnull) { nextBucket(); }
 
 		// Used to implement end().
 		HX_INLINE const_iterator() : m_hashTable(hxnull), m_nextIndex(0u), m_currentNode(hxnull) { } // end

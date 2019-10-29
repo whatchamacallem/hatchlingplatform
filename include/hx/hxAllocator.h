@@ -30,7 +30,7 @@ public:
 	}
 
 	// Returns the number of elements of T allocated.
-	HX_INLINE HX_CONSTEXPR uint32_t getCapacity() const { return Capacity; }
+	HX_CONSTEXPR uint32_t getCapacity() const { return Capacity; }
 
 	// Returns const array of T.
 	HX_INLINE const T* getStorage() const { return reinterpret_cast<const T*>(m_allocator + 0); }

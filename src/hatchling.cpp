@@ -2,20 +2,22 @@
 // Copyright 2017 Leap Motion
 
 #include <hx/hatchling.h>
-#include <hx/hxMemoryManager.h>
-#include <hx/hxDma.h>
-#include <hx/hxProfiler.h>
-#include <hx/hxFile.h>
 #include <hx/hxConsole.h>
+#include <hx/hxDma.h>
+#include <hx/hxFile.h>
 #include <hx/hxHashTableNodes.h>
+#include <hx/hxProfiler.h>
+#include <hx/hxprintf.h>
 
+#if HX_USE_C_FILE
 #include <stdio.h>
+#endif
 
 // ----------------------------------------------------------------------------
-// HX_IS_DEBUGGER_PRESENT()
+// Implements HX_IS_DEBUGGER_PRESENT().  
 
 #if (HX_RELEASE) < 3
-#ifdef _MSC_VER
+#if _MSC_VER && !(HX_TEST_DIE_AT_THE_END)
 #include <Windows.h>
 
 #define HX_IS_DEBUGGER_PRESENT IsDebuggerPresent
@@ -29,10 +31,10 @@ static bool HX_IS_DEBUGGER_PRESENT() {
 #else
 #define HX_IS_DEBUGGER_PRESENT() false
 #endif
-#endif
+#endif // (HX_RELEASE) < 3
 
 // ----------------------------------------------------------------------------
-// HX_REGISTER_FILENAME_HASH
+// Implements HX_REGISTER_FILENAME_HASH.  See hxStringLiteralHash.h.
 
 #if (HX_RELEASE) < 1
 HX_REGISTER_FILENAME_HASH
@@ -67,7 +69,7 @@ void hxInitAt(const char* file, uint32_t line) {
 	hxDmaInit();
 
 #if __cpp_exceptions
-	hxout << "WARNING: disable exceptions\n"; // Exceptions add unnecessary overhead.
+	hxout << "WARNING disable exceptions\n"; // Exceptions add unnecessary overhead.
 #endif
 }
 
@@ -101,7 +103,7 @@ void hxShutdown() {
 	g_hxSettings.isShuttingDown = true;
 	hxConsoleDeregisterAll(); // Free console allocations.
 	hxMemoryManagerShutDown();
-	hxout.close(); // will continue to echo to stdout.
+	hxout.close();
 
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	g_hxSettings.disableMemoryManager = true;
@@ -110,20 +112,20 @@ void hxShutdown() {
 
 extern "C"
 void hxExit(const char* format, ...) {
-	char buf[HX_MAX_LINE] = "exit format\n";
+	char buf[HX_MAX_LINE] = "\n";
 	if (format != hxnull) {
 		va_list args;
 		va_start(args, format);
-		::vsnprintf_(buf, HX_MAX_LINE, format, args);
+		hxvsnprintf(buf, HX_MAX_LINE, format, args);
 		va_end(args);
 	}
 
 	hxFile& f = hxout;
 	if (f.is_open() || f.is_echo()) {
-		f << "EXIT: " << buf;
+		f << "EXIT " << buf;
 	}
 
-	if (!(HX_TEST_DIE_AT_THE_END) && HX_IS_DEBUGGER_PRESENT()) {
+	if (HX_IS_DEBUGGER_PRESENT()) {
 		// Stop here before the call stack gets lost inside _Exit.  This is not for
 		// normal termination on an embedded target.
 		HX_DEBUG_BREAK;
@@ -152,7 +154,7 @@ int hxAssertHandler(const char* file, uint32_t line) {
 	hxLogHandler(hxLogLevel_Assert, "%s(%u) hash %08x\n", f, (unsigned int)line,
 		(unsigned int)hxStringLiteralHashDebug(file));
 
-	if ((HX_TEST_DIE_AT_THE_END) || !HX_IS_DEBUGGER_PRESENT()) {
+	if (!HX_IS_DEBUGGER_PRESENT()) {
 		hxExit("no debugger\n");
 	}
 
@@ -161,7 +163,7 @@ int hxAssertHandler(const char* file, uint32_t line) {
 }
 #else
 void hxAssertHandler(uint32_t file, uint32_t line) {
-	hxExit("ASSERT_FAIL: %08x(%u)\n", (unsigned int)file, (unsigned int)line);
+	hxExit("ASSERT_FAIL %08x(%u)\n", (unsigned int)file, (unsigned int)line);
 }
 #endif
 
@@ -176,7 +178,7 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 	}
 
 	char buf[HX_MAX_LINE+1];
-	int sz = format ? ::vsnprintf_(buf, HX_MAX_LINE, format, args) : 0;
+	int sz = format ? hxvsnprintf(buf, HX_MAX_LINE, format, args) : -1;
 	hxAssertMsg(sz >= 0, "format error: %s", format ? format : "(null)");
 	if (sz <= 0) {
 		return;
@@ -190,32 +192,32 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 		hxFile& f = hxout;
 		if (f.is_open() || f.is_echo()) {
 			if (level == hxLogLevel_Warning) {
-				f << "WARNING: ";
+				f << "WARNING ";
 			}
 			else if (level == hxLogLevel_Assert) {
-				f << "ASSERT_FAIL: ";
+				f << "ASSERT_FAIL ";
 			}
 			f.write(buf, sz);
 		}
 	}
 }
 
-#else // HX_RELEASE == 3 facilities
-
+#elif HX_USE_C_FILE // HX_RELEASE == 3 && HX_USE_C_FILE
 extern "C"
 void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
-	char buf[HX_MAX_LINE];
-	int sz = format ? ::vsnprintf_(buf, HX_MAX_LINE, format, args) : 0;
-	if (sz <= 0) {
+	hxInit();
+	if (!format || level < g_hxSettings.logLevel) {
 		return;
-	}	
+	}
+	char buf[HX_MAX_LINE];
+	int sz = hxvsnprintf(buf, HX_MAX_LINE, format, args);
 	sz = hxMin(sz, HX_MAX_LINE);
-#if HX_USE_C_FILE
 	::fwrite(buf, 1, sz, stdout);
-#else // !HX_USE_C_FILE
-#error "TODO: file I/O"
-#endif
 }
-
+#else // HX_RELEASE == 3 && !(HX_USE_C_FILE)
+// TODO: hxLogHandlerV().
+extern "C"
+void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
+	(void)level; (void)format; (void)args;
+}
 #endif
-

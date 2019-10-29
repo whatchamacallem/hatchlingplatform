@@ -7,6 +7,10 @@
 
 #if HX_PROFILE
 #include <hx/internal/hxProfilerInternal.h>
+#define HX_PROFILE_FN(x) x
+#else // !HX_PROFILE
+#define HX_PROFILE_FN(x) ((void)0)
+#endif
 
 // ----------------------------------------------------------------------------
 // hxProfiler API
@@ -17,40 +21,32 @@
 
 // hxProfileScope(const char* labelStringLiteral)
 #define hxProfileScope(labelStringLiteral) \
-	hxProfilerScopeInternal<> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral)
+	HX_PROFILE_FN( hxProfilerScopeInternal<> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral) )
 
 // hxProfileScopeMin(const char* labelStringLiteral, uint32_t minCycles)
-#define hxProfileScopeMin(labelStringLiteral, min) \
-	hxProfilerScopeInternal<min> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral)
+#define hxProfileScopeMin(labelStringLiteral, minCycles) \
+	HX_PROFILE_FN( hxProfilerScopeInternal<minCycles> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral) )
 
 // Clears samples and begins sampling.
-#define hxProfilerStart() g_hxProfiler.start()
+#define hxProfilerStart() HX_PROFILE_FN( g_hxProfiler.start() )
 
 // Ends sampling.  Does not clear samples.
-#define hxProfilerStop() g_hxProfiler.stop()
+#define hxProfilerStop() HX_PROFILE_FN( g_hxProfiler.stop() )
 
-// Writes samples to the log.
-#define hxProfilerLog() g_hxProfiler.log()
+// Writes samples to the system log.
+#define hxProfilerLog() HX_PROFILE_FN( g_hxProfiler.log() )
 
-// Writes profiling data in a format usable by Chrome's chrome://tracing view.
-// Usage: In Chrome go to "chrome://tracing/". Load the generated json file.  Use
-// the W/A/S/D keys.  Format: https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview
-#define hxProfilerWriteToChromeTracing(filename) g_hxProfiler.writeToChromeTracing(filename)
+// filename is a C string representing a writable destination.  Writes profiling
+// data in a format usable by Chrome's chrome://tracing view.  Usage: In Chrome
+// go to "chrome://tracing/". Load the generated json file.  Use the W/A/S/D keys.
+// See http://www.chromium.org/developers/how-tos/trace-event-profiling-tool
+#define hxProfilerWriteToChromeTracing(filename) HX_PROFILE_FN( g_hxProfiler.writeToChromeTracing(filename) )
 
 // c_hxProfilerDefaultSamplingCutoff is 1 microsecond.
-#if HX_USE_CPP11_TIME
-static constexpr uint32_t c_hxProfilerDefaultSamplingCutoff =
-	(uint32_t)(std::chrono::high_resolution_clock::period::den / (std::chrono::high_resolution_clock::period::num * 1000000));
+#if HX_PROFILE && HX_USE_CPP11_TIME
+constexpr uint32_t c_hxProfilerDefaultSamplingCutoff =
+	(uint32_t)(std::chrono::high_resolution_clock::period::den
+		/ (std::chrono::high_resolution_clock::period::num * 1000000));
 #else
 enum { c_hxProfilerDefaultSamplingCutoff = 1000 };
-#endif
-
-// ----------------------------------------------------------------------------
-#else // !HX_PROFILE
-#define hxProfileScope(...) ((void)0)
-#define hxProfileScopeMin(...) ((void)0)
-#define hxProfilerStart() ((void)0)
-#define hxProfilerStop() ((void)0)
-#define hxProfilerLog() ((void)0)
-#define hxProfilerWriteToChromeTracing(filename) ((void)0)
 #endif

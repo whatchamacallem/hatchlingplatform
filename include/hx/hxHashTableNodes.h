@@ -50,7 +50,7 @@ public:
 		return x;
 	}
 	HX_INLINE static bool keyEqual(const hxHashTableNodeStringLiteral& lhs, const Key& rhs, uint32_t rhsHash) {
-		return lhs.m_hash == rhsHash && ::strcmp(lhs.key, rhs) == 0;
+		return lhs.hash() == rhsHash && ::strcmp(lhs.key, rhs) == 0;
 	}
 private:
 	uint32_t m_hash;
@@ -68,5 +68,5 @@ public:
 		: hxHashTableNodeStringLiteral(hxStringDuplicate(k, id)) { }
 	HX_INLINE hxHashTableNodeString(const char* k, uint32_t hash)
 		: hxHashTableNodeStringLiteral(hxStringDuplicate(k, id), hash) { }
-	HX_INLINE ~hxHashTableNodeString() { hxFree((void*)key); }
+	HX_INLINE ~hxHashTableNodeString() { hxFree(const_cast<char*>(key)); }
 };

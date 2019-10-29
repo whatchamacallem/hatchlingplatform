@@ -213,7 +213,7 @@ TEST_F(hxArrayTest, Resizing) {
 
 		hxArray<TestObject> objs;
 		objs.reserve(10);
-		objs.assign(nums, nums + (sizeof nums / sizeof *nums));
+		objs.assign(nums);
 
 		objs.resize(3);
 

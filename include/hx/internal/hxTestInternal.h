@@ -35,7 +35,7 @@ public:
 		::memset(mFactories + 0, 0x00, sizeof mFactories);
 	}
 
-	void setSearchTerm(const char* searchTermStringLiteral) { searchTermStringLiteral = mSearchTermStringLiteral; }
+	void setSearchTerm(const char* searchTermStringLiteral) { mSearchTermStringLiteral = searchTermStringLiteral; }
 
 	void addTest(FactoryBase* fn) {
 		hxAssertRelease(mNumFactories < MAX_TESTS, "MAX_TESTS overflow\n");
@@ -45,6 +45,7 @@ public:
 	// format is required to end with an \n.  Returns /dev/null on success and
 	// the system log otherwise.
 	hxFile& assertCheck(const char* file, int32_t line, bool condition, const char* format, ...) {
+		++mAssertCount;
 		mTestState = (condition && mTestState != TEST_FAIL) ? TEST_PASS : TEST_FAIL;
 		if (!condition) {
 			if(++mAssertFailCount >= MAX_FAIL_MESSAGES) {
@@ -54,13 +55,14 @@ public:
 				return devNull();
 			}
 
-			hxLogHandler(hxLogLevel_Assert, "%s.%s", mCurrentTest->Suite(), mCurrentTest->Case());
 			hxLogConsole("%s(%d): ", file, (int)line);
-
 			va_list args;
 			va_start(args, format);
 			hxLogHandlerV(hxLogLevel_Console, format, args);
 			va_end(args);
+
+			hxAssertRelease(mCurrentTest, "not testing");
+			hxLogHandler(hxLogLevel_Assert, "%s.%s", mCurrentTest->Suite(), mCurrentTest->Case());
 
 			return hxout;
 		}
@@ -68,15 +70,15 @@ public:
 	}
 
 	int32_t executeAllTests() {
-		mPassCount = mFailCount = 0;
+		mPassCount = mFailCount = mAssertCount = 0;
 		hxLogConsole("RUNNING_TESTS (%s)\n", (mSearchTermStringLiteral ? mSearchTermStringLiteral : "ALL"));
 		for (FactoryBase** it = mFactories; it != (mFactories + mNumFactories); ++it) {
 			if (!mSearchTermStringLiteral || ::strstr(mSearchTermStringLiteral, (*it)->Suite()) != hxnull) {
 				hxLogConsole("%s.%s...\n", (*it)->Suite(), (*it)->Case());
 
+				mCurrentTest = *it;
 				mTestState = TEST_NOTHING_ASSERTED;
 				mAssertFailCount = 0;
-				mCurrentTest = *it;
 
 				{
 					// Tests should have no side effects.  Therefore all allocations must be
@@ -99,23 +101,26 @@ public:
 			}
 		}
 
-		hxLogConsole("skipped %d tests\n", (int)(mNumFactories - mPassCount - mFailCount));
+		hxLogConsole("skipped %d tests.  checked %d assertions.\n",
+			(int)(mNumFactories - mPassCount - mFailCount), mAssertCount);
 
-		hxProfilerStop();
-		if (mPassCount > 0 && mFailCount == 0) {
-			hxLogHandler(hxLogLevel_Console, "[  PASSED  ] %d tests.\n", (int)mPassCount);
-			return 0u; // success
+		hxWarnCheck(mPassCount + mFailCount, "NOTHING TESTED");
+
+		if (mPassCount != 0 && mFailCount == 0) {
+			hxLogHandler(hxLogLevel_Console, "[  PASSED  ] %d test%s.\n", (int)mPassCount,
+				((mPassCount != 1) ? "s" : ""));
 		}
 		else {
 			hxLogHandler(hxLogLevel_Console, " %d FAILED TEST%s\n", (int)mFailCount,
-				((mFailCount > 1) ? "S" : ""));
-			return hxMax(1, mFailCount);
+				((mFailCount != 1) ? "S" : ""));
+			mFailCount = hxMax(mFailCount, 1); // Nothing tested is failure.
 		}
+		return mFailCount;
 	}
 
 private:
 	hxFile& devNull() {
-		static hxFile f(hxFile::out | hxFile::fallible);
+		static hxFile f(hxFile::out | hxFile::fallible); // Allows writes to fail.
 		return f;
 	}
 
@@ -129,5 +134,6 @@ private:
 	int32_t mPassCount;
 	int32_t mFailCount;
 	const char* mSearchTermStringLiteral;
+	int32_t mAssertCount;
 	int32_t mAssertFailCount;
 };

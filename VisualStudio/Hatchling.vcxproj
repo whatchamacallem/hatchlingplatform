@@ -39,9 +39,23 @@
     <ClInclude Include="..\include\hx\internal\hxHashTableInternal.h" />
     <ClInclude Include="..\include\hx\internal\hxProfilerInternal.h" />
     <ClInclude Include="..\include\hx\internal\hxTestInternal.h" />
-    <ClInclude Include="..\include\hx\printf.h" />
+    <ClInclude Include="..\include\hx\hxprintf.h" />
+    <ClInclude Include="..\printf\printf.h" />
+    <ClInclude Include="..\printf\test\catch.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\printf\printf.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\printf\test\test_suite.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\src\hatchling.cpp" />
     <ClCompile Include="..\src\hxConsole.cpp" />
     <ClCompile Include="..\src\hxCUtils.c" />
@@ -53,8 +67,7 @@
     <ClCompile Include="..\src\hxSort.cpp" />
     <ClCompile Include="..\src\hxStringLiteralHash.cpp" />
     <ClCompile Include="..\src\hxTaskQueue.cpp" />
-    <ClCompile Include="..\src\hxTestMain.cpp" />
-    <ClCompile Include="..\src\printf.c" />
+    <ClCompile Include="..\src\hxprintf.cpp" />
     <ClCompile Include="..\test\hxArrayTest.cpp" />
     <ClCompile Include="..\test\hxConsoleTest.cpp" />
     <ClCompile Include="..\test\hxDmaTest.cpp" />
@@ -65,10 +78,14 @@
     <ClCompile Include="..\test\hxSortTest.cpp" />
     <ClCompile Include="..\test\hxStringHashTest.cpp" />
     <ClCompile Include="..\test\hxTaskQueueTest.cpp" />
+    <ClCompile Include="..\test\hxTestMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\etc\CONTRIBUTORS.txt" />
     <Text Include="..\etc\LICENSE.txt" />
+    <Text Include="hxConsoleTest_FileTest.txt" />
+    <Text Include="hxFileTest_ReadWrite.txt" />
+    <Text Include="log.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.editorconfig" />
@@ -77,10 +94,20 @@
     <None Include="..\.travis.yml" />
     <None Include="..\etc\coverage.md" />
     <None Include="..\etc\coverage.sh" />
+    <None Include="..\etc\gittest.sh" />
     <None Include="..\etc\profile.json" />
     <None Include="..\etc\test.sh" />
+    <None Include="..\printf\.git" />
+    <None Include="..\printf\.gitattributes" />
+    <None Include="..\printf\.travis.yml" />
+    <None Include="..\printf\codecov.yml" />
+    <None Include="..\printf\LICENSE" />
+    <None Include="..\printf\Makefile" />
+    <None Include="..\printf\README.md" />
     <None Include="..\README.md" />
     <None Include=".gitignore" />
+    <None Include="hxFileTest_Operators.bin" />
+    <None Include="profile.json" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

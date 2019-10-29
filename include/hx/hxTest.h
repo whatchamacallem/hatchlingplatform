@@ -3,8 +3,8 @@
 // Copyright 2017 Leap Motion
 
 #include <hx/hatchling.h>
-#include <hx/hxProfiler.h>
 #include <hx/hxFile.h>
+#include <hx/hxProfiler.h>
 
 // ----------------------------------------------------------------------------
 // Enable this to use Google Test instead of hxTestRunner::executeAllTests().

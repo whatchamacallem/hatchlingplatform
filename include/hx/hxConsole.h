@@ -8,12 +8,13 @@ class hxFile;
 // ----------------------------------------------------------------------------
 // hxConsole API
 //
-// Implements a simple console for remote use or to implement configuration files.
-// Output is directed to the system log with hxLogLevel_Console.  A remote console
-// will require forwarding commands to the target and reporting the system log back.
-// Configuration files only require file I/O.  Case calls with up to 4 args which are
-// fundamental types are supported.  Setting variables of a fundamental type are also
-// supported.
+// Implements a simple console for remote use or to implement configuration
+// files.  Output is directed to the system log with hxLogLevel_Console.  A
+// remote console will require forwarding commands to the target and reporting
+// the system log back.  Configuration files only require file I/O.  All calls
+// with up to 4 args which are fundamental types are supported.  Setting
+// variables of a fundamental type are also supported.  const char* args will
+// capture the remainder of the line including #'s.
 
 // Registers a function.  Use in a global scope.
 //   E.g. hxConsoleCommand(srand);
@@ -41,7 +42,7 @@ void hxConsoleDeregister(const char* id);
 // Explicit de-registration of all console symbols.
 void hxConsoleDeregisterAll();
 
-// Evaluates a console command which either calls a function or sets a variable.
+// Evaluates a console command to either call a function or set a variable.
 //   E.g.: "srand 77" or "aVariable 5"
 bool hxConsoleExecLine(const char* command);
 

@@ -1,4 +1,3 @@
-
 #pragma once
 // Copyright 2017-2019 Adrian Johnston
 
@@ -14,7 +13,7 @@ template<typename Node, uint32_t HashBits>
 class hxHashTableInternalAllocator : public hxAllocator<Node*, 1u << HashBits> {
 public:
 	HX_INLINE hxHashTableInternalAllocator() { ::memset(this->getStorage(), 0x00, sizeof(Node*) * this->getCapacity()); }
-	HX_INLINE HX_CONSTEXPR uint32_t getHashBits() const { return HashBits; }
+	HX_CONSTEXPR uint32_t getHashBits() const { return HashBits; }
 	HX_INLINE void setHashBits(uint32_t bits) { hxAssertMsg(bits == HashBits, "resizing static hash table"); }
 };
 

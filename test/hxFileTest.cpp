@@ -49,6 +49,7 @@ TEST(hxFileTest, NotExist) {
 	hxFile f(hxFile::in | hxFile::fallible, "TEST_FILE_DOES_NOT_EXIST_%d", 123);
 	ASSERT_EQ(f.good(), false);
 	ASSERT_EQ(f.is_open(), false);
+	ASSERT_EQ(f.is_fallible(), true);
 }
 
 TEST_F(hxFileTest, Operators) {

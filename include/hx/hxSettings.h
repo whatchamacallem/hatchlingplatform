@@ -42,7 +42,7 @@
 #pragma warning(disable: 4996)
 
 #else // target settings
-// "Some C++98 embedded compiler" (currently gcc.)
+// This is configured for gcc and clang.  Other compilers will require customization.
 
 #define HX_USE_C_FILE 1
 
@@ -78,7 +78,7 @@
 #if HX_USE_CPP14_CONSTEXPR
 #define HX_CONSTEXPR constexpr
 #else
-#define HX_CONSTEXPR
+#define HX_CONSTEXPR HX_INLINE
 #endif
 
 // ----------------------------------------------------------------------------
@@ -145,25 +145,6 @@
 #define HX_RADIX_SORT_MIN_SIZE 50u // uses hxInsertionSort() below this.
 
 // ----------------------------------------------------------------------------
-// PRINTF_* See <hx/printf.h>
-
-// support for the floating point type (%f)
-#ifndef PRINTF_DISABLE_SUPPORT_FLOAT
-#define PRINTF_SUPPORT_FLOAT
-#endif
-
-// support for the long long types (%llu or %p)
-#ifndef PRINTF_DISABLE_SUPPORT_LONG_LONG
-#define PRINTF_SUPPORT_LONG_LONG
-#endif
-
-// support for the ptrdiff_t type (%t)
-// ptrdiff_t is normally defined in <stddef.h> as long or long long type
-#ifndef PRINTF_DISABLE_SUPPORT_PTRDIFF_T
-#define PRINTF_SUPPORT_PTRDIFF_T
-#endif
-
-// ----------------------------------------------------------------------------
 // Default undetected HX_USE_* features.
 
 #ifndef HX_USE_C_FILE
@@ -185,7 +166,7 @@
 
 struct hxSettings {
 	const char* logFile;
-	uint8_t logLevel; // logFile
+	uint8_t logLevel; // For logFile
 	uint8_t isShuttingDown; // Allows destruction of permanent resources.
 
 #if (HX_MEM_DIAGNOSTIC_LEVEL) > 0
@@ -194,6 +175,7 @@ struct hxSettings {
 #if (HX_RELEASE) < 1
 	int32_t assertsToBeSkipped; // Allows testing asserts.
 	uint8_t deathTest;
+	float lightEmittingDiode;
 #endif
 };
 

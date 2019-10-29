@@ -94,8 +94,7 @@ void hxDmaAwaitSyncPointLabeled(struct hxDmaSyncPoint& syncPoint, const char* la
 		// syncPoint.debugOnly is the value of s_hxDmaBarrierCounter for proceeding dma.
 		if (it->barrierCounter <= syncPoint.debugOnly) {
 			bool isOk = ::memcmp(it->dst, it->src, it->bytes) == 0;
-			hxAssertRelease(isOk, "dma corrupt %s, %s", it->labelStringLiteral,
-				(labelStringLiteral ? labelStringLiteral : "dma await"));
+			hxAssertRelease(isOk, "dma corrupt %s, %s", it->labelStringLiteral, (labelStringLiteral ? labelStringLiteral : "dma await"));
 			s_hxDmaDebugRecords.erase_unordered(it);
 		}
 	}

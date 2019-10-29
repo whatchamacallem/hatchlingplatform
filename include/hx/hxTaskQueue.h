@@ -22,13 +22,13 @@ public:
 		explicit Task(const char* staticLabel = hxnull)
 			: m_queue(hxnull), m_nextWaitingTask(hxnull), m_label(staticLabel) { }
 
-		// Not called by queue. execute() may delete this _if allocator is thread safe_.
+		// Not called by queue. execute() may free task _if allocator is thread safe_.
 		virtual ~Task() { hxAssertRelease(!m_queue, "deleting queued task: %s", getLabel()); }
 
 		// Will be wrapped in hxProfileScope(getLabel());
 		virtual void execute(hxTaskQueue* q) = 0;
 
-		const char* getLabel() const { return m_label ? m_label : "(null)"; }
+		const char* getLabel() const { return m_label ? m_label : "task"; }
 		void setLabel(const char* x) { m_label = x; }
 
 	private:

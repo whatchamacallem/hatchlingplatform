@@ -10,7 +10,6 @@
 // Implements some of std::vector.  Requires T to have a default constructor.
 // Undocumented functions follow std::vector.  Undocumented methods have a
 // standard interface.
-// 
 
 template<typename T, uint32_t Capacity=hxAllocatorDynamicCapacity>
 class hxArray : private hxAllocator<T, Capacity> {
@@ -27,7 +26,7 @@ public:
 
 	// Copy constructs an array.  Does not allow movement of hxUniquePtrs.  Use
 	// assign() for that.
-	HX_INLINE explicit hxArray(const hxArray& rhs) {
+	HX_INLINE explicit hxArray(const hxArray& rhs) : hxAllocator<T, Capacity>() {
 		m_end = this->getStorage();
 		assign(rhs.cbegin(), rhs.cend());
 	}
@@ -35,7 +34,7 @@ public:
 	// Copy constructs an array from a container with begin() and end() methods and
 	// a random access iterator.
 	template <typename Rhs>
-	HX_INLINE explicit hxArray(const Rhs& rhs) {
+	HX_INLINE explicit hxArray(const Rhs& rhs) : hxAllocator<T, Capacity>() {
 		m_end = this->getStorage();
 		assign(rhs.begin(), rhs.end());
 	}
@@ -128,6 +127,9 @@ public:
 		(--m_end)->~T();
 	}
 
+	HX_INLINE const T* data() const { return this->getStorage(); }
+	HX_INLINE       T* data() { return this->getStorage(); }
+
 	// Copies the elements of a container with begin() and end() methods and a random
 	// access iterator.
 	template <typename Iter>
@@ -139,11 +141,12 @@ public:
 		m_end = it;
 	}
 
-	HX_INLINE const T* data() const { return this->getStorage(); }
-	HX_INLINE       T* data() { return this->getStorage(); }
-
 	// --------------------------------------------------------------------------
 	// Non-standard but useful
+
+	// Constructs an array of T from an array of T2.
+	template<typename T2, size_t Sz>
+	HX_INLINE void assign(const T2(&a)[Sz]) { assign(a + 0, a + Sz); }
 
 	// Variant of emplace_back() that returns a pointer for use with placement new.
 	HX_INLINE void* emplace_back_unconstructed() {
@@ -151,7 +154,8 @@ public:
 		return (void*)m_end++;
 	}
 
-	// Variant of erase() that moves the end element down to replace erased element.
+	// Variant of erase() that moves the end element down to replace erased
+	// element.
 	HX_INLINE void erase_unordered(uint32_t index) {
 		hxAssert(index < size());
 		T* it = this->getStorage() + index;
@@ -161,7 +165,8 @@ public:
 		m_end->~T();
 	}
 
-	// Variant of erase() that moves the end element down to replace erased element.
+	// Variant of erase() that moves the end element down to replace the erased
+	// element.
 	HX_INLINE void erase_unordered(T* it) {
 		hxAssert((uint32_t)(it - this->getStorage()) < size());
 		if (it != --m_end) {

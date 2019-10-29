@@ -7,8 +7,8 @@
 // ----------------------------------------------------------------------------
 // hxLess
 //
-// Case object for performing comparisons. Invokes operator <.  This is C++14's
-// std::less<void>.
+// Templated parameter type for performing comparisons.  Invokes operator <.
+// This is C++14's std::less<void>.
 
 struct hxLess {
 	template<typename T1, typename T2>
@@ -18,7 +18,7 @@ struct hxLess {
 // ----------------------------------------------------------------------------
 // hxInsertionSort
 //
-// Sorts the elements in the range [first, last) in ascending order using the
+// Sorts the elements in the range [first, last) in comparison order using the
 // insertion sort algorithm.
 //
 // The compare parameter is a function object that returns true if the first
@@ -150,6 +150,7 @@ public:
 
 	// Adds a key and value pointer.
 	HX_INLINE void insert(Key key, Value* val) {
-		::new(m_array.emplace_back_unconstructed()) KeyValuePair(key, (void*)val);
+		// Perform casts safe for -Wcast-qual with a const and volatile Value type.
+		::new(m_array.emplace_back_unconstructed()) KeyValuePair(key, const_cast<void*>((const volatile void*)val));
 	}
 };

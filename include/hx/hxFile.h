@@ -38,12 +38,12 @@ public:
 	// Closes stream.
 	~hxFile();
 
-	// Opens a stream using a formatted filename.  Non-standard arg order.  Does
-	// not remove echo or fallible.
+	// Opens a stream using a formatted filename.
 	bool open(uint16_t mode, const char* filename, ...) HX_ATTR_FORMAT(3, 4);
 
-	// Closes stream.  Does not remove echo or fallible by default.
-	void close(uint16_t keepModes = fallible | echo);
+	// Closes stream.  If either fallible or echo are specified they will be kept
+	// enabled after closing.
+	void close();
 
 	HX_INLINE bool is_open() const { return m_filePImpl != hxnull; }
 
@@ -107,13 +107,14 @@ public:
 	// Supports Google Test style diagnostic messages.
 	template<size_t StringLength>
 	HX_INLINE hxFile& operator<<(const char(&str)[StringLength]) {
+		hxAssert(::strnlen(str, StringLength) == (StringLength-1));
 		write(str, StringLength-1);
 		return *this;
 	}
 
 	template<size_t StringLength>
 	HX_INLINE hxFile& operator<<(char(&str)[StringLength]) {
-		write(str, ::strlen(str));
+		write(str, ::strnlen(str, StringLength));
 		return *this;
 	}
 
