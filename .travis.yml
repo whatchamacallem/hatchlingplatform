@@ -1,0 +1,14 @@
+sudo: false
+dist: trusty
+language: cpp
+compiler: g++
+
+script:
+  - ./etc/coverage.sh
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+branches:
+  only:
+    - master
