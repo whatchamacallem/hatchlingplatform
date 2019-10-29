@@ -7,6 +7,7 @@
 #include "hxProfiler.h"
 #include "hxFile.h"
 #include "hxConsole.h"
+#include "hxHashTableNodes.h"
 
 #include <stdio.h>
 
@@ -15,7 +16,11 @@
 static const char* s_hxInitFile = ""; // For trapping code running before hxMain.
 static uint32_t s_hxInitLine = 0;
 
-// ----------------------------------------------------------------------------
+#if (HX_RELEASE) < 1
+static hxHashTable<hxHashTableNodeStaticString, 7> s_hxStringLiteralHashes;
+hxRegisterFileConstructor::hxRegisterFileConstructor(const char* s) { s_hxStringLiteralHashes.insert_unique(s, hxMemoryManagerId_Heap); }
+HX_REGISTER_FILENAME_HASH;
+#endif
 
 extern "C"
 void hxInitAt(const char* file, uint32_t line) {
@@ -28,7 +33,8 @@ void hxInitAt(const char* file, uint32_t line) {
 	g_hxSettings.construct();
 
 	hxLog("Hatchling Platform\n");
-	hxConsolePrint("HX_RELEASE %d.  HX_PROFILE %d.  Last full build: " __DATE__ " " __TIME__ "\n", HX_RELEASE, HX_PROFILE);
+	hxConsolePrint("Release %d Profile %d Flags %d %d %d Build: " __DATE__ " " __TIME__ "\n",
+		HX_RELEASE, HX_PROFILE, HX_HAS_CPP11_THREADS, HX_HAS_CPP11_TIME, HX_HAS_CPP14_CONSTEXPR);
 
 	hxMemoryManagerInit();
 	hxDmaInit();
@@ -44,6 +50,17 @@ void hxInitAt(const char* file, uint32_t line) {
 #endif
 }
 
+extern "C"
+void hxLogHandler(enum hxLogLevel level, const char* format, ...) {
+	va_list args;
+	va_start(args, format);
+	hxLogHandlerV(level, format, args);
+	va_end(args);
+}
+
+// ----------------------------------------------------------------------------
+// HX_RELEASE < 3 facilities 
+
 #if (HX_RELEASE) < 3
 // Wrapped to ensure correct construction order.
 static hxFile& hxLogFile() {
@@ -55,6 +72,15 @@ extern "C"
 void hxShutdown() {
 	hxAssertRelease(g_hxIsInit, "hxShutdown unexpected\n");
 	hxLogRelease("hxShutdown...\n");
+
+#if (HX_RELEASE) < 1
+	hxLog("filename hash codes:\n");
+	for (hxHashTable<hxHashTableNodeStaticString, 7>::iterator it = s_hxStringLiteralHashes.begin();
+			it != s_hxStringLiteralHashes.end(); ++it) {
+		hxLog("  %08x %s\n", hxHashString(it->key), it->key);
+	}
+	s_hxStringLiteralHashes.clear();
+#endif
 
 	hxProfilerShutdown();
 	hxDmaShutDown();
@@ -102,22 +128,21 @@ void hxExit(const char* format, ...) {
 }
 
 extern "C"
+#if (HX_RELEASE) < 1
 void hxAssertHandler(const char* file, uint32_t line) {
 	hxInit();
-#if (HX_RELEASE) < 1
+	const char* f = hxBasename(file);
 	if (g_hxSettings.assertsToBeSkipped-- > 0) {
+		hxLogHandler(hxLogLevel_Assert, "(skipped) %s(%u) hash %08x\n", f, (unsigned int)line, (unsigned int)hxHashString(file));
 		return;
 	}
-#endif
-	if (file != null) {
-		const char* f = hxBasename(file);
-		hxExit("ASSERT_FAIL: %s(%u)\n", f, (unsigned int)line);
-	}
-	else
-	{
-		hxExit("ASSERT_FAIL\n");
-	}
+	hxExit("ASSERT_FAIL: %s(%u) hash %08x\n", f, (unsigned int)line, (unsigned int)hxHashString(file));
 }
+#else
+void hxAssertHandler(uint32_t file, uint32_t line) {
+	hxExit("ASSERT_FAIL: %08x(%u)\n", (unsigned int)file, (unsigned int)line);
+}
+#endif
 
 extern "C"
 void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
@@ -166,8 +191,9 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 	}
 }
 
-
-#else // #if (HX_RELEASE) >= 3
+#else
+// ----------------------------------------------------------------------------
+// HX_RELEASE == 3 facilities
 
 extern "C"
 void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
@@ -179,11 +205,5 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 }
 
 #endif
+// ----------------------------------------------------------------------------
 
-extern "C"
-void hxLogHandler(enum hxLogLevel level, const char* format, ...) {
-	va_list args;
-	va_start(args, format);
-	hxLogHandlerV(level, format, args);
-	va_end(args);
-}

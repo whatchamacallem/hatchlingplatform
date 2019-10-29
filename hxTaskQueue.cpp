@@ -3,6 +3,8 @@
 #include "hxTaskQueue.h"
 #include "hxProfiler.h"
 
+HX_REGISTER_FILENAME_HASH;
+
 // ----------------------------------------------------------------------------
 
 hxTaskQueue::hxTaskQueue(int32_t threadPoolSize)

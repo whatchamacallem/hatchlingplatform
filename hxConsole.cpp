@@ -7,6 +7,8 @@
 
 #include <algorithm>
 
+HX_REGISTER_FILENAME_HASH;
+
 // ----------------------------------------------------------------------------------
 // Console commands
 

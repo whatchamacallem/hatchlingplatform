@@ -7,6 +7,11 @@
 #include "hxConsole.h"
 
 #if HX_PROFILE
+#if HX_HAS_CPP11_THREADS
+#include <mutex>
+#endif
+
+HX_REGISTER_FILENAME_HASH;
 
 hxProfiler g_hxProfiler;
 
@@ -24,42 +29,18 @@ hxConsoleCommandNamed(hxProfileToChrome, profileToChrome);
 
 // ----------------------------------------------------------------------------------
 #if HX_HAS_CPP11_THREADS
-#include <mutex>
-
 // Use the address of a thread local variable as a unique thread id.
-static thread_local uint8_t s_hxProfilerThreadIdAddress = 0;
-static std::mutex s_hxProfilerMutex;
-
-hxProfilerScopeInternal::~hxProfilerScopeInternal() {
-	uint32_t t1 = hxProfilerScopeInternal::sampleCycles();
-	uint32_t delta = (t1 - m_t0);
-	hxProfiler& data = g_hxProfiler;
-	if (data.m_isEnabled && delta >= m_minCycles) {
-		std::unique_lock<std::mutex> lk(s_hxProfilerMutex);
-		if (!data.m_records.full()) {
-			::new (data.m_records.emplace_back_unconstructed()) hxProfiler::Record(m_t0, t1, m_label, (uint32_t)(ptrdiff_t)&s_hxProfilerThreadIdAddress);
-		}
-	}
-}
+thread_local uint8_t s_hxProfilerThreadIdAddress = 0;
+std::mutex s_hxProfilerMutex;
 #endif
 
 // ----------------------------------------------------------------------------------
 #if HX_HAS_CPP11_TIME
-#include <chrono>
-
-using c_hxProfilerPeriod = std::chrono::high_resolution_clock::period;
-
 const float g_hxProfilerMillisecondsPerCycle = ((float)c_hxProfilerPeriod::num * 1.0e+3f) / (float)c_hxProfilerPeriod::den;
-const uint32_t g_hxProfilerDefaultSamplingCutoff = (c_hxProfilerPeriod::den / (c_hxProfilerPeriod::num * 1000000));
-
-static std::chrono::high_resolution_clock::time_point g_hxStart;
-uint32_t hxProfilerScopeInternal::sampleCycles() {
-	return (uint32_t)(std::chrono::high_resolution_clock::now() - g_hxStart).count();
-}
+std::chrono::high_resolution_clock::time_point g_hxStart;
 #else
 // TODO: Use target settings.
 const float g_hxProfilerMillisecondsPerCycle = 1.0e-6f; // Also 1.e+6 cycles/ms, a 1 GHz chip.
-const uint32_t g_hxProfilerDefaultSamplingCutoff = 1000; // ~1 microsecond.
 #endif // !HX_HAS_CPP11_TIME
 
 // ----------------------------------------------------------------------------------
@@ -77,12 +58,12 @@ void hxProfiler::init() {
 #if HX_HAS_CPP11_TIME
 	g_hxStart = std::chrono::high_resolution_clock::now();
 #endif
-	hxLogRelease("hxProfilerInit... %u cycles\n", (unsigned int)hxProfilerScopeInternal::sampleCycles()); // Logging may easily be off at this point.
+	hxLogRelease("hxProfilerInit... %u cycles\n", (unsigned int)hxProfilerScopeInternal<0u>::sampleCycles()); // Logging may easily be off at this point.
 }
 
 void hxProfiler::shutdown() {
 	if (m_isEnabled) {
-		hxLogRelease("hxProfilerShutdown... %u cycles\n", (unsigned int)hxProfilerScopeInternal::sampleCycles());
+		hxLogRelease("hxProfilerShutdown... %u cycles\n", (unsigned int)hxProfilerScopeInternal<0u>::sampleCycles());
 	}
 	m_isEnabled = false;
 

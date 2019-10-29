@@ -4,6 +4,8 @@
 #include "hxDma.h"
 #include "hxTest.h"
 
+HX_REGISTER_FILENAME_HASH;
+
 // ----------------------------------------------------------------------------------
 
 class hxDmaTest :

@@ -4,6 +4,8 @@
 #include "hxTest.h"
 #include "hxFile.h"
 
+HX_REGISTER_FILENAME_HASH;
+
 // ----------------------------------------------------------------------------------
 
 class hxConsoleTest :

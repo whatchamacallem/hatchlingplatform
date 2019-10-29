@@ -4,6 +4,8 @@
 #include "hxTest.h"
 #include "hxConsole.h"
 
+HX_REGISTER_FILENAME_HASH;
+
 hxSettings g_hxSettings;
 
 hxConsoleVariableNamed(g_hxSettings.logLevelConsole, logLevelConsole);

@@ -3,7 +3,7 @@
 // Copyright 2017 Leap Motion
 
 #ifndef HATCHLING_H
-#error "include hatchling.h"
+#error #include "hatchling.h"
 #endif
 
 #ifdef __cplusplus
@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-#define HX_ALIGNMENT_MASK ((uintptr_t)(sizeof(void*) - 1u)) // HX_ALIGNMENT-1
+#define HX_ALIGNMENT_MASK ((uintptr_t)(sizeof(char*) - 1u)) // HX_ALIGNMENT-1
 #define hxIsAligned(x) (((uintptr_t)(x) & HX_ALIGNMENT_MASK) == 0)
 #define hxAssertAligned(x) hxAssert(hxIsAligned(x))
 

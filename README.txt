@@ -32,19 +32,8 @@ to an embedded system.  It uses C++11 in certain cases on the host.
 
 * Logging and memory management available in plain C.  See hatchling.h.
 
-Tested with:
-	Visual Studio all builds
-
-	gcc -O3 -Wall -DHX_RELEASE=0 -std=c++98 -fno-exceptions -fno-rtti -Wno-unused-local-typedefs *.cpp *.c -lstdc++ -o hxtest
-	./hxtest
-
-	for i in 0 1 2 3; do
-	clang -O3 -Wall -DHX_RELEASE=$i -lubsan -fsanitize=undefined -Wno-unused-local-typedefs *.cpp *.c -lstdc++ -o hxtest
-	./hxtest
-	done
-
-Using versions:
-	Visual Studio Community 2017 15.7.6
-	gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.5)
-	clang version 3.8.0-2ubuntu4 (tags/RELEASE_380/final)
+Tested with test.sh using:
+* Microsoft Visual Studio Community 2017 Version 15.8.9
+* gcc (Ubuntu 5.4.0-6ubuntu1~16.04.10) 5.4.0 20160609
+* clang version 3.8.0-2ubuntu4 (tags/RELEASE_380/final)
 

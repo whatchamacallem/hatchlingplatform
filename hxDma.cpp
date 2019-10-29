@@ -5,6 +5,8 @@
 #include "hxProfiler.h"
 #include "hxArray.h"
 
+HX_REGISTER_FILENAME_HASH;
+
 // TODO
 #ifndef HX_HAS_DMA
 #define HX_HAS_DMA 0

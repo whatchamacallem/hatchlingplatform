@@ -3,16 +3,18 @@
 // Copyright 2017 Leap Motion
 
 #ifndef HATCHLING_H
-#error "include hatchling.h"
+#error #include "hatchling.h"
 #endif
 
 // ----------------------------------------------------------------------------
 // Compiler detection and some C++11 polyfill.
 
 #ifdef _MSC_VER
+// MSVC doesn't support C++ feature test macros, and sets __cplusplus wrong by default
 #define HX_HAS_C_FILE 1
 #define HX_HAS_CPP11_THREADS 1
 #define HX_HAS_CPP11_TIME 1
+#define HX_HAS_CPP14_CONSTEXPR 0 // silently generating horrible code as of MSVC 15.8.9.
 
 #define HX_RESTRICT __restrict
 #define HX_INLINE __forceinline
@@ -35,6 +37,18 @@
 #define HX_TARGET 1
 #define HX_HAS_C_FILE 1
 
+#ifndef HX_HAS_CPP11_THREADS
+#define HX_HAS_CPP11_THREADS (__cplusplus >= 201103L)
+#endif
+
+#ifndef HX_HAS_CPP11_TIME
+#define HX_HAS_CPP11_TIME (__cplusplus >= 201103L)
+#endif
+
+#ifndef HX_HAS_CPP14_CONSTEXPR
+#define HX_HAS_CPP14_CONSTEXPR (__cplusplus >= 201402L) // "__cpp_constexpr >= 201304" may not compile as C++
+#endif
+
 #define HX_RESTRICT __restrict
 #define HX_INLINE inline __attribute__((always_inline))
 #define HX_LINK_SCRATCHPAD // TODO
@@ -42,13 +56,14 @@
 #define HX_ATTR_NORETURN __attribute__((noreturn))
 #define HX_DEBUG_BREAK ((void)0) // TODO
 
-#ifdef __cplusplus
-// C++11 polyfill
+#if defined(__cplusplus) && __cplusplus < 201103L // C++98
+// C++11 polyfill.  WARNING: breaks C++11 headers.
 #define static_assert(x,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [(x) ? 1 : -1]
 #define override
-#endif // __cplusplus
+#endif // C++98
 #endif // !HX_HOST
 
+// This is the one namespace violation, you don't have to keep it.
 #define null 0
 
 // ----------------------------------------------------------------------------
@@ -109,14 +124,6 @@
 
 #ifndef HX_HAS_C_FILE
 #define HX_HAS_C_FILE 0
-#endif
-
-#ifndef HX_HAS_CPP11_THREADS
-#define HX_HAS_CPP11_THREADS 0
-#endif
-
-#ifndef HX_HAS_CPP11_TIME
-#define HX_HAS_CPP11_TIME 0
 #endif
 
 // ----------------------------------------------------------------------------

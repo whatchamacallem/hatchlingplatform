@@ -55,3 +55,13 @@ char* hxStringDuplicate(const char* s, enum hxMemoryManagerId allocatorId) {
 	strcpy(d, s); // d = s
 	return d;
 }
+
+uint32_t hxHashString(const char* s) {
+	uint32_t x = 0u;
+	size_t i = strlen(s);
+	i = (i <= 192u) ? i : 192u; // match limits of hxHashStringLiteral macro
+	while (i--) {
+		x = (uint32_t)0x61C88647 * x ^ (uint32_t)s[i];
+	}
+	return x;
+}

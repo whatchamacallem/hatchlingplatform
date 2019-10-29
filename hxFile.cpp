@@ -3,6 +3,8 @@
 #include "hxFile.h"
 #include <stdio.h>
 
+HX_REGISTER_FILENAME_HASH;
+
 // Target will require an implementation of fopen(), fclose(), fread(), fwrite(),
 // fgets() and feof().
 

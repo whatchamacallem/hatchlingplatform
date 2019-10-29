@@ -6,6 +6,8 @@
 #include "hxUniquePtr.h"
 #include "hxTest.h"
 
+HX_REGISTER_FILENAME_HASH;
+
 // ----------------------------------------------------------------------------------
 
 static class hxArrayTest* s_hxTestCurrent = null;

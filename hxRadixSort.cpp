@@ -4,6 +4,8 @@
 
 #include <algorithm>
 
+HX_REGISTER_FILENAME_HASH;
+
 static_assert(HX_RADIX_SORT_BITS == 8 || HX_RADIX_SORT_BITS == 11, "Unsupported HX_RADIX_SORT_BITS");
 
 void hxRadixSortBase::sort(hxMemoryManagerId tempMemory) {

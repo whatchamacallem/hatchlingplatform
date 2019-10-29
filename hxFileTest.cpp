@@ -3,6 +3,8 @@
 #include "hxFile.h"
 #include "hxTest.h"
 
+HX_REGISTER_FILENAME_HASH;
+
 // ConsoleTest.cpp provides coverage for normal operation.
 
 // ----------------------------------------------------------------------------------

@@ -5,6 +5,8 @@
 #include "hxTest.h"
 #include "hxMemoryManager.h"
 
+HX_REGISTER_FILENAME_HASH;
+
 // ----------------------------------------------------------------------------------
 
 class hxMemoryManagerTest :

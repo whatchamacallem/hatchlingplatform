@@ -7,6 +7,8 @@
 #include "hxTaskQueue.h"
 #include "hxConsole.h"
 
+HX_REGISTER_FILENAME_HASH;
+
 // ----------------------------------------------------------------------------------
 #if HX_PROFILE
 
@@ -38,7 +40,7 @@ public:
 		}
 
 		virtual void generateScopes(float targetMs) {
-			uint32_t startCycles = hxProfilerScopeInternal::sampleCycles();
+			uint32_t startCycles = hxProfilerScopeInternal<0u>::sampleCycles();
 			uint32_t delta = 0u;
 
 			// Open up a sub-scope if time allows.
@@ -57,7 +59,7 @@ public:
 				}
 
 				// Unsigned arithmetic handles clock wrapping correctly.
-				delta = hxProfilerScopeInternal::sampleCycles() - startCycles;
+				delta = hxProfilerScopeInternal<0u>::sampleCycles() - startCycles;
 			}
 		}
 

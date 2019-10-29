@@ -4,6 +4,8 @@
 #include "hatchling.h"
 #include "hxMemoryManager.h"
 
+HX_REGISTER_FILENAME_HASH;
+
 // ----------------------------------------------------------------------------
 // Debug memory markings:
 //
@@ -20,7 +22,7 @@
 // disastrous results.
 HX_INLINE static void* hxMallocChecked(size_t size) {
 	void* t = ::malloc(size);
-	hxAssertRelease(t, "malloc fail: %lu bytes\n", (unsigned long)size);
+	hxAssertRelease(t, "malloc fail: %u bytes\n", (unsigned int)size);
 	return t;
 }
 
@@ -134,7 +136,7 @@ protected:
 		hdr.guard = hxMemoryAllocationHeader::c_guard;
 #endif
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 3
-		// Record the size of the allocation in debug.  Cast via (uintptr_t) because Mac not supporting %p.
+		// Record the size of the allocation in debug.  Cast via (uintptr_t) because %p is not portable.
 		hxLog("%s: %d at %x  (count %d, bytes %d)\n", m_label, (int)size, (unsigned int)aligned, (int)m_allocationCount, (int)m_bytesAllocated);
 #endif
 		return (void*)aligned;

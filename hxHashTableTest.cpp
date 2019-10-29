@@ -5,6 +5,8 @@
 #include "hxHashTableNodes.h"
 #include "hxTest.h"
 
+HX_REGISTER_FILENAME_HASH;
+
 // ----------------------------------------------------------------------------------
 
 static class hxHashTableTest* s_hxTestCurrent = 0;
