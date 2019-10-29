@@ -8,11 +8,14 @@ class hxFile;
 // ----------------------------------------------------------------------------
 // hxout
 
-// hxout is the hxFile for both stdout and the system log.
-#define hxout hxFileOut()
+// hxout is the system log.  Returns an hxFile for use as both stdout and stderr.
+#define hxout hxOut()
 
 // Implements hxout.
-hxFile& hxFileOut();
+hxFile& hxOut();
+
+// Closes the system log while still allowing assert messages to be written to stdout.
+void hxCloseOut();
 
 // ----------------------------------------------------------------------------
 // hxFile: RAII wrapper for file I/O.  A mixture of unformatted std::basic_fstream
@@ -41,8 +44,7 @@ public:
 	// Opens a stream using a formatted filename.
 	bool open(uint16_t mode_, const char* filename_, ...) HX_ATTR_FORMAT(3, 4);
 
-	// Closes stream.  If either fallible or echo are specified they will be kept
-	// enabled after closing.
+	// Closes stream.
 	void close();
 
 	HX_INLINE bool is_open() const { return m_filePImpl != hxnull; }
@@ -90,16 +92,18 @@ public:
 	template<typename T_>
 	HX_INLINE bool write1(const T_& t_) { return write(&t_, sizeof t_) == sizeof t_; }
 
-	// Read a single unformatted native endian object from a stream.
+	// Read a single unformatted native endian object from a stream.  Avoiding >>
+	// as that indicates formatting.
 	template<typename T_>
-	HX_INLINE hxFile& operator>>(T_& t_) {
+	HX_INLINE hxFile& operator>=(T_& t_) {
 		read(&t_, sizeof t_);
 		return *this;
 	}
 
-	// Write a single unformatted native endian object to a stream.
+	// Write a single unformatted native endian object to a stream.  Avoiding <<
+	// as that indicates formatting.
 	template<typename T_>
-	HX_INLINE hxFile& operator<<(const T_& t_) {
+	HX_INLINE hxFile& operator<=(const T_& t_) {
 		write(&t_, sizeof t_);
 		return *this;
 	}
@@ -123,7 +127,7 @@ private:
 	void operator=(const hxFile&); // = delete
 	template<typename T_> HX_INLINE hxFile& operator>>(const T_* t_); // = delete
 
-	bool open_(uint16_t mode_, const char* format_, va_list args_);
+	bool openv_(uint16_t mode_, const char* format_, va_list args_);
 
 	char* m_filePImpl;
 	uint16_t m_openMode;

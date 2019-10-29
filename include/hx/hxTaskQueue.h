@@ -35,14 +35,14 @@ private:
 	hxTaskQueue(const hxTaskQueue&); // = delete
 	void operator=(const hxTaskQueue&); // = delete
 
-	static const uint32_t c_runningQueueCheck = 0xc710b034u;
+	static const uint32_t RunningQueueCheck_ = 0xc710b034u;
 
 	hxTask* m_nextTask;
 	uint32_t m_runningQueueCheck;
 
 #if HX_USE_CPP11_THREADS
-	enum class ExecutorMode { Pool, Waiting, Stopping };
-	static void executorThread(hxTaskQueue* q_, ExecutorMode mode_);
+	enum class ExecutorMode_ { Pool_, Waiting_, Stopping_ };
+	static void executorThread_(hxTaskQueue* q_, ExecutorMode_ mode_);
 
 	int32_t m_threadPoolSize = 0;
 	std::thread* m_threads = hxnull;

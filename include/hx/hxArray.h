@@ -147,7 +147,7 @@ public:
 
 	// Constructs an array of T from an array of T2.
 	template<typename T2_, size_t Sz_>
-	HX_INLINE void assign(const T2_(&a_)[Sz_]) { assign(a_ + 0u, a_ + Sz_); }
+	HX_INLINE void assign(const T2_(&a_)[Sz_]) { assign(a_ + 0, a_ + Sz_); }
 
 	// Variant of emplace_back() that returns a pointer for use with placement new.
 	HX_INLINE void* emplace_back_unconstructed() {

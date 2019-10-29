@@ -88,7 +88,7 @@ public:
 
 				if (mTestState == TEST_STATE_NOTHING_ASSERTED) {
 					assertCheck(hxBasename((*it_)->File()), (*it_)->Line(), false,
-						"NOTHING ASSERTED");
+						"NOTHING_ASSERTED");
 					++mFailCount;
 				}
 				else if (mTestState == TEST_STATE_PASS) {

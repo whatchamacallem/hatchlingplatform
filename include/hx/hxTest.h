@@ -33,7 +33,7 @@ HX_INLINE void InitGoogleTest() { }
 	struct HX_CONCATENATE(SuiteName_, CaseName_) : hxTestRunner::TestFactoryBase { \
 		struct Executor_ : testing::Test { virtual void Run() HX_OVERRIDE; }; \
 		HX_CONCATENATE(SuiteName_, CaseName_)() { hxTestRunner::singleton().addTest(this); } \
-		virtual void Run() HX_OVERRIDE { Executor_ executor; executor.Run(); } \
+		virtual void Run() HX_OVERRIDE { Executor_ executor_; executor_.Run(); } \
 		virtual const char* Suite() HX_OVERRIDE { return #SuiteName_; } \
 		virtual const char* Case() HX_OVERRIDE { return #CaseName_; } \
 		virtual const char* File() HX_OVERRIDE { return __FILE__; } \
@@ -42,12 +42,12 @@ HX_INLINE void InitGoogleTest() { }
 	static HX_CONCATENATE(SuiteName_, CaseName_) HX_CONCATENATE(s_hxTest, CaseName_); \
 	void HX_CONCATENATE(SuiteName_, CaseName_)::Executor_::Run()
 
-// TEST_F.  Google Test reimplementation, SuiteName_ must be a subclass of testing::Test.
+// TEST_F.  Google Test reimplementation, SuiteName must be a subclass of testing::Test.
 #define TEST_F(SuiteName_, CaseName_) \
 	struct HX_CONCATENATE(SuiteName_, CaseName_) : hxTestRunner::TestFactoryBase { \
 		struct Executor_ : SuiteName_ { virtual void Run() HX_OVERRIDE; }; \
 		HX_CONCATENATE(SuiteName_, CaseName_)() { hxTestRunner::singleton().addTest(this); } \
-		virtual void Run() HX_OVERRIDE { Executor_ executor; executor.Run(); } \
+		virtual void Run() HX_OVERRIDE { Executor_ executor_; executor_.Run(); } \
 		virtual const char* Suite() HX_OVERRIDE { return #SuiteName_; } \
 		virtual const char* Case() HX_OVERRIDE { return #CaseName_; } \
 		virtual const char* File() HX_OVERRIDE { return __FILE__; } \
@@ -59,7 +59,7 @@ HX_INLINE void InitGoogleTest() { }
 // RUN_ALL_TESTS.
 #define RUN_ALL_TESTS() hxTestRunner::singleton().executeAllTests()
 
-// SUCCEED causes current test to pass instead of failing with NOTHING ASSERTED.
+// SUCCEED causes current test to pass instead of failing with NOTHING_ASSERTED.
 #define SUCCEED() hxTestRunner::singleton().assertCheck(hxnull, 0, true, hxnull)
 
 // FAIL causes current test to fail.

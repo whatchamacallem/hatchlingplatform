@@ -41,7 +41,9 @@ public:
 	HX_INLINE T* getStorage() { return reinterpret_cast<T*>(m_allocator + 0); }
 
 private:
-	enum { m_capacity = Capacity_ }; // Consistently show m_capacity in debugger.
+	// Consistently show m_capacity in debugger.
+	static const uint32_t m_capacity = Capacity_;
+
 	// Using union to implement alignas(char *).
 	union {
 		// Char arrays are the least likely to encounter undefined behavior.
@@ -64,7 +66,7 @@ public:
 
 	// Does not allocate until reserveStorage() is called.
 	HX_INLINE hxAllocator() {
-		m_allocator = 0;
+		m_allocator = hxnull;
 		m_capacity = 0;
 	}
 
@@ -73,7 +75,7 @@ public:
 		if (m_allocator) {
 			m_capacity = 0;
 			hxFree(m_allocator);
-			m_allocator = 0;
+			m_allocator = hxnull;
 		}
 	}
 
@@ -90,11 +92,11 @@ public:
 
 	// Use hxArray::get_allocator() to access extended allocation semantics.
 	HX_INLINE void reserveStorageExt(uint32_t sz_,
-			hxMemoryManagerId alId=hxMemoryManagerId_Current,
-			uintptr_t alignmentMask=HX_ALIGNMENT_MASK) {
+			hxMemoryManagerId alId_=hxMemoryManagerId_Current,
+			uintptr_t alignmentMask_=HX_ALIGNMENT_MASK) {
 		if (sz_ <= m_capacity) { return; }
 		hxAssertRelease(m_capacity == 0, "allocator reallocation disallowed.");
-		m_allocator = (T*)hxMallocExt(sizeof(T) * sz_, alId, alignmentMask);
+		m_allocator = (T*)hxMallocExt(sizeof(T) * sz_, alId_, alignmentMask_);
 		m_capacity = sz_;
 		if ((HX_RELEASE) < 1) {
 			::memset(m_allocator, 0xcd, sizeof(T) * sz_);

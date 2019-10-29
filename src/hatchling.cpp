@@ -133,8 +133,7 @@ void hxShutdown() {
 	g_hxSettings.isShuttingDown = true;
 	hxConsoleDeregisterAll(); // Free console allocations.
 	hxMemoryManagerShutDown();
-	hxout.close();
-
+	hxCloseOut(); // Assert messages will still be written to stdout.
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	g_hxSettings.disableMemoryManager = true;
 #endif
@@ -202,7 +201,6 @@ void hxAssertHandler(uint32_t file, uint32_t line) {
 
 extern "C"
 void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
-	hxInit();
 	if (level < g_hxSettings.logLevel) {
 		return;
 	}
@@ -233,19 +231,21 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 }
 
 #else // HX_RELEASE == 3
-HX_STATIC_ASSERT(HX_USE_STDIO_H, "TODO: Logging I/O");
 extern "C"
 void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
-	hxInit();
 	if (!format || level < g_hxSettings.logLevel) {
 		return;
 	}
 	char buf[HX_MAX_LINE+1];
 	int sz = hxvsnprintf(buf, HX_MAX_LINE, format, args);
-	sz = hxMin(sz, HX_MAX_LINE);
-	if (level == hxLogLevel_Warning || level == hxLogLevel_Assert) {
-		buf[sz++] = '\n';
+	if (sz > 0) {
+		sz = hxMin(sz, HX_MAX_LINE);
+		if (level == hxLogLevel_Warning || level == hxLogLevel_Assert) {
+			buf[sz++] = '\n';
+		}
+
+		HX_STATIC_ASSERT(HX_USE_STDIO_H, "TODO: Logging I/O");
+		::fwrite(buf, 1, sz, stdout);
 	}
-	::fwrite(buf, 1, sz, stdout);
 }
 #endif

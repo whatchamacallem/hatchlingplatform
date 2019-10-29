@@ -34,13 +34,13 @@ public:
 
 	// Hashing stops at first non-printing character.
 	HX_INLINE static uint32_t hash(const char*const& key) {
-		const char* k = key;
-		uint32_t x = (uint32_t)0x811c9dc5; // FNV-1a string hashing.
-		while (!hxIsDelimiter(*k)) {
-			x ^= (uint32_t)*k++;
-			x *= (uint32_t)0x01000193;
+		const char* k_ = key;
+		uint32_t x_ = (uint32_t)0x811c9dc5; // FNV-1a string hashing.
+		while (!hxIsDelimiter(*k_)) {
+			x_ ^= (uint32_t)*k_++;
+			x_ *= (uint32_t)0x01000193;
 		}
-		return x;
+		return x_;
 	}
 
 	// Compare first whitespace delimited tokens.

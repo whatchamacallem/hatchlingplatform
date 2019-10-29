@@ -41,13 +41,13 @@ public:
 		return m_hash;
 	}
 	HX_INLINE static uint32_t hash(const char*const& key_) {
-		const char* k = key_;
-		uint32_t x = (uint32_t)0x811c9dc5; // FNV-1a string hashing.
-		while (*k != '\0') {
-			x ^= (uint32_t)*k++;
-			x *= (uint32_t)0x01000193;
+		const char* k_ = key_;
+		uint32_t x_ = (uint32_t)0x811c9dc5; // FNV-1a string hashing.
+		while (*k_ != '\0') {
+			x_ ^= (uint32_t)*k_++;
+			x_ *= (uint32_t)0x01000193;
 		}
-		return x;
+		return x_;
 	}
 	HX_INLINE static bool keyEqual(const hxHashTableNodeStringLiteral& lhs_, const Key& rhs_, uint32_t rhsHash_) {
 		return lhs_.hash() == rhsHash_ && ::strcmp(lhs_.key, rhs_) == 0;

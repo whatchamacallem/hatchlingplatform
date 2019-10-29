@@ -30,13 +30,15 @@ HX_INLINE void hxInsertionSort(T* first_, T* last_, const Compare& compare_) {
 		if (compare_(*i_, *j_)) {
 			T t_ = *i_;
 			*i_ = *j_;
-			while (j_ > first_) {
+			while (first_ < j_) {
 				T* k_ = j_ - 1;
 				if (compare_(t_, *k_)) {
 					*j_ = *k_;
 					j_ = k_;
 				}
-				else { break; }
+				else {
+					break;
+				}
 			}
 			*j_ = t_;
 		}
