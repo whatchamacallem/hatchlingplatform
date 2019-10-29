@@ -26,7 +26,7 @@ public:
 
 	// Used to ensure initial capacity as reserveStorage() will not reallocate.
 	HX_INLINE void reserveStorage(uint32_t size) {
-		hxAssertRelease(size <= Capacity, "allocator overflowing fixed capacity.");
+		hxAssertRelease(size <= Capacity, "allocator overflowing fixed capacity."); (void)size;
 	}
 
 	// Returns the number of elements of T allocated.

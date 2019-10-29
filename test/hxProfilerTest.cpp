@@ -28,7 +28,7 @@ class hxProfilerTest :
 	public testing::Test
 {
 public:
-	struct hxProfilerTaskTest : public hxTaskQueue::Task {
+	struct hxProfilerTaskTest : public hxTask {
 		hxProfilerTaskTest() : m_targetMs(0.0f), m_accumulator(0) { }
 
 		void construct(const char* label, float targetMs) {
@@ -38,11 +38,12 @@ public:
 		}
 
 		virtual void execute(hxTaskQueue* q) HX_OVERRIDE {
+			(void)q;
 			generateScopes(m_targetMs);
 		}
 
 		virtual void generateScopes(float targetMs) {
-			uint32_t startCycles = hxProfiler::sampleCycles();
+			uint32_t startCycles = hxTimeSampleCycles();
 			uint32_t delta = 0u;
 
 			// Open up a sub-scope if time allows.
@@ -53,7 +54,7 @@ public:
 				generateScopes(subtarget);
 			}
 
-			while ((float)delta * g_hxProfilerMillisecondsPerCycle < targetMs) {
+			while ((float)delta * c_hxTimeMillisecondsPerCycle < targetMs) {
 				// Perform work that might not be optimized away by the compiler.
 				int32_t ops = (m_accumulator & 0xf) + 1;
 				for (int32_t i = 0; i < ops; ++i) {
@@ -61,7 +62,7 @@ public:
 				}
 
 				// Unsigned arithmetic handles clock wrapping correctly.
-				delta = hxProfiler::sampleCycles() - startCycles;
+				delta = hxTimeSampleCycles() - startCycles;
 			}
 		}
 

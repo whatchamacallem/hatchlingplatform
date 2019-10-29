@@ -35,7 +35,7 @@ TEST(hxDeathTest, NothingAsserted) {
 int32_t hxTestMain() {
 	hxInit();
 
-	hxLogConsole("hatchling platform " HATCHLING_STR "\n");
+	hxLogConsole("hatchling platform " HATCHLING_TAG "\n");
 	hxLogConsole("release %d profile %d flags %d%d%d build: " __DATE__ " " __TIME__ "\n",
 		(int)(HX_RELEASE), (int)(HX_PROFILE), (int)(HX_USE_CPP11_THREADS),
 		(int)(HX_USE_CPP11_TIME), (int)(HX_USE_CPP14_CONSTEXPR));

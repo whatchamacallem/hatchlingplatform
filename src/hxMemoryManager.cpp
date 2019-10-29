@@ -98,11 +98,11 @@ public:
 		m_highWater = 0u;
 	}
 
-	virtual void beginAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId newId) HX_OVERRIDE { }
-	virtual void endAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId oldId) HX_OVERRIDE { }
-	virtual uintptr_t getAllocationCount(hxMemoryManagerId id) const HX_OVERRIDE { return m_allocationCount; }
-	virtual uintptr_t getBytesAllocated(hxMemoryManagerId id) const HX_OVERRIDE { return m_bytesAllocated; }
-	virtual uintptr_t getHighWater(hxMemoryManagerId id) HX_OVERRIDE { return m_highWater; }
+	virtual void beginAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId newId) HX_OVERRIDE { (void)scope; (void)newId; }
+	virtual void endAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId oldId) HX_OVERRIDE { (void)scope; (void)oldId; }
+	virtual uintptr_t getAllocationCount(hxMemoryManagerId id) const HX_OVERRIDE { (void)id; return m_allocationCount; }
+	virtual uintptr_t getBytesAllocated(hxMemoryManagerId id) const HX_OVERRIDE { (void)id; return m_bytesAllocated; }
+	virtual uintptr_t getHighWater(hxMemoryManagerId id) HX_OVERRIDE { (void)id; return m_highWater; }
 
 	virtual void* onAlloc(size_t size, uintptr_t alignmentMask) HX_OVERRIDE {
 		hxAssert(size != 0u); // hxMemoryAllocatorBase::allocate
@@ -182,12 +182,12 @@ public:
 		}
 	}
 
-	virtual void beginAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId newId) HX_OVERRIDE { }
-	virtual void endAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId oldId) HX_OVERRIDE { }
+	virtual void beginAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId newId) HX_OVERRIDE { (void)scope; (void)newId; }
+	virtual void endAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId oldId) HX_OVERRIDE { (void)scope; (void)oldId; }
 	bool contains(void* ptr) { return (uintptr_t)ptr >= m_begin && (uintptr_t)ptr < m_end; }
-	virtual uintptr_t getAllocationCount(hxMemoryManagerId id) const HX_OVERRIDE { return m_allocationCount; }
-	virtual uintptr_t getBytesAllocated(hxMemoryManagerId id) const HX_OVERRIDE { return m_current - m_begin; }
-	virtual uintptr_t getHighWater(hxMemoryManagerId id) HX_OVERRIDE { return m_current - m_begin; }
+	virtual uintptr_t getAllocationCount(hxMemoryManagerId id) const HX_OVERRIDE { (void)id; return m_allocationCount; }
+	virtual uintptr_t getBytesAllocated(hxMemoryManagerId id) const HX_OVERRIDE { (void)id; return m_current - m_begin; }
+	virtual uintptr_t getHighWater(hxMemoryManagerId id) HX_OVERRIDE { (void)id; return m_current - m_begin; }
 
 	void* release() {
 		void* t = (void*)m_begin;
@@ -247,6 +247,7 @@ public:
 	}
 
 	virtual void endAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId oldId) HX_OVERRIDE {
+		(void)oldId;
 		getHighWater(hxMemoryManagerId_Current);
 
 		hxAssertMsg(m_allocationCount == scope->getPreviousAllocationCount(),
@@ -263,6 +264,7 @@ public:
 	}
 
 	virtual uintptr_t getHighWater(hxMemoryManagerId id) HX_OVERRIDE {
+		(void)id;
 		if (m_highWater < (m_current - m_begin)) {
 			m_highWater = (m_current - m_begin);
 		}
@@ -334,6 +336,7 @@ public:
 	}
 
 	virtual void beginAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId newId) HX_OVERRIDE {
+		(void)scope;
 		m_currentSection = (uint32_t)newId - (uint32_t)hxMemoryManagerId_ScratchPage0;
 		hxAssert(m_currentSection < c_nSections);
 		Section& section = m_sections[m_currentSection];
@@ -358,6 +361,7 @@ public:
 	}
 
 	virtual void endAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId oldId) HX_OVERRIDE {
+		(void)scope;
 		hxAssert(m_currentSection < c_nSections);
 		Section& section = m_sections[m_currentSection];
 		hxAssert(section.m_current != 0u);
@@ -498,7 +502,7 @@ uint32_t hxMemoryManager::allocationCount() {
 	uint32_t allocationCount = 0;
 	hxLog("memory manager allocation count:\n");
 	for (int32_t i = 0; i != hxMemoryManagerId_MAX; ++i) {
-		hxMemoryAllocatorBase& al = *m_memoryAllocators[i]; (void)al;
+		hxMemoryAllocatorBase& al = *m_memoryAllocators[i];
 		hxLog("  %s count %u size %u high_water %u\n", al.label(),
 			(unsigned int)al.getAllocationCount((hxMemoryManagerId)i),
 			(unsigned int)al.getBytesAllocated((hxMemoryManagerId)i),
@@ -738,8 +742,7 @@ void hxMemoryManagerShutDown() {
 #endif
 	// Any allocations made while active will crash when free'd.
 	uint32_t allocationCount = hxMemoryManagerAllocationCount();
-	hxAssertRelease(allocationCount == 0, "memory leaks: %d", (int)allocationCount);
-		(void)allocationCount;
+	hxAssertRelease(allocationCount == 0, "memory leaks: %d", (int)allocationCount); (void)allocationCount;
 
 	s_hxMemoryManager->destruct();
 

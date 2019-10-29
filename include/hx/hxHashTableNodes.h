@@ -21,7 +21,7 @@ public:
 		return (uint32_t)key * (uint32_t)0x61C88647u;
 	}
 	HX_INLINE static bool keyEqual(const hxHashTableNodeInteger& lhs, const Key& rhs, uint32_t rhsHash) {
-		return lhs.key == rhs; (void)rhsHash;
+		(void)rhsHash; return lhs.key == rhs;
 	}
 };
 

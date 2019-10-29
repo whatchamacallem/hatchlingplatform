@@ -8,7 +8,7 @@
 #error #include <hx/hatchling.h>
 #endif
 
-#if defined(hxvsnprintf) && HX_USE_C_FILE
+#if defined(hxvsnprintf) && HX_USE_STDIO_H
 // provide declaration of vsnprintf when hxvsnprintf is not in use.
 #include <stdio.h>
 #endif

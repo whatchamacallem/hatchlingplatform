@@ -155,7 +155,7 @@ struct hxCommand0 : public hxCommand {
 		return false;
 	}
 	virtual void usage(const char* id=hxnull) HX_OVERRIDE {
-		hxLogConsole("%s\n", id ? id : "use no args");
+		hxLogConsole("%s\n", id ? id : "use no args"); (void)id;
 	}
 	R(*m_fn)();
 };
@@ -174,7 +174,7 @@ struct hxCommand1 : public hxCommand {
 		return false;
 	}
 	virtual void usage(const char* id=hxnull) HX_OVERRIDE {
-		hxLogConsole("%s %s\n", id ? id : "usage:", hxArg<A>::getLabel());
+		hxLogConsole("%s %s\n", id ? id : "usage:", hxArg<A>::getLabel()); (void)id;
 	}
 	R(*m_fn)(A);
 };
@@ -197,7 +197,7 @@ struct hxCommand2 : public hxCommand {
 		return false;
 	}
 	virtual void usage(const char* id=hxnull) HX_OVERRIDE {
-		hxLogConsole("%s %s, %s\n", id ? id : "usage:", hxArg<A1>::getLabel(), hxArg<A2>::getLabel());
+		hxLogConsole("%s %s, %s\n", id ? id : "usage:", hxArg<A1>::getLabel(), hxArg<A2>::getLabel()); (void)id;
 	}
 	R(*m_fn)(A1, A2);
 };
@@ -224,7 +224,7 @@ struct hxCommand3 : public hxCommand {
 		return false;
 	}
 	virtual void usage(const char* id=hxnull) HX_OVERRIDE {
-		hxLogConsole("%s %s, %s, %s\n", id ? id : "usage:", hxArg<A1>::getLabel(), hxArg<A2>::getLabel(), hxArg<A3>::getLabel());
+		hxLogConsole("%s %s, %s, %s\n", id ? id : "usage:", hxArg<A1>::getLabel(), hxArg<A2>::getLabel(), hxArg<A3>::getLabel()); (void)id;
 	}
 	R(*m_fn)(A1, A2, A3);
 };
@@ -254,7 +254,7 @@ struct hxCommand4 : public hxCommand {
 	}
 	virtual void usage(const char* id=hxnull) HX_OVERRIDE {
 		hxLogConsole("%s %s, %s, %s, %s\n", id ? id : "usage:", hxArg<A1>::getLabel(), hxArg<A2>::getLabel(), hxArg<A3>::getLabel(),
-			hxArg<A4>::getLabel());
+			hxArg<A4>::getLabel()); (void)id;
 	}
 	R(*m_fn)(A1, A2, A3, A4);
 };
@@ -277,6 +277,7 @@ struct hxVariable : public hxCommand {
 		return false;
 	}
 	virtual void usage(const char* id=hxnull) HX_OVERRIDE {
+		(void)id;
 #if HX_USE_64_BIT_TYPES
 		if (*m_var == (T)(long long)*m_var) {
 			// If the current value fits in a long long, use that.

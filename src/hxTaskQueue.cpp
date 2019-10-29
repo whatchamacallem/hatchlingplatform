@@ -9,10 +9,11 @@ HX_REGISTER_FILENAME_HASH
 // hxTaskQueue
 
 hxTaskQueue::hxTaskQueue(int32_t threadPoolSize)
-	: m_nextWaitingTask(hxnull)
+	: m_nextTask(hxnull)
 	, m_runningQueueCheck(c_runningQueueCheck)
 
 {
+	(void)threadPoolSize;
 #if HX_USE_CPP11_THREADS
 	m_threadPoolSize = (threadPoolSize >= 0) ? threadPoolSize
 		: ((int32_t)std::thread::hardware_concurrency() - 1);
@@ -47,23 +48,23 @@ hxTaskQueue::~hxTaskQueue() {
 	}
 }
 
-void hxTaskQueue::enqueue(Task* task) {
-	hxAssert(task && !task->m_queue && !task->m_nextWaitingTask);
-	task->m_queue = this;
+void hxTaskQueue::enqueue(hxTask* task) {
+	hxAssert(task);
+	task->setOwner(this);
 
 #if HX_USE_CPP11_THREADS
 	if (m_threadPoolSize > 0) {
 		std::unique_lock<std::mutex> lk(m_mutex);
 		hxAssertRelease(m_runningQueueCheck == c_runningQueueCheck, "enqueue to stopped queue");
-		task->m_nextWaitingTask = m_nextWaitingTask;
-		m_nextWaitingTask = task;
+		task->setNextTask(m_nextTask);
+		m_nextTask = task;
 		m_condVarTasks.notify_one();
 	}
 	else
 #endif
 	{
-		task->m_nextWaitingTask = m_nextWaitingTask;
-		m_nextWaitingTask = task;
+		task->setNextTask(m_nextTask);
+		m_nextTask = task;
 	}
 }
 
@@ -76,11 +77,11 @@ void hxTaskQueue::waitForAll() {
 	else
 #endif
 	{
-		while (m_nextWaitingTask) {
-			Task* task = m_nextWaitingTask;
-			m_nextWaitingTask = task->m_nextWaitingTask;
-			task->m_queue = hxnull;
-			task->m_nextWaitingTask = hxnull;
+		while (m_nextTask) {
+			hxTask* task = m_nextTask;
+			m_nextTask = task->getNextTask();
+			task->setNextTask(hxnull);
+			task->setOwner(hxnull);
 
 			// Last time this object is touched.  It may delete or re-enqueue itself, we
 			// don't care.
@@ -92,7 +93,7 @@ void hxTaskQueue::waitForAll() {
 
 #if HX_USE_CPP11_THREADS
 void hxTaskQueue::executorThread(hxTaskQueue* q, ExecutorMode mode) {
-	Task* task = hxnull;
+	hxTask* task = hxnull;
 	for (;;) {
 		{
 			std::unique_lock<std::mutex> lk(q->m_mutex);
@@ -101,7 +102,7 @@ void hxTaskQueue::executorThread(hxTaskQueue* q, ExecutorMode mode) {
 				// Waited to reacquire critical section to decrement counter for previous task.
 				task = hxnull;
 				hxAssert(q->m_executingCount > 0);
-				if (--q->m_executingCount == 0 && !q->m_nextWaitingTask) {
+				if (--q->m_executingCount == 0 && !q->m_nextTask) {
 					q->m_condVarWaiting.notify_all();
 				}
 			}
@@ -109,20 +110,20 @@ void hxTaskQueue::executorThread(hxTaskQueue* q, ExecutorMode mode) {
 			// Either aquire a next task or meet stopping criteria.
 			if (mode == ExecutorMode::Pool) {
 				q->m_condVarTasks.wait(lk, [q] {
-					return q->m_nextWaitingTask || q->m_runningQueueCheck != c_runningQueueCheck;
+					return q->m_nextTask || q->m_runningQueueCheck != c_runningQueueCheck;
 				});
 			}
 
-			if (q->m_nextWaitingTask) {
+			if (q->m_nextTask) {
 				hxAssertRelease(q->m_runningQueueCheck == c_runningQueueCheck, "Q");
-				task = q->m_nextWaitingTask;
-				q->m_nextWaitingTask = task->m_nextWaitingTask;
+				task = q->m_nextTask;
+				q->m_nextTask = task->getNextTask();
 				++q->m_executingCount;
 			}
 			else {
 				if (mode != ExecutorMode::Pool) {
 					q->m_condVarWaiting.wait(lk, [q] {
-						return q->m_executingCount == 0 && !q->m_nextWaitingTask;
+						return q->m_executingCount == 0 && !q->m_nextTask;
 					});
 
 					if (mode == ExecutorMode::Stopping) {
@@ -136,8 +137,8 @@ void hxTaskQueue::executorThread(hxTaskQueue* q, ExecutorMode mode) {
 			}
 		}
 
-		task->m_nextWaitingTask = hxnull;
-		task->m_queue = hxnull;
+		task->setNextTask(hxnull);
+		task->setOwner(hxnull);
 		hxProfileScope(task->getLabel());
 		// Last time this object is touched.  It may delete or re-enqueue itself.
 		task->execute(q);

@@ -45,6 +45,7 @@ public:
 
 	// Compare first whitespace delimited tokens.
 	HX_INLINE static bool keyEqual(const hxConsoleHashTableNode& lhs, const char*const& rhs, uint32_t rhsHash) {
+		(void)rhs;
 		hxAssertMsg(lhs.hash() != rhsHash || ::strncmp(lhs.key, rhs, ::strlen(lhs.key)) == 0,
 			"console symbol hash collision: %s %s", lhs.key, rhs);
 		return lhs.hash() == rhsHash;

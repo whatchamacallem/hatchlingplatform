@@ -2,6 +2,7 @@
 // Copyright 2017-2019 Adrian Johnston
 
 #include <hx/hatchling.h>
+#include <hx/hxTask.h>
 
 #if HX_USE_CPP11_THREADS
 #include <mutex>
@@ -15,33 +16,6 @@
 
 class hxTaskQueue {
 public:
-	// Base class for tasks to be queued.
-	class Task {
-	public:
-		// staticLabel must be a static string.
-		explicit Task(const char* staticLabel = hxnull)
-			: m_queue(hxnull), m_nextWaitingTask(hxnull), m_label(staticLabel) { }
-
-		// Not called by queue. execute() may free task _if allocator is thread safe_.
-		virtual ~Task() { hxAssertRelease(!m_queue, "deleting queued task: %s", getLabel()); }
-
-		// Will be wrapped in hxProfileScope(getLabel());
-		virtual void execute(hxTaskQueue* q) = 0;
-
-		const char* getLabel() const { return m_label ? m_label : "task"; }
-		void setLabel(const char* x) { m_label = x; }
-
-	private:
-		friend class hxTaskQueue;
-
-		Task(const Task&); // = delete
-		void operator=(const Task&); // = delete
-
-		hxTaskQueue* m_queue;
-		Task* m_nextWaitingTask;
-		const char* m_label;
-	};
-
 	// threadPoolSize -1 indicates using a hardware_concurrency()-1 size thread pool.
 	// threadPoolSize 0 does not use threading. 
 	explicit hxTaskQueue(int32_t threadPoolSize = -1);
@@ -51,10 +25,10 @@ public:
 
 	// Does not delete task after execution.  Thread safe and callable from
 	// running tasks.
-	void enqueue(Task* task);
+	void enqueue(hxTask* task);
 
 	// The thread calling waitForAll() will execute tasks as well.  Do not call
-	// from Task::execute().
+	// from hxTask::execute().
 	void waitForAll();
 
 private:
@@ -63,7 +37,7 @@ private:
 
 	static const uint32_t c_runningQueueCheck = 0xc710b034u;
 
-	Task* m_nextWaitingTask;
+	hxTask* m_nextTask;
 	uint32_t m_runningQueueCheck;
 
 #if HX_USE_CPP11_THREADS

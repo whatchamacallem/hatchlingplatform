@@ -72,6 +72,7 @@ public:
 	}
 
 	void TestMemoryAllocatorLeak(hxMemoryManagerId id) {
+		(void)id;
 #if (HX_RELEASE) < 1
 		uintptr_t startCount = 0;
 		uintptr_t startBytes = 0;

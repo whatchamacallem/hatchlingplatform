@@ -18,7 +18,7 @@ struct hxDmaSyncPoint {
 #else
 	hxDmaSyncPoint() : pImpl(hxnull) { }
 #endif
-	// TODO: Add a target specific handle.
+	// TODO: Configure for target.  Use pImpl to store a target specific handle.
 	char* pImpl;
 };
 

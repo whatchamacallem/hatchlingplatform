@@ -18,11 +18,11 @@ public:
 	};
 
 	struct FactoryBase {
-		virtual void Run(void) = 0;
-		virtual const char* Suite(void) = 0;
-		virtual const char* Case(void) = 0;
-		virtual const char* File(void) = 0;
-		virtual int32_t Line(void) = 0;
+		virtual void Run() = 0;
+		virtual const char* Suite() = 0;
+		virtual const char* Case() = 0;
+		virtual const char* File() = 0;
+		virtual int32_t Line() = 0;
 	};
 
 	// Ensures constructor runs before tests are registered by global constructors.
@@ -55,7 +55,7 @@ public:
 				return devNull();
 			}
 
-			hxLogConsole("%s(%d): ", file, (int)line);
+			hxLogConsole("%s(%d): ", file, (int)line); (void)file; (void)line;
 			va_list args;
 			va_start(args, format);
 			hxLogHandlerV(hxLogLevel_Console, format, args);

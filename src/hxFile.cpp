@@ -2,7 +2,7 @@
 
 #include <hx/hxFile.h>
 
-#if HX_USE_C_FILE
+#if HX_USE_STDIO_H
 #include <stdio.h>
 #endif
 
@@ -11,7 +11,7 @@ HX_REGISTER_FILENAME_HASH
 // ----------------------------------------------------------------------------
 // hxFile
 //
-// With HX_USE_C_FILE target will require an implementation of fopen(), fclose(),
+// With HX_USE_STDIO_H target will require an implementation of fopen(), fclose(),
 // fread(), fwrite(), fgets() and feof().
 
 // Wrapped to ensure correct construction order.
@@ -49,8 +49,8 @@ bool hxFile::open(uint16_t mode, const char* filename, ...) {
 	return rv;
 }
 
-HX_STATIC_ASSERT(HX_USE_C_FILE, "TODO: File I/O");
-#if HX_USE_C_FILE
+HX_STATIC_ASSERT(HX_USE_STDIO_H, "TODO: File I/O");
+#if HX_USE_STDIO_H
 
 bool hxFile::openV(uint16_t mode, const char* filename, va_list args) {
 	hxInit();
@@ -102,7 +102,7 @@ size_t hxFile::read(void* bytes, size_t byteCount) {
 		"file not readable");
 	size_t bytesRead = (bytes && m_filePImpl) ? ::fread(bytes, 1, byteCount, (FILE*)m_filePImpl) : 0u;
 	hxAssertRelease((byteCount == bytesRead) || (m_openMode & hxFile::fallible),
-		"read bytes %d != actual %d", (int)byteCount, (int)bytesRead); (void)bytesRead;
+		"read bytes %d != actual %d", (int)byteCount, (int)bytesRead);
 	if (byteCount != bytesRead) {
 		m_good = false;
 		m_eof = m_filePImpl ? ::feof((FILE*)m_filePImpl) : false;
@@ -120,7 +120,7 @@ size_t hxFile::write(const void* bytes, size_t byteCount) {
 		"file not writable");
 	size_t bytesWritten = (bytes && m_filePImpl) ? ::fwrite(bytes, 1, byteCount, (FILE*)m_filePImpl) : 0u;
 	hxAssertRelease((byteCount == bytesWritten) || (m_openMode & hxFile::fallible),
-		"write bytes %d != actual %d", (int)byteCount, (int)bytesWritten); (void)bytesWritten;
+		"write bytes %d != actual %d", (int)byteCount, (int)bytesWritten);
 	m_good = byteCount == bytesWritten; // Can restore goodness.
 	return bytesWritten;
 }

@@ -67,25 +67,19 @@
     <ClCompile Include="..\test\hxTestMain.cpp">
       <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="..\printf\printf.c">
-      <Filter>printf</Filter>
-    </ClCompile>
-    <ClCompile Include="..\printf\test\test_suite.cpp">
-      <Filter>printf\test</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\hxprintf.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\hx\internal\hxConsoleInternal.h">
-      <Filter>include/hx\internal</Filter>
+      <Filter>include/hx/internal</Filter>
     </ClInclude>
     <ClInclude Include="..\include\hx\internal\hxHashTableInternal.h">
-      <Filter>include/hx\internal</Filter>
+      <Filter>include/hx/internal</Filter>
     </ClInclude>
     <ClInclude Include="..\include\hx\internal\hxProfilerInternal.h">
-      <Filter>include/hx\internal</Filter>
+      <Filter>include/hx/internal</Filter>
     </ClInclude>
     <ClInclude Include="..\include\hx\hatchling.h">
       <Filter>include/hx</Filter>
@@ -133,7 +127,7 @@
       <Filter>include/hx</Filter>
     </ClInclude>
     <ClInclude Include="..\include\hx\internal\hxTestInternal.h">
-      <Filter>include/hx\internal</Filter>
+      <Filter>include/hx/internal</Filter>
     </ClInclude>
     <ClInclude Include="..\include\hx\hxTest.h">
       <Filter>include/hx</Filter>
@@ -141,11 +135,14 @@
     <ClInclude Include="..\include\hx\hxprintf.h">
       <Filter>include/hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\printf\printf.h">
-      <Filter>printf</Filter>
+    <ClInclude Include="..\include\hx\hxTask.h">
+      <Filter>include/hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\printf\test\catch.hpp">
-      <Filter>printf\test</Filter>
+    <ClInclude Include="..\include\hx\hxTime.h">
+      <Filter>include/hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxChron.h">
+      <Filter>include/hx</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -175,27 +172,6 @@
     <None Include="profile.json">
       <Filter>visualstudio</Filter>
     </None>
-    <None Include="..\printf\.git">
-      <Filter>printf</Filter>
-    </None>
-    <None Include="..\printf\.gitattributes">
-      <Filter>printf</Filter>
-    </None>
-    <None Include="..\printf\.travis.yml">
-      <Filter>printf</Filter>
-    </None>
-    <None Include="..\printf\codecov.yml">
-      <Filter>printf</Filter>
-    </None>
-    <None Include="..\printf\LICENSE">
-      <Filter>printf</Filter>
-    </None>
-    <None Include="..\printf\Makefile">
-      <Filter>printf</Filter>
-    </None>
-    <None Include="..\printf\README.md">
-      <Filter>printf</Filter>
-    </None>
     <None Include="..\etc\gittest.sh">
       <Filter>etc</Filter>
     </None>
@@ -224,9 +200,6 @@
     <Filter Include="include/hx">
       <UniqueIdentifier>{5ec69030-5e28-4ba6-bcbf-83de1ba20691}</UniqueIdentifier>
     </Filter>
-    <Filter Include="include/hx\internal">
-      <UniqueIdentifier>{532f28cf-a317-43a1-a22d-989bcb590968}</UniqueIdentifier>
-    </Filter>
     <Filter Include="etc">
       <UniqueIdentifier>{f018f69f-8d51-4c00-94ef-b3064c6a7480}</UniqueIdentifier>
     </Filter>
@@ -236,11 +209,8 @@
     <Filter Include="visualstudio">
       <UniqueIdentifier>{8ef34652-adbc-4070-89c7-6e496d9fd230}</UniqueIdentifier>
     </Filter>
-    <Filter Include="printf">
-      <UniqueIdentifier>{e32b420d-5c79-4509-a6fe-4e59c1e5035d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="printf\test">
-      <UniqueIdentifier>{f7f70262-c64d-4c22-aec6-200d4b09a1c0}</UniqueIdentifier>
+    <Filter Include="include/hx/internal">
+      <UniqueIdentifier>{532f28cf-a317-43a1-a22d-989bcb590968}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

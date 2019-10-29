@@ -22,7 +22,7 @@ public:
 		g_hxProfiler.recordsClear();
 #endif
 	}
-	struct TaskTest : public hxTaskQueue::Task {
+	struct TaskTest : public hxTask {
 		TaskTest() : m_execCount(0), m_reenqueueCount(0) { }
 
 		virtual void execute(hxTaskQueue* q) HX_OVERRIDE {

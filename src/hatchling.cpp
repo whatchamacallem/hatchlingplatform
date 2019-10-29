@@ -9,7 +9,7 @@
 #include <hx/hxProfiler.h>
 #include <hx/hxprintf.h>
 
-#if HX_USE_C_FILE
+#if HX_USE_STDIO_H
 #include <stdio.h>
 #endif
 
@@ -56,6 +56,10 @@ void hxSettingsConstruct();
 static const char* s_hxInitFile = ""; // For trapping code running before hxMain.
 static uint32_t s_hxInitLine = 0;
 
+#if HX_USE_CPP11_TIME
+std::chrono::high_resolution_clock::time_point g_hxTimeStart;
+#endif
+
 extern "C"
 void hxInitAt(const char* file, uint32_t line) {
 	hxAssertRelease(!g_hxIsInit, "internal error");
@@ -63,6 +67,10 @@ void hxInitAt(const char* file, uint32_t line) {
 
 	if (file) { s_hxInitFile = file; }
 	s_hxInitLine = line;
+
+#if HX_USE_CPP11_TIME
+	g_hxTimeStart = std::chrono::high_resolution_clock::now();
+#endif
 
 	hxSettingsConstruct();
 	hxMemoryManagerInit();
@@ -202,7 +210,8 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 	}
 }
 
-#elif HX_USE_C_FILE // HX_RELEASE == 3 && HX_USE_C_FILE
+#else // HX_RELEASE == 3
+HX_STATIC_ASSERT(HX_USE_STDIO_H, "TODO: Logging I/O");
 extern "C"
 void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 	hxInit();
@@ -213,11 +222,5 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 	int sz = hxvsnprintf(buf, HX_MAX_LINE, format, args);
 	sz = hxMin(sz, HX_MAX_LINE);
 	::fwrite(buf, 1, sz, stdout);
-}
-#else // HX_RELEASE == 3 && !(HX_USE_C_FILE)
-// TODO: hxLogHandlerV().
-extern "C"
-void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
-	(void)level; (void)format; (void)args;
 }
 #endif

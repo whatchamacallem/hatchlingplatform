@@ -13,8 +13,8 @@
 #include <string.h>
 
 // Major, minor and patch versions.
-#define HATCHLING_VER 0x20103
-#define HATCHLING_STR "v2.1.3"
+#define HATCHLING_VER 0x20104
+#define HATCHLING_TAG "v2.1.4"
 
 // HX_RELEASE: 0 is a debug build with all asserts and verbose strings.
 //             1 is a release build with critical asserts and verbose warnings.
@@ -23,8 +23,8 @@
 //               E.g. for CMake's "MinSizeRel".
 //             3 no asserts or tear down and very minimal logging.
 //
-#ifndef HX_RELEASE
-#ifdef NDEBUG
+#if !defined(HX_RELEASE)
+#if defined(NDEBUG)
 #define HX_RELEASE 1
 #else
 #define HX_RELEASE 0
@@ -89,7 +89,7 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 int hxAssertHandler(const char* file, uint32_t line);
 
 #else // !(HX_RELEASE < 1)
-#define hxInit() (void)(g_hxIsInit || (hxInitAt(0, 0), 0))
+#define hxInit() (void)(g_hxIsInit || (hxInitAt(hxnull, 0), 0))
 #define hxLog(...) ((void)0)
 #define hxAssertMsg(x, ...) ((void)0)
 #define hxAssert(x) ((void)0)

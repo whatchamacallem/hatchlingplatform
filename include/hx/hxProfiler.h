@@ -4,6 +4,7 @@
 
 #include <hx/hatchling.h>
 #include <hx/hxStockpile.h>
+#include <hx/hxTime.h>
 
 #if HX_PROFILE
 #include <hx/internal/hxProfilerInternal.h>
@@ -41,12 +42,3 @@
 // go to "chrome://tracing/". Load the generated json file.  Use the W/A/S/D keys.
 // See http://www.chromium.org/developers/how-tos/trace-event-profiling-tool
 #define hxProfilerWriteToChromeTracing(filename) HX_PROFILE_FN( g_hxProfiler.writeToChromeTracing(filename) )
-
-// c_hxProfilerDefaultSamplingCutoff is 1 microsecond.
-#if HX_PROFILE && HX_USE_CPP11_TIME
-constexpr uint32_t c_hxProfilerDefaultSamplingCutoff =
-	(uint32_t)(std::chrono::high_resolution_clock::period::den
-		/ (std::chrono::high_resolution_clock::period::num * 1000000));
-#else
-enum { c_hxProfilerDefaultSamplingCutoff = 1000 };
-#endif

@@ -29,33 +29,22 @@
     <ClInclude Include="..\include\hx\hxHashTableNodes.h" />
     <ClInclude Include="..\include\hx\hxMemoryManager.h" />
     <ClInclude Include="..\include\hx\hxProfiler.h" />
+    <ClInclude Include="..\include\hx\hxChron.h" />
     <ClInclude Include="..\include\hx\hxSettings.h" />
     <ClInclude Include="..\include\hx\hxSort.h" />
     <ClInclude Include="..\include\hx\hxStockpile.h" />
     <ClInclude Include="..\include\hx\hxStringLiteralHash.h" />
+    <ClInclude Include="..\include\hx\hxTask.h" />
     <ClInclude Include="..\include\hx\hxTaskQueue.h" />
     <ClInclude Include="..\include\hx\hxTest.h" />
+    <ClInclude Include="..\include\hx\hxTime.h" />
     <ClInclude Include="..\include\hx\internal\hxConsoleInternal.h" />
     <ClInclude Include="..\include\hx\internal\hxHashTableInternal.h" />
     <ClInclude Include="..\include\hx\internal\hxProfilerInternal.h" />
     <ClInclude Include="..\include\hx\internal\hxTestInternal.h" />
     <ClInclude Include="..\include\hx\hxprintf.h" />
-    <ClInclude Include="..\printf\printf.h" />
-    <ClInclude Include="..\printf\test\catch.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\printf\printf.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\printf\test\test_suite.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\src\hatchling.cpp" />
     <ClCompile Include="..\src\hxConsole.cpp" />
     <ClCompile Include="..\src\hxCUtils.c" />
@@ -97,13 +86,6 @@
     <None Include="..\etc\gittest.sh" />
     <None Include="..\etc\profile.json" />
     <None Include="..\etc\test.sh" />
-    <None Include="..\printf\.git" />
-    <None Include="..\printf\.gitattributes" />
-    <None Include="..\printf\.travis.yml" />
-    <None Include="..\printf\codecov.yml" />
-    <None Include="..\printf\LICENSE" />
-    <None Include="..\printf\Makefile" />
-    <None Include="..\printf\README.md" />
     <None Include="..\README.md" />
     <None Include=".gitignore" />
     <None Include="hxFileTest_Operators.bin" />
@@ -187,10 +169,16 @@
       <PreprocessorDefinitions>HX_HAS_64_BIT_TYPES=0;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FloatingPointModel>Strict</FloatingPointModel>
+      <FloatingPointExceptions>true</FloatingPointExceptions>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <StringPooling>true</StringPooling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -202,10 +190,16 @@
       <PreprocessorDefinitions>HX_HAS_64_BIT_TYPES=1;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FloatingPointModel>Strict</FloatingPointModel>
+      <FloatingPointExceptions>true</FloatingPointExceptions>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <StringPooling>true</StringPooling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -225,12 +219,16 @@
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <WarningLevel>Level3</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -250,12 +248,16 @@
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <WarningLevel>Level3</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

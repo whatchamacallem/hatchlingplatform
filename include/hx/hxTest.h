@@ -18,7 +18,7 @@ namespace testing {
 
 class Test {
 public:
-	virtual void Run(void) = 0;
+	virtual void Run() = 0;
 	virtual ~Test() {}
 };
 
@@ -40,7 +40,7 @@ HX_INLINE void InitGoogleTest() { }
 		virtual int32_t Line() HX_OVERRIDE { return __LINE__; } \
 	}; \
 	static HX_CONCATENATE(SuiteName, CaseName) HX_CONCATENATE(s_hxTest, CaseName); \
-	void HX_CONCATENATE(SuiteName, CaseName)::Executor::Run(void)
+	void HX_CONCATENATE(SuiteName, CaseName)::Executor::Run()
 
 // TEST_F.  Google Test reimplementation, SuiteName must be a subclass of testing::Test.
 #define TEST_F(SuiteName, CaseName) \
@@ -54,7 +54,7 @@ HX_INLINE void InitGoogleTest() { }
 		virtual int32_t Line() HX_OVERRIDE { return __LINE__; } \
 	}; \
 	static HX_CONCATENATE(SuiteName, CaseName) HX_CONCATENATE(s_hxTest, CaseName); \
-	void HX_CONCATENATE(SuiteName, CaseName)::Executor::Run(void)
+	void HX_CONCATENATE(SuiteName, CaseName)::Executor::Run()
 
 #define RUN_ALL_TESTS() hxTestRunner::get().executeAllTests()
 #define SUCCEED() hxTestRunner::get().assertCheck(hxnull, 0, true, hxnull) // Avoids NOTHING ASSERTED.

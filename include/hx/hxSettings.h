@@ -15,9 +15,9 @@
 #define _HAS_EXCEPTIONS 0 // must be included before standard headers
 #endif
 
-// MSVC doesn't support C++ feature test macros, and sets __cplusplus wrong by
-// default
-#define HX_USE_C_FILE 1
+// MSVC doesn't support C++ feature test macros and sets __cplusplus wrong by
+// default.
+#define HX_USE_STDIO_H 1
 #define HX_USE_CPP11_THREADS __STDCPP_THREADS__ 
 #define HX_USE_CPP11_TIME 1
 #define HX_USE_CPP14_CONSTEXPR 0 // silently generating horrible code as of MSVC 15.8.9.
@@ -44,24 +44,25 @@
 #else // target settings
 // This is configured for gcc and clang.  Other compilers will require customization.
 
-#define HX_USE_C_FILE 1
+#define HX_USE_STDIO_H 1
 
-#ifndef HX_USE_CPP11_THREADS
+#if !defined(HX_USE_CPP11_THREADS)
 #define HX_USE_CPP11_THREADS (__cplusplus >= 201103L)
 #endif
 
-#ifndef HX_USE_CPP11_TIME
+#if !defined(HX_USE_CPP11_TIME)
 #define HX_USE_CPP11_TIME (__cplusplus >= 201103L)
 #endif
 
-#ifndef HX_USE_CPP14_CONSTEXPR
+#if !defined(HX_USE_CPP14_CONSTEXPR)
 // "__cpp_constexpr >= 201304" may not compile as C++
 #define HX_USE_CPP14_CONSTEXPR (__cplusplus >= 201402L)
 #endif
 
 #define HX_RESTRICT __restrict
 #define HX_INLINE inline __attribute__((always_inline))
-#define HX_LINK_SCRATCHPAD // TODO
+#define HX_LINK_SCRATCHPAD // TODO: Configure for target.  A linker section is required.
+
 #define HX_ATTR_FORMAT(pos, start) __attribute__((format(printf, pos, start)))
 #define HX_ATTR_NORETURN __attribute__((noreturn))
 #define HX_DEBUG_BREAK __builtin_trap()
@@ -94,7 +95,7 @@
 //  2: log allocator scopes
 //  3: also log heap utilization
 //
-#ifndef HX_MEM_DIAGNOSTIC_LEVEL
+#if !defined(HX_MEM_DIAGNOSTIC_LEVEL)
 #define HX_MEM_DIAGNOSTIC_LEVEL ((HX_RELEASE) < 2) ? 1 : 0
 #endif
 
@@ -109,7 +110,7 @@
 // ----------------------------------------------------------------------------
 // HX_PROFILE: 0 disables code for capturing profiling data
 //             1 compiles in code.  See hxProfileScope().
-#ifndef HX_PROFILE
+#if !defined(HX_PROFILE)
 #define HX_PROFILE (HX_RELEASE) < 2
 #endif
 
@@ -118,7 +119,7 @@
 
 // ----------------------------------------------------------------------------
 // HX_DEBUG_DMA.  Internal validation, set to 1 or 0 as needed
-#ifndef HX_DEBUG_DMA
+#if !defined(HX_DEBUG_DMA)
 #define HX_DEBUG_DMA (HX_RELEASE) < 1
 #endif
 
@@ -127,12 +128,12 @@
 
 // ----------------------------------------------------------------------------
 // HX_USE_GOOGLE_TEST:  In case you need to use Google Test.
-#ifndef HX_USE_GOOGLE_TEST
+#if !defined(HX_USE_GOOGLE_TEST)
 #define HX_USE_GOOGLE_TEST 0
 #endif
 
 // Set by etc/coverage.sh
-#ifndef HX_TEST_DIE_AT_THE_END
+#if !defined(HX_TEST_DIE_AT_THE_END)
 #define HX_TEST_DIE_AT_THE_END 0
 #endif
 
@@ -147,16 +148,16 @@
 // ----------------------------------------------------------------------------
 // Default undetected HX_USE_* features.
 
-#ifndef HX_USE_C_FILE
-#define HX_USE_C_FILE 1
+#if !defined(HX_USE_STDIO_H)
+#define HX_USE_STDIO_H 1
 #endif
 
 // size_t is used regardless because it is expected to be 32-bit on the target.
-#ifndef HX_USE_64_BIT_TYPES
+#if !defined(HX_USE_64_BIT_TYPES)
 #define HX_USE_64_BIT_TYPES 1
 #endif
 
-#ifndef HX_USE_DMA
+#if !defined(HX_USE_DMA)
 #define HX_USE_DMA 0
 #endif
 

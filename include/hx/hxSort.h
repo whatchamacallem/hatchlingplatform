@@ -91,7 +91,7 @@ protected:
 
 
 // ----------------------------------------------------------------------------
-// hxRadixSort.  Sorts an array of Value* by Keys.
+// hxRadixSort.  Sorts an array of value* by keys.  K is the key and V the value.
 //
 // Nota bene: Keys of double, int64_t and uint64_t are not supported.  Keys
 // are stored as uint32_t.

@@ -35,7 +35,7 @@ export GREP_COLOR='0;32'
 
 # c++ warning flags.  preceded by -pedantic-errors except with c++98.
 WARNINGS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
-	-Wwrite-strings -Wendif-labels -Wstrict-overflow=1 -Wno-unused-parameter"
+	-Wwrite-strings -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter"
 
 # Test gcc with both -std=c++98 and -std=c++14.  Not using -pedantic-errors with
 # c++98 as "anonymous variadic macros were introduced in c++11."  (This code base
@@ -78,6 +78,6 @@ rm log.txt profile.json hxConsoleTest_FileTest.txt hxFileTest_Operators.bin \
 
 # ALL_PASSED
 echo "
-$(tput setaf 2)$(tput bold)ALL_PASSED$(tput sgr 0)
+$(tput bold)$(tput bold)ALL_PASSED$(tput sgr 0)
 "
 

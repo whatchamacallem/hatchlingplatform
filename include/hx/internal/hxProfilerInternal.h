@@ -8,20 +8,11 @@
 #error #include <hx/hxProfiler.h>
 #endif
 
-#if HX_USE_CPP11_TIME
-#include <chrono>
-#else
-#include <time.h>
-#endif
-
 // Use direct access to an object with static linkage for speed.
 extern class hxProfiler g_hxProfiler;
 
 // Address of s_hxProfilerThreadIdAddress used to uniquely identify thread.
 extern HX_THREAD_LOCAL uint8_t s_hxProfilerThreadIdAddress;
-
-// Scales cycles to ms.  Clock rates may vary.
-extern float g_hxProfilerMillisecondsPerCycle;
 
 // ----------------------------------------------------------------------------
 // hxProfiler
@@ -29,12 +20,12 @@ extern float g_hxProfilerMillisecondsPerCycle;
 class hxProfiler {
 public:
 	struct Record {
-		HX_INLINE Record(uint32_t begin, uint32_t end, const char* label, uint32_t threadId)
+		HX_INLINE Record(hx_cycles_t begin, hx_cycles_t end, const char* label, uint32_t threadId)
 			: m_label(label), m_begin(begin), m_end(end), m_threadId(threadId) {
 		}
 		const char* m_label;
-		uint32_t m_begin;
-		uint32_t m_end;
+		hx_cycles_t m_begin;
+		hx_cycles_t m_end;
 		uint32_t m_threadId;
 	};
 
@@ -49,23 +40,8 @@ public:
 	HX_INLINE uint32_t recordsSize() { return m_records.size(); }
 	HX_INLINE void recordsClear() { m_records.clear(); }
 
-#if HX_USE_CPP11_TIME
-	static std::chrono::high_resolution_clock::time_point s_start;
-
-	HX_INLINE static uint32_t sampleCycles() {
-		return (uint32_t)(std::chrono::high_resolution_clock::now() - s_start).count();
-	}
-#else
-	// TODO: read cycle counter register for target.  This version is a Linux fallback.
-	HX_INLINE static uint32_t sampleCycles() {
-		timespec ts;
-		clock_gettime(CLOCK_MONOTONIC, &ts);
-		return (uint32_t)ts.tv_nsec;
-	}
-#endif // !HX_USE_CPP11_TIME
-
 private:
-	template<uint32_t MinCycles> friend class hxProfilerScopeInternal;
+	template<hx_cycles_t MinCycles> friend class hxProfilerScopeInternal;
 	bool m_isStarted;
 	hxStockpile<Record, HX_PROFILER_MAX_RECORDS> m_records;
 };
@@ -73,19 +49,19 @@ private:
 // ----------------------------------------------------------------------------
 // hxProfilerScopeInternal
 
-template<uint32_t MinCycles=0u>
+template<hx_cycles_t MinCycles=0u>
 class hxProfilerScopeInternal {
 public:
 	// See hxProfileScope() below.
 	HX_INLINE hxProfilerScopeInternal(const char* labelStringLiteral)
 		: m_label(labelStringLiteral)
 	{
-		m_t0 = g_hxProfiler.m_isStarted ? hxProfiler::sampleCycles() : ~(uint32_t)0;
+		m_t0 = g_hxProfiler.m_isStarted ? hxTimeSampleCycles() : ~(hx_cycles_t)0;
 	}
 
 	HX_INLINE ~hxProfilerScopeInternal() {
-		if (m_t0 != ~(uint32_t)0) {
-			uint32_t t1 = hxProfiler::sampleCycles();
+		if (m_t0 != ~(hx_cycles_t)0) {
+			hx_cycles_t t1 = hxTimeSampleCycles();
 			if ((t1 - m_t0) >= MinCycles) {
 				void* rec = g_hxProfiler.m_records.emplace_back_atomic();
 				if (rec) {
@@ -101,6 +77,6 @@ private:
 	hxProfilerScopeInternal(const hxProfilerScopeInternal&); // = delete
 	void operator=(const hxProfilerScopeInternal&); // = delete
 	const char* m_label;
-	uint32_t m_t0;
+	hx_cycles_t m_t0;
 };
 

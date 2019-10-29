@@ -35,18 +35,18 @@ static std::mutex s_hxDmaDebugMutex;
 #endif
 
 void hxDmaInit() {
-	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO");
+	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO: Configure for target.");
 }
 
 #if (HX_RELEASE) < 3
 void hxDmaShutDown() {
-	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO");
+	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO: Configure for target.");
 }
 #endif
 
 void hxDmaEndFrame() {
 	hxDmaAwaitAll("end frame");
-	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO");
+	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO: Configure for target.");
 #if HX_DEBUG_DMA
 	HX_DMA_DEBUG_MUTEX_LOCK;
 	s_hxDmaBarrierCounter = 0u;
@@ -54,7 +54,8 @@ void hxDmaEndFrame() {
 }
 
 void hxDmaAddSyncPoint(struct hxDmaSyncPoint& syncPoint) {
-	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO");
+	(void)syncPoint;
+	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO: Configure for target.");
 #if HX_DEBUG_DMA
 	HX_DMA_DEBUG_MUTEX_LOCK;
 	syncPoint.debugOnly = s_hxDmaBarrierCounter++;
@@ -65,9 +66,9 @@ void hxDmaAddSyncPoint(struct hxDmaSyncPoint& syncPoint) {
 void hxDmaStartLabeled(void* dst, const void* src, size_t bytes, const char* labelStringLiteral) {
 	hxAssertMsg(src != hxnull && dst != hxnull && bytes != 0, "dma illegal args: %s 0x%x, 0x%x, 0x%x",
 		(labelStringLiteral ? labelStringLiteral : "dma start"), (unsigned int)(uintptr_t)dst,
-		(unsigned int)(uintptr_t)src, (unsigned int)(uintptr_t)bytes);
+		(unsigned int)(uintptr_t)src, (unsigned int)(uintptr_t)bytes); (void)labelStringLiteral;
 #if HX_USE_DMA
-	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO");
+	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO: Configure for target.");
 #else
 	::memcpy(dst, src, bytes);
 #endif
@@ -82,9 +83,10 @@ void hxDmaStartLabeled(void* dst, const void* src, size_t bytes, const char* lab
 }
 
 void hxDmaAwaitSyncPointLabeled(struct hxDmaSyncPoint& syncPoint, const char* labelStringLiteral) {
+	(void)syncPoint;
 	hxProfileScopeMin((labelStringLiteral ? labelStringLiteral : "dma await"),
-		c_hxProfilerDefaultSamplingCutoff);
-	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO");
+		c_hxTimeDefaultTimingCutoff); (void)labelStringLiteral;
+	HX_STATIC_ASSERT(!HX_USE_DMA, "TODO: Configure for target.");
 
 #if HX_DEBUG_DMA
 	HX_DMA_DEBUG_MUTEX_LOCK;
