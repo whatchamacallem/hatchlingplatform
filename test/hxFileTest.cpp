@@ -22,9 +22,31 @@ public:
 };
 
 // ----------------------------------------------------------------------------------
+#if __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-zero-length"
+#endif
+
+TEST(hxFileTest, EmptyName) {
+	hxFile f(hxFile::in | hxFile::fallible, "");
+	ASSERT_EQ(f.good(), false);
+	ASSERT_EQ(f.is_open(), false);
+}
+
+#if __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
+TEST(hxFileTest, ReadWrite) {
+	hxFile f(hxFile::in | hxFile::out | hxFile::fallible, "hxFileTest_ReadWrite.txt");
+	f << "hxFileTest_ReadWrite.txt";
+
+	ASSERT_EQ(f.good(), true);
+	ASSERT_EQ(f.is_open(), true);
+}
 
 TEST(hxFileTest, NotExist) {
-	hxFile f(hxFile::in | hxFile::fallible, "TEST_FILE_DOES_NOT_EXIST");
+	hxFile f(hxFile::in | hxFile::fallible, "TEST_FILE_DOES_NOT_EXIST_%d", 123);
 	ASSERT_EQ(f.good(), false);
 	ASSERT_EQ(f.is_open(), false);
 }

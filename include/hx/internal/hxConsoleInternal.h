@@ -151,7 +151,7 @@ struct hxCase0 : public hxCommand {
 			return true;
 		}
 
-		hxLogConsole("Error: Expecting no parameters\n");
+		hxLogConsole("error: expecting no parameters\n");
 		return false;
 	}
 	virtual void log(const char* id) HX_OVERRIDE {
@@ -170,7 +170,7 @@ struct hxCase1 : public hxCommand {
 			m_fn(arg1.val);
 			return true;
 		}
-		log("Usage:");
+		log("usage:");
 		return false;
 	}
 	virtual void log(const char* id) HX_OVERRIDE {
@@ -193,7 +193,7 @@ struct hxCase2 : public hxCommand {
 				return true;
 			}
 		}
-		log("Usage:");
+		log("usage:");
 		return false;
 	}
 	virtual void log(const char* id) HX_OVERRIDE {
@@ -220,7 +220,7 @@ struct hxCase3 : public hxCommand {
 			}
 		}
 
-		log("Usage:");
+		log("usage:");
 		return false;
 	}
 	virtual void log(const char* id) HX_OVERRIDE {
@@ -249,7 +249,7 @@ struct hxCase4 : public hxCommand {
 				}
 			}
 		}
-		log("Usage:");
+		log("usage:");
 		return false;
 	}
 	virtual void log(const char* id) HX_OVERRIDE {

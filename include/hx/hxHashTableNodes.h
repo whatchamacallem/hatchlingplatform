@@ -32,7 +32,9 @@ public:
 	typedef hxHashTableNodeBase<const char*> Base;
 	HX_INLINE hxHashTableNodeStringLiteral(const char* k) : Base(k), m_hash(hash(k)) { }
 	HX_INLINE hxHashTableNodeStringLiteral(const char* k, uint32_t hash) : Base(k), m_hash(hash) { }
-	HX_INLINE uint32_t hash() const { return m_hash; }
+	HX_INLINE uint32_t hash() const {
+		return m_hash;
+	}
 	HX_INLINE static uint32_t hash(const char*const& key) {
 		const char* k = key;
 		uint32_t x = (uint32_t)0x811c9dc5; // FNV-1a string hashing.

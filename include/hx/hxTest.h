@@ -8,9 +8,9 @@
 
 // ----------------------------------------------------------------------------
 // Enable this to use Google Test instead of hxTestRunner::executeAllTests().
-#if HX_GOOGLE_TEST
+#if HX_USE_GOOGLE_TEST
 #include <gtest/gtest.h>
-#else // !HX_GOOGLE_TEST
+#else // !HX_USE_GOOGLE_TEST
 #include <hx/internal/hxTestInternal.h>
 
 // A partial Google Test reimplementation.
@@ -28,7 +28,7 @@ HX_INLINE void InitGoogleTest() { }
 
 } // namespace testing
 
-// TEST. GoogleTest reimplementation.
+// TEST. Google Test reimplementation.
 #define TEST(SuiteName, CaseName) \
 	struct HX_CONCATENATE(SuiteName, CaseName) : hxTestRunner::FactoryBase { \
 		struct Executor : testing::Test { virtual void Run() HX_OVERRIDE; }; \
@@ -42,7 +42,7 @@ HX_INLINE void InitGoogleTest() { }
 	static HX_CONCATENATE(SuiteName, CaseName) HX_CONCATENATE(s_hxTest, CaseName); \
 	void HX_CONCATENATE(SuiteName, CaseName)::Executor::Run(void)
 
-// TEST_F.  GoogleTest reimplementation, SuiteName must be a subclass of testing::Test.
+// TEST_F.  Google Test reimplementation, SuiteName must be a subclass of testing::Test.
 #define TEST_F(SuiteName, CaseName) \
 	struct HX_CONCATENATE(SuiteName, CaseName) : hxTestRunner::FactoryBase { \
 		struct Executor : SuiteName { virtual void Run() HX_OVERRIDE; }; \
@@ -58,7 +58,7 @@ HX_INLINE void InitGoogleTest() { }
 
 #define RUN_ALL_TESTS() hxTestRunner::get().executeAllTests()
 #define SUCCEED() hxTestRunner::get().assertCheck(hxnull, 0, true, hxnull) // Avoids NOTHING ASSERTED.
-#define FAIL() hxTestRunner::get().assertCheck(__FILE__, __LINE__, false, "test fail\n")
+#define FAIL() hxTestRunner::get().assertCheck(__FILE__, __LINE__, false, "failed here\n")
 
 // Args are only evaluated once.
 #define ASSERT_TRUE(x) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (x), #x "\n")
@@ -81,7 +81,7 @@ HX_INLINE void InitGoogleTest() { }
 #define EXPECT_EQ ASSERT_EQ
 #define EXPECT_NE ASSERT_NE
 
-#endif // !HX_GOOGLE_TEST
+#endif // !HX_USE_GOOGLE_TEST
 
 // ----------------------------------------------------------------------------
 // hxTestRandom.  The linear congruential random number generator from Numerical Recipes.

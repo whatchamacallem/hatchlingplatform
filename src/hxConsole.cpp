@@ -28,7 +28,9 @@ public:
 	}
 	HX_INLINE ~hxConsoleHashTableNode() { hxFree(m_cmd); }
 
-	HX_INLINE uint32_t hash() const { return m_hash; }
+	HX_INLINE uint32_t hash() const {
+		return m_hash;
+	}
 
 	// Hashing stops at first non-printing character.
 	HX_INLINE static uint32_t hash(const char*const& key) {
@@ -90,7 +92,7 @@ bool hxConsoleExecLine(const char* command) {
 
 	hxConsoleHashTableNode* node = hxConsoleCommands().find(pos);
 	if (!node) {
-		hxWarn("Command not found: %s", command);
+		hxWarn("command not found: %s", command);
 		return false;
 	}
 
@@ -100,7 +102,7 @@ bool hxConsoleExecLine(const char* command) {
 	}
 
 	bool result = node->m_cmd->execute(pos); // The hxArgs skip leading whitespace.
-	hxWarnCheck(result, "Cannot execute: %s", command);
+	hxWarnCheck(result, "cannot execute: %s", command);
 	return result;
 }
 
@@ -108,7 +110,7 @@ bool hxConsoleExecFile(hxFile& file) {
 	char buf[HX_MAX_LINE];
 	bool result = true;
 	while ((result || file.is_fallible()) && file.getline(buf)) {
-		hxLog("CONSOLE: %s", buf);
+		hxLog("console: %s", buf);
 		result = hxConsoleExecLine(buf) && result;
 	}
 	return result;
@@ -122,10 +124,10 @@ struct hxConsoleLess {
 
 void hxConsoleExecFilename(const char* filename) {
 	hxFile file(hxFile::in | hxFile::fallible, "%s", filename);
-	hxWarnCheck(file.is_open(), "Cannot open: %s", filename);
+	hxWarnCheck(file.is_open(), "cannot open: %s", filename);
 	if (file.is_open()) {
 		bool isOk = hxConsoleExecFile(file);
-		hxWarnCheck(isOk, "Encountering errors: %s", filename); (void)isOk;
+		hxWarnCheck(isOk, "encountering errors: %s", filename); (void)isOk;
 	}
 }
 
@@ -148,7 +150,6 @@ void hxConsoleHelp() {
 
 		hxInsertionSort(cmds.begin(), cmds.end(), hxConsoleLess());
 
-		hxLogConsole("CONSOLE_SYMBOLS\n");
 		for (hxArray<const hxConsoleHashTableNode*>::iterator it = cmds.begin(); it != cmds.end(); ++it) {
 			(*it)->m_cmd->log((*it)->key);
 		}

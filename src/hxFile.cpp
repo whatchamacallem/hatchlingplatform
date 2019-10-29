@@ -15,7 +15,7 @@ HX_REGISTER_FILENAME_HASH
 // fgets() and feof().
 
 // Wrapped to ensure correct construction order.
-hxFile& hxLogFile() {
+hxFile& hxFileOut() {
 	static hxFile f(hxFile::out | hxFile::fallible | hxFile::echo, "%s", g_hxSettings.logFile ? g_hxSettings.logFile : "");
 	return f;
 }
@@ -30,6 +30,7 @@ hxFile::hxFile(uint16_t mode) {
 hxFile::hxFile(uint16_t mode, const char* filename, ...) {
 	m_filePImpl = hxnull;
 	va_list args;
+	m_openMode = mode;
 	va_start(args, filename);
 	openV(mode, filename, args);
 	va_end(args);
@@ -50,14 +51,13 @@ bool hxFile::open(uint16_t mode, const char* filename, ...) {
 #if HX_USE_C_FILE
 
 bool hxFile::openV(uint16_t mode, const char* filename, va_list args) {
-	hxAssertMsg((mode & ~(uint16_t)((1u << 5) - 1u)) == 0, "using reserved file mode");
+	hxInit();
+	hxAssertMsg((mode & ~(uint16_t)((1u << 5) - 1u)) == 0, "reserved file mode bits");
 	close();
 
-	m_openMode = mode;
+	m_openMode |= mode; // keeps echo and fallible.
 
-	if (mode == 0 || filename == hxnull) {
-		return false;
-	}
+	hxAssertRelease((mode & (hxFile::in | hxFile::out)) && filename, "missing file args");
 
 	char buf[HX_MAX_LINE] = "";
 	::vsnprintf_(buf, HX_MAX_LINE, filename, args); // C99
@@ -75,7 +75,7 @@ bool hxFile::openV(uint16_t mode, const char* filename, va_list args) {
 		m = "wb";
 		break;
 	default:
-		m = "rb+";
+		m = "w+b";
 	}
 
 	m_filePImpl = (char*)::fopen(buf, m);
@@ -84,12 +84,12 @@ bool hxFile::openV(uint16_t mode, const char* filename, va_list args) {
 	return m_good;
 }
 
-void hxFile::close() {
+void hxFile::close(uint16_t keepModes) {
 	if (m_filePImpl) {
 		::fclose((FILE*)m_filePImpl);
 		m_filePImpl = hxnull;
 	}
-	m_openMode = 0u;
+	m_openMode = m_openMode & keepModes & (uint16_t)(echo | fallible);
 	m_good = false;
 	m_eof = false;
 }
@@ -114,7 +114,7 @@ size_t hxFile::write(const void* bytes, size_t byteCount) {
 #endif
 
 	hxAssertMsg(bytes, "null i/o buffer");
-	hxAssertMsg((m_openMode & hxFile::out) && (m_filePImpl || (m_openMode & hxFile::fallible)), "file not writable");
+	hxAssertMsg((m_openMode & (hxFile::out | hxFile::echo)) && (m_filePImpl || (m_openMode & hxFile::fallible)), "file not writable");
 	size_t bytesWritten = (bytes && m_filePImpl) ? ::fwrite(bytes, 1, byteCount, (FILE*)m_filePImpl) : 0u;
 	hxAssertRelease((byteCount == bytesWritten) || (m_openMode & hxFile::fallible), "write bytes %d != actual %d", (int)byteCount, (int)bytesWritten); (void)bytesWritten;
 	m_good = byteCount == bytesWritten; // Can restore goodness.

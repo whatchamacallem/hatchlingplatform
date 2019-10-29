@@ -69,16 +69,17 @@
   <ItemGroup>
     <Text Include="..\etc\CONTRIBUTORS.txt" />
     <Text Include="..\etc\LICENSE.txt" />
-    <Text Include="..\README.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.editorconfig" />
     <None Include="..\.gitattributes" />
-    <None Include="..\.gitignore" />
     <None Include="..\.travis.yml" />
+    <None Include="..\etc\coverage.md" />
     <None Include="..\etc\coverage.sh" />
     <None Include="..\etc\profile.json" />
     <None Include="..\etc\test.sh" />
+    <None Include="..\README.md" />
+    <None Include=".gitignore" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

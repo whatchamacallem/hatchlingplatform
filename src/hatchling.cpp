@@ -11,6 +11,11 @@
 
 #include <stdio.h>
 
+#ifdef _MSC_VER
+// Using Windows.h for IsDebuggerPresent().
+#include <Windows.h>
+#endif
+
 // ----------------------------------------------------------------------------
 // HX_REGISTER_FILENAME_HASH
 
@@ -44,8 +49,8 @@ void hxInitAt(const char* file, uint32_t line) {
 
 	hxSettingsConstruct();
 
-	hxLogConsole("Hatchling Platform\n");
-	hxLogConsole("Release %d Profile %d Flags %d%d%d Build: " __DATE__ " " __TIME__ "\n",
+	hxLogConsole("hatchling platform\n");
+	hxLogConsole("release %d profile %d flags %d%d%d build: " __DATE__ " " __TIME__ "\n",
 		(int)(HX_RELEASE), (int)(HX_PROFILE), (int)(HX_USE_CPP11_THREADS), (int)(HX_USE_CPP11_TIME), (int)(HX_USE_CPP14_CONSTEXPR));
 
 	hxMemoryManagerInit();
@@ -55,10 +60,10 @@ void hxInitAt(const char* file, uint32_t line) {
 	hxout << "WARNING: RTTI is enabled\n"; // RTTI is not advised.
 #endif
 #ifdef __cpp_exceptions
-	hxout << "WARNING: Exceptions are enabled\n"; // Exceptions are not used.
+	hxout << "WARNING: exceptions are enabled\n"; // Exceptions are not used.
 #endif
 #if !HX_USE_CPP11_THREADS
-	hxout << "WARNING: Single threaded only\n"; // Audit HX_USE_CPP11_THREADS if you need custom threading.
+	hxout << "WARNING: single threaded only\n"; // Audit HX_USE_CPP11_THREADS if you need custom threading.
 #endif
 }
 
@@ -77,8 +82,8 @@ void hxLogHandler(enum hxLogLevel level, const char* format, ...) {
 
 extern "C"
 void hxShutdown() {
-	hxAssertRelease(g_hxIsInit, "hxShutdown unexpected\n");
-	hxLog("hxShutdown...\n");
+	hxAssertRelease(g_hxIsInit, "shutdown unexpected\n");
+	hxLog("shutdown...\n");
 
 #if (HX_RELEASE) < 1
 	hxLog("filename hash codes:\n");
@@ -95,7 +100,8 @@ void hxShutdown() {
 	g_hxSettings.isShuttingDown = true;
 	hxConsoleDeregisterAll(); // Free console allocations.
 	hxMemoryManagerShutDown();
-	hxLogFile().close();
+	hxout.close();
+
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	g_hxSettings.disableMemoryManager = true;
 #endif
@@ -103,37 +109,53 @@ void hxShutdown() {
 
 extern "C"
 void hxExit(const char* format, ...) {
-	char buf[HX_MAX_LINE];
-	int sz = -1;
+	char buf[HX_MAX_LINE] = "exit format\n";
 	if (format != hxnull) {
 		va_list args;
 		va_start(args, format);
-		sz = ::vsnprintf_(buf, HX_MAX_LINE, format, args);
+		::vsnprintf_(buf, HX_MAX_LINE, format, args);
 		va_end(args);
 	}
 
-	hxFile& f = hxLogFile();
-	if (f.is_open()) {
-		f.print("%s", (sz < 0) ? "exit format error\n" : buf);
-		f.close();
+	hxFile& f = hxout;
+	if (f.is_open() || f.is_echo()) {
+		f << "EXIT: " << buf;
 	}
 
-	// Stop here before the callstack gets lost inside _Exit.  This is not for
-	// normal termination on an embedded target.
-	HX_DEBUG_BREAK;
+#if _MSC_VER && !(HX_TEST_DIE_AT_THE_END)
+	if (IsDebuggerPresent()) {
+		// Stop here before the call stack gets lost inside _Exit.  This is not for
+		// normal termination on an embedded target.
+		HX_DEBUG_BREAK;
+	}
+#endif
+
+#if (HX_RELEASE) < 1
+	// Code coverage runs at exit.  A death test will return EXIT_SUCCESS.
+	::exit(g_hxSettings.deathTest ? EXIT_SUCCESS : EXIT_FAILURE);
+#else
 	::_Exit(EXIT_FAILURE);
+#endif
 }
 
 extern "C"
 #if (HX_RELEASE) < 1
-void hxAssertHandler(const char* file, uint32_t line) {
+int hxAssertHandler(const char* file, uint32_t line) {
 	hxInit();
 	const char* f = hxBasename(file);
 	if (g_hxSettings.assertsToBeSkipped-- > 0) {
 		hxLogHandler(hxLogLevel_Assert, "(skipped) %s(%u) hash %08x", f, (unsigned int)line, (unsigned int)hxStringLiteralHashDebug(file));
-		return;
+		return 1;
 	}
-	hxExit("ASSERT_FAIL: %s(%u) hash %08x\n", f, (unsigned int)line, (unsigned int)hxStringLiteralHashDebug(file));
+	hxLogHandler(hxLogLevel_Assert, "%s(%u) hash %08x\n", f, (unsigned int)line, (unsigned int)hxStringLiteralHashDebug(file));
+
+#if _MSC_VER && !(HX_TEST_DIE_AT_THE_END)
+	if (!IsDebuggerPresent())
+#endif
+		hxExit("no debugger\n");
+
+	// return to HX_DEBUG_BREAK at calling line.
+	return 0;
 }
 #else
 void hxAssertHandler(uint32_t file, uint32_t line) {
@@ -160,22 +182,16 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 	}
 
 	if (level >= g_hxSettings.logLevel) {
-		hxFile& f = hxLogFile();
-		if (f.is_open()) {
+		hxFile& f = hxout;
+		if (f.is_open() || f.is_echo()) {
 			if (level == hxLogLevel_Warning) {
 				f << "WARNING: ";
 			}
 			else if (level == hxLogLevel_Assert) {
 				f << "ASSERT_FAIL: ";
 			}
-
 			f.write(buf, sz);
 		}
-#if HX_USE_C_FILE
-		else if (level >= hxLogLevel_Console) {
-			::fwrite(buf, sz, 1, stdout);
-		}
-#endif
 	}
 }
 

@@ -3,23 +3,30 @@
 
 #include <hx/hatchling.h>
 
-// hxout is the hxFile for both stdout and the system log.
-#define hxout hxLogFile()
+class hxFile;
 
 // ----------------------------------------------------------------------------
-// hxFile: RAII wrapper for stream I/O.  A mixture of unformatted std::basic_fstream
+// hxout
+
+// hxout is the hxFile for both stdout and the system log.
+#define hxout hxFileOut()
+
+// Implements hxout.
+hxFile& hxFileOut();
+
+// ----------------------------------------------------------------------------
+// hxFile: RAII wrapper for file I/O.  A mixture of unformatted std::basic_fstream
 // operations and formatted C-style text printing.
 
 class hxFile {
 public:
 	// openmode is a subset of std::ios_base::openmode with fallible and echo added.
-	// fallible is similar to setting std::basic_ios::exceptions(0). 
+	// fallible skips asserts and is similar to setting std::basic_ios::exceptions(0). 
 	enum openmode {
 		in = 1u << 0,       // Open for binary reading.
 		out = 1u << 1,      // Open for binary writing.
 		fallible = 1u << 2, // Skip asserts.
 		echo = 1u << 3,     // Echo to stdout if available.
-		binary = 1u << 4,   // This flag is ignored.
 	};
 
 	// Stream is closed by default.
@@ -31,10 +38,12 @@ public:
 	// Closes stream.
 	~hxFile();
 
-	// Opens a stream using a formatted filename.  Non-standard arg order.
+	// Opens a stream using a formatted filename.  Non-standard arg order.  Does
+	// not remove echo or fallible.
 	bool open(uint16_t mode, const char* filename, ...) HX_ATTR_FORMAT(3, 4);
 
-	void close();
+	// Closes stream.  Does not remove echo or fallible by default.
+	void close(uint16_t keepModes = fallible | echo);
 
 	HX_INLINE bool is_open() const { return m_filePImpl != hxnull; }
 
@@ -51,22 +60,27 @@ public:
 	// checking if exceptions are enabled.
 	HX_INLINE bool is_fallible() const { return (m_openMode & fallible) != 0; }
 
+	// Returns whether all writes will be echoed to stdout.  Non-standard, think xtrace.
+	HX_INLINE bool is_echo() const { return (m_openMode & echo) != 0; }
+
 	size_t read(void* bytes, size_t count);
 
 	size_t write(const void* bytes, size_t count);
 
 	// Reads an \n or EOF terminated character sequence.  Allowed to fail on
 	// EOF without needing to be hxFile::fallible.  Automatically determines
-	// the size of the provided char array.
+	// the size of the provided char array.  buffer is a reference to a char
+	// array.
 	template<size_t BufferSize>
 	HX_INLINE bool getline(char(&buffer)[BufferSize]) { return getline(buffer, BufferSize); }
 
-	// Reads an \n or EOF terminated character sequence.  Allowed to fail on
-	// EOF without needing to be hxFile::fallible.
+	// Reads an \n or EOF terminated character sequence.  Allowed to fail on EOF
+	// without needing to be hxFile::fallible.
 	bool getline(char* buffer, size_t bufferSize);
 
-	// Formatted string write.  Must be less than HX_MAX_LINE characters.
-	bool print(const char* format, ...) HX_ATTR_FORMAT(2, 3); // gcc considers "this" to be argument 1.
+	// Formatted string write.  Must be less than HX_MAX_LINE characters.  gcc
+	// considers "this" to be argument 1.
+	bool print(const char* format, ...) HX_ATTR_FORMAT(2, 3);
 
 	// Read a single unformatted native endian object.
 	template<typename T>
@@ -90,10 +104,16 @@ public:
 		return *this;
 	}
 
-	// Supports GoogleTest style diagnostic messages.
+	// Supports Google Test style diagnostic messages.
 	template<size_t StringLength>
 	HX_INLINE hxFile& operator<<(const char(&str)[StringLength]) {
 		write(str, StringLength-1);
+		return *this;
+	}
+
+	template<size_t StringLength>
+	HX_INLINE hxFile& operator<<(char(&str)[StringLength]) {
+		write(str, ::strlen(str));
 		return *this;
 	}
 
@@ -109,6 +129,3 @@ private:
 	bool m_good;
 	bool m_eof;
 };
-
-// See hxout.
-hxFile& hxLogFile();

@@ -30,7 +30,7 @@ public:
 
 	hxTestRunner() {
 		mNumFactories = 0;
-		mCurrentTest = 0;
+		mCurrentTest = hxnull;
 		mFilterSuiteName = hxnull;
 		::memset(mFactories + 0, 0x00, sizeof mFactories);
 	}
@@ -48,7 +48,7 @@ public:
 		if (!condition) {
 			if(++mAssertFailCount >= MAX_FAIL_MESSAGES) {
 				if (mAssertFailCount == MAX_FAIL_MESSAGES) {
-					hxLogConsole("Remaining asserts will fail silently...\n");
+					hxLogConsole("remaining asserts will fail silently...\n");
 				}
 				return devNull();
 			}
@@ -61,13 +61,13 @@ public:
 			hxLogHandlerV(hxLogLevel_Console, format, args);
 			va_end(args);
 
-			return hxLogFile();
+			return hxout;
 		}
 		return devNull();
 	}
 
-	bool executeAllTests() {
-		hxWarnCheck((HX_RELEASE) <= 0, "Running tests with HX_RELEASE > 0");
+	int32_t executeAllTests() {
+		hxWarnCheck((HX_RELEASE) <= 0, "running tests with HX_RELEASE > 0");
 
 		mPassCount = mFailCount = 0;
 		hxLogConsole("RUNNING_TESTS (%s)\n", (mFilterSuiteName ? mFilterSuiteName : "ALL"));
@@ -87,6 +87,7 @@ public:
 
 				if (mTestState == TEST_NOTHING_ASSERTED) {
 					assertCheck(hxBasename((*it)->File()), (*it)->Line(), false, "NOTHING ASSERTED");
+					++mFailCount;
 				}
 				else if (mTestState == TEST_PASS) {
 					++mPassCount;
@@ -96,17 +97,17 @@ public:
 				}
 			}
 			else {
-				hxLogConsole("Skipping %s.%s..\n", (*it)->Suite(), (*it)->Case());
+				hxLogConsole("skipping %s.%s..\n", (*it)->Suite(), (*it)->Case());
 			}
 		}
 		hxProfilerStop();
 		if (mPassCount > 0 && mFailCount == 0) {
 			hxLogHandler(hxLogLevel_Console, "[  PASSED  ] %d tests.\n", (int)mPassCount);
-			return true;
+			return 0u; // success
 		}
 		else {
 			hxLogHandler(hxLogLevel_Console, " %d FAILED TEST%s\n", (int)mFailCount, ((mFailCount > 1) ? "S" : ""));
-			return false;
+			return hxMax(1, mFailCount);
 		}
 	}
 

@@ -38,7 +38,7 @@
 // Allow use of fopen and strncpy.  fopen_s and strncpy_s are not C99.
 #pragma warning(disable: 4996)
 
-#else // !_MSC_VER
+#else // target settings
 // "Some C++98 embedded compiler" (currently gcc.)
 
 #define HX_USE_C_FILE 1
@@ -69,16 +69,11 @@
 #define HX_STATIC_ASSERT(x,...) static_assert(x, __VA_ARGS__)
 #define HX_OVERRIDE override
 #endif
-#endif // !_MSC_VER
+#endif // target settings
 
 // ----------------------------------------------------------------------------
-
-#if HX_USE_CPP11_THREADS
-#define HX_THREAD_LOCAL thread_local
-#else
-// single threaded operation can ignore thread_local
-#define HX_THREAD_LOCAL
-#endif
+// Maximum length for formatted messages printed with this platform.
+#define HX_MAX_LINE 280
 
 // ----------------------------------------------------------------------------
 // HX_MEM_DIAGNOSTIC_LEVEL.  Memory management debug mode.
@@ -89,7 +84,9 @@
 //  2: log allocator scopes
 //  3: also log heap utilization
 //
+#ifndef HX_MEM_DIAGNOSTIC_LEVEL
 #define HX_MEM_DIAGNOSTIC_LEVEL ((HX_RELEASE) < 2) ? 1 : 0
+#endif
 
 // Memory manager pool sizes
 #define HX_KB (1u << 10) // 1024u
@@ -119,9 +116,14 @@
 #define HX_DEBUG_DMA_RECORDS 16
 
 // ----------------------------------------------------------------------------
-// HX_GOOGLE_TEST:  In case you need to use GoogleTest.
-#ifndef HX_GOOGLE_TEST
-#define HX_GOOGLE_TEST 0
+// HX_USE_GOOGLE_TEST:  In case you need to use Google Test.
+#ifndef HX_USE_GOOGLE_TEST
+#define HX_USE_GOOGLE_TEST 0
+#endif
+
+// Set by etc/coverage.sh
+#ifndef HX_TEST_DIE_AT_THE_END
+#define HX_TEST_DIE_AT_THE_END 0
 #endif
 
 // ----------------------------------------------------------------------------
@@ -176,7 +178,8 @@ struct hxSettings {
 	uint8_t disableMemoryManager;
 #endif
 #if (HX_RELEASE) < 1
-	uint32_t assertsToBeSkipped; // Allows testing asserts.
+	int32_t assertsToBeSkipped; // Allows testing asserts.
+	uint8_t deathTest;
 #endif
 };
 

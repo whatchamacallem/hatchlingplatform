@@ -1,16 +1,13 @@
+[![Generic badge](https://img.shields.io/badge/hatchling-platform-blue.svg)](https://github.com/adrian3git/HatchlingPlatform)
+[![GitHub version](https://badge.fury.io/gh/adrian3git%2FHatchlingPlatform.svg)](http://badge.fury.io/gh/adrian3git%2FHatchlingPlatform)
 [![Build Status](https://travis-ci.org/adrian3git/HatchlingPlatform.svg?branch=master)](https://travis-ci.org/adrian3git/HatchlingPlatform)
-[![codecov](https://codecov.io/gh/adrian3git/HatchlingPlatform/branch/master/graph/badge.svg)](https://codecov.io/gh/adrian3git/HatchlingPlatform)
 
+# Hatchling Platform
 
-The Hatchling Platform is designed to facilitate C++ embedded systems
-development on a target too constrained to provide traditional operating
-system services.  This is a narrowly defined platform intended to be
-developed against in a modern desktop development environment before
-cross compiling to an embedded system.  An approach intended to limit
-debugging on the target.  It is also a replacement C++ runtime, intended
-to largely replace the use of the standard C++ libraries.
+Small C++ run-time intended to be developed against on the desktop before cross
+compiling to an embedded target.
 
- * Test Driver.  A partial lightweight reimplementation of GoogleTest.
+ * Test Driver.  A partial lightweight reimplementation of Google Test.
 
  * Profiling.  Captures a hierarchical time-line view with a minimum of
    overhead.  View the example etc/profile.json file in Chrome's
@@ -21,9 +18,9 @@ to largely replace the use of the standard C++ libraries.
 
  * DMA.  Cross platform DMA with validation.
 
- * Container Support.  Provides a small non-reallocating subset of
-   std::vector, std::allocator and std::unordered_{map,multimap,set,
-   multiset}.
+ * Containers.  Provides a small non-reallocating subset of
+   std::vector, std::allocator and std::unordered_{ map, set, multimap,
+   multiset }.
 
  * Command line based console with simple C++ function binding.
  

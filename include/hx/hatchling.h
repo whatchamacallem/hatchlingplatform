@@ -51,6 +51,9 @@ enum hxLogLevel {
 	hxLogLevel_Assert   // Reason for abnormal termination.
 };
 
+// The null pointer value for a given pointer type represented by the numeric constant 0.
+#define hxnull 0
+
 #if (HX_RELEASE) < 1
 // Initializes the platform.
 #define hxInit() (void)(g_hxIsInit || (hxInitAt(__FILE__, __LINE__), 0))
@@ -59,13 +62,13 @@ enum hxLogLevel {
 #define hxLog(...) hxLogHandler(hxLogLevel_Log, __VA_ARGS__)
 
 // Does not evaluate message args unless condition fails.  HX_RELEASE < 1
-#define hxAssertMsg(x, ...) (void)(!!(x) || (hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), hxAssertHandler(__FILE__, __LINE__), 0))
+#define hxAssertMsg(x, ...) (void)(!!(x) || ((hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), hxAssertHandler(__FILE__, __LINE__)) || (HX_DEBUG_BREAK,0)))
 
 // Logs an error and terminates execution if x is false.  HX_RELEASE < 1
-#define hxAssert(x) (void)((!!(x)) || (hxLogHandler(hxLogLevel_Assert, HX_QUOTE(x)), hxAssertHandler(__FILE__, __LINE__), 0))
+#define hxAssert(x) (void)((!!(x)) || ((hxLogHandler(hxLogLevel_Assert, HX_QUOTE(x)), hxAssertHandler(__FILE__, __LINE__)) || (HX_DEBUG_BREAK,0)))
 
 // Assert handler.  Do not call directly, signature changes and then is removed.  HX_RELEASE < 3
-void hxAssertHandler(const char* file, uint32_t line);
+int hxAssertHandler(const char* file, uint32_t line);
 
 #else // !(HX_RELEASE < 1)
 #define hxInit() (void)(g_hxIsInit || (hxInitAt(0, 0), 0))
@@ -90,7 +93,7 @@ HX_ATTR_NORETURN void hxAssertHandler(uint32_t file, uint32_t line);
 
 #if (HX_RELEASE) < 1
 // Logs an error and terminates execution if x is false up to release level 3.  HX_RELEASE < 4
-#define hxAssertRelease(x, ...) (void)(!!(x) || (hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), hxAssertHandler(__FILE__, __LINE__), 0))
+#define hxAssertRelease(x, ...) (void)(!!(x) || ((hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), hxAssertHandler(__FILE__, __LINE__)) || (HX_DEBUG_BREAK,0)))
 #else
 #define hxAssertRelease(x, ...) (void)(!!(x) || (hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), hxAssertHandler(hxStringLiteralHash(__FILE__), __LINE__), 0))
 #endif
@@ -105,12 +108,6 @@ HX_ATTR_NORETURN void hxAssertHandler(uint32_t file, uint32_t line);
 #define hxAssertRelease(x, ...) ((void)0)
 #endif
 #endif
-
-// The null pointer value for a given pointer type represented by the numeric constant 0.
-#define hxnull 0
-
-// Maximum length for formatted messages printed with this platform.
-#define HX_MAX_LINE 280
 
 // Macro for adding quotation marks.  Evaluates __LINE__ as a string containing a number instead of as "__LINE__".
 #define HX_QUOTE(x) HX_QUOTE_(x)
@@ -129,6 +126,7 @@ extern int g_hxIsInit;
 #if (HX_RELEASE) < 3
 // Terminates service.  Releases all resources acquired by the platform and
 // confirms all memory allocations have been released. HX_RELEASE < 3.
+// Does not clear g_hxIsInit, shutdown is final.
 void hxShutdown();
 
 // Stops execution with a formatted message.  HX_RELEASE < 3.
@@ -175,5 +173,12 @@ template<typename T> HX_INLINE T hxClamp(T x, T minimum, T maximum) {
 	hxAssert(minimum <= maximum);
 	return (x <= minimum) ? minimum : ((x >= maximum) ? maximum : x);
 }
+
+#if HX_USE_CPP11_THREADS
+// single threaded operation can ignore thread_local
+#define HX_THREAD_LOCAL thread_local
+#else
+#define HX_THREAD_LOCAL
+#endif
 
 #endif // __cplusplus

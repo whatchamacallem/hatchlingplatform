@@ -12,14 +12,20 @@ HX_REGISTER_FILENAME_HASH
 // ----------------------------------------------------------------------------------
 // Console commands
 
-static void hxProfile() { g_hxProfiler.start(); }
-hxConsoleCommandNamed(hxProfile, profilestart);
+static void hxProfileStartCommand() {
+	hxProfilerStart();
+}
+hxConsoleCommandNamed(hxProfileStartCommand, profilestart);
 
-static void hxProfileLog() { g_hxProfiler.log(); }
-hxConsoleCommandNamed(hxProfileLog, profilelog);
+static void hxProfilerLogCommand() {
+	hxProfilerLog();
+}
+hxConsoleCommandNamed(hxProfilerLogCommand, profilelog);
 
-static void hxProfileToChrome(const char* filename) { g_hxProfiler.writeToChromeTracing(filename); }
-hxConsoleCommandNamed(hxProfileToChrome, profiletrace);
+static void hxProfilerWriteToChromeTracingCommand(const char* filename) {
+	hxProfilerWriteToChromeTracing(filename);
+}
+hxConsoleCommandNamed(hxProfilerWriteToChromeTracingCommand, profiletrace);
 
 // ----------------------------------------------------------------------------------
 // variables
@@ -59,16 +65,12 @@ void hxProfiler::stop() {
 void hxProfiler::log() {
 	m_isStarted = false;
 
-	if (m_records.empty()) {
-		hxLogRelease("hxProfiler no samples\n");
-	}
-
 	for (uint32_t i = 0; i < m_records.size(); ++i) {
 		const hxProfiler::Record& rec = m_records[i];
 
 		uint32_t delta = rec.m_end - rec.m_begin;
-		hxLogRelease("hxProfiler %s: thread %x cycles %u %fms\n", hxBasename(rec.m_label),
-			(unsigned int)rec.m_threadId, (unsigned int)delta, delta * (double)g_hxProfilerMillisecondsPerCycle);
+		hxLogRelease("profile %s: %fms cycles %u thread %x\n", hxBasename(rec.m_label),
+			delta * (double)g_hxProfilerMillisecondsPerCycle, (unsigned int)delta, (unsigned int)rec.m_threadId);
 	}
 }
 
@@ -77,20 +79,12 @@ void hxProfiler::writeToChromeTracing(const char* filename) {
 
 	hxFile f(hxFile::out, "%s", filename);
 
-	if (m_records.empty()) {
-		f.print("[]\n");
-		hxLogConsole("Trace has no samples: %s...\n", filename);
-		return;
-	}
-
 	f.print("[\n");
 	// Converting absolute values works better with integer precision.
 	uint32_t cyclesPerMicrosecond = (uint32_t)(1.0e-3f / g_hxProfilerMillisecondsPerCycle);
 	for (uint32_t i = 0; i < m_records.size(); ++i) {
 		const hxProfiler::Record& rec = m_records[i];
-		if (i != 0) {
-			f.print(",\n");
-		}
+		if (i != 0) { f.print(",\n"); }
 		const char* bn = hxBasename(rec.m_label);
 		f.print("{\"name\":\"%s\",\"cat\":\"PERF\",\"ph\":\"B\",\"pid\":0,\"tid\":%u,\"ts\":%u},\n",
 			bn, (unsigned int)rec.m_threadId, (unsigned int)(rec.m_begin / cyclesPerMicrosecond));
@@ -99,7 +93,7 @@ void hxProfiler::writeToChromeTracing(const char* filename) {
 	}
 	f.print("\n]\n");
 
-	hxLogConsole("Wrote trace to: %s...\n", filename);
+	hxLogConsole("wrote %s.\n", filename);
 }
 
 #endif // HX_PROFILE

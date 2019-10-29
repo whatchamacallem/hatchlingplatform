@@ -196,9 +196,13 @@ TEST(hxConsoleTest, RegisterCommand) {
 	bool b5 = hxConsoleExecLine("NotExist");
 	ASSERT_FALSE(b5);
 
-	// add code coverage for missing calls.
+	// add code coverage for unmade calls.
 	hxConsoleTestRegister2(1.0f);
 	hxConsoleTestRegister3(1, 1.0f);
+
+	hxConsoleDeregister("hxConsoleTestRegister0");
+	bool b6 = hxConsoleExecLine("hxConsoleTestRegister0 77 ..."); // same as before
+	ASSERT_FALSE(b6);
 }
 
 // ----------------------------------------------------------------------------------
