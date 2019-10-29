@@ -23,54 +23,54 @@ public:
 };
 
 // Use hxTestRunner::setFilterStringLiteral() instead.
-HX_INLINE void InitGoogleTest(int *argc, char **argv) { (void)argc; (void)argv; }
+HX_INLINE void InitGoogleTest(int *argc_, char **argv_) { (void)argc_; (void)argv_; }
 HX_INLINE void InitGoogleTest() { }
 
 } // namespace testing
 
 // TEST. Google Test reimplementation.
-#define TEST(SuiteName, CaseName) \
-	struct HX_CONCATENATE(SuiteName, CaseName) : hxTestRunner::FactoryBase { \
-		struct Executor : testing::Test { virtual void Run() HX_OVERRIDE; }; \
-		HX_CONCATENATE(SuiteName, CaseName)() { hxTestRunner::get().addTest(this); } \
-		virtual void Run() HX_OVERRIDE { Executor executor; executor.Run(); } \
-		virtual const char* Suite() HX_OVERRIDE { return #SuiteName; } \
-		virtual const char* Case() HX_OVERRIDE { return #CaseName; } \
+#define TEST(SuiteName_, CaseName_) \
+	struct HX_CONCATENATE(SuiteName_, CaseName_) : hxTestRunner::FactoryBase { \
+		struct Executor_ : testing::Test { virtual void Run() HX_OVERRIDE; }; \
+		HX_CONCATENATE(SuiteName_, CaseName_)() { hxTestRunner::get().addTest(this); } \
+		virtual void Run() HX_OVERRIDE { Executor_ executor; executor.Run(); } \
+		virtual const char* Suite() HX_OVERRIDE { return #SuiteName_; } \
+		virtual const char* Case() HX_OVERRIDE { return #CaseName_; } \
 		virtual const char* File() HX_OVERRIDE { return __FILE__; } \
 		virtual int32_t Line() HX_OVERRIDE { return __LINE__; } \
 	}; \
-	static HX_CONCATENATE(SuiteName, CaseName) HX_CONCATENATE(s_hxTest, CaseName); \
-	void HX_CONCATENATE(SuiteName, CaseName)::Executor::Run()
+	static HX_CONCATENATE(SuiteName_, CaseName_) HX_CONCATENATE(s_hxTest, CaseName_); \
+	void HX_CONCATENATE(SuiteName_, CaseName_)::Executor_::Run()
 
-// TEST_F.  Google Test reimplementation, SuiteName must be a subclass of testing::Test.
-#define TEST_F(SuiteName, CaseName) \
-	struct HX_CONCATENATE(SuiteName, CaseName) : hxTestRunner::FactoryBase { \
-		struct Executor : SuiteName { virtual void Run() HX_OVERRIDE; }; \
-		HX_CONCATENATE(SuiteName, CaseName)() { hxTestRunner::get().addTest(this); } \
-		virtual void Run() HX_OVERRIDE { Executor executor; executor.Run(); } \
-		virtual const char* Suite() HX_OVERRIDE { return #SuiteName; } \
-		virtual const char* Case() HX_OVERRIDE { return #CaseName; } \
+// TEST_F.  Google Test reimplementation, SuiteName_ must be a subclass of testing::Test.
+#define TEST_F(SuiteName_, CaseName_) \
+	struct HX_CONCATENATE(SuiteName_, CaseName_) : hxTestRunner::FactoryBase { \
+		struct Executor_ : SuiteName_ { virtual void Run() HX_OVERRIDE; }; \
+		HX_CONCATENATE(SuiteName_, CaseName_)() { hxTestRunner::get().addTest(this); } \
+		virtual void Run() HX_OVERRIDE { Executor_ executor; executor.Run(); } \
+		virtual const char* Suite() HX_OVERRIDE { return #SuiteName_; } \
+		virtual const char* Case() HX_OVERRIDE { return #CaseName_; } \
 		virtual const char* File() HX_OVERRIDE { return __FILE__; } \
 		virtual int32_t Line() HX_OVERRIDE { return __LINE__; } \
 	}; \
-	static HX_CONCATENATE(SuiteName, CaseName) HX_CONCATENATE(s_hxTest, CaseName); \
-	void HX_CONCATENATE(SuiteName, CaseName)::Executor::Run()
+	static HX_CONCATENATE(SuiteName_, CaseName_) HX_CONCATENATE(s_hxTest, CaseName_); \
+	void HX_CONCATENATE(SuiteName_, CaseName_)::Executor_::Run()
 
 #define RUN_ALL_TESTS() hxTestRunner::get().executeAllTests()
 #define SUCCEED() hxTestRunner::get().assertCheck(hxnull, 0, true, hxnull) // Avoids NOTHING ASSERTED.
 #define FAIL() hxTestRunner::get().assertCheck(__FILE__, __LINE__, false, "failed here")
 
 // Args are only evaluated once.
-#define ASSERT_TRUE(x) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (x), #x)
-#define ASSERT_FALSE(x) hxTestRunner::get().assertCheck(__FILE__, __LINE__, !(x), "!" #x)
-#define ASSERT_NEAR(expected, actual, absolute_range) hxTestRunner::get().assertCheck( \
-	__FILE__, __LINE__, hxAbs((expected)-(actual)) <= (absolute_range), "abs(" #expected "-" #actual ")<=" #absolute_range)
-#define ASSERT_LT(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) < (rhs), #lhs "<" #rhs)
-#define ASSERT_GT(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) > (rhs), #lhs ">" #rhs)
-#define ASSERT_LE(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) <= (rhs), #lhs "<=" #rhs)
-#define ASSERT_GE(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) >= (rhs), #lhs ">=" #rhs)
-#define ASSERT_EQ(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) == (rhs), #lhs "==" #rhs)
-#define ASSERT_NE(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) != (rhs), #lhs "!=" #rhs)
+#define ASSERT_TRUE(x_) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (x_), #x_)
+#define ASSERT_FALSE(x_) hxTestRunner::get().assertCheck(__FILE__, __LINE__, !(x_), "!" #x_)
+#define ASSERT_NEAR(expected_, actual_, absolute_range_) hxTestRunner::get().assertCheck( \
+	__FILE__, __LINE__, hxAbs((expected_)-(actual_)) <= (absolute_range_), "abs(" #expected_ "-" #actual_ ")<=" #absolute_range_)
+#define ASSERT_LT(lhs_, rhs_) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs_) < (rhs_), #lhs_ "<" #rhs_)
+#define ASSERT_GT(lhs_, rhs_) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs_) > (rhs_), #lhs_ ">" #rhs_)
+#define ASSERT_LE(lhs_, rhs_) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs_) <= (rhs_), #lhs_ "<=" #rhs_)
+#define ASSERT_GE(lhs_, rhs_) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs_) >= (rhs_), #lhs_ ">=" #rhs_)
+#define ASSERT_EQ(lhs_, rhs_) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs_) == (rhs_), #lhs_ "==" #rhs_)
+#define ASSERT_NE(lhs_, rhs_) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs_) != (rhs_), #lhs_ "!=" #rhs_)
 
 #define EXPECT_TRUE ASSERT_TRUE
 #define EXPECT_FALSE ASSERT_FALSE
@@ -88,7 +88,7 @@ HX_INLINE void InitGoogleTest() { }
 // hxTestRandom.  The linear congruential random number generator from Numerical Recipes.
 struct hxTestRandom {
 public:
-	HX_INLINE hxTestRandom(uint32_t seed = 1u) : m_seed(seed) { }
+	HX_INLINE hxTestRandom(uint32_t seed_ = 1u) : m_seed(seed_) { }
 	HX_INLINE uint32_t operator()() { return (m_seed = 1664525u * m_seed + 1013904223u); }
 	uint32_t m_seed;
 };

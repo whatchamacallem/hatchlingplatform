@@ -8,9 +8,9 @@
 
 #if HX_PROFILE
 #include <hx/internal/hxProfilerInternal.h>
-#define HX_PROFILE_FN(x) x
+#define HX_PROFILE_FN(x_) x_
 #else // !HX_PROFILE
-#define HX_PROFILE_FN(x) ((void)0)
+#define HX_PROFILE_FN(x_) ((void)0)
 #endif
 
 // ----------------------------------------------------------------------------
@@ -21,12 +21,12 @@
 // in hxTime.h as a recommended MinCycles cutoff.
 
 // hxProfileScope(const char* labelStringLiteral)
-#define hxProfileScope(labelStringLiteral) \
-	HX_PROFILE_FN( hxProfilerScopeInternal<> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral) )
+#define hxProfileScope(labelStringLiteral_) \
+	HX_PROFILE_FN( hxProfilerScopeInternal<> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral_) )
 
 // hxProfileScopeMin(const char* labelStringLiteral, uint32_t minCycles)
-#define hxProfileScopeMin(labelStringLiteral, minCycles) \
-	HX_PROFILE_FN( hxProfilerScopeInternal<minCycles> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral) )
+#define hxProfileScopeMin(labelStringLiteral_, minCycles_) \
+	HX_PROFILE_FN( hxProfilerScopeInternal<minCycles_> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral_) )
 
 // Clears samples and begins sampling.
 #define hxProfilerStart() HX_PROFILE_FN( g_hxProfiler.start() )
@@ -41,4 +41,4 @@
 // data in a format usable by Chrome's chrome://tracing view.  Usage: In Chrome
 // go to "chrome://tracing/". Load the generated json file.  Use the W/A/S/D keys.
 // See http://www.chromium.org/developers/how-tos/trace-event-profiling-tool
-#define hxProfilerWriteToChromeTracing(filename) HX_PROFILE_FN( g_hxProfiler.writeToChromeTracing(filename) )
+#define hxProfilerWriteToChromeTracing(filename_) HX_PROFILE_FN( g_hxProfiler.writeToChromeTracing(filename_) )

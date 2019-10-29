@@ -20,8 +20,8 @@ extern HX_THREAD_LOCAL uint8_t s_hxProfilerThreadIdAddress;
 class hxProfiler {
 public:
 	struct Record {
-		HX_INLINE Record(hx_cycles_t begin, hx_cycles_t end, const char* label, uint32_t threadId)
-			: m_label(label), m_begin(begin), m_end(end), m_threadId(threadId) {
+		HX_INLINE Record(hx_cycles_t begin_, hx_cycles_t end_, const char* label_, uint32_t threadId_)
+			: m_label(label_), m_begin(begin_), m_end(end_), m_threadId(threadId_) {
 		}
 		const char* m_label;
 		hx_cycles_t m_begin;
@@ -41,7 +41,7 @@ public:
 	HX_INLINE void recordsClear() { m_records.clear(); }
 
 private:
-	template<hx_cycles_t MinCycles> friend class hxProfilerScopeInternal;
+	template<hx_cycles_t MinCycles_> friend class hxProfilerScopeInternal;
 	bool m_isStarted;
 	hxStockpile<Record, HX_PROFILER_MAX_RECORDS> m_records;
 };
@@ -49,7 +49,7 @@ private:
 // ----------------------------------------------------------------------------
 // hxProfilerScopeInternal
 
-template<hx_cycles_t MinCycles=0u>
+template<hx_cycles_t MinCycles_=0u>
 class hxProfilerScopeInternal {
 public:
 	// See hxProfileScope() below.
@@ -61,11 +61,11 @@ public:
 
 	HX_INLINE ~hxProfilerScopeInternal() {
 		if (m_t0 != ~(hx_cycles_t)0) {
-			hx_cycles_t t1 = hxTimeSampleCycles();
-			if ((t1 - m_t0) >= MinCycles) {
-				void* rec = g_hxProfiler.m_records.emplace_back_atomic();
-				if (rec) {
-					::new (rec) hxProfiler::Record(m_t0, t1, m_label,
+			hx_cycles_t t1_ = hxTimeSampleCycles();
+			if ((t1_ - m_t0) >= MinCycles_) {
+				void* rec_ = g_hxProfiler.m_records.emplace_back_atomic();
+				if (rec_) {
+					::new (rec_) hxProfiler::Record(m_t0, t1_, m_label,
 						(uint32_t)(uintptr_t)&s_hxProfilerThreadIdAddress);
 				}
 			}

@@ -7,7 +7,7 @@ git pull origin master
 git submodule update --init
 git submodule foreach git pull origin master
 
-./testdriver.sh
+./etc/testdriver.sh
 
 if [[ $(git status --porcelain) ]]; then
     echo "unexpected modifications:"
@@ -16,6 +16,4 @@ if [[ $(git status --porcelain) ]]; then
 	exit 1
 fi
 
-echo "
-$(tput bold)$(tput bold)testgit.sh passed.(tput sgr 0)
-"
+echo testgit.sh passed.

@@ -16,8 +16,8 @@ HX_REGISTER_FILENAME_HASH
 class hxConsoleHashTableNode : public hxHashTableNodeBase<const char*> {
 public:
 	typedef hxHashTableNodeBase<Key> Base;
-	HX_INLINE hxConsoleHashTableNode(const char* key_, uint32_t hash)
-			: Base(key_), m_cmd(0), m_hash(hash) {
+	HX_INLINE hxConsoleHashTableNode(const char* key_, uint32_t hash_)
+			: Base(key_), m_cmd(0), m_hash(hash_) {
 		if ((HX_RELEASE) < 1) {
 			const char* k = key;
 			while (!hxIsDelimiter(*k)) {
@@ -52,7 +52,6 @@ public:
 	}
 
 	hxCommand* m_cmd;
-private:
 	uint32_t m_hash;
 };
 
@@ -120,7 +119,7 @@ bool hxConsoleExecFile(hxFile& file) {
 struct hxConsoleLess {
 	HX_INLINE bool operator()(const hxConsoleHashTableNode* lhs,
 			const hxConsoleHashTableNode* rhs) const {
-		return ::strcmp(lhs->key, rhs->key) < 0;
+		return lhs->m_hash < rhs->m_hash;
 	}
 };
 

@@ -169,7 +169,10 @@
     <None Include="profile.json">
       <Filter>visualstudio</Filter>
     </None>
-    <None Include="..\etc\gittest.sh">
+    <None Include="..\etc\testgit.sh">
+      <Filter>etc</Filter>
+    </None>
+    <None Include="..\etc\testdriver.sh">
       <Filter>etc</Filter>
     </None>
   </ItemGroup>

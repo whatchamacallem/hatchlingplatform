@@ -9,9 +9,12 @@
 // This is a hxHashTable specific subclass of hxAllocator.  C++98 requires this to be
 // declared outside hxHashTable.
 
-template<typename Node, uint32_t HashBits>
-class hxHashTableInternalAllocator : public hxAllocator<Node*, 1u << HashBits> {
+template<typename Node_, uint32_t HashBits_>
+class hxHashTableInternalAllocator : public hxAllocator<Node_*, 1u << HashBits_> {
 public:
+	typedef Node_ Node;
+	enum { HashBits = HashBits_ };
+
 	HX_INLINE hxHashTableInternalAllocator() {
 		::memset(this->getStorage(), 0x00, sizeof(Node*) * this->getCapacity());
 	}
@@ -21,10 +24,13 @@ public:
 	}
 };
 
-template<typename Node>
-class hxHashTableInternalAllocator<Node, hxAllocatorDynamicCapacity>
-	: public hxAllocator<Node*, hxAllocatorDynamicCapacity> {
+template<typename Node_>
+class hxHashTableInternalAllocator<Node_, hxAllocatorDynamicCapacity>
+	: public hxAllocator<Node_*, hxAllocatorDynamicCapacity> {
 public:
+	typedef Node_ Node;
+	enum { HashBits = hxAllocatorDynamicCapacity };
+
 	HX_INLINE hxHashTableInternalAllocator() : m_hashBits(0u) { }
 
 	HX_INLINE uint32_t getHashBits() const {
@@ -32,12 +38,12 @@ public:
 		return m_hashBits;
 	}
 
-	HX_INLINE void setHashBits(uint32_t bits) {
-		hxAssertMsg(m_hashBits == 0u || bits == m_hashBits, "resizing dynamic hash table");
+	HX_INLINE void setHashBits(uint32_t bits_) {
+		hxAssertMsg(m_hashBits == 0u || bits_ == m_hashBits, "resizing dynamic hash table");
 		if (m_hashBits == 0u) {
-			hxAssertMsg(bits > 0u && bits <= 31u, "hash bits must be [1..31]");
-			m_hashBits = bits;
-			this->reserveStorage(1u << bits);
+			hxAssertMsg(bits_ > 0u && bits_ <= 31u, "hash bits must be [1..31]");
+			m_hashBits = bits_;
+			this->reserveStorage(1u << bits_);
 			::memset(this->getStorage(), 0x00, sizeof(Node*) * this->getCapacity());
 		}
 	}

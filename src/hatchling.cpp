@@ -2,12 +2,14 @@
 // Copyright 2017 Leap Motion
 
 #include <hx/hatchling.h>
+#include <hx/hxArray.h>
 #include <hx/hxConsole.h>
 #include <hx/hxDma.h>
 #include <hx/hxFile.h>
 #include <hx/hxHashTableNodes.h>
 #include <hx/hxProfiler.h>
 #include <hx/hxprintf.h>
+#include <hx/hxSort.h>
 
 #if HX_USE_STDIO_H
 #include <stdio.h>
@@ -38,14 +40,42 @@ static bool HX_IS_DEBUGGER_PRESENT() {
 
 #if (HX_RELEASE) < 1
 HX_REGISTER_FILENAME_HASH
+typedef hxHashTable<hxHashTableNodeStringLiteral, 5> hxHashStringLiteral;
 
-hxHashTable<hxHashTableNodeStringLiteral, 7>& hxStringLiteralHashes() {
-	static hxHashTable<hxHashTableNodeStringLiteral, 7> s_hxStringLiteralHashes;
+struct hxFilenameLess {
+	HX_INLINE bool operator()(const char*& lhs, const char*& rhs) const {
+		return hxStringLiteralHashDebug(lhs) < hxStringLiteralHashDebug(rhs);
+	}
+};
+
+hxHashStringLiteral& hxStringLiteralHashes() {
+	static hxHashStringLiteral s_hxStringLiteralHashes;
 	return s_hxStringLiteralHashes;
 }
 hxRegisterFileConstructor::hxRegisterFileConstructor(const char* s) {
 	hxStringLiteralHashes().insert_unique(s, hxMemoryManagerId_Heap);
 }
+
+static void hxPrintFileHashes() {
+	hxLog("filenames in hash order:\n");
+
+	typedef hxArray<const char*> Filenames;
+	Filenames filenames; filenames.reserve(hxStringLiteralHashes().size());
+	for (hxHashStringLiteral::iterator it = hxStringLiteralHashes().begin();
+		it != hxStringLiteralHashes().end(); ++it) {
+		filenames.push_back(it->key);
+	}
+
+	hxInsertionSort(filenames.begin(), filenames.end(), hxFilenameLess());
+
+	for (Filenames::iterator it = filenames.begin(); it != filenames.end(); ++it) {
+		hxLog("  %08x %s\n", hxStringLiteralHashDebug(*it), *it);
+	}
+
+	hxStringLiteralHashes().clear();
+}
+#else
+#define hxPrintFileHashes() ((void)0)
 #endif
 
 // ----------------------------------------------------------------------------
@@ -96,15 +126,7 @@ void hxLogHandler(enum hxLogLevel level, const char* format, ...) {
 
 extern "C"
 void hxShutdown() {
-#if (HX_RELEASE) < 1
-	hxLog("filename hash codes:\n");
-	for (hxHashTable<hxHashTableNodeStringLiteral, 7>::iterator it = hxStringLiteralHashes().begin();
-			it != hxStringLiteralHashes().end(); ++it) {
-		hxLog("  %08x %s\n", hxStringLiteralHashDebug(it->key), it->key);
-	}
-	hxStringLiteralHashes().clear();
-#endif
-
+	hxPrintFileHashes();
 	hxProfilerStop();
 	hxDmaShutDown();
 

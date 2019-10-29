@@ -11,11 +11,13 @@
 //
 // Provides static allocation when capacity is greater than zero.
 
-template<typename T, uint32_t Capacity>
+template<typename T_, uint32_t Capacity_>
 class hxAllocator {
 public:
+	typedef T_ T;
+
 	// Template specialization below should have been selected.
-	HX_STATIC_ASSERT(Capacity > 0u, "Capacity > 0");
+	HX_STATIC_ASSERT(Capacity_ > 0u, "Capacity_ > 0");
 
 	// Initializes memory to 0xCD when HX_RELEASE < 1.
 	HX_INLINE hxAllocator() {
@@ -25,12 +27,12 @@ public:
 	}
 
 	// Used to ensure initial capacity as reserveStorage() will not reallocate.
-	HX_INLINE void reserveStorage(uint32_t size) {
-		hxAssertRelease(size <= Capacity, "allocator overflowing fixed capacity."); (void)size;
+	HX_INLINE void reserveStorage(uint32_t size_) {
+		hxAssertRelease(size_ <= Capacity_, "allocator overflowing fixed capacity."); (void)size_;
 	}
 
 	// Returns the number of elements of T allocated.
-	HX_CONSTEXPR_FN uint32_t getCapacity() const { return Capacity; }
+	HX_CONSTEXPR_FN uint32_t getCapacity() const { return Capacity_; }
 
 	// Returns const array of T.
 	HX_INLINE const T* getStorage() const { return reinterpret_cast<const T*>(m_allocator + 0); }
@@ -39,7 +41,7 @@ public:
 	HX_INLINE T* getStorage() { return reinterpret_cast<T*>(m_allocator + 0); }
 
 private:
-	enum { m_capacity = Capacity }; // Consistently show m_capacity in debugger.
+	enum { m_capacity = Capacity_ }; // Consistently show m_capacity in debugger.
 	// Using union to implement alignas(char *).
 	union {
 		// Char arrays are the least likely to encounter undefined behavior.
@@ -51,13 +53,15 @@ private:
 // ----------------------------------------------------------------------------
 // hxAllocator<0>
 //
-// Capacity is set by first call to reserveStorage() and may not be extended.
+// Capacity_ is set by first call to reserveStorage() and may not be extended.
 
 #define hxAllocatorDynamicCapacity 0u
 
-template<typename T>
-class hxAllocator<T, hxAllocatorDynamicCapacity> {
+template<typename T_>
+class hxAllocator<T_, hxAllocatorDynamicCapacity> {
 public:
+	typedef T_ T;
+
 	// Does not allocate until reserveStorage() is called.
 	HX_INLINE hxAllocator() {
 		m_allocator = 0;
@@ -73,27 +77,27 @@ public:
 		}
 	}
 
-	// Capacity is set by first call to reserveStorage() and may not be extended.
-	HX_INLINE void reserveStorage(uint32_t sz) {
-		if (sz <= m_capacity) { return; }
+	// Capacity_ is set by first call to reserveStorage() and may not be extended.
+	HX_INLINE void reserveStorage(uint32_t sz_) {
+		if (sz_ <= m_capacity) { return; }
 		hxAssertRelease(m_capacity == 0, "allocator reallocation disallowed.");
-		m_allocator = (T*)hxMalloc(sizeof(T) * sz); // Never fails.
-		m_capacity = sz;
+		m_allocator = (T*)hxMalloc(sizeof(T) * sz_); // Never fails.
+		m_capacity = sz_;
 		if ((HX_RELEASE) < 1) {
-			::memset(m_allocator, 0xcd, sizeof(T) * sz);
+			::memset(m_allocator, 0xcd, sizeof(T) * sz_);
 		}
 	}
 
 	// Use hxArray::get_allocator() to access extended allocation semantics.
-	HX_INLINE void reserveStorageExt(uint32_t sz,
+	HX_INLINE void reserveStorageExt(uint32_t sz_,
 			hxMemoryManagerId alId=hxMemoryManagerId_Current,
 			uintptr_t alignmentMask=HX_ALIGNMENT_MASK) {
-		if (sz <= m_capacity) { return; }
+		if (sz_ <= m_capacity) { return; }
 		hxAssertRelease(m_capacity == 0, "allocator reallocation disallowed.");
-		m_allocator = (T*)hxMallocExt(sizeof(T) * sz, alId, alignmentMask);
-		m_capacity = sz;
+		m_allocator = (T*)hxMallocExt(sizeof(T) * sz_, alId, alignmentMask);
+		m_capacity = sz_;
 		if ((HX_RELEASE) < 1) {
-			::memset(m_allocator, 0xcd, sizeof(T) * sz);
+			::memset(m_allocator, 0xcd, sizeof(T) * sz_);
 		}
 	}
 

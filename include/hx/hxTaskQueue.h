@@ -18,14 +18,14 @@ class hxTaskQueue {
 public:
 	// threadPoolSize -1 indicates using a hardware_concurrency()-1 size thread
 	// pool.  threadPoolSize 0 does not use threading. 
-	explicit hxTaskQueue(int32_t threadPoolSize = -1);
+	explicit hxTaskQueue(int32_t threadPoolSize_ = -1);
 
 	// Calls waitForAll before destructing.
 	~hxTaskQueue();
 
 	// Does not delete task after execution.  Thread safe and callable from
 	// running tasks.
-	void enqueue(hxTask* task);
+	void enqueue(hxTask* task_);
 
 	// The thread calling waitForAll() will execute tasks as well.  Do not call
 	// from hxTask::execute().
@@ -42,7 +42,7 @@ private:
 
 #if HX_USE_CPP11_THREADS
 	enum class ExecutorMode { Pool, Waiting, Stopping };
-	static void executorThread(hxTaskQueue* q, ExecutorMode mode);
+	static void executorThread(hxTaskQueue* q_, ExecutorMode mode_);
 
 	int32_t m_threadPoolSize = 0;
 	std::thread* m_threads = hxnull;

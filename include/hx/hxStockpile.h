@@ -13,24 +13,27 @@
 // Provides atomic storage for results of multi-threaded processing.  Requests
 // for entries beyond Capacity will fail.
 
-template<typename T, uint32_t Capacity>
-class hxStockpile : private hxAllocator<T, Capacity> {
+template<typename T_, uint32_t Capacity_>
+class hxStockpile : private hxAllocator<T_, Capacity_> {
 public:
+	typedef T_ T;
+	enum { Capacity = Capacity_ };
+
 	HX_STATIC_ASSERT(Capacity > 0u, "fixed size only");
 
 	HX_INLINE explicit hxStockpile() { m_size = 0u; }
 	HX_INLINE ~hxStockpile() { destruct(); }
 
-	HX_INLINE const T& operator[](uint32_t index) const {
-		hxAssert(index < hxMin((uint32_t)m_size, Capacity));
-		return this->getStorage()[index];
+	HX_INLINE const T& operator[](uint32_t index_) const {
+		hxAssert(index_ < hxMin((uint32_t)m_size, Capacity));
+		return this->getStorage()[index_];
 	}
-	HX_INLINE       T& operator[](uint32_t index)       {
-		hxAssert(index < hxMin((uint32_t)m_size, Capacity));
-		return this->getStorage()[index];
+	HX_INLINE       T& operator[](uint32_t index_)       {
+		hxAssert(index_ < hxMin((uint32_t)m_size, (uint32_t)Capacity));
+		return this->getStorage()[index_];
 	}
 
-	HX_INLINE uint32_t size() const { return hxMin((uint32_t)m_size, Capacity); }
+	HX_INLINE uint32_t size() const { return hxMin((uint32_t)m_size, (uint32_t)Capacity); }
 	HX_CONSTEXPR_FN uint32_t capacity() const { return Capacity; }
 
 	HX_INLINE bool empty() const { return m_size == 0u; }
@@ -39,10 +42,10 @@ public:
 	HX_INLINE const T* data() const { return this->getStorage(); }
 	HX_INLINE       T* data() { return this->getStorage(); }
 
-	HX_INLINE bool push_back_atomic(const T& t) {
-		uint32_t index = m_size++;
-		if (index < Capacity) {
-			::new (this->getStorage() + index) T(t);
+	HX_INLINE bool push_back_atomic(const T& t_) {
+		uint32_t index_ = m_size++;
+		if (index_ < Capacity) {
+			::new (this->getStorage() + index_) T(t_);
 			return true;
 		}
 		m_size = Capacity;
@@ -51,9 +54,9 @@ public:
 
 	// Returns pointer for use with placement new, if available.
 	HX_INLINE void* emplace_back_atomic() {
-		uint32_t index = m_size++;
-		if (index < Capacity) {
-			return this->getStorage() + index;
+		uint32_t index_ = m_size++;
+		if (index_ < Capacity) {
+			return this->getStorage() + index_;
 		}
 		m_size = Capacity;
 		return hxnull;
@@ -66,15 +69,15 @@ public:
 
 private:
 	HX_INLINE void destruct() {
-		T* t = this->getStorage();
-		uint32_t sz = hxMin((uint32_t)m_size, Capacity);
-		while (sz--) {
-			t++->~T();
+		T* t_ = this->getStorage();
+		uint32_t sz_ = hxMin((uint32_t)m_size, (uint32_t)Capacity);
+		while (sz_--) {
+			t_++->~T();
 		}
 	}
 
-	explicit hxStockpile(const hxStockpile& rhs); // = delete
-	void operator=(const hxStockpile& rhs); // = delete
+	explicit hxStockpile(const hxStockpile& rhs_); // = delete
+	void operator=(const hxStockpile& rhs_); // = delete
 
 #if HX_USE_CPP11_THREADS
 	std::atomic<uint32_t> m_size;

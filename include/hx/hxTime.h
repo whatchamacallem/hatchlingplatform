@@ -36,8 +36,8 @@ static const float c_hxTimeMillisecondsPerCycle = 1.0e-6f; // Also 1.e+6 cycles/
 static const hx_cycles_t c_hxTimeDefaultTimingCutoff = 1000;
 
 HX_INLINE static hx_cycles_t hxTimeSampleCycles() {
-	timespec ts;
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	return (uint32_t)ts.tv_nsec;
+	timespec ts_;
+	clock_gettime(CLOCK_MONOTONIC, &ts_);
+	return (uint32_t)ts_.tv_nsec;
 }
 #endif

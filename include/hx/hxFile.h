@@ -30,16 +30,16 @@ public:
 	};
 
 	// Stream is closed by default.
-	hxFile(uint16_t mode=0u);
+	hxFile(uint16_t mode_=0u);
 
 	// Opens a stream using a formatted filename.  Non-standard arg order.
-	hxFile(uint16_t mode, const char* filename, ...) HX_ATTR_FORMAT(3, 4);
+	hxFile(uint16_t mode_, const char* filename_, ...) HX_ATTR_FORMAT(3, 4);
 
 	// Closes stream.
 	~hxFile();
 
 	// Opens a stream using a formatted filename.
-	bool open(uint16_t mode, const char* filename, ...) HX_ATTR_FORMAT(3, 4);
+	bool open(uint16_t mode_, const char* filename_, ...) HX_ATTR_FORMAT(3, 4);
 
 	// Closes stream.  If either fallible or echo are specified they will be kept
 	// enabled after closing.
@@ -63,67 +63,67 @@ public:
 	// Returns whether all writes will be echoed to stdout.  Non-standard.
 	HX_INLINE bool is_echo() const { return (m_openMode & echo) != 0; }
 
-	size_t read(void* bytes, size_t count);
+	size_t read(void* bytes_, size_t count_);
 
-	size_t write(const void* bytes, size_t count);
+	size_t write(const void* bytes_, size_t count_);
 
 	// Reads an \n or EOF terminated character sequence.  Allowed to fail on
 	// EOF without needing to be hxFile::fallible.  Automatically determines
 	// the size of the provided char array.  buffer is a reference to a char
 	// array.
-	template<size_t BufferSize>
-	HX_INLINE bool getline(char(&buffer)[BufferSize]) { return getline(buffer, BufferSize); }
+	template<size_t BufferSize_>
+	HX_INLINE bool getline(char(&buffer_)[BufferSize_]) { return getline(buffer_, BufferSize_); }
 
 	// Reads an \n or EOF terminated character sequence.  Allowed to fail on EOF
 	// without needing to be hxFile::fallible.
-	bool getline(char* buffer, size_t bufferSize);
+	bool getline(char* buffer_, size_t bufferSize_);
 
 	// Formatted string write.  Must be less than HX_MAX_LINE characters.  gcc
 	// considers "this" to be argument 1.
-	bool print(const char* format, ...) HX_ATTR_FORMAT(2, 3);
+	bool print(const char* format_, ...) HX_ATTR_FORMAT(2, 3);
 
 	// Read a single unformatted native endian object.
-	template<typename T>
-	HX_INLINE bool read1(T& t) { return read(&t, sizeof t) == sizeof t; }
+	template<typename T_>
+	HX_INLINE bool read1(T_& t_) { return read(&t_, sizeof t_) == sizeof t_; }
 
 	// Write a single unformatted native endian object.
-	template<typename T>
-	HX_INLINE bool write1(const T& t) { return write(&t, sizeof t) == sizeof t; }
+	template<typename T_>
+	HX_INLINE bool write1(const T_& t_) { return write(&t_, sizeof t_) == sizeof t_; }
 
 	// Read a single unformatted native endian object from a stream.
-	template<typename T>
-	HX_INLINE hxFile& operator>>(T& t) {
-		read(&t, sizeof t);
+	template<typename T_>
+	HX_INLINE hxFile& operator>>(T_& t_) {
+		read(&t_, sizeof t_);
 		return *this;
 	}
 
 	// Write a single unformatted native endian object to a stream.
-	template<typename T>
-	HX_INLINE hxFile& operator<<(const T& t) {
-		write(&t, sizeof t);
+	template<typename T_>
+	HX_INLINE hxFile& operator<<(const T_& t_) {
+		write(&t_, sizeof t_);
 		return *this;
 	}
 
 	// Write a string literal.  Supports Google Test style diagnostic messages.
-	template<size_t StringLength>
-	HX_INLINE hxFile& operator<<(const char(&str)[StringLength]) {
-		hxAssert(::strnlen(str, StringLength) == (StringLength-1));
-		write(str, StringLength-1);
+	template<size_t StringLength_>
+	HX_INLINE hxFile& operator<<(const char(&str_)[StringLength_]) {
+		hxAssert(::strnlen(str_, StringLength_) == (StringLength_-1));
+		write(str_, StringLength_-1);
 		return *this;
 	}
 
-	template<size_t StringLength>
-	HX_INLINE hxFile& operator<<(char(&str)[StringLength]) {
-		write(str, ::strnlen(str, StringLength));
+	template<size_t StringLength_>
+	HX_INLINE hxFile& operator<<(char(&str_)[StringLength_]) {
+		write(str_, ::strnlen(str_, StringLength_));
 		return *this;
 	}
 
 private:
 	hxFile(const hxFile&); // = delete
 	void operator=(const hxFile&); // = delete
-	template<typename T> HX_INLINE hxFile& operator>>(const T* t); // = delete
+	template<typename T_> HX_INLINE hxFile& operator>>(const T_* t_); // = delete
 
-	bool openV(uint16_t mode, const char* format, va_list args);
+	bool openV(uint16_t mode_, const char* format_, va_list args_);
 
 	char* m_filePImpl;
 	uint16_t m_openMode;

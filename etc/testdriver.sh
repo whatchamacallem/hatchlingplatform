@@ -29,6 +29,4 @@ echo "testing optional feature settings.  these tests will spew errors and still
 echo "now testing successful execution.  no errors expected."
 ./etc/test.sh
 
-echo "
-$(tput bold)$(tput bold)testdriver.sh passed.(tput sgr 0)
-"
+echo testdriver.sh passed.

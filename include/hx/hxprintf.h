@@ -18,10 +18,10 @@ extern "C" {
 #endif
 
 #if !defined(hxvsnprintf)
-int hxvsnprintf(char* buffer, size_t count, const char* format, va_list va);
+int hxvsnprintf(char* buffer_, size_t count_, const char* format_, va_list va_);
 #endif
 
-int hxsnprintf(char* buffer, size_t count, const char* format, ...);
+int hxsnprintf(char* buffer_, size_t count_, const char* format_, ...);
 
 #if defined(__cplusplus)
 }

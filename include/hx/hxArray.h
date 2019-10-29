@@ -11,14 +11,15 @@
 // Undocumented functions follow std::vector.  Undocumented methods have a
 // standard interface.
 
-template<typename T, uint32_t Capacity=hxAllocatorDynamicCapacity>
-class hxArray : private hxAllocator<T, Capacity> {
+template<typename T_, uint32_t Capacity_=hxAllocatorDynamicCapacity>
+class hxArray : private hxAllocator<T_, Capacity_> {
 public:
+	typedef T_ T;
 	typedef T value_type;
 	typedef uint32_t size_type; // 32-bit indices. 
 	typedef T* iterator; // Random access iterator.
 	typedef const T* const_iterator; // Const random access iterator.
-	typedef hxAllocator<T, Capacity> allocator_type; 
+	typedef hxAllocator<T, Capacity_> allocator_type; 
 
 	// Constructs an empty array with a capacity of Capacity.  m_end will be 0
 	// if Capacity is 0.
@@ -26,17 +27,17 @@ public:
 
 	// Copy constructs an array.  Does not allow movement of hxUniquePtrs.  Use
 	// assign() for that.
-	HX_INLINE explicit hxArray(const hxArray& rhs) : hxAllocator<T, Capacity>() {
+	HX_INLINE explicit hxArray(const hxArray& rhs_) : hxAllocator<T, Capacity_>() {
 		m_end = this->getStorage();
-		assign(rhs.cbegin(), rhs.cend());
+		assign(rhs_.cbegin(), rhs_.cend());
 	}
 
 	// Copy constructs an array from a container with begin() and end() methods and
 	// a random access iterator.
 	template <typename Rhs>
-	HX_INLINE explicit hxArray(const Rhs& rhs) : hxAllocator<T, Capacity>() {
+	HX_INLINE explicit hxArray(const Rhs& rhs_) : hxAllocator<T, Capacity_>() {
 		m_end = this->getStorage();
-		assign(rhs.begin(), rhs.end());
+		assign(rhs_.begin(), rhs_.end());
 	}
 
 	// Destructs array.
@@ -45,15 +46,15 @@ public:
 	}
 
 	// Standard except reallocation is disallowed.
-	HX_INLINE void operator=(const hxArray& rhs) {
-		assign(rhs.begin(), rhs.end());
+	HX_INLINE void operator=(const hxArray& rhs_) {
+		assign(rhs_.begin(), rhs_.end());
 	}
 
 	// Copies the elements of a container with begin() and end() methods and a random
 	// access iterator.
 	template <typename Rhs>
-	HX_INLINE void operator=(const Rhs& rhs) {
-		assign(rhs.begin(), rhs.end());
+	HX_INLINE void operator=(const Rhs& rhs_) {
+		assign(rhs_.begin(), rhs_.end());
 	}
 
 	// Standard interface.
@@ -74,13 +75,13 @@ public:
 	HX_INLINE const T& back() const { hxAssert(size()); return *(m_end - 1); }
 	HX_INLINE       T& back() { hxAssert(size()); return *(m_end - 1); }
 
-	HX_INLINE const T& operator[](uint32_t index) const {
-		hxAssert(index < size());
-		return this->getStorage()[index];
+	HX_INLINE const T& operator[](uint32_t index_) const {
+		hxAssert(index_ < size());
+		return this->getStorage()[index_];
 	}
-	HX_INLINE       T& operator[](uint32_t index) {
-		hxAssert(index < size());
-		return this->getStorage()[index];
+	HX_INLINE       T& operator[](uint32_t index_) {
+		hxAssert(index_ < size());
+		return this->getStorage()[index_];
 	}
 
 	HX_INLINE uint32_t size() const {
@@ -88,9 +89,9 @@ public:
 		return (uint32_t)(m_end - this->getStorage());
 	}
 
-	HX_INLINE void reserve(uint32_t c) {
+	HX_INLINE void reserve(uint32_t size_) {
 		T* prev = this->getStorage();
-		this->reserveStorage(c);
+		this->reserveStorage(size_);
 		hxAssertMsg(!prev || prev == this->getStorage(), "no reallocation"); (void)prev;
 		if (m_end == hxnull) {
 			m_end = this->getStorage();
@@ -106,20 +107,20 @@ public:
 
 	HX_INLINE bool empty() const { return m_end == this->getStorage(); }
 
-	HX_INLINE void resize(uint32_t sz) {
-		reserve(sz);
-		if (sz >= size()) {
-			this->construct(m_end, this->getStorage() + sz);
+	HX_INLINE void resize(uint32_t size_) {
+		reserve(size_);
+		if (size_ >= size()) {
+			this->construct(m_end, this->getStorage() + size_);
 		}
 		else {
-			destruct(this->getStorage() + sz, m_end);
+			destruct(this->getStorage() + size_, m_end);
 		}
-		m_end = this->getStorage() + sz;
+		m_end = this->getStorage() + size_;
 	}
 
-	HX_INLINE void push_back(const T& t) {
+	HX_INLINE void push_back(const T& t_) {
 		hxAssert(size() < capacity());
-		::new (m_end++) T(t);
+		::new (m_end++) T(t_);
 	}
 
 	HX_INLINE void pop_back() {
@@ -133,20 +134,20 @@ public:
 	// Copies the elements of a container with begin() and end() methods and a random
 	// access iterator.
 	template <typename Iter>
-	HX_INLINE void assign(Iter first, Iter last) {
-		reserve((uint32_t)(last - first));
-		T* it = this->getStorage();
-		destruct(it, m_end);
-		while (first != last) { ::new (it++) T(*first++); }
-		m_end = it;
+	HX_INLINE void assign(Iter first_, Iter last_) {
+		reserve((uint32_t)(last_ - first_));
+		T* it_ = this->getStorage();
+		destruct(it_, m_end);
+		while (first_ != last_) { ::new (it_++) T(*first_++); }
+		m_end = it_;
 	}
 
 	// --------------------------------------------------------------------------
 	// Non-standard but useful
 
 	// Constructs an array of T from an array of T2.
-	template<typename T2, size_t Sz>
-	HX_INLINE void assign(const T2(&a)[Sz]) { assign(a + 0, a + Sz); }
+	template<typename T2_, size_t Sz_>
+	HX_INLINE void assign(const T2_(&a_)[Sz_]) { assign(a_ + 0u, a_ + Sz_); }
 
 	// Variant of emplace_back() that returns a pointer for use with placement new.
 	HX_INLINE void* emplace_back_unconstructed() {
@@ -156,21 +157,21 @@ public:
 
 	// Variant of erase() that moves the end element down to replace erased
 	// element.
-	HX_INLINE void erase_unordered(uint32_t index) {
-		hxAssert(index < size());
-		T* it = this->getStorage() + index;
-		if (it != --m_end) {
-			*it = *m_end;
+	HX_INLINE void erase_unordered(uint32_t index_) {
+		hxAssert(index_ < size());
+		T* it_ = this->getStorage() + index_;
+		if (it_ != --m_end) {
+			*it_ = *m_end;
 		}
 		m_end->~T();
 	}
 
 	// Variant of erase() that moves the end element down to replace the erased
 	// element.
-	HX_INLINE void erase_unordered(T* it) {
-		hxAssert((uint32_t)(it - this->getStorage()) < size());
-		if (it != --m_end) {
-			*it = *m_end;
+	HX_INLINE void erase_unordered(T* it_) {
+		hxAssert((uint32_t)(it_ - this->getStorage()) < size());
+		if (it_ != --m_end) {
+			*it_ = *m_end;
 		}
 		m_end->~T();
 	}
@@ -181,15 +182,15 @@ public:
 	}
 
 private:
-	HX_INLINE void construct(T* first, T* last) {
-		while (first != last) {
-			::new (first++) T;
+	HX_INLINE void construct(T* first_, T* last_) {
+		while (first_ != last_) {
+			::new (first_++) T;
 		}
 	}
 
-	HX_INLINE void destruct(T* first, T* last) {
-		while (first != last) {
-			first++->~T();
+	HX_INLINE void destruct(T* first_, T* last_) {
+		while (first_ != last_) {
+			first_++->~T();
 		}
 	}
 	T* m_end;

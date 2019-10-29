@@ -25,15 +25,15 @@
 #define HX_RESTRICT __restrict
 #define HX_INLINE __forceinline
 #define HX_LINK_SCRATCHPAD
-#define HX_ATTR_FORMAT(pos, start)
+#define HX_ATTR_FORMAT(pos_, start_)
 #define HX_DEBUG_BREAK __debugbreak()
 
 #if defined(__cplusplus) && _MSC_VER >= 1900
-#define HX_STATIC_ASSERT(x,...) static_assert((bool)(x), __VA_ARGS__)
+#define HX_STATIC_ASSERT(x_,...) static_assert((bool)(x_), __VA_ARGS__)
 #define HX_OVERRIDE override
 #define HX_ATTR_NORETURN [[noreturn]]
 #else // !__cplusplus
-#define HX_STATIC_ASSERT(x,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [!!(x) ? 1 : -1]
+#define HX_STATIC_ASSERT(x_,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [!!(x_) ? 1 : -1]
 #define HX_OVERRIDE
 #define HX_ATTR_NORETURN
 #endif
@@ -60,15 +60,15 @@
 #define HX_INLINE inline __attribute__((always_inline))
 #define HX_LINK_SCRATCHPAD // TODO: Configure for target.  A linker section is required.
 
-#define HX_ATTR_FORMAT(pos, start) __attribute__((format(printf, pos, start)))
+#define HX_ATTR_FORMAT(pos_, start_) __attribute__((format(printf, pos_, start_)))
 #define HX_ATTR_NORETURN __attribute__((noreturn))
 #define HX_DEBUG_BREAK __builtin_trap()
 
 #if defined(__cplusplus) && __cplusplus >= 201103L
-#define HX_STATIC_ASSERT(x,...) static_assert(x, __VA_ARGS__)
+#define HX_STATIC_ASSERT(x_,...) static_assert(x_, __VA_ARGS__)
 #define HX_OVERRIDE override
 #else // C/C++98
-#define HX_STATIC_ASSERT(x,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [!!(x) ? 1 : -1]
+#define HX_STATIC_ASSERT(x_,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [!!(x_) ? 1 : -1]
 #define HX_OVERRIDE
 #endif
 #endif // target settings
@@ -97,7 +97,9 @@
 
 // ----------------------------------------------------------------------------
 // Maximum length for formatted messages printed with this platform.
+#if !defined(HX_MAX_LINE)
 #define HX_MAX_LINE 180
+#endif
 
 // ----------------------------------------------------------------------------
 // HX_MEM_DIAGNOSTIC_LEVEL.  Memory management debug mode.
@@ -113,12 +115,21 @@
 #endif
 
 // Memory manager pool sizes
-#define HX_KB (1u << 10) // 1024u
-#define HX_MB (1u << 20) // 1048576u
-#define HX_MEMORY_BUDGET_PERMANENT        5u * HX_KB
-#define HX_MEMORY_BUDGET_TEMPORARY_STACK  1u * HX_MB
-#define HX_MEMORY_BUDGET_SCRATCH_PAGE    10u * HX_KB
-#define HX_MEMORY_BUDGET_SCRATCH_TEMP    60u * HX_KB
+#define HX_KIB (1u << 10) // A KiB is 1024 bytes.
+#define HX_MIB (1u << 20) // A MiB is 1,048,576 bytes.
+
+#if !defined(HX_MEMORY_BUDGET_PERMANENT)
+#define HX_MEMORY_BUDGET_PERMANENT        (5u * HX_KIB)
+#endif
+#if !defined(HX_MEMORY_BUDGET_TEMPORARY_STACK)
+#define HX_MEMORY_BUDGET_TEMPORARY_STACK  (1u * HX_MIB)
+#endif
+#if !defined(HX_MEMORY_BUDGET_SCRATCH_PAGE)
+#define HX_MEMORY_BUDGET_SCRATCH_PAGE    (10u * HX_KIB)
+#endif
+#if !defined(HX_MEMORY_BUDGET_SCRATCH_TEMP)
+#define HX_MEMORY_BUDGET_SCRATCH_TEMP    (60u * HX_KIB)
+#endif
 
 // When set to 0 HX_USE_MEMORY_SCRATCH will disable the scratchpad code.
 #if !defined(HX_USE_MEMORY_SCRATCH)
@@ -133,7 +144,9 @@
 #endif
 
 // The profiler doesn't reallocate.  This is the maximum.
+#if !defined(HX_PROFILER_MAX_RECORDS)
 #define HX_PROFILER_MAX_RECORDS 4096
+#endif
 
 // ----------------------------------------------------------------------------
 // HX_DEBUG_DMA.  Internal validation, set to 1 or 0 as needed
@@ -160,8 +173,13 @@
 // These need to be determined by benchmarking on the target platform.  The 8-
 // bit version tries to be memory efficient, the 11-bit version optimizes for
 // speed over memory.
+#if !defined(HX_RADIX_SORT_BITS)
 #define HX_RADIX_SORT_BITS 8 // either 8 or 11.
+#endif
+
+#if !defined(HX_RADIX_SORT_MIN_SIZE)
 #define HX_RADIX_SORT_MIN_SIZE 50u // uses hxInsertionSort() below this.
+#endif
 
 // ----------------------------------------------------------------------------
 // Default undetected HX_USE_* features.

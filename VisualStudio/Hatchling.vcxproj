@@ -82,7 +82,8 @@
     <None Include="..\.travis.yml" />
     <None Include="..\etc\coverage.md" />
     <None Include="..\etc\coverage.sh" />
-    <None Include="..\etc\gittest.sh" />
+    <None Include="..\etc\testdriver.sh" />
+    <None Include="..\etc\testgit.sh" />
     <None Include="..\etc\profile.json" />
     <None Include="..\etc\test.sh" />
     <None Include="..\README.md" />

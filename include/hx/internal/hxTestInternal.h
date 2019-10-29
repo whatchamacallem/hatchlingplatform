@@ -13,8 +13,8 @@ public:
 	};
 
 	enum {
-		MAX_FAIL_MESSAGES = 5,
-		MAX_TESTS = 256
+		TEST_MAX_FAIL_MESSAGES = 5,
+		TEST_MAX_CASES = 256
 	};
 
 	struct FactoryBase {
@@ -35,28 +35,28 @@ public:
 		::memset(mFactories + 0, 0x00, sizeof mFactories);
 	}
 
-	void setSearchTerm(const char* searchTermStringLiteral) { mSearchTermStringLiteral = searchTermStringLiteral; }
+	void setSearchTerm(const char* searchTermStringLiteral_) { mSearchTermStringLiteral = searchTermStringLiteral_; }
 
-	void addTest(FactoryBase* fn) {
-		hxAssertRelease(mNumFactories < MAX_TESTS, "MAX_TESTS overflow\n");
-		mFactories[mNumFactories++] = fn;
+	void addTest(FactoryBase* fn_) {
+		hxAssertRelease(mNumFactories < TEST_MAX_CASES, "TEST_MAX_CASES overflow\n");
+		mFactories[mNumFactories++] = fn_;
 	}
 
 	// message is required to end with an \n.  Returns devNull() on success and
 	// the system log otherwise.
-	hxFile& assertCheck(const char* file, int32_t line, bool condition, const char* message) {
+	hxFile& assertCheck(const char* file_, int32_t line_, bool condition_, const char* message_) {
 		++mAssertCount;
-		mTestState = (condition && mTestState != TEST_FAIL) ? TEST_PASS : TEST_FAIL;
-		if (!condition) {
-			if(++mAssertFailCount >= MAX_FAIL_MESSAGES) {
-				if (mAssertFailCount == MAX_FAIL_MESSAGES) {
+		mTestState = (condition_ && mTestState != TEST_FAIL) ? TEST_PASS : TEST_FAIL;
+		if (!condition_) {
+			if(++mAssertFailCount >= TEST_MAX_FAIL_MESSAGES) {
+				if (mAssertFailCount == TEST_MAX_FAIL_MESSAGES) {
 					hxLogConsole("remaining asserts will fail silently...\n");
 				}
 				return devNull();
 			}
 
-			hxLogConsole("%s(%d): ", file, (int)line); (void)file; (void)line;
-			hxLogHandler(hxLogLevel_Console, "%s\n", message);
+			hxLogConsole("%s(%d): ", file_, (int)line_); (void)file_; (void)line_;
+			hxLogHandler(hxLogLevel_Console, "%s\n", message_);
 
 			hxAssertRelease(mCurrentTest, "not testing");
 			hxLogHandler(hxLogLevel_Assert, "%s.%s", mCurrentTest->Suite(), mCurrentTest->Case());
@@ -69,11 +69,11 @@ public:
 	int32_t executeAllTests() {
 		mPassCount = mFailCount = mAssertCount = 0;
 		hxLogConsole("RUNNING_TESTS (%s)\n", (mSearchTermStringLiteral ? mSearchTermStringLiteral : "ALL"));
-		for (FactoryBase** it = mFactories; it != (mFactories + mNumFactories); ++it) {
-			if (!mSearchTermStringLiteral || ::strstr(mSearchTermStringLiteral, (*it)->Suite()) != hxnull) {
-				hxLogConsole("%s.%s...\n", (*it)->Suite(), (*it)->Case());
+		for (FactoryBase** it_ = mFactories; it_ != (mFactories + mNumFactories); ++it_) {
+			if (!mSearchTermStringLiteral || ::strstr(mSearchTermStringLiteral, (*it_)->Suite()) != hxnull) {
+				hxLogConsole("%s.%s...\n", (*it_)->Suite(), (*it_)->Case());
 
-				mCurrentTest = *it;
+				mCurrentTest = *it_;
 				mTestState = TEST_NOTHING_ASSERTED;
 				mAssertFailCount = 0;
 
@@ -81,11 +81,11 @@ public:
 					// Tests should have no side effects.  Therefore all allocations must be
 					// safe to reset.
 					hxMemoryManagerScope temporaryStack(hxMemoryManagerId_TemporaryStack);
-					(*it)->Run();
+					(*it_)->Run();
 				}
 
 				if (mTestState == TEST_NOTHING_ASSERTED) {
-					assertCheck(hxBasename((*it)->File()), (*it)->Line(), false,
+					assertCheck(hxBasename((*it_)->File()), (*it_)->Line(), false,
 						"NOTHING ASSERTED");
 					++mFailCount;
 				}
@@ -117,14 +117,14 @@ public:
 
 private:
 	hxFile& devNull() {
-		static hxFile f(hxFile::out | hxFile::fallible); // Allows writes to fail.
-		return f;
+		static hxFile f_(hxFile::out | hxFile::fallible); // Allows writes to fail.
+		return f_;
 	}
 
 	hxTestRunner(const hxTestRunner&); // = delete
 	void operator=(const hxTestRunner&); // = delete
 
-	FactoryBase* mFactories[MAX_TESTS];
+	FactoryBase* mFactories[TEST_MAX_CASES];
 	int32_t mNumFactories;
 	FactoryBase* mCurrentTest;
 	TestState mTestState;

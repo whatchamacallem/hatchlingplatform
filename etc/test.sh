@@ -55,6 +55,4 @@ done
 rm log.txt profile.json hxConsoleTest_FileTest.txt hxFileTest_Operators.bin \
 	hxFileTest_ReadWrite.txt
 
-echo "
-$(tput bold)$(tput bold)test.sh passed.(tput sgr 0)
-"
+echo test.sh passed
