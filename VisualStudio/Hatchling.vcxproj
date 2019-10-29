@@ -29,7 +29,6 @@
     <ClInclude Include="..\include\hx\hxHashTableNodes.h" />
     <ClInclude Include="..\include\hx\hxMemoryManager.h" />
     <ClInclude Include="..\include\hx\hxProfiler.h" />
-    <ClInclude Include="..\include\hx\hxChron.h" />
     <ClInclude Include="..\include\hx\hxSettings.h" />
     <ClInclude Include="..\include\hx\hxSort.h" />
     <ClInclude Include="..\include\hx\hxStockpile.h" />

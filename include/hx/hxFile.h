@@ -104,7 +104,7 @@ public:
 		return *this;
 	}
 
-	// Supports Google Test style diagnostic messages.
+	// Write a string literal.  Supports Google Test style diagnostic messages.
 	template<size_t StringLength>
 	HX_INLINE hxFile& operator<<(const char(&str)[StringLength]) {
 		hxAssert(::strnlen(str, StringLength) == (StringLength-1));

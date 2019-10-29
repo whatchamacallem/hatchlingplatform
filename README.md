@@ -5,7 +5,8 @@
 # Hatchling Platform
 
 Small C++ run-time intended to be developed against on the desktop before cross
-compiling to an embedded target.
+compiling to an embedded target.  This is minimalist programming.  I wrote this for
+myself to have on hand for bare metal projects but welcome feedback and patches.
 
  * `#include` [`<hx/hatchling.h>`](https://github.com/adrian3git/HatchlingPlatform/blob/master/include/hx/hatchling.h)
 
@@ -30,7 +31,7 @@ compiling to an embedded target.
 
  * 64-bit clean.  Intended for but not limited to use with a 32-bit
    target.  Memory allocation, DMA and File I/O use size_t, everything
-   else is 32-bit.
+   else is 32-bit to keep structure layouts predictable.
 
  * Does not use exceptions or `std::type_info.`
 
@@ -40,7 +41,7 @@ compiling to an embedded target.
 
  * Logging and memory management available in plain C99.
 
- * Includes `printf` from: https://github.com/mpaland/printf
+ * Includes a tiny and configurable `printf` from: https://github.com/mpaland/printf
 
 Tested with `./etc/test.sh` using:
  * Microsoft Visual Studio Community 2017 Version 15.9.8+28307.481

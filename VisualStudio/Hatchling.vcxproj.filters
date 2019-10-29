@@ -141,9 +141,6 @@
     <ClInclude Include="..\include\hx\hxTime.h">
       <Filter>include/hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\hxChron.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.editorconfig" />
