@@ -71,8 +71,8 @@ static void hxPrintFileHashes() {
 
 	hxInsertionSort(filenames.begin(), filenames.end(), hxFilenameLess());
 
-	for (Filenames::iterator it = filenames.begin(); it != filenames.end(); ++it) {
-		hxLog("  %08x %s\n", hxStringLiteralHashDebug(*it), *it);
+	for (Filenames::iterator f = filenames.begin(); f != filenames.end(); ++f) {
+		hxLog("  %08x %s\n", hxStringLiteralHashDebug(*f), *f);
 	}
 
 	hxStringLiteralHashes().clear();
