@@ -8,8 +8,6 @@
 #   etc/test.sh -DHX_TEST_DIE_AT_THE_END=1
 #
 # will run the tests with HX_TEST_DIE_AT_THE_END defined to be 1.
-
-#set -o xtrace
 set -o errexit
 
 export GREP_COLOR='0;32' # green
@@ -57,8 +55,6 @@ done
 rm log.txt profile.json hxConsoleTest_FileTest.txt hxFileTest_Operators.bin \
 	hxFileTest_ReadWrite.txt
 
-# ALL_PASSED
 echo "
-$(tput bold)$(tput bold)ALL_PASSED$(tput sgr 0)
+$(tput bold)$(tput bold)test.sh passed.(tput sgr 0)
 "
-

@@ -1,12 +1,6 @@
 #!/bin/bash
 # Copyright 2019 Adrian Johnston
-
 set -o errexit
-
-reset
-git pull origin master
-git submodule update --init
-git submodule foreach git pull origin master
 
 echo "
 $(tput rev)                                                                              
@@ -35,10 +29,6 @@ echo "testing optional feature settings.  these tests will spew errors and still
 echo "now testing successful execution.  no errors expected."
 ./etc/test.sh
 
-# confirm working directory is clean
-if [[ $(git status --porcelain) ]]; then
-    echo "unexpected modifications:"
-	git status --porcelain
-	echo "try: git clean -f -d"
-	exit 1
-fi
+echo "
+$(tput bold)$(tput bold)testdriver.sh passed.(tput sgr 0)
+"

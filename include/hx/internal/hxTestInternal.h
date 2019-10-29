@@ -42,9 +42,9 @@ public:
 		mFactories[mNumFactories++] = fn;
 	}
 
-	// format is required to end with an \n.  Returns /dev/null on success and
+	// message is required to end with an \n.  Returns devNull() on success and
 	// the system log otherwise.
-	hxFile& assertCheck(const char* file, int32_t line, bool condition, const char* format, ...) {
+	hxFile& assertCheck(const char* file, int32_t line, bool condition, const char* message) {
 		++mAssertCount;
 		mTestState = (condition && mTestState != TEST_FAIL) ? TEST_PASS : TEST_FAIL;
 		if (!condition) {
@@ -56,10 +56,7 @@ public:
 			}
 
 			hxLogConsole("%s(%d): ", file, (int)line); (void)file; (void)line;
-			va_list args;
-			va_start(args, format);
-			hxLogHandlerV(hxLogLevel_Console, format, args);
-			va_end(args);
+			hxLogHandler(hxLogLevel_Console, "%s\n", message);
 
 			hxAssertRelease(mCurrentTest, "not testing");
 			hxLogHandler(hxLogLevel_Assert, "%s.%s", mCurrentTest->Suite(), mCurrentTest->Case());
@@ -89,7 +86,7 @@ public:
 
 				if (mTestState == TEST_NOTHING_ASSERTED) {
 					assertCheck(hxBasename((*it)->File()), (*it)->Line(), false,
-						"NOTHING ASSERTED\n");
+						"NOTHING ASSERTED");
 					++mFailCount;
 				}
 				else if (mTestState == TEST_PASS) {

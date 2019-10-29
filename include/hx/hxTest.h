@@ -58,19 +58,19 @@ HX_INLINE void InitGoogleTest() { }
 
 #define RUN_ALL_TESTS() hxTestRunner::get().executeAllTests()
 #define SUCCEED() hxTestRunner::get().assertCheck(hxnull, 0, true, hxnull) // Avoids NOTHING ASSERTED.
-#define FAIL() hxTestRunner::get().assertCheck(__FILE__, __LINE__, false, "failed here\n")
+#define FAIL() hxTestRunner::get().assertCheck(__FILE__, __LINE__, false, "failed here")
 
 // Args are only evaluated once.
-#define ASSERT_TRUE(x) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (x), #x "\n")
-#define ASSERT_FALSE(x) hxTestRunner::get().assertCheck(__FILE__, __LINE__, !(x), "!" #x "\n")
+#define ASSERT_TRUE(x) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (x), #x)
+#define ASSERT_FALSE(x) hxTestRunner::get().assertCheck(__FILE__, __LINE__, !(x), "!" #x)
 #define ASSERT_NEAR(expected, actual, absolute_range) hxTestRunner::get().assertCheck( \
-	__FILE__, __LINE__, hxAbs((expected)-(actual)) <= (absolute_range), "abs(" #expected "-" #actual ")<=" #absolute_range "\n")
-#define ASSERT_LT(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) < (rhs), #lhs "<" #rhs "\n")
-#define ASSERT_GT(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) > (rhs), #lhs ">" #rhs "\n")
-#define ASSERT_LE(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) <= (rhs), #lhs "<=" #rhs "\n")
-#define ASSERT_GE(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) >= (rhs), #lhs ">=" #rhs "\n")
-#define ASSERT_EQ(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) == (rhs), #lhs "==" #rhs "\n")
-#define ASSERT_NE(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) != (rhs), #lhs "!=" #rhs "\n")
+	__FILE__, __LINE__, hxAbs((expected)-(actual)) <= (absolute_range), "abs(" #expected "-" #actual ")<=" #absolute_range)
+#define ASSERT_LT(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) < (rhs), #lhs "<" #rhs)
+#define ASSERT_GT(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) > (rhs), #lhs ">" #rhs)
+#define ASSERT_LE(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) <= (rhs), #lhs "<=" #rhs)
+#define ASSERT_GE(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) >= (rhs), #lhs ">=" #rhs)
+#define ASSERT_EQ(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) == (rhs), #lhs "==" #rhs)
+#define ASSERT_NE(lhs, rhs) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs) != (rhs), #lhs "!=" #rhs)
 
 #define EXPECT_TRUE ASSERT_TRUE
 #define EXPECT_FALSE ASSERT_FALSE

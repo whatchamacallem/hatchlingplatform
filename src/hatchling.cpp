@@ -218,9 +218,12 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 	if (!format || level < g_hxSettings.logLevel) {
 		return;
 	}
-	char buf[HX_MAX_LINE];
+	char buf[HX_MAX_LINE+1];
 	int sz = hxvsnprintf(buf, HX_MAX_LINE, format, args);
 	sz = hxMin(sz, HX_MAX_LINE);
+	if (level == hxLogLevel_Warning || level == hxLogLevel_Assert) {
+		buf[sz++] = '\n';
+	}
 	::fwrite(buf, 1, sz, stdout);
 }
 #endif

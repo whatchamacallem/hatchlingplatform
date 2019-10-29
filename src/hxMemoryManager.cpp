@@ -98,6 +98,11 @@ private:
 
 // ----------------------------------------------------------------------------
 // hxMemoryAllocatorOsHeap
+//
+// Wraps heap allocations with a header and adds padding to obtain required
+// alignment.  This is only intended for large or debug allocations.  For lots
+// of small allocations use a small block allocator or check to see if C++17's
+// (or C11's) aligned_alloc() is available and efficient on your target.
 
 class hxMemoryAllocatorOsHeap : public hxMemoryAllocatorBase {
 public:

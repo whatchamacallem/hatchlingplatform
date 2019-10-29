@@ -184,13 +184,7 @@ template<typename T> HX_CONSTEXPR_FN const T hxAbs(const T& x) { return (x < (T)
 
 // Returns x clamped between the minimum and maximum using < comparisons.
 template<typename T> HX_CONSTEXPR_FN const T& hxClamp(const T& x, const T& minimum, const T& maximum) {
-	hxAssert(minimum <= maximum);
+	hxAssert(!(maximum < minimum));
 	return (x < minimum) ? minimum : ((maximum < x) ? maximum : x);
 }
-
-#else
-#define hxMin(x, y) (((x) < (y)) ? (x) : (y))
-#define hxMax(x, y) (((y) < (x)) ? (x) : (y))
-#define hxAbs(x) (((x) < 0) ? (0 - (x)) : (x))
-#define hxClamp(x, minimum, maximum) (((x) < (minimum)) ? (minimum) : (((maximum) < (x)) ? (maximum) : (x)))
 #endif

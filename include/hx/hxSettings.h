@@ -19,8 +19,8 @@
 // default.
 #define HX_USE_STDIO_H 1
 #define HX_USE_CPP11_THREADS __STDCPP_THREADS__ 
-#define HX_USE_CPP11_TIME 1
-#define HX_USE_CPP14_CONSTEXPR 0 // silently generating horrible code as of MSVC 15.8.9.
+#define HX_USE_CPP11_TIME (_MSC_VER >= 1900)
+#define HX_USE_CPP14_CONSTEXPR 0 // silently generating horrible assembly as of MSVC 15.8.9.
 
 #define HX_RESTRICT __restrict
 #define HX_INLINE __forceinline
@@ -28,7 +28,7 @@
 #define HX_ATTR_FORMAT(pos, start)
 #define HX_DEBUG_BREAK __debugbreak()
 
-#if defined(__cplusplus) && __cplusplus >= 201103L
+#if defined(__cplusplus) && _MSC_VER >= 1900
 #define HX_STATIC_ASSERT(x,...) static_assert((bool)(x), __VA_ARGS__)
 #define HX_OVERRIDE override
 #define HX_ATTR_NORETURN [[noreturn]]
@@ -67,7 +67,7 @@
 #if defined(__cplusplus) && __cplusplus >= 201103L
 #define HX_STATIC_ASSERT(x,...) static_assert(x, __VA_ARGS__)
 #define HX_OVERRIDE override
-#else // !C++98
+#else // C/C++98
 #define HX_STATIC_ASSERT(x,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [!!(x) ? 1 : -1]
 #define HX_OVERRIDE
 #endif

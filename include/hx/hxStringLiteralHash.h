@@ -10,7 +10,7 @@
 //
 // To log filename hashes in a debug build, add HX_REGISTER_FILENAME_HASH to C++ source files.
 
-#if HX_USE_CPP14_CONSTEXPR
+#if defined(__cplusplus) && HX_USE_CPP14_CONSTEXPR
 // C++14 compile time hashing for string constants, used by hxAssertRelease().
 template<size_t len>
 constexpr uint32_t hxStringLiteralHash(const char(&s)[len]) {
