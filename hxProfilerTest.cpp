@@ -29,13 +29,15 @@ class hxProfilerTest :
 {
 public:
 	struct hxProfilerTaskTest : public hxTaskQueue::Task {
-		void configure(const char* label, float targetMs) {
+		hxProfilerTaskTest() : m_targetMs(0.0f), m_accumulator(0) { }
+
+		void construct(const char* label, float targetMs) {
 			setLabel(label);
 			m_targetMs = targetMs;
 			m_accumulator = 0;
 		}
 
-		virtual void execute(hxTaskQueue* q) override {
+		virtual void execute(hxTaskQueue* q) HX_OVERRIDE {
 			generateScopes(m_targetMs);
 		}
 
@@ -76,8 +78,8 @@ TEST_F(hxProfilerTest, Single1ms) {
 	{
 		hxProfileScope("1 ms");
 		hxProfilerTaskTest one;
-		one.configure("1 ms", 1.0f);
-		one.execute(null);
+		one.construct("1 ms", 1.0f);
+		one.execute(hx_null);
 	}
 
 	ASSERT_TRUE(1u == (g_hxProfiler.recordsSize() - startRecords));
@@ -85,13 +87,13 @@ TEST_F(hxProfilerTest, Single1ms) {
 
 TEST_F(hxProfilerTest, writeToChromeTracing) {
 	// Shut down profiling and use console commands for next capture.
-	hxProfilerShutdown();
+	hxProfilerStop();
 	hxConsoleExecLine("profileStart");
 
 	hxTaskQueue q;
 	hxProfilerTaskTest tasks[s_hxTestNumLabels];
 	for (int32_t i = s_hxTestNumLabels; i--; ) {
-		tasks[i].configure(s_hxTestLabels[i], (float)i);
+		tasks[i].construct(s_hxTestLabels[i], (float)i);
 		q.enqueue(tasks + i);
 	}
 	q.waitForAll();

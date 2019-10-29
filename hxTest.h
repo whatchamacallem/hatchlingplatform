@@ -5,7 +5,7 @@
 #include "hatchling.h"
 #include "hxProfiler.h"
 
-// Enable this to use GoogleTest
+// Enable this to use GoogleTest instead of hxTestRunner.
 #if HX_GOOGLE_TEST
 #include <gtest/gtest.h>
 #else // !HX_GOOGLE_TEST
@@ -44,6 +44,7 @@ public:
 		mNumFactories = 0;
 		mCurrentTest = 0;
 		mFilterClassName = 0;
+		::memset(mFactories + 0, 0x00, sizeof mFactories);
 	}
 
 	void setFilterStaticString(const char* className) { mFilterClassName = className; }
@@ -75,7 +76,6 @@ public:
 
 	bool executeAllTests() {
 		hxWarnCheck((HX_RELEASE) <= 0, "Running tests with HX_RELEASE > 0");
-		hxProfilerInit();
 
 		mPassCount = mFailCount = 0;
 		hxLogRelease("hxTestRunner: %s...\n", (mFilterClassName ? mFilterClassName : "All"));
@@ -83,6 +83,7 @@ public:
 		for (FactoryBase** it = mFactories; it != (mFactories + mNumFactories); ++it) {
 			if (!mFilterClassName || ::strcmp(mFilterClassName, (*it)->hxTest_ClassName()) == 0) {
 				hxLogRelease("%s.%s...\n", (*it)->hxTest_ClassName(), (*it)->hxTest_FunctionName());
+				hxProfilerStart();
 
 				mTestState = TEST_NOTHING_ASSERTED;
 				mAssertFailCount = 0;
@@ -112,7 +113,7 @@ public:
 			}
 		}
 		hxLogRelease("--------\n");
-		hxProfilerShutdown();
+		hxProfilerStop();
 		if (mPassCount > 0 && mFailCount == 0) {
 			hxLogHandler(hxLogLevel_Console, "TESTS_PASSED: All %d tests successful.\n", (int)mPassCount);
 			return true;

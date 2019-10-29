@@ -7,13 +7,15 @@
 // hxRadixSort.  See hxRadixSort.cpp for tuning.
 
 // ----------------------------------------------------------------------------
-// hxRadixSortBase.  Operations that are independent of hxRadixSort type. 
+// hxRadixSortBase.  Operations that are independent of hxRadixSort type.
+//
+// See hxRadixSort<K, V> below.
 
 class hxRadixSortBase {
 public:
 	// Arithmetic left shift i >> 31 can be implemented with a negative unsigned
 	// left shift: -(u >> 31). 
-	static_assert((int32_t)0x80000000u >> 31 == ~(int32_t)0, "arithmetic left shift expected");
+	HX_STATIC_ASSERT((int32_t)0x80000000u >> 31 == ~(int32_t)0, "arithmetic left shift expected");
 
 	HX_INLINE void reserve(uint32_t sz) { m_array.reserve(sz); }
 	HX_INLINE void clear() { m_array.clear(); }
@@ -62,7 +64,7 @@ public:
 	{
 	public:
 		HX_INLINE const_iterator(hxArray<KeyValuePair>::const_iterator it) : m_ptr(it) { }
-		HX_INLINE const_iterator() : m_ptr(null) { } // invalid
+		HX_INLINE const_iterator() : m_ptr(hx_null) { } // invalid
 		HX_INLINE const_iterator& operator++() { ++m_ptr; return *this; }
 		HX_INLINE const_iterator operator++(int) { const_iterator t(*this); operator++(); return t; }
 		HX_INLINE bool operator==(const const_iterator& rhs) const { return m_ptr == rhs.m_ptr; }

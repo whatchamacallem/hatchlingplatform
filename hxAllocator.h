@@ -14,7 +14,7 @@
 template<typename T, uint32_t Capacity>
 class hxAllocator {
 public:
-	static_assert(Capacity > 0u, "Capacity > 0");
+	HX_STATIC_ASSERT(Capacity > 0u, "Capacity > 0");
 	HX_INLINE hxAllocator() {
 		if ((HX_RELEASE) < 1) {
 			::memset(m_allocator, 0xcd, sizeof m_allocator);

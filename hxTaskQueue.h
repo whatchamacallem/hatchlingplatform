@@ -19,7 +19,7 @@ public:
 	class Task {
 	public:
 		// staticLabel must be a static string.
-		explicit Task(const char* staticLabel = "task") : m_queue(null), m_nextWaitingTask(null), m_label(staticLabel) { }
+		explicit Task(const char* staticLabel = "task") : m_queue(hx_null), m_nextWaitingTask(hx_null), m_label(staticLabel) { }
 
 		// Not called by queue. execute() may delete this _if allocator is thread safe_.
 		virtual ~Task() { hxAssertRelease(!m_queue, "deleting queued task: %s", getLabel()); }
@@ -70,7 +70,7 @@ private:
 	static void executorThread(hxTaskQueue* q, ExecutorMode mode);
 
 	int32_t m_threadPoolSize = 0;
-	std::thread* m_threads = null;
+	std::thread* m_threads = hx_null;
 	std::mutex m_mutex;
 	std::condition_variable m_condVarTasks;
 	std::condition_variable m_condVarWaiting;

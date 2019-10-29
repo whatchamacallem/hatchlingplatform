@@ -201,7 +201,7 @@ template<> struct hxArg<const char*> {
 template<typename R>
 struct hxFunction0 : public hxCommand {
 	hxFunction0(R(*fn)()) : m_fn(fn) { }
-	virtual bool execute(const char* str) override {
+	virtual bool execute(const char* str) HX_OVERRIDE {
 		if(hxIsEndOfLine(str)) {
 			m_fn();
 			return true;
@@ -210,7 +210,7 @@ struct hxFunction0 : public hxCommand {
 		hxLogRelease("Error: Expecting no parameters\n");
 		return false;
 	}
-	virtual void log(const char* id) override {
+	virtual void log(const char* id) HX_OVERRIDE {
 		hxLogRelease("%s\n", id);
 	}
 	R(*m_fn)();
@@ -219,8 +219,8 @@ struct hxFunction0 : public hxCommand {
 template<typename R, typename A>
 struct hxFunction1 : public hxCommand {
 	hxFunction1(R(*fn)(A)) : m_fn(fn) { }
-	virtual bool execute(const char* str) override {
-		char* ptr = null;
+	virtual bool execute(const char* str) HX_OVERRIDE {
+		char* ptr = hx_null;
 		hxArg<A> arg1(str, &ptr);
 		if (str != ptr && hxIsEndOfLine(ptr)) {
 			m_fn(arg1.val);
@@ -229,7 +229,7 @@ struct hxFunction1 : public hxCommand {
 		log("Usage:");
 		return false;
 	}
-	virtual void log(const char* id) override {
+	virtual void log(const char* id) HX_OVERRIDE {
 		hxLogRelease("%s %s\n", id, hxArg<A>::getLabel());
 	}
 	R(*m_fn)(A);
@@ -238,9 +238,9 @@ struct hxFunction1 : public hxCommand {
 template<typename R, typename A1, typename A2>
 struct hxFunction2 : public hxCommand {
 	hxFunction2(R(*fn)(A1, A2)) : m_fn(fn) { }
-	virtual bool execute(const char* p) override {
-		char* pA = null;
-		char* pB = null;
+	virtual bool execute(const char* p) HX_OVERRIDE {
+		char* pA = hx_null;
+		char* pB = hx_null;
 		hxArg<A1> arg1(p, &pA);
 		if (p != pA) {
 			hxArg<A2> arg2(pA, &pB);
@@ -252,7 +252,7 @@ struct hxFunction2 : public hxCommand {
 		log("Usage:");
 		return false;
 	}
-	virtual void log(const char* id) override {
+	virtual void log(const char* id) HX_OVERRIDE {
 		hxLogRelease("%s %s, %s\n", id, hxArg<A1>::getLabel(), hxArg<A2>::getLabel());
 	}
 	R(*m_fn)(A1, A2);
@@ -261,9 +261,9 @@ struct hxFunction2 : public hxCommand {
 template<typename R, typename A1, typename A2, typename A3>
 struct hxFunction3 : public hxCommand {
 	hxFunction3(R(*fn)(A1, A2, A3)) : m_fn(fn) { }
-	virtual bool execute(const char* p) override {
-		char* pA = null;
-		char* pB = null;
+	virtual bool execute(const char* p) HX_OVERRIDE {
+		char* pA = hx_null;
+		char* pB = hx_null;
 		hxArg<A1> arg1(p, &pA);
 		if (p != pA) {
 			hxArg<A2> arg2(pA, &pB);
@@ -279,7 +279,7 @@ struct hxFunction3 : public hxCommand {
 		log("Usage:");
 		return false;
 	}
-	virtual void log(const char* id) override {
+	virtual void log(const char* id) HX_OVERRIDE {
 		hxLogRelease("%s %s, %s, %s\n", id, hxArg<A1>::getLabel(), hxArg<A2>::getLabel(), hxArg<A3>::getLabel());
 	}
 	R(*m_fn)(A1, A2, A3);
@@ -288,9 +288,9 @@ struct hxFunction3 : public hxCommand {
 template<typename R, typename A1, typename A2, typename A3, typename A4>
 struct hxFunction4 : public hxCommand {
 	hxFunction4(R(*fn)(A1, A2, A3, A4)) : m_fn(fn) { }
-	virtual bool execute(const char* p) override {
-		char* pA = null;
-		char* pB = null;
+	virtual bool execute(const char* p) HX_OVERRIDE {
+		char* pA = hx_null;
+		char* pB = hx_null;
 		hxArg<A1> arg1(p, &pA);
 		if (p != pA) {
 			hxArg<A2> arg2(pA, &pB);
@@ -308,7 +308,7 @@ struct hxFunction4 : public hxCommand {
 		log("Usage:");
 		return false;
 	}
-	virtual void log(const char* id) override {
+	virtual void log(const char* id) HX_OVERRIDE {
 		hxLogRelease("%s %s, %s, %s, %s\n", id, hxArg<A1>::getLabel(), hxArg<A2>::getLabel(), hxArg<A3>::getLabel(),
 			hxArg<A4>::getLabel());
 	}
@@ -318,8 +318,8 @@ struct hxFunction4 : public hxCommand {
 template<typename T>
 struct hxVariable : public hxCommand {
 	hxVariable(volatile T* var) : m_var(var) { }
-	virtual bool execute(const char* str) override {
-		char* ptr = null;
+	virtual bool execute(const char* str) HX_OVERRIDE {
+		char* ptr = hx_null;
 		hxArg<T> x(str, &ptr);
 		if (ptr != str && hxIsEndOfLine(ptr)) {
 			*m_var = x.val;
@@ -328,7 +328,7 @@ struct hxVariable : public hxCommand {
 		log("Error: Expected type (and current value):");
 		return false;
 	}
-	virtual void log(const char* id) override {
+	virtual void log(const char* id) HX_OVERRIDE {
 		if (*m_var == (T)(long long)*m_var) {
 			// If the current value fits in a long long, use that.
 			hxLogRelease("%s %s (%lld)\n", id, hxArg<T>::getLabel(), (long long)*m_var);

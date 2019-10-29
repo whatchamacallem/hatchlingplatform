@@ -10,12 +10,13 @@
 // ----------------------------------------------------------------------------
 // hxStockpile
 //
-// Provides atomic storage for results of multi-threaded processing.
+// Provides atomic storage for results of multi-threaded processing.  Requests
+// for entries beyond Capacity will fail.
 
 template<typename T, uint32_t Capacity>
 class hxStockpile : private hxAllocator<T, Capacity> {
 public:
-	static_assert(Capacity > 0u, "fixed size only");
+	HX_STATIC_ASSERT(Capacity > 0u, "fixed size only");
 
 	HX_INLINE explicit hxStockpile() { m_size = 0u; }
 	HX_INLINE ~hxStockpile() { destruct(); }
@@ -49,13 +50,13 @@ public:
 	}
 
 	// Returns pointer for use with placement new, if available.
-	HX_INLINE void* emplace_back_unconstructed_atomic() {
+	HX_INLINE void* emplace_back_atomic() {
 		uint32_t index = m_size++;
 		if (index < Capacity) {
 			return this->getStorage() + index;
 		}
 		m_size = Capacity;
-		return null;
+		return hx_null;
 	}
 
 	HX_INLINE void clear() {

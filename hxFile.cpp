@@ -9,14 +9,17 @@ HX_REGISTER_FILENAME_HASH;
 // fgets() and feof().
 
 hxFile::hxFile() {
-	m_filePImpl = null;
+	m_filePImpl = hx_null;
 	m_openMode = 0u;
 	m_good = false;
 	m_eof = false;
 }
 
 hxFile::hxFile(uint16_t mode, const char* filename, ...) {
-	m_filePImpl = null;
+	m_filePImpl = hx_null;
+	m_openMode = 0u;
+	m_good = false;
+	m_eof = false;
 	va_list args;
 	va_start(args, filename);
 	openV(mode, filename, args);
@@ -60,14 +63,14 @@ bool hxFile::openV(uint16_t mode, const char* filename, va_list args) {
 	m_openMode = mode;
 	m_filePImpl = (char*)::fopen(buf, m);
 	hxAssertRelease(m_filePImpl || (mode & hxFile::fallible), "failed to open file: %s", buf);
-	m_good = m_filePImpl != null;
+	m_good = m_filePImpl != hx_null;
 	return m_good;
 }
 
 void hxFile::close() {
 	if (m_filePImpl) {
 		::fclose((FILE*)m_filePImpl);
-		m_filePImpl = null;
+		m_filePImpl = hx_null;
 	}
 	m_openMode = 0u;
 	m_good = false;
@@ -98,9 +101,11 @@ size_t hxFile::write(const void* bytes, size_t byteCount) {
 bool hxFile::getline(char* buffer, size_t bufferSize) {
 	hxAssertMsg(buffer, "null i/o buffer");
 	hxAssertMsg((m_openMode & hxFile::in) && (m_filePImpl || (m_openMode & hxFile::fallible)), "invalid file");
-	char* result = (buffer && m_filePImpl) ? ::fgets(buffer, (int)bufferSize, (FILE*)m_filePImpl) : null;
+	char* result = (buffer && m_filePImpl) ? ::fgets(buffer, (int)bufferSize, (FILE*)m_filePImpl) : hx_null;
 	if (!result) {
-		buffer[0] = '\0';
+		if (buffer && bufferSize) {
+			buffer[0] = '\0';
+		}
 		m_good = false;
 		m_eof = m_filePImpl ? ::feof((FILE*)m_filePImpl) : false;
 		hxAssertRelease(m_eof || (m_openMode & hxFile::fallible), "getline error");

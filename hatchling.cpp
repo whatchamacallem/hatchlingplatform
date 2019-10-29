@@ -34,7 +34,7 @@ void hxInitAt(const char* file, uint32_t line) {
 
 	hxLog("Hatchling Platform\n");
 	hxConsolePrint("Release %d Profile %d Flags %d %d %d Build: " __DATE__ " " __TIME__ "\n",
-		HX_RELEASE, HX_PROFILE, HX_HAS_CPP11_THREADS, HX_HAS_CPP11_TIME, HX_HAS_CPP14_CONSTEXPR);
+		(int)(HX_RELEASE), (int)(HX_PROFILE), (int)(HX_HAS_CPP11_THREADS), (int)(HX_HAS_CPP11_TIME), (int)(HX_HAS_CPP14_CONSTEXPR));
 
 	hxMemoryManagerInit();
 	hxDmaInit();
@@ -82,7 +82,7 @@ void hxShutdown() {
 	s_hxStringLiteralHashes.clear();
 #endif
 
-	hxProfilerShutdown();
+	hxProfilerStop();
 	hxDmaShutDown();
 
 	g_hxSettings.isShuttingDown = true;
@@ -98,7 +98,7 @@ extern "C"
 void hxExit(const char* format, ...) {
 	char buf[HX_MAX_LINE];
 	int sz = -1;
-	if (format != null) {
+	if (format != hx_null) {
 		va_list args;
 		va_start(args, format);
 		sz = ::vsnprintf(buf, HX_MAX_LINE, format, args);

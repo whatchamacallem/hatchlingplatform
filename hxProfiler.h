@@ -23,8 +23,8 @@
 #define hxProfileScope(labelStaticString, ...)  \
 	hxProfilerScopeInternal<__VA_ARGS__> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStaticString)
 
-#define hxProfilerInit() g_hxProfiler.init()
-#define hxProfilerShutdown() g_hxProfiler.shutdown()
+#define hxProfilerStart() g_hxProfiler.start()
+#define hxProfilerStop() g_hxProfiler.stop()
 #define hxProfilerLog() g_hxProfiler.log()
 
 // Writes profiling data in a format usable by Chrome's chrome://tracing view.
@@ -36,15 +36,18 @@ extern float g_hxProfilerMillisecondsPerCycle;     // Scales cycles to ms.
 
 // c_hxProfilerDefaultSamplingCutoff is 1 microsecond.
 #if HX_HAS_CPP11_TIME
-extern std::chrono::high_resolution_clock::time_point g_hxStart;
-using c_hxProfilerPeriod = std::chrono::high_resolution_clock::period;
-static constexpr uint32_t c_hxProfilerDefaultSamplingCutoff = (uint32_t)(c_hxProfilerPeriod::den / (c_hxProfilerPeriod::num * 1000000));
+static constexpr uint32_t c_hxProfilerDefaultSamplingCutoff =
+	(uint32_t)(std::chrono::high_resolution_clock::period::den / (std::chrono::high_resolution_clock::period::num * 1000000));
 #else
 enum { c_hxProfilerDefaultSamplingCutoff = 1000 };
 #endif
 
 // ----------------------------------------------------------------------------------
 // hxProfiler internals
+
+#if HX_HAS_CPP11_TIME
+extern std::chrono::high_resolution_clock::time_point g_hxStart;
+#endif
 
 // address of s_hxProfilerThreadIdAddress used to uniquely identify thread.
 extern HX_THREAD_LOCAL uint8_t s_hxProfilerThreadIdAddress;
@@ -61,11 +64,10 @@ public:
 		uint32_t m_threadId;
 	};
 
-	hxProfiler() : m_isEnabled(false) { };
+	hxProfiler() : m_isStarted(false) { };
 
-	void init();
-	void shutdown();
 	void start();
+	void stop();
 	void log();
 	void writeToChromeTracing(const char* filename);
 
@@ -74,7 +76,7 @@ public:
 	HX_INLINE void recordsClear() { m_records.clear(); }
 private:
 	template<uint32_t MinCycles> friend class hxProfilerScopeInternal;
-	bool m_isEnabled;
+	bool m_isStarted;
 	hxStockpile<Record, HX_PROFILER_MAX_RECORDS> m_records;
 };
 
@@ -88,17 +90,17 @@ public:
 	HX_INLINE hxProfilerScopeInternal(const char* labelStaticString)
 		: m_label(labelStaticString)
 	{
-		m_t0 = sampleCycles();
+		m_t0 = g_hxProfiler.m_isStarted ? sampleCycles() : 0u;
 	}
 
 	HX_INLINE ~hxProfilerScopeInternal() {
-		uint32_t t1 = sampleCycles();
-		uint32_t delta = (t1 - m_t0);
-		hxProfiler& data = g_hxProfiler;
-		if (data.m_isEnabled && delta >= MinCycles) {
-			void* rec = data.m_records.emplace_back_unconstructed_atomic();
-			if (rec) {
-				::new (rec) hxProfiler::Record(m_t0, t1, m_label, (uint32_t)(ptrdiff_t)&s_hxProfilerThreadIdAddress);
+		if (m_t0 != 0u) {
+			uint32_t t1 = sampleCycles();
+			if ((t1 - m_t0) >= MinCycles) {
+				void* rec = g_hxProfiler.m_records.emplace_back_atomic();
+				if (rec) {
+					::new (rec) hxProfiler::Record(m_t0, t1, m_label, (uint32_t)(ptrdiff_t)&s_hxProfilerThreadIdAddress);
+				}
 			}
 		}
 	}
@@ -127,8 +129,8 @@ private:
 // ----------------------------------------------------------------------------------
 #else // !HX_PROFILE
 #define hxProfileScope(...) ((void)0)
-#define hxProfilerInit() ((void)0)
-#define hxProfilerShutdown() ((void)0)
+#define hxProfilerStart() ((void)0)
+#define hxProfilerStop() ((void)0)
 #define hxProfilerLog() ((void)0)
 #define hxProfilerWriteToChromeTracing(filename) ((void)0)
 #endif

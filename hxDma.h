@@ -5,7 +5,7 @@
 #include "hatchling.h"
 
 // ----------------------------------------------------------------------------
-// DMA.  Internally profiling and validating.
+// DMA API.  Internally profiling and validating.
 
 // These versions only label themselves when HX_PROFILE != 0.
 #if HX_PROFILE
@@ -13,15 +13,17 @@
 #define hxDmaAwaitSyncPoint(barrier) hxDmaAwaitSyncPointLabeled(barrier, __FILE__ "(" HX_QUOTE(__LINE__) ") wait dma")
 #define hxDmaAwaitAll() hxDmaAwaitAllLabeled(__FILE__ "(" HX_QUOTE(__LINE__) ") wait dma")
 #else // !HX_PROFILE
-#define hxDmaStart(dst, src, bytes) hxDmaStartLabeled(dst, src, bytes, null)
-#define hxDmaAwaitSyncPoint(barrier) hxDmaAwaitSyncPointLabeled(barrier, null)
-#define hxDmaAwaitAll() hxDmaAwaitAllLabeled(null)
+#define hxDmaStart(dst, src, bytes) hxDmaStartLabeled(dst, src, bytes, hx_null)
+#define hxDmaAwaitSyncPoint(barrier) hxDmaAwaitSyncPointLabeled(barrier, hx_null)
+#define hxDmaAwaitAll() hxDmaAwaitAllLabeled(hx_null)
 #endif
 
 struct hxDmaSyncPoint {
 #if HX_DEBUG_DMA
-	hxDmaSyncPoint() : debug(~(uint32_t)0u) { }
+	hxDmaSyncPoint() : debug(~(uint32_t)0u), pImpl(hx_null) { }
 	uint32_t debug;
+#else
+	hxDmaSyncPoint() : pImpl(hx_null) { }
 #endif
 	// TODO: Target specific handle.
 	char* pImpl;

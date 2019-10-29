@@ -75,7 +75,7 @@ public:
 		T* prev = this->getStorage();
 		this->reserveStorage(c);
 		hxAssertMsg(!prev || prev == this->getStorage(), "no reallocation"); (void)prev;
-		if (m_end == null) {
+		if (m_end == hx_null) {
 			m_end = this->getStorage();
 		}
 	}

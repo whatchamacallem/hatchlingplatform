@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 // ----------------------------------------------------------------------------
-// C API
+// Memory Manager C API
 
 #define HX_ALIGNMENT_MASK ((uintptr_t)(sizeof(char*) - 1u)) // HX_ALIGNMENT-1
 #define hxIsAligned(x) (((uintptr_t)(x) & HX_ALIGNMENT_MASK) == 0)
@@ -36,21 +36,20 @@ enum hxMemoryManagerId {
 	hxMemoryManagerId_Console = hxMemoryManagerId_Heap
 };
 
-// C API for hxMemoryManager:
 void* hxMalloc(size_t size);
 void* hxMallocExt(size_t size, enum hxMemoryManagerId memoryAllocatorId, uintptr_t alignmentMask/*=HX_ALIGNMENT_MASK*/);
 void hxFree(void* ptr);
 uint32_t hxIsScratchpad(void* ptr); // returns bool as int.
 
-// ----------------------------------------------------------------------------
-// C++ API
 #ifdef __cplusplus
 } // extern "C"
+
+// ----------------------------------------------------------------------------
+// Memory Manager C++ API
 
 // hxMemoryManagerScope
 //
 // Set current allocator using RAII interface.
-
 class hxMemoryManagerScope
 {
 public:

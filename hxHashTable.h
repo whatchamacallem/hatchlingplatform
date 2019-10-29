@@ -38,7 +38,7 @@ public:
 	typedef K Key;
 	const Key key;
 
-	HX_INLINE hxHashTableNodeBase(const Key& k) : key(k), m_next(null) { }
+	HX_INLINE hxHashTableNodeBase(const Key& k) : key(k), m_next(hx_null) { }
 
 private:
 	template<typename N, uint32_t HashBits>
@@ -71,8 +71,8 @@ public:
 	{
 	public:
 		HX_INLINE const_iterator(const hxHashTable* tbl)
-			: m_hashTable((hxHashTable*)tbl), m_nextIndex(0u), m_currentNode(null) { next(); }
-		HX_INLINE const_iterator() : m_hashTable(null), m_nextIndex(0u), m_currentNode(null) { } // end
+			: m_hashTable((hxHashTable*)tbl), m_nextIndex(0u), m_currentNode(hx_null) { next(); }
+		HX_INLINE const_iterator() : m_hashTable(hx_null), m_nextIndex(0u), m_currentNode(hx_null) { } // end
 		HX_INLINE const_iterator& operator++() {
 			hxAssertMsg(m_currentNode, "iterator invalid"); // !end
 			if (!(m_currentNode = (Node*)m_currentNode->m_next)) {
@@ -151,7 +151,7 @@ public:
 
 	// Inserts a node.  Allows multiple nodes of the same Key.
 	HX_INLINE void insert_node(Node* node) {
-		hxAssert(node != null);
+		hxAssert(node != hx_null);
 		uint32_t hash = node->hash();
 		Node** pos = getBucket(hash);
 		node->m_next = *pos;
@@ -162,7 +162,7 @@ public:
 	// Returns a Node matching key if any.  If previous is non-null it must be
 	// a node previously returned from find() with the same key and that has
 	// not been removed.  Then find() will return a subsequent node if any.
-	HX_INLINE Node* find(const Key& key, const Node* previous=null) {
+	HX_INLINE Node* find(const Key& key, const Node* previous=hx_null) {
 		if (!previous) {
 			uint32_t hash = Node::hash(key);
 			for (Node* n = *getBucket(hash); n; n = (Node*)n->m_next) {
@@ -180,10 +180,10 @@ public:
 				}
 			}
 		}
-		return null;
+		return hx_null;
 	}
 
-	HX_INLINE const Node* find(const Key& key, const Node* previous=null) const {
+	HX_INLINE const Node* find(const Key& key, const Node* previous=hx_null) const {
 		// Call non-const version for brevity.
 		return const_cast<hxHashTable*>(this)->find(key, previous);
 	}
@@ -211,7 +211,7 @@ public:
 			}
 			next = (Node**)&n->m_next;
 		}
-		return null;
+		return hx_null;
 	}
 
 	// Release all Nodes matching key and call deleter() on every node.
@@ -300,7 +300,7 @@ public:
 	}
 
 private:
-	static_assert(HashBits <= 31u, "hxHashTable: hash bits must be [0..31]");
+	HX_STATIC_ASSERT(HashBits <= 31u, "hxHashTable: hash bits must be [0..31]");
 
 	hxHashTable(const hxHashTable&); // Disable copy and assign
 	void operator=(const hxHashTable&);

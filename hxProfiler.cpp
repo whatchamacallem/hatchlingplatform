@@ -30,8 +30,9 @@ HX_THREAD_LOCAL uint8_t s_hxProfilerThreadIdAddress = 0;
 
 // ----------------------------------------------------------------------------------
 #if HX_HAS_CPP11_TIME
-float g_hxProfilerMillisecondsPerCycle = ((float)c_hxProfilerPeriod::num * 1.0e+3f) / (float)c_hxProfilerPeriod::den;
 std::chrono::high_resolution_clock::time_point g_hxStart;
+float g_hxProfilerMillisecondsPerCycle =
+	((float)std::chrono::high_resolution_clock::period::num * 1.0e+3f) / (float)std::chrono::high_resolution_clock::period::den;
 #else
 // TODO: Use target settings.
 float g_hxProfilerMillisecondsPerCycle = 1.0e-6f; // Also 1.e+6 cycles/ms, a 1 GHz chip.
@@ -39,36 +40,22 @@ float g_hxProfilerMillisecondsPerCycle = 1.0e-6f; // Also 1.e+6 cycles/ms, a 1 G
 
 // ----------------------------------------------------------------------------------
 
-void hxProfiler::init() {
-	if (m_isEnabled) {
-		hxWarn("Profiler already enabled");
-		return;
-	}
+void hxProfiler::start() {
+	m_records.clear();
+	m_isStarted = true;
 
-	m_isEnabled = true;
-
+	// Logging may easily be off at this point.
+	hxLogRelease("hxProfilerStart... %u cycles\n", (unsigned int)hxProfilerScopeInternal<0u>::sampleCycles());
 #if HX_HAS_CPP11_TIME
 	g_hxStart = std::chrono::high_resolution_clock::now();
 #endif
-	// Logging may easily be off at this point.
-	hxLogRelease("hxProfilerInit... %u cycles\n", (unsigned int)hxProfilerScopeInternal<0u>::sampleCycles());
 }
 
-void hxProfiler::shutdown() {
-	if (m_isEnabled) {
-		hxLogRelease("hxProfilerShutdown... %u cycles\n", (unsigned int)hxProfilerScopeInternal<0u>::sampleCycles());
+void hxProfiler::stop() {
+	if (m_isStarted) {
+		hxLogRelease("hxProfilerStop... %u cycles\n", (unsigned int)hxProfilerScopeInternal<0u>::sampleCycles());
 	}
-	m_isEnabled = false;
-	m_records.clear();
-}
-
-void hxProfiler::start() {
-	if (!m_isEnabled) {
-		init();
-	}
-	else {
-		m_records.clear();
-	}
+	m_isStarted = false;
 }
 
 void hxProfiler::log() {
@@ -80,11 +67,9 @@ void hxProfiler::log() {
 		const hxProfiler::Record& rec = m_records[i];
 
 		uint32_t delta = rec.m_end - rec.m_begin;
-		hxLogRelease("hxProfiler %s: thread %x cycles %u %fms\n", hxBasename(rec.m_label),
-			(unsigned int)rec.m_threadId, (unsigned int)delta, (float)delta * g_hxProfilerMillisecondsPerCycle);
+		hxLogRelease("hxProfiler %s: thread %x cycles %u %lfms\n", hxBasename(rec.m_label),
+			(unsigned int)rec.m_threadId, (unsigned int)delta, (double)delta * (double)g_hxProfilerMillisecondsPerCycle);
 	}
-
-	m_records.clear();
 }
 
 void hxProfiler::writeToChromeTracing(const char* filename) {
@@ -111,8 +96,6 @@ void hxProfiler::writeToChromeTracing(const char* filename) {
 			bn, (unsigned int)rec.m_threadId, (unsigned int)(rec.m_end / cyclesPerMicrosecond));
 	}
 	f.print("\n]\n");
-
-	m_records.clear();
 
 	hxLogRelease("Wrote trace to: %s...\n", filename);
 }

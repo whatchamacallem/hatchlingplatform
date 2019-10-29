@@ -25,11 +25,11 @@ public:
 	void close(); // close stream and clear open flags
 
 	// std::basic_fstream interface
-	HX_INLINE bool is_open() const { return m_filePImpl != null; }
+	HX_INLINE bool is_open() const { return m_filePImpl != hx_null; }
 	HX_INLINE bool good() const { return m_good; } // Check for failure or EOF.
 	HX_INLINE bool eof() const { return m_eof; }   // Check for EOF only.
 	HX_INLINE void clear() {
-		m_good = m_filePImpl != null;
+		m_good = m_filePImpl != hx_null;
 		m_eof = false;
 	}
 

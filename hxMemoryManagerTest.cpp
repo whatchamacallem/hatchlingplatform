@@ -76,7 +76,7 @@ public:
 #if (HX_RELEASE) < 1
 		uintptr_t startCount = 0;
 		uintptr_t startBytes = 0;
-		void* ptr2 = null;
+		void* ptr2 = hx_null;
 		int32_t assertsAllowed = g_hxSettings.assertsToBeSkipped;
 
 		{

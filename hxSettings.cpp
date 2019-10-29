@@ -20,7 +20,7 @@ void hxSettings::construct() {
 
 	logLevelConsole = hxLogLevel_Log;
 	logLevelFile = hxLogLevel_Log;
-	logFile = "hx_log.txt"; // set to null here to disable
+	logFile = "hx_log.txt"; // set to hx_null here to disable
 	isShuttingDown = false;
 #if (HX_RELEASE) < 1
 	assertsToBeSkipped = 0;

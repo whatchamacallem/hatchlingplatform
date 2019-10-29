@@ -25,7 +25,7 @@ public:
 	struct TaskTest : public hxTaskQueue::Task {
 		TaskTest() : m_execCount(0), m_reenqueueCount(0) { }
 
-		virtual void execute(hxTaskQueue* q) override {
+		virtual void execute(hxTaskQueue* q) HX_OVERRIDE {
 			++m_execCount;
 			if (m_reenqueueCount > 0) {
 				--m_reenqueueCount;

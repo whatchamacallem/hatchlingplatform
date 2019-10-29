@@ -7,7 +7,7 @@
 // Copyright 2017 Adrian Johnston
 // Copyright 2017 Leap Motion
 //
-// Build configuration.  See also hxSettings.h.
+// See also hxSettings.h and hxMemoryManager.h as they are included.
 //
 // HX_RELEASE: 0 is a debug build with all asserts and long strings.
 //             1 is a release build with critical asserts and verbose warnings.
@@ -27,7 +27,7 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef __cpp_exceptions
+#if defined(_MSC_VER) && !defined(__cpp_exceptions)
 #define _HAS_EXCEPTIONS 0 // For Visual Studio.
 #endif
 
@@ -45,32 +45,44 @@ extern "C" {
 #endif
 
 // ----------------------------------------------------------------------------
+// Hatchling Platform C API
 
+/// hxLogLevel Runtime setting for verbosity of log messages.  HX_RELEASE
+/// independently controls what messages are compiled in.  See
+/// g_hxSettings.logLevelConsole and g_hxSettings.logLevelFile.
 enum hxLogLevel {
-	hxLogLevel_Log,     // No automatic newline. May compile out.
-	hxLogLevel_Console, // No automatic newline. Always prints.
-	hxLogLevel_Warning,
-	hxLogLevel_Assert
+	hxLogLevel_Log,     // Verbose informative messages. No automatic newline.
+	hxLogLevel_Console, // Responses to console commands. No automatic newline.
+	hxLogLevel_Warning, // Warnings about serious problems
+	hxLogLevel_Assert   // Reason for abnormal termination.
 };
 
-// hatchling.cpp, with C linkage
-void hxInitAt(const char* file, uint32_t line); // Use hxInit.
-void hxLogHandler(enum hxLogLevel level, const char* format, ...) HX_ATTR_FORMAT(2, 3);
-void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args);
+/// Initializes the platform.  Records file and line if non-null.  Use hxInit()
+/// below instead.
+void hxInitAt(const char* file, uint32_t line);
+
 #if (HX_RELEASE) < 3
-void hxShutdown(); // Expects all non-debug allocations to be released.
+/// Terminates service.  Releases all resources acquired by the platform and
+/// confirms all non-debug memory allocations have been released. HX_RELEASE < 3.
+void hxShutdown();
+
+/// Stops execution with a formatted message.  HX_RELEASE < 3.
 HX_ATTR_NORETURN void hxExit(const char* format, ...);
 #endif
 
-// hxCUtils.c
-extern int g_hxIsInit;
-void hxHexDump(const void* p, uint32_t bytes, const char* label);
-void hxFloatDump(const float* ptr, uint32_t count, const char* label);
-const char* hxBasename(const char* path);
-char* hxStringDuplicate(const char* s, enum hxMemoryManagerId allocatorId /*=hxMemoryManagerId_Heap*/);
-uint32_t hxHashStringLiteralDebug(const char* s);
+/// 
+void hxLogHandler(enum hxLogLevel level, const char* format, ...) HX_ATTR_FORMAT(2, 3);
+
+void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args);
 
 #define hxConsolePrint(...) hxLogHandler(hxLogLevel_Console, __VA_ARGS__)
+
+extern int g_hxIsInit;
+void hxHexDump(const void* address, uint32_t bytes, const char* label);
+void hxFloatDump(const float* address, uint32_t floats, const char* label);
+const char* hxBasename(const char* path);
+char* hxStringDuplicate(const char* string, enum hxMemoryManagerId allocatorId /*=hxMemoryManagerId_Heap*/);
+uint32_t hxHashStringLiteralDebug(const char* string);
 
 #if (HX_RELEASE) < 1
 #define hxInit() (void)(g_hxIsInit || (hxInitAt(__FILE__, __LINE__), 0))
@@ -107,6 +119,7 @@ HX_ATTR_NORETURN void hxAssertHandler(uint32_t file, uint32_t line);
 #endif
 #endif
 
+#define hx_null 0
 #define HX_MAX_LINE 280
 #define HX_QUOTE_(x) #x // evaluates __LINE__ as a number instead of "__LINE__".
 #define HX_QUOTE(x) HX_QUOTE_(x)
@@ -117,7 +130,7 @@ HX_ATTR_NORETURN void hxAssertHandler(uint32_t file, uint32_t line);
 #ifdef __cplusplus
 } // extern "C"
 
-static_assert((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: [0..3]");
+HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: [0..3]");
 
 template<typename T> HX_INLINE T hxAbs(T x) { return (x >= (T)0) ? x : ((T)0 - x); }
 template<typename T> HX_INLINE T hxMax(T x, T y) { return (x > y) ? x : y; }

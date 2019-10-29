@@ -7,7 +7,6 @@
 
 HX_REGISTER_FILENAME_HASH;
 
-// HX_HOST may be configured to use GoogleTest instead.
 #if !(HX_GOOGLE_TEST)
 
 // Ensures constructor runs before tests are registered by global constructors.

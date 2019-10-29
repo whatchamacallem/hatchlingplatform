@@ -10,7 +10,7 @@ HX_REGISTER_FILENAME_HASH;
 
 // ----------------------------------------------------------------------------------
 
-static class hxArrayTest* s_hxTestCurrent = null;
+static class hxArrayTest* s_hxTestCurrent = hx_null;
 
 class hxArrayTest :
 	public testing::test
@@ -66,7 +66,7 @@ public:
 	};
 
 	hxArrayTest() {
-		hxAssert(s_hxTestCurrent == null);
+		hxAssert(s_hxTestCurrent == hx_null);
 		m_constructed = 0;
 		m_destructed = 0;
 		m_nextId = -1;
@@ -284,9 +284,9 @@ TEST_F(hxArrayTest, UniquePtr) {
 		objs.get_allocator().reserveStorageExt(10u, hxMemoryManagerId_Current, HX_ALIGNMENT_MASK);
 		objs.resize(5u);
 
-		void* a0 = null;
-		char* a1 = null;
-		int*  a2 = null;
+		void* a0 = hx_null;
+		char* a1 = hx_null;
+		int*  a2 = hx_null;
 
 		objs[2].reset(hxNew<TestObject>()); // Compile test, free will not be called.
 		ASSERT_TRUE(objs[2]->constructor == 0);

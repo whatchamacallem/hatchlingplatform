@@ -13,6 +13,7 @@ class hxDmaTest :
 {
 public:
 	hxDmaTest() {
+		::memset(m_buf + 0, 0x00, sizeof m_buf);
 		setBuf();
 	}
 
@@ -22,7 +23,7 @@ public:
 		checkBuf(); // Don't trash test buffer
 	}
 
-	void setBuf(uint8_t* buf=null) {
+	void setBuf(uint8_t* buf=hx_null) {
 		buf = buf ? buf : m_buf;
 		for (uint32_t i = BufSize; i--;) {
 			buf[i] = (uint8_t)i;

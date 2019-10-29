@@ -21,6 +21,8 @@
 #define HX_LINK_SCRATCHPAD
 #define HX_ATTR_FORMAT(pos, start)
 #define HX_DEBUG_BREAK __debugbreak()
+#define HX_STATIC_ASSERT(x,...) static_assert(((bool)(x) == true), __VA_ARGS__)
+#define HX_OVERRIDE override
 
 #ifdef __cplusplus
 #define HX_ATTR_NORETURN [[noreturn]]
@@ -31,7 +33,7 @@
 // Allow use of fopen and strncpy.  fopen_s and strncpy_s are not C99.
 #pragma warning(disable: 4996)
 
-#else // !HX_HOST
+#else // !_MSC_VER
 // "Some C++98 embedded compiler" (currently gcc.)
 
 #define HX_TARGET 1
@@ -57,11 +59,13 @@
 #define HX_DEBUG_BREAK ((void)0) // TODO
 
 #if defined(__cplusplus) && __cplusplus < 201103L // C++98
-// C++11 polyfill.  WARNING: breaks C++11 headers.
-#define static_assert(x,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [(x) ? 1 : -1]
-#define override
-#endif // C++98
-#endif // !HX_HOST
+#define HX_STATIC_ASSERT(x,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [(x) ? 1 : -1]
+#define HX_OVERRIDE
+#else // !C++98
+#define HX_STATIC_ASSERT(x,...) static_assert(x, __VA_ARGS__)
+#define HX_OVERRIDE override
+#endif
+#endif // !_MSC_VER
 
 #if HX_HAS_CPP11_THREADS
 #define HX_THREAD_LOCAL thread_local
@@ -69,9 +73,6 @@
 // single threaded operation can ignore thread_local
 #define HX_THREAD_LOCAL
 #endif
-
-// This is the one namespace violation, you don't have to keep it.
-#define null 0
 
 // ----------------------------------------------------------------------------
 // HX_MEM_DIAGNOSTIC_LEVEL.  Memory management debug mode.
@@ -100,7 +101,7 @@
 #endif
 
 // The profiler doesn't reallocate.  This is the maximum.
-#define HX_PROFILER_MAX_RECORDS 1000
+#define HX_PROFILER_MAX_RECORDS 4096
 
 // ----------------------------------------------------------------------------
 // HX_DEBUG_DMA.  Internal validation, set to 1 or 0 as needed
