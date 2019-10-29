@@ -159,7 +159,7 @@ public:
 								  hxMemoryManagerId id_=hxMemoryManagerId_Current,
 								  uintptr_t alignmentMask_=HX_ALIGNMENT_MASK) {
 		uint32_t hash_ = Node::hash(key_);
-		Node** pos_ = getBucket(hash_);
+		Node** pos_ = getBucket_(hash_);
 		for (Node* n_ = *pos_; n_; n_ = (Node*)n_->m_next) {
 			if (Node::keyEqual(*n_, key_, hash_)) {
 				return *n_;
@@ -176,7 +176,7 @@ public:
 	HX_INLINE void insert_node(Node* node_) {
 		hxAssert(node_ != hxnull);
 		uint32_t hash_ = node_->hash();
-		Node** pos_ = getBucket(hash_);
+		Node** pos_ = getBucket_(hash_);
 		node_->m_next = *pos_;
 		*pos_ = node_;
 		++m_size;
@@ -188,7 +188,7 @@ public:
 	HX_INLINE Node* find(const Key& key_, const Node* previous_=hxnull) {
 		if (!previous_) {
 			uint32_t hash_ = Node::hash(key_);
-			for (Node* n_ = *getBucket(hash_); n_; n_ = (Node*)n_->m_next) {
+			for (Node* n_ = *getBucket_(hash_); n_; n_ = (Node*)n_->m_next) {
 				if (Node::keyEqual(*n_, key_, hash_)) {
 					return n_;
 				}
@@ -216,7 +216,7 @@ public:
 	HX_INLINE uint32_t count(const Key& key_) const {
 		uint32_t total_ = 0u;
 		uint32_t hash_ = Node::hash(key_);
-		for (const Node* n_ = *getBucket(hash_); n_; n_ = (Node*)n_->m_next) {
+		for (const Node* n_ = *getBucket_(hash_); n_; n_ = (Node*)n_->m_next) {
 			if (Node::keyEqual(*n_, key_, hash_)) {
 				++total_;
 			}
@@ -227,7 +227,7 @@ public:
 	// Removes and returns first node with key if any.
 	HX_INLINE Node* extract(const Key& key_) {
 		uint32_t hash_ = Node::hash(key_);
-		Node** next_ = getBucket(hash_);
+		Node** next_ = getBucket_(hash_);
 		while (Node* n_ = *next_) {
 			if (Node::keyEqual(*n_, key_, hash_)) {
 				*next_ = (Node*)n_->m_next;
@@ -247,7 +247,7 @@ public:
 	HX_INLINE uint32_t erase(const Key& key_, const Deleter& deleter_) {
 		uint32_t count_ = 0u;
 		uint32_t hash_ = Node::hash(key_);
-		Node** next_ = getBucket(hash_);
+		Node** next_ = getBucket_(hash_);
 		while (Node* n_ = *next_) {
 			if (Node::keyEqual(*n_, key_, hash_)) {
 				*next_ = (Node*)n_->m_next;
@@ -337,13 +337,13 @@ private:
 	void operator=(const hxHashTable&); // = delete
 
 	// Pointer to head of singly-linked list for key's hash value.
-	HX_INLINE Node** getBucket(uint32_t hash_) {
+	HX_INLINE Node** getBucket_(uint32_t hash_) {
 		uint32_t index_ = hash_ >> (32u - m_table.getHashBits());
 		hxAssert(index_ < m_table.getCapacity());
 		return m_table.getStorage() + index_;
 	}
 
-	HX_INLINE const Node*const* getBucket(uint32_t hash_) const {
+	HX_INLINE const Node*const* getBucket_(uint32_t hash_) const {
 		uint32_t index_ = hash_ >> (32u - m_table.getHashBits());
 		hxAssert(index_ < m_table.getCapacity());
 		return m_table.getStorage() + index_;

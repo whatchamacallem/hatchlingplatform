@@ -22,7 +22,7 @@ public:
 	HX_STATIC_ASSERT(Capacity > 0u, "fixed size only");
 
 	HX_INLINE explicit hxStockpile() { m_size = 0u; }
-	HX_INLINE ~hxStockpile() { destruct(); }
+	HX_INLINE ~hxStockpile() { destruct_(); }
 
 	HX_INLINE const T& operator[](uint32_t index_) const {
 		hxAssert(index_ < hxMin((uint32_t)m_size, Capacity));
@@ -63,12 +63,12 @@ public:
 	}
 
 	HX_INLINE void clear() {
-		destruct();
+		destruct_();
 		m_size = 0u;
 	}
 
 private:
-	HX_INLINE void destruct() {
+	HX_INLINE void destruct_() {
 		T* t_ = this->getStorage();
 		uint32_t sz_ = hxMin((uint32_t)m_size, (uint32_t)Capacity);
 		while (sz_--) {

@@ -55,4 +55,4 @@ done
 rm log.txt profile.json hxConsoleTest_FileTest.txt hxFileTest_Operators.bin \
 	hxFileTest_ReadWrite.txt
 
-echo test.sh passed
+echo test.sh passed.

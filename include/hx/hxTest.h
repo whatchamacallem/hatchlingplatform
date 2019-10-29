@@ -22,7 +22,7 @@ public:
 	virtual ~Test() {}
 };
 
-// Use hxTestRunner::setFilterStringLiteral() instead.
+// Use hxTestRunner::setFilterStringLiteral() to filter tests.
 HX_INLINE void InitGoogleTest(int *argc_, char **argv_) { (void)argc_; (void)argv_; }
 HX_INLINE void InitGoogleTest() { }
 
@@ -30,9 +30,9 @@ HX_INLINE void InitGoogleTest() { }
 
 // TEST. Google Test reimplementation.
 #define TEST(SuiteName_, CaseName_) \
-	struct HX_CONCATENATE(SuiteName_, CaseName_) : hxTestRunner::FactoryBase { \
+	struct HX_CONCATENATE(SuiteName_, CaseName_) : hxTestRunner::TestFactoryBase { \
 		struct Executor_ : testing::Test { virtual void Run() HX_OVERRIDE; }; \
-		HX_CONCATENATE(SuiteName_, CaseName_)() { hxTestRunner::get().addTest(this); } \
+		HX_CONCATENATE(SuiteName_, CaseName_)() { hxTestRunner::singleton().addTest(this); } \
 		virtual void Run() HX_OVERRIDE { Executor_ executor; executor.Run(); } \
 		virtual const char* Suite() HX_OVERRIDE { return #SuiteName_; } \
 		virtual const char* Case() HX_OVERRIDE { return #CaseName_; } \
@@ -44,9 +44,9 @@ HX_INLINE void InitGoogleTest() { }
 
 // TEST_F.  Google Test reimplementation, SuiteName_ must be a subclass of testing::Test.
 #define TEST_F(SuiteName_, CaseName_) \
-	struct HX_CONCATENATE(SuiteName_, CaseName_) : hxTestRunner::FactoryBase { \
+	struct HX_CONCATENATE(SuiteName_, CaseName_) : hxTestRunner::TestFactoryBase { \
 		struct Executor_ : SuiteName_ { virtual void Run() HX_OVERRIDE; }; \
-		HX_CONCATENATE(SuiteName_, CaseName_)() { hxTestRunner::get().addTest(this); } \
+		HX_CONCATENATE(SuiteName_, CaseName_)() { hxTestRunner::singleton().addTest(this); } \
 		virtual void Run() HX_OVERRIDE { Executor_ executor; executor.Run(); } \
 		virtual const char* Suite() HX_OVERRIDE { return #SuiteName_; } \
 		virtual const char* Case() HX_OVERRIDE { return #CaseName_; } \
@@ -56,31 +56,37 @@ HX_INLINE void InitGoogleTest() { }
 	static HX_CONCATENATE(SuiteName_, CaseName_) HX_CONCATENATE(s_hxTest, CaseName_); \
 	void HX_CONCATENATE(SuiteName_, CaseName_)::Executor_::Run()
 
-#define RUN_ALL_TESTS() hxTestRunner::get().executeAllTests()
-#define SUCCEED() hxTestRunner::get().assertCheck(hxnull, 0, true, hxnull) // Avoids NOTHING ASSERTED.
-#define FAIL() hxTestRunner::get().assertCheck(__FILE__, __LINE__, false, "failed here")
+// RUN_ALL_TESTS.
+#define RUN_ALL_TESTS() hxTestRunner::singleton().executeAllTests()
 
-// Args are only evaluated once.
-#define ASSERT_TRUE(x_) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (x_), #x_)
-#define ASSERT_FALSE(x_) hxTestRunner::get().assertCheck(__FILE__, __LINE__, !(x_), "!" #x_)
-#define ASSERT_NEAR(expected_, actual_, absolute_range_) hxTestRunner::get().assertCheck( \
+// SUCCEED causes current test to pass instead of failing with NOTHING ASSERTED.
+#define SUCCEED() hxTestRunner::singleton().assertCheck(hxnull, 0, true, hxnull)
+
+// FAIL causes current test to fail.
+#define FAIL() hxTestRunner::singleton().assertCheck(__FILE__, __LINE__, false, "failed here")
+
+// EXPECT_*. Args are only evaluated once.  Uses operators '<' and '==' only.
+#define EXPECT_TRUE(x_) hxTestRunner::singleton().assertCheck(__FILE__, __LINE__, (x_), #x_)
+#define EXPECT_FALSE(x_) hxTestRunner::singleton().assertCheck(__FILE__, __LINE__, !(x_), "!" #x_)
+#define EXPECT_NEAR(expected_, actual_, absolute_range_) hxTestRunner::singleton().assertCheck( \
 	__FILE__, __LINE__, hxAbs((expected_)-(actual_)) <= (absolute_range_), "abs(" #expected_ "-" #actual_ ")<=" #absolute_range_)
-#define ASSERT_LT(lhs_, rhs_) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs_) < (rhs_), #lhs_ "<" #rhs_)
-#define ASSERT_GT(lhs_, rhs_) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs_) > (rhs_), #lhs_ ">" #rhs_)
-#define ASSERT_LE(lhs_, rhs_) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs_) <= (rhs_), #lhs_ "<=" #rhs_)
-#define ASSERT_GE(lhs_, rhs_) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs_) >= (rhs_), #lhs_ ">=" #rhs_)
-#define ASSERT_EQ(lhs_, rhs_) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs_) == (rhs_), #lhs_ "==" #rhs_)
-#define ASSERT_NE(lhs_, rhs_) hxTestRunner::get().assertCheck(__FILE__, __LINE__, (lhs_) != (rhs_), #lhs_ "!=" #rhs_)
+#define EXPECT_LT(lhs_, rhs_) hxTestRunner::singleton().assertCheck(__FILE__, __LINE__, (lhs_) < (rhs_), #lhs_ "<" #rhs_)
+#define EXPECT_GT(lhs_, rhs_) hxTestRunner::singleton().assertCheck(__FILE__, __LINE__, (rhs_) < (lhs_), #lhs_ ">" #rhs_)
+#define EXPECT_LE(lhs_, rhs_) hxTestRunner::singleton().assertCheck(__FILE__, __LINE__, !((rhs_) < (lhs_)), #lhs_ "<=" #rhs_)
+#define EXPECT_GE(lhs_, rhs_) hxTestRunner::singleton().assertCheck(__FILE__, __LINE__, !((lhs_) < (rhs_)), #lhs_ ">=" #rhs_)
+#define EXPECT_EQ(lhs_, rhs_) hxTestRunner::singleton().assertCheck(__FILE__, __LINE__, (lhs_) == (rhs_), #lhs_ "==" #rhs_)
+#define EXPECT_NE(lhs_, rhs_) hxTestRunner::singleton().assertCheck(__FILE__, __LINE__, !((lhs_) == (rhs_)), #lhs_ "!=" #rhs_)
 
-#define EXPECT_TRUE ASSERT_TRUE
-#define EXPECT_FALSE ASSERT_FALSE
-#define EXPECT_NEAR ASSERT_NEAR
-#define EXPECT_LT ASSERT_LT
-#define EXPECT_GT ASSERT_GT
-#define EXPECT_LE ASSERT_LE
-#define EXPECT_GE ASSERT_GE
-#define EXPECT_EQ ASSERT_EQ
-#define EXPECT_NE ASSERT_NE
+// Without using exceptions ASSERT_* becomes EXPECT_*.
+#define ASSERT_TRUE EXPECT_TRUE
+#define ASSERT_FALSE EXPECT_FALSE
+#define ASSERT_NEAR EXPECT_NEAR
+#define ASSERT_LT EXPECT_LT
+#define ASSERT_GT EXPECT_GT
+#define ASSERT_LE EXPECT_LE
+#define ASSERT_GE EXPECT_GE
+#define ASSERT_EQ EXPECT_EQ
+#define ASSERT_NE EXPECT_NE
 
 #endif // !HX_USE_GOOGLE_TEST
 

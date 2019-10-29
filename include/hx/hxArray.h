@@ -42,7 +42,7 @@ public:
 
 	// Destructs array.
 	HX_INLINE ~hxArray() {
-		destruct(this->getStorage(), m_end);
+		destruct_(this->getStorage(), m_end);
 	}
 
 	// Standard except reallocation is disallowed.
@@ -101,7 +101,7 @@ public:
 	HX_INLINE uint32_t capacity() const { return this->getCapacity(); }
 
 	HX_INLINE void clear() {
-		destruct(this->getStorage(), m_end);
+		destruct_(this->getStorage(), m_end);
 		m_end = this->getStorage();
 	}
 
@@ -110,10 +110,10 @@ public:
 	HX_INLINE void resize(uint32_t size_) {
 		reserve(size_);
 		if (size_ >= size()) {
-			this->construct(m_end, this->getStorage() + size_);
+			this->construct_(m_end, this->getStorage() + size_);
 		}
 		else {
-			destruct(this->getStorage() + size_, m_end);
+			destruct_(this->getStorage() + size_, m_end);
 		}
 		m_end = this->getStorage() + size_;
 	}
@@ -137,7 +137,7 @@ public:
 	HX_INLINE void assign(Iter first_, Iter last_) {
 		reserve((uint32_t)(last_ - first_));
 		T* it_ = this->getStorage();
-		destruct(it_, m_end);
+		destruct_(it_, m_end);
 		while (first_ != last_) { ::new (it_++) T(*first_++); }
 		m_end = it_;
 	}
@@ -182,13 +182,13 @@ public:
 	}
 
 private:
-	HX_INLINE void construct(T* first_, T* last_) {
+	HX_INLINE void construct_(T* first_, T* last_) {
 		while (first_ != last_) {
 			::new (first_++) T;
 		}
 	}
 
-	HX_INLINE void destruct(T* first_, T* last_) {
+	HX_INLINE void destruct_(T* first_, T* last_) {
 		while (first_ != last_) {
 			first_++->~T();
 		}

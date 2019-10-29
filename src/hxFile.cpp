@@ -37,7 +37,7 @@ hxFile::hxFile(uint16_t mode, const char* filename, ...) {
 	va_list args;
 	m_openMode = mode;
 	va_start(args, filename);
-	openV(mode, filename, args);
+	open_(mode, filename, args);
 	va_end(args);
 }
 
@@ -48,7 +48,7 @@ hxFile::~hxFile() {
 bool hxFile::open(uint16_t mode, const char* filename, ...) {
 	va_list args;
 	va_start(args, filename);
-	bool rv = openV(mode, filename, args);
+	bool rv = open_(mode, filename, args);
 	va_end(args);
 	return rv;
 }
@@ -56,7 +56,7 @@ bool hxFile::open(uint16_t mode, const char* filename, ...) {
 HX_STATIC_ASSERT(HX_USE_STDIO_H, "TODO: File I/O");
 #if HX_USE_STDIO_H
 
-bool hxFile::openV(uint16_t mode, const char* filename, va_list args) {
+bool hxFile::open_(uint16_t mode, const char* filename, va_list args) {
 	hxInit();
 	hxAssertMsg((mode & ~(uint16_t)((1u << 5) - 1u)) == 0, "reserved file mode bits");
 	close();

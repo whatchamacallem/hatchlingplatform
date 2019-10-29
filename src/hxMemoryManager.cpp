@@ -402,12 +402,12 @@ public:
 	}
 
 	virtual uintptr_t getAllocationCount(hxMemoryManagerId id) const HX_OVERRIDE {
-		const Section& section = m_sections[CalculateSection(id)];
+		const Section& section = m_sections[calculateSection_(id)];
 		return section.m_allocationCount;
 	}
 
 	virtual uintptr_t getBytesAllocated(hxMemoryManagerId id) const HX_OVERRIDE {
-		const Section& section = m_sections[CalculateSection(id)];
+		const Section& section = m_sections[calculateSection_(id)];
 		return section.m_current ? (section.m_current - section.m_begin) : 0u;
 	}
 
@@ -430,12 +430,12 @@ public:
 	}
 
 	virtual uintptr_t getHighWater(hxMemoryManagerId id) HX_OVERRIDE {
-		const Section& section = m_sections[CalculateSection(id)];
+		const Section& section = m_sections[calculateSection_(id)];
 		return section.m_highWater - section.m_begin;
 	}
 
 private:
-	uint32_t CalculateSection(hxMemoryManagerId id) const {
+	uint32_t calculateSection_(hxMemoryManagerId id) const {
 		uint32_t section = (uint32_t)id - (uint32_t)hxMemoryManagerId_ScratchPage0;
 		hxAssert(section < c_nSections);
 		return section;

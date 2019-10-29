@@ -6,7 +6,11 @@
 // ----------------------------------------------------------------------------
 // C utils
 
-int g_hxIsInit; // Do not initialize to 0.  MSVC actually handles that differently.
+// g_hxIsInit. Do not initialize to 0. MSVC actually handles that differently.
+int g_hxIsInit;
+
+// g_hxSettings.  Declared here in plain C for maximum portability. 
+struct hxSettings g_hxSettings;
 
 #if defined(__clang__)
 __attribute__((no_sanitize("address")))

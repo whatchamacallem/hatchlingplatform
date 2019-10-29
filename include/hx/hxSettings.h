@@ -18,9 +18,16 @@
 // MSVC doesn't support C++ feature test macros and sets __cplusplus wrong by
 // default.
 #define HX_USE_STDIO_H 1
+
+#if !defined(HX_USE_CPP11_THREADS)
 #define HX_USE_CPP11_THREADS __STDCPP_THREADS__ 
+#endif
+#if !defined(HX_USE_CPP11_TIME)
 #define HX_USE_CPP11_TIME (_MSC_VER >= 1900)
+#endif
+#if !defined(HX_USE_CPP14_CONSTEXPR)
 #define HX_USE_CPP14_CONSTEXPR 0 // silently generating horrible assembly as of MSVC 15.8.9.
+#endif
 
 #define HX_RESTRICT __restrict
 #define HX_INLINE __forceinline
@@ -46,11 +53,9 @@
 #if !defined(HX_USE_CPP11_THREADS)
 #define HX_USE_CPP11_THREADS (__cplusplus >= 201103L)
 #endif
-
 #if !defined(HX_USE_CPP11_TIME)
 #define HX_USE_CPP11_TIME (__cplusplus >= 201103L)
 #endif
-
 #if !defined(HX_USE_CPP14_CONSTEXPR)
 // "__cpp_constexpr >= 201304" may not compile as C++
 #define HX_USE_CPP14_CONSTEXPR (__cplusplus >= 201402L)
@@ -114,10 +119,10 @@
 #define HX_MEM_DIAGNOSTIC_LEVEL ((HX_RELEASE) < 2) ? 1 : 0
 #endif
 
-// Memory manager pool sizes
 #define HX_KIB (1u << 10) // A KiB is 1024 bytes.
 #define HX_MIB (1u << 20) // A MiB is 1,048,576 bytes.
 
+// Pool sizes.
 #if !defined(HX_MEMORY_BUDGET_PERMANENT)
 #define HX_MEMORY_BUDGET_PERMANENT        (5u * HX_KIB)
 #endif
@@ -155,7 +160,9 @@
 #endif
 
 // Number of DMA operations tracked.
+#if !defined(HX_DEBUG_DMA_RECORDS)
 #define HX_DEBUG_DMA_RECORDS 16
+#endif
 
 // ----------------------------------------------------------------------------
 // HX_USE_GOOGLE_TEST:  In case you need to use Google Test.
@@ -201,6 +208,10 @@
 // hxSettings.  Constructed by first call to hxInit() which happens when or
 // before the memory allocator constructs.
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 struct hxSettings {
 	const char* logFile;
 	uint8_t logLevel; // For logFile
@@ -216,11 +227,9 @@ struct hxSettings {
 #endif
 };
 
-// Constructed by hxInit().
-#if defined(__cplusplus)
-extern "C" {
-#endif
+// g_hxSettings.  Global struct constructed by hxInit().
 extern struct hxSettings g_hxSettings;
+
 #if defined(__cplusplus)
-}
+} // extern "C"
 #endif

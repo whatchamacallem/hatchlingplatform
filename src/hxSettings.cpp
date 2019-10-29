@@ -8,10 +8,8 @@ HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------
 // hxSettings
-
-extern "C" {
-hxSettings g_hxSettings;
-}
+//
+// g_hxSettings is declared in hxCUtils.c for maximum portability. 
 
 hxConsoleVariableNamed(g_hxSettings.logLevel, loglevel);
 

@@ -7,17 +7,19 @@
 struct hxTestRunner {
 public:
 	enum TestState {
-		TEST_NOTHING_ASSERTED,
-		TEST_PASS,
-		TEST_FAIL
+		TEST_STATE_NOTHING_ASSERTED,
+		TEST_STATE_PASS,
+		TEST_STATE_FAIL
 	};
 
 	enum {
 		TEST_MAX_FAIL_MESSAGES = 5,
+#if !defined(TEST_MAX_CASES)
 		TEST_MAX_CASES = 256
+#endif
 	};
 
-	struct FactoryBase {
+	struct TestFactoryBase {
 		virtual void Run() = 0;
 		virtual const char* Suite() = 0;
 		virtual const char* Case() = 0;
@@ -26,7 +28,7 @@ public:
 	};
 
 	// Ensures constructor runs before tests are registered by global constructors.
-	static hxTestRunner& get() { static hxTestRunner s_hxTestRunner; return s_hxTestRunner; }
+	static hxTestRunner& singleton() { static hxTestRunner s_hxTestRunner; return s_hxTestRunner; }
 
 	hxTestRunner() {
 		mNumFactories = 0;
@@ -37,22 +39,22 @@ public:
 
 	void setSearchTerm(const char* searchTermStringLiteral_) { mSearchTermStringLiteral = searchTermStringLiteral_; }
 
-	void addTest(FactoryBase* fn_) {
+	void addTest(TestFactoryBase* fn_) {
 		hxAssertRelease(mNumFactories < TEST_MAX_CASES, "TEST_MAX_CASES overflow\n");
 		mFactories[mNumFactories++] = fn_;
 	}
 
-	// message is required to end with an \n.  Returns devNull() on success and
-	// the system log otherwise.
+	// message is required to end with an \n.  Returns equivalent of /dev/null on
+	// success and the system log otherwise.
 	hxFile& assertCheck(const char* file_, int32_t line_, bool condition_, const char* message_) {
 		++mAssertCount;
-		mTestState = (condition_ && mTestState != TEST_FAIL) ? TEST_PASS : TEST_FAIL;
+		mTestState = (condition_ && mTestState != TEST_STATE_FAIL) ? TEST_STATE_PASS : TEST_STATE_FAIL;
 		if (!condition_) {
 			if(++mAssertFailCount >= TEST_MAX_FAIL_MESSAGES) {
 				if (mAssertFailCount == TEST_MAX_FAIL_MESSAGES) {
 					hxLogConsole("remaining asserts will fail silently...\n");
 				}
-				return devNull();
+				return devNull_();
 			}
 
 			hxLogConsole("%s(%d): ", file_, (int)line_); (void)file_; (void)line_;
@@ -63,18 +65,18 @@ public:
 
 			return hxout;
 		}
-		return devNull();
+		return devNull_();
 	}
 
 	int32_t executeAllTests() {
 		mPassCount = mFailCount = mAssertCount = 0;
 		hxLogConsole("RUNNING_TESTS (%s)\n", (mSearchTermStringLiteral ? mSearchTermStringLiteral : "ALL"));
-		for (FactoryBase** it_ = mFactories; it_ != (mFactories + mNumFactories); ++it_) {
+		for (TestFactoryBase** it_ = mFactories; it_ != (mFactories + mNumFactories); ++it_) {
 			if (!mSearchTermStringLiteral || ::strstr(mSearchTermStringLiteral, (*it_)->Suite()) != hxnull) {
 				hxLogConsole("%s.%s...\n", (*it_)->Suite(), (*it_)->Case());
 
 				mCurrentTest = *it_;
-				mTestState = TEST_NOTHING_ASSERTED;
+				mTestState = TEST_STATE_NOTHING_ASSERTED;
 				mAssertFailCount = 0;
 
 				{
@@ -84,12 +86,12 @@ public:
 					(*it_)->Run();
 				}
 
-				if (mTestState == TEST_NOTHING_ASSERTED) {
+				if (mTestState == TEST_STATE_NOTHING_ASSERTED) {
 					assertCheck(hxBasename((*it_)->File()), (*it_)->Line(), false,
 						"NOTHING ASSERTED");
 					++mFailCount;
 				}
-				else if (mTestState == TEST_PASS) {
+				else if (mTestState == TEST_STATE_PASS) {
 					++mPassCount;
 				}
 				else {
@@ -116,7 +118,7 @@ public:
 	}
 
 private:
-	hxFile& devNull() {
+	hxFile& devNull_() {
 		static hxFile f_(hxFile::out | hxFile::fallible); // Allows writes to fail.
 		return f_;
 	}
@@ -124,9 +126,9 @@ private:
 	hxTestRunner(const hxTestRunner&); // = delete
 	void operator=(const hxTestRunner&); // = delete
 
-	FactoryBase* mFactories[TEST_MAX_CASES];
+	TestFactoryBase* mFactories[TEST_MAX_CASES];
 	int32_t mNumFactories;
-	FactoryBase* mCurrentTest;
+	TestFactoryBase* mCurrentTest;
 	TestState mTestState;
 	int32_t mPassCount;
 	int32_t mFailCount;

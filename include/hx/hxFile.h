@@ -123,7 +123,7 @@ private:
 	void operator=(const hxFile&); // = delete
 	template<typename T_> HX_INLINE hxFile& operator>>(const T_* t_); // = delete
 
-	bool openV(uint16_t mode_, const char* format_, va_list args_);
+	bool open_(uint16_t mode_, const char* format_, va_list args_);
 
 	char* m_filePImpl;
 	uint16_t m_openMode;

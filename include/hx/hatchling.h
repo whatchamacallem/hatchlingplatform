@@ -13,8 +13,8 @@
 #include <string.h>
 
 // Major, minor and patch versions.
-#define HATCHLING_VER 0x20110
-#define HATCHLING_TAG "v2.1.10"
+#define HATCHLING_VER 0x20111
+#define HATCHLING_TAG "v2.1.11"
 
 // HX_RELEASE: 0 is a debug build with all asserts and verbose strings.
 //             1 is a release build with critical asserts and verbose warnings.
@@ -86,7 +86,7 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 
 // Assert handler.  Do not call directly, signature changes and then is removed.
 // HX_RELEASE < 3
-int hxAssertHandler(const char* file, uint32_t line);
+int hxAssertHandler(const char* file_, uint32_t line_);
 
 #else // !(HX_RELEASE < 1)
 #define hxInit() (void)(g_hxIsInit || (hxInitAt(hxnull, 0), 0))

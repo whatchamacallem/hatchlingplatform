@@ -53,7 +53,7 @@ private:
 // ----------------------------------------------------------------------------
 // hxAllocator<0>
 //
-// Capacity_ is set by first call to reserveStorage() and may not be extended.
+// Capacity is set by first call to reserveStorage() and may not be extended.
 
 #define hxAllocatorDynamicCapacity 0u
 
@@ -77,7 +77,7 @@ public:
 		}
 	}
 
-	// Capacity_ is set by first call to reserveStorage() and may not be extended.
+	// Capacity is set by first call to reserveStorage() and may not be extended.
 	HX_INLINE void reserveStorage(uint32_t sz_) {
 		if (sz_ <= m_capacity) { return; }
 		hxAssertRelease(m_capacity == 0, "allocator reallocation disallowed.");

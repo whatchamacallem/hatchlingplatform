@@ -24,5 +24,5 @@ int hxvsnprintf(char* buffer_, size_t count_, const char* format_, va_list va_);
 int hxsnprintf(char* buffer_, size_t count_, const char* format_, ...);
 
 #if defined(__cplusplus)
-}
+} // extern "C"
 #endif
