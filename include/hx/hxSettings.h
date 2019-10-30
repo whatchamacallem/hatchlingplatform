@@ -6,9 +6,19 @@
 #error #include <hx/hatchling.h>
 #endif
 
-// ----------------------------------------------------------------------------
 // Compiler detection and target specific C++11/C++14 polyfill.
 
+// ----------------------------------------------------------------------------
+// WebAssembly.  Support use with any compiler front end.
+#if !defined(HX_USE_WASM)
+#if defined(__EMSCRIPTEN__)
+#define HX_USE_WASM 1
+#else
+#define HX_USE_WASM 0
+#endif
+#endif
+
+// ----------------------------------------------------------------------------
 #if defined(_MSC_VER)
 
 #if !defined(__cpp_exceptions) && !defined(_HAS_EXCEPTIONS)
@@ -45,13 +55,14 @@
 #define HX_ATTR_NORETURN
 #endif
 
-#else // target settings
-// This is configured for gcc and clang.  Other compilers will require customization.
+// ----------------------------------------------------------------------------
+#else // target settings (clang and gcc.)
+// Other compilers will require customization.
 
 #define HX_USE_STDIO_H 1
 
 #if !defined(HX_USE_CPP11_THREADS)
-#define HX_USE_CPP11_THREADS (__cplusplus >= 201103L)
+#define HX_USE_CPP11_THREADS (__cplusplus >= 201103L && !HX_USE_WASM)
 #endif
 #if !defined(HX_USE_CPP11_TIME)
 #define HX_USE_CPP11_TIME (__cplusplus >= 201103L)
@@ -197,7 +208,7 @@
 
 // size_t is used regardless because it is expected to be 32-bit on the target.
 #if !defined(HX_USE_64_BIT_TYPES)
-#define HX_USE_64_BIT_TYPES 1
+#define HX_USE_64_BIT_TYPES !HX_USE_WASM
 #endif
 
 #if !defined(HX_USE_DMA_HARDWARE)

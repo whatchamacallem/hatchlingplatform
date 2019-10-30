@@ -346,7 +346,7 @@ TEST(hxConsoleTest, FileTest) {
 	ASSERT_EQ(s_hxConsoleTestFileVar2, 89.0f);
 }
 
-#if (HX_RELEASE) < 2
+#if (HX_RELEASE) < 2 && !HX_USE_WASM
 TEST(hxConsoleTest, FilePeekPoke) {
 	int target[16] = { 137, 396 };
 	{

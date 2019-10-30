@@ -175,6 +175,9 @@
     <None Include="..\etc\testdriver.sh">
       <Filter>etc</Filter>
     </None>
+    <None Include="..\etc\wasm.sh">
+      <Filter>etc</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\etc\CONTRIBUTORS.txt">

@@ -27,9 +27,9 @@ HX_INLINE static hx_cycles_t hxTimeSampleCycles() {
 }
 
 #else
-#include <time.h>
 
-HX_STATIC_ASSERT(__linux__, "TODO: This needs to be configured for the target");
+// TODO: This needs to be configured for the target.
+#include <time.h>
 
 static const float c_hxTimeMillisecondsPerCycle = 1.0e-6f; // Also 1.e+6 cycles/ms, a 1 GHz chip.
 

@@ -13,8 +13,8 @@
 #include <string.h>
 
 // Major, minor and patch versions.
-#define HATCHLING_VER 0x20114
-#define HATCHLING_TAG "v2.1.14"
+#define HATCHLING_VER 0x20115
+#define HATCHLING_TAG "v2.1.15"
 
 // HX_RELEASE: 0 is a debug build with all asserts and verbose strings.
 //             1 is a release build with critical asserts and verbose warnings.

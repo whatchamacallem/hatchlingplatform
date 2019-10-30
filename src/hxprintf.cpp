@@ -8,12 +8,12 @@
 #if !defined(hxvsnprintf)
 
 // Import the printf module into an anonymous namespace.  printf.h requires
-// _putchar to be defined even when not used. 
+// _putchar to be defined even when not used.
 namespace {
 	extern "C"
 	void _putchar(char c) { (void)c; }
 
-	#include "../printf/printf.h"
+	#include "../printf/printf.h" // try: git submodule update --init
 	#include "../printf/printf.c"
 } // namespace
 
