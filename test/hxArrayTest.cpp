@@ -6,6 +6,8 @@
 #include <hx/hxStockpile.h>
 #include <hx/hxTest.h>
 
+#include <limits.h>
+
 HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------
@@ -19,22 +21,22 @@ public:
 	struct TestObject {
 		TestObject() {
 			++s_hxTestCurrent->m_constructed;
-			id = s_hxTestCurrent->m_nextId--;
+			id = (INT_MIN < s_hxTestCurrent->m_nextId) ? s_hxTestCurrent->m_nextId-- : 0;
 			constructor = 0;
 		}
 		TestObject(void*) {
 			++s_hxTestCurrent->m_constructed;
-			id = s_hxTestCurrent->m_nextId--;
+			id = (INT_MIN < s_hxTestCurrent->m_nextId) ? s_hxTestCurrent->m_nextId-- : 0;
 			constructor = 1;
 		}
 		TestObject(void*, char*) {
 			++s_hxTestCurrent->m_constructed;
-			id = s_hxTestCurrent->m_nextId--;
+			id = (INT_MIN < s_hxTestCurrent->m_nextId) ? s_hxTestCurrent->m_nextId-- : 0;
 			constructor = 2;
 		}
 		TestObject(void*, char*, int*) {
 			++s_hxTestCurrent->m_constructed;
-			id = s_hxTestCurrent->m_nextId--;
+			id = (INT_MIN < s_hxTestCurrent->m_nextId) ? s_hxTestCurrent->m_nextId-- : 0;
 			constructor = 3;
 		}
 
@@ -74,12 +76,12 @@ public:
 		s_hxTestCurrent = 0;
 	}
 
-	bool CheckTotals(int32_t total) const {
+	bool CheckTotals(uint32_t total) const {
 		return m_constructed == total && m_destructed == total;
 	}
 
-	int32_t m_constructed;
-	int32_t m_destructed;
+	uint32_t m_constructed;
+	uint32_t m_destructed;
 	int32_t m_nextId;
 };
 

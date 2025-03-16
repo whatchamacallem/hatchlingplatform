@@ -23,14 +23,14 @@ WARNINGS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 gcc --version | grep gcc
 for I in 0 1 2 3; do
 echo gcc c++98 -O$I "$@"
-gcc -Iinclude -O$I -Wall -Wextra -Werror -pedantic-errors -DHX_RELEASE=$I "$@" \
+gcc -Iinclude -O$I -g -Wall -Wextra -Werror -pedantic-errors -DHX_RELEASE=$I "$@" \
 	-std=c99 -c src/*.c
-gcc -Iinclude -O$I $WARNINGS -DHX_RELEASE=$I "$@" -std=c++98 -fno-exceptions \
+gcc -Iinclude -O$I -g $WARNINGS -DHX_RELEASE=$I "$@" -std=c++98 -fno-exceptions \
 	-fno-rtti  -Wno-unused-local-typedefs */*.cpp *.o -lstdc++ -o hxtest
 ./hxtest | grep '\[  PASSED  \]' --color || ./hxtest
 rm hxtest
 echo gcc c++14 -O$I "$@"
-gcc -Iinclude -O$I -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" -pthread \
+gcc -Iinclude -O$I -g -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" -pthread \
 	-std=c++14 -fno-exceptions -fno-rtti */*.cpp *.o -lpthread -lstdc++ -o hxtest
 ./hxtest | grep '\[  PASSED  \]' --color || ./hxtest
 rm hxtest *.o
@@ -40,10 +40,10 @@ done
 clang --version | grep clang
 for I in 0 1 2 3; do
 echo clang UBSan -O$I "$@"
-clang -Iinclude -O$I -Wall -Wextra -Werror -DHX_RELEASE=$I "$@" \
+clang -Iinclude -O$I -g -Wall -Wextra -Werror -DHX_RELEASE=$I "$@" \
 	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address \
 	-std=c99 -c src/*.c
-clang -Iinclude -O$I -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
+clang -Iinclude -O$I -g -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
 	-DHX_USE_CPP11_THREADS=$I -DHX_USE_CPP11_TIME=$I "$@" -pthread -std=c++14 \
 	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address -lubsan \
 	*/*.cpp *.o -lpthread -lstdc++ -o hxtest

@@ -26,6 +26,8 @@ struct hxLess {
 
 template<typename T, typename Compare>
 HX_INLINE void hxInsertionSort(T* first_, T* last_, const Compare& compare_) {
+	if(first_ == last_) { return; } // don't add +1 to null.
+
 	for (T* i_ = first_ + 1, *j_ = first_; i_ < last_; j_ = i_++) {
 		if (compare_(*i_, *j_)) {
 			T t_ = *i_;
