@@ -58,7 +58,6 @@ int32_t hxTestMain() {
 	return testsFailing;
 }
 
-extern "C"
 int main() {
 	::testing::InitGoogleTest();
 

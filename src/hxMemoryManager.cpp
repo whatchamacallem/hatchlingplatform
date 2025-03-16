@@ -612,7 +612,6 @@ hxMemoryManagerScope::hxMemoryManagerScope(hxMemoryManagerId id)
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
 	if (!s_hxMemoryManager) {
-		::memset(this, 0x00, sizeof *this);
 		return;
 	}
 #endif

@@ -2,9 +2,8 @@
 set -o xtrace
 set -o errexit
 
-source ../emsdk/emsdk_env.sh --build=Release
+emcc -Iinclude -O2 -c src/*.c
+emcc -Iinclude -O2 *.o */*.cpp -o hello.html
 
-emcc -s WASM=1 -Iinclude -O2 -std=c99 -c src/*.c
-emcc -s WASM=1 -Iinclude -O2 -std=c++98 *.o */*.cpp -o hello.html
-
-python -m SimpleHTTPServer
+echo http://localhost:9876/hello.html
+python3 -m http.server 9876
