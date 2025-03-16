@@ -4,7 +4,7 @@
 // HX_RELEASE < 1 memory markings:
 //
 //   ab - Allocated to client code.
-//   cd - Allocated to hxAllocator.
+//   cd - Allocated to hxAllocator static allocation.
 //   dd - Belongs to memory manager.
 //   ee - Freed to OS heap.
 

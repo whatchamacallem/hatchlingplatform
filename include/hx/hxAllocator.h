@@ -19,7 +19,7 @@ public:
 	// Template specialization below should have been selected.
 	HX_STATIC_ASSERT(Capacity_ > 0u, "Capacity_ > 0");
 
-	// Initializes memory to 0xCD when HX_RELEASE < 1.
+    // Initializes memory to 0xcd when HX_RELEASE < 1.
 	HX_INLINE hxAllocator() {
 		if ((HX_RELEASE) < 1) {
 			::memset(m_allocator, 0xcd, sizeof m_allocator);
@@ -85,9 +85,6 @@ public:
 		hxAssertRelease(m_capacity == 0, "allocator reallocation disallowed.");
 		m_allocator = (T*)hxMalloc(sizeof(T) * sz_); // Never fails.
 		m_capacity = sz_;
-		if ((HX_RELEASE) < 1) {
-			::memset(m_allocator, 0xcd, sizeof(T) * sz_);
-		}
 	}
 
 	// Use hxArray::get_allocator() to access extended allocation semantics.
@@ -98,9 +95,6 @@ public:
 		hxAssertRelease(m_capacity == 0, "allocator reallocation disallowed.");
 		m_allocator = (T*)hxMallocExt(sizeof(T) * sz_, alId_, alignmentMask_);
 		m_capacity = sz_;
-		if ((HX_RELEASE) < 1) {
-			::memset(m_allocator, 0xcd, sizeof(T) * sz_);
-		}
 	}
 
 	// Returns the number of elements of T allocated.

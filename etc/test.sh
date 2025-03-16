@@ -10,7 +10,7 @@
 # will run the tests with HX_TEST_DIE_AT_THE_END defined to be 1.
 set -o errexit
 
-export GREP_COLOR='0;32' # green
+export GREP_COLORS='mt=0;32' # green
 
 # c++ warning flags.  preceded by -pedantic-errors except with c++98.
 WARNINGS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
