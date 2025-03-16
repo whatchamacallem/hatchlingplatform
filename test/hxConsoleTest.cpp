@@ -95,6 +95,8 @@ namespace {
 } // namespace {
 
 TEST(hxConsoleTest, CommandFactory) {
+	hxLogConsole("TEST_EXPECTING_WARNINGS:\n");
+
 	c_hxConsoleTestCallFlags = 0;
 
 	hxCommand* f0 = hxCommandFactory(hxConsoleTestFn0);

@@ -59,7 +59,7 @@ HX_INLINE void hxArgParse(T_& val_, const char* str_, char** next_, R_(*parser_)
 	R_ r_ = parser_(str_, next_, 10);
 	// These compares are optimized away when not needed.
 	if (r_ < hxLimits<T_>::minVal() || r_ > hxLimits<T_>::maxVal()) {
-		hxWarn("overflow");
+		hxWarn("command arg overflow");
 		*next_ = const_cast<char*>(str_); // reject input.
 		val_ = (T_)0; // Otherwise gcc will incorrectly complain.
 		return;
@@ -163,7 +163,7 @@ struct hxCommand0 : public hxCommand {
 		return false;
 	}
 	virtual void usage(const char* id_=hxnull) HX_OVERRIDE {
-		hxLogConsole("%s\n", id_ ? id_ : "use no args"); (void)id_;
+		hxLogConsole("%s\n", id_ ? id_ : "usage: no args"); (void)id_;
 	}
 	R_(*m_fn)();
 };
@@ -205,7 +205,7 @@ struct hxCommand2 : public hxCommand {
 		return false;
 	}
 	virtual void usage(const char* id_=hxnull) HX_OVERRIDE {
-		hxLogConsole("%s %s, %s\n", id_ ? id_ : "usage:", hxArg<A1_>::getLabel(), hxArg<A2_>::getLabel()); (void)id_;
+		hxLogConsole("%s %s %s\n", id_ ? id_ : "usage:", hxArg<A1_>::getLabel(), hxArg<A2_>::getLabel()); (void)id_;
 	}
 	R_(*m_fn)(A1_, A2_);
 };
@@ -232,7 +232,7 @@ struct hxCommand3 : public hxCommand {
 		return false;
 	}
 	virtual void usage(const char* id_=hxnull) HX_OVERRIDE {
-		hxLogConsole("%s %s, %s, %s\n", id_ ? id_ : "usage:", hxArg<A1_>::getLabel(), hxArg<A2_>::getLabel(), hxArg<A3_>::getLabel()); (void)id_;
+		hxLogConsole("%s %s %s %s\n", id_ ? id_ : "usage:", hxArg<A1_>::getLabel(), hxArg<A2_>::getLabel(), hxArg<A3_>::getLabel()); (void)id_;
 	}
 	R_(*m_fn)(A1_, A2_, A3_);
 };
@@ -261,7 +261,7 @@ struct hxCommand4 : public hxCommand {
 		return false;
 	}
 	virtual void usage(const char* id_=hxnull) HX_OVERRIDE {
-		hxLogConsole("%s %s, %s, %s, %s\n", id_ ? id_ : "usage:", hxArg<A1_>::getLabel(), hxArg<A2_>::getLabel(), hxArg<A3_>::getLabel(),
+		hxLogConsole("%s %s %s %s %s\n", id_ ? id_ : "usage:", hxArg<A1_>::getLabel(), hxArg<A2_>::getLabel(), hxArg<A3_>::getLabel(),
 			hxArg<A4_>::getLabel()); (void)id_;
 	}
 	R_(*m_fn)(A1_, A2_, A3_, A4_);
@@ -272,7 +272,7 @@ struct hxVariable : public hxCommand {
 	hxVariable(volatile T* var_) : m_var(var_) { }
 	virtual bool execute(const char* str_) HX_OVERRIDE {
 		if (hxIsEndOfLine(str_)) {
-			usage(""); // print type and value.
+			usage("value is:"); // print type and value.
 			return true;
 		}
 		char* ptr_ = hxnull;
@@ -281,7 +281,7 @@ struct hxVariable : public hxCommand {
 			*m_var = x_.value;
 			return true;
 		}
-		usage("error with variable: ");
+		usage("usage:");
 		return false;
 	}
 	virtual void usage(const char* id_=hxnull) HX_OVERRIDE {
@@ -289,20 +289,20 @@ struct hxVariable : public hxCommand {
 #if HX_USE_64_BIT_TYPES
 		if (*m_var == (T)(long long)*m_var) {
 			// If the current value fits in a long long, use that.
-			hxLogConsole("%s %s %lld\n", id_ ? id_ : "usage:", hxArg<T>::getLabel(), (long long)*m_var);
+			hxLogConsole("%s %s(=%lld)\n", id_ ? id_ : "usage:", hxArg<T>::getLabel(), (long long)*m_var);
 		}
 		else {
-			hxLogConsole("%s %s %lf\n", id_ ? id_ : "usage:", hxArg<T>::getLabel(), (double)*m_var);
+			hxLogConsole("%s %s(=%lf)\n", id_ ? id_ : "usage:", hxArg<T>::getLabel(), (double)*m_var);
 		}
 	}
 #else
 		if (*m_var == (T)(int)*m_var) {
 			// If the current value fits in a int, use that.
-			hxLogConsole("%s %s %d\n", id_ ? id_ : "usage:", hxArg<T>::getLabel(), (int)*m_var);
+			hxLogConsole("%s %s(=%d)\n", id_ ? id_ : "usage:", hxArg<T>::getLabel(), (int)*m_var);
 		}
 		else {
 			// This cast is just a gesture, as variadic float args are promoted to double.
-			hxLogConsole("%s %s %f\n", id_ ? id_ : "usage:", hxArg<T>::getLabel(), (float)*m_var);
+			hxLogConsole("%s %s(=%f)\n", id_ ? id_ : "usage:", hxArg<T>::getLabel(), (float)*m_var);
 		}
 	}
 #endif
