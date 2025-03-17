@@ -18,12 +18,12 @@ __attribute__((no_sanitize("address")))
 void hxHexDump(const void* address, uint32_t bytes, int pretty) {
 	if ((HX_RELEASE) < 2 && address != hxnull) {
 		bytes = (bytes + 15u) & ~(uint32_t)15; // round up to 16 bytes.
-		uint8_t* addr = (uint8_t*)address;
+		const uint8_t* addr = (const uint8_t*)address;
 		for (uint32_t i = 0; i < bytes;) {
 			if (pretty) {
 				hxLogConsole("%08x: ", (unsigned int)(uintptr_t)addr);
 			}
-			uint8_t* str = addr;
+			const uint8_t* str = addr;
 			for (int32_t maximum = 4; i < bytes && maximum--; i += 4) {
 				hxLogConsole("%02x%02x%02x%02x ", addr[0], addr[1], addr[2], addr[3]);
 				addr += 4;

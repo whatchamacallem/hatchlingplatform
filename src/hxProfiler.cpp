@@ -39,15 +39,18 @@ hxProfiler g_hxProfiler;
 // hxProfiler
 
 void hxProfiler::start() {
+	HX_PROFILER_LOCK();
 	m_records.clear();
 	m_isStarted = true;
 }
 
 void hxProfiler::stop() {
+	HX_PROFILER_LOCK();
 	m_isStarted = false;
 }
 
 void hxProfiler::log() {
+	HX_PROFILER_LOCK();
 	m_isStarted = false;
 
 	for (uint32_t i = 0; i < m_records.size(); ++i) {
@@ -61,6 +64,7 @@ void hxProfiler::log() {
 }
 
 void hxProfiler::writeToChromeTracing(const char* filename) {
+	HX_PROFILER_LOCK();
 	m_isStarted = false;
 
 	hxFile f(hxFile::out, "%s", filename);

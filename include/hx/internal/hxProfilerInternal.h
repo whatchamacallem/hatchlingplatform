@@ -8,6 +8,14 @@
 #error #include <hx/hxProfiler.h>
 #endif
 
+#if HX_USE_CPP11_THREADS
+#include <mutex>
+
+#define HX_PROFILER_LOCK() std::unique_lock<std::mutex> lk(g_hxProfiler.m_mutex)
+#else
+#define HX_PROFILER_LOCK() (void)0
+#endif
+
 // Use direct access to an object with static linkage for speed.
 extern class hxProfiler g_hxProfiler;
 
@@ -43,6 +51,9 @@ public:
 private:
 	template<hx_cycles_t MinCycles_> friend class hxProfilerScopeInternal;
 	bool m_isStarted;
+#if HX_USE_CPP11_THREADS
+	std::mutex m_mutex;
+#endif
 	hxArray<Record, HX_PROFILER_MAX_RECORDS> m_records;
 };
 
@@ -56,10 +67,14 @@ public:
 	HX_INLINE hxProfilerScopeInternal(const char* labelStringLiteral)
 		: m_label(labelStringLiteral)
 	{
+		HX_PROFILER_LOCK();
+
 		m_t0 = g_hxProfiler.m_isStarted ? hxTimeSampleCycles() : ~(hx_cycles_t)0;
 	}
 
 	HX_INLINE ~hxProfilerScopeInternal() {
+		HX_PROFILER_LOCK();
+
 		if (m_t0 != ~(hx_cycles_t)0) {
 			hx_cycles_t t1_ = hxTimeSampleCycles();
 			if ((t1_ - m_t0) >= MinCycles_) {

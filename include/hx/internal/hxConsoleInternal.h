@@ -21,7 +21,7 @@ struct hxConsoleConstructor {
 };
 
 // Console tokens are delimited by any whitespace and non-printing low-ASCII
-// characters.  NUL must be checked for separately and UTF-8 is not supported.
+// characters.  NUL is a delimiter and must be checked for separately.
 HX_INLINE static bool hxIsDelimiter(char ch_) { return ch_ <= 32; }
 
 // Checks for printing characters.
@@ -32,40 +32,17 @@ HX_INLINE static bool hxIsEndOfLine(const char* str_) {
 	return *str_ == 0 || *str_ == '#'; // Skip comments
 }
 
-// Unsigned min<T>()/max<T>().  Yes, re-implementing std::min<T>()/max<T>() is
-// a bit much.  But it makes this freestanding.
-template<bool IsSigned_, typename T_> struct hxLimitsSelect {
-	static HX_CONSTEXPR_FN T_ minVal() { return T_(0); }
-	static HX_CONSTEXPR_FN T_ maxVal() { return ~T_(0); }
-};
-
-// Signed min<T>()/max<T>().  Does silly things to avoid overflowing a signed
-// integer type.
-template<typename T_> struct hxLimitsSelect<true, T_> {
-	static HX_CONSTEXPR_FN T_ minVal() { return T_(-1) - maxVal(); }
-	static HX_CONSTEXPR_FN T_ maxVal() { return msb1_() | (msb1_() - T_(1)); }
-private:
-	// Using CHAR_BIT would require <limits.h> and this code assumes <stdint.h>
-	// types are being used anyway.
-	static HX_CONSTEXPR_FN T_ msb1_() { return T_(1) << (sizeof(T_) * 8 - 2); }
-};
-
-// select an implementation of min<T>()/max<T>() depending on whether T is signed.
-template<typename T_> struct hxLimits : public hxLimitsSelect<(T_)~T_(0) < T_(0), T_> { };
-
 // Wrapper for strtol() style parser.  You may not want to force inlining of this.
 template <typename T_, typename R_>
 HX_INLINE void hxArgParse(T_& val_, const char* str_, char** next_, R_(*parser_)(char const*, char**, int)) {
 	R_ r_ = parser_(str_, next_, 10);
-	// These compares are optimized away when not needed.
-	if (r_ < hxLimits<T_>::minVal() || r_ > hxLimits<T_>::maxVal()) {
+	if (r_ != (T_)r_) {
 		hxWarn("command arg overflow");
 		*next_ = const_cast<char*>(str_); // reject input.
 		val_ = (T_)0; // Otherwise gcc will incorrectly complain.
 		return;
 	}
 	val_ = (T_)r_;
-	return;
 }
 
 // hxArg<T>. Binds string parsing operations to function args.  Invalid arguments are

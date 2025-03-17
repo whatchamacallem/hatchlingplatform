@@ -7,15 +7,12 @@
 #endif
 
 // Compiler detection and target specific C++11/C++14 polyfill.
+// Use #if(HX_...) instead of #ifdef(HX_...).
 
-// ----------------------------------------------------------------------------
-// WebAssembly.  Support use with any compiler front end.
-#if !defined(HX_USE_WASM)
-#if defined(__EMSCRIPTEN__)
-#define HX_USE_WASM 1
-#else
-#define HX_USE_WASM 0
-#endif
+#if defined(__cplusplus)
+#define HX_CPLUSPLUS __cplusplus
+#else 
+#define HX_CPLUSPLUS 0
 #endif
 
 // ----------------------------------------------------------------------------
@@ -45,11 +42,11 @@
 #define HX_ATTR_FORMAT(pos_, start_)
 #define HX_DEBUG_BREAK __debugbreak()
 
-#if defined(__cplusplus) && _MSC_VER >= 1900
+#if HX_CPLUSPLUS && _MSC_VER >= 1900
 #define HX_STATIC_ASSERT(x_,...) static_assert((bool)(x_), __VA_ARGS__)
 #define HX_OVERRIDE override
 #define HX_ATTR_NORETURN [[noreturn]]
-#else // !__cplusplus
+#else // !HX_CPLUSPLUS
 #define HX_STATIC_ASSERT(x_,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [!!(x_) ? 1 : -1]
 #define HX_OVERRIDE
 #define HX_ATTR_NORETURN
@@ -59,17 +56,26 @@
 #else // target settings (clang and gcc.)
 // Other compilers will require customization.
 
+// WebAssembly.  Support use with any compiler front end.
+#if !defined(HX_USE_WASM)
+#if defined(__EMSCRIPTEN__)
+#define HX_USE_WASM 1
+#else
+#define HX_USE_WASM 0
+#endif
+#endif
+
 #define HX_USE_STDIO_H 1
 
 #if !defined(HX_USE_CPP11_THREADS)
-#define HX_USE_CPP11_THREADS (__cplusplus >= 201103L && !HX_USE_WASM)
+#define HX_USE_CPP11_THREADS (HX_CPLUSPLUS >= 201103L && !HX_USE_WASM)
 #endif
 #if !defined(HX_USE_CPP11_TIME)
-#define HX_USE_CPP11_TIME (__cplusplus >= 201103L)
+#define HX_USE_CPP11_TIME (HX_CPLUSPLUS >= 201103L)
 #endif
 #if !defined(HX_USE_CPP14_CONSTEXPR)
 // "__cpp_constexpr >= 201304" may not compile as C++
-#define HX_USE_CPP14_CONSTEXPR (__cplusplus >= 201402L)
+#define HX_USE_CPP14_CONSTEXPR (HX_CPLUSPLUS >= 201402L)
 #endif
 
 #define HX_RESTRICT __restrict
@@ -80,7 +86,7 @@
 #define HX_ATTR_NORETURN __attribute__((noreturn))
 #define HX_DEBUG_BREAK __builtin_trap()
 
-#if defined(__cplusplus) && __cplusplus >= 201103L
+#if HX_CPLUSPLUS >= 201103L
 #define HX_STATIC_ASSERT(x_,...) static_assert(x_, __VA_ARGS__)
 #define HX_OVERRIDE override
 #else // C/C++98
@@ -219,7 +225,7 @@
 // hxSettings.  Constructed by first call to hxInit() which happens when or
 // before the memory allocator constructs.
 
-#if defined(__cplusplus)
+#if HX_CPLUSPLUS
 extern "C" {
 #endif
 
@@ -241,6 +247,6 @@ struct hxSettings {
 // g_hxSettings.  Global struct constructed by hxInit().
 extern struct hxSettings g_hxSettings;
 
-#if defined(__cplusplus)
+#if HX_CPLUSPLUS
 } // extern "C"
 #endif

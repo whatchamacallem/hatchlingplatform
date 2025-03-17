@@ -6,7 +6,7 @@
 #error #include <hx/hatchling.h>
 #endif
 
-#if defined(__cplusplus)
+#if HX_CPLUSPLUS
 #include <new>
 
 extern "C" {
@@ -61,7 +61,7 @@ char* hxStringDuplicate(const char* string_, enum hxMemoryManagerId id_ /*=hxMem
 
 uint32_t hxIsScratchpad(void* ptr_); // returns bool as int.
 
-#if __cplusplus
+#if HX_CPLUSPLUS
 } // extern "C"
 
 // ----------------------------------------------------------------------------
@@ -164,4 +164,4 @@ HX_INLINE char* hxStringDuplicate(const char* s_) {
 	return hxStringDuplicate(s_, hxMemoryManagerId_Heap);
 }
 
-#endif // __cplusplus
+#endif // HX_CPLUSPLUS

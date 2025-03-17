@@ -4,7 +4,7 @@
 //
 // Copyright 2017-2019 Adrian Johnston
 // Copyright 2017 Leap Motion
-// https://github.com/adrian3git/HatchlingPlatform
+// https://github.com/whatchamacallem/HatchlingPlatform
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -37,7 +37,7 @@
 #include <hx/hxMemoryManager.h>
 #include <hx/hxStringLiteralHash.h>
 
-#if __cplusplus
+#if HX_CPLUSPLUS
 extern "C" {
 #endif
 
@@ -142,7 +142,7 @@ extern int g_hxIsInit;
 // Terminates service.  Releases all resources acquired by the platform and
 // confirms all memory allocations have been released. HX_RELEASE < 3.
 // Does not clear g_hxIsInit, shutdown is final.
-void hxShutdown();
+void hxShutdown(void);
 
 // HX_RELEASE < 3.  Stops execution with a formatted message.  Format must end
 // with a \n.
@@ -170,7 +170,7 @@ const char* hxBasename(const char* path_);
 uint32_t hxStringLiteralHashDebug(const char* string_);
 
 // ----------------------------------------------------------------------------
-#if __cplusplus
+#if HX_CPLUSPLUS
 } // extern "C"
 
 // More portable versions of min(), max(), abs() and clamp() using the < operator.
