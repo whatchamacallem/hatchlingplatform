@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+# In the emsdk directory:
+# ./emsdk activate latest
+# source ./emsdk_env.sh
+
 set -o xtrace
 set -o errexit
 

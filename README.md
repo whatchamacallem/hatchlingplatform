@@ -43,6 +43,8 @@ Tested using:
  * Microsoft Visual Studio Community 2017 Version 15.9.12
  * gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
  * Ubuntu clang version 18.1.3 (1ubuntu1)
+ * emcc (Emscripten 4.0.5)
+
  * See `test.sh` 
 
 Licensed under Apache License Version 2.0.
