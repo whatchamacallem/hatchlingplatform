@@ -692,7 +692,7 @@ uintptr_t hxMemoryManagerScope::getScopeBytesAllocated() const {
 
 extern "C"
 void* hxMalloc(size_t size) {
-	hxAssertRelease(g_hxIsInit, "call hxInit");
+	hxInit();
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
 	if (!s_hxMemoryManager) {
@@ -708,7 +708,7 @@ void* hxMalloc(size_t size) {
 
 extern "C"
 void* hxMallocExt(size_t size, hxMemoryManagerId id, uintptr_t alignmentMask) {
-	hxAssertRelease(g_hxIsInit, "call hxInit");
+	hxInit();
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
 	if (!s_hxMemoryManager) {

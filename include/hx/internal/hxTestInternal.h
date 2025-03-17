@@ -57,8 +57,8 @@ public:
 				return devNull_();
 			}
 
-			hxLogConsole("%s(%d): ", file_, (int)line_); (void)file_; (void)line_;
-			hxLogConsole("%s\n", message_);
+			hxLogHandler(hxLogLevel_Console, "%s(%d): ", file_, (int)line_);
+			hxLogHandler(hxLogLevel_Console, "%s\n", message_);
 
 			hxAssertRelease(mCurrentTest, "not testing");
 			hxLogHandler(hxLogLevel_Assert, "%s.%s", mCurrentTest->Suite(), mCurrentTest->Case());
