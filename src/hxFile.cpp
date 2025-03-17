@@ -17,14 +17,14 @@ HX_REGISTER_FILENAME_HASH
 
 // Wrapped to ensure correct construction order.
 hxFile& hxOut() {
-	static hxFile f(hxFile::out | hxFile::fallible | hxFile::echo, "%s",
-		g_hxSettings.logFile ? g_hxSettings.logFile : "");
+	static hxFile f(hxFile::out | hxFile::echo, "%s",
+		(g_hxIsInit && g_hxSettings.logFile) ? g_hxSettings.logFile : "");
 	return f;
 }
 
 void hxCloseOut() {
 	// Allow assert messages to be written to stdout.
-	hxout.open(hxFile::out | hxFile::fallible | hxFile::echo, "%s", "");
+	hxout.open(hxFile::out | hxFile::echo, "%s", "");
 }
 
 // ----------------------------------------------------------------------------
@@ -42,8 +42,8 @@ hxFile::hxFile(uint16_t mode) {
 
 hxFile::hxFile(uint16_t mode, const char* filename, ...) {
 	m_filePImpl = hxnull;
+	
 	va_list args;
-	m_openMode = mode;
 	va_start(args, filename);
 	openv_(mode, filename, args);
 	va_end(args);
@@ -65,12 +65,11 @@ HX_STATIC_ASSERT(HX_USE_STDIO_H, "TODO: File I/O");
 #if HX_USE_STDIO_H
 
 bool hxFile::openv_(uint16_t mode, const char* filename, va_list args) {
-	hxInit();
+	hxInit(); // Needed to write out asserts at startup.
+	close(); // clears all state
+	m_openMode = mode; 
+
 	hxAssertMsg((mode & ~(uint16_t)((1u << 5) - 1u)) == 0, "reserved file mode bits");
-	close();
-
-	m_openMode = mode;
-
 	hxAssertRelease((mode & (hxFile::in | hxFile::out)) && filename, "missing file args");
 
 	char buf[HX_MAX_LINE] = "";

@@ -608,7 +608,7 @@ void hxMemoryManager::free(void* ptr) {
 
 hxMemoryManagerScope::hxMemoryManagerScope(hxMemoryManagerId id)
 {
-	hxInit();
+	hxAssertRelease(g_hxIsInit, "call hxInit");
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
 	if (!s_hxMemoryManager) {
@@ -628,7 +628,7 @@ hxMemoryManagerScope::hxMemoryManagerScope(hxMemoryManagerId id)
 }
 
 hxMemoryManagerScope::~hxMemoryManagerScope() {
-	hxInit();
+	hxAssertRelease(g_hxIsInit, "call hxInit");
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
 	if (!s_hxMemoryManager || m_previousId == hxMemoryManagerId_Current) {
@@ -644,7 +644,7 @@ hxMemoryManagerScope::~hxMemoryManagerScope() {
 }
 
 uintptr_t hxMemoryManagerScope::getTotalAllocationCount() const {
-	hxInit();
+	hxAssertRelease(g_hxIsInit, "call hxInit");
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
 	if (!s_hxMemoryManager) {
@@ -655,7 +655,7 @@ uintptr_t hxMemoryManagerScope::getTotalAllocationCount() const {
 }
 
 uintptr_t hxMemoryManagerScope::getTotalBytesAllocated() const {
-	hxInit();
+	hxAssertRelease(g_hxIsInit, "call hxInit");
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
 	if (!s_hxMemoryManager) {
@@ -666,7 +666,7 @@ uintptr_t hxMemoryManagerScope::getTotalBytesAllocated() const {
 }
 
 uintptr_t hxMemoryManagerScope::getScopeAllocationCount() const {
-	hxInit();
+	hxAssertRelease(g_hxIsInit, "call hxInit");
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
 	if (!s_hxMemoryManager) {
@@ -677,7 +677,7 @@ uintptr_t hxMemoryManagerScope::getScopeAllocationCount() const {
 }
 
 uintptr_t hxMemoryManagerScope::getScopeBytesAllocated() const {
-	hxInit();
+	hxAssertRelease(g_hxIsInit, "call hxInit");
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
 	if (!s_hxMemoryManager) {
@@ -692,7 +692,7 @@ uintptr_t hxMemoryManagerScope::getScopeBytesAllocated() const {
 
 extern "C"
 void* hxMalloc(size_t size) {
-	hxInit();
+	hxAssertRelease(g_hxIsInit, "call hxInit");
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
 	if (!s_hxMemoryManager) {
@@ -708,7 +708,7 @@ void* hxMalloc(size_t size) {
 
 extern "C"
 void* hxMallocExt(size_t size, hxMemoryManagerId id, uintptr_t alignmentMask) {
-	hxInit();
+	hxAssertRelease(g_hxIsInit, "call hxInit");
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
 	if (!s_hxMemoryManager) {
@@ -725,7 +725,7 @@ void* hxMallocExt(size_t size, hxMemoryManagerId id, uintptr_t alignmentMask) {
 
 extern "C"
 void hxFree(void *ptr) {
-	hxInit();
+	hxAssertRelease(g_hxIsInit, "call hxInit");
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
 	if (!s_hxMemoryManager) {
@@ -741,7 +741,7 @@ void hxFree(void *ptr) {
 }
 
 void hxMemoryManagerInit() {
-	hxInit(); // Safe to call again.
+	hxAssertRelease(g_hxIsInit, "call hxInit");
 	hxAssert(!s_hxMemoryManager);
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	if (g_hxSettings.disableMemoryManager) {
@@ -756,7 +756,7 @@ void hxMemoryManagerInit() {
 }
 
 void hxMemoryManagerShutDown() {
-	hxInit();
+	hxAssertRelease(g_hxIsInit, "call hxInit");
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
 	if (!s_hxMemoryManager) {
@@ -778,7 +778,7 @@ void hxMemoryManagerShutDown() {
 }
 
 uint32_t hxMemoryManagerAllocationCount() {
-	hxInit();
+	hxAssertRelease(g_hxIsInit, "call hxInit");
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager,
 		"disableMemoryManager inconsistent");

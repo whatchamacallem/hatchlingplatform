@@ -9,6 +9,7 @@ class hxFile;
 // hxout
 
 // hxout is the system log.  Returns an hxFile for use as both stdout and stderr.
+// If you don't want a written file set g_hxSettings.logFile to hxnull.
 #define hxout hxOut()
 
 // Implements hxout.

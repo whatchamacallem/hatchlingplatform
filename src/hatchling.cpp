@@ -52,6 +52,7 @@ hxHashStringLiteral& hxStringLiteralHashes() {
 	return s_hxStringLiteralHashes;
 }
 hxRegisterFileConstructor::hxRegisterFileConstructor(const char* s) {
+	hxInit();
 	hxStringLiteralHashes().insert_unique(s, hxMemoryManagerId_Heap);
 }
 
@@ -128,6 +129,7 @@ void hxLogHandler(enum hxLogLevel level, const char* format, ...) {
 
 extern "C"
 void hxShutdown() {
+	hxAssert(g_hxIsInit);
 	hxPrintFileHashes();
 	hxProfilerStop();
 	hxDmaShutDown();
@@ -143,8 +145,8 @@ void hxShutdown() {
 
 extern "C"
 void hxExit(const char* format, ...) {
-	hxFile& f = hxout; // Calls hxInit().
-	if (f.is_open() || (f.is_echo() && f.is_fallible())) {
+	hxFile& f = hxout;
+	if (f.is_open() || f.is_echo()) {
 		f << "EXIT ";
 
 		char buf[HX_MAX_LINE] = "\n";
@@ -177,9 +179,8 @@ void hxExit(const char* format, ...) {
 extern "C"
 #if (HX_RELEASE) < 1
 int hxAssertHandler(const char* file, uint32_t line) {
-	hxInit();
 	const char* f = hxBasename(file);
-	if (g_hxSettings.assertsToBeSkipped-- > 0) {
+	if (!g_hxIsInit || g_hxSettings.assertsToBeSkipped-- > 0) {
 		hxLogHandler(hxLogLevel_Assert, "(skipped) %s(%u) hash %08x", f, (unsigned int)line,
 			(unsigned int)hxStringLiteralHashDebug(file));
 		return 1;
@@ -205,13 +206,13 @@ void hxAssertHandler(uint32_t file, uint32_t line) {
 
 extern "C"
 void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
-	hxFile& f = hxout; // Calls hxInit().
+	hxFile& f = hxout;
 
-	if (level < g_hxSettings.logLevel) {
+	if (g_hxIsInit && level < g_hxSettings.logLevel) {
 		return;
 	}
 
-	if (f.is_open() || (f.is_echo() && f.is_fallible())) {
+	if (f.is_open() || f.is_echo()) {
 		char buf[HX_MAX_LINE+1];
 		int sz = format ? vsnprintf(buf, HX_MAX_LINE, format, args) : -1;
 		hxAssertMsg(sz >= 0, "format error: %s", format ? format : "(null)");
@@ -236,8 +237,8 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 #else // HX_RELEASE == 3
 extern "C"
 void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
-	hxInit(); // no need to guard calls that may message.
-	if (!format || level < g_hxSettings.logLevel) {
+
+	if (!format || (g_hxIsInit && level < g_hxSettings.logLevel)) {
 		return;
 	}
 	char buf[HX_MAX_LINE+1];

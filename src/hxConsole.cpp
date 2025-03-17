@@ -109,7 +109,7 @@ bool hxConsoleExecLine(const char* command) {
 bool hxConsoleExecFile(hxFile& file) {
 	char buf[HX_MAX_LINE];
 	bool result = true;
-	while ((result || file.is_fallible()) && file.getline(buf)) {
+	while (result && file.getline(buf)) {
 		hxLog("console: %s", buf);
 		result = hxConsoleExecLine(buf) && result;
 	}
@@ -124,7 +124,7 @@ struct hxConsoleLess {
 };
 
 void hxConsoleExecFilename(const char* filename) {
-	hxFile file(hxFile::in | hxFile::fallible, "%s", filename);
+	hxFile file(hxFile::in, "%s", filename);
 	hxWarnCheck(file.is_open(), "cannot open: %s", filename);
 	if (file.is_open()) {
 		bool isOk = hxConsoleExecFile(file);
