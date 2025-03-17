@@ -17,14 +17,14 @@ HX_REGISTER_FILENAME_HASH
 
 // Wrapped to ensure correct construction order.
 hxFile& hxOut() {
-	static hxFile f(hxFile::out | hxFile::echo, "%s",
+	static hxFile f(hxFile::out | hxFile::echo | hxFile::fallible, "%s",
 		(g_hxIsInit && g_hxSettings.logFile) ? g_hxSettings.logFile : "");
 	return f;
 }
 
 void hxCloseOut() {
 	// Allow assert messages to be written to stdout.
-	hxout.open(hxFile::out | hxFile::echo, "%s", "");
+	hxout.open(hxFile::out | hxFile::echo | hxFile::fallible, "%s", "");
 }
 
 // ----------------------------------------------------------------------------
