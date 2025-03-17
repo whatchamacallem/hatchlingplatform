@@ -2,7 +2,7 @@
 # Copyright 2019 Adrian Johnston
 set -o errexit
 
-./etc/testdriver.sh
+./testdriver.sh
 
 if [[ $(git status --porcelain) ]]; then
     echo "unexpected modifications:"

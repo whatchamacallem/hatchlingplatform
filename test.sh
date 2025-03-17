@@ -5,7 +5,7 @@
 #
 # Adds script args to compiler command line using "$@" so for example calling
 #
-#   etc/test.sh -DHX_TEST_DIE_AT_THE_END=1
+#   ./test.sh -DHX_TEST_DIE_AT_THE_END=1
 #
 # will run the tests with HX_TEST_DIE_AT_THE_END defined to be 1.
 set -o errexit

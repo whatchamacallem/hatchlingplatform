@@ -3,7 +3,7 @@
         {
             "type": "cppbuild",
             "label": "C/C++: g++ build active file",
-            "command": "./etc/debugbuild.sh",
+            "command": "./debugbuild.sh",
             "args": [
             ],
             "options": {
