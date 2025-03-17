@@ -3,8 +3,8 @@
 // Copyright 2017 Leap Motion
 
 #include <hx/hatchling.h>
-#include <hx/hxStockpile.h>
 #include <hx/hxTime.h>
+#include <hx/hxArray.h>
 
 #if HX_PROFILE
 #include <hx/internal/hxProfilerInternal.h>

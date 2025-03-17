@@ -43,7 +43,7 @@ public:
 private:
 	template<hx_cycles_t MinCycles_> friend class hxProfilerScopeInternal;
 	bool m_isStarted;
-	hxStockpile<Record, HX_PROFILER_MAX_RECORDS> m_records;
+	hxArray<Record, HX_PROFILER_MAX_RECORDS> m_records;
 };
 
 // ----------------------------------------------------------------------------
@@ -63,7 +63,7 @@ public:
 		if (m_t0 != ~(hx_cycles_t)0) {
 			hx_cycles_t t1_ = hxTimeSampleCycles();
 			if ((t1_ - m_t0) >= MinCycles_) {
-				void* rec_ = g_hxProfiler.m_records.emplace_back_atomic();
+				void* rec_ = g_hxProfiler.m_records.emplace_back_unconstructed();
 				if (rec_) {
 					::new (rec_) hxProfiler::Record(m_t0, t1_, m_label,
 						(uint32_t)(uintptr_t)&s_hxProfilerThreadIdAddress);

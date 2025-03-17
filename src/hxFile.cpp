@@ -74,7 +74,7 @@ bool hxFile::openv_(uint16_t mode, const char* filename, va_list args) {
 	hxAssertRelease((mode & (hxFile::in | hxFile::out)) && filename, "missing file args");
 
 	char buf[HX_MAX_LINE] = "";
-	hxvsnprintf(buf, HX_MAX_LINE, filename, args);
+	vsnprintf(buf, HX_MAX_LINE, filename, args);
 
 	if (buf[0] == '\0') {
 		return false;
@@ -160,7 +160,7 @@ bool hxFile::print(const char* format, ...) {
 	char str[HX_MAX_LINE] = "";
 	va_list args;
 	va_start(args, format);
-	int len = hxvsnprintf(str, HX_MAX_LINE, format, args);
+	int len = vsnprintf(str, HX_MAX_LINE, format, args);
 	va_end(args);
 
 	// These are potential data corruption issues, not fallible I/O.

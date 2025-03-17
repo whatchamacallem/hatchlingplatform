@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+
 
 // Major, minor and patch versions.
 #define HATCHLING_VER 0x20115
@@ -34,7 +36,6 @@
 #include <hx/hxSettings.h>
 #include <hx/hxMemoryManager.h>
 #include <hx/hxStringLiteralHash.h>
-#include <hx/hxprintf.h>
 
 #if __cplusplus
 extern "C" {

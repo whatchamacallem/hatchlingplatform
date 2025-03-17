@@ -14,7 +14,6 @@
 #include <hx/hxHashTableNodes.h>
 #include <hx/hxProfiler.h>
 #include <hx/hxSort.h>
-#include <hx/hxStockpile.h>
 #include <hx/hxTaskQueue.h>
 
 HX_REGISTER_FILENAME_HASH
@@ -41,7 +40,7 @@ int32_t hxTestMain() {
 		(int)(HX_USE_CPP11_TIME), (int)(HX_USE_CPP14_CONSTEXPR), (int)(HX_MEM_DIAGNOSTIC_LEVEL));
 
 	char bytes[48] = { };
-	hxsnprintf(bytes, 48, "%s", "The quick brown fox jumps over the lazy dog....");
+	snprintf(bytes, 48, "%s", "The quick brown fox jumps over the lazy dog....");
 	hxHexDump(bytes, 48, 1);
 
 	const float floats[] = { 0.0f, 1.0f, 2.0f };

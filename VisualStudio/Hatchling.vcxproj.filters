@@ -67,9 +67,6 @@
     <ClCompile Include="..\test\hxTestMain.cpp">
       <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\hxprintf.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\hx\internal\hxConsoleInternal.h">
@@ -117,9 +114,6 @@
     <ClInclude Include="..\include\hx\hxSort.h">
       <Filter>include/hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\hxStockpile.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\hx\hxStringLiteralHash.h">
       <Filter>include/hx</Filter>
     </ClInclude>
@@ -131,10 +125,6 @@
     </ClInclude>
     <ClInclude Include="..\include\hx\hxTest.h">
       <Filter>include/hx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hxprintf.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\hx\hxTask.h">
       <Filter>include/hx</Filter>
     </ClInclude>

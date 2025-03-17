@@ -31,7 +31,6 @@
     <ClInclude Include="..\include\hx\hxProfiler.h" />
     <ClInclude Include="..\include\hx\hxSettings.h" />
     <ClInclude Include="..\include\hx\hxSort.h" />
-    <ClInclude Include="..\include\hx\hxStockpile.h" />
     <ClInclude Include="..\include\hx\hxStringLiteralHash.h" />
     <ClInclude Include="..\include\hx\hxTask.h" />
     <ClInclude Include="..\include\hx\hxTaskQueue.h" />
@@ -41,7 +40,6 @@
     <ClInclude Include="..\include\hx\internal\hxHashTableInternal.h" />
     <ClInclude Include="..\include\hx\internal\hxProfilerInternal.h" />
     <ClInclude Include="..\include\hx\internal\hxTestInternal.h" />
-    <ClInclude Include="..\include\hx\hxprintf.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\hatchling.cpp" />
@@ -55,7 +53,6 @@
     <ClCompile Include="..\src\hxSort.cpp" />
     <ClCompile Include="..\src\hxStringLiteralHash.cpp" />
     <ClCompile Include="..\src\hxTaskQueue.cpp" />
-    <ClCompile Include="..\src\hxprintf.cpp" />
     <ClCompile Include="..\test\hxArrayTest.cpp" />
     <ClCompile Include="..\test\hxConsoleTest.cpp" />
     <ClCompile Include="..\test\hxDmaTest.cpp" />

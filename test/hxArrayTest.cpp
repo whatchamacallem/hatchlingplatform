@@ -3,7 +3,6 @@
 
 #include <hx/hatchling.h>
 #include <hx/hxArray.h>
-#include <hx/hxStockpile.h>
 #include <hx/hxTest.h>
 
 #include <limits.h>
@@ -279,14 +278,3 @@ TEST_F(hxArrayTest, Assignment) {
 	ASSERT_TRUE(CheckTotals(6));
 }
 
-TEST(hxArrayTest, Stockpile) {
-
-	hxStockpile<int, 3> pile;
-	for (int i = 4; i--;) {
-		pile.push_back_atomic(7);
-	}
-	ASSERT_EQ(pile.size(), 3);
-
-	void* p = pile.emplace_back_atomic();
-	ASSERT_EQ(p, hxnull);
-}

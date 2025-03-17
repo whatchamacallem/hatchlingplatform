@@ -8,7 +8,6 @@
 #include <hx/hxFile.h>
 #include <hx/hxHashTableNodes.h>
 #include <hx/hxProfiler.h>
-#include <hx/hxprintf.h>
 #include <hx/hxSort.h>
 
 #if HX_USE_STDIO_H
@@ -152,7 +151,7 @@ void hxExit(const char* format, ...) {
 		if (format != hxnull) {
 			va_list args;
 			va_start(args, format);
-			hxvsnprintf(buf, HX_MAX_LINE, format, args);
+			vsnprintf(buf, HX_MAX_LINE, format, args);
 			va_end(args);
 		}
 
@@ -214,7 +213,7 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 
 	if (f.is_open() || (f.is_echo() && f.is_fallible())) {
 		char buf[HX_MAX_LINE+1];
-		int sz = format ? hxvsnprintf(buf, HX_MAX_LINE, format, args) : -1;
+		int sz = format ? vsnprintf(buf, HX_MAX_LINE, format, args) : -1;
 		hxAssertMsg(sz >= 0, "format error: %s", format ? format : "(null)");
 		if (sz <= 0) {
 			return;
@@ -242,7 +241,7 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 		return;
 	}
 	char buf[HX_MAX_LINE+1];
-	int sz = hxvsnprintf(buf, HX_MAX_LINE, format, args);
+	int sz = vsnprintf(buf, HX_MAX_LINE, format, args);
 	if (sz > 0) {
 		sz = hxMin(sz, HX_MAX_LINE);
 		if (level == hxLogLevel_Warning || level == hxLogLevel_Assert) {
