@@ -4,7 +4,7 @@
 #include <hx/internal/hxHashTableInternal.h>
 
 // hxHashTable.h - This header implements a hash table that operates without 
-// allocating memory or copying around data.  It can be used as either a map
+// reallocating memory or copying around data.  It can be used as either a map
 // or a set and has operations that allow for unique or duplicate keys.  While
 // this interface is designed to be familiar, changes will be required to
 // switch over code using standard containers.  In particular, all modification
@@ -323,7 +323,7 @@ public:
 			for (const Node* n_ = *it_; n_; n_ = (const Node*)n_->m_next) {
 				++count_;
 			}
-			maximum_ = hxMax(maximum_, count_);
+			maximum_ = hxmax(maximum_, count_);
 		}
 		return maximum_;
 	}

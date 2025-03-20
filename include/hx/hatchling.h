@@ -177,20 +177,20 @@ uint32_t hxStringLiteralHashDebug(const char* string_);
 
 // Returns the minimum value of x and y using a < comparison.
 template<typename T_>
-HX_CONSTEXPR_FN const T_& hxMin(const T_& x_, const T_& y_) { return (x_ < y_) ? x_ : y_; }
+HX_CONSTEXPR_FN const T_& hxmin(const T_& x_, const T_& y_) { return ((x_) < (y_)) ? (x_) : (y_); }
 
 // Returns the maximum value of x and y using a < comparison.
 template<typename T_>
-HX_CONSTEXPR_FN const T_& hxMax(const T_& x_, const T_& y_) { return (y_ < x_) ? x_ : y_; }
+HX_CONSTEXPR_FN const T_& hxmax(const T_& x_, const T_& y_) { return ((y_) < (x_)) ? (x_) : (y_); }
 
 // Returns the absolute value of x using a < comparison.
 template<typename T_>
-HX_CONSTEXPR_FN const T_ hxAbs(const T_& x_) { return (x_ < (T_)0) ? ((T_)0 - x_) : x_; }
+HX_CONSTEXPR_FN const T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - (x_)) : (x_); }
 
 // Returns x clamped between the minimum and maximum using < comparisons.
 template<typename T_>
-HX_CONSTEXPR_FN const T_& hxClamp(const T_& x_, const T_& minimum_, const T_& maximum_) {
-	hxAssert(!(maximum_ < minimum_));
-	return (x_ < minimum_) ? minimum_ : ((maximum_ < x_) ? maximum_ : x_);
+HX_CONSTEXPR_FN const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& maximum_) {
+	hxAssert(!((maximum_) < (minimum_)));
+	return ((x_) < (minimum_)) ? (minimum_) : (((maximum_) < (x_)) ? (maximum_) : (x_));
 }
 #endif

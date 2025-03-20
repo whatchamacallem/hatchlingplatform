@@ -18,8 +18,9 @@ struct hxLess {
 // ----------------------------------------------------------------------------
 // hxInsertionSort
 //
-// Sorts the elements in the range [first, last) in comparison order using the
-// insertion sort algorithm.
+// Sorts the elements in the range [first, last) in comparison order using
+// the insertion sort algorithm.  The last parameter points past the end of
+// the array.
 //
 // The compare parameter is a function object that returns true if the first
 // argument is ordered before (i.e. is less than) the second.  See hxLess.

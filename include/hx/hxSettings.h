@@ -7,7 +7,8 @@
 #endif
 
 // Compiler detection and target specific C++11/C++14 polyfill.
-// Use #if(HX_...) instead of #ifdef(HX_...).
+// Use #if(HX_...) instead of #ifdef(HX_...) for all HX_* macros. 
+// Except use #ifdef with HX_USE_...
 
 #if defined(__cplusplus)
 #define HX_CPLUSPLUS __cplusplus
@@ -120,7 +121,7 @@
 // ----------------------------------------------------------------------------
 // Maximum length for formatted messages printed with this platform.
 #if !defined(HX_MAX_LINE)
-#define HX_MAX_LINE 180
+#define HX_MAX_LINE 500
 #endif
 
 // ----------------------------------------------------------------------------
@@ -233,14 +234,14 @@ struct hxSettings {
 	const char* logFile;
 	uint8_t logLevel; // For logFile
 	uint8_t isShuttingDown; // Allows destruction of permanent resources.
+	uint8_t deathTest; // Just for testing
 
 #if (HX_MEM_DIAGNOSTIC_LEVEL) > 0
 	uint8_t disableMemoryManager;
 #endif
 #if (HX_RELEASE) < 1
 	int32_t assertsToBeSkipped; // Allows testing asserts.
-	uint8_t deathTest;
-	float lightEmittingDiode;
+	float lightEmittingDiode; // Just for testing
 #endif
 };
 

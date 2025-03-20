@@ -33,7 +33,7 @@ public:
 	HX_INLINE const char* getLabel() const { return m_label ? m_label : "task"; }
 	HX_INLINE void setLabel(const char* x_) { m_label = x_; }
 
-	// Enforces a single ownership policy.  Must set to hxnull before assigning a new owner, 
+	// Enforces a single ownership policy.  Must set to hxnull first.
 	HX_INLINE void setOwner(const void* x_) {
 		hxAssertRelease((!m_owner || !x_) && !m_nextTask, "re-enqueuing task: %s", getLabel());
 		m_owner = x_;

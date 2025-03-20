@@ -22,13 +22,13 @@ void hxSettingsConstruct() {
 	g_hxSettings.logLevel = hxLogLevel_Log;
 	g_hxSettings.logFile = ((HX_RELEASE) < 1) ? "log.txt" : hxnull;
 	g_hxSettings.isShuttingDown = false;
+	g_hxSettings.deathTest = 0;
 
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	g_hxSettings.disableMemoryManager = false;
 #endif
 #if (HX_RELEASE) < 1
 	g_hxSettings.assertsToBeSkipped = 0;
-	g_hxSettings.deathTest = 0;
 	g_hxSettings.lightEmittingDiode = 0.7f;
 #endif
 }

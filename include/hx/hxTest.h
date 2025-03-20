@@ -69,7 +69,7 @@ HX_INLINE void InitGoogleTest() { }
 #define EXPECT_TRUE(x_) hxTestRunner::singleton().assertCheck(__FILE__, __LINE__, (x_), #x_)
 #define EXPECT_FALSE(x_) hxTestRunner::singleton().assertCheck(__FILE__, __LINE__, !(x_), "!" #x_)
 #define EXPECT_NEAR(expected_, actual_, absolute_range_) hxTestRunner::singleton().assertCheck( \
-	__FILE__, __LINE__, hxAbs((expected_)-(actual_)) <= (absolute_range_), "abs(" #expected_ "-" #actual_ ")<=" #absolute_range_)
+	__FILE__, __LINE__, hxabs((expected_)-(actual_)) <= (absolute_range_), "abs(" #expected_ "-" #actual_ ")<=" #absolute_range_)
 #define EXPECT_LT(lhs_, rhs_) hxTestRunner::singleton().assertCheck(__FILE__, __LINE__, (lhs_) < (rhs_), #lhs_ "<" #rhs_)
 #define EXPECT_GT(lhs_, rhs_) hxTestRunner::singleton().assertCheck(__FILE__, __LINE__, (rhs_) < (lhs_), #lhs_ ">" #rhs_)
 #define EXPECT_LE(lhs_, rhs_) hxTestRunner::singleton().assertCheck(__FILE__, __LINE__, !((rhs_) < (lhs_)), #lhs_ "<=" #rhs_)

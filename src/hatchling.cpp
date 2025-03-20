@@ -18,11 +18,11 @@
 // Implements HX_IS_DEBUGGER_PRESENT().  
 
 #if (HX_RELEASE) < 3
-#if defined(_MSC_VER) && !(HX_TEST_DIE_AT_THE_END)
+#if defined(_MSC_VER)
 #include <Windows.h>
 
 #define HX_IS_DEBUGGER_PRESENT IsDebuggerPresent
-#elif defined(__linux__) && !(HX_TEST_DIE_AT_THE_END)
+#elif defined(__linux__)
 #include <sys/ptrace.h>
 
 static bool HX_IS_DEBUGGER_PRESENT() {
@@ -219,7 +219,7 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 		if (sz <= 0) {
 			return;
 		}
-		sz = hxMin(sz, HX_MAX_LINE);
+		sz = hxmin(sz, HX_MAX_LINE);
 		if (level == hxLogLevel_Warning || level == hxLogLevel_Assert) {
 			buf[sz++] = '\n';
 		}
@@ -244,7 +244,7 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 	char buf[HX_MAX_LINE+1];
 	int sz = vsnprintf(buf, HX_MAX_LINE, format, args);
 	if (sz > 0) {
-		sz = hxMin(sz, HX_MAX_LINE);
+		sz = hxmin(sz, HX_MAX_LINE);
 		if (level == hxLogLevel_Warning || level == hxLogLevel_Assert) {
 			buf[sz++] = '\n';
 		}

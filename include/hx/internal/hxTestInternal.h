@@ -112,7 +112,7 @@ public:
 		else {
 			hxLogHandler(hxLogLevel_Console, " %d FAILED TEST%s\n", (int)mFailCount,
 				((mFailCount != 1) ? "S" : ""));
-			mFailCount = hxMax(mFailCount, 1); // Nothing tested is failure.
+			mFailCount = hxmax(mFailCount, 1); // Nothing tested is failure.
 		}
 		return mFailCount;
 	}

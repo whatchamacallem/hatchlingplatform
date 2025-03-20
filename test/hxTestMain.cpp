@@ -18,12 +18,12 @@
 
 HX_REGISTER_FILENAME_HASH
 
-#if (HX_TEST_DIE_AT_THE_END) && (HX_RELEASE) < 1
+#if (HX_TEST_DIE_AT_THE_END)
 TEST(hxDeathTest, Fail) {
 	hxLog("TEST_EXPECTING_ASSERTS:\n");
 	SUCCEED();
 	for (int i = 10; i--;) {
-		FAIL() << "this message is logged on failure.\n";
+		FAIL() << "this message is logged on repeated assert failures.\n";
 	}
 }
 TEST(hxDeathTest, NothingAsserted) {
@@ -62,7 +62,7 @@ int main() {
 
 	int32_t testsFailing = hxTestMain();
 
-#if (HX_TEST_DIE_AT_THE_END) && (HX_RELEASE) < 1
+#if (HX_TEST_DIE_AT_THE_END)
 	hxAssertMsg(testsFailing == 2, "expected 2 tests to fail");
 	g_hxSettings.deathTest = 1;
 	hxAssertMsg(0, "HX_TEST_DIE_AT_THE_END"); // Will exit with EXIT_SUCCESS.
