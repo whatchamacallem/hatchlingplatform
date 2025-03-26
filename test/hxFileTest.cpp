@@ -27,7 +27,7 @@ public:
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
 #endif
 
-TEST(hxFileTest, EmptyName) {
+TEST_F(hxFileTest, EmptyName) {
 	hxFile f(hxFile::in | hxFile::fallible, "");
 	ASSERT_EQ(f.good(), false);
 	ASSERT_EQ(f.is_open(), false);
@@ -37,7 +37,7 @@ TEST(hxFileTest, EmptyName) {
 #pragma GCC diagnostic pop
 #endif
 
-TEST(hxFileTest, ReadWrite) {
+TEST_F(hxFileTest, ReadWrite) {
 	hxFile f(hxFile::in | hxFile::out | hxFile::fallible, "hxFileTest_ReadWrite.txt");
 	f << "hxFileTest_ReadWrite.txt";
 
@@ -45,7 +45,7 @@ TEST(hxFileTest, ReadWrite) {
 	ASSERT_EQ(f.is_open(), true);
 }
 
-TEST(hxFileTest, NotExist) {
+TEST_F(hxFileTest, NotExist) {
 	hxFile f(hxFile::in | hxFile::fallible, "TEST_FILE_DOES_NOT_EXIST_%d", 123);
 	ASSERT_EQ(f.good(), false);
 	ASSERT_EQ(f.is_open(), false);

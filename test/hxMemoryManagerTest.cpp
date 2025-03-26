@@ -8,20 +8,20 @@ HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------
 
-TEST(hxMemoryManagerTest, ZeroBytes) {
+TEST(hxMemoryManagerTestF, ZeroBytes) {
 	void* p = hxMalloc(0u);
 	ASSERT_TRUE(p != hxnull);
 	hxFree(p);
 }
 
-TEST(hxMemoryManagerTest, StringDuplicateNull) {
+TEST(hxMemoryManagerTestF, StringDuplicateNull) {
 	// duplicating a null string is null.
 	void* p = hxStringDuplicate(hxnull);
 	ASSERT_TRUE(p == hxnull);
 	hxFree(hxnull);
 }
 
-TEST(hxMemoryManagerTest, StringDuplicate) {
+TEST(hxMemoryManagerTestF, StringDuplicate) {
 	char* p = hxStringDuplicate("str");
 	ASSERT_TRUE(p != hxnull);
 	ASSERT_TRUE(::strcmp(p, "str") == 0);
@@ -152,7 +152,7 @@ TEST_F(hxMemoryManagerTest, Execute) {
 	TestMemoryAllocatorLeak(hxMemoryManagerId_TemporaryStack);
 }
 
-TEST(hxMemoryManagerTest, TempOverflow) {
+TEST_F(hxMemoryManagerTest, TempOverflow) {
 	// there is no policy against using the debug heap in release
 	void* p = hxMallocExt(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1, hxMemoryManagerId_TemporaryStack, 0u);
 	ASSERT_TRUE(p != hxnull);
@@ -166,7 +166,7 @@ TEST(hxMemoryManagerTest, TempOverflow) {
 }
 
 #if HX_USE_MEMORY_SCRATCH
-TEST(hxMemoryManagerTest, ScratchOverflow) {
+TEST_F(hxMemoryManagerTest, ScratchOverflow) {
 	hxMemoryManagerScope temp(hxMemoryManagerId_ScratchTemp);
 
 	// exercise ext version.
