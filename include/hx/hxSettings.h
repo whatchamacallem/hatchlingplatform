@@ -17,15 +17,15 @@
 #endif
 
 // ----------------------------------------------------------------------------
+// MSVC doesn't support C++ feature test macros very well.
 #if defined(_MSC_VER)
 
 #if !defined(__cpp_exceptions) && !defined(_HAS_EXCEPTIONS)
 #define _HAS_EXCEPTIONS 0 // must be included before standard headers
 #endif
 
-// MSVC doesn't support C++ feature test macros and sets __cplusplus wrong by
-// default.
 #define HX_USE_STDIO_H 1
+#define HX_USE_WASM 0
 
 #if !defined(HX_USE_CPP11_THREADS)
 #define HX_USE_CPP11_THREADS __STDCPP_THREADS__ 

@@ -1,10 +1,119 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <None Include="..\.gitattributes" />
+    <None Include="..\clean.sh" />
+    <None Include="..\debugbuild.sh" />
+    <None Include="..\README.md" />
+    <None Include="..\test.sh" />
+    <None Include="..\testcoverage.sh" />
+    <None Include="..\testerrorhandling.sh" />
+    <None Include="..\testwasm.sh" />
+    <None Include="..\.vscode\launch.json">
+      <Filter>.vscode</Filter>
+    </None>
+    <None Include="..\.vscode\tasks.json">
+      <Filter>.vscode</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\CMakeLists.txt" />
+    <Text Include="..\CONTRIBUTORS.txt" />
+    <Text Include="..\LICENSE.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{7d1f616f-7287-40f4-9c0e-01d41a3a11f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{5565279d-eb2a-4366-93e6-ba58b7f8eb1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\hx">
+      <UniqueIdentifier>{fc36403a-f6ab-4767-ab09-b198601a0e82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test">
+      <UniqueIdentifier>{2455cce9-b002-486c-baa8-1400d4362553}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\hx\internal">
+      <UniqueIdentifier>{2a023416-46bf-4c2c-a257-3b569eff4f6b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include=".vscode">
+      <UniqueIdentifier>{bd9d2bcc-0275-4104-bc61-ac9e5e52bf02}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\hx\hatchling.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxAllocator.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxArray.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxConsole.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxDma.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxFile.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxHashTable.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxHashTableNodes.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxMemoryManager.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxProfiler.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxSettings.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxSort.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxStringLiteralHash.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxTask.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxTaskQueue.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxTest.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\hxTime.h">
+      <Filter>include\hx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\internal\hxConsoleInternal.h">
+      <Filter>include\hx\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\internal\hxHashTableInternal.h">
+      <Filter>include\hx\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\internal\hxProfilerInternal.h">
+      <Filter>include\hx\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hx\internal\hxTestInternal.h">
+      <Filter>include\hx\internal</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="..\src\hatchling.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\hxConsole.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\hxCUtils.c">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\hxDma.cpp">
@@ -31,179 +140,38 @@
     <ClCompile Include="..\src\hxTaskQueue.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\test\hxMemoryManagerTest.cpp">
-      <Filter>test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\test\hxHashTableTest.cpp">
-      <Filter>test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\test\hxProfilerTest.cpp">
-      <Filter>test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\test\hxStringHashTest.cpp">
-      <Filter>test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\test\hxSortTest.cpp">
-      <Filter>test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\test\hxTaskQueueTest.cpp">
-      <Filter>test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\test\hxFileTest.cpp">
-      <Filter>test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\test\hxDmaTest.cpp">
+    <ClCompile Include="..\test\hxArrayTest.cpp">
       <Filter>test</Filter>
     </ClCompile>
     <ClCompile Include="..\test\hxConsoleTest.cpp">
       <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="..\test\hxArrayTest.cpp">
+    <ClCompile Include="..\test\hxDmaTest.cpp">
       <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\hxCUtils.c">
-      <Filter>src</Filter>
+    <ClCompile Include="..\test\hxFileTest.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\hxHashTableTest.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\hxMemoryManagerTest.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\hxProfilerTest.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\hxSortTest.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\hxStringHashTest.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\hxTaskQueueTest.cpp">
+      <Filter>test</Filter>
     </ClCompile>
     <ClCompile Include="..\test\hxTestMain.cpp">
       <Filter>test</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\include\hx\internal\hxConsoleInternal.h">
-      <Filter>include/hx/internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\internal\hxHashTableInternal.h">
-      <Filter>include/hx/internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\internal\hxProfilerInternal.h">
-      <Filter>include/hx/internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hatchling.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hxAllocator.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hxArray.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hxConsole.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hxDma.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hxFile.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hxHashTable.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hxHashTableNodes.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hxMemoryManager.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hxProfiler.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hxSettings.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hxSort.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hxStringLiteralHash.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hxTaskQueue.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\internal\hxTestInternal.h">
-      <Filter>include/hx/internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hxTest.h">
-      <Filter>include/hx</Filter>
-    <ClInclude Include="..\include\hx\hxTask.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\hx\hxTime.h">
-      <Filter>include/hx</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\.editorconfig" />
-    <None Include="..\.gitattributes" />
-    <None Include="..\etc\test.sh">
-      <Filter>etc</Filter>
-    </None>
-    <None Include="..\etc\profile.json">
-      <Filter>etc</Filter>
-    </None>
-    <None Include="..\etc\coverage.sh">
-      <Filter>etc</Filter>
-    </None>
-    <None Include="..\.travis.yml" />
-    <None Include="..\README.md" />
-    <None Include="..\etc\coverage.md">
-      <Filter>etc</Filter>
-    </None>
-    <None Include=".gitignore">
-      <Filter>visualstudio</Filter>
-    </None>
-    <None Include="..\.gitignore" />
-    <None Include="hxFileTest_Operators.bin">
-      <Filter>visualstudio</Filter>
-    </None>
-    <None Include="profile.json">
-      <Filter>visualstudio</Filter>
-    </None>
-    <None Include="..\etc\testgit.sh">
-      <Filter>etc</Filter>
-    </None>
-    <None Include="..\etc\testdriver.sh">
-      <Filter>etc</Filter>
-    </None>
-    <None Include="..\etc\wasm.sh">
-      <Filter>etc</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\etc\CONTRIBUTORS.txt">
-      <Filter>etc</Filter>
-    </Text>
-    <Text Include="..\etc\LICENSE.txt">
-      <Filter>etc</Filter>
-    </Text>
-    <Text Include="hxConsoleTest_FileTest.txt">
-      <Filter>visualstudio</Filter>
-    </Text>
-    <Text Include="hxFileTest_ReadWrite.txt">
-      <Filter>visualstudio</Filter>
-    </Text>
-    <Text Include="log.txt">
-      <Filter>visualstudio</Filter>
-    </Text>
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="test">
-      <UniqueIdentifier>{3d071560-7084-4c50-881d-3b3ee065e990}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include/hx">
-      <UniqueIdentifier>{5ec69030-5e28-4ba6-bcbf-83de1ba20691}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="etc">
-      <UniqueIdentifier>{f018f69f-8d51-4c00-94ef-b3064c6a7480}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src">
-      <UniqueIdentifier>{1d99ce56-607d-4056-9425-35f06bc7492c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="visualstudio">
-      <UniqueIdentifier>{8ef34652-adbc-4070-89c7-6e496d9fd230}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include/hx/internal">
-      <UniqueIdentifier>{532f28cf-a317-43a1-a22d-989bcb590968}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
 </Project>

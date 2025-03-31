@@ -19,6 +19,23 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\.gitattributes" />
+    <None Include="..\.vscode\launch.json" />
+    <None Include="..\.vscode\tasks.json" />
+    <None Include="..\clean.sh" />
+    <None Include="..\debugbuild.sh" />
+    <None Include="..\README.md" />
+    <None Include="..\test.sh" />
+    <None Include="..\testcoverage.sh" />
+    <None Include="..\testerrorhandling.sh" />
+    <None Include="..\testwasm.sh" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\CMakeLists.txt" />
+    <Text Include="..\CONTRIBUTORS.txt" />
+    <Text Include="..\LICENSE.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="..\include\hx\hatchling.h" />
     <ClInclude Include="..\include\hx\hxAllocator.h" />
     <ClInclude Include="..\include\hx\hxArray.h" />
@@ -65,62 +82,38 @@
     <ClCompile Include="..\test\hxTaskQueueTest.cpp" />
     <ClCompile Include="..\test\hxTestMain.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\etc\CONTRIBUTORS.txt" />
-    <Text Include="..\etc\LICENSE.txt" />
-    <Text Include="hxConsoleTest_FileTest.txt" />
-    <Text Include="hxFileTest_ReadWrite.txt" />
-    <Text Include="log.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\.editorconfig" />
-    <None Include="..\.gitattributes" />
-    <None Include="..\.gitignore" />
-    <None Include="..\.travis.yml" />
-    <None Include="..\etc\coverage.md" />
-    <None Include="..\etc\coverage.sh" />
-    <None Include="..\etc\testdriver.sh" />
-    <None Include="..\etc\testgit.sh" />
-    <None Include="..\etc\profile.json" />
-    <None Include="..\etc\test.sh" />
-    <None Include="..\etc\wasm.sh" />
-    <None Include="..\README.md" />
-    <None Include=".gitignore" />
-    <None Include="hxFileTest_Operators.bin" />
-    <None Include="profile.json" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{90404E16-6D17-4659-80C3-D73519CA8126}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>HatchlingPlatform</RootNamespace>
     <ProjectName>Hatchling</ProjectName>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
