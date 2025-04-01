@@ -79,8 +79,13 @@
 #define HX_USE_CPP14_CONSTEXPR (HX_CPLUSPLUS >= 201402L)
 #endif
 
-#define HX_RESTRICT __restrict
+#if (HX_RELEASE) < 1
+#define HX_INLINE inline
+#else
 #define HX_INLINE inline __attribute__((always_inline))
+#endif
+
+#define HX_RESTRICT __restrict
 #define HX_LINK_SCRATCHPAD // TODO: Configure for target.  A linker section is required.
 
 #define HX_ATTR_FORMAT(pos_, start_) __attribute__((format(printf, pos_, start_)))
@@ -188,7 +193,7 @@
 #define HX_USE_GOOGLE_TEST 0
 #endif
 
-// Set by etc/coverage.sh
+// Set by coverage.sh
 #if !defined(HX_TEST_DIE_AT_THE_END)
 #define HX_TEST_DIE_AT_THE_END 0
 #endif
@@ -203,7 +208,7 @@
 #endif
 
 #if !defined(HX_RADIX_SORT_MIN_SIZE)
-#define HX_RADIX_SORT_MIN_SIZE 50u // uses hxInsertionSort() below this.
+#define HX_RADIX_SORT_MIN_SIZE 8u // uses hxInsertionSort() below this.
 #endif
 
 // ----------------------------------------------------------------------------

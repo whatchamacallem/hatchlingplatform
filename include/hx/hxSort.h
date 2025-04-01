@@ -29,21 +29,22 @@ template<typename T, typename Compare>
 HX_INLINE void hxInsertionSort(T* first_, T* last_, const Compare& compare_) {
 	if(first_ == last_) { return; } // don't add +1 to null.
 
-	for (T* i_ = first_ + 1, *j_ = first_; i_ < last_; j_ = i_++) {
-		if (compare_(*i_, *j_)) {
-			T t_ = *i_;
-			*i_ = *j_;
-			while (first_ < j_) {
-				T* k_ = j_ - 1;
-				if (compare_(t_, *k_)) {
-					*j_ = *k_;
-					j_ = k_;
+	// i points to value being inserted. j points to next unsorted value.
+	for (T *i_ = first_, *j_ = first_ + 1; j_ < last_; i_ = j_++) {
+		if (!compare_(*i_, *j_)) {
+			T t_ = *j_;
+			*j_ = *i_;
+			while (first_ < i_) {
+				T* k_ = i_ - 1;
+				if (!compare_(*k_, t_)) {
+					*i_ = *k_;
+					i_ = k_;
 				}
 				else {
 					break;
 				}
 			}
-			*j_ = t_;
+			*i_ = t_;
 		}
 	}
 }

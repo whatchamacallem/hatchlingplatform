@@ -127,20 +127,24 @@ static int hxSortCompareTest(const int a, const int b) {
 }
 
 TEST(hxInsertionSortTest, SortCompareCCase) {
-	int ints[3] = { 2, 1, 0 };
+	int ints[5] = { 2, 1, 0, 4, -5 };
 
+	// sort 0 elements
 	hxInsertionSort<int, int(*)(int a, int b)>(ints, ints, hxSortCompareTest);
-	const int ints1[3] = { 2, 1, 0 };
+	const int ints1[5] = { 2, 1, 0, 4, -5 };
 	ASSERT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // nothing changed
 
-	hxInsertionSort<int, int(*)(int a, int b)>(ints, ints + 1, hxSortCompareTest);
+	// sort 1 element
+	hxInsertionSort<int>(ints, ints + 1, hxSortCompareTest);
 	ASSERT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // still nothing changed
 
-	hxInsertionSort<int, int (*)(int a, int b)>(ints, ints + 2, hxSortCompareTest);
-	const int ints2[3] = { 1, 2, 0 };
-	ASSERT_TRUE(::memcmp(ints, ints2, sizeof ints) == 0); // first 2 sorted
+	// sort 2 elements
+	hxInsertionSort(ints, ints + 2);
+	const int ints2[5] = { 1, 2, 0, 4, -5 };
+	ASSERT_TRUE(::memcmp(ints, ints2, sizeof ints) == 0);
 
-	hxInsertionSort<int, int(*)(int a, int b)>(ints, ints + 3, hxSortCompareTest);
-	const int ints3[3] = { 0, 1, 2 };
+	// sort all
+	hxInsertionSort(ints, ints + 5, hxSortCompareTest);
+	const int ints3[5] = { -5, 0, 1, 2, 4 };
 	ASSERT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0); // sorted
 }
