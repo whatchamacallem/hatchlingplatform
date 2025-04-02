@@ -31,7 +31,7 @@ TEST(hxDeathTest, NothingAsserted) {
 }
 #endif
 
-int32_t hxTestMain() {
+size_t hxTestMain() {
 	hxInit();
 
 	hxLogConsole("hatchling platform " HATCHLING_TAG "\n");
@@ -49,7 +49,7 @@ int32_t hxTestMain() {
 	hxConsoleHelp();
 
 	// RUN_ALL_TESTS is a Google Test symbol.
-	int32_t testsFailing = RUN_ALL_TESTS();
+	size_t testsFailing = (size_t)RUN_ALL_TESTS();
 
 #if (HX_RELEASE) < 3
 	hxShutdown();
@@ -60,12 +60,12 @@ int32_t hxTestMain() {
 int main() {
 	::testing::InitGoogleTest();
 
-	int32_t testsFailing = hxTestMain();
+	size_t testsFailing = hxTestMain();
 
 #if (HX_TEST_DIE_AT_THE_END)
-	hxAssertMsg(testsFailing == 2, "expected 2 tests to fail");
+	hxAssertRelease(testsFailing == 2, "expected 2 tests to fail");
 	g_hxSettings.deathTest = 1;
-	hxAssertMsg(0, "HX_TEST_DIE_AT_THE_END"); // Will exit with EXIT_SUCCESS.
+	return (testsFailing == 2) ? EXIT_SUCCESS : EXIT_FAILURE; // Expect 2 tests to fail.
 #endif
 
 	return (testsFailing == 0) ? EXIT_SUCCESS : EXIT_FAILURE;

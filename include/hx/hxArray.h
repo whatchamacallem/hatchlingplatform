@@ -11,12 +11,11 @@
 // Undocumented functions follow std::vector.  Undocumented methods have a
 // standard interface.
 
-template<typename T_, uint32_t Capacity_=hxAllocatorDynamicCapacity>
+template<typename T_, size_t Capacity_=hxAllocatorDynamicCapacity>
 class hxArray : private hxAllocator<T_, Capacity_> {
 public:
 	typedef T_ T;
 	typedef T value_type;
-	typedef uint32_t size_type; // 32-bit indices. 
 	typedef T* iterator; // Random access iterator.
 	typedef const T* const_iterator; // Const random access iterator.
 	typedef hxAllocator<T, Capacity_> allocator_type; 
@@ -75,21 +74,21 @@ public:
 	HX_INLINE const T& back() const { hxAssert(size()); return *(m_end - 1); }
 	HX_INLINE       T& back() { hxAssert(size()); return *(m_end - 1); }
 
-	HX_INLINE const T& operator[](uint32_t index_) const {
+	HX_INLINE const T& operator[](size_t index_) const {
 		hxAssert(index_ < size());
 		return this->getStorage()[index_];
 	}
-	HX_INLINE       T& operator[](uint32_t index_) {
+	HX_INLINE       T& operator[](size_t index_) {
 		hxAssert(index_ < size());
 		return this->getStorage()[index_];
 	}
 
-	HX_INLINE uint32_t size() const {
+	HX_INLINE size_t size() const {
 		hxAssert(!m_end == !this->getStorage());
-		return (uint32_t)(m_end - this->getStorage());
+		return (size_t)(m_end - this->getStorage());
 	}
 
-	HX_INLINE void reserve(uint32_t size_) {
+	HX_INLINE void reserve(size_t size_) {
 		T* prev = this->getStorage();
 		this->reserveStorage(size_);
 		hxAssertMsg(!prev || prev == this->getStorage(), "no reallocation"); (void)prev;
@@ -98,7 +97,7 @@ public:
 		}
 	}
 
-	HX_INLINE uint32_t capacity() const { return this->getCapacity(); }
+	HX_INLINE size_t capacity() const { return this->getCapacity(); }
 
 	HX_INLINE void clear() {
 		destruct_(this->getStorage(), m_end);
@@ -107,7 +106,7 @@ public:
 
 	HX_INLINE bool empty() const { return m_end == this->getStorage(); }
 
-	HX_INLINE void resize(uint32_t size_) {
+	HX_INLINE void resize(size_t size_) {
 		reserve(size_);
 		if (size_ >= size()) {
 			this->construct_(m_end, this->getStorage() + size_);
@@ -135,7 +134,7 @@ public:
 	// access iterator.
 	template <typename Iter>
 	HX_INLINE void assign(Iter first_, Iter last_) {
-		reserve((uint32_t)(last_ - first_));
+		reserve((size_t)(last_ - first_));
 		T* it_ = this->getStorage();
 		destruct_(it_, m_end);
 		while (first_ != last_) { ::new (it_++) T(*first_++); }
@@ -157,7 +156,7 @@ public:
 
 	// Variant of erase() that moves the end element down to replace erased
 	// element.
-	HX_INLINE void erase_unordered(uint32_t index_) {
+	HX_INLINE void erase_unordered(size_t index_) {
 		hxAssert(index_ < size());
 		T* it_ = this->getStorage() + index_;
 		if (it_ != --m_end) {
@@ -169,7 +168,7 @@ public:
 	// Variant of erase() that moves the end element down to replace the erased
 	// element.
 	HX_INLINE void erase_unordered(T* it_) {
-		hxAssert((uint32_t)(it_ - this->getStorage()) < size());
+		hxAssert((size_t)(it_ - this->getStorage()) < size());
 		if (it_ != --m_end) {
 			*it_ = *m_end;
 		}

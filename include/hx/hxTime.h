@@ -4,7 +4,7 @@
 #include <hx/hatchling.h>
 
 // Stores at least a seconds worth of CPU cycles.  Used when profiling.
-typedef uint32_t hx_cycles_t;
+typedef size_t hx_cycles_t;
 
 // c_hxTimeDefaultTimingCutoff is 1 microsecond.  
 #if HX_USE_CPP11_TIME
@@ -15,7 +15,7 @@ constexpr float c_hxTimeMillisecondsPerCycle = ((float)std::chrono::high_resolut
 												/ (float)std::chrono::high_resolution_clock::period::den;
 
 // cutoff for samples that performed little to no processing.
-constexpr hx_cycles_t c_hxTimeDefaultTimingCutoff = (uint32_t)(std::chrono::high_resolution_clock::period::den
+constexpr hx_cycles_t c_hxTimeDefaultTimingCutoff = (hx_cycles_t)(std::chrono::high_resolution_clock::period::den
 												/ (std::chrono::high_resolution_clock::period::num * 1000000));
 
 // internal use only
@@ -38,6 +38,6 @@ static const hx_cycles_t c_hxTimeDefaultTimingCutoff = 1000;
 HX_INLINE static hx_cycles_t hxTimeSampleCycles() {
 	timespec ts_;
 	clock_gettime(CLOCK_MONOTONIC, &ts_);
-	return (uint32_t)ts_.tv_nsec;
+	return (hx_cycles_t)ts_.tv_nsec;
 }
 #endif

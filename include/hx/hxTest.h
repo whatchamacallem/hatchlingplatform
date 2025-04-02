@@ -37,7 +37,7 @@ HX_INLINE void InitGoogleTest() { }
 		virtual const char* Suite() HX_OVERRIDE { return #SuiteName_; } \
 		virtual const char* Case() HX_OVERRIDE { return #CaseName_; } \
 		virtual const char* File() HX_OVERRIDE { return __FILE__; } \
-		virtual int32_t Line() HX_OVERRIDE { return __LINE__; } \
+		virtual size_t Line() HX_OVERRIDE { return __LINE__; } \
 	}; \
 	static HX_CONCATENATE(SuiteName_, CaseName_) HX_CONCATENATE(s_hxTest, CaseName_); \
 	void HX_CONCATENATE(SuiteName_, CaseName_)::Executor_::Run()
@@ -51,7 +51,7 @@ HX_INLINE void InitGoogleTest() { }
 		virtual const char* Suite() HX_OVERRIDE { return #SuiteName_; } \
 		virtual const char* Case() HX_OVERRIDE { return #CaseName_; } \
 		virtual const char* File() HX_OVERRIDE { return __FILE__; } \
-		virtual int32_t Line() HX_OVERRIDE { return __LINE__; } \
+		virtual size_t Line() HX_OVERRIDE { return __LINE__; } \
 	}; \
 	static HX_CONCATENATE(SuiteName_, CaseName_) HX_CONCATENATE(s_hxTest, CaseName_); \
 	void HX_CONCATENATE(SuiteName_, CaseName_)::Executor_::Run()

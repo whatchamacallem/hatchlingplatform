@@ -33,15 +33,15 @@ public:
 			}
 		}
 
-		int32_t m_execCount;
-		int32_t m_reenqueueCount;
+		size_t m_execCount;
+		size_t m_reenqueueCount;
 	};
 };
 
 // ----------------------------------------------------------------------------
 
 TEST_F(hxTaskQueueTest, Nop) {
-	for (int32_t i = 0; i <= MAX_POOL; ++i) {
+	for (size_t i = 0; i <= MAX_POOL; ++i) {
 		{
 			hxTaskQueue q(i);
 		}
@@ -54,7 +54,7 @@ TEST_F(hxTaskQueueTest, Nop) {
 }
 
 TEST_F(hxTaskQueueTest, Single) {
-	for (int32_t i = 0; i <= MAX_POOL; ++i) {
+	for (size_t i = 0; i <= MAX_POOL; ++i) {
 		TaskTest task0;
 		TaskTest task1;
 		{
@@ -77,12 +77,12 @@ TEST_F(hxTaskQueueTest, Single) {
 }
 
 TEST_F(hxTaskQueueTest, SingleStepping) {
-	for (int32_t i = 0; i <= MAX_POOL; ++i) {
-		for (int32_t j = 1; j < MAX_TASKS; ++j) {
+	for (size_t i = 0; i <= MAX_POOL; ++i) {
+		for (size_t j = 1; j < MAX_TASKS; ++j) {
 			TaskTest task0;
 			{
 				hxTaskQueue q(i);
-				for (int32_t k = 1; k <= j; ++k) {
+				for (size_t k = 1; k <= j; ++k) {
 					q.enqueue(&task0);
 					q.waitForAll();
 				}
@@ -94,23 +94,23 @@ TEST_F(hxTaskQueueTest, SingleStepping) {
 }
 
 TEST_F(hxTaskQueueTest, Multiple) {
-	for (int32_t i = 0; i <= MAX_POOL; ++i) {
-		for (int32_t j = 1; j < MAX_TASKS; ++j) {
+	for (size_t i = 0; i <= MAX_POOL; ++i) {
+		for (size_t j = 1; j < MAX_TASKS; ++j) {
 
 			TaskTest tasks0[MAX_TASKS];
 			TaskTest tasks1[MAX_TASKS];
 			{
 				hxTaskQueue q(i);
-				for (int32_t k = 0; k <= j; ++k) {
+				for (size_t k = 0; k <= j; ++k) {
 					q.enqueue(&tasks0[k]);
 				}
 				q.waitForAll();
-				for (int32_t k = 0; k <= j; ++k) {
+				for (size_t k = 0; k <= j; ++k) {
 					q.enqueue(&tasks1[k]);
 					ASSERT_TRUE(tasks0[k].m_execCount == 1);
 				}
 			}
-			for (int32_t k = 0; k <= j; ++k) {
+			for (size_t k = 0; k <= j; ++k) {
 				ASSERT_TRUE(tasks0[k].m_execCount == 1);
 				ASSERT_TRUE(tasks1[k].m_execCount == 1);
 			}
@@ -118,11 +118,11 @@ TEST_F(hxTaskQueueTest, Multiple) {
 			TaskTest tasks2[MAX_TASKS];
 			{
 				hxTaskQueue q(i);
-				for (int32_t k = 0; k <= j; ++k) {
+				for (size_t k = 0; k <= j; ++k) {
 					q.enqueue(&tasks2[k]);
 				}
 			}
-			for (int32_t k = 0; k <= j; ++k) {
+			for (size_t k = 0; k <= j; ++k) {
 				ASSERT_TRUE(tasks2[k].m_execCount == 1);
 			}
 		}
@@ -130,20 +130,20 @@ TEST_F(hxTaskQueueTest, Multiple) {
 }
 
 TEST_F(hxTaskQueueTest, MultipleStepping) {
-	for (int32_t i = 0; i <= MAX_POOL; ++i) {
-		for (int32_t j = 1; j < MAX_TASKS; ++j) {
+	for (size_t i = 0; i <= MAX_POOL; ++i) {
+		for (size_t j = 1; j < MAX_TASKS; ++j) {
 
 			TaskTest tasks0[MAX_TASKS];
 			{
 				hxTaskQueue q(i);
-				for (int32_t k = 1; k <= j; ++k) {
-					for (int32_t l = 0; l <= j; ++l) {
+				for (size_t k = 1; k <= j; ++k) {
+					for (size_t l = 0; l <= j; ++l) {
 						q.enqueue(&tasks0[l]);
 					}
 					q.waitForAll();
 				}
 			}
-			for (int32_t l = 0; l <= j; ++l) {
+			for (size_t l = 0; l <= j; ++l) {
 				ASSERT_TRUE(tasks0[l].m_execCount == j);
 			}
 		}
@@ -151,24 +151,24 @@ TEST_F(hxTaskQueueTest, MultipleStepping) {
 }
 
 TEST_F(hxTaskQueueTest, MultipleReenqueuing) {
-	for (int32_t i = 0; i <= MAX_POOL; ++i) {
-		for (int32_t j = 1; j < MAX_TASKS; ++j) {
+	for (size_t i = 0; i <= MAX_POOL; ++i) {
+		for (size_t j = 1; j < MAX_TASKS; ++j) {
 
 			TaskTest tasks0[MAX_TASKS];
 			TaskTest tasks1[MAX_TASKS];
 			{
 				hxTaskQueue q(i);
-				for (int32_t k = 0; k <= j; ++k) {
+				for (size_t k = 0; k <= j; ++k) {
 					tasks0[k].m_reenqueueCount = k;
 					q.enqueue(&tasks0[k]);
 				}
 				q.waitForAll();
-				for (int32_t k = 0; k <= j; ++k) {
+				for (size_t k = 0; k <= j; ++k) {
 					tasks1[k].m_reenqueueCount = k;
 					q.enqueue(&tasks1[k]);
 				}
 			}
-			for (int32_t k = 0; k <= j; ++k) {
+			for (size_t k = 0; k <= j; ++k) {
 				ASSERT_TRUE(tasks0[k].m_execCount == (k + 1));
 				ASSERT_TRUE(tasks1[k].m_execCount == (k + 1));
 			}
@@ -177,12 +177,12 @@ TEST_F(hxTaskQueueTest, MultipleReenqueuing) {
 			TaskTest tasks2[MAX_TASKS];
 			{
 				hxTaskQueue q(i);
-				for (int32_t k = 0; k <= j; ++k) {
+				for (size_t k = 0; k <= j; ++k) {
 					tasks2[k].m_reenqueueCount = k;
 					q.enqueue(&tasks2[k]);
 				}
 			}
-			for (int32_t k = 0; k <= j; ++k) {
+			for (size_t k = 0; k <= j; ++k) {
 				ASSERT_TRUE(tasks2[k].m_execCount == (k + 1));
 			}
 		}

@@ -75,12 +75,12 @@ public:
 		s_hxTestCurrent = 0;
 	}
 
-	bool CheckTotals(uint32_t total) const {
+	bool CheckTotals(size_t total) const {
 		return m_constructed == total && m_destructed == total;
 	}
 
-	uint32_t m_constructed;
-	uint32_t m_destructed;
+	size_t m_constructed;
+	size_t m_destructed;
 	int32_t m_nextId;
 };
 

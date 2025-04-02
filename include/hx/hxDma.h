@@ -13,8 +13,8 @@
 struct hxDmaSyncPoint {
 #if HX_DEBUG_DMA
 	// A synchronization point must be set with hxDmaAddSyncPoint() before use.
-	hxDmaSyncPoint() : debugOnly(~(uint32_t)0u), pImpl(hxnull) { }
-	uint32_t debugOnly;
+	hxDmaSyncPoint() : debugOnly(~(size_t)0u), pImpl(hxnull) { }
+	size_t debugOnly;
 #else
 	hxDmaSyncPoint() : pImpl(hxnull) { }
 #endif

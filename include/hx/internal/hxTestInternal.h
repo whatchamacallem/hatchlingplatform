@@ -24,7 +24,7 @@ public:
 		virtual const char* Suite() = 0;
 		virtual const char* Case() = 0;
 		virtual const char* File() = 0;
-		virtual int32_t Line() = 0;
+		virtual size_t Line() = 0;
 	};
 
 	// Ensures constructor runs before tests are registered by global constructors.
@@ -46,7 +46,7 @@ public:
 
 	// message is required to end with an \n.  Returns equivalent of /dev/null on
 	// success and the system log otherwise.
-	hxFile& assertCheck(const char* file_, int32_t line_, bool condition_, const char* message_) {
+	hxFile& assertCheck(const char* file_, size_t line_, bool condition_, const char* message_) {
 		++mAssertCount;
 		mTestState = (condition_ && mTestState != TEST_STATE_FAIL) ? TEST_STATE_PASS : TEST_STATE_FAIL;
 		if (!condition_) {
@@ -57,7 +57,7 @@ public:
 				return devNull_();
 			}
 
-			hxLogHandler(hxLogLevel_Console, "%s(%d): ", file_, (int)line_);
+			hxLogHandler(hxLogLevel_Console, "%s(%zu): ", file_, line_);
 			hxLogHandler(hxLogLevel_Console, "%s\n", message_);
 
 			hxAssertRelease(mCurrentTest, "not testing");
@@ -68,7 +68,7 @@ public:
 		return devNull_();
 	}
 
-	int32_t executeAllTests() {
+	size_t executeAllTests() {
 		mPassCount = mFailCount = mAssertCount = 0;
 		hxLogConsole("RUNNING_TESTS (%s)\n", (mSearchTermStringLiteral ? mSearchTermStringLiteral : "ALL"));
 		for (TestFactoryBase** it_ = mFactories; it_ != (mFactories + mNumFactories); ++it_) {
@@ -100,19 +100,19 @@ public:
 			}
 		}
 
-		hxLogConsole("skipped %d tests.  checked %d assertions.\n",
-			(int)(mNumFactories - mPassCount - mFailCount), mAssertCount);
+		hxLogConsole("skipped %zu tests.  checked %zu assertions.\n",
+			mNumFactories - mPassCount - mFailCount, mAssertCount);
 
 		hxWarnCheck(mPassCount + mFailCount, "NOTHING TESTED");
 
 		if (mPassCount != 0 && mFailCount == 0) {
-			hxLogHandler(hxLogLevel_Console, "[  PASSED  ] %d test%s.\n", (int)mPassCount,
+			hxLogHandler(hxLogLevel_Console, "[  PASSED  ] %zu test%s.\n", mPassCount,
 				((mPassCount != 1) ? "s" : ""));
 		}
 		else {
-			hxLogHandler(hxLogLevel_Console, " %d FAILED TEST%s\n", (int)mFailCount,
+			hxLogHandler(hxLogLevel_Console, " %zu FAILED TEST%s\n", mFailCount,
 				((mFailCount != 1) ? "S" : ""));
-			mFailCount = hxmax(mFailCount, 1); // Nothing tested is failure.
+			mFailCount = hxmax(mFailCount, (size_t)1u); // Nothing tested is failure.
 		}
 		return mFailCount;
 	}
@@ -127,12 +127,12 @@ private:
 	void operator=(const hxTestRunner&); // = delete
 
 	TestFactoryBase* mFactories[TEST_MAX_CASES];
-	int32_t mNumFactories;
+	size_t mNumFactories;
 	TestFactoryBase* mCurrentTest;
 	TestState mTestState;
-	int32_t mPassCount;
-	int32_t mFailCount;
+	size_t mPassCount;
+	size_t mFailCount;
 	const char* mSearchTermStringLiteral;
-	int32_t mAssertCount;
-	int32_t mAssertFailCount;
+	size_t mAssertCount;
+	size_t mAssertFailCount;
 };

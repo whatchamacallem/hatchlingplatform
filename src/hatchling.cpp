@@ -87,14 +87,14 @@ static void hxPrintFileHashes() {
 void hxSettingsConstruct();
 
 static const char* s_hxInitFile = ""; // For trapping code running before hxMain.
-static uint32_t s_hxInitLine = 0;
+static size_t s_hxInitLine = 0;
 
 #if HX_USE_CPP11_TIME
 std::chrono::high_resolution_clock::time_point g_hxTimeStart;
 #endif
 
 extern "C"
-void hxInitAt(const char* file, uint32_t line) {
+void hxInitAt(const char* file, size_t line) {
 	hxAssertRelease(!g_hxIsInit, "internal error");
 	g_hxIsInit = 1;
 
@@ -178,7 +178,7 @@ void hxExit(const char* format, ...) {
 
 extern "C"
 #if (HX_RELEASE) < 1
-int hxAssertHandler(const char* file, uint32_t line) {
+int hxAssertHandler(const char* file, size_t line) {
 	const char* f = hxBasename(file);
 	if (!g_hxIsInit || g_hxSettings.assertsToBeSkipped-- > 0) {
 		hxLogHandler(hxLogLevel_Assert, "(skipped) %s(%u) hash %08x", f, (unsigned int)line,
@@ -196,7 +196,7 @@ int hxAssertHandler(const char* file, uint32_t line) {
 	return 0;
 }
 #else
-void hxAssertHandler(uint32_t file, uint32_t line) {
+void hxAssertHandler(uint32_t file, size_t line) {
 	hxExit("ASSERT_FAIL %08x(%u)\n", (unsigned int)file, (unsigned int)line);
 }
 #endif

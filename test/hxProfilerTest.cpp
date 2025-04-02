@@ -22,7 +22,7 @@ static const char* s_hxTestLabels[] = {
 	"Tau",      "Upsilon", "Phi",
 	"Chi",      "Psi",     "Omega"
 };
-static const uint32_t s_hxTestNumLabels = sizeof s_hxTestLabels / sizeof *s_hxTestLabels;
+static const size_t s_hxTestNumLabels = sizeof s_hxTestLabels / sizeof *s_hxTestLabels;
 
 class hxProfilerTest :
 	public testing::Test
@@ -43,21 +43,21 @@ public:
 		}
 
 		virtual void generateScopes(float targetMs) {
-			uint32_t startCycles = hxTimeSampleCycles();
-			uint32_t delta = 0u;
+			size_t startCycles = hxTimeSampleCycles();
+			size_t delta = 0u;
 
 			// Open up a sub-scope if time allows.
 			if (targetMs >= 2.0f) {
 				float subtarget = targetMs / 2.0f;
-				const char* subLabel = s_hxTestLabels[(int32_t)subtarget];
+				const char* subLabel = s_hxTestLabels[(size_t)subtarget];
 				hxProfileScope(subLabel);
 				generateScopes(subtarget);
 			}
 
 			while ((float)delta * c_hxTimeMillisecondsPerCycle < targetMs) {
 				// Perform work that might not be optimized away by the compiler.
-				int32_t ops = (m_accumulator & 0xf) + 1;
-				for (int32_t i = 0; i < ops; ++i) {
+				size_t ops = (m_accumulator & 0xf) + 1;
+				for (size_t i = 0; i < ops; ++i) {
 					m_accumulator ^= m_testPrng();
 				}
 
@@ -67,7 +67,7 @@ public:
 		}
 
 		float m_targetMs;
-		int32_t m_accumulator;
+		size_t m_accumulator;
 		hxTestRandom m_testPrng;
 	};
 };
@@ -77,7 +77,7 @@ public:
 TEST_F(hxProfilerTest, Single1ms) {
 	hxProfilerStart();
 
-	uint32_t startRecords = g_hxProfiler.recordsSize();
+	size_t startRecords = g_hxProfiler.recordsSize();
 	{
 		hxProfileScope("1 ms");
 		hxProfilerTaskTest one;
@@ -98,7 +98,7 @@ TEST_F(hxProfilerTest, writeToChromeTracing) {
 
 	hxTaskQueue q;
 	hxProfilerTaskTest tasks[s_hxTestNumLabels];
-	for (int32_t i = s_hxTestNumLabels; i--; ) {
+	for (size_t i = s_hxTestNumLabels; i--; ) {
 		tasks[i].construct(s_hxTestLabels[i], (float)i);
 		q.enqueue(tasks + i);
 	}

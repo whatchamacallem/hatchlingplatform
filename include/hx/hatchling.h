@@ -15,8 +15,8 @@
 
 
 // Major, minor and patch versions.
-#define HATCHLING_VER 0x20115
-#define HATCHLING_TAG "v2.1.15"
+#define HATCHLING_VER 0x20116
+#define HATCHLING_TAG "v2.1.16"
 
 // HX_RELEASE: 0 is a debug build with all asserts and verbose strings.
 //             1 is a release build with critical asserts and verbose warnings.
@@ -87,14 +87,14 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 
 // Assert handler.  Do not call directly, signature changes and then is removed.
 // HX_RELEASE < 3
-int hxAssertHandler(const char* file_, uint32_t line_);
+int hxAssertHandler(const char* file_, size_t line_);
 
 #else // !(HX_RELEASE < 1)
 #define hxInit() (void)(g_hxIsInit || (hxInitAt(hxnull, 0), 0))
 #define hxLog(...) ((void)0)
 #define hxAssertMsg(x_, ...) ((void)0)
 #define hxAssert(x_) ((void)0)
-HX_ATTR_NORETURN void hxAssertHandler(uint32_t file_, uint32_t line_);
+HX_ATTR_NORETURN void hxAssertHandler(uint32_t file_, size_t line_);
 #endif
 
 #if (HX_RELEASE) < 2
@@ -133,7 +133,7 @@ HX_ATTR_NORETURN void hxAssertHandler(uint32_t file_, uint32_t line_);
 #endif
 
 // Use hxInit() instead.
-void hxInitAt(const char* file_, uint32_t line_);
+void hxInitAt(const char* file_, size_t line_);
 
 // Set to true by hxInit().
 extern int g_hxIsInit;
@@ -157,10 +157,10 @@ void hxLogHandlerV(enum hxLogLevel level_, const char* format_, va_list args_);
 
 // Prints an array of bytes formatted in hexadecimal.  Additional information
 // provided when pretty is non-zero.
-void hxHexDump(const void* address_, uint32_t bytes_, int pretty_);
+void hxHexDump(const void* address_, size_t bytes_, int pretty_);
 
 // Prints an array of floating point values.
-void hxFloatDump(const float* address_, uint32_t floats_);
+void hxFloatDump(const float* address_, size_t floats_);
 
 // Returns a pointer to those characters following the last '\' or '/' character
 // or path if those are not present.

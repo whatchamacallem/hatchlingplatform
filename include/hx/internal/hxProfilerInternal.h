@@ -45,7 +45,7 @@ public:
 	void writeToChromeTracing(const char* filename);
 
 	// For testing
-	HX_INLINE uint32_t recordsSize() { return m_records.size(); }
+	HX_INLINE size_t recordsSize() { return m_records.size(); }
 	HX_INLINE void recordsClear() { m_records.clear(); }
 
 private:

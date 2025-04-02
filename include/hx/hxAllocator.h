@@ -11,7 +11,7 @@
 //
 // Provides static allocation when capacity is greater than zero.
 
-template<typename T_, uint32_t Capacity_>
+template<typename T_, size_t Capacity_>
 class hxAllocator {
 public:
 	typedef T_ T;
@@ -27,12 +27,12 @@ public:
 	}
 
 	// Used to ensure initial capacity as reserveStorage() will not reallocate.
-	HX_INLINE void reserveStorage(uint32_t size_) {
+	HX_INLINE void reserveStorage(size_t size_) {
 		hxAssertRelease(size_ <= Capacity_, "allocator overflowing fixed capacity."); (void)size_;
 	}
 
 	// Returns the number of elements of T allocated.
-	HX_CONSTEXPR_FN uint32_t getCapacity() const { return Capacity_; }
+	HX_CONSTEXPR_FN size_t getCapacity() const { return Capacity_; }
 
 	// Returns const array of T.
 	HX_INLINE const T* getStorage() const { return reinterpret_cast<const T*>(m_allocator + 0); }
@@ -42,7 +42,7 @@ public:
 
 private:
 	// Consistently show m_capacity in debugger.
-	static const uint32_t m_capacity = Capacity_;
+	static const size_t m_capacity = Capacity_;
 
 	// Using union to implement alignas(char *).
 	union {
@@ -80,7 +80,7 @@ public:
 	}
 
 	// Capacity is set by first call to reserveStorage() and may not be extended.
-	HX_INLINE void reserveStorage(uint32_t sz_) {
+	HX_INLINE void reserveStorage(size_t sz_) {
 		if (sz_ <= m_capacity) { return; }
 		hxAssertRelease(m_capacity == 0, "allocator reallocation disallowed.");
 		m_allocator = (T*)hxMalloc(sizeof(T) * sz_); // Never fails.
@@ -88,7 +88,7 @@ public:
 	}
 
 	// Use hxArray::get_allocator() to access extended allocation semantics.
-	HX_INLINE void reserveStorageExt(uint32_t sz_,
+	HX_INLINE void reserveStorageExt(size_t sz_,
 			hxMemoryManagerId alId_=hxMemoryManagerId_Current,
 			uintptr_t alignmentMask_=HX_ALIGNMENT_MASK) {
 		if (sz_ <= m_capacity) { return; }
@@ -98,7 +98,7 @@ public:
 	}
 
 	// Returns the number of elements of T allocated.
-	HX_INLINE uint32_t getCapacity() const { return m_capacity; }
+	HX_INLINE size_t getCapacity() const { return m_capacity; }
 
 	// Returns const array of T.
 	HX_INLINE const T* getStorage() const { return m_allocator; }
@@ -110,6 +110,6 @@ private:
 	hxAllocator(const hxAllocator&); // = delete
 	void operator=(const hxAllocator&); // = delete
 
-	uint32_t m_capacity;
+	size_t m_capacity;
 	T* m_allocator;
 };

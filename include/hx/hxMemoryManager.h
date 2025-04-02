@@ -59,7 +59,7 @@ void hxFree(void* ptr_);
 // Allocates a copy of a string using the provided allocator.
 char* hxStringDuplicate(const char* string_, enum hxMemoryManagerId id_ /*=hxMemoryManagerId_Heap*/);
 
-uint32_t hxIsScratchpad(void* ptr_); // returns bool as int.
+int hxIsScratchpad(void* ptr_); // returns bool as int.
 
 #if HX_CPLUSPLUS
 } // extern "C"
@@ -97,7 +97,7 @@ private:
 
 void hxMemoryManagerInit();
 void hxMemoryManagerShutDown();
-uint32_t hxMemoryManagerAllocationCount();
+size_t hxMemoryManagerAllocationCount();
 
 // hxNew.  An extended new().  hxMemoryManagerId_Current is the default.  C++11
 // perfect argument forwarding would be less of an eyesore.  Use hxArray to manage

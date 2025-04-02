@@ -35,7 +35,7 @@ static class hxMemoryManager* s_hxMemoryManager = hxnull;
 // hxScratchpad
 
 #if HX_USE_MEMORY_SCRATCH
-template<uint32_t Bytes>
+template<size_t Bytes>
 struct hxScratchpad {
 	HX_INLINE void* data() { return &*m_storage; }
 	HX_INLINE bool contains(void* ptr) {
@@ -48,12 +48,12 @@ HX_LINK_SCRATCHPAD hxScratchpad<((HX_MEMORY_BUDGET_SCRATCH_PAGE) * 3u
 	+ (HX_MEMORY_BUDGET_SCRATCH_TEMP))> g_hxScratchpadObject;
 
 extern "C"
-uint32_t hxIsScratchpad(void * ptr) {
+int hxIsScratchpad(void * ptr) {
 	return g_hxScratchpadObject.contains(ptr) ? 1 : 0;
 }
 #else
 extern "C"
-uint32_t hxIsScratchpad(void * ptr) { (void)ptr; return 0; }
+int hxIsScratchpad(void * ptr) { (void)ptr; return 0; }
 #endif // !HX_USE_MEMORY_SCRATCH
 
 // ----------------------------------------------------------------------------
@@ -64,8 +64,8 @@ struct hxMemoryAllocationHeader {
 	uintptr_t actual; // address actually returned by malloc.
 
 #if (HX_RELEASE) < 2
-	static const uint32_t c_guard = 0xc811b135u;
-	uint32_t guard;
+	static const size_t c_guard = 0xc811b135u;
+	size_t guard;
 #endif
 };
 
@@ -309,8 +309,8 @@ private:
 		uintptr_t m_highWater;
 	};
 
-	static const uint32_t c_allSection = hxMemoryManagerId_ScratchAll - hxMemoryManagerId_ScratchPage0;
-	static const uint32_t c_nSections = c_allSection + 1u;
+	static const size_t c_allSection = hxMemoryManagerId_ScratchAll - hxMemoryManagerId_ScratchPage0;
+	static const size_t c_nSections = c_allSection + 1u;
 
 public:
 	void construct(void* ptr, size_t size, const char* label) {
@@ -326,7 +326,7 @@ public:
 		  (HX_MEMORY_BUDGET_SCRATCH_TEMP)      // hxMemoryManagerId_ScratchTemp
 		};
 
-		for (uint32_t i = 0; i < (uint32_t)c_allSection; ++i) {
+		for (size_t i = 0; i < (size_t)c_allSection; ++i) {
 			m_sections[i].m_begin = current;
 			m_sections[i].m_current = 0u;
 			m_sections[i].m_allocationCount = 0u;
@@ -346,7 +346,7 @@ public:
 		sectionAll.m_end = (uintptr_t)ptr + (((HX_MEMORY_BUDGET_SCRATCH_PAGE) * 3u
 			+ (HX_MEMORY_BUDGET_SCRATCH_TEMP)));
 
-		m_currentSection = (uint32_t)0;
+		m_currentSection = (size_t)0;
 		hxAssert((current - (uintptr_t)ptr) == (uintptr_t)size);
 
 		if ((HX_RELEASE) < 1) {
@@ -356,7 +356,7 @@ public:
 
 	virtual void beginAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId newId) HX_OVERRIDE {
 		(void)scope;
-		m_currentSection = (uint32_t)newId - (uint32_t)hxMemoryManagerId_ScratchPage0;
+		m_currentSection = (size_t)newId - (size_t)hxMemoryManagerId_ScratchPage0;
 		hxAssert(m_currentSection < c_nSections);
 		Section& section = m_sections[m_currentSection];
 
@@ -365,7 +365,7 @@ public:
 			hxAssertMsg(section.m_current == 0u, "reopening scratchpad allocator");
 			if (newId == hxMemoryManagerId_ScratchAll) {
 				// Everything but hxMemoryManagerId_ScratchAll must be closed.
-				for (uint32_t i = 0; i < (uint32_t)c_allSection; ++i) {
+				for (size_t i = 0; i < (size_t)c_allSection; ++i) {
 					hxAssertMsg(m_sections[i].m_current == 0u, "scratchpad all is exclusive");
 				}
 			}
@@ -394,7 +394,7 @@ public:
 		section.m_allocationCount = 0u;
 
 		// May not be valid.
-		m_currentSection = (uint32_t)oldId - (uint32_t)hxMemoryManagerId_ScratchPage0;
+		m_currentSection = (size_t)oldId - (size_t)hxMemoryManagerId_ScratchPage0;
 	}
 
 	bool contains(void* ptr) {
@@ -435,13 +435,13 @@ public:
 	}
 
 private:
-	uint32_t calculateSection_(hxMemoryManagerId id) const {
-		uint32_t section = (uint32_t)id - (uint32_t)hxMemoryManagerId_ScratchPage0;
+	size_t calculateSection_(hxMemoryManagerId id) const {
+		size_t section = (size_t)id - (size_t)hxMemoryManagerId_ScratchPage0;
 		hxAssert(section < c_nSections);
 		return section;
 	}
 
-	uint32_t m_currentSection;
+	size_t m_currentSection;
 	Section m_sections[c_nSections];
 };
 #endif // HX_USE_MEMORY_SCRATCH
@@ -453,7 +453,7 @@ class hxMemoryManager {
 public:
 	void construct();
 	void destruct();
-	uint32_t allocationCount();
+	size_t allocationCount();
 
 	hxMemoryManagerId beginAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId newId);
 	void endAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId previousId);
@@ -524,8 +524,8 @@ void hxMemoryManager::destruct() {
 	::free(m_memoryAllocatorTemporaryStack.release());
 }
 
-uint32_t hxMemoryManager::allocationCount() {
-	uint32_t allocationCount = 0;
+size_t hxMemoryManager::allocationCount() {
+	size_t allocationCount = 0;
 	hxLog("memory manager allocation count:\n");
 	for (int32_t i = 0; i != hxMemoryManagerId_MAX; ++i) {
 		hxMemoryAllocatorBase& al = *m_memoryAllocators[i];
@@ -533,7 +533,7 @@ uint32_t hxMemoryManager::allocationCount() {
 			(unsigned int)al.getAllocationCount((hxMemoryManagerId)i),
 			(unsigned int)al.getBytesAllocated((hxMemoryManagerId)i),
 			(unsigned int)al.getHighWater((hxMemoryManagerId)i));
-		allocationCount += (uint32_t)al.getAllocationCount((hxMemoryManagerId)i);
+		allocationCount += (size_t)al.getAllocationCount((hxMemoryManagerId)i);
 	}
 	return allocationCount;
 }
@@ -764,7 +764,7 @@ void hxMemoryManagerShutDown() {
 	}
 #endif
 	// Any allocations made while active will crash when free'd.
-	uint32_t allocationCount = hxMemoryManagerAllocationCount();
+	size_t allocationCount = hxMemoryManagerAllocationCount();
 	hxAssertRelease(allocationCount == 0, "memory leaks: %d", (int)allocationCount); (void)allocationCount;
 
 	s_hxMemoryManager->destruct();
@@ -777,7 +777,7 @@ void hxMemoryManagerShutDown() {
 	s_hxMemoryManager = hxnull;
 }
 
-uint32_t hxMemoryManagerAllocationCount() {
+size_t hxMemoryManagerAllocationCount() {
 	hxAssertRelease(g_hxIsInit, "call hxInit");
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager,
@@ -810,13 +810,13 @@ void hxFree(void *ptr) {
 }
 
 extern "C"
-uint32_t hxIsScratchpad(void * ptr) { (void)ptr; return 0; }
+int hxIsScratchpad(void * ptr) { (void)ptr; return 0; }
 
 void hxMemoryManagerInit() { }
 
 void hxMemoryManagerShutDown() { }
 
-uint32_t hxMemoryManagerAllocationCount() { return 0; }
+size_t hxMemoryManagerAllocationCount() { return 0; }
 
 hxMemoryManagerScope::hxMemoryManagerScope(hxMemoryManagerId id)
 {

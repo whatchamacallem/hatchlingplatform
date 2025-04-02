@@ -101,7 +101,7 @@ public:
 		uintptr_t startCount = 0;
 		uintptr_t startBytes = 0;
 		void* ptr2 = hxnull;
-		int32_t assertsAllowed = g_hxSettings.assertsToBeSkipped;
+		size_t assertsAllowed = g_hxSettings.assertsToBeSkipped;
 
 		{
 			hxMemoryManagerScope allocatorScope(id);
@@ -144,7 +144,7 @@ TEST_F(hxMemoryManagerTest, Execute) {
 #endif
 	hxLog("TEST_EXPECTING_ASSERTS:\n");
 
-	for (int32_t i = 0; i < hxMemoryManagerId_MAX; ++i) {
+	for (size_t i = 0; i < hxMemoryManagerId_MAX; ++i) {
 		TestMemoryAllocatorNormal((hxMemoryManagerId)i);
 	}
 

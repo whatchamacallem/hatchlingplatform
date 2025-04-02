@@ -15,16 +15,16 @@ HX_REGISTER_FILENAME_HASH
 
 #if HX_DEBUG_DMA
 struct hxDmaDebugRecord {
-	hxDmaDebugRecord(const void* d, const void* s, size_t b, uint32_t c, const char* l) :
+	hxDmaDebugRecord(const void* d, const void* s, size_t b, size_t c, const char* l) :
 		dst(d), src(s), bytes(b), barrierCounter(c), labelStringLiteral(l) { }
 	const void* dst;
 	const void* src;
 	size_t bytes;
-	uint32_t barrierCounter;
+	size_t barrierCounter;
 	const char* labelStringLiteral;
 };
 static hxArray<hxDmaDebugRecord, HX_DEBUG_DMA_RECORDS> s_hxDmaDebugRecords;
-static uint32_t s_hxDmaBarrierCounter = 0u;
+static size_t s_hxDmaBarrierCounter = 0u;
 
 #if HX_USE_CPP11_THREADS
 static std::mutex s_hxDmaDebugMutex;

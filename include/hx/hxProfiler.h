@@ -24,7 +24,7 @@
 #define hxProfileScope(labelStringLiteral_) \
 	HX_PROFILE_FN( hxProfilerScopeInternal<> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral_) )
 
-// hxProfileScopeMin(const char* labelStringLiteral, uint32_t minCycles)
+// hxProfileScopeMin(const char* labelStringLiteral, size_t minCycles)
 #define hxProfileScopeMin(labelStringLiteral_, minCycles_) \
 	HX_PROFILE_FN( hxProfilerScopeInternal<minCycles_> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral_) )
 

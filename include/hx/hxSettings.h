@@ -245,7 +245,7 @@ struct hxSettings {
 	uint8_t disableMemoryManager;
 #endif
 #if (HX_RELEASE) < 1
-	int32_t assertsToBeSkipped; // Allows testing asserts.
+	size_t assertsToBeSkipped; // Allows testing asserts.
 	float lightEmittingDiode; // Just for testing
 #endif
 };

@@ -113,7 +113,7 @@ size_t hxFile::read(void* bytes, size_t byteCount) {
 		"file not readable");
 	size_t bytesRead = (bytes && m_filePImpl) ? ::fread(bytes, 1, byteCount, (FILE*)m_filePImpl) : 0u;
 	hxAssertRelease((byteCount == bytesRead) || (m_openMode & hxFile::fallible),
-		"read bytes %d != actual %d", (int)byteCount, (int)bytesRead);
+		"read bytes %zu != actual %zu", byteCount, bytesRead);
 	if (byteCount != bytesRead) {
 		m_good = false;
 		m_eof = m_filePImpl ? ::feof((FILE*)m_filePImpl) : false;
@@ -131,7 +131,7 @@ size_t hxFile::write(const void* bytes, size_t byteCount) {
 		"file not writable");
 	size_t bytesWritten = (bytes && m_filePImpl) ? ::fwrite(bytes, 1, byteCount, (FILE*)m_filePImpl) : 0u;
 	hxAssertRelease((byteCount == bytesWritten) || (m_openMode & hxFile::fallible),
-		"write bytes %d != actual %d", (int)byteCount, (int)bytesWritten);
+		"write bytes %zu != actual %zu", byteCount, bytesWritten);
 	m_good = byteCount == bytesWritten; // Can restore goodness.
 	return bytesWritten;
 }
