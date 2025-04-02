@@ -54,7 +54,7 @@ void hxTaskQueue::enqueue(hxTask* task) {
 
 #if HX_USE_CPP11_THREADS
 	if (m_threadPoolSize > 0) {
-		std::unique_lock<std::mutex> lk(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 		hxAssertRelease(m_runningQueueCheck == RunningQueueCheck_, "enqueue to stopped queue");
 		task->setNextTask(m_nextTask);
 		m_nextTask = task;

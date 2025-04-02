@@ -280,7 +280,7 @@ TEST_F(hxHashTableTest, Strings) {
 			ASSERT_TRUE(::strcmp(table[colors[i]].key, colors[i]) == 0);
 		}
 		ASSERT_TRUE(table.find("Cyan") != hxnull);
-		ASSERT_TRUE(table.find("Sangoire") == hxnull);
+		ASSERT_TRUE(table.find("Pink") == hxnull);
 
 	}
 	ASSERT_EQ(m_constructed, sz);

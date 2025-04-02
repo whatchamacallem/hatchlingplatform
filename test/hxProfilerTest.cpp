@@ -87,8 +87,8 @@ TEST_F(hxProfilerTest, Single1ms) {
 
 	ASSERT_TRUE(1u == (g_hxProfiler.recordsSize() - startRecords));
 
-	bool isok = hxConsoleExecLine("profilelog");
-	ASSERT_TRUE(isok);
+	bool isOk = hxConsoleExecLine("profilelog");
+	ASSERT_TRUE(isOk);
 }
 
 TEST_F(hxProfilerTest, writeToChromeTracing) {

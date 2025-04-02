@@ -129,7 +129,7 @@ TEST(hxConsoleTest, CommandFactory) {
 	// Check that all flags have been set.
 	ASSERT_EQ(c_hxConsoleTestCallFlags, (1<<hxConsoleTestTypeID_MAX)-1);
 
-	// The hxCommands are being routed to the permenant heap.  While that
+	// The hxCommands are being routed to the permanent heap.  While that
 	// allocator is unable to reuse space, free them for correctness.
 	g_hxSettings.isShuttingDown = true;
 	hxFree(f0);
@@ -341,8 +341,8 @@ TEST(hxConsoleTest, FileTest) {
 			"hxConsoleTestFileFnName 89\n"
 			"\n";
 	}
-	bool isok = hxConsoleExecLine("exec hxConsoleTest_FileTest.txt");
-	ASSERT_TRUE(isok);
+	bool isOk = hxConsoleExecLine("exec hxConsoleTest_FileTest.txt");
+	ASSERT_TRUE(isOk);
 
 	ASSERT_EQ(s_hxConsoleTestFileVar1, 78.0f);
 	ASSERT_EQ(s_hxConsoleTestFileVar2, 89.0f);
@@ -363,8 +363,8 @@ TEST(hxConsoleTest, FilePeekPoke) {
 		f.print("poke %ld 4 175\n", (unsigned long int)(target + 0));
 #endif
 	}
-	bool isok = hxConsoleExecLine("exec hxConsoleTest_FileTest.txt");
-	ASSERT_TRUE(isok);
+	bool isOk = hxConsoleExecLine("exec hxConsoleTest_FileTest.txt");
+	ASSERT_TRUE(isOk);
 
 	ASSERT_EQ(target[0], 175);
 	ASSERT_EQ(target[1], 396);

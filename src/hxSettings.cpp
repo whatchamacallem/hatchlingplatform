@@ -14,7 +14,7 @@ HX_REGISTER_FILENAME_HASH
 hxConsoleVariableNamed(g_hxSettings.logLevel, loglevel);
 
 #if (HX_RELEASE) < 1
-hxConsoleVariableNamed(g_hxSettings.assertsToBeSkipped, skipasserts);
+hxConsoleVariableNamed(g_hxSettings.assertsToBeSkipped, skipAsserts);
 hxConsoleVariableNamed(g_hxSettings.lightEmittingDiode, lightEmittingDiode);
 #endif
 
