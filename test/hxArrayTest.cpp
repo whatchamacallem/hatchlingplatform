@@ -23,21 +23,6 @@ public:
 			id = (INT_MIN < s_hxTestCurrent->m_nextId) ? s_hxTestCurrent->m_nextId-- : 0;
 			constructor = 0;
 		}
-		TestObject(void*) {
-			++s_hxTestCurrent->m_constructed;
-			id = (INT_MIN < s_hxTestCurrent->m_nextId) ? s_hxTestCurrent->m_nextId-- : 0;
-			constructor = 1;
-		}
-		TestObject(void*, char*) {
-			++s_hxTestCurrent->m_constructed;
-			id = (INT_MIN < s_hxTestCurrent->m_nextId) ? s_hxTestCurrent->m_nextId-- : 0;
-			constructor = 2;
-		}
-		TestObject(void*, char*, int*) {
-			++s_hxTestCurrent->m_constructed;
-			id = (INT_MIN < s_hxTestCurrent->m_nextId) ? s_hxTestCurrent->m_nextId-- : 0;
-			constructor = 3;
-		}
 
 		TestObject(const TestObject& rhs) {
 			++s_hxTestCurrent->m_constructed;
@@ -56,8 +41,6 @@ public:
 		}
 
 		void operator=(const TestObject& rhs) { id = rhs.id; }
-		void operator=(int32_t x) { id = x; }
-		bool operator==(const TestObject& rhs) const { return id == rhs.id; }
 		bool operator==(int32_t x) const { return id == x; }
 
 		int32_t id;

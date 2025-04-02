@@ -43,6 +43,7 @@ TEST_F(hxFileTest, ReadWrite) {
 
 	ASSERT_EQ(f.good(), true);
 	ASSERT_EQ(f.is_open(), true);
+	ASSERT_EQ(f.is_echo(), false);
 }
 
 TEST_F(hxFileTest, NotExist) {

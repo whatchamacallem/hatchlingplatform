@@ -15,26 +15,6 @@
 #endif
 
 // ----------------------------------------------------------------------------
-// Implements HX_IS_DEBUGGER_PRESENT().  
-
-#if (HX_RELEASE) < 3
-#if defined(_MSC_VER)
-#include <Windows.h>
-
-#define HX_IS_DEBUGGER_PRESENT IsDebuggerPresent
-#elif defined(__linux__)
-#include <sys/ptrace.h>
-
-static bool HX_IS_DEBUGGER_PRESENT() {
-	static bool val = ::ptrace(PTRACE_TRACEME, 0, 1, 0) == -1;
-	return val;
-}
-#else
-#define HX_IS_DEBUGGER_PRESENT() false
-#endif
-#endif // (HX_RELEASE) < 3
-
-// ----------------------------------------------------------------------------
 // Implements HX_REGISTER_FILENAME_HASH.  See hxStringLiteralHash.h.
 
 #if (HX_RELEASE) < 1
@@ -160,12 +140,6 @@ void hxExit(const char* format, ...) {
 		f << buf;
 	}
 
-	if (HX_IS_DEBUGGER_PRESENT()) {
-		// Stop here before the call stack gets lost inside _Exit.  This is not for
-		// normal termination on an embedded target.
-		HX_DEBUG_BREAK;
-	}
-
 #if (HX_RELEASE) < 1
 	// Code coverage runs at exit.  A death test will return EXIT_SUCCESS.
 	::exit(g_hxSettings.deathTest ? EXIT_SUCCESS : EXIT_FAILURE);
@@ -187,10 +161,6 @@ int hxAssertHandler(const char* file, size_t line) {
 	}
 	hxLogHandler(hxLogLevel_Assert, "%s(%u) hash %08x\n", f, (unsigned int)line,
 		(unsigned int)hxStringLiteralHashDebug(file));
-
-	if (!HX_IS_DEBUGGER_PRESENT()) {
-		hxExit("no debugger\n");
-	}
 
 	// return to HX_DEBUG_BREAK at calling line.
 	return 0;
