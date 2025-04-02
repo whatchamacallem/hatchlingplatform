@@ -65,7 +65,7 @@ int main() {
 #if (HX_TEST_DIE_AT_THE_END)
 	hxAssertRelease(testsFailing == 2, "expected 2 tests to fail");
 	g_hxSettings.deathTest = 1;
-	return (testsFailing == 2) ? EXIT_SUCCESS : EXIT_FAILURE; // Expect 2 tests to fail.
+	hxExit("Expected failures correct.\n");
 #endif
 
 	return (testsFailing == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
