@@ -16,6 +16,9 @@ export GREP_COLORS='mt=0;32' # green
 WARNINGS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter"
 
+# The -m32 switch enables 32-bit compilation.  You will need these packages on Ubuntu:
+#   sudo apt-get install gcc-multilib g++-multilib
+#
 # Test gcc with both -std=c++98 and -std=c++14.  Not using -pedantic-errors with
 # c++98 as "anonymous variadic macros were introduced in c++11."  (This code base
 # and gcc's defaults cheat slightly by pretending c99 was available in c++98.)
@@ -24,14 +27,14 @@ gcc --version | grep gcc
 for I in 0 1 2 3; do
 echo gcc c++98 -O$I "$@"...
 gcc -Iinclude -O$I -g -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" \
-	-std=c99 -c src/*.c
+	-std=c99 -m32 -c src/*.c
 gcc -Iinclude -O$I -g $WARNINGS -DHX_RELEASE=$I "$@" -std=c++98 -fno-exceptions \
-	-fno-rtti -Wno-unused-local-typedefs */*.cpp *.o -lstdc++ -o hxtest
+	-fno-rtti -Wno-unused-local-typedefs */*.cpp *.o -lstdc++ -m32 -o hxtest
 ./hxtest | grep '\[  PASSED  \]' --color || ./hxtest
 rm hxtest
 echo gcc c++14 -O$I "$@"...
 gcc -Iinclude -O$I -g -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" -pthread \
-	-std=c++14 -fno-exceptions -fno-rtti */*.cpp *.o -lpthread -lstdc++ -o hxtest
+	-std=c++14 -fno-exceptions -fno-rtti */*.cpp *.o -lpthread -lstdc++ -m32 -o hxtest
 ./hxtest | grep '\[  PASSED  \]' --color || ./hxtest
 rm hxtest *.o
 done

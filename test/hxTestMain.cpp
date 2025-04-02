@@ -38,6 +38,7 @@ size_t hxTestMain() {
 	hxLogConsole("release %d profile %d flags %d%d%d%d build: " __DATE__ " " __TIME__ "\n",
 		(int)(HX_RELEASE), (int)(HX_PROFILE), (int)(HX_USE_CPP11_THREADS),
 		(int)(HX_USE_CPP11_TIME), (int)(HX_USE_CPP14_CONSTEXPR), (int)(HX_MEM_DIAGNOSTIC_LEVEL));
+	hxLogConsole("size_t bytes %d\n", (int)sizeof(size_t));
 
 	char bytes[48] = { };
 	snprintf(bytes, 48, "%s", "The quick brown fox jumps over the lazy dog....");
