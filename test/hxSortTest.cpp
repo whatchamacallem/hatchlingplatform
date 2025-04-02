@@ -148,3 +148,26 @@ TEST(hxInsertionSortTest, SortCompareCCase) {
 	const int ints3[5] = { -5, 0, 1, 2, 4 };
 	ASSERT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0); // sorted
 }
+
+TEST(hxBinarySearchTest, SimpleCase) {
+	int ints[5] = { 2, 5, 6, 88, 99 };
+	int* result = hxBinarySearch(ints+0, ints+5, 88, hxSortCompareTest);
+	ASSERT_TRUE(result != hxnull && *result == 88);
+
+	const int* cresult = hxBinarySearch((const int*)ints+0, (const int*)ints+5, 2, hxSortCompareTest);
+	ASSERT_TRUE(cresult != hxnull && *cresult == 2);
+
+	cresult = hxBinarySearch((const int*)ints+0, (const int*)ints+5, 99);
+	ASSERT_TRUE(cresult != hxnull && *cresult == 99);
+
+	result = hxBinarySearch(ints+0, ints+5, 0);
+	ASSERT_TRUE(result == hxnull);
+
+	result = hxBinarySearch(ints+0, ints+5, 100);
+	ASSERT_TRUE(result == hxnull);
+
+	result = hxBinarySearch(ints+0, ints+5, 7);
+	ASSERT_TRUE(result == hxnull);
+}
+
+

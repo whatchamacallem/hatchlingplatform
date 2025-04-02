@@ -26,15 +26,15 @@ struct hxLess {
 // argument is ordered before (i.e. is less than) the second.  See hxLess.
 
 template<typename T, typename Compare>
-HX_INLINE void hxInsertionSort(T* first_, T* last_, const Compare& compare_) {
-	if(first_ == last_) { return; } // don't add +1 to null.
+HX_INLINE void hxInsertionSort(T* begin_, T* end_, const Compare& compare_) {
+	if(begin_ == end_) { return; } // don't add +1 to null.
 
 	// i points to value being inserted. j points to next unsorted value.
-	for (T *i_ = first_, *j_ = first_ + 1; j_ < last_; i_ = j_++) {
+	for (T *i_ = begin_, *j_ = begin_ + 1; j_ < end_; i_ = j_++) {
 		if (!compare_(*i_, *j_)) {
 			T t_ = *j_;
 			*j_ = *i_;
-			while (first_ < i_) {
+			while (begin_ < i_) {
 				T* k_ = i_ - 1;
 				if (!compare_(*k_, t_)) {
 					*i_ = *k_;
@@ -52,9 +52,58 @@ HX_INLINE void hxInsertionSort(T* first_, T* last_, const Compare& compare_) {
 // ----------------------------------------------------------------------------
 // A specialization of hxInsertionSort using hxLess.
 template<typename T>
-HX_INLINE void hxInsertionSort(T* first_, T* last_) {
-	hxInsertionSort(first_, last_, hxLess());
+HX_INLINE void hxInsertionSort(T* begin_, T* end_) {
+	hxInsertionSort(begin_, end_, hxLess());
 }
+
+// ----------------------------------------------------------------------------
+// hxBinarySearch
+//
+// Performs a binary search in the range [first, last). Returns HX_NULL if the
+// value is not found. Unsorted data will lead to errors. Non-unique values
+// will be selected between arbitrarily.
+//
+// The compare parameter is a function object that returns true if the first
+// argument is ordered before (i.e. is less than) the second.  See hxLess.
+
+template<typename T, typename Compare>
+HX_INLINE T* hxBinarySearch(T* begin_, T* end_, const T& val_, const Compare& compare_) {
+	if(begin_ == end_) { return hxnull; } // don't operate on null.
+
+	// warning: index may be -1 or overflow in a_ + b_.
+	int_fast32_t a_ = 0;
+	int_fast32_t b_ = (int_fast32_t)(end_ - begin_) - 1;
+	
+	while(a_ <= b_) {
+		int_fast32_t mid_ = (a_ + b_) / 2;
+		if(!compare_(val_, begin_[mid_])) {
+			if(!compare_(begin_[mid_], val_)) {
+				return begin_ + mid_;
+			}
+			a_ = mid_ + 1; // val is > mid.
+		}
+		else {
+			b_ = mid_ - 1; // val is < mid.
+		}
+	}
+	return hxnull;
+}
+
+template<typename T>
+HX_INLINE T* hxBinarySearch(T* begin_, T* end_, const T& val_) {
+	return hxBinarySearch(begin_, end_, val_, hxLess());
+}
+
+template<typename T, typename Compare>
+HX_INLINE const T* hxBinarySearch(const T* begin_, const T* end_, const T& val_, const Compare& compare_) {
+	return hxBinarySearch(const_cast<T*>(begin_), const_cast<T*>(end_), val_, compare_);
+}
+
+template<typename T>
+HX_INLINE const T* hxBinarySearch(const T* begin_, const T* end_, const T& val_) {
+	return hxBinarySearch(const_cast<T*>(begin_), const_cast<T*>(end_), val_, hxLess());
+}
+
 
 // ----------------------------------------------------------------------------
 // hxRadixSortBase.  Operations that are independent of hxRadixSort type.
