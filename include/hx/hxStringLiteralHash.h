@@ -35,7 +35,8 @@ constexpr uint32_t hxStringLiteralHash(const char(&s_)[len_]) {
 // ----------------------------------------------------------------------------
 // HX_REGISTER_FILENAME_HASH
 //
-// Registers hash of __FILE__ to be logged in a debug build.
+// Registers hash of __FILE__ to be logged in a debug build.  This information
+// will be needed to identify file name hashes in release builds.
 
 #if HX_CPLUSPLUS && (HX_RELEASE) < 1
 // Do not use, implementation of HX_REGISTER_FILENAME_HASH.

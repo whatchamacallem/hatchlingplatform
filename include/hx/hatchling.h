@@ -66,7 +66,7 @@ enum hxLogLevel {
 
 HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0..3]");
 
-#if (HX_RELEASE) < 1
+#if (HX_RELEASE) == 0 // debug facilities
 // Initializes the platform.
 #define hxInit() (void)(g_hxIsInit || (hxInitAt(__FILE__, __LINE__), 0))
 
@@ -86,13 +86,19 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 // HX_RELEASE < 3
 int hxAssertHandler(const char* file_, size_t line_);
 
-#else // !(HX_RELEASE < 1)
+// Logs an error and terminates execution if x is false up to release level 2.
+// HX_RELEASE < 3
+#define hxAssertRelease(x_, ...) (void)(!!(x_) || ((hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
+	hxAssertHandler(__FILE__, __LINE__)) || (HX_DEBUG_BREAK,0)))
+
+#else // HX_RELEASE > 1
 #define hxInit() (void)(g_hxIsInit || (hxInitAt(hxnull, 0), 0))
 #define hxLog(...) ((void)0)
 #define hxAssertMsg(x_, ...) ((void)0)
 #define hxAssert(x_) ((void)0)
 HX_ATTR_NORETURN void hxAssertHandler(uint32_t file_, size_t line_);
 #endif
+
 
 #if (HX_RELEASE) < 2
 // Enters formatted messages in the system log up to release level 1.  No automatic
@@ -108,25 +114,21 @@ HX_ATTR_NORETURN void hxAssertHandler(uint32_t file_, size_t line_);
 // Enters formatted warnings in the system log when x_ is false.  HX_RELEASE < 2
 #define hxWarnCheck(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Warning, __VA_ARGS__), 0))
 
-#if (HX_RELEASE) < 1
-// Logs an error and terminates execution if x is false up to release level 2.
-// HX_RELEASE < 3
-#define hxAssertRelease(x_, ...) (void)(!!(x_) || ((hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
-	hxAssertHandler(__FILE__, __LINE__)) || (HX_DEBUG_BREAK,0)))
-#else
-#define hxAssertRelease(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
-	hxAssertHandler(hxStringLiteralHash(__FILE__), __LINE__), 0))
-#endif
-#else // !(HX_RELEASE < 2)
+#else // HX_RELEASE >= 2
 #define hxLogRelease(...) ((void)0)
 #define hxLogConsole(...) ((void)0)
 #define hxWarn(...) ((void)0)
 #define hxWarnCheck(x_, ...) ((void)0)
-#if (HX_RELEASE) < 3
-#define hxAssertRelease(x_, ...) (void)(!!(x_) || (hxAssertHandler(hxStringLiteralHash(__FILE__), __LINE__), 0))
-#else
-#define hxAssertRelease(x_, ...) ((void)0)
 #endif
+
+// hxAssertRelease has 4 variations
+#if (HX_RELEASE) == 1
+#define hxAssertRelease(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
+	hxAssertHandler(hxStringLiteralHash(__FILE__), __LINE__), 0))
+#elif (HX_RELEASE) == 2
+#define hxAssertRelease(x_, ...) (void)(!!(x_) || (hxAssertHandler(hxStringLiteralHash(__FILE__), __LINE__), 0))
+#elif (HX_RELEASE) == 3
+#define hxAssertRelease(x_, ...) ((void)0) // no asserts at level 3.
 #endif
 
 // Use hxInit() instead.
