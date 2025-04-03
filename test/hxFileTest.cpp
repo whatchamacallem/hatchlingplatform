@@ -1,4 +1,4 @@
-// Copyright 2018 Adrian Johnston
+// Copyright 2017-2025 Adrian Johnston
 
 #include <hx/hxFile.h>
 #include <hx/hxTest.h>

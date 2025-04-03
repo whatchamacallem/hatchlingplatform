@@ -1,5 +1,5 @@
 #pragma once
-// Copyright 2017-2019 Adrian Johnston
+// Copyright 2017-2025 Adrian Johnston
 
 #include <hx/hatchling.h>
 
@@ -50,50 +50,61 @@ HX_INLINE void hxArgParse(T_& val_, const char* str_, char** next_, R_(*parser_)
 
 template<typename T_> struct hxArg; // Undefined. Specialization required.
 
-template<> struct hxArg<int8_t> {
+template<> struct hxArg<signed char> {
 	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtol); }
 	HX_INLINE static const char* getLabel() { return "s8"; }
-	int8_t value;
+	signed char value;
 };
-template<> struct hxArg<int16_t> {
+template<> struct hxArg<signed short> {
 	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtol); }
 	HX_INLINE static const char* getLabel() { return "s16"; }
-	int16_t value;
+	signed short value;
 };
-template<> struct hxArg<int32_t> {
+template<> struct hxArg<signed int> {
 	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtol); }
 	HX_INLINE static const char* getLabel() { return "s32"; }
-	int32_t value;
+	signed int value;
 };
-#if HX_USE_64_BIT_TYPES
-template<> struct hxArg<int64_t> {
+template<> struct hxArg<signed long int> {
+	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtol); }
+	HX_INLINE static const char* getLabel() { return "s32"; }
+	signed long int value;
+};
+template<> struct hxArg<signed long long int> {
 	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtoll); }
 	HX_INLINE static const char* getLabel() { return "s64"; }
-	int64_t value;
+	signed long long int value;
 };
-#endif
-template<> struct hxArg<uint8_t> {
+template<> struct hxArg<unsigned char> {
 	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtoul); }
 	HX_INLINE static const char* getLabel() { return "u8"; }
-	uint8_t value;
+	unsigned char value;
 };
-template<> struct hxArg<uint16_t> {
+template<> struct hxArg<unsigned short> {
 	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtoul); }
 	HX_INLINE static const char* getLabel() { return "u16"; }
-	uint16_t value;
+	unsigned short value;
 };
-template<> struct hxArg<uint32_t> {
+template<> struct hxArg<unsigned int> {
 	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtoul); }
 	HX_INLINE static const char* getLabel() { return "u32"; }
-	uint32_t value;
+	unsigned int value;
 };
-#if HX_USE_64_BIT_TYPES
-template<> struct hxArg<uint64_t> {
+template<> struct hxArg<unsigned long int> {
+	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtoul); }
+	HX_INLINE static const char* getLabel() { return "u32"; }
+	unsigned long int value;
+};
+template<> struct hxArg<unsigned long long int> {
 	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtoull); }
 	HX_INLINE static const char* getLabel() { return "u64"; }
-	uint64_t value;
+	unsigned long long int value;
 };
-#endif
+template<> struct hxArg<char> {
+	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtol); }
+	HX_INLINE static const char* getLabel() { return "s8"; }
+	char value;
+};
 template<> struct hxArg<float> {
 	HX_INLINE hxArg(const char* str_, char** next_) : value(::strtof(str_, next_)) { }
 	HX_INLINE static const char* getLabel() { return "f32"; }
@@ -263,7 +274,6 @@ struct hxVariable : public hxCommand {
 	}
 	virtual void usage(const char* id_=hxnull) HX_OVERRIDE {
 		(void)id_;
-#if HX_USE_64_BIT_TYPES
 		if (*m_var == (T)(long long)*m_var) {
 			// If the current value fits in a long long, use that.
 			hxLogConsole("%s %s(=%lld)\n", id_ ? id_ : "usage:", hxArg<T>::getLabel(), (long long)*m_var);
@@ -272,17 +282,6 @@ struct hxVariable : public hxCommand {
 			hxLogConsole("%s %s(=%lf)\n", id_ ? id_ : "usage:", hxArg<T>::getLabel(), (double)*m_var);
 		}
 	}
-#else
-		if (*m_var == (T)(int)*m_var) {
-			// If the current value fits in a int, use that.
-			hxLogConsole("%s %s(=%d)\n", id_ ? id_ : "usage:", hxArg<T>::getLabel(), (int)*m_var);
-		}
-		else {
-			// This cast is just a gesture, as variadic float args are promoted to double.
-			hxLogConsole("%s %s(=%f)\n", id_ ? id_ : "usage:", hxArg<T>::getLabel(), (float)*m_var);
-		}
-	}
-#endif
 	volatile T* m_var;
 };
 

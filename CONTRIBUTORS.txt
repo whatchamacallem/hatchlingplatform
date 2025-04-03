@@ -1,11 +1,5 @@
 
-Initial version of this code is copyright 2017 Leap Motion, Inc and graciously
-released under the Apache License 2.0.  Any contributions must be and are made
-under the same license.  See: LICENSE.txt
-
 Contributors are:
 
 Adrian Johnston <adrian3@gmail.com>  First published July 19, 2017.
-  Original design and implementation released by and (c) Leap Motion.
   Ongoing maintenance and development (c) Adrian Johnston.
-

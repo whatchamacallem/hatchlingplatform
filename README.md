@@ -4,49 +4,51 @@
 # Hatchling Platform
 
 Small C++ run-time intended to be developed against on the desktop before cross
-compiling to an embedded target.  This is minimalist programming.  I wrote this for
-myself to have on hand for bare metal projects but welcome feedback and patches.
+compiling to an embedded target with limited RAM.
 
- * A lightweight streamlined reimplementation of Google Test.  This code base is
-   exhaustively tested.
+ * A lightweight streamlined reimplementation of Google Test.  Allows running
+   CI tests on a development board.
 
  * Profiling.  Captures a hierarchical time-line view with a minimum of
-   overhead.  View the example `profile.json` file in Chrome's
-   `about://tracing` view.
+   overhead.  Generates output that can be viewed with Chrome's
+   `about://tracing` view.  (Use the WASD keys to move around.)
 
  * Memory Management.  Abstracts a range of allocation strategies behind an
-   RAII interface.
+   RAII interface. This is intended for targets where memory fragmentation
+   is not allowed.  This may save up to 30% of memory and 30% execution time.
 
- * DMA.  Cross platform DMA wrapper with validation.
+ * DMA.  Cross platform DMA wrapper which allows validation on the host before
+   deploying to a target.  Provides profiling information.
 
- * Containers.  Provides a small non-reallocating subset of
+ * Containers and algorithms.  Provides a small non-reallocating subset of
    `std::vector` `std::allocator` and `std::unordered_{ map, set, multimap,
-   multiset }.`
+   multiset }.`  These are integrated with the memory manager.
 
- * Command line based console with simple C++ function binding.
+ * Command line based console with simple C++ function binding. Allows debugging
+   on the target without relinking and relaunching.
  
- * Task Queue.  Provides an object oriented interface to multi-threading.
+ * Task Queue.  Provides an object oriented interface to multi-threading. The
+   default implementation uses `<thread>` and allows for target specific
+   implementations.
 
- * Uses standard C99 headers as required.  With the exception of host
-   implementations where threading and time headers are included.  And
-   `<new>.`
+ * Uses the minimum necessary standard C99 headers as required.  With the
+   exception of host implementations where threading and time headers are
+   included.  Also `<new>` is used for placement new.
 
- * Logging and memory management available in plain C99.
+ * Logging and memory management available in plain C99. `<hx/hatchling.h>` is
+   available in C and provides memory management and string hashing as well.
 
   * 64-bit clean.  Intended for but not limited to use with a 32-bit
-   target.  Memory allocation, DMA and File I/O use size_t, everything
-   else is 32-bit to keep structure layouts predictable.
+   target.  size_t is fairly widely used.
 
- * Does not use exceptions or `std::type_info.`
+ * Does not use exceptions or `std::type_info` as these are inefficient.
+
+ * See `LICENSE.txt` for license terms.
 
 Tested using:
- * Microsoft Visual Studio Community 2017 Version 15.9.12
+ * Microsoft Visual Studio Community 2022
  * gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
- * Ubuntu clang version 18.1.3 (1ubuntu1)
+ * Ubuntu clang version 18.1.3 (1ubuntu1) x86_64-pc-linux-gnu
  * emcc (Emscripten 4.0.5)
-
  * See `test.sh` 
 
-Licensed under Apache License Version 2.0.
- * http://www.apache.org/licenses/
- * See `LICENSE.txt` for license terms.

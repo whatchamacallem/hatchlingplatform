@@ -1,5 +1,6 @@
+# Copyright 2017-2025 Adrian Johnston
+#
 #!/bin/bash
-# Copyright 2025 Adrian Johnston
 
 set -o errexit
 

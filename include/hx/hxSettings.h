@@ -1,9 +1,8 @@
 #pragma once
-// Copyright 2017-2019 Adrian Johnston
-// Copyright 2017 Leap Motion
+// Copyright 2017-2025 Adrian Johnston
 
 #if !HATCHLING_VER
-#error #include <hx/hatchling.h>
+#error #include <hx/hatchling.h> instead
 #endif
 
 // Compiler detection and target specific C++11/C++14 polyfill.
@@ -218,11 +217,6 @@
 #define HX_USE_STDIO_H 1
 #endif
 
-// size_t is used regardless because it is expected to be 32-bit on the target.
-#if !defined(HX_USE_64_BIT_TYPES)
-#define HX_USE_64_BIT_TYPES !HX_USE_WASM
-#endif
-
 #if !defined(HX_USE_DMA_HARDWARE)
 #define HX_USE_DMA_HARDWARE 0
 #endif
@@ -245,7 +239,7 @@ struct hxSettings {
 	uint8_t disableMemoryManager;
 #endif
 #if (HX_RELEASE) < 1
-	size_t assertsToBeSkipped; // Allows testing asserts.
+	int assertsToBeSkipped; // Allows testing asserts.
 	float lightEmittingDiode; // Just for testing
 #endif
 };

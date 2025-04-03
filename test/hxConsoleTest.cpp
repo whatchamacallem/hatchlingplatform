@@ -1,4 +1,4 @@
-// Copyright 2017-2019 Adrian Johnston
+// Copyright 2017-2025 Adrian Johnston
 
 #include <hx/hxConsole.h>
 #include <hx/hxFile.h>
@@ -20,11 +20,9 @@ namespace {
 		hxConsoleTestTypeID_UShort,
 		hxConsoleTestTypeID_UInt,
 		hxConsoleTestTypeID_Float,
-#if HX_USE_64_BIT_TYPES
 		hxConsoleTestTypeID_LongLong,
 		hxConsoleTestTypeID_ULongLong,
 		hxConsoleTestTypeID_Double,
-#endif
 		hxConsoleTestTypeID_MAX
 	};
 
@@ -39,11 +37,9 @@ namespace {
 	const uint32_t c_hxConsoleTestExpectedUInt = 3456;
 	const float c_hxConsoleTestExpectedFloat = 6.78f;
 
-#if HX_USE_64_BIT_TYPES
 	const int64_t c_hxConsoleTestExpectedLongLong = 56789ll;
 	const uint64_t c_hxConsoleTestExpectedULongLong = 67890ull;
 	const double c_hxConsoleTestExpectedDouble = 7.89;
-#endif // HX_USE_64_BIT_TYPES
 
 	template<typename T>
 	void hxConsoleTestTypeCheckT(T t, hxConsoleTestTypeID id, T expected) {
@@ -83,13 +79,11 @@ namespace {
 		hxConsoleTestTypeCheck(Float, a3);
 		return 4;
 	}
-#if HX_USE_64_BIT_TYPES
 	void hxConsoleTestFn8(int64_t a0, uint64_t a1, double a2) {
 		hxConsoleTestTypeCheck(LongLong, a0);
 		hxConsoleTestTypeCheck(ULongLong, a1);
 		hxConsoleTestTypeCheck(Double, a2);
 	}
-#endif
 
 #undef hxConsoleTestTypeCheck
 } // namespace {
@@ -119,12 +113,10 @@ TEST(hxConsoleTest, CommandFactory) {
 	ASSERT_TRUE(f4->execute("2345 3456 3456 6.78"));
 	ASSERT_FALSE(f4->execute("$*"));
 
-#if HX_USE_64_BIT_TYPES
 	hxCommand* ff = hxCommandFactory(hxConsoleTestFn8);
 	ASSERT_TRUE(ff->execute("56789 67890 7.89"));
 	ASSERT_FALSE(ff->execute("56d789 67890 7.89"));
 	hxFree(ff);
-#endif
 
 	// Check that all flags have been set.
 	ASSERT_EQ(c_hxConsoleTestCallFlags, (1<<hxConsoleTestTypeID_MAX)-1);
@@ -216,7 +208,7 @@ TEST(hxConsoleTest, RegisterCommand) {
 // hxConsoleTest::RegisterVariable
 
 namespace {
-	int8_t s_hxConsoleTestChar = 0;
+	char s_hxConsoleTestChar = 0;
 	int16_t s_hxConsoleTestShort = 0;
 	int32_t s_hxConsoleTestInt = 0;
 	int32_t s_hxConsoleTestLong = 0;
@@ -227,12 +219,10 @@ namespace {
 	float s_hxConsoleTestFloat = 0;
 	bool s_hxConsoleTestBool0 = true;
 	bool s_hxConsoleTestBool1 = false;
-
-#if HX_USE_64_BIT_TYPES
+	size_t s_hxConsoleTestSize = 0u;
 	int64_t s_hxConsoleTestLongLong = 0;
 	uint64_t s_hxConsoleTestULongLong = 0;
 	double s_hxConsoleTestDouble = 0;
-#endif
 } // namespace {
 
 hxConsoleVariable(s_hxConsoleTestChar);
@@ -246,12 +236,10 @@ hxConsoleVariable(s_hxConsoleTestULong);
 hxConsoleVariable(s_hxConsoleTestFloat);
 hxConsoleVariable(s_hxConsoleTestBool0);
 hxConsoleVariable(s_hxConsoleTestBool1);
-
-#if HX_USE_64_BIT_TYPES
+hxConsoleVariable(s_hxConsoleTestSize);
 hxConsoleVariable(s_hxConsoleTestLongLong);
 hxConsoleVariable(s_hxConsoleTestULongLong);
 hxConsoleVariable(s_hxConsoleTestDouble);
-#endif
 
 TEST(hxConsoleTest, RegisterVariable) {
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestChar 123"));
@@ -265,12 +253,10 @@ TEST(hxConsoleTest, RegisterVariable) {
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestFloat 678.0"));
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestBool0 0"));
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestBool1 1"));
-
-#if HX_USE_64_BIT_TYPES
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestLongLong 567"));
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestSize 1000"));
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestULongLong 5678"));
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestDouble 789.0"));
-#endif
 
 	hxLogConsole("TEST_EXPECTING_WARNINGS:\n");
 	ASSERT_FALSE(hxConsoleExecLine("s_hxConsoleTestInt 3.5"));
@@ -287,12 +273,10 @@ TEST(hxConsoleTest, RegisterVariable) {
 	ASSERT_EQ(s_hxConsoleTestFloat, 678.0f);
 	ASSERT_EQ(s_hxConsoleTestBool0, false);
 	ASSERT_EQ(s_hxConsoleTestBool1, true);
-
-#if HX_USE_64_BIT_TYPES
+	ASSERT_EQ(s_hxConsoleTestSize, 1000l);
 	ASSERT_EQ(s_hxConsoleTestLongLong, 567ll);
 	ASSERT_EQ(s_hxConsoleTestULongLong, 5678ull);
 	ASSERT_EQ(s_hxConsoleTestDouble, 789.0);
-#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -351,15 +335,9 @@ TEST(hxConsoleTest, FilePeekPoke) {
 	int target[16] = { 137, 396 };
 	{
 		hxFile f(hxFile::out, "hxConsoleTest_FileTest.txt");
-#if HX_USE_64_BIT_TYPES
 		f.print("peek %lld 4\n", (unsigned long long int)(target + 0));
 		f.print("hex %lld 4\n", (unsigned long long int)(target + 0));
 		f.print("poke %lld 4 175\n", (unsigned long long int)(target + 0));
-#else
-		f.print("peek %ld 4\n", (unsigned long int)(target + 0));
-		f.print("hex %ld 4\n", (unsigned long int)(target + 0));
-		f.print("poke %ld 4 175\n", (unsigned long int)(target + 0));
-#endif
 	}
 	bool isOk = hxConsoleExecLine("exec hxConsoleTest_FileTest.txt");
 	ASSERT_TRUE(isOk);

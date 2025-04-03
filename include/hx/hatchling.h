@@ -2,8 +2,7 @@
 
 // Hatchling Platform.  <hx/hatchling.h> is both C and C++.
 //
-// Copyright 2017-2019 Adrian Johnston
-// Copyright 2017 Leap Motion
+// Copyright 2017-2025 Adrian Johnston
 // https://github.com/whatchamacallem/HatchlingPlatform
 
 #include <stdarg.h>
@@ -15,8 +14,8 @@
 
 
 // Major, minor and patch versions.
-#define HATCHLING_VER 0x20116
-#define HATCHLING_TAG "v2.1.16"
+#define HATCHLING_VER 0x20117
+#define HATCHLING_TAG "v2.1.17"
 
 // HX_RELEASE: 0 is a debug build with all asserts and verbose strings.
 //             1 is a release build with critical asserts and verbose warnings.

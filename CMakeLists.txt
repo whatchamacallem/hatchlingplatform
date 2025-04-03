@@ -1,3 +1,5 @@
+# Copyright 2017-2025 Adrian Johnston
+#
 # A CMake build that uses Google Test instead of the hxTest.h reimplementation.
 
 

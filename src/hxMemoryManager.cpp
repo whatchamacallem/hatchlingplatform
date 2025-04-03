@@ -1,5 +1,4 @@
-// Copyright 2017-2019 Adrian Johnston
-// Copyright 2017 Leap Motion
+// Copyright 2017-2025 Adrian Johnston
 
 // HX_RELEASE < 1 memory markings:
 //
