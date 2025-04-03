@@ -146,7 +146,7 @@ void hxExit(const char* format, ...) {
 #else
 	// WARNING: All of the global C++ destructors may be registered with atexit()
 	// which wastes a little memory.
-	::_Exit(EXIT_FAILURE);
+	::_Exit(g_hxSettings.deathTest ? EXIT_SUCCESS : EXIT_FAILURE);
 #endif
 }
 

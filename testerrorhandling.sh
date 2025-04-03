@@ -30,4 +30,4 @@ echo "testing optional feature settings.  these tests will spew errors and still
 echo "now testing successful execution.  no errors expected."
 ./test.sh
 
-echo testdriver.sh passed.
+echo all tests passed.

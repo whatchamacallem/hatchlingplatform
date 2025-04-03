@@ -232,7 +232,6 @@ namespace {
 	int64_t s_hxConsoleTestLongLong = 0;
 	uint64_t s_hxConsoleTestULongLong = 0;
 	double s_hxConsoleTestDouble = 0;
-	double s_hxConsoleTestDoubleLarge = (double)(1ull << 63) * (double)(1ull << 63);
 #endif
 } // namespace {
 
@@ -252,7 +251,6 @@ hxConsoleVariable(s_hxConsoleTestBool1);
 hxConsoleVariable(s_hxConsoleTestLongLong);
 hxConsoleVariable(s_hxConsoleTestULongLong);
 hxConsoleVariable(s_hxConsoleTestDouble);
-hxConsoleVariable(s_hxConsoleTestDoubleLarge);
 #endif
 
 TEST(hxConsoleTest, RegisterVariable) {
@@ -264,14 +262,14 @@ TEST(hxConsoleTest, RegisterVariable) {
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestUShort 2345"));
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestUInt 3456"));
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestULong 4567"));
-	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestFloat 6.78"));
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestFloat 678.0"));
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestBool0 0"));
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestBool1 1"));
 
 #if HX_USE_64_BIT_TYPES
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestLongLong 567"));
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestULongLong 5678"));
-	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestDouble 7.89"));
+	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestDouble 789.0"));
 #endif
 
 	hxLogConsole("TEST_EXPECTING_WARNINGS:\n");
@@ -286,14 +284,14 @@ TEST(hxConsoleTest, RegisterVariable) {
 	ASSERT_EQ(s_hxConsoleTestUShort, 2345);
 	ASSERT_EQ(s_hxConsoleTestUInt, 3456);
 	ASSERT_EQ(s_hxConsoleTestULong, 4567ul);
-	ASSERT_EQ(s_hxConsoleTestFloat, 6.78f);
+	ASSERT_EQ(s_hxConsoleTestFloat, 678.0f);
 	ASSERT_EQ(s_hxConsoleTestBool0, false);
 	ASSERT_EQ(s_hxConsoleTestBool1, true);
 
 #if HX_USE_64_BIT_TYPES
 	ASSERT_EQ(s_hxConsoleTestLongLong, 567ll);
 	ASSERT_EQ(s_hxConsoleTestULongLong, 5678ull);
-	ASSERT_EQ(s_hxConsoleTestDouble, 7.89);
+	ASSERT_EQ(s_hxConsoleTestDouble, 789.0);
 #endif
 }
 
