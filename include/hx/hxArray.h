@@ -62,10 +62,12 @@ public:
 	HX_INLINE const T* begin() const { return this->getStorage(); }
 	HX_INLINE       T* begin() { return this->getStorage(); }
 	HX_INLINE const T* cbegin() const { return this->getStorage(); }
+	HX_INLINE const T* cbegin() { return this->getStorage(); }
 
 	HX_INLINE const T* end() const { return m_end; }
 	HX_INLINE       T* end() { return m_end; }
 	HX_INLINE const T* cend() const { return m_end; }
+	HX_INLINE const T* cend() { return m_end; }
 
 	HX_INLINE const T& front() const { hxAssert(size()); return *this->getStorage(); }
 	HX_INLINE       T& front() { hxAssert(size()); return *this->getStorage(); }

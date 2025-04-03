@@ -19,7 +19,6 @@ hxConsoleVariableNamed(g_hxSettings.lightEmittingDiode, lightEmittingDiode);
 
 void hxSettingsConstruct() {
 	g_hxSettings.logLevel = hxLogLevel_Log;
-	g_hxSettings.logFile = ((HX_RELEASE) < 1) ? "log.txt" : hxnull;
 	g_hxSettings.isShuttingDown = false;
 	g_hxSettings.deathTest = 0;
 

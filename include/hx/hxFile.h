@@ -6,31 +6,17 @@
 class hxFile;
 
 // ----------------------------------------------------------------------------
-// hxout
-
-// hxout is the system log.  Returns an hxFile for use as both stdout and stderr.
-// If you don't want a written file set g_hxSettings.logFile to hxnull.
-#define hxout hxOut()
-
-// Implements hxout.
-hxFile& hxOut();
-
-// Closes the system log while still allowing assert messages to be written to stdout.
-void hxCloseOut();
-
-// ----------------------------------------------------------------------------
 // hxFile: RAII wrapper for file I/O.  A mixture of unformatted std::basic_fstream
 // operations and formatted C-style text printing.
 
 class hxFile {
 public:
-	// openmode is a subset of std::ios_base::openmode with fallible and echo added.
+	// openmode is a subset of std::ios_base::openmode with fallible added.
 	// fallible skips asserts and is similar to setting std::basic_ios::exceptions(0). 
 	enum openmode {
 		in = 1u << 0,       // Open for binary reading.
 		out = 1u << 1,      // Open for binary writing.
-		fallible = 1u << 2, // Skip asserts.
-		echo = 1u << 3,     // Echo to stdout if available.
+		fallible = 1u << 2  // Skip asserts.
 	};
 
 	// Stream is closed by default.
@@ -59,12 +45,13 @@ public:
 		m_eof = false;
 	}
 
+	HX_INLINE bool is_in() const { return (m_openMode & in) != 0; }
+
+	HX_INLINE bool is_out() const { return (m_openMode & out) != 0; }
+
 	// Returns whether operations may fail without asserting.  Non-standard, similar
 	// to checking if exceptions are enabled.
 	HX_INLINE bool is_fallible() const { return (m_openMode & fallible) != 0; }
-
-	// Returns whether all writes will be echoed to stdout.  Non-standard.
-	HX_INLINE bool is_echo() const { return (m_openMode & echo) != 0; }
 
 	size_t read(void* bytes_, size_t count_);
 
@@ -114,14 +101,6 @@ public:
 	HX_INLINE hxFile& operator<<(const char(&str_)[StringLength_]) {
 		hxAssert(::strnlen(str_, StringLength_) == (StringLength_-1));
 		write(str_, StringLength_-1);
-		return *this;
-	}
-
-	// Write a null terminated string.  Supports Google Test style diagnostic
-	// messages.
-	template<size_t StringLength_>
-	HX_INLINE hxFile& operator<<(char(&str_)[StringLength_]) {
-		write(str_, ::strnlen(str_, StringLength_));
 		return *this;
 	}
 

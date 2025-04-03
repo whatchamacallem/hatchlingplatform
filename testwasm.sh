@@ -8,7 +8,7 @@ set -o xtrace
 set -o errexit
 
 emcc -Iinclude -O2 -c src/*.c
-emcc -Iinclude -O2 *.o */*.cpp -o index.html
+emcc -Iinclude -O2 -fno-exceptions *.o */*.cpp -o index.html
 
 echo open http://localhost:9876/
 python3 -m http.server 9876

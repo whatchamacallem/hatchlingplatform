@@ -10,8 +10,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-
 
 // Major, minor and patch versions.
 #define HATCHLING_VER 0x20117

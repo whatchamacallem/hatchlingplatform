@@ -132,7 +132,7 @@ public:
 		HX_INLINE Node* operator->() const { return this->m_currentNode; }
 	};
 
-	// Constructs an empty hash table with a capacity of Capacity.
+	// Constructs an empty hash table with a capacity of HashBits^2.
 	HX_INLINE explicit hxHashTable() { m_size = 0u; }
 
 	// Destructs hash table.
@@ -142,13 +142,15 @@ public:
 	HX_INLINE const_iterator begin() const { return const_iterator(this); }
 	HX_INLINE iterator begin() { return iterator(this); }
 	HX_INLINE const_iterator cbegin() const { return const_iterator(this); }
+	HX_INLINE const_iterator cbegin() { return const_iterator(this); }
 	HX_INLINE const_iterator end() const { return const_iterator(); }
 	HX_INLINE iterator end() { return iterator(); }
 	HX_INLINE const_iterator cend() const { return const_iterator(); }
+	HX_INLINE const_iterator cend() { return const_iterator(); }
 	HX_INLINE uint32_t size() const { return m_size; }
-	HX_INLINE bool empty() const { return m_size != 0u; }
+	HX_INLINE bool empty() const { return m_size == 0u; }
 
-	// Returns Node& for key.  Any allocation required use hxMemoryManagerId_Current
+	// Returns Node& for key.  Any allocation required uses hxMemoryManagerId_Current
 	// and HX_ALIGNMENT_MASK.
 	HX_INLINE Node& operator[](const Key& key_) { return insert_unique(key_); }
 
@@ -241,8 +243,8 @@ public:
 	// the number of nodes released.  Deleter can be functions with signature "void
 	// deleter(Node*)" and functors supporting "operator()(Node*)" and with an
 	// "operator bool" returning true.
-	template<typename Deleter>
-	HX_INLINE uint32_t erase(const Key& key_, const Deleter& deleter_) {
+	template<typename Deleter_>
+	HX_INLINE uint32_t erase(const Key& key_, const Deleter_& deleter_) {
 		uint32_t count_ = 0u;
 		uint32_t hash_ = Node::hash(key_);
 		Node** next_ = getBucket_(hash_);
@@ -271,8 +273,8 @@ public:
 	// Removes all nodes and calls deleter() on every node.  Deleter can be
 	// function pointers with signature "void deleter(Node*)" or functors
 	// supporting "operator()(Node*) and operator (bool)."
-	template<typename Deleter>
-	HX_INLINE void clear(const Deleter& deleter_) {
+	template<typename Deleter_>
+	HX_INLINE void clear(const Deleter_& deleter_) {
 		if (deleter_) {
 			if (m_size != 0u) {
 				Node** itEnd_ = m_table.getStorage() + m_table.getCapacity();

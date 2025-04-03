@@ -9,9 +9,14 @@
 #include <hx/hxProfiler.h>
 #include <hx/hxSort.h>
 
-#if HX_USE_STDIO_H
 #include <stdio.h>
+
+// Exceptions add overhead to c++ and add untested pathways.
+#if defined(__cpp_exceptions)
+HX_STATIC_ASSERT(0, "exceptions should not be enabled");
 #endif
+
+#define HX_STDOUT_STR(x) ::fwrite(x, (sizeof x) - 1, 1, stdout)
 
 // ----------------------------------------------------------------------------
 // Implements HX_REGISTER_FILENAME_HASH.  See hxStringLiteralHash.h.
@@ -87,10 +92,6 @@ void hxInitAt(const char* file, size_t line) {
 	hxSettingsConstruct();
 	hxMemoryManagerInit();
 	hxDmaInit();
-
-#if defined(__cpp_exceptions)
-	hxout << "WARNING disable exceptions\n"; // Exceptions add unnecessary overhead.
-#endif
 }
 
 extern "C"
@@ -116,7 +117,6 @@ void hxShutdown() {
 	g_hxSettings.isShuttingDown = true;
 	hxConsoleDeregisterAll(); // Free console allocations.
 	hxMemoryManagerShutDown();
-	hxCloseOut(); // Assert messages will still be written to stdout.
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	g_hxSettings.disableMemoryManager = true;
 #endif
@@ -124,20 +124,15 @@ void hxShutdown() {
 
 extern "C"
 void hxExit(const char* format, ...) {
-	hxFile& f = hxout;
-	if (f.is_open() || f.is_echo()) {
-		f << "EXIT ";
+	HX_STDOUT_STR("EXIT ");
 
-		char buf[HX_MAX_LINE] = "\n";
-		if (format != hxnull) {
-			va_list args;
-			va_start(args, format);
-			vsnprintf(buf, HX_MAX_LINE, format, args);
-			va_end(args);
-		}
+	char buf[HX_MAX_LINE] = "\n";
+	va_list args;
+	va_start(args, format);
+	size_t len = format ? vsnprintf(buf, HX_MAX_LINE, format, args) : 1u;
+	va_end(args);
 
-		f << buf;
-	}
+	::fwrite(buf, 1, hxmax<size_t>(len, 0u), stdout);
 
 #if (HX_RELEASE) < 1
 	// Code coverage runs at exit.  A death test will return EXIT_SUCCESS.
@@ -175,32 +170,23 @@ void hxAssertHandler(uint32_t file, size_t line) {
 
 extern "C"
 void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
-	hxFile& f = hxout;
-
-	if (g_hxIsInit && level < g_hxSettings.logLevel) {
+	char buf[HX_MAX_LINE+1];
+	int sz = format ? vsnprintf(buf, HX_MAX_LINE, format, args) : -1;
+	hxAssertRelease(sz >= 0, "format error: %s", format ? format : "(null)");
+	if (sz <= 0) {
 		return;
 	}
-
-	if (f.is_open() || f.is_echo()) {
-		char buf[HX_MAX_LINE+1];
-		int sz = format ? vsnprintf(buf, HX_MAX_LINE, format, args) : -1;
-		hxAssertMsg(sz >= 0, "format error: %s", format ? format : "(null)");
-		if (sz <= 0) {
-			return;
-		}
-		sz = hxmin(sz, HX_MAX_LINE);
-		if (level == hxLogLevel_Warning || level == hxLogLevel_Assert) {
-			buf[sz++] = '\n';
-		}
-
-		if (level == hxLogLevel_Warning) {
-			f << "WARNING ";
-		}
-		else if (level == hxLogLevel_Assert) {
-			f << "ASSERT_FAIL ";
-		}
-		f.write(buf, sz);
+	if (level == hxLogLevel_Warning || level == hxLogLevel_Assert) {
+		buf[sz++] = '\n';
 	}
+
+	if (level == hxLogLevel_Warning) {
+		HX_STDOUT_STR("WARNING ");
+	}
+	else if (level == hxLogLevel_Assert) {
+		HX_STDOUT_STR("ASSERT_FAIL ");
+	}
+	::fwrite(buf, 1, sz, stdout);
 }
 
 #else // HX_RELEASE == 3
@@ -218,7 +204,6 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 			buf[sz++] = '\n';
 		}
 
-		HX_STATIC_ASSERT(HX_USE_STDIO_H, "TODO: Logging I/O");
 		::fwrite(buf, 1, sz, stdout);
 	}
 }

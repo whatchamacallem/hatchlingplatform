@@ -23,7 +23,6 @@
 #define _HAS_EXCEPTIONS 0 // must be included before standard headers
 #endif
 
-#define HX_USE_STDIO_H 1
 #define HX_USE_WASM 0
 
 #if !defined(HX_USE_CPP11_THREADS)
@@ -64,8 +63,6 @@
 #define HX_USE_WASM 0
 #endif
 #endif
-
-#define HX_USE_STDIO_H 1
 
 #if !defined(HX_USE_CPP11_THREADS)
 #define HX_USE_CPP11_THREADS (HX_CPLUSPLUS >= 201103L && !HX_USE_WASM)
@@ -213,10 +210,6 @@
 // ----------------------------------------------------------------------------
 // Default undetected HX_USE_* features.
 
-#if !defined(HX_USE_STDIO_H)
-#define HX_USE_STDIO_H 1
-#endif
-
 #if !defined(HX_USE_DMA_HARDWARE)
 #define HX_USE_DMA_HARDWARE 0
 #endif
@@ -230,8 +223,7 @@ extern "C" {
 #endif
 
 struct hxSettings {
-	const char* logFile;
-	uint8_t logLevel; // For logFile
+	uint8_t logLevel;
 	uint8_t isShuttingDown; // Allows destruction of permanent resources.
 	uint8_t deathTest; // Just for testing
 

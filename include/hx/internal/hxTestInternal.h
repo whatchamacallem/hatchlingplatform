@@ -62,7 +62,7 @@ public:
 			hxAssertRelease(mCurrentTest, "not testing");
 			hxLogHandler(hxLogLevel_Assert, "%s.%s", mCurrentTest->Suite(), mCurrentTest->Case());
 
-			return hxout;
+			return devNull_();
 		}
 		return devNull_();
 	}

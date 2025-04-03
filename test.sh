@@ -49,13 +49,13 @@ clang -Iinclude -O$I -g $WARNINGS -pedantic-errors -DHX_RELEASE=$I "$@" \
 clang -Iinclude -O$I -g -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
 	-DHX_USE_CPP11_THREADS=$I -DHX_USE_CPP11_TIME=$I "$@" -pthread -std=c++14 \
 	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address -lubsan \
-	*/*.cpp *.o -lpthread -lstdc++ -o hxtest
+	-fno-exceptions */*.cpp *.o -lpthread -lstdc++ -o hxtest
 ./hxtest | grep '\[  PASSED  \]' --color || ./hxtest
 rm hxtest *.o
 done
 
 # Remove output.
-rm log.txt profile.json hxConsoleTest_FileTest.txt hxFileTest_Operators.bin \
+rm profile.json hxConsoleTest_FileTest.txt hxFileTest_Operators.bin \
 	hxFileTest_ReadWrite.txt
 
 echo all tests passed.

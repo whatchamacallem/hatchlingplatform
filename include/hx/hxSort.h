@@ -194,10 +194,12 @@ public:
 	HX_INLINE const_iterator begin() const { return const_iterator(m_array.cbegin()); }
 	HX_INLINE iterator begin() { return iterator(m_array.begin()); }
 	HX_INLINE const_iterator cbegin() const { return const_iterator(m_array.cbegin()); }
+	HX_INLINE const_iterator cbegin() { return const_iterator(m_array.cbegin()); }
 
 	HX_INLINE const_iterator end() const { return const_iterator(m_array.cend()); }
 	HX_INLINE iterator end() { return iterator(m_array.end()); }
 	HX_INLINE const_iterator cend() const { return const_iterator(m_array.cend()); }
+	HX_INLINE const_iterator cend() { return const_iterator(m_array.cend()); }
 
 	HX_INLINE uint32_t size() const { return m_array.size(); }
 	HX_INLINE bool empty() const { return m_array.empty(); }

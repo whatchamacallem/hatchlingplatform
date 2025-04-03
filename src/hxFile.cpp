@@ -2,9 +2,7 @@
 
 #include <hx/hxFile.h>
 
-#if HX_USE_STDIO_H
 #include <stdio.h>
-#endif
 
 #if defined(_MSC_VER)
 #pragma warning(disable: 4996) // Allow use of fopen as fopen_s is not C99.
@@ -13,25 +11,10 @@
 HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------
-// This is hxout.
-
-// Wrapped to ensure correct construction order.
-hxFile& hxOut() {
-	static hxFile f(hxFile::out | hxFile::echo | hxFile::fallible, "%s",
-		(g_hxIsInit && g_hxSettings.logFile) ? g_hxSettings.logFile : "");
-	return f;
-}
-
-void hxCloseOut() {
-	// Allow assert messages to be written to stdout.
-	hxout.open(hxFile::out | hxFile::echo | hxFile::fallible, "%s", "");
-}
-
-// ----------------------------------------------------------------------------
 // hxFile
 //
-// With HX_USE_STDIO_H target will require an implementation of fopen(), fclose(),
-// fread(), fwrite(), fgets() and feof().
+// Target will require an implementation of fopen(), fclose(), fread(), fwrite(),
+// fgets() and feof().
 
 hxFile::hxFile(uint16_t mode) {
 	m_filePImpl = hxnull;
@@ -61,11 +44,8 @@ bool hxFile::open(uint16_t mode, const char* filename, ...) {
 	return rv;
 }
 
-HX_STATIC_ASSERT(HX_USE_STDIO_H, "TODO: File I/O");
-#if HX_USE_STDIO_H
-
 bool hxFile::openv_(uint16_t mode, const char* filename, va_list args) {
-	hxInit(); // Needed to write out asserts at startup.
+	hxInit(); // Needed to write out asserts before main().
 	close(); // clears all state
 	m_openMode = mode; 
 
@@ -122,12 +102,8 @@ size_t hxFile::read(void* bytes, size_t byteCount) {
 }
 
 size_t hxFile::write(const void* bytes, size_t byteCount) {
-	if (m_openMode & echo) {
-		::fwrite(bytes, 1, byteCount, stdout);
-	}
-
 	hxAssertMsg(bytes, "null i/o buffer");
-	hxAssertMsg((m_openMode & (hxFile::out | hxFile::echo)) && (m_filePImpl || (m_openMode & hxFile::fallible)),
+	hxAssertMsg((m_openMode & hxFile::out) && (m_filePImpl || (m_openMode & hxFile::fallible)),
 		"file not writable");
 	size_t bytesWritten = (bytes && m_filePImpl) ? ::fwrite(bytes, 1, byteCount, (FILE*)m_filePImpl) : 0u;
 	hxAssertRelease((byteCount == bytesWritten) || (m_openMode & hxFile::fallible),
@@ -151,7 +127,6 @@ bool hxFile::getline(char* buffer, size_t bufferSize) {
 	}
 	return true;
 }
-#endif
 
 bool hxFile::print(const char* format, ...) {
 	hxAssert(format);

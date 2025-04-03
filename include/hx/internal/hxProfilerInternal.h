@@ -3,8 +3,8 @@
 //
 // hxProfiler internals.  See hxProfiler.h instead
 
-#if !(HX_PROFILE)
-#error #include <hx/hxProfiler.h>
+#if !defined(HX_PROFILE)
+#error #include <hx/hxProfiler.h> instead
 #endif
 
 #if HX_USE_CPP11_THREADS
