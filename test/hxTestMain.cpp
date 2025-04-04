@@ -59,6 +59,8 @@ size_t hxTestMain() {
 }
 
 int main() {
+	hxPrintFileHashes();
+
 	::testing::InitGoogleTest();
 
 	size_t testsFailing = hxTestMain();

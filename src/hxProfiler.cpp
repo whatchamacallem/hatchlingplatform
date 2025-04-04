@@ -14,7 +14,7 @@ HX_REGISTER_FILENAME_HASH
 static void hxProfileStartCommand() {
 	hxProfilerStart();
 }
-hxConsoleCommandNamed(hxProfileStartCommand, profilestart);
+hxConsoleCommandNamed(hxProfileStartCommand, profilebegin);
 
 static void hxProfilerLogCommand() {
 	hxProfilerLog();
@@ -24,36 +24,36 @@ hxConsoleCommandNamed(hxProfilerLogCommand, profilelog);
 static void hxProfilerWriteToChromeTracingCommand(const char* filename) {
 	hxProfilerWriteToChromeTracing(filename);
 }
-hxConsoleCommandNamed(hxProfilerWriteToChromeTracingCommand, profiletrace);
+hxConsoleCommandNamed(hxProfilerWriteToChromeTracingCommand, profileend);
 
 // ----------------------------------------------------------------------------
 // variables
 
 // Use the address of a thread local variable as a unique thread id.
-HX_THREAD_LOCAL uint8_t s_hxProfilerThreadIdAddress = 0;
+HX_THREAD_LOCAL uint8_t s_hxProfilerThreadIdAddress_ = 0;
 
-hxProfiler g_hxProfiler;
+hxProfilerInternal_ g_hxProfiler_;
 
 // ----------------------------------------------------------------------------
-// hxProfiler
+// hxProfilerInternal_
 
-void hxProfiler::start() {
-	HX_PROFILER_LOCK();
+void hxProfilerInternal_::start_() {
+	HX_PROFILER_LOCK_();
 	m_records.clear();
 	m_isStarted = true;
 }
 
-void hxProfiler::stop() {
-	HX_PROFILER_LOCK();
+void hxProfilerInternal_::stop_() {
+	HX_PROFILER_LOCK_();
 	m_isStarted = false;
 }
 
-void hxProfiler::log() {
-	HX_PROFILER_LOCK();
+void hxProfilerInternal_::log_() {
+	HX_PROFILER_LOCK_();
 	m_isStarted = false;
 
 	for (size_t i = 0; i < m_records.size(); ++i) {
-		const hxProfiler::Record& rec = m_records[i];
+		const hxProfilerRecord_& rec = m_records[i];
 
 		size_t delta = rec.m_end - rec.m_begin;
 		hxLogRelease("profile %s: %fms cycles %u thread %x\n", hxBasename(rec.m_label),
@@ -62,8 +62,8 @@ void hxProfiler::log() {
 	}
 }
 
-void hxProfiler::writeToChromeTracing(const char* filename) {
-	HX_PROFILER_LOCK();
+void hxProfilerInternal_::writeToChromeTracing_(const char* filename) {
+	HX_PROFILER_LOCK_();
 	m_isStarted = false;
 
 	hxFile f(hxFile::out, "%s", filename);
@@ -72,7 +72,7 @@ void hxProfiler::writeToChromeTracing(const char* filename) {
 	// Converting absolute values works better with integer precision.
 	size_t cyclesPerMicrosecond = (size_t)(1.0e-3f / c_hxTimeMillisecondsPerCycle);
 	for (size_t i = 0; i < m_records.size(); ++i) {
-		const hxProfiler::Record& rec = m_records[i];
+		const hxProfilerRecord_& rec = m_records[i];
 		if (i != 0) { f.print(",\n"); }
 		const char* bn = hxBasename(rec.m_label);
 		f.print("{\"name\":\"%s\",\"cat\":\"PERF\",\"ph\":\"B\",\"pid\":0,\"tid\":%u,\"ts\":%u},\n",

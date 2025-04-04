@@ -76,7 +76,7 @@ public:
 TEST_F(hxProfilerTest, Single1ms) {
 	hxProfilerStart();
 
-	size_t startRecords = g_hxProfiler.recordsSize();
+	size_t startRecords = g_hxProfiler_.recordsSize_();
 	{
 		hxProfileScope("1 ms");
 		hxProfilerTaskTest one;
@@ -84,7 +84,7 @@ TEST_F(hxProfilerTest, Single1ms) {
 		one.execute(hxnull);
 	}
 
-	ASSERT_TRUE(1u == (g_hxProfiler.recordsSize() - startRecords));
+	ASSERT_TRUE(1u == (g_hxProfiler_.recordsSize_() - startRecords));
 
 	bool isOk = hxConsoleExecLine("profilelog");
 	ASSERT_TRUE(isOk);
@@ -93,7 +93,7 @@ TEST_F(hxProfilerTest, Single1ms) {
 TEST_F(hxProfilerTest, writeToChromeTracing) {
 	// Shut down profiling and use console commands for next capture.
 	hxProfilerStop();
-	hxConsoleExecLine("profilestart");
+	hxConsoleExecLine("profilebegin");
 
 	hxTaskQueue q;
 	hxProfilerTaskTest tasks[s_hxTestNumLabels];
@@ -103,9 +103,9 @@ TEST_F(hxProfilerTest, writeToChromeTracing) {
 	}
 	q.waitForAll();
 
-	ASSERT_TRUE(90u == g_hxProfiler.recordsSize());
+	ASSERT_TRUE(90u == g_hxProfiler_.recordsSize_());
 
-	hxConsoleExecLine("profiletrace profile.json");
+	hxConsoleExecLine("profileend profile.json");
 	hxProfilerLog();
 }
 

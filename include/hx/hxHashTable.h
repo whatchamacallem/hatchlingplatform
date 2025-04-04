@@ -350,5 +350,5 @@ private:
 	}
 
 	uint32_t m_size;
-	hxHashTableInternalAllocator<Node, HashBits> m_table;
+	hxHashTableInternalAllocator_<Node, HashBits> m_table;
 };

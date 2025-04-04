@@ -23,7 +23,8 @@ public:
 	// Delete task.  The execute() call may free task _if allocator is thread safe_.
 	HX_INLINE virtual ~hxTask() { hxAssertRelease(!m_owner, "deleting queued task: %s", getLabel()); }
 
-	// Will be wrapped in hxProfileScope(getLabel());
+	// This call is the last time this object is touched by hxTaskQueue.  It may
+	// delete or re-enqueue itself.  Will also be wrapped in hxProfileScope(getLabel());
 	virtual void execute(hxTaskQueue* q_) = 0;
 
 	// Embedded linked list of tasks used by owners.

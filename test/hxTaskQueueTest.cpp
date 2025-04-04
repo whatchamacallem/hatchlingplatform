@@ -17,10 +17,6 @@ public:
 	};
 
 	~hxTaskQueueTest() {
-#if HX_PROFILE
-		// Dont spam the test logs.
-		g_hxProfiler.recordsClear();
-#endif
 	}
 	struct TaskTest : public hxTask {
 		TaskTest() : m_execCount(0), m_reenqueueCount(0) { }

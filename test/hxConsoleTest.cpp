@@ -86,36 +86,36 @@ namespace {
 	}
 
 #undef hxConsoleTestTypeCheck
-} // namespace {
+} // namespace
 
 TEST(hxConsoleTest, CommandFactory) {
 	hxLogConsole("TEST_EXPECTING_WARNINGS:\n");
 
 	c_hxConsoleTestCallFlags = 0;
 
-	hxCommand* f0 = hxCommandFactory(hxConsoleTestFn0);
-	ASSERT_TRUE(f0->execute(""));
-	ASSERT_FALSE(f0->execute("unexpected text"));
+	hxCommand_* f0 = hxCommandFactory_(hxConsoleTestFn0);
+	ASSERT_TRUE(f0->execute_(""));
+	ASSERT_FALSE(f0->execute_("unexpected text"));
 
-	hxCommand* f1 = hxCommandFactory(hxConsoleTestFn1);
-	ASSERT_TRUE(f1->execute("123"));
-	ASSERT_FALSE(f1->execute("256"));
+	hxCommand_* f1 = hxCommandFactory_(hxConsoleTestFn1);
+	ASSERT_TRUE(f1->execute_("123"));
+	ASSERT_FALSE(f1->execute_("256"));
 
-	hxCommand* f2 = hxCommandFactory(hxConsoleTestFn2);
-	ASSERT_TRUE(f2->execute("-234 -345"));
-	ASSERT_FALSE(f2->execute("32768 -345"));
+	hxCommand_* f2 = hxCommandFactory_(hxConsoleTestFn2);
+	ASSERT_TRUE(f2->execute_("-234 -345"));
+	ASSERT_FALSE(f2->execute_("32768 -345"));
 
-	hxCommand* f3 = hxCommandFactory(hxConsoleTestFn3);
-	ASSERT_TRUE(f3->execute("1 12"));
-	ASSERT_FALSE(f3->execute("2 12"));
+	hxCommand_* f3 = hxCommandFactory_(hxConsoleTestFn3);
+	ASSERT_TRUE(f3->execute_("1 12"));
+	ASSERT_FALSE(f3->execute_("2 12"));
 
-	hxCommand* f4 = hxCommandFactory(hxConsoleTestFn4);
-	ASSERT_TRUE(f4->execute("2345 3456 3456 6.78"));
-	ASSERT_FALSE(f4->execute("$*"));
+	hxCommand_* f4 = hxCommandFactory_(hxConsoleTestFn4);
+	ASSERT_TRUE(f4->execute_("2345 3456 3456 6.78"));
+	ASSERT_FALSE(f4->execute_("$*"));
 
-	hxCommand* ff = hxCommandFactory(hxConsoleTestFn8);
-	ASSERT_TRUE(ff->execute("56789 67890 7.89"));
-	ASSERT_FALSE(ff->execute("56d789 67890 7.89"));
+	hxCommand_* ff = hxCommandFactory_(hxConsoleTestFn8);
+	ASSERT_TRUE(ff->execute_("56789 67890 7.89"));
+	ASSERT_FALSE(ff->execute_("56d789 67890 7.89"));
 	hxFree(ff);
 
 	// Check that all flags have been set.
@@ -153,7 +153,7 @@ namespace {
 	void hxConsoleTestRegister3(uint32_t, float a1) {
 		s_hxConsoleTestResultHook = a1;
 	}
-} // namespace {
+} // namespace
 
 hxConsoleCommand(hxConsoleTestRegister0);
 hxConsoleCommand(hxConsoleTestRegister1);
@@ -223,7 +223,7 @@ namespace {
 	int64_t s_hxConsoleTestLongLong = 0;
 	uint64_t s_hxConsoleTestULongLong = 0;
 	double s_hxConsoleTestDouble = 0;
-} // namespace {
+} // namespace
 
 hxConsoleVariable(s_hxConsoleTestChar);
 hxConsoleVariable(s_hxConsoleTestShort);
@@ -289,7 +289,7 @@ namespace {
 	void hxConsoleTestFileFn(float f) {
 		s_hxConsoleTestFileVar2 = f;
 	}
-} // namespace {
+} // namespace
 
 hxConsoleVariableNamed(s_hxConsoleTestFileVar1, hxConsoleTestFileVar);
 hxConsoleCommandNamed(hxConsoleTestFileFn, hxConsoleTestFileFnName);

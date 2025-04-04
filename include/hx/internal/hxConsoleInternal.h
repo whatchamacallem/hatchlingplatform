@@ -6,26 +6,26 @@
 // ----------------------------------------------------------------------------
 // hxConsole internals.  See hxConsole.h instead.
 
-struct hxCommand {
-	virtual bool execute(const char* str_) = 0; // Return false for parse errors.
-	virtual void usage(const char* id_=hxnull) = 0; // Expects command name.
+struct hxCommand_ {
+	virtual bool execute_(const char* str_) = 0; // Return false for parse errors.
+	virtual void usage_(const char* id_=hxnull) = 0; // Expects command name.
 };
 
 // Explicit registration, takes ownership of fn, id expected to be a string literal.
-void hxConsoleRegister(hxCommand* fn_, const char* id_);
+void hxConsoleRegister_(hxCommand_* fn_, const char* id_);
 
-struct hxConsoleConstructor {
-	HX_INLINE hxConsoleConstructor(hxCommand* fn_, const char* id_) {
-		hxConsoleRegister(fn_, id_);
+struct hxConsoleConstructor_ {
+	HX_INLINE hxConsoleConstructor_(hxCommand_* fn_, const char* id_) {
+		hxConsoleRegister_(fn_, id_);
 	}
 };
 
 // Console tokens are delimited by any whitespace and non-printing low-ASCII
-// characters.  NUL is a delimiter and must be checked for separately.
-HX_INLINE static bool hxIsDelimiter(char ch_) { return ch_ <= 32; }
+// characters.  NUL is considered a delimiter and must be checked for separately.
+HX_INLINE static bool hxIsDelimiter_(char ch_) { return ch_ <= 32; }
 
 // Checks for printing characters.
-HX_INLINE static bool hxIsEndOfLine(const char* str_) {
+HX_INLINE static bool hxIsEndOfLine_(const char* str_) {
 	while (*str_ != 0 && *str_ <= 32) {
 		++str_;
 	}
@@ -34,10 +34,10 @@ HX_INLINE static bool hxIsEndOfLine(const char* str_) {
 
 // Wrapper for strtol() style parser.  You may not want to force inlining of this.
 template <typename T_, typename R_>
-HX_INLINE void hxArgParse(T_& val_, const char* str_, char** next_, R_(*parser_)(char const*, char**, int)) {
+HX_INLINE void hxArgParse_(T_& val_, const char* str_, char** next_, R_(*parser_)(char const*, char**, int)) {
 	R_ r_ = parser_(str_, next_, 10);
 	if (r_ != (T_)r_) {
-		hxWarn("command arg overflow");
+		hxWarn("operand overflow");
 		*next_ = const_cast<char*>(str_); // reject input.
 		val_ = (T_)0; // Otherwise gcc will incorrectly complain.
 		return;
@@ -45,279 +45,279 @@ HX_INLINE void hxArgParse(T_& val_, const char* str_, char** next_, R_(*parser_)
 	val_ = (T_)r_;
 }
 
-// hxArg<T>. Binds string parsing operations to function args.  Invalid arguments are
+// hxArg_<T_>. Binds string parsing operations to function args.  Invalid arguments are
 // set to 0, arguments out of range result in the maximum representable values.
 
-template<typename T_> struct hxArg; // Undefined. Specialization required.
+template<typename T_> struct hxArg_; // Undefined. Specialization required.
 
-template<> struct hxArg<signed char> {
-	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtol); }
-	HX_INLINE static const char* getLabel() { return "s8"; }
-	signed char value;
+template<> struct hxArg_<signed char> {
+	HX_INLINE hxArg_(const char* str_, char** next_) { hxArgParse_(value_, str_, next_, ::strtol); }
+	HX_INLINE static const char* getLabel_() { return "s8"; }
+	signed char value_;
 };
-template<> struct hxArg<signed short> {
-	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtol); }
-	HX_INLINE static const char* getLabel() { return "s16"; }
-	signed short value;
+template<> struct hxArg_<signed short> {
+	HX_INLINE hxArg_(const char* str_, char** next_) { hxArgParse_(value_, str_, next_, ::strtol); }
+	HX_INLINE static const char* getLabel_() { return "s16"; }
+	signed short value_;
 };
-template<> struct hxArg<signed int> {
-	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtol); }
-	HX_INLINE static const char* getLabel() { return "s32"; }
-	signed int value;
+template<> struct hxArg_<signed int> {
+	HX_INLINE hxArg_(const char* str_, char** next_) { hxArgParse_(value_, str_, next_, ::strtol); }
+	HX_INLINE static const char* getLabel_() { return "s32"; }
+	signed int value_;
 };
-template<> struct hxArg<signed long int> {
-	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtol); }
-	HX_INLINE static const char* getLabel() { return "s32"; }
-	signed long int value;
+template<> struct hxArg_<signed long int> {
+	HX_INLINE hxArg_(const char* str_, char** next_) { hxArgParse_(value_, str_, next_, ::strtol); }
+	HX_INLINE static const char* getLabel_() { return "s32"; }
+	signed long int value_;
 };
-template<> struct hxArg<signed long long int> {
-	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtoll); }
-	HX_INLINE static const char* getLabel() { return "s64"; }
-	signed long long int value;
+template<> struct hxArg_<signed long long int> {
+	HX_INLINE hxArg_(const char* str_, char** next_) { hxArgParse_(value_, str_, next_, ::strtoll); }
+	HX_INLINE static const char* getLabel_() { return "s64"; }
+	signed long long int value_;
 };
-template<> struct hxArg<unsigned char> {
-	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtoul); }
-	HX_INLINE static const char* getLabel() { return "u8"; }
-	unsigned char value;
+template<> struct hxArg_<unsigned char> {
+	HX_INLINE hxArg_(const char* str_, char** next_) { hxArgParse_(value_, str_, next_, ::strtoul); }
+	HX_INLINE static const char* getLabel_() { return "u8"; }
+	unsigned char value_;
 };
-template<> struct hxArg<unsigned short> {
-	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtoul); }
-	HX_INLINE static const char* getLabel() { return "u16"; }
-	unsigned short value;
+template<> struct hxArg_<unsigned short> {
+	HX_INLINE hxArg_(const char* str_, char** next_) { hxArgParse_(value_, str_, next_, ::strtoul); }
+	HX_INLINE static const char* getLabel_() { return "u16"; }
+	unsigned short value_;
 };
-template<> struct hxArg<unsigned int> {
-	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtoul); }
-	HX_INLINE static const char* getLabel() { return "u32"; }
-	unsigned int value;
+template<> struct hxArg_<unsigned int> {
+	HX_INLINE hxArg_(const char* str_, char** next_) { hxArgParse_(value_, str_, next_, ::strtoul); }
+	HX_INLINE static const char* getLabel_() { return "u32"; }
+	unsigned int value_;
 };
-template<> struct hxArg<unsigned long int> {
-	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtoul); }
-	HX_INLINE static const char* getLabel() { return "u32"; }
-	unsigned long int value;
+template<> struct hxArg_<unsigned long int> {
+	HX_INLINE hxArg_(const char* str_, char** next_) { hxArgParse_(value_, str_, next_, ::strtoul); }
+	HX_INLINE static const char* getLabel_() { return "u32"; }
+	unsigned long int value_;
 };
-template<> struct hxArg<unsigned long long int> {
-	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtoull); }
-	HX_INLINE static const char* getLabel() { return "u64"; }
-	unsigned long long int value;
+template<> struct hxArg_<unsigned long long int> {
+	HX_INLINE hxArg_(const char* str_, char** next_) { hxArgParse_(value_, str_, next_, ::strtoull); }
+	HX_INLINE static const char* getLabel_() { return "u64"; }
+	unsigned long long int value_;
 };
-template<> struct hxArg<char> {
-	HX_INLINE hxArg(const char* str_, char** next_) { hxArgParse(value, str_, next_, ::strtol); }
-	HX_INLINE static const char* getLabel() { return "s8"; }
-	char value;
+template<> struct hxArg_<char> {
+	HX_INLINE hxArg_(const char* str_, char** next_) { hxArgParse_(value_, str_, next_, ::strtol); }
+	HX_INLINE static const char* getLabel_() { return "s8"; }
+	char value_;
 };
-template<> struct hxArg<float> {
-	HX_INLINE hxArg(const char* str_, char** next_) : value(::strtof(str_, next_)) { }
-	HX_INLINE static const char* getLabel() { return "f32"; }
-	float value;
+template<> struct hxArg_<float> {
+	HX_INLINE hxArg_(const char* str_, char** next_) : value_(::strtof(str_, next_)) { }
+	HX_INLINE static const char* getLabel_() { return "f32"; }
+	float value_;
 };
-template<> struct hxArg<double> {
-	HX_INLINE hxArg(const char* str_, char** next_) : value(::strtod(str_, next_)) { }
-	HX_INLINE static const char* getLabel() { return "f64"; }
-	double value;
+template<> struct hxArg_<double> {
+	HX_INLINE hxArg_(const char* str_, char** next_) : value_(::strtod(str_, next_)) { }
+	HX_INLINE static const char* getLabel_() { return "f64"; }
+	double value_;
 };
 // bool params must be 0 or 1.
-template<> struct hxArg<bool> {
-	HX_INLINE hxArg(const char* str_, char** next_) {
+template<> struct hxArg_<bool> {
+	HX_INLINE hxArg_(const char* str_, char** next_) {
 		unsigned long t_ = ::strtoul(str_, next_, 2);
-		value = (t_ != 0ul);
+		value_ = (t_ != 0ul);
 	}
-	HX_INLINE static const char* getLabel() { return "0/1"; }
-	bool value;
+	HX_INLINE static const char* getLabel_() { return "0/1"; }
+	bool value_;
 };
 
 // const char* args capture remainder of line including #'s.
-template<> struct hxArg<const char*> {
-	HX_INLINE hxArg(const char* str_, char** next_) {
-		while (*str_ != '\0' && hxIsDelimiter(*str_)) { // Skip leading whitespace
+template<> struct hxArg_<const char*> {
+	HX_INLINE hxArg_(const char* str_, char** next_) {
+		while (*str_ != '\0' && hxIsDelimiter_(*str_)) { // Skip leading whitespace
 			++str_;
 		}
-		value = str_;
+		value_ = str_;
 		*next_ = const_cast<char*>("");
 	}
-	HX_INLINE static const char* getLabel() { return "string"; }
-	const char* value;
+	HX_INLINE static const char* getLabel_() { return "string"; }
+	const char* value_;
 };
 
 template<typename R_>
-struct hxCommand0 : public hxCommand {
-	hxCommand0(R_(*fn_)()) : m_fn(fn_) { }
-	virtual bool execute(const char* str_) HX_OVERRIDE {
-		if(hxIsEndOfLine(str_)) {
-			m_fn();
+struct hxCommand0_ : public hxCommand_ {
+	hxCommand0_(R_(*fn_)()) : m_fn_(fn_) { }
+	virtual bool execute_(const char* str_) HX_OVERRIDE {
+		if(hxIsEndOfLine_(str_)) {
+			m_fn_();
 			return true;
 		}
 
-		usage();
+		usage_();
 		return false;
 	}
-	virtual void usage(const char* id_=hxnull) HX_OVERRIDE {
-		hxLogConsole("%s\n", id_ ? id_ : "usage: no args"); (void)id_;
+	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
+		hxLogConsole("%s\n", id_ ? id_ : "usage_: no args"); (void)id_;
 	}
-	R_(*m_fn)();
+	R_(*m_fn_)();
 };
 
 template<typename R_, typename A_>
-struct hxCommand1 : public hxCommand {
-	hxCommand1(R_(*fn_)(A_)) : m_fn(fn_) { }
-	virtual bool execute(const char* str_) HX_OVERRIDE {
+struct hxCommand1_ : public hxCommand_ {
+	hxCommand1_(R_(*fn_)(A_)) : m_fn_(fn_) { }
+	virtual bool execute_(const char* str_) HX_OVERRIDE {
 		char* ptr_ = hxnull;
-		hxArg<A_> arg1_(str_, &ptr_);
-		if (str_ != ptr_ && hxIsEndOfLine(ptr_)) {
-			m_fn(arg1_.value);
+		hxArg_<A_> arg1_(str_, &ptr_);
+		if (str_ != ptr_ && hxIsEndOfLine_(ptr_)) {
+			m_fn_(arg1_.value_);
 			return true;
 		}
-		usage();
+		usage_();
 		return false;
 	}
-	virtual void usage(const char* id_=hxnull) HX_OVERRIDE {
-		hxLogConsole("%s %s\n", id_ ? id_ : "usage:", hxArg<A_>::getLabel()); (void)id_;
+	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
+		hxLogConsole("%s %s\n", id_ ? id_ : "usage_:", hxArg_<A_>::getLabel_()); (void)id_;
 	}
-	R_(*m_fn)(A_);
+	R_(*m_fn_)(A_);
 };
 
 template<typename R_, typename A1_, typename A2_>
-struct hxCommand2 : public hxCommand {
-	hxCommand2(R_(*fn_)(A1_, A2_)) : m_fn(fn_) { }
-	virtual bool execute(const char* p_) HX_OVERRIDE {
+struct hxCommand2_ : public hxCommand_ {
+	hxCommand2_(R_(*fn_)(A1_, A2_)) : m_fn_(fn_) { }
+	virtual bool execute_(const char* p_) HX_OVERRIDE {
 		char* pA_ = hxnull;
 		char* pB_ = hxnull;
-		hxArg<A1_> arg1_(p_, &pA_);
+		hxArg_<A1_> arg1_(p_, &pA_);
 		if (p_ != pA_) {
-			hxArg<A2_> arg2_(pA_, &pB_);
-			if (pA_ != pB_ && hxIsEndOfLine(pB_)) {
-				m_fn(arg1_.value, arg2_.value);
+			hxArg_<A2_> arg2_(pA_, &pB_);
+			if (pA_ != pB_ && hxIsEndOfLine_(pB_)) {
+				m_fn_(arg1_.value_, arg2_.value_);
 				return true;
 			}
 		}
-		usage();
+		usage_();
 		return false;
 	}
-	virtual void usage(const char* id_=hxnull) HX_OVERRIDE {
-		hxLogConsole("%s %s %s\n", id_ ? id_ : "usage:", hxArg<A1_>::getLabel(), hxArg<A2_>::getLabel()); (void)id_;
+	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
+		hxLogConsole("%s %s %s\n", id_ ? id_ : "usage_:", hxArg_<A1_>::getLabel_(), hxArg_<A2_>::getLabel_()); (void)id_;
 	}
-	R_(*m_fn)(A1_, A2_);
+	R_(*m_fn_)(A1_, A2_);
 };
 
 template<typename R_, typename A1_, typename A2_, typename A3_>
-struct hxCommand3 : public hxCommand {
-	hxCommand3(R_(*fn_)(A1_, A2_, A3_)) : m_fn(fn_) { }
-	virtual bool execute(const char* p_) HX_OVERRIDE {
+struct hxCommand3_ : public hxCommand_ {
+	hxCommand3_(R_(*fn_)(A1_, A2_, A3_)) : m_fn_(fn_) { }
+	virtual bool execute_(const char* p_) HX_OVERRIDE {
 		char* pA_ = hxnull;
 		char* pB_ = hxnull;
-		hxArg<A1_> arg1_(p_, &pA_);
+		hxArg_<A1_> arg1_(p_, &pA_);
 		if (p_ != pA_) {
-			hxArg<A2_> arg2_(pA_, &pB_);
+			hxArg_<A2_> arg2_(pA_, &pB_);
 			if (pA_ != pB_) {
-				hxArg<A3_> arg3_(pB_, &pA_);
-				if (pA_ != pB_ && hxIsEndOfLine(pA_)) {
-					m_fn(arg1_.value, arg2_.value, arg3_.value);
+				hxArg_<A3_> arg3_(pB_, &pA_);
+				if (pA_ != pB_ && hxIsEndOfLine_(pA_)) {
+					m_fn_(arg1_.value_, arg2_.value_, arg3_.value_);
 					return true;
 				}
 			}
 		}
 
-		usage();
+		usage_();
 		return false;
 	}
-	virtual void usage(const char* id_=hxnull) HX_OVERRIDE {
-		hxLogConsole("%s %s %s %s\n", id_ ? id_ : "usage:", hxArg<A1_>::getLabel(), hxArg<A2_>::getLabel(), hxArg<A3_>::getLabel()); (void)id_;
+	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
+		hxLogConsole("%s %s %s %s\n", id_ ? id_ : "usage_:", hxArg_<A1_>::getLabel_(), hxArg_<A2_>::getLabel_(), hxArg_<A3_>::getLabel_()); (void)id_;
 	}
-	R_(*m_fn)(A1_, A2_, A3_);
+	R_(*m_fn_)(A1_, A2_, A3_);
 };
 
 template<typename R_, typename A1_, typename A2_, typename A3_, typename A4_>
-struct hxCommand4 : public hxCommand {
-	hxCommand4(R_(*fn_)(A1_, A2_, A3_, A4_)) : m_fn(fn_) { }
-	virtual bool execute(const char* p_) HX_OVERRIDE {
+struct hxCommand4_ : public hxCommand_ {
+	hxCommand4_(R_(*fn_)(A1_, A2_, A3_, A4_)) : m_fn_(fn_) { }
+	virtual bool execute_(const char* p_) HX_OVERRIDE {
 		char* pA_ = hxnull;
 		char* pB_ = hxnull;
-		hxArg<A1_> arg1_(p_, &pA_);
+		hxArg_<A1_> arg1_(p_, &pA_);
 		if (p_ != pA_) {
-			hxArg<A2_> arg2_(pA_, &pB_);
+			hxArg_<A2_> arg2_(pA_, &pB_);
 			if (pA_ != pB_) {
-				hxArg<A3_> arg3_(pB_, &pA_);
+				hxArg_<A3_> arg3_(pB_, &pA_);
 				if (pA_ != pB_) {
-					hxArg<A4_> arg4_(pA_, &pB_);
-					if (pA_ != pB_ && hxIsEndOfLine(pB_)) {
-						m_fn(arg1_.value, arg2_.value, arg3_.value, arg4_.value);
+					hxArg_<A4_> arg4_(pA_, &pB_);
+					if (pA_ != pB_ && hxIsEndOfLine_(pB_)) {
+						m_fn_(arg1_.value_, arg2_.value_, arg3_.value_, arg4_.value_);
 						return true;
 					}
 				}
 			}
 		}
-		usage();
+		usage_();
 		return false;
 	}
-	virtual void usage(const char* id_=hxnull) HX_OVERRIDE {
-		hxLogConsole("%s %s %s %s %s\n", id_ ? id_ : "usage:", hxArg<A1_>::getLabel(), hxArg<A2_>::getLabel(), hxArg<A3_>::getLabel(),
-			hxArg<A4_>::getLabel()); (void)id_;
+	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
+		hxLogConsole("%s %s %s %s %s\n", id_ ? id_ : "usage_:", hxArg_<A1_>::getLabel_(), hxArg_<A2_>::getLabel_(), hxArg_<A3_>::getLabel_(),
+			hxArg_<A4_>::getLabel_()); (void)id_;
 	}
-	R_(*m_fn)(A1_, A2_, A3_, A4_);
+	R_(*m_fn_)(A1_, A2_, A3_, A4_);
 };
 
-template<typename T>
-struct hxVariable : public hxCommand {
-	hxVariable(volatile T* var_) : m_var(var_) { }
-	virtual bool execute(const char* str_) HX_OVERRIDE {
-		if (hxIsEndOfLine(str_)) {
-			usage("value is:"); // print type and value.
+template<typename T_>
+struct hxVariable_ : public hxCommand_ {
+	hxVariable_(volatile T_* var_) : m_var_(var_) { }
+	virtual bool execute_(const char* str_) HX_OVERRIDE {
+		if (hxIsEndOfLine_(str_)) {
+			usage_("value_ is:"); // print type and value_.
 			return true;
 		}
 		char* ptr_ = hxnull;
-		hxArg<T> x_(str_, &ptr_);
-		if (ptr_ != str_ && hxIsEndOfLine(ptr_)) {
-			*m_var = x_.value;
+		hxArg_<T_> x_(str_, &ptr_);
+		if (ptr_ != str_ && hxIsEndOfLine_(ptr_)) {
+			*m_var_ = x_.value_;
 			return true;
 		}
-		usage("usage:");
+		usage_("usage_:");
 		return false;
 	}
-	virtual void usage(const char* id_=hxnull) HX_OVERRIDE {
+	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
 		(void)id_;
-		if (*m_var == (T)(long long)*m_var) {
-			// If the current value fits in a long long, use that.
-			hxLogConsole("%s %s(=%lld)\n", id_ ? id_ : "usage:", hxArg<T>::getLabel(), (long long)*m_var);
+		if (*m_var_ == (T_)(long long)*m_var_) {
+			// If the current value_ fits in a long long, use that.
+			hxLogConsole("%s %s(=%lld)\n", id_ ? id_ : "usage_:", hxArg_<T_>::getLabel_(), (long long)*m_var_);
 		}
 		else {
-			hxLogConsole("%s %s(=%lf)\n", id_ ? id_ : "usage:", hxArg<T>::getLabel(), (double)*m_var);
+			hxLogConsole("%s %s(=%lf)\n", id_ ? id_ : "usage_:", hxArg_<T_>::getLabel_(), (double)*m_var_);
 		}
 	}
-	volatile T* m_var;
+	volatile T_* m_var_;
 };
 
 template<typename R_>
-HX_INLINE hxCommand* hxCommandFactory(R_(*fn_)()) {
-	return hxNewExt<hxCommand0<R_>, hxMemoryManagerId_Console>(fn_);
+HX_INLINE hxCommand_* hxCommandFactory_(R_(*fn_)()) {
+	return hxNewExt<hxCommand0_<R_>, hxMemoryManagerId_Console>(fn_);
 }
 
 template<typename R_, typename A1_>
-HX_INLINE hxCommand* hxCommandFactory(R_(*fn_)(A1_)) {
-	return hxNewExt<hxCommand1<R_, A1_>, hxMemoryManagerId_Console>(fn_);
+HX_INLINE hxCommand_* hxCommandFactory_(R_(*fn_)(A1_)) {
+	return hxNewExt<hxCommand1_<R_, A1_>, hxMemoryManagerId_Console>(fn_);
 }
 
 template<typename R_, typename A1_, typename A2_>
-HX_INLINE hxCommand* hxCommandFactory(R_(*fn_)(A1_, A2_)) {
-	return hxNewExt<hxCommand2<R_, A1_, A2_>, hxMemoryManagerId_Console>(fn_);
+HX_INLINE hxCommand_* hxCommandFactory_(R_(*fn_)(A1_, A2_)) {
+	return hxNewExt<hxCommand2_<R_, A1_, A2_>, hxMemoryManagerId_Console>(fn_);
 }
 
 template<typename R_, typename A1_, typename A2_, typename A3_>
-HX_INLINE hxCommand* hxCommandFactory(R_(*fn_)(A1_, A2_, A3_)) {
-	return hxNewExt<hxCommand3<R_, A1_, A2_, A3_>, hxMemoryManagerId_Console>(fn_);
+HX_INLINE hxCommand_* hxCommandFactory_(R_(*fn_)(A1_, A2_, A3_)) {
+	return hxNewExt<hxCommand3_<R_, A1_, A2_, A3_>, hxMemoryManagerId_Console>(fn_);
 }
 
 template<typename R_, typename A1_, typename A2_, typename A3_, typename A4_>
-HX_INLINE hxCommand* hxCommandFactory(R_(*fn_)(A1_, A2_, A3_, A4_)) {
-	return hxNewExt<hxCommand4<R_, A1_, A2_, A3_, A4_>, hxMemoryManagerId_Console>(fn_);
+HX_INLINE hxCommand_* hxCommandFactory_(R_(*fn_)(A1_, A2_, A3_, A4_)) {
+	return hxNewExt<hxCommand4_<R_, A1_, A2_, A3_, A4_>, hxMemoryManagerId_Console>(fn_);
 }
 
-template<typename T>
-HX_INLINE hxCommand* hxVariableFactory(volatile T* var_) {
-    // Warning: Whole program optimization was breaking with this: return hxNew<hxVariable<T> >(var_);
-	return ::new(hxMallocExt(sizeof(hxVariable<T>), hxMemoryManagerId_Console, HX_ALIGNMENT_MASK)) hxVariable<T>(var_);
+template<typename T_>
+HX_INLINE hxCommand_* hxVariableFactory_(volatile T_* var_) {
+    // Warning: Whole program optimization was breaking with this: return hxNew<hxVariable_<T_> >(var_);
+	return ::new(hxMallocExt(sizeof(hxVariable_<T_>), hxMemoryManagerId_Console, HX_ALIGNMENT_MASK)) hxVariable_<T_>(var_);
 }
 
 // ERROR: Pointers cannot be console variables.
-template<typename T>
-inline hxCommand* hxVariableFactory(volatile T** var_); // = delete
-template<typename T>
-inline hxCommand* hxVariableFactory(const volatile T** var_); // = delete
+template<typename T_>
+inline hxCommand_* hxVariableFactory_(volatile T_** var_); // = delete
+template<typename T_>
+inline hxCommand_* hxVariableFactory_(const volatile T_** var_); // = delete

@@ -11,6 +11,8 @@
 
 #include <stdio.h>
 
+HX_REGISTER_FILENAME_HASH
+
 // Exceptions add overhead to c++ and add untested pathways.
 #if defined(__cpp_exceptions)
 HX_STATIC_ASSERT(0, "exceptions should not be enabled");
@@ -19,10 +21,9 @@ HX_STATIC_ASSERT(0, "exceptions should not be enabled");
 #define HX_STDOUT_STR(x) ::fwrite(x, (sizeof x) - 1, 1, stdout)
 
 // ----------------------------------------------------------------------------
-// Implements HX_REGISTER_FILENAME_HASH.  See hxStringLiteralHash.h.
+// Implements HX_REGISTER_FILENAME_HASH in debug.  See hxStringLiteralHash.h.
 
 #if (HX_RELEASE) < 1
-HX_REGISTER_FILENAME_HASH
 typedef hxHashTable<hxHashTableNodeStringLiteral, 5> hxHashStringLiteral;
 
 struct hxFilenameLess {
@@ -40,7 +41,7 @@ hxRegisterFileConstructor::hxRegisterFileConstructor(const char* s) {
 	hxStringLiteralHashes().insert_unique(s, hxMemoryManagerId_Heap);
 }
 
-static void hxPrintFileHashes() {
+void hxPrintFileHashes(void) {
 	hxLog("filenames in hash order:\n");
 
 	typedef hxArray<const char*> Filenames;
@@ -61,8 +62,6 @@ static void hxPrintFileHashes() {
 
 	hxStringLiteralHashes().clear();
 }
-#else
-#define hxPrintFileHashes() ((void)0)
 #endif
 
 // ----------------------------------------------------------------------------
@@ -70,20 +69,14 @@ static void hxPrintFileHashes() {
 
 void hxSettingsConstruct();
 
-static const char* s_hxInitFile = ""; // For trapping code running before hxMain.
-static size_t s_hxInitLine = 0;
-
 #if HX_USE_CPP11_TIME
 std::chrono::high_resolution_clock::time_point g_hxTimeStart;
 #endif
 
 extern "C"
-void hxInitAt(const char* file, size_t line) {
-	hxAssertRelease(!g_hxIsInit, "internal error");
+void hxInitInternal(void) {
+	hxAssertRelease(!g_hxIsInit, "call hxInit() instead");
 	g_hxIsInit = 1;
-
-	if (file) { s_hxInitFile = file; }
-	s_hxInitLine = line;
 
 #if HX_USE_CPP11_TIME
 	g_hxTimeStart = std::chrono::high_resolution_clock::now();
@@ -102,31 +95,49 @@ void hxLogHandler(enum hxLogLevel level, const char* format, ...) {
 	va_end(args);
 }
 
+extern "C"
+void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
+	if(g_hxSettings.logLevel > level) {
+		return;
+	}
+
+	char buf[HX_MAX_LINE+1];
+	int sz = format ? vsnprintf(buf, HX_MAX_LINE, format, args) : -1;
+	hxAssertRelease(sz >= 0, "format error: %s", format ? format : "(null)");
+	if (sz <= 0) {
+		return;
+	}
+	if (level == hxLogLevel_Warning) {
+		HX_STDOUT_STR("WARNING ");
+		buf[sz++] = '\n';
+	}
+	else if (level == hxLogLevel_Assert) {
+		HX_STDOUT_STR("ASSERT_FAIL ");
+		buf[sz++] = '\n';
+	}
+	::fwrite(buf, 1, sz, stdout);
+}
+
 // ----------------------------------------------------------------------------
-// HX_RELEASE < 3 facilities 
+// HX_RELEASE < 3 facilities for testing tear down. Just call _Exit() otherwise. 
 
 #if (HX_RELEASE) < 3
 
 extern "C"
-void hxShutdown() {
+void hxShutdown(void) {
 	hxAssert(g_hxIsInit);
-	hxPrintFileHashes();
+	g_hxSettings.isShuttingDown = true;
 	hxProfilerStop();
 	hxDmaShutDown();
-
-	g_hxSettings.isShuttingDown = true;
 	hxConsoleDeregisterAll(); // Free console allocations.
-	hxMemoryManagerShutDown();
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	g_hxSettings.disableMemoryManager = true;
-#endif
+	hxMemoryManagerShutDown(); // Will trap further activity
 }
 
 extern "C"
 void hxExit(const char* format, ...) {
 	HX_STDOUT_STR("EXIT ");
 
-	char buf[HX_MAX_LINE] = "\n";
+	char buf[HX_MAX_LINE];
 	va_list args;
 	va_start(args, format);
 	size_t len = format ? vsnprintf(buf, HX_MAX_LINE, format, args) : 1u;
@@ -134,18 +145,12 @@ void hxExit(const char* format, ...) {
 
 	::fwrite(buf, 1, hxmax<size_t>(len, 0u), stdout);
 
-#if (HX_RELEASE) < 1
-	// Code coverage runs at exit.  A death test will return EXIT_SUCCESS.
+	// The deathTest flag is for coverage testing.
 	::exit(g_hxSettings.deathTest ? EXIT_SUCCESS : EXIT_FAILURE);
-#else
-	// WARNING: All of the global C++ destructors may be registered with atexit()
-	// which wastes a little memory.
-	::_Exit(g_hxSettings.deathTest ? EXIT_SUCCESS : EXIT_FAILURE);
-#endif
 }
 
+#if (HX_RELEASE) == 0
 extern "C"
-#if (HX_RELEASE) < 1
 int hxAssertHandler(const char* file, size_t line) {
 	const char* f = hxBasename(file);
 	if (!g_hxIsInit || g_hxSettings.assertsToBeSkipped-- > 0) {
@@ -160,51 +165,12 @@ int hxAssertHandler(const char* file, size_t line) {
 	return 0;
 }
 #else
+extern "C" HX_ATTR_NORETURN
 void hxAssertHandler(uint32_t file, size_t line) {
 	hxExit("ASSERT_FAIL %08x(%u)\n", (unsigned int)file, (unsigned int)line);
 }
 #endif
 
-// ----------------------------------------------------------------------------
-// hxLogHandlerV
+#endif // HX_RELEASE < 3
 
-extern "C"
-void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
-	char buf[HX_MAX_LINE+1];
-	int sz = format ? vsnprintf(buf, HX_MAX_LINE, format, args) : -1;
-	hxAssertRelease(sz >= 0, "format error: %s", format ? format : "(null)");
-	if (sz <= 0) {
-		return;
-	}
-	if (level == hxLogLevel_Warning || level == hxLogLevel_Assert) {
-		buf[sz++] = '\n';
-	}
 
-	if (level == hxLogLevel_Warning) {
-		HX_STDOUT_STR("WARNING ");
-	}
-	else if (level == hxLogLevel_Assert) {
-		HX_STDOUT_STR("ASSERT_FAIL ");
-	}
-	::fwrite(buf, 1, sz, stdout);
-}
-
-#else // HX_RELEASE == 3
-extern "C"
-void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
-
-	if (!format || (g_hxIsInit && level < g_hxSettings.logLevel)) {
-		return;
-	}
-	char buf[HX_MAX_LINE+1];
-	int sz = vsnprintf(buf, HX_MAX_LINE, format, args);
-	if (sz > 0) {
-		sz = hxmin(sz, HX_MAX_LINE);
-		if (level == hxLogLevel_Warning || level == hxLogLevel_Assert) {
-			buf[sz++] = '\n';
-		}
-
-		::fwrite(buf, 1, sz, stdout);
-	}
-}
-#endif

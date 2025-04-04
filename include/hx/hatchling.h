@@ -51,7 +51,7 @@ enum hxLogLevel {
 };
 
 // The null pointer value for a given pointer type represented by the numeric
-// constant 0.
+// constant 0.  This header is C.  Use nullptr if you prefer it.
 #define hxnull 0
 
 // Macro for adding quotation marks.  Evaluates __LINE__ as a string containing
@@ -68,7 +68,7 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 
 #if (HX_RELEASE) == 0 // debug facilities
 // Initializes the platform.
-#define hxInit() (void)(g_hxIsInit || (hxInitAt(__FILE__, __LINE__), 0))
+#define hxInit() (void)(g_hxIsInit || (hxInitInternal(), 0))
 
 // Enters formatted messages in the system log.  Does not add a newline.
 // HX_RELEASE < 1
@@ -92,7 +92,7 @@ int hxAssertHandler(const char* file_, size_t line_);
 	hxAssertHandler(__FILE__, __LINE__)) || (HX_DEBUG_BREAK,0)))
 
 #else // HX_RELEASE > 1
-#define hxInit() (void)(g_hxIsInit || (hxInitAt(hxnull, 0), 0))
+#define hxInit() (void)(g_hxIsInit || (hxInitInternal(), 0))
 #define hxLog(...) ((void)0)
 #define hxAssertMsg(x_, ...) ((void)0)
 #define hxAssert(x_) ((void)0)
@@ -131,10 +131,10 @@ HX_ATTR_NORETURN void hxAssertHandler(uint32_t file_, size_t line_);
 #define hxAssertRelease(x_, ...) ((void)0) // no asserts at level 3.
 #endif
 
-// Use hxInit() instead.
-void hxInitAt(const char* file_, size_t line_);
+// Use hxInit() instead. It checks g_hxIsInit.
+void hxInitInternal(void);
 
-// Set to true by hxInit().
+// Set to true by hxInitInternal().
 extern int g_hxIsInit;
 
 #if (HX_RELEASE) < 3
@@ -167,6 +167,13 @@ const char* hxBasename(const char* path_);
 
 // Calculates a string hash at runtime that is the same as hxStringLiteralHash.
 uint32_t hxStringLiteralHashDebug(const char* string_);
+
+#if (HX_RELEASE) < 1
+// Prints file name hashes registered with HX_REGISTER_FILENAME_HASH.  Use after main().
+void hxPrintFileHashes(void);
+#else
+#define hxPrintFileHashes() ((void)0)
+#endif
 
 // ----------------------------------------------------------------------------
 #if HX_CPLUSPLUS

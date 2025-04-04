@@ -20,7 +20,7 @@ public:
 			: Base(key_), m_cmd(0), m_hash(hash_) {
 		if ((HX_RELEASE) < 1) {
 			const char* k = key;
-			while (!hxIsDelimiter(*k)) {
+			while (!hxIsDelimiter_(*k)) {
 				++k;
 			}
 			hxAssertMsg(*k == '\0', "console symbol contains delimiter: \"%s\"", key);
@@ -36,7 +36,7 @@ public:
 	HX_INLINE static uint32_t hash(const char*const& key) {
 		const char* k_ = key;
 		uint32_t x_ = (uint32_t)0x811c9dc5; // FNV-1a string hashing.
-		while (!hxIsDelimiter(*k_)) {
+		while (!hxIsDelimiter_(*k_)) {
 			x_ ^= (uint32_t)*k_++;
 			x_ *= (uint32_t)0x01000193;
 		}
@@ -51,7 +51,7 @@ public:
 		return lhs.hash() == rhsHash;
 	}
 
-	hxCommand* m_cmd;
+	hxCommand_* m_cmd;
 	uint32_t m_hash;
 };
 
@@ -63,8 +63,8 @@ static hxCommandTable& hxConsoleCommands() { static hxCommandTable tbl; return t
 // ----------------------------------------------------------------------------
 // Console API
 
-void hxConsoleRegister(hxCommand* fn, const char* id) {
-	hxAssertMsg(fn && id, "hxConsoleRegister args");
+void hxConsoleRegister_(hxCommand_* fn, const char* id) {
+	hxAssertMsg(fn && id, "hxConsoleRegister_ args");
 	hxConsoleHashTableNode& node = hxConsoleCommands().insert_unique(id, hxMemoryManagerId_Heap);
 	hxAssertMsg(!node.m_cmd, "command already registered: %s", id);
 	node.m_cmd = fn;
@@ -81,7 +81,7 @@ void hxConsoleDeregisterAll() {
 bool hxConsoleExecLine(const char* command) {
 	// Skip leading whitespace
 	const char* pos = command;
-	while (*pos != '\0' && hxIsDelimiter(*pos)) {
+	while (*pos != '\0' && hxIsDelimiter_(*pos)) {
 		++pos;
 	}
 
@@ -97,12 +97,12 @@ bool hxConsoleExecLine(const char* command) {
 	}
 
 	// Skip command name
-	while (!hxIsDelimiter(*pos)) {
+	while (!hxIsDelimiter_(*pos)) {
 		++pos;
 	}
 
-	bool result = node->m_cmd->execute(pos); // The hxArgs skip leading whitespace.
-	hxWarnCheck(result, "cannot execute: %s", command);
+	bool result = node->m_cmd->execute_(pos); // The hxArg_s skip leading whitespace.
+	hxWarnCheck(result, "cannot execute_: %s", command);
 	return result;
 }
 
@@ -111,7 +111,7 @@ bool hxConsoleExecFile(hxFile& file) {
 	bool result = true;
 	while (result && file.getline(buf)) {
 		hxLog("console: %s", buf);
-		result = hxConsoleExecLine(buf) && result;
+		result = hxConsoleExecLine(buf);
 	}
 	return result;
 }
@@ -155,7 +155,7 @@ void hxConsoleHelp() {
 
 		for (hxArray<const hxConsoleHashTableNode*>::iterator it = cmds.begin();
 				it != cmds.end(); ++it) {
-			(*it)->m_cmd->usage((*it)->key);
+			(*it)->m_cmd->usage_((*it)->key);
 		}
 	}
 }
@@ -191,5 +191,5 @@ hxConsoleCommandNamed(hxConsolePoke, poke);
 hxConsoleCommandNamed(hxConsoleHexDump, hex);
 #endif
 
-// Executes commands and settings in file.  usage: "exec <filename>"
+// Executes commands and settings in file.  usage_: "exec <filename>"
 hxConsoleCommandNamed(hxConsoleExecFilename, exec);

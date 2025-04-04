@@ -18,23 +18,23 @@ class hxFile;
 
 // Registers a function.  Use in a global scope.
 //   E.g. hxConsoleCommand(srand);
-#define hxConsoleCommand(x_) hxConsoleConstructor \
-	HX_CONCATENATE(g_hxConsoleSymbol_,x_)(hxCommandFactory(&(x_)), HX_QUOTE(x_))
+#define hxConsoleCommand(x_) hxConsoleConstructor_ \
+	HX_CONCATENATE(g_hxConsoleSymbol_,x_)(hxCommandFactory_(&(x_)), HX_QUOTE(x_))
 
 // Registers a named function.  Use in a global scope.  Provided name must be a
 // valid C identifier.
-#define hxConsoleCommandNamed(x_, name_) hxConsoleConstructor \
-	HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxCommandFactory(&(x_)), HX_QUOTE(name_))
+#define hxConsoleCommandNamed(x_, name_) hxConsoleConstructor_ \
+	HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxCommandFactory_(&(x_)), HX_QUOTE(name_))
 
 // Registers a variable.  Use in a global scope.
 //   E.g. bool g_isEnabled=false; hxConsoleVariable(g_isEnabled);
-#define hxConsoleVariable(x_) hxConsoleConstructor \
-	HX_CONCATENATE(g_hxConsoleSymbol_,x_)(hxVariableFactory(&(x_)), HX_QUOTE(x_))
+#define hxConsoleVariable(x_) hxConsoleConstructor_ \
+	HX_CONCATENATE(g_hxConsoleSymbol_,x_)(hxVariableFactory_(&(x_)), HX_QUOTE(x_))
 
 // Registers a named variable.  Use in a global scope.  Provided name must be a
 // valid C identifier.
-#define hxConsoleVariableNamed(x_, name_) hxConsoleConstructor \
-	HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxVariableFactory(&(x_)), HX_QUOTE(name_))
+#define hxConsoleVariableNamed(x_, name_) hxConsoleConstructor_ \
+	HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxVariableFactory_(&(x_)), HX_QUOTE(name_))
 
 // Explicit de-registration of a console symbol.
 void hxConsoleDeregister(const char* id_);
