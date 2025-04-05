@@ -2,11 +2,11 @@
 // Copyright 2017-2025 Adrian Johnston
 
 #include <hx/hatchling.h>
-#include <hx/hxTime.h>
-#include <hx/hxArray.h>
+#include <hx/hxTime.hpp>
+#include <hx/hxArray.hpp>
 
 #if HX_PROFILE
-#include <hx/internal/hxProfilerInternal.h>
+#include <hx/internal/hxProfilerInternal.hpp>
 #define HX_PROFILE_ONLY_(x_) x_
 #else // !HX_PROFILE
 #define HX_PROFILE_ONLY_(x_) ((void)0)

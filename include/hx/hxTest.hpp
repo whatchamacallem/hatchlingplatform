@@ -8,7 +8,7 @@
 #if HX_USE_GOOGLE_TEST
 #include <gtest/gtest.h>
 #else // !HX_USE_GOOGLE_TEST
-#include <hx/internal/hxTestInternal.h>
+#include <hx/internal/hxTestInternal.hpp>
 
 // A partial Google Test reimplementation.
 namespace testing {

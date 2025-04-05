@@ -1,7 +1,7 @@
 #pragma once
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/internal/hxHashTableInternal.h>
+#include <hx/internal/hxHashTableInternal.hpp>
 
 // hxHashTable.h - This header implements a hash table that operates without 
 // reallocating memory or copying around data.  It can be used as either a map

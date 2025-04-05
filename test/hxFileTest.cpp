@@ -1,7 +1,7 @@
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hxFile.h>
-#include <hx/hxTest.h>
+#include <hx/hxFile.hpp>
+#include <hx/hxTest.hpp>
 
 HX_REGISTER_FILENAME_HASH
 

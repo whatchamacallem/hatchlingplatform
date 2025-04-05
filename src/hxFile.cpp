@@ -1,6 +1,6 @@
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hxFile.h>
+#include <hx/hxFile.hpp>
 
 #include <stdio.h>
 

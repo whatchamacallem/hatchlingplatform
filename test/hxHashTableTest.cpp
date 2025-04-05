@@ -1,8 +1,8 @@
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hxHashTableNodes.h>
-#include <hx/hxHashTable.h>
-#include <hx/hxTest.h>
+#include <hx/hxHashTableNodes.hpp>
+#include <hx/hxHashTable.hpp>
+#include <hx/hxTest.hpp>
 
 HX_REGISTER_FILENAME_HASH
 

@@ -1,7 +1,7 @@
 // Copyright 2017-2025 Adrian Johnston
 
 #include <hx/hatchling.h>
-#include <hx/hxConsole.h>
+#include <hx/hxConsole.hpp>
 
 HX_REGISTER_FILENAME_HASH
 

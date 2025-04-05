@@ -1,7 +1,7 @@
 #pragma once
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hxHashTable.h>
+#include <hx/hxHashTable.hpp>
 
 // Usable implementations of the hxHashTable Node template parameter.
 

@@ -1,7 +1,7 @@
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hxArray.h>
-#include <hx/hxTest.h>
+#include <hx/hxArray.hpp>
+#include <hx/hxTest.hpp>
 
 #include <limits.h>
 

@@ -1,7 +1,7 @@
 #pragma once
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hxAllocator.h>
+#include <hx/hxAllocator.hpp>
 
 // ----------------------------------------------------------------------------
 // hxArray

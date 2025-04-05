@@ -1,6 +1,6 @@
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hxSort.h>
+#include <hx/hxSort.hpp>
 
 HX_REGISTER_FILENAME_HASH
 

@@ -1,8 +1,8 @@
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hxDma.h>
-#include <hx/hxArray.h>
-#include <hx/hxProfiler.h>
+#include <hx/hxDma.hpp>
+#include <hx/hxArray.hpp>
+#include <hx/hxProfiler.hpp>
 #if HX_USE_CPP11_THREADS
 #include <mutex>
 #endif

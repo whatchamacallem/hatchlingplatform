@@ -2,7 +2,7 @@
 // Copyright 2017-2025 Adrian Johnston
 
 #include <hx/hatchling.h>
-#include <hx/hxFile.h>
+#include <hx/hxFile.hpp>
 
 HX_STATIC_ASSERT(!HX_USE_GOOGLE_TEST, "Do not include directly");
 

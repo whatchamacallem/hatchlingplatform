@@ -1,10 +1,10 @@
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hxProfiler.h>
-#include <hx/hxTaskQueue.h>
-#include <hx/hxConsole.h>
+#include <hx/hxProfiler.hpp>
+#include <hx/hxTaskQueue.hpp>
+#include <hx/hxConsole.hpp>
 
-#include <hx/hxTest.h>
+#include <hx/hxTest.hpp>
 
 HX_REGISTER_FILENAME_HASH
 

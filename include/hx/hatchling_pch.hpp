@@ -6,18 +6,18 @@
 // Clang usage that does not require -cc1 or -Xclang.
 
 #include <hx/hatchling.h>
-#include <hx/hxAllocator.h>
-#include <hx/hxArray.h>
-#include <hx/hxConsole.h>
-#include <hx/hxDma.h>
-#include <hx/hxFile.h>
-#include <hx/hxHashTable.h>
-#include <hx/hxHashTableNodes.h>
+#include <hx/hxAllocator.hpp>
+#include <hx/hxArray.hpp>
+#include <hx/hxConsole.hpp>
+#include <hx/hxDma.hpp>
+#include <hx/hxFile.hpp>
+#include <hx/hxHashTable.hpp>
+#include <hx/hxHashTableNodes.hpp>
 #include <hx/hxMemoryManager.h>
-#include <hx/hxProfiler.h>
-#include <hx/hxSort.h>
+#include <hx/hxProfiler.hpp>
+#include <hx/hxSort.hpp>
 #include <hx/hxStringLiteralHash.h>
-#include <hx/hxTask.h>
-#include <hx/hxTaskQueue.h>
-#include <hx/hxTest.h> // May include Google Test.
-#include <hx/hxTime.h>
+#include <hx/hxTask.hpp>
+#include <hx/hxTaskQueue.hpp>
+#include <hx/hxTest.hpp> // May include Google Test.
+#include <hx/hxTime.hpp>

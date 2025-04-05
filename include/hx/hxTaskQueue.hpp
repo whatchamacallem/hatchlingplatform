@@ -2,7 +2,7 @@
 // Copyright 2017-2025 Adrian Johnston
 
 #include <hx/hatchling.h>
-#include <hx/hxTask.h>
+#include <hx/hxTask.hpp>
 
 #if HX_USE_CPP11_THREADS
 #include <mutex>
@@ -12,7 +12,7 @@
 
 // ----------------------------------------------------------------------------
 // hxTaskQueue.  Execute supplied tasks in arbitrary order without cancellation
-// using an optional thread pool.  See <hx/hxTask.h>.
+// using an optional thread pool.  See <hx/hxTask.hpp>.
 
 class hxTaskQueue {
 public:

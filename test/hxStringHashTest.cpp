@@ -1,7 +1,7 @@
 // Copyright 2017-2025 Adrian Johnston
 
 // confirm hxTest.h includes hatchling.h correctly.
-#include <hx/hxTest.h>
+#include <hx/hxTest.hpp>
 
 HX_REGISTER_FILENAME_HASH
 

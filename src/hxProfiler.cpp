@@ -1,8 +1,8 @@
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hxProfiler.h>
-#include <hx/hxConsole.h>
-#include <hx/hxFile.h>
+#include <hx/hxProfiler.hpp>
+#include <hx/hxConsole.hpp>
+#include <hx/hxFile.hpp>
 
 #if HX_PROFILE
 

@@ -1,13 +1,13 @@
 // Copyright 2017-2025 Adrian Johnston
 
 #include <hx/hatchling.h>
-#include <hx/hxArray.h>
-#include <hx/hxConsole.h>
-#include <hx/hxDma.h>
-#include <hx/hxFile.h>
-#include <hx/hxHashTableNodes.h>
-#include <hx/hxProfiler.h>
-#include <hx/hxSort.h>
+#include <hx/hxArray.hpp>
+#include <hx/hxConsole.hpp>
+#include <hx/hxDma.hpp>
+#include <hx/hxFile.hpp>
+#include <hx/hxHashTableNodes.hpp>
+#include <hx/hxProfiler.hpp>
+#include <hx/hxSort.hpp>
 
 #include <stdio.h>
 
