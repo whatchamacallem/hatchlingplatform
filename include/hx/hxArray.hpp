@@ -16,7 +16,7 @@ public:
 	typedef T_ T;
 	typedef T value_type;
 	typedef T* iterator; // Random access iterator.
-	typedef const T* const_iterator; // Const random access iterator.
+	typedef const T* constIterator; // Const random access iterator.
 	typedef hxAllocator<T, Capacity_> allocator_type; 
 
 	// Constructs an empty array with a capacity of Capacity.  m_end will be 0
@@ -27,7 +27,7 @@ public:
 	// assign() for that.
 	HX_INLINE explicit hxArray(const hxArray& rhs_) : hxAllocator<T, Capacity_>() {
 		m_end = this->getStorage();
-		assign(rhs_.cbegin(), rhs_.cend());
+		assign(rhs_.cBegin(), rhs_.cEnd());
 	}
 
 	// Copy constructs an array from a container with begin() and end() methods and
@@ -56,18 +56,18 @@ public:
 	}
 
 	// Standard interface.
-	HX_INLINE const allocator_type& get_allocator() const { return *this; }
-	HX_INLINE       allocator_type& get_allocator() { return *this; }
+	HX_INLINE const allocator_type& getAllocator() const { return *this; }
+	HX_INLINE       allocator_type& getAllocator() { return *this; }
 
 	HX_INLINE const T* begin() const { return this->getStorage(); }
 	HX_INLINE       T* begin() { return this->getStorage(); }
-	HX_INLINE const T* cbegin() const { return this->getStorage(); }
-	HX_INLINE const T* cbegin() { return this->getStorage(); }
+	HX_INLINE const T* cBegin() const { return this->getStorage(); }
+	HX_INLINE const T* cBegin() { return this->getStorage(); }
 
 	HX_INLINE const T* end() const { return m_end; }
 	HX_INLINE       T* end() { return m_end; }
-	HX_INLINE const T* cend() const { return m_end; }
-	HX_INLINE const T* cend() { return m_end; }
+	HX_INLINE const T* cEnd() const { return m_end; }
+	HX_INLINE const T* cEnd() { return m_end; }
 
 	HX_INLINE const T& front() const { hxAssert(size()); return *this->getStorage(); }
 	HX_INLINE       T& front() { hxAssert(size()); return *this->getStorage(); }
@@ -118,12 +118,12 @@ public:
 		m_end = this->getStorage() + size_;
 	}
 
-	HX_INLINE void push_back(const T& t_) {
+	HX_INLINE void pushBack(const T& t_) {
 		hxAssert(size() < capacity());
 		::new (m_end++) T(t_);
 	}
 
-	HX_INLINE void pop_back() {
+	HX_INLINE void popBack() {
 		hxAssert(size());
 		(--m_end)->~T();
 	}
@@ -150,14 +150,14 @@ public:
 	HX_INLINE void assign(const T2_(&a_)[Sz_]) { assign(a_ + 0, a_ + Sz_); }
 
 	// Variant of emplace_back() that returns a pointer for use with placement new.
-	HX_INLINE void* emplace_back_unconstructed() {
+	HX_INLINE void* emplaceBackUnconstructed() {
 		hxAssert(size() < capacity());
 		return (void*)m_end++;
 	}
 
 	// Variant of erase() that moves the end element down to replace erased
 	// element.
-	HX_INLINE void erase_unordered(size_t index_) {
+	HX_INLINE void eraseUnordered(size_t index_) {
 		hxAssert(index_ < size());
 		T* it_ = this->getStorage() + index_;
 		if (it_ != --m_end) {
@@ -168,7 +168,7 @@ public:
 
 	// Variant of erase() that moves the end element down to replace the erased
 	// element.
-	HX_INLINE void erase_unordered(T* it_) {
+	HX_INLINE void eraseUnordered(T* it_) {
 		hxAssert((size_t)(it_ - this->getStorage()) < size());
 		if (it_ != --m_end) {
 			*it_ = *m_end;

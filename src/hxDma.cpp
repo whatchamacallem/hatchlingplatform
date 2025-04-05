@@ -75,7 +75,7 @@ void hxDmaStartLabeled(void* dst, const void* src, size_t bytes, const char* lab
 	HX_DMA_DEBUG_MUTEX_LOCK;
 	hxAssert(!s_hxDmaDebugRecords.full());
 	if (!s_hxDmaDebugRecords.full()) {
-		s_hxDmaDebugRecords.push_back(hxDmaDebugRecord(dst, src, bytes, s_hxDmaBarrierCounter,
+		s_hxDmaDebugRecords.pushBack(hxDmaDebugRecord(dst, src, bytes, s_hxDmaBarrierCounter,
 			(labelStringLiteral ? labelStringLiteral : "dma start")));
 	}
 #endif
@@ -96,7 +96,7 @@ void hxDmaAwaitSyncPointLabeled(struct hxDmaSyncPoint& syncPoint, const char* la
 		if (it->barrierCounter <= syncPoint.debugOnly) {
 			bool isOk = ::memcmp(it->dst, it->src, it->bytes) == 0;
 			hxAssertRelease(isOk, "dma corrupt %s, %s", it->labelStringLiteral, (labelStringLiteral ? labelStringLiteral : "dma await"));
-			s_hxDmaDebugRecords.erase_unordered(it);
+			s_hxDmaDebugRecords.eraseUnordered(it);
 		}
 	}
 #endif

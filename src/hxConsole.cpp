@@ -65,7 +65,7 @@ static hxCommandTable& hxConsoleCommands() { static hxCommandTable tbl; return t
 
 void hxConsoleRegister_(hxCommand_* fn, const char* id) {
 	hxAssertMsg(fn && id, "hxConsoleRegister_ args");
-	hxConsoleHashTableNode& node = hxConsoleCommands().insert_unique(id, hxMemoryManagerId_Heap);
+	hxConsoleHashTableNode& node = hxConsoleCommands().insertUnique(id, hxMemoryManagerId_Heap);
 	hxAssertMsg(!node.m_cmd, "command already registered: %s", id);
 	node.m_cmd = fn;
 }
@@ -142,13 +142,13 @@ void hxConsoleHelp() {
 
 		hxArray<const hxConsoleHashTableNode*> cmds;
 		cmds.reserve(hxConsoleCommands().size());
-		for (hxCommandTable::const_iterator it = hxConsoleCommands().cbegin();
-				it != hxConsoleCommands().cend(); ++it) {
+		for (hxCommandTable::constIterator it = hxConsoleCommands().cBegin();
+				it != hxConsoleCommands().cEnd(); ++it) {
 			if (::strncmp(it->key, "hxConsoleTest", 13) == 0 ||
 					::strncmp(it->key, "s_hxConsoleTest", 15) == 0) {
 				continue;
 			}
-			cmds.push_back(&*it);
+			cmds.pushBack(&*it);
 		}
 
 		hxInsertionSort(cmds.begin(), cmds.end(), hxConsoleLess());

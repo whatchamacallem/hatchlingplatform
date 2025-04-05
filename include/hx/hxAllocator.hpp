@@ -86,7 +86,7 @@ public:
 		m_capacity = sz_;
 	}
 
-	// Use hxArray::get_allocator() to access extended allocation semantics.
+	// Use hxArray::getAllocator() to access extended allocation semantics.
 	HX_INLINE void reserveStorageExt(size_t sz_,
 			hxMemoryManagerId alId_=hxMemoryManagerId_Current,
 			uintptr_t alignmentMask_=HX_ALIGNMENT_MASK) {

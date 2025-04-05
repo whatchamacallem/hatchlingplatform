@@ -25,7 +25,7 @@ struct hxConsoleConstructor_ {
 HX_INLINE static bool hxIsDelimiter_(char ch_) { return ch_ <= 32; }
 
 // Checks for printing characters.
-HX_INLINE static bool hxIsEndOfLine_(const char* str_) {
+HX_INLINE static bool hxIsEndOfline_(const char* str_) {
 	while (*str_ != 0 && *str_ <= 32) {
 		++str_;
 	}
@@ -142,7 +142,7 @@ template<typename R_>
 struct hxCommand0_ : public hxCommand_ {
 	hxCommand0_(R_(*fn_)()) : m_fn_(fn_) { }
 	virtual bool execute_(const char* str_) HX_OVERRIDE {
-		if(hxIsEndOfLine_(str_)) {
+		if(hxIsEndOfline_(str_)) {
 			m_fn_();
 			return true;
 		}
@@ -162,7 +162,7 @@ struct hxCommand1_ : public hxCommand_ {
 	virtual bool execute_(const char* str_) HX_OVERRIDE {
 		char* ptr_ = hxnull;
 		hxArg_<A_> arg1_(str_, &ptr_);
-		if (str_ != ptr_ && hxIsEndOfLine_(ptr_)) {
+		if (str_ != ptr_ && hxIsEndOfline_(ptr_)) {
 			m_fn_(arg1_.value_);
 			return true;
 		}
@@ -184,7 +184,7 @@ struct hxCommand2_ : public hxCommand_ {
 		hxArg_<A1_> arg1_(p_, &pA_);
 		if (p_ != pA_) {
 			hxArg_<A2_> arg2_(pA_, &pB_);
-			if (pA_ != pB_ && hxIsEndOfLine_(pB_)) {
+			if (pA_ != pB_ && hxIsEndOfline_(pB_)) {
 				m_fn_(arg1_.value_, arg2_.value_);
 				return true;
 			}
@@ -209,7 +209,7 @@ struct hxCommand3_ : public hxCommand_ {
 			hxArg_<A2_> arg2_(pA_, &pB_);
 			if (pA_ != pB_) {
 				hxArg_<A3_> arg3_(pB_, &pA_);
-				if (pA_ != pB_ && hxIsEndOfLine_(pA_)) {
+				if (pA_ != pB_ && hxIsEndOfline_(pA_)) {
 					m_fn_(arg1_.value_, arg2_.value_, arg3_.value_);
 					return true;
 				}
@@ -238,7 +238,7 @@ struct hxCommand4_ : public hxCommand_ {
 				hxArg_<A3_> arg3_(pB_, &pA_);
 				if (pA_ != pB_) {
 					hxArg_<A4_> arg4_(pA_, &pB_);
-					if (pA_ != pB_ && hxIsEndOfLine_(pB_)) {
+					if (pA_ != pB_ && hxIsEndOfline_(pB_)) {
 						m_fn_(arg1_.value_, arg2_.value_, arg3_.value_, arg4_.value_);
 						return true;
 					}
@@ -259,13 +259,13 @@ template<typename T_>
 struct hxVariable_ : public hxCommand_ {
 	hxVariable_(volatile T_* var_) : m_var_(var_) { }
 	virtual bool execute_(const char* str_) HX_OVERRIDE {
-		if (hxIsEndOfLine_(str_)) {
+		if (hxIsEndOfline_(str_)) {
 			usage_("value_ is:"); // print type and value_.
 			return true;
 		}
 		char* ptr_ = hxnull;
 		hxArg_<T_> x_(str_, &ptr_);
-		if (ptr_ != str_ && hxIsEndOfLine_(ptr_)) {
+		if (ptr_ != str_ && hxIsEndOfline_(ptr_)) {
 			*m_var_ = x_.value_;
 			return true;
 		}

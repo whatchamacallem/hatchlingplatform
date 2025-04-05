@@ -5,8 +5,6 @@
 #   ./emsdk activate latest
 #   source ./emsdk_env.sh
 
-which emcc
-
 # Use the sort command to do a version aware comparison of two strings on two
 # different lines.
 echo "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 4.0.0
@@ -16,8 +14,8 @@ echo "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 4.0
 if [ ${PIPESTATUS[1]} -eq 0 ]; then
 	echo "emcc version is ok."
 else
-	echo "ERROR: emcc is missing or emcc version is too small.  You need to go build the emsdk yourself"
-    echo "       and add the latest emcc to your PATH."
+	echo "ERROR: emcc is missing or emcc version is too small."
+    echo "see: https://emscripten.org/docs/getting_started/downloads.html"
     exit 1;
 fi
 

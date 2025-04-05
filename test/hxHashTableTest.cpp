@@ -77,14 +77,14 @@ TEST_F(hxHashTableTest, Null) {
 		ASSERT_EQ(table.size(), 0u);
 
 		ASSERT_TRUE(table.begin() == table.end());
-		ASSERT_TRUE(table.cbegin() == table.cend());
-		ASSERT_TRUE(((const Table&)table).begin() == ((const Table&)table).cend());
+		ASSERT_TRUE(table.cBegin() == table.cEnd());
+		ASSERT_TRUE(((const Table&)table).begin() == ((const Table&)table).cEnd());
 		ASSERT_FALSE(table.begin() != table.end());
-		ASSERT_FALSE(table.cbegin() != table.cend());
-		ASSERT_FALSE(((const Table&)table).begin() != ((const Table&)table).cend());
+		ASSERT_FALSE(table.cBegin() != table.cEnd());
+		ASSERT_FALSE(((const Table&)table).begin() != ((const Table&)table).cEnd());
 
 		table.clear();
-		ASSERT_EQ(table.load_factor(), 0.0f);
+		ASSERT_EQ(table.loadFactor(), 0.0f);
 
 	}
 	ASSERT_EQ(m_constructed, 0);
@@ -97,18 +97,18 @@ TEST_F(hxHashTableTest, Single) {
 		typedef hxHashTable<TestInteger, 4> Table;
 		Table table;
 		TestInteger* node = hxNew<TestInteger>(k);
-		table.insert_node(node);
+		table.insertNode(node);
 
 		// Operations on a single node
 		ASSERT_TRUE(table.begin() != table.end());
-		ASSERT_TRUE(table.cbegin() != table.cend());
+		ASSERT_TRUE(table.cBegin() != table.cEnd());
 		ASSERT_TRUE(++table.begin() == table.end());
-		ASSERT_TRUE(++table.cbegin() == table.cend());
+		ASSERT_TRUE(++table.cBegin() == table.cEnd());
 		ASSERT_EQ(table.size(), 1u);
 		ASSERT_EQ(table.count(k), 1u);
 		ASSERT_TRUE(table[k].key == k);
 		ASSERT_TRUE(table[k].value.id == node->value.id);
-		ASSERT_TRUE(table.insert_unique(k).value.id == node->value.id);
+		ASSERT_TRUE(table.insertUnique(k).value.id == node->value.id);
 		ASSERT_TRUE(table.find(k) == node);
 		ASSERT_TRUE(table.find(k, node) == hxnull);
 		ASSERT_TRUE(((const Table&)table).find(k) == node);
@@ -118,9 +118,9 @@ TEST_F(hxHashTableTest, Single) {
 		ASSERT_TRUE(table.extract(k) == node);
 		ASSERT_TRUE(table.extract(k) == hxnull);
 
-		table.insert_node(node);
+		table.insertNode(node);
 		ASSERT_TRUE(table.find(k) == node);
-		table.release_all();
+		table.releaseAll();
 		ASSERT_TRUE(table.find(k) == hxnull);
 		ASSERT_EQ(table.size(), 0u);
 
@@ -151,7 +151,7 @@ TEST_F(hxHashTableTest, Multiple) {
 		// Table will be overloaded.
 		typedef hxHashTable<TestInteger> Table;
 		Table table;
-		table.set_hash_bits(5);
+		table.setHashBits(5);
 
 		// Insert N elements
 		for (int i = 0; i < N; ++i) {
@@ -171,7 +171,7 @@ TEST_F(hxHashTableTest, Multiple) {
 
 			// Iteration over.
 			ASSERT_TRUE(it != table.end());
-			ASSERT_TRUE(cit != table.cend());
+			ASSERT_TRUE(cit != table.cEnd());
 			ASSERT_TRUE(it == cit);
 			ASSERT_TRUE((unsigned int)it->value.id < (unsigned int)N);
 			idHistogram[it->value.id]++;
@@ -181,7 +181,7 @@ TEST_F(hxHashTableTest, Multiple) {
 			it++;
 		}
 		ASSERT_TRUE(table.end() == it);
-		ASSERT_TRUE(table.cend() == cit);
+		ASSERT_TRUE(table.cEnd() == cit);
 		for (int i = 0; i < N; ++i) {
 			ASSERT_EQ(idHistogram[i], 2);
 		}
@@ -190,7 +190,7 @@ TEST_F(hxHashTableTest, Multiple) {
 		for (int i = 0; i < N; ++i) {
 			TestInteger* ti = hxNew<TestInteger>(i);
 			ASSERT_EQ(ti->value.id, i+N);
-			table.insert_node(ti);
+			table.insertNode(ti);
 		}
 
 		// Check properties of 2*N duplicate keys.
@@ -221,13 +221,13 @@ TEST_F(hxHashTableTest, Multiple) {
 			cit++;
 		}
 		ASSERT_TRUE(table.end() == it);
-		ASSERT_TRUE(table.cend() == cit);
+		ASSERT_TRUE(table.cEnd() == cit);
 		for (int i = 0; i < N; ++i) {
 			ASSERT_EQ(keyHistogram[i], 4);
 		}
 
 		// Check that keys are distributed such that no bucket has more than 2x average.
-		ASSERT_TRUE((table.load_factor() * 2.0f) > (float)table.load_max());
+		ASSERT_TRUE((table.loadFactor() * 2.0f) > (float)table.loadMax());
 
 		// Erase keys [0..N/2), remove 1 of 2 of keys [N/2..N)
 		for (int i = 0; i < (N/2); ++i) {
@@ -241,7 +241,7 @@ TEST_F(hxHashTableTest, Multiple) {
 
 		// Check properties of N/2 remaining keys.
 		for (int i = 0; i < (N/2); ++i) {
-			ASSERT_EQ(table.release_key(i), 0);
+			ASSERT_EQ(table.releaseKey(i), 0);
 			ASSERT_TRUE(table.find(i) == hxnull);
 		}
 		for (int i = (N/2); i < N; ++i) {
@@ -258,7 +258,7 @@ TEST_F(hxHashTableTest, Multiple) {
 			cit++;
 		}
 		ASSERT_TRUE(table.end() == it);
-		ASSERT_TRUE(table.cend() == cit);
+		ASSERT_TRUE(table.cEnd() == cit);
 	}
 	ASSERT_EQ(m_constructed, 2*N);
 	ASSERT_EQ(m_destructed, 2*N);

@@ -22,6 +22,7 @@
     <None Include="..\.gitattributes" />
     <None Include="..\.vscode\launch.json" />
     <None Include="..\.vscode\tasks.json" />
+    <None Include="..\checkubuntu.sh" />
     <None Include="..\clean.sh" />
     <None Include="..\debugbuild.sh" />
     <None Include="..\README.md" />

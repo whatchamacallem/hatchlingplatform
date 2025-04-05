@@ -27,7 +27,7 @@ extern "C" {
 
 // The default alignment HX_ALIGNMENT_MASK allows for storing char pointers.
 // This alignment should work for most types except SIMD vectors.
-#define HX_ALIGNMENT_MASK ((uintptr_t)(sizeof(char*)-1u)) // HX_ALIGNMENT-1
+#define HX_ALIGNMENT_MASK ((uintptr_t)(sizeof(char*)-1u)) // masks bits that must be zero.
 
 // hxMemoryManagerId. (See hxMemoryManager.cpp)
 // hxMemoryManagerId_Scratch* are tightly coupled with hxMemoryAllocatorScratchpad.

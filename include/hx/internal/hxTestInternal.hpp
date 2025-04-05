@@ -6,15 +6,15 @@
 
 HX_STATIC_ASSERT(!HX_USE_GOOGLE_TEST, "Do not include directly");
 
-struct hxTestFactoryBase_ {
-	virtual void Run_() = 0;
-	virtual const char* Suite_() = 0;
-	virtual const char* Case_() = 0;
-	virtual const char* File_() = 0;
-	virtual size_t Line_() = 0;
+struct hxTestCaseBase_ {
+	virtual void run_() = 0;
+	virtual const char* suite_() = 0;
+	virtual const char* case_() = 0;
+	virtual const char* file_() = 0;
+	virtual size_t line_() = 0;
 };
 
-struct hxTestRunner_ {
+struct hxTestSuiteExecutor_ {
 public:
 	enum TestState {
 		TEST_STATE_NOTHING_ASSERTED,
@@ -30,9 +30,9 @@ public:
 	};
 
 	// Ensures constructor runs before tests are registered by global constructors.
-	static hxTestRunner_& singleton_() { static hxTestRunner_ s_hxTestRunner; return s_hxTestRunner; }
+	static hxTestSuiteExecutor_& singleton_() { static hxTestSuiteExecutor_ s_hxTestRunner; return s_hxTestRunner; }
 
-	hxTestRunner_() {
+	hxTestSuiteExecutor_() {
 		m_numFactories = 0;
 		m_currentTest = hxnull;
 		m_searchTermStringLiteral = hxnull;
@@ -41,7 +41,7 @@ public:
 
 	void setSearchTerm_(const char* searchTermStringLiteral_) { m_searchTermStringLiteral = searchTermStringLiteral_; }
 
-	void addTest_(hxTestFactoryBase_* fn_) {
+	void addTest_(hxTestCaseBase_* fn_) {
 		hxAssertRelease(m_numFactories < TEST_MAX_CASES, "TEST_MAX_CASES overflow\n");
 		m_factories[m_numFactories++] = fn_;
 	}
@@ -63,7 +63,7 @@ public:
 			hxLogHandler(hxLogLevel_Console, "%s\n", message_);
 
 			hxAssertRelease(m_currentTest, "not testing");
-			hxLogHandler(hxLogLevel_Assert, "%s.%s", m_currentTest->Suite_(), m_currentTest->Case_());
+			hxLogHandler(hxLogLevel_Assert, "%s.%s", m_currentTest->suite_(), m_currentTest->case_());
 
 			return devNull_();
 		}
@@ -73,9 +73,9 @@ public:
 	size_t executeAllTests_() {
 		m_passCount = m_failCount = m_assertCount = 0;
 		hxLogConsole("RUNNING_TESTS (%s)\n", (m_searchTermStringLiteral ? m_searchTermStringLiteral : "ALL"));
-		for (hxTestFactoryBase_** it_ = m_factories; it_ != (m_factories + m_numFactories); ++it_) {
-			if (!m_searchTermStringLiteral || ::strstr(m_searchTermStringLiteral, (*it_)->Suite_()) != hxnull) {
-				hxLogConsole("%s.%s...\n", (*it_)->Suite_(), (*it_)->Case_());
+		for (hxTestCaseBase_** it_ = m_factories; it_ != (m_factories + m_numFactories); ++it_) {
+			if (!m_searchTermStringLiteral || ::strstr(m_searchTermStringLiteral, (*it_)->suite_()) != hxnull) {
+				hxLogConsole("%s.%s...\n", (*it_)->suite_(), (*it_)->case_());
 
 				m_currentTest = *it_;
 				m_testState = TEST_STATE_NOTHING_ASSERTED;
@@ -85,11 +85,11 @@ public:
 					// Tests should have no side effects.  Therefore all allocations must be
 					// safe to reset.
 					hxMemoryManagerScope temporaryStack(hxMemoryManagerId_TemporaryStack);
-					(*it_)->Run_();
+					(*it_)->run_();
 				}
 
 				if (m_testState == TEST_STATE_NOTHING_ASSERTED) {
-					assertCheck_(hxBasename((*it_)->File_()), (*it_)->Line_(), false,
+					assertCheck_(hxBasename((*it_)->file_()), (*it_)->line_(), false,
 						"NOTHING_ASSERTED");
 					++m_failCount;
 				}
@@ -125,12 +125,12 @@ private:
 		return f_;
 	}
 
-	hxTestRunner_(const hxTestRunner_&); // = delete
-	void operator=(const hxTestRunner_&); // = delete
+	hxTestSuiteExecutor_(const hxTestSuiteExecutor_&); // = delete
+	void operator=(const hxTestSuiteExecutor_&); // = delete
 
-	hxTestFactoryBase_* m_factories[TEST_MAX_CASES];
+	hxTestCaseBase_* m_factories[TEST_MAX_CASES];
 	size_t m_numFactories;
-	hxTestFactoryBase_* m_currentTest;
+	hxTestCaseBase_* m_currentTest;
 	TestState m_testState;
 	size_t m_passCount;
 	size_t m_failCount;

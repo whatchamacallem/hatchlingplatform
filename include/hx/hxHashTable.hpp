@@ -60,7 +60,7 @@ private:
 //
 // Node must be a subclass of hxHashTableNode with the interface described above.
 // If non-zero HashBits configures the size of the hash table to be HashBits^2.
-// Otherwise use set_hash_bits() to configure hash bits dynamically.
+// Otherwise use setHashBits() to configure hash bits dynamically.
 
 template<typename Node_, uint32_t HashBits_=hxAllocatorDynamicCapacity>
 class hxHashTable {
@@ -74,18 +74,18 @@ public:
 	// A forward iterator.  Iteration is O(n + (1 << HashBits)).  Iterators are
 	// only invalidated by the removal of the Node referenced.  Does not support
 	// std::iterator_traits or std::forward_iterator_tag. 
-	class const_iterator
+	class constIterator
 	{
 	public:
 		// Used to implement begin().  (table will not be modified.)
-		HX_INLINE const_iterator(const hxHashTable* table_)
+		HX_INLINE constIterator(const hxHashTable* table_)
 			: m_hashTable(const_cast<hxHashTable*>(table_)), m_nextIndex(0u), m_currentNode(hxnull) { nextBucket(); }
 
 		// Used to implement end().
-		HX_INLINE const_iterator() : m_hashTable(hxnull), m_nextIndex(0u), m_currentNode(hxnull) { } // end
+		HX_INLINE constIterator() : m_hashTable(hxnull), m_nextIndex(0u), m_currentNode(hxnull) { } // end
 
 		// Standard interface.
-		HX_INLINE const_iterator& operator++() {
+		HX_INLINE constIterator& operator++() {
 			hxAssertMsg(m_currentNode, "iterator invalid"); // !end
 			if (!(m_currentNode = (Node*)m_currentNode->m_next)) {
 				nextBucket();
@@ -94,9 +94,9 @@ public:
 		}
 
 		// Standard interface.
-		HX_INLINE const_iterator operator++(int) { const_iterator t_(*this); operator++(); return t_; }
-		HX_INLINE bool operator==(const const_iterator& rhs_) const { return m_currentNode == rhs_.m_currentNode; }
-		HX_INLINE bool operator!=(const const_iterator& rhs_) const { return m_currentNode != rhs_.m_currentNode; }
+		HX_INLINE constIterator operator++(int) { constIterator t_(*this); operator++(); return t_; }
+		HX_INLINE bool operator==(const constIterator& rhs_) const { return m_currentNode == rhs_.m_currentNode; }
+		HX_INLINE bool operator!=(const constIterator& rhs_) const { return m_currentNode != rhs_.m_currentNode; }
 		HX_INLINE const Node& operator*() const { return *m_currentNode; }
 		HX_INLINE const Node* operator->() const { return m_currentNode; }
 
@@ -116,18 +116,18 @@ public:
 		Node* m_currentNode;
 	};
 
-	class iterator : public const_iterator
+	class iterator : public constIterator
 	{
 	public:
 		// Used to implement begin().
-		HX_INLINE iterator(hxHashTable* tbl_) : const_iterator(tbl_) { }
+		HX_INLINE iterator(hxHashTable* tbl_) : constIterator(tbl_) { }
 
 		// Used to implement end().
 		HX_INLINE iterator() { }
 
 		// Standard interface.
-		HX_INLINE iterator& operator++() { const_iterator::operator++(); return *this; }
-		HX_INLINE iterator operator++(int) { iterator cit_(*this); const_iterator::operator++(); return cit_; }
+		HX_INLINE iterator& operator++() { constIterator::operator++(); return *this; }
+		HX_INLINE iterator operator++(int) { iterator cit_(*this); constIterator::operator++(); return cit_; }
 		HX_INLINE Node& operator*() const { return *this->m_currentNode; }
 		HX_INLINE Node* operator->() const { return this->m_currentNode; }
 	};
@@ -139,23 +139,23 @@ public:
 	HX_INLINE ~hxHashTable() { clear(); }
 
 	// Standard interface.
-	HX_INLINE const_iterator begin() const { return const_iterator(this); }
+	HX_INLINE constIterator begin() const { return constIterator(this); }
 	HX_INLINE iterator begin() { return iterator(this); }
-	HX_INLINE const_iterator cbegin() const { return const_iterator(this); }
-	HX_INLINE const_iterator cbegin() { return const_iterator(this); }
-	HX_INLINE const_iterator end() const { return const_iterator(); }
+	HX_INLINE constIterator cBegin() const { return constIterator(this); }
+	HX_INLINE constIterator cBegin() { return constIterator(this); }
+	HX_INLINE constIterator end() const { return constIterator(); }
 	HX_INLINE iterator end() { return iterator(); }
-	HX_INLINE const_iterator cend() const { return const_iterator(); }
-	HX_INLINE const_iterator cend() { return const_iterator(); }
+	HX_INLINE constIterator cEnd() const { return constIterator(); }
+	HX_INLINE constIterator cEnd() { return constIterator(); }
 	HX_INLINE uint32_t size() const { return m_size; }
 	HX_INLINE bool empty() const { return m_size == 0u; }
 
 	// Returns Node& for key.  Any allocation required uses hxMemoryManagerId_Current
 	// and HX_ALIGNMENT_MASK.
-	HX_INLINE Node& operator[](const Key& key_) { return insert_unique(key_); }
+	HX_INLINE Node& operator[](const Key& key_) { return insertUnique(key_); }
 
 	// Returns a node containing key if any or allocates and returns a new one.
-	HX_INLINE Node& insert_unique(const Key& key_,
+	HX_INLINE Node& insertUnique(const Key& key_,
 								  hxMemoryManagerId id_=hxMemoryManagerId_Current,
 								  uintptr_t alignmentMask_=HX_ALIGNMENT_MASK) {
 		uint32_t hash_ = Node::hash(key_);
@@ -173,7 +173,7 @@ public:
 	}
 
 	// Inserts a node.  Allows multiple nodes of the same Key.
-	HX_INLINE void insert_node(Node* node_) {
+	HX_INLINE void insertNode(Node* node_) {
 		hxAssert(node_ != hxnull);
 		uint32_t hash_ = node_->hash();
 		Node** pos_ = getBucket_(hash_);
@@ -268,7 +268,7 @@ public:
 	HX_INLINE uint32_t erase(const Key& key_) { return erase(key_, hxDeleter()); }
 
 	// Removes but does not delete nodes with an equivalent key.
-	HX_INLINE uint32_t release_key(const Key& key_) { return erase(key_, (void(*)(Node*))0); }
+	HX_INLINE uint32_t releaseKey(const Key& key_) { return erase(key_, (void(*)(Node*))0); }
 
 	// Removes all nodes and calls deleter() on every node.  Deleter can be
 	// function pointers with signature "void deleter(Node*)" or functors
@@ -291,7 +291,7 @@ public:
 			}
 		}
 		else {
-			release_all();
+			releaseAll();
 		}
 	}
 
@@ -299,7 +299,7 @@ public:
 	HX_INLINE void clear() { clear(hxDeleter()); }
 
 	// Removes but does not delete all nodes.
-	HX_INLINE void release_all() {
+	HX_INLINE void releaseAll() {
 		if (m_size != 0u) {
 			::memset(m_table.getStorage(), 0x00, sizeof(Node*) * m_table.getCapacity());
 			m_size = 0u;
@@ -307,16 +307,16 @@ public:
 	}
 
 	// Returns the number of buckets in the hash table.
-	HX_INLINE uint32_t bucket_count() const { return m_table.getCapacity(); };
+	HX_INLINE uint32_t bucketCount() const { return m_table.getCapacity(); };
 
 	// Sets bucket count to be 1 << bits.  Only for use with hxAllocatorDynamicCapacity.
-	HX_INLINE void set_hash_bits(uint32_t bits_) { return m_table.setHashBits(bits_); };
+	HX_INLINE void setHashBits(uint32_t bits_) { return m_table.setHashBits(bits_); };
 
 	// Returns the average number of nodes per-hash table bucket.
-	HX_INLINE float load_factor() const { return (float)m_size / (float)bucket_count(); }
+	HX_INLINE float loadFactor() const { return (float)m_size / (float)bucketCount(); }
 
 	// Returns size of largest bucket.
-	uint32_t load_max() const {
+	uint32_t loadMax() const {
 		// An unallocated table will be ok.
 		uint32_t maximum_=0u;
 		const Node*const* itEnd_ = m_table.getStorage() + m_table.getCapacity();

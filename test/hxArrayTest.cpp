@@ -84,10 +84,10 @@ TEST_F(hxArrayTest, EmptyFull) {
 	a.reserve(1);
 	ASSERT_TRUE(a.empty());
 	ASSERT_TRUE(!a.full());
-	a.push_back(TestObject());
+	a.pushBack(TestObject());
 	ASSERT_TRUE(!a.empty());
 	ASSERT_TRUE(a.full());
-	a.pop_back();
+	a.popBack();
 	ASSERT_TRUE(a.empty());
 	ASSERT_TRUE(!a.full());
 }
@@ -100,10 +100,10 @@ TEST_F(hxArrayTest, Allocators) {
 	ASSERT_EQ(objsDynamic.size(), 0u);
 	ASSERT_EQ(objsStatic.size(), 0u);
 
-	objsDynamic.push_back(TestObject(20));
-	objsDynamic.push_back(TestObject(21));
-	objsStatic.push_back(TestObject(20));
-	objsStatic.push_back(TestObject(21));
+	objsDynamic.pushBack(TestObject(20));
+	objsDynamic.pushBack(TestObject(21));
+	objsStatic.pushBack(TestObject(20));
+	objsStatic.pushBack(TestObject(21));
 
 	ASSERT_EQ(objsDynamic.size(), 2u);
 	ASSERT_EQ(objsDynamic[0], 20);
@@ -123,9 +123,9 @@ TEST_F(hxArrayTest, Iteration) {
 		static const int32_t nums[3] = { 21, 22, 23 };
 
 		hxArray<TestObject, 10u> objs;
-		objs.push_back(TestObject(nums[0]));
-		objs.push_back(TestObject(nums[1]));
-		objs.push_back(TestObject(nums[2]));
+		objs.pushBack(TestObject(nums[0]));
+		objs.pushBack(TestObject(nums[1]));
+		objs.pushBack(TestObject(nums[2]));
 
 		const hxArray<TestObject, 10u>& cobjs = objs;
 
@@ -137,7 +137,7 @@ TEST_F(hxArrayTest, Iteration) {
 		}
 
 		counter = 0;
-		for (hxArray<TestObject, 10u>::const_iterator it = cobjs.begin();
+		for (hxArray<TestObject, 10u>::constIterator it = cobjs.begin();
 				it != cobjs.end(); ++it) {
 			ASSERT_EQ(it->id, objs[counter].id);
 			ASSERT_EQ(it->id, nums[counter]);
@@ -165,19 +165,19 @@ TEST_F(hxArrayTest, Modification) {
 
 		// 91, 92, 93, 94
 
-		objs.pop_back();
-		objs.pop_back();
-		objs.pop_back();
+		objs.popBack();
+		objs.popBack();
+		objs.popBack();
 
 		TestObject to;
-		objs.push_back(to);
-		objs.push_back((const TestObject&)to);
+		objs.pushBack(to);
+		objs.pushBack((const TestObject&)to);
 
-		::new (objs.emplace_back_unconstructed()) TestObject;
+		::new (objs.emplaceBackUnconstructed()) TestObject;
 
 		// 91, 92, -1, -2, -3
 
-		objs.erase_unordered(1);
+		objs.eraseUnordered(1);
 
 		// 91, -2, -1
 
@@ -233,7 +233,7 @@ TEST_F(hxArrayTest, Assignment) {
 
 		TestObject to;
 		to.id = 67;
-		objs.push_back(to);
+		objs.pushBack(to);
 
 		hxArray<TestObject> objs2;
 		objs2 = objs; // Assign to same type

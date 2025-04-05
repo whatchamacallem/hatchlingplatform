@@ -158,29 +158,29 @@ public:
 
 	// ForwardIterator over Vales.  Not currently bound to std::iterator_traits
 	// or std::forward_iterator_tag. 
-	class const_iterator
+	class constIterator
 	{
 	public:
-		HX_INLINE const_iterator(hxArray<KeyValuePair>::const_iterator it_) : m_ptr(it_) { }
-		HX_INLINE const_iterator() : m_ptr(hxnull) { } // invalid
-		HX_INLINE const_iterator& operator++() { ++m_ptr; return *this; }
-		HX_INLINE const_iterator operator++(int) { const_iterator t(*this); operator++(); return t; }
-		HX_INLINE bool operator==(const const_iterator& rhs_) const { return m_ptr == rhs_.m_ptr; }
-		HX_INLINE bool operator!=(const const_iterator& rhs_) const { return m_ptr != rhs_.m_ptr; }
+		HX_INLINE constIterator(hxArray<KeyValuePair>::constIterator it_) : m_ptr(it_) { }
+		HX_INLINE constIterator() : m_ptr(hxnull) { } // invalid
+		HX_INLINE constIterator& operator++() { ++m_ptr; return *this; }
+		HX_INLINE constIterator operator++(int) { constIterator t(*this); operator++(); return t; }
+		HX_INLINE bool operator==(const constIterator& rhs_) const { return m_ptr == rhs_.m_ptr; }
+		HX_INLINE bool operator!=(const constIterator& rhs_) const { return m_ptr != rhs_.m_ptr; }
 		HX_INLINE const Value& operator*() const { return *(const Value*)m_ptr->m_val; }
 		HX_INLINE const Value* operator->() const { return (const Value*)m_ptr->m_val; }
 
 	protected:
-		hxArray<KeyValuePair>::const_iterator m_ptr;
+		hxArray<KeyValuePair>::constIterator m_ptr;
 	};
 
-	class iterator : public const_iterator
+	class iterator : public constIterator
 	{
 	public:
-		HX_INLINE iterator(hxArray<KeyValuePair>::iterator it_) : const_iterator(it_) { }
+		HX_INLINE iterator(hxArray<KeyValuePair>::iterator it_) : constIterator(it_) { }
 		HX_INLINE iterator() { }
-		HX_INLINE iterator& operator++() { const_iterator::operator++(); return *this; }
-		HX_INLINE iterator operator++(int) { iterator t_(*this); const_iterator::operator++(); return t_; }
+		HX_INLINE iterator& operator++() { constIterator::operator++(); return *this; }
+		HX_INLINE iterator operator++(int) { iterator t_(*this); constIterator::operator++(); return t_; }
 		HX_INLINE Value& operator*() const { return *(Value*)this->m_ptr->m_val; }
 		HX_INLINE Value* operator->() const { return (Value*)this->m_ptr->m_val; }
 	};
@@ -191,15 +191,15 @@ public:
 	HX_INLINE const Value* get(uint32_t index_) const { return (Value*)m_array[index_].m_val; }
 	HX_INLINE       Value* get(uint32_t index_) { return (Value*)m_array[index_].m_val; }
 
-	HX_INLINE const_iterator begin() const { return const_iterator(m_array.cbegin()); }
+	HX_INLINE constIterator begin() const { return constIterator(m_array.cBegin()); }
 	HX_INLINE iterator begin() { return iterator(m_array.begin()); }
-	HX_INLINE const_iterator cbegin() const { return const_iterator(m_array.cbegin()); }
-	HX_INLINE const_iterator cbegin() { return const_iterator(m_array.cbegin()); }
+	HX_INLINE constIterator cBegin() const { return constIterator(m_array.cBegin()); }
+	HX_INLINE constIterator cBegin() { return constIterator(m_array.cBegin()); }
 
-	HX_INLINE const_iterator end() const { return const_iterator(m_array.cend()); }
+	HX_INLINE constIterator end() const { return constIterator(m_array.cEnd()); }
 	HX_INLINE iterator end() { return iterator(m_array.end()); }
-	HX_INLINE const_iterator cend() const { return const_iterator(m_array.cend()); }
-	HX_INLINE const_iterator cend() { return const_iterator(m_array.cend()); }
+	HX_INLINE constIterator cEnd() const { return constIterator(m_array.cEnd()); }
+	HX_INLINE constIterator cEnd() { return constIterator(m_array.cEnd()); }
 
 	HX_INLINE uint32_t size() const { return m_array.size(); }
 	HX_INLINE bool empty() const { return m_array.empty(); }
@@ -207,6 +207,6 @@ public:
 	// Adds a key and value pointer.
 	HX_INLINE void insert(Key key_, Value* val_) {
 		// Perform casts safe for -Wcast-qual with a const and volatile Value type.
-		::new(m_array.emplace_back_unconstructed()) KeyValuePair(key_, const_cast<void*>((const volatile void*)val_));
+		::new(m_array.emplaceBackUnconstructed()) KeyValuePair(key_, const_cast<void*>((const volatile void*)val_));
 	}
 };

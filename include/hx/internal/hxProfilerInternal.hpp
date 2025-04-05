@@ -78,7 +78,7 @@ public:
 		if (m_t0 != ~(hx_cycles_t)0) {
 			hx_cycles_t t1_ = hxTimeSampleCycles();
 			if ((t1_ - m_t0) >= MinCycles_) {
-				void* rec_ = g_hxProfiler_.m_records.emplace_back_unconstructed();
+				void* rec_ = g_hxProfiler_.m_records.emplaceBackUnconstructed();
 				if (rec_) {
 					::new (rec_) hxProfilerInternal_::hxProfilerRecord_(m_t0, t1_, m_label,
 						(uint32_t)(uintptr_t)&s_hxProfilerThreadIdAddress_);

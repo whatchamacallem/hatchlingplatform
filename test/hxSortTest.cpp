@@ -24,7 +24,7 @@ public:
 		a.reserve(size);
 		for(uint32_t i= size;i--;) {
 			uint32_t x = m_prng() & mask;
-			a.push_back((Key)x - offset);
+			a.pushBack((Key)x - offset);
 		}
 	}
 
@@ -59,7 +59,7 @@ public:
 		ASSERT_EQ(rs.size(), size);
 
 		typename hxRadixSort<Key, TestObject<Key> >::iterator it = rs.begin();
-		typename hxRadixSort<Key, TestObject<Key> >::const_iterator cit = rs.cbegin();
+		typename hxRadixSort<Key, TestObject<Key> >::constIterator cit = rs.cBegin();
 
 		for (uint32_t i=0u; i < size; ++i) {
 			ASSERT_EQ(b[i].id, rs[i].id);
@@ -68,7 +68,7 @@ public:
 		}
 
 		ASSERT_EQ(it, rs.end());
-		ASSERT_EQ(cit, rs.cend());
+		ASSERT_EQ(cit, rs.cEnd());
 	}
 
 	hxTestRandom m_prng;

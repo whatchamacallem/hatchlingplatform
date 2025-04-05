@@ -38,7 +38,7 @@ hxHashStringLiteral& hxStringLiteralHashes() {
 }
 hxRegisterFileConstructor::hxRegisterFileConstructor(const char* s) {
 	hxInit();
-	hxStringLiteralHashes().insert_unique(s, hxMemoryManagerId_Heap);
+	hxStringLiteralHashes().insertUnique(s, hxMemoryManagerId_Heap);
 }
 
 void hxPrintFileHashes(void) {
@@ -49,9 +49,9 @@ void hxPrintFileHashes(void) {
 	filenames.reserve(hxStringLiteralHashes().size());
 
 	hxHashStringLiteral::iterator it = hxStringLiteralHashes().begin();
-	hxHashStringLiteral::const_iterator end = hxStringLiteralHashes().cend();
+	hxHashStringLiteral::constIterator end = hxStringLiteralHashes().cEnd();
 	for (; it != end; ++it) {
-		filenames.push_back(it->key);
+		filenames.pushBack(it->key);
 	}
 
 	hxInsertionSort(filenames.begin(), filenames.end(), hxFilenameLess());
