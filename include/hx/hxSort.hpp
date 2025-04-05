@@ -174,6 +174,7 @@ public:
 		hxArray<KeyValuePair>::constIterator m_ptr;
 	};
 
+	// can be cast to a constIterator
 	class iterator : public constIterator
 	{
 	public:

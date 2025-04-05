@@ -116,6 +116,7 @@ public:
 		Node* m_currentNode;
 	};
 
+	// can be cast to a constIterator
 	class iterator : public constIterator
 	{
 	public:

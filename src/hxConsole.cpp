@@ -57,10 +57,17 @@ public:
 	uint32_t m_hash;
 };
 
-typedef hxHashTable<hxConsoleHashTableNode, 4> hxCommandTable;
+struct hxConsoleLess_ {
+	HX_INLINE bool operator()(const hxConsoleHashTableNode* lhs,
+			const hxConsoleHashTableNode* rhs) const {
+		return ::strcasecmp(lhs->key, rhs->key) < 0;
+	}
+};
+
+typedef hxHashTable<hxConsoleHashTableNode, 4> hxCommandTable_;
 
 // Wrapped to ensure correct construction order.
-hxCommandTable& hxConsoleCommands() { static hxCommandTable tbl; return tbl; }
+hxCommandTable_& hxConsoleCommands_() { static hxCommandTable_ tbl; return tbl; }
 
 } // namespace
 
@@ -69,17 +76,17 @@ hxCommandTable& hxConsoleCommands() { static hxCommandTable tbl; return tbl; }
 
 void hxConsoleRegister_(hxCommand_* fn, const char* id) {
 	hxAssertMsg(fn && id, "hxConsoleRegister_ args");
-	hxConsoleHashTableNode& node = hxConsoleCommands().insertUnique(id, hxMemoryManagerId_Heap);
+	hxConsoleHashTableNode& node = hxConsoleCommands_().insertUnique(id, hxMemoryManagerId_Heap);
 	hxAssertMsg(!node.m_cmd, "command already registered: %s", id);
 	node.m_cmd = fn;
 }
 
 void hxConsoleDeregister(const char* id) {
-	hxConsoleCommands().erase(id);
+	hxConsoleCommands_().erase(id);
 }
 
 void hxConsoleDeregisterAll() {
-	hxConsoleCommands().clear();
+	hxConsoleCommands_().clear();
 }
 
 bool hxConsoleExecLine(const char* command) {
@@ -94,7 +101,7 @@ bool hxConsoleExecLine(const char* command) {
 		return true;
 	}
 
-	hxConsoleHashTableNode* node = hxConsoleCommands().find(pos);
+	hxConsoleHashTableNode* node = hxConsoleCommands_().find(pos);
 	if (!node) {
 		hxWarn("command not found: %s", command);
 		return false;
@@ -105,7 +112,7 @@ bool hxConsoleExecLine(const char* command) {
 		++pos;
 	}
 
-	bool result = node->m_cmd->execute_(pos); // The hxArg_s skip leading whitespace.
+	bool result = node->m_cmd->execute_(pos); // skips leading whitespace.
 	hxWarnCheck(result, "cannot execute_: %s", command);
 	return result;
 }
@@ -145,9 +152,9 @@ void hxConsoleHelp() {
 		hxMemoryManagerScope heap(hxMemoryManagerId_Heap);
 
 		hxArray<const hxConsoleHashTableNode*> cmds;
-		cmds.reserve(hxConsoleCommands().size());
-		for (hxCommandTable::constIterator it = hxConsoleCommands().cBegin();
-				it != hxConsoleCommands().cEnd(); ++it) {
+		cmds.reserve(hxConsoleCommands_().size());
+		for (hxCommandTable_::constIterator it = hxConsoleCommands_().cBegin();
+				it != hxConsoleCommands_().cEnd(); ++it) {
 			if (::strncmp(it->key, "hxConsoleTest", 13) == 0 ||
 					::strncmp(it->key, "s_hxConsoleTest", 15) == 0) {
 				continue;
@@ -155,7 +162,7 @@ void hxConsoleHelp() {
 			cmds.pushBack(&*it);
 		}
 
-		hxInsertionSort(cmds.begin(), cmds.end(), hxConsoleLess());
+		hxInsertionSort<const hxConsoleHashTableNode*, hxConsoleLess_>(cmds.begin(), cmds.end(), hxConsoleLess_());
 
 		for (hxArray<const hxConsoleHashTableNode*>::iterator it = cmds.begin();
 				it != cmds.end(); ++it) {

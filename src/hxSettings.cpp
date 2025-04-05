@@ -10,12 +10,14 @@ HX_REGISTER_FILENAME_HASH
 //
 // g_hxSettings is declared in hxCUtils.c for maximum portability. 
 
+namespace {
 hxConsoleVariableNamed(g_hxSettings.logLevel, loglevel);
 
 #if (HX_RELEASE) < 1
 hxConsoleVariableNamed(g_hxSettings.assertsToBeSkipped, skipAsserts);
 hxConsoleVariableNamed(g_hxSettings.lightEmittingDiode, lightEmittingDiode);
 #endif
+} // namespace
 
 void hxSettingsConstruct() {
 	g_hxSettings.logLevel = hxLogLevel_Log;

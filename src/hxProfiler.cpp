@@ -23,12 +23,12 @@ void hxProfilerWriteToChromeTracingCommand_(const char* filename) {
 	hxProfilerWriteToChromeTracing(filename);
 }
 
-} // namespace
-
 hxConsoleCommandNamed(hxProfileBeginCommand_, profilebegin);
 hxConsoleCommandNamed(hxProfileEndCommand_, profileend);
 hxConsoleCommandNamed(hxProfilerLogCommand_, profilelog);
 hxConsoleCommandNamed(hxProfilerWriteToChromeTracingCommand_, profilewrite);
+
+} // namespace
 
 // ----------------------------------------------------------------------------
 // variables

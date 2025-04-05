@@ -12,8 +12,8 @@ HX_REGISTER_FILENAME_HASH
 namespace {
 
 #if HX_DEBUG_DMA
-struct hxDmaDebugRecord {
-	hxDmaDebugRecord(const void* d, const void* s, size_t b, size_t c, const char* l) :
+struct hxDmaDebugRecord_ {
+	hxDmaDebugRecord_(const void* d, const void* s, size_t b, size_t c, const char* l) :
 		dst(d), src(s), bytes(b), barrierCounter(c), labelStringLiteral(l) { }
 	const void* dst;
 	const void* src;
@@ -21,20 +21,18 @@ struct hxDmaDebugRecord {
 	size_t barrierCounter;
 	const char* labelStringLiteral;
 };
-hxArray<hxDmaDebugRecord, HX_DEBUG_DMA_RECORDS> s_hxDmaDebugRecords;
+hxArray<hxDmaDebugRecord_, HX_DEBUG_DMA_RECORDS> s_hxDmaDebugRecords;
 size_t s_hxDmaBarrierCounter = 0u;
 
 #if HX_USE_CPP11_THREADS
 std::mutex s_hxDmaDebugMutex;
-#define HX_DMA_DEBUG_MUTEX_LOCK std::lock_guard<std::mutex> debugGuard(s_hxDmaDebugMutex)
+#define HX_DMA_DEBUG_MUTEX_LOCK std::lock_guard<std::mutex> debugGuard_(s_hxDmaDebugMutex)
 #else
 #define HX_DMA_DEBUG_MUTEX_LOCK ((void)0)
 #endif
 #endif
 
 } // namespace
-
-
 
 void hxDmaInit() {
 	HX_STATIC_ASSERT(!HX_USE_DMA_HARDWARE, "TODO: Configure for target.");
@@ -78,7 +76,7 @@ void hxDmaStartLabeled(void* dst, const void* src, size_t bytes, const char* lab
 	HX_DMA_DEBUG_MUTEX_LOCK;
 	hxAssert(!s_hxDmaDebugRecords.full());
 	if (!s_hxDmaDebugRecords.full()) {
-		s_hxDmaDebugRecords.pushBack(hxDmaDebugRecord(dst, src, bytes, s_hxDmaBarrierCounter,
+		s_hxDmaDebugRecords.pushBack(hxDmaDebugRecord_(dst, src, bytes, s_hxDmaBarrierCounter,
 			(labelStringLiteral ? labelStringLiteral : "dma start")));
 	}
 #endif
@@ -94,7 +92,7 @@ void hxDmaAwaitSyncPointLabeled(struct hxDmaSyncPoint& syncPoint, const char* la
 	HX_DMA_DEBUG_MUTEX_LOCK;
 	hxAssertRelease(syncPoint.debugOnly < s_hxDmaBarrierCounter, "dma sync point unexpected: %s",
 		(labelStringLiteral ? labelStringLiteral : "dma await"));
-	for (hxDmaDebugRecord* it = (s_hxDmaDebugRecords.end() - 1); it >= s_hxDmaDebugRecords.begin(); --it) {
+	for (hxDmaDebugRecord_* it = (s_hxDmaDebugRecords.end() - 1); it >= s_hxDmaDebugRecords.begin(); --it) {
 		// syncPoint.debugOnly is the value of s_hxDmaBarrierCounter for proceeding dma.
 		if (it->barrierCounter <= syncPoint.debugOnly) {
 			bool isOk = ::memcmp(it->dst, it->src, it->bytes) == 0;

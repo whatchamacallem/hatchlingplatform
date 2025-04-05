@@ -48,7 +48,7 @@ void hxPrintFileHashes(void) {
 	Filenames filenames;
 	filenames.reserve(hxStringLiteralHashes().size());
 
-	hxHashStringLiteral::iterator it = hxStringLiteralHashes().begin();
+	hxHashStringLiteral::constIterator it = hxStringLiteralHashes().cBegin();
 	hxHashStringLiteral::constIterator end = hxStringLiteralHashes().cEnd();
 	for (; it != end; ++it) {
 		filenames.pushBack(it->key);
