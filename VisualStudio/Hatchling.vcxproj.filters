@@ -45,52 +45,52 @@
     <ClInclude Include="..\include\hx\hatchling.h">
       <Filter>include\hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\hxAllocator.h">
+    <ClInclude Include="..\include\hx\hxAllocator.hpp">
       <Filter>include\hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\hxArray.h">
+    <ClInclude Include="..\include\hx\hxArray.hpp">
       <Filter>include\hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\hxConsole.h">
+    <ClInclude Include="..\include\hx\hxConsole.hpp">
       <Filter>include\hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\hxDma.h">
+    <ClInclude Include="..\include\hx\hxDma.hpp">
       <Filter>include\hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\hxFile.h">
+    <ClInclude Include="..\include\hx\hxFile.hpp">
       <Filter>include\hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\hxHashTable.h">
+    <ClInclude Include="..\include\hx\hxHashTable.hpp">
       <Filter>include\hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\hxHashTableNodes.h">
+    <ClInclude Include="..\include\hx\hxHashTableNodes.hpp">
       <Filter>include\hx</Filter>
     </ClInclude>
     <ClInclude Include="..\include\hx\hxMemoryManager.h">
       <Filter>include\hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\hxProfiler.h">
+    <ClInclude Include="..\include\hx\hxProfiler.hpp">
       <Filter>include\hx</Filter>
     </ClInclude>
     <ClInclude Include="..\include\hx\hxSettings.h">
       <Filter>include\hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\hxSort.h">
+    <ClInclude Include="..\include\hx\hxSort.hpp">
       <Filter>include\hx</Filter>
     </ClInclude>
     <ClInclude Include="..\include\hx\hxStringLiteralHash.h">
       <Filter>include\hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\hxTask.h">
+    <ClInclude Include="..\include\hx\hxTask.hpp">
       <Filter>include\hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\hxTaskQueue.h">
+    <ClInclude Include="..\include\hx\hxTaskQueue.hpp">
       <Filter>include\hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\hxTest.h">
+    <ClInclude Include="..\include\hx\hxTest.hpp">
       <Filter>include\hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\hxTime.h">
+    <ClInclude Include="..\include\hx\hxTime.hpp">
       <Filter>include\hx</Filter>
     </ClInclude>
     <ClInclude Include="..\include\hx\internal\hxConsoleInternal.h">

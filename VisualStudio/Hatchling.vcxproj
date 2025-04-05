@@ -37,22 +37,22 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\hx\hatchling.h" />
-    <ClInclude Include="..\include\hx\hxAllocator.h" />
-    <ClInclude Include="..\include\hx\hxArray.h" />
-    <ClInclude Include="..\include\hx\hxConsole.h" />
-    <ClInclude Include="..\include\hx\hxDma.h" />
-    <ClInclude Include="..\include\hx\hxFile.h" />
-    <ClInclude Include="..\include\hx\hxHashTable.h" />
-    <ClInclude Include="..\include\hx\hxHashTableNodes.h" />
+    <ClInclude Include="..\include\hx\hxAllocator.hpp" />
+    <ClInclude Include="..\include\hx\hxArray.hpp" />
+    <ClInclude Include="..\include\hx\hxConsole.hpp" />
+    <ClInclude Include="..\include\hx\hxDma.hpp" />
+    <ClInclude Include="..\include\hx\hxFile.hpp" />
+    <ClInclude Include="..\include\hx\hxHashTable.hpp" />
+    <ClInclude Include="..\include\hx\hxHashTableNodes.hpp" />
     <ClInclude Include="..\include\hx\hxMemoryManager.h" />
-    <ClInclude Include="..\include\hx\hxProfiler.h" />
+    <ClInclude Include="..\include\hx\hxProfiler.hpp" />
     <ClInclude Include="..\include\hx\hxSettings.h" />
-    <ClInclude Include="..\include\hx\hxSort.h" />
+    <ClInclude Include="..\include\hx\hxSort.hpp" />
     <ClInclude Include="..\include\hx\hxStringLiteralHash.h" />
-    <ClInclude Include="..\include\hx\hxTask.h" />
-    <ClInclude Include="..\include\hx\hxTaskQueue.h" />
-    <ClInclude Include="..\include\hx\hxTest.h" />
-    <ClInclude Include="..\include\hx\hxTime.h" />
+    <ClInclude Include="..\include\hx\hxTask.hpp" />
+    <ClInclude Include="..\include\hx\hxTaskQueue.hpp" />
+    <ClInclude Include="..\include\hx\hxTest.hpp" />
+    <ClInclude Include="..\include\hx\hxTime.hpp" />
     <ClInclude Include="..\include\hx\internal\hxConsoleInternal.h" />
     <ClInclude Include="..\include\hx\internal\hxHashTableInternal.h" />
     <ClInclude Include="..\include\hx\internal\hxProfilerInternal.h" />
