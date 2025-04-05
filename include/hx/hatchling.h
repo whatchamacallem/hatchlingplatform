@@ -12,8 +12,8 @@
 #include <string.h>
 
 // Major, minor and patch versions.
-#define HATCHLING_VER 0x20117
-#define HATCHLING_TAG "v2.1.17"
+#define HATCHLING_VER 0x20118
+#define HATCHLING_TAG "v2.1.18"
 
 #include <hx/hxSettings.h>
 #include <hx/hxMemoryManager.h>
