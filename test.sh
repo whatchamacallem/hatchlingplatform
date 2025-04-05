@@ -26,14 +26,15 @@ clang -Iinclude -O$I -g $WARNINGS -pedantic-errors -DHX_RELEASE=$I "$@" \
 	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address \
 	-std=c99 -c src/*.c
 # generate pch. clang does this automatically when a c++ header file is the target. 
-clang++ -Iinclude -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
-	-DHX_USE_CPP11_THREADS=$I -DHX_USE_CPP11_TIME=$I "$@" -std=c++14 \
+clang++ -Iinclude -O$I -g -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
+	-DHX_USE_CPP11_THREADS=$I -DHX_USE_CPP11_TIME=$I "$@" -pthread -std=c++14 \
+	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address \
 	-fno-exceptions include/hx/hatchlingPch.hpp -o hatchlingPch.hpp.pch
 # compile C++ and link
 clang++ -Iinclude -O$I -g -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
 	-DHX_USE_CPP11_THREADS=$I -DHX_USE_CPP11_TIME=$I "$@" -pthread -std=c++14 \
 	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address -lubsan \
-	-fno-exceptions hatchlingPch.hpp.pch */*.cpp *.o -lpthread -lstdc++ -o hxtest
+	-fno-exceptions -include-pch hatchlingPch.hpp.pch */*.cpp *.o -lpthread -lstdc++ -o hxtest
 ./hxtest | grep '\[  PASSED  \]' --color || ./hxtest
 rm hxtest *.o
 done
@@ -49,13 +50,16 @@ done
 gcc --version | grep gcc
 for I in 0 1 2 3; do
 echo gcc c++98 -O$I "$@"...
+# -std=c99
 gcc -Iinclude -O$I -g -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" \
 	-std=c99 -m32 -c src/*.c
+# -std=c++98
 gcc -Iinclude -O$I -g $WARNINGS -DHX_RELEASE=$I "$@" -std=c++98 -fno-exceptions \
 	-fno-rtti -Wno-unused-local-typedefs */*.cpp *.o -lstdc++ -m32 -o hxtest
 ./hxtest | grep '\[  PASSED  \]' --color || ./hxtest
 rm hxtest
 echo gcc c++14 -O$I "$@"...
+# -std=c++14
 gcc -Iinclude -O$I -g -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" -pthread \
 	-std=c++14 -fno-exceptions -fno-rtti */*.cpp *.o -lpthread -lstdc++ -m32 -o hxtest
 ./hxtest | grep '\[  PASSED  \]' --color || ./hxtest

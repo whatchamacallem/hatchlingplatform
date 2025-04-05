@@ -5,6 +5,26 @@
 #error #include <hx/hatchling.h> instead
 #endif
 
+// HX_RELEASE: 0 is a debug build with all asserts and verbose strings.
+//             1 is a release build with critical asserts and verbose warnings.
+//               E.g. for CMake's "RelWithDebInfo".
+//             2 is a release build with only critical asserts using minimal strings.
+//               E.g. for CMake's "MinSizeRel".
+//             3 no asserts or tear down and very minimal logging.
+//
+#if !defined(HX_RELEASE)
+#if defined(NDEBUG)
+#define HX_RELEASE 1
+#else
+#define HX_RELEASE 0
+#endif
+#endif
+
+// Allows calling code to check if hatchlingPch.h was used correctly.
+#if !defined(HX_HATCHLING_PCH_USED)
+#define HX_HATCHLING_PCH_USED 0
+#endif
+
 // Compiler detection and target specific C++11/C++14 polyfill.
 // Use #if(HX_...) instead of #ifdef(HX_...) for all HX_* macros. 
 // Except use #ifdef with HX_USE_...

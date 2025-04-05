@@ -1,7 +1,22 @@
 // Copyright 2017-2025 Adrian Johnston
 
 // Include everything to catch conflicts.
-#include <hx/hatchlingPch.hpp>
+#include <hx/hatchling.h>
+#include <hx/hxAllocator.hpp>
+#include <hx/hxArray.hpp>
+#include <hx/hxConsole.hpp>
+#include <hx/hxDma.hpp>
+#include <hx/hxFile.hpp>
+#include <hx/hxHashTable.hpp>
+#include <hx/hxHashTableNodes.hpp>
+#include <hx/hxMemoryManager.h>
+#include <hx/hxProfiler.hpp>
+#include <hx/hxSort.hpp>
+#include <hx/hxStringLiteralHash.h>
+#include <hx/hxTask.hpp>
+#include <hx/hxTaskQueue.hpp>
+#include <hx/hxTest.hpp> // May include Google Test.
+#include <hx/hxTime.hpp>
 
 // Include standard headers last as a test.
 #include <stdio.h>
@@ -28,7 +43,8 @@ size_t hxTestMain() {
 	hxLogConsole("release %d profile %d flags %d%d%d%d build: " __DATE__ " " __TIME__ "\n",
 		(int)(HX_RELEASE), (int)(HX_PROFILE), (int)(HX_USE_CPP11_THREADS),
 		(int)(HX_USE_CPP11_TIME), (int)(HX_USE_CPP14_CONSTEXPR), (int)(HX_MEM_DIAGNOSTIC_LEVEL));
-	hxLogConsole("size_t bytes %d\n", (int)sizeof(size_t));
+		hxLogConsole("sizeof(size_t) = %d\n", (int)sizeof(size_t));
+		hxLogConsole("PCH used = %d\n", (int)HX_HATCHLING_PCH_USED);
 
 	char bytes[48] = { };
 	snprintf(bytes, 48, "%s", "The quick brown fox jumps over the lazy dog....");

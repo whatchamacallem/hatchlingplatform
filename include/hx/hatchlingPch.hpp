@@ -3,8 +3,10 @@
 
 // Includes all the Hatchling headers for use building a precompiled header.
 // This is C++ and has an appropriate extension for that.  Use hatchling.h
-// for building a C header.
+// for building a C precompiled header.
 // See test.sh for Clang PCH usage that does not require -cc1 or -Xclang.
+
+#define HX_HATCHLING_PCH_USED 1
 
 #include <hx/hatchling.h>
 #include <hx/hxAllocator.hpp>

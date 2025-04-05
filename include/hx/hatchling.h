@@ -15,21 +15,6 @@
 #define HATCHLING_VER 0x20117
 #define HATCHLING_TAG "v2.1.17"
 
-// HX_RELEASE: 0 is a debug build with all asserts and verbose strings.
-//             1 is a release build with critical asserts and verbose warnings.
-//               E.g. for CMake's "RelWithDebInfo".
-//             2 is a release build with only critical asserts using minimal strings.
-//               E.g. for CMake's "MinSizeRel".
-//             3 no asserts or tear down and very minimal logging.
-//
-#if !defined(HX_RELEASE)
-#if defined(NDEBUG)
-#define HX_RELEASE 1
-#else
-#define HX_RELEASE 0
-#endif
-#endif
-
 #include <hx/hxSettings.h>
 #include <hx/hxMemoryManager.h>
 #include <hx/hxStringLiteralHash.h>
