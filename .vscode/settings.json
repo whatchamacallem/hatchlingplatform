@@ -38,6 +38,7 @@
         "Wstrict",
         "Wundef",
         "Wunused",
-        "Wwrite"
+        "Wwrite",
+        "Xclang"
     ]
 }

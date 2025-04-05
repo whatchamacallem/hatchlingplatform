@@ -1,7 +1,7 @@
 // Copyright 2017-2025 Adrian Johnston
 
 // Include everything to catch conflicts.
-#include <hx/hatchling_pch.hpp>
+#include <hx/hatchlingPch.hpp>
 
 // Include standard headers last as a test.
 #include <stdio.h>

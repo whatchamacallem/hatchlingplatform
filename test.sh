@@ -9,7 +9,7 @@
 #
 # will run the tests with HX_TEST_DIE_AT_THE_END defined to be 1.
 set -o errexit
-set -x
+#set -x
 
 export GREP_COLORS='mt=0;32' # green
 
@@ -28,12 +28,12 @@ clang -Iinclude -O$I -g $WARNINGS -pedantic-errors -DHX_RELEASE=$I "$@" \
 # generate pch. clang does this automatically when a c++ header file is the target. 
 clang++ -Iinclude -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
 	-DHX_USE_CPP11_THREADS=$I -DHX_USE_CPP11_TIME=$I "$@" -std=c++14 \
-	-fno-exceptions include/hx/hatchling_pch.hpp -o hatchling_pch.hpp.pch
+	-fno-exceptions include/hx/hatchlingPch.hpp -o hatchlingPch.hpp.pch
 # compile C++ and link
 clang++ -Iinclude -O$I -g -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
 	-DHX_USE_CPP11_THREADS=$I -DHX_USE_CPP11_TIME=$I "$@" -pthread -std=c++14 \
 	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address -lubsan \
-	-fno-exceptions hatchling_pch.hpp.pch */*.cpp *.o -lpthread -lstdc++ -o hxtest
+	-fno-exceptions hatchlingPch.hpp.pch */*.cpp *.o -lpthread -lstdc++ -o hxtest
 ./hxtest | grep '\[  PASSED  \]' --color || ./hxtest
 rm hxtest *.o
 done
@@ -62,8 +62,8 @@ gcc -Iinclude -O$I -g -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" -pthread \
 rm hxtest *.o
 done
 
-# Remove output.
+# Remove output.  Fails if output is not present.
 rm profile.json hxConsoleTest_FileTest.txt hxFileTest_Operators.bin \
-	hxFileTest_ReadWrite.txt
+	hxFileTest_ReadWrite.txt hatchlingPch.hpp.pch
 
 echo all tests passed.
