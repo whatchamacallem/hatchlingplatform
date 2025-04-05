@@ -6,5 +6,5 @@ set -o xtrace
 
 rm -f profile.json hxConsoleTest_FileTest.txt hxFileTest_Operators.bin \
         hxFileTest_ReadWrite.txt hxCUtils.o hxtest \
-        index.* *.html coverage.css *.gcda *gcno
+        index.* *.html coverage.css *.gcda *gcno hatchling_pch.hpp.pch
 

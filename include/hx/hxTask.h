@@ -17,11 +17,11 @@ class hxTask {
 public:
 	// Construct task.  staticLabel must be a static string.
 	HX_INLINE explicit hxTask(const char* staticLabel_=hxnull)
-		: m_nextTask(hxnull), m_label(staticLabel_), m_owner(hxnull) {
+		: m_nextTask(hxnull), m_label(staticLabel_), m_exclusiveOwner(hxnull) {
 	}
 
 	// Delete task.  The execute() call may free task _if allocator is thread safe_.
-	HX_INLINE virtual ~hxTask() { hxAssertRelease(!m_owner, "deleting queued task: %s", getLabel()); }
+	HX_INLINE virtual ~hxTask() { hxAssertRelease(!m_exclusiveOwner, "deleting queued task: %s", getLabel()); }
 
 	// This call is the last time this object is touched by hxTaskQueue.  It may
 	// delete or re-enqueue itself.  Will also be wrapped in hxProfileScope(getLabel());
@@ -31,13 +31,14 @@ public:
 	HX_INLINE hxTask* getNextTask() const { return m_nextTask; }
 	HX_INLINE void setNextTask(hxTask* x_) { m_nextTask = x_; }
 
+	// Expects a constant string literal or null as a task label.
 	HX_INLINE const char* getLabel() const { return m_label ? m_label : "task"; }
 	HX_INLINE void setLabel(const char* x_) { m_label = x_; }
 
-	// Enforces a single ownership policy.  Must set to hxnull first.
-	HX_INLINE void setOwner(const void* x_) {
-		hxAssertRelease((!m_owner || !x_) && !m_nextTask, "re-enqueuing task: %s", getLabel());
-		m_owner = x_;
+	// Enforces a single ownership policy.  Must set to hxnull between owners.
+	HX_INLINE void setExclusiveOwner(const void* x_) {
+		hxAssertRelease((!m_exclusiveOwner || !x_) && !m_nextTask, "re-enqueuing task: %s", getLabel());
+		m_exclusiveOwner = x_;
 	}
 
 private:
@@ -46,5 +47,5 @@ private:
 
 	hxTask* m_nextTask;
 	const char* m_label;
-	const void* m_owner;
+	const void* m_exclusiveOwner;
 };

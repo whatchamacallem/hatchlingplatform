@@ -1,20 +1,10 @@
 // Copyright 2017-2025 Adrian Johnston
-#include <stdio.h>
-
-#include <hx/hatchling.h>
-#include <hx/hxTest.h> // May include Google Test.
 
 // Include everything to catch conflicts.
-#include <hx/hxAllocator.h>
-#include <hx/hxArray.h>
-#include <hx/hxConsole.h>
-#include <hx/hxDma.h>
-#include <hx/hxFile.h>
-#include <hx/hxHashTable.h>
-#include <hx/hxHashTableNodes.h>
-#include <hx/hxProfiler.h>
-#include <hx/hxSort.h>
-#include <hx/hxTaskQueue.h>
+#include <hx/hatchling_pch.hpp>
+
+// Include standard headers last as a test.
+#include <stdio.h>
 
 HX_REGISTER_FILENAME_HASH
 

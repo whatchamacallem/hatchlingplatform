@@ -86,6 +86,7 @@ TEST_F(hxProfilerTest, Single1ms) {
 
 	ASSERT_TRUE(1u == (g_hxProfiler_.recordsSize_() - startRecords));
 
+	// stops the profiler and dumps sample to console:
 	bool isOk = hxConsoleExecLine("profilelog");
 	ASSERT_TRUE(isOk);
 }
