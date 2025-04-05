@@ -112,7 +112,7 @@ size_t hxFile::write(const void* bytes, size_t byteCount) {
 	return bytesWritten;
 }
 
-bool hxFile::getline(char* buffer, size_t bufferSize) {
+bool hxFile::getLine(char* buffer, size_t bufferSize) {
 	hxAssertMsg(buffer, "null i/o buffer");
 	hxAssertMsg((m_openMode & hxFile::in) && (m_filePImpl || (m_openMode & hxFile::fallible)), "file not readable");
 	char* result = (buffer && bufferSize && m_filePImpl) ? ::fgets(buffer, (int)bufferSize, (FILE*)m_filePImpl) : hxnull;
@@ -122,7 +122,7 @@ bool hxFile::getline(char* buffer, size_t bufferSize) {
 		}
 		m_good = false;
 		m_eof = m_filePImpl ? ::feof((FILE*)m_filePImpl) : false;
-		hxAssertRelease(m_eof || (m_openMode & hxFile::fallible), "getline error");
+		hxAssertRelease(m_eof || (m_openMode & hxFile::fallible), "getLine error");
 		return false; // EOF or error
 	}
 	return true;

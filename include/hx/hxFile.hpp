@@ -11,9 +11,9 @@ class hxFile;
 
 class hxFile {
 public:
-	// openmode is a subset of std::ios_base::openmode with fallible added.
+	// openMode is a subset of std::ios_base::openmode with fallible added.
 	// fallible skips asserts and is similar to setting std::basic_ios::exceptions(0). 
-	enum openmode {
+	enum openMode {
 		in = 1u << 0,       // Open for binary reading.
 		out = 1u << 1,      // Open for binary writing.
 		fallible = 1u << 2  // Skip asserts.
@@ -34,7 +34,7 @@ public:
 	// Closes stream.
 	void close();
 
-	HX_INLINE bool is_open() const { return m_filePImpl != hxnull; }
+	HX_INLINE bool isOpen() const { return m_filePImpl != hxnull; }
 
 	HX_INLINE bool good() const { return m_good; }
 
@@ -45,13 +45,7 @@ public:
 		m_eof = false;
 	}
 
-	HX_INLINE bool is_in() const { return (m_openMode & in) != 0; }
-
-	HX_INLINE bool is_out() const { return (m_openMode & out) != 0; }
-
-	// Returns whether operations may fail without asserting.  Non-standard, similar
-	// to checking if exceptions are enabled.
-	HX_INLINE bool is_fallible() const { return (m_openMode & fallible) != 0; }
+	HX_INLINE uint16_t mode() const { return m_openMode; }
 
 	size_t read(void* bytes_, size_t count_);
 
@@ -62,11 +56,11 @@ public:
 	// the size of the provided char array.  buffer is a reference to a char
 	// array.
 	template<size_t BufferSize_>
-	HX_INLINE bool getline(char(&buffer_)[BufferSize_]) { return getline(buffer_, BufferSize_); }
+	HX_INLINE bool getLine(char(&buffer_)[BufferSize_]) { return getLine(buffer_, BufferSize_); }
 
 	// Reads an \n or EOF terminated character sequence.  Allowed to fail on EOF
 	// without needing to be hxFile::fallible.
-	bool getline(char* buffer_, size_t bufferSize_);
+	bool getLine(char* buffer_, size_t bufferSize_);
 
 	// Formatted string write.  Must be less than HX_MAX_LINE characters.  gcc
 	// considers "this" to be argument 1.

@@ -8,17 +8,17 @@
 HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------
-// hxConsoleHashTableNode
+// hxConsoleHashTableNode_
 //
 // Compares command lines to static strings.  Hashing stops at first non-printing
 // character.
 
 namespace {
 
-class hxConsoleHashTableNode : public hxHashTableNodeBase<const char*> {
+class hxConsoleHashTableNode_ : public hxHashTableNodeBase<const char*> {
 public:
 	typedef hxHashTableNodeBase<Key> Base;
-	HX_INLINE hxConsoleHashTableNode(const char* key_, uint32_t hash_)
+	HX_INLINE hxConsoleHashTableNode_(const char* key_, uint32_t hash_)
 			: Base(key_), m_cmd(0), m_hash(hash_) {
 		if ((HX_RELEASE) < 1) {
 			const char* k = key;
@@ -28,7 +28,7 @@ public:
 			hxAssertMsg(*k == '\0', "console symbol contains delimiter: \"%s\"", key);
 		}
 	}
-	HX_INLINE ~hxConsoleHashTableNode() { hxFree(m_cmd); }
+	HX_INLINE ~hxConsoleHashTableNode_() { hxFree(m_cmd); }
 
 	HX_INLINE uint32_t hash() const {
 		return m_hash;
@@ -46,7 +46,7 @@ public:
 	}
 
 	// Compare first whitespace delimited tokens.
-	HX_INLINE static bool keyEqual(const hxConsoleHashTableNode& lhs, const char*const& rhs, uint32_t rhsHash) {
+	HX_INLINE static bool keyEqual(const hxConsoleHashTableNode_& lhs, const char*const& rhs, uint32_t rhsHash) {
 		(void)rhs;
 		hxAssertMsg(lhs.hash() != rhsHash || ::strncmp(lhs.key, rhs, ::strlen(lhs.key)) == 0,
 			"console symbol hash collision: %s %s", lhs.key, rhs);
@@ -58,13 +58,13 @@ public:
 };
 
 struct hxConsoleLess_ {
-	HX_INLINE bool operator()(const hxConsoleHashTableNode* lhs,
-			const hxConsoleHashTableNode* rhs) const {
+	HX_INLINE bool operator()(const hxConsoleHashTableNode_* lhs,
+			const hxConsoleHashTableNode_* rhs) const {
 		return ::strcasecmp(lhs->key, rhs->key) < 0;
 	}
 };
 
-typedef hxHashTable<hxConsoleHashTableNode, 4> hxCommandTable_;
+typedef hxHashTable<hxConsoleHashTableNode_, 4> hxCommandTable_;
 
 // Wrapped to ensure correct construction order.
 hxCommandTable_& hxConsoleCommands_() { static hxCommandTable_ tbl; return tbl; }
@@ -76,7 +76,7 @@ hxCommandTable_& hxConsoleCommands_() { static hxCommandTable_ tbl; return tbl; 
 
 void hxConsoleRegister_(hxCommand_* fn, const char* id) {
 	hxAssertMsg(fn && id, "hxConsoleRegister_ args");
-	hxConsoleHashTableNode& node = hxConsoleCommands_().insertUnique(id, hxMemoryManagerId_Heap);
+	hxConsoleHashTableNode_& node = hxConsoleCommands_().insertUnique(id, hxMemoryManagerId_Heap);
 	hxAssertMsg(!node.m_cmd, "command already registered: %s", id);
 	node.m_cmd = fn;
 }
@@ -101,7 +101,7 @@ bool hxConsoleExecLine(const char* command) {
 		return true;
 	}
 
-	hxConsoleHashTableNode* node = hxConsoleCommands_().find(pos);
+	hxConsoleHashTableNode_* node = hxConsoleCommands_().find(pos);
 	if (!node) {
 		hxWarn("command not found: %s", command);
 		return false;
@@ -120,24 +120,17 @@ bool hxConsoleExecLine(const char* command) {
 bool hxConsoleExecFile(hxFile& file) {
 	char buf[HX_MAX_LINE];
 	bool result = true;
-	while (result && file.getline(buf)) {
+	while (result && file.getLine(buf)) {
 		hxLog("console: %s", buf);
 		result = hxConsoleExecLine(buf);
 	}
 	return result;
 }
 
-struct hxConsoleLess {
-	HX_INLINE bool operator()(const hxConsoleHashTableNode* lhs,
-			const hxConsoleHashTableNode* rhs) const {
-		return lhs->m_hash < rhs->m_hash;
-	}
-};
-
 void hxConsoleExecFilename(const char* filename) {
 	hxFile file(hxFile::in, "%s", filename);
-	hxWarnCheck(file.is_open(), "cannot open: %s", filename);
-	if (file.is_open()) {
+	hxWarnCheck(file.isOpen(), "cannot open: %s", filename);
+	if (file.isOpen()) {
 		bool isOk = hxConsoleExecFile(file);
 		hxWarnCheck(isOk, "encountering errors: %s", filename); (void)isOk;
 	}
@@ -151,7 +144,7 @@ void hxConsoleHelp() {
 	if ((HX_RELEASE) < 2) {
 		hxMemoryManagerScope heap(hxMemoryManagerId_Heap);
 
-		hxArray<const hxConsoleHashTableNode*> cmds;
+		hxArray<const hxConsoleHashTableNode_*> cmds;
 		cmds.reserve(hxConsoleCommands_().size());
 		for (hxCommandTable_::constIterator it = hxConsoleCommands_().cBegin();
 				it != hxConsoleCommands_().cEnd(); ++it) {
@@ -162,9 +155,9 @@ void hxConsoleHelp() {
 			cmds.pushBack(&*it);
 		}
 
-		hxInsertionSort<const hxConsoleHashTableNode*, hxConsoleLess_>(cmds.begin(), cmds.end(), hxConsoleLess_());
+		hxInsertionSort<const hxConsoleHashTableNode_*, hxConsoleLess_>(cmds.begin(), cmds.end(), hxConsoleLess_());
 
-		for (hxArray<const hxConsoleHashTableNode*>::iterator it = cmds.begin();
+		for (hxArray<const hxConsoleHashTableNode_*>::iterator it = cmds.begin();
 				it != cmds.end(); ++it) {
 			(*it)->m_cmd->usage_((*it)->key);
 		}

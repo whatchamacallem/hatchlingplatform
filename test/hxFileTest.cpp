@@ -30,7 +30,7 @@ public:
 TEST_F(hxFileTest, EmptyName) {
 	hxFile f(hxFile::in | hxFile::fallible, "");
 	ASSERT_EQ(f.good(), false);
-	ASSERT_EQ(f.is_open(), false);
+	ASSERT_EQ(f.isOpen(), false);
 }
 
 #if defined(__GNUC__)
@@ -42,14 +42,14 @@ TEST_F(hxFileTest, ReadWrite) {
 	f << "hxFileTest_ReadWrite.txt";
 
 	ASSERT_EQ(f.good(), true);
-	ASSERT_EQ(f.is_open(), true);
+	ASSERT_EQ(f.isOpen(), true);
 }
 
 TEST_F(hxFileTest, NotExist) {
 	hxFile f(hxFile::in | hxFile::fallible, "TEST_FILE_DOES_NOT_EXIST_%d", 123);
 	ASSERT_EQ(f.good(), false);
-	ASSERT_EQ(f.is_open(), false);
-	ASSERT_EQ(f.is_fallible(), true);
+	ASSERT_EQ(f.isOpen(), false);
+	ASSERT_EQ((bool)(f.mode() & hxFile::fallible), true);
 }
 
 TEST_F(hxFileTest, Operators) {
