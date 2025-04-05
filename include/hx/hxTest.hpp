@@ -10,7 +10,10 @@
 #else // !HX_USE_GOOGLE_TEST
 #include <hx/internal/hxTestInternal.hpp>
 
-// A partial Google Test reimplementation.
+// A partial Google Test reimplementation.  Use -DHX_TEST_MAX_CASES to provide
+// enough room for all tests.
+// Use hxTestSuiteExecutor_::setFilterStringLiteral() to filter tests.
+
 namespace testing {
 
 class Test {
@@ -19,7 +22,6 @@ public:
 	virtual ~Test() {}
 };
 
-// Use hxTestSuiteExecutor_::setFilterStringLiteral() to filter tests.
 HX_INLINE void InitGoogleTest(int *argc_, char **argv_) { (void)argc_; (void)argv_; }
 HX_INLINE void InitGoogleTest() { }
 

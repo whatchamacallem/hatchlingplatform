@@ -15,7 +15,7 @@ HX_REGISTER_FILENAME_HASH
 // hxMallocChecked.  Always check malloc and halt on failure.  This is extremely
 // important with hardware where 0 is a valid address and can be written to with
 // disastrous results.
-HX_INLINE static void* hxMallocChecked(size_t size) {
+static HX_INLINE void* hxMallocChecked(size_t size) {
 	void* t = ::malloc(size);
 	hxAssertRelease(t, "malloc fail: %u bytes\n", (unsigned int)size);
 #if (HX_RELEASE) >= 3
@@ -27,8 +27,10 @@ HX_INLINE static void* hxMallocChecked(size_t size) {
 // HX_MEM_DIAGNOSTIC_LEVEL.  See hxSettings.h.
 #if (HX_MEM_DIAGNOSTIC_LEVEL) != -1
 
+namespace {
+
 // Needs to be a pointer to prevent a constructor running at a bad time.
-static class hxMemoryManager* s_hxMemoryManager = hxnull;
+class hxMemoryManager* s_hxMemoryManager = hxnull;
 
 // ----------------------------------------------------------------------------
 // hxScratchpad
@@ -601,6 +603,8 @@ void hxMemoryManager::free(void* ptr) {
 
 	m_memoryAllocatorHeap.onFreeNonVirtual(ptr);
 }
+
+} // namespace
 
 // ----------------------------------------------------------------------------
 // hxMemoryManagerScope

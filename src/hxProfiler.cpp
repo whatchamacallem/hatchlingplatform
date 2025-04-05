@@ -11,20 +11,24 @@ HX_REGISTER_FILENAME_HASH
 // ----------------------------------------------------------------------------
 // Console commands
 
-static void hxProfileStartCommand() {
-	hxProfilerStart();
-}
-hxConsoleCommandNamed(hxProfileStartCommand, profilebegin);
+namespace {
 
-static void hxProfilerLogCommand() {
-	hxProfilerLog();
-}
-hxConsoleCommandNamed(hxProfilerLogCommand, profilelog);
+void hxProfileBeginCommand_() { hxProfilerBegin(); }
 
-static void hxProfilerWriteToChromeTracingCommand(const char* filename) {
+void hxProfileEndCommand_() { hxProfilerEnd(); }
+
+void hxProfilerLogCommand_() { hxProfilerLog(); }
+
+void hxProfilerWriteToChromeTracingCommand_(const char* filename) {
 	hxProfilerWriteToChromeTracing(filename);
 }
-hxConsoleCommandNamed(hxProfilerWriteToChromeTracingCommand, profileend);
+
+} // namespace
+
+hxConsoleCommandNamed(hxProfileBeginCommand_, profilebegin);
+hxConsoleCommandNamed(hxProfileEndCommand_, profileend);
+hxConsoleCommandNamed(hxProfilerLogCommand_, profilelog);
+hxConsoleCommandNamed(hxProfilerWriteToChromeTracingCommand_, profilewrite);
 
 // ----------------------------------------------------------------------------
 // variables

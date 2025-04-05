@@ -74,7 +74,7 @@ public:
 // ----------------------------------------------------------------------------
 
 TEST_F(hxProfilerTest, Single1ms) {
-	hxProfilerStart();
+	hxProfilerBegin();
 
 	size_t startRecords = g_hxProfiler_.recordsSize_();
 	{
@@ -93,7 +93,7 @@ TEST_F(hxProfilerTest, Single1ms) {
 
 TEST_F(hxProfilerTest, writeToChromeTracing) {
 	// Shut down profiling and use console commands for next capture.
-	hxProfilerStop();
+	hxProfilerEnd();
 	hxConsoleExecLine("profilebegin");
 
 	hxTaskQueue q;
@@ -106,7 +106,7 @@ TEST_F(hxProfilerTest, writeToChromeTracing) {
 
 	ASSERT_TRUE(90u == g_hxProfiler_.recordsSize_());
 
-	hxConsoleExecLine("profileend profile.json");
+	hxConsoleExecLine("profilewrite profile.json");
 	hxProfilerLog();
 }
 

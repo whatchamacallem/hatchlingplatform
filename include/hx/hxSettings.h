@@ -66,7 +66,7 @@
 #define HX_OVERRIDE override
 #define HX_ATTR_NORETURN [[noreturn]]
 #else // !HX_CPLUSPLUS
-#define HX_STATIC_ASSERT(x_,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [!!(x_) ? 1 : -1]
+#define HX_STATIC_ASSERT(x_,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__COUNTER__) [!!(x_) ? 1 : -1]
 #define HX_OVERRIDE
 #define HX_ATTR_NORETURN
 #endif
@@ -112,7 +112,7 @@
 #define HX_STATIC_ASSERT(x_,...) static_assert(x_, __VA_ARGS__)
 #define HX_OVERRIDE override
 #else // C/C++98
-#define HX_STATIC_ASSERT(x_,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__LINE__) [!!(x_) ? 1 : -1]
+#define HX_STATIC_ASSERT(x_,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__COUNTER__) [!!(x_) ? 1 : -1]
 #define HX_OVERRIDE
 #endif
 #endif // target settings

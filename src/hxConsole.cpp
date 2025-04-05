@@ -13,6 +13,8 @@ HX_REGISTER_FILENAME_HASH
 // Compares command lines to static strings.  Hashing stops at first non-printing
 // character.
 
+namespace {
+
 class hxConsoleHashTableNode : public hxHashTableNodeBase<const char*> {
 public:
 	typedef hxHashTableNodeBase<Key> Base;
@@ -58,7 +60,9 @@ public:
 typedef hxHashTable<hxConsoleHashTableNode, 4> hxCommandTable;
 
 // Wrapped to ensure correct construction order.
-static hxCommandTable& hxConsoleCommands() { static hxCommandTable tbl; return tbl; }
+hxCommandTable& hxConsoleCommands() { static hxCommandTable tbl; return tbl; }
+
+} // namespace
 
 // ----------------------------------------------------------------------------
 // Console API

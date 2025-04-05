@@ -16,16 +16,16 @@ struct hxTestCaseBase_ {
 
 struct hxTestSuiteExecutor_ {
 public:
-	enum TestState {
-		TEST_STATE_NOTHING_ASSERTED,
-		TEST_STATE_PASS,
-		TEST_STATE_FAIL
+	enum TestState_ {
+		TEST_STATE_NOTHING_ASSERTED_,
+		TEST_STATE_PASS_,
+		TEST_STATE_FAIL_
 	};
 
 	enum {
-		TEST_MAX_FAIL_MESSAGES = 5,
-#if !defined(TEST_MAX_CASES)
-		TEST_MAX_CASES = 256
+		TEST_MAX_FAIL_MESSAGES_ = 5,
+#if !defined(HX_TEST_MAX_CASES)
+		HX_TEST_MAX_CASES = 256
 #endif
 	};
 
@@ -42,7 +42,8 @@ public:
 	void setSearchTerm_(const char* searchTermStringLiteral_) { m_searchTermStringLiteral = searchTermStringLiteral_; }
 
 	void addTest_(hxTestCaseBase_* fn_) {
-		hxAssertRelease(m_numFactories < TEST_MAX_CASES, "TEST_MAX_CASES overflow\n");
+		// Use -DHX_TEST_MAX_CASES to provide enough room for all tests.
+		hxAssertRelease(m_numFactories < HX_TEST_MAX_CASES, "HX_TEST_MAX_CASES overflow\n");
 		m_factories[m_numFactories++] = fn_;
 	}
 
@@ -50,10 +51,10 @@ public:
 	// success and the system log otherwise.
 	hxFile& assertCheck_(const char* file_, size_t line_, bool condition_, const char* message_) {
 		++m_assertCount;
-		m_testState = (condition_ && m_testState != TEST_STATE_FAIL) ? TEST_STATE_PASS : TEST_STATE_FAIL;
+		m_testState = (condition_ && m_testState != TEST_STATE_FAIL_) ? TEST_STATE_PASS_ : TEST_STATE_FAIL_;
 		if (!condition_) {
-			if(++m_assertFailCount >= TEST_MAX_FAIL_MESSAGES) {
-				if (m_assertFailCount == TEST_MAX_FAIL_MESSAGES) {
+			if(++m_assertFailCount >= TEST_MAX_FAIL_MESSAGES_) {
+				if (m_assertFailCount == TEST_MAX_FAIL_MESSAGES_) {
 					hxLogConsole("remaining asserts will fail silently...\n");
 				}
 				return devNull_();
@@ -78,7 +79,7 @@ public:
 				hxLogConsole("%s.%s...\n", (*it_)->suite_(), (*it_)->case_());
 
 				m_currentTest = *it_;
-				m_testState = TEST_STATE_NOTHING_ASSERTED;
+				m_testState = TEST_STATE_NOTHING_ASSERTED_;
 				m_assertFailCount = 0;
 
 				{
@@ -88,12 +89,12 @@ public:
 					(*it_)->run_();
 				}
 
-				if (m_testState == TEST_STATE_NOTHING_ASSERTED) {
+				if (m_testState == TEST_STATE_NOTHING_ASSERTED_) {
 					assertCheck_(hxBasename((*it_)->file_()), (*it_)->line_(), false,
 						"NOTHING_ASSERTED");
 					++m_failCount;
 				}
-				else if (m_testState == TEST_STATE_PASS) {
+				else if (m_testState == TEST_STATE_PASS_) {
 					++m_passCount;
 				}
 				else {
@@ -128,10 +129,10 @@ private:
 	hxTestSuiteExecutor_(const hxTestSuiteExecutor_&); // = delete
 	void operator=(const hxTestSuiteExecutor_&); // = delete
 
-	hxTestCaseBase_* m_factories[TEST_MAX_CASES];
+	hxTestCaseBase_* m_factories[HX_TEST_MAX_CASES];
 	size_t m_numFactories;
 	hxTestCaseBase_* m_currentTest;
-	TestState m_testState;
+	TestState_ m_testState;
 	size_t m_passCount;
 	size_t m_failCount;
 	const char* m_searchTermStringLiteral;

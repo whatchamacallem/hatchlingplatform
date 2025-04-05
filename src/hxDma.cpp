@@ -9,8 +9,7 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------
-// dma
+namespace {
 
 #if HX_DEBUG_DMA
 struct hxDmaDebugRecord {
@@ -22,16 +21,20 @@ struct hxDmaDebugRecord {
 	size_t barrierCounter;
 	const char* labelStringLiteral;
 };
-static hxArray<hxDmaDebugRecord, HX_DEBUG_DMA_RECORDS> s_hxDmaDebugRecords;
-static size_t s_hxDmaBarrierCounter = 0u;
+hxArray<hxDmaDebugRecord, HX_DEBUG_DMA_RECORDS> s_hxDmaDebugRecords;
+size_t s_hxDmaBarrierCounter = 0u;
 
 #if HX_USE_CPP11_THREADS
-static std::mutex s_hxDmaDebugMutex;
+std::mutex s_hxDmaDebugMutex;
 #define HX_DMA_DEBUG_MUTEX_LOCK std::lock_guard<std::mutex> debugGuard(s_hxDmaDebugMutex)
 #else
 #define HX_DMA_DEBUG_MUTEX_LOCK ((void)0)
 #endif
 #endif
+
+} // namespace
+
+
 
 void hxDmaInit() {
 	HX_STATIC_ASSERT(!HX_USE_DMA_HARDWARE, "TODO: Configure for target.");

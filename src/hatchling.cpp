@@ -14,7 +14,7 @@
 HX_REGISTER_FILENAME_HASH
 
 // Exceptions add overhead to c++ and add untested pathways.
-#if defined(__cpp_exceptions)
+#if defined(__cpp_exceptions) && !defined(__INTELLISENSE__)
 HX_STATIC_ASSERT(0, "exceptions should not be enabled");
 #endif
 
@@ -127,7 +127,7 @@ extern "C"
 void hxShutdown(void) {
 	hxAssert(g_hxIsInit);
 	g_hxSettings.isShuttingDown = true;
-	hxProfilerStop();
+	hxProfilerEnd();
 	hxDmaShutDown();
 	hxConsoleDeregisterAll(); // Free console allocations.
 	hxMemoryManagerShutDown(); // Will trap further activity
