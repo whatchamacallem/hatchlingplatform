@@ -15,19 +15,19 @@ public:
 	typedef T* iterator; // Random access iterator.
 	typedef const T* constIterator; // Const random access iterator.
 
-	// Constructs an empty array with a capacity of Capacity.  m_end will be 0
+	// Constructs an empty array with a capacity of Capacity. m_end will be 0
 	// if Capacity is 0.
 	HX_INLINE explicit hxArray() { m_end = this->getStorage(); }
 
-	// Copy constructs an array.  Does not allow movement of hxUniquePtrs.  Use
-	// assign() for that.
+	// Copy constructs an array. Does not allow movement of hxUniquePtrs. Use
+	// assign() for that. Expects `rhs_` to be a reference to another hxArray.
 	HX_INLINE explicit hxArray(const hxArray& rhs_) : hxAllocator<T, Capacity_>() {
 		m_end = this->getStorage();
 		assign(rhs_.cBegin(), rhs_.cEnd());
 	}
 
 	// Copy constructs an array from a container with begin() and end() methods and
-	// a random access iterator.
+	// a random access iterator. Expects `rhs_` to be a reference to a container.
 	template <typename Rhs>
 	HX_INLINE explicit hxArray(const Rhs& rhs_) : hxAllocator<T, Capacity_>() {
 		m_end = this->getStorage();
@@ -40,13 +40,14 @@ public:
 	}
 
 	// Assigns the contents of another hxArray to this array.
-	// Standard except reallocation is disallowed.
+	// Standard except reallocation is disallowed. Expects `rhs_` to be a reference
+	// to another hxArray.
 	HX_INLINE void operator=(const hxArray& rhs_) {
 		assign(rhs_.begin(), rhs_.end());
 	}
 
 	// Copies the elements of a container with begin() and end() methods and a random
-	// access iterator.
+	// access iterator. Expects `rhs_` to be a reference to a container.
 	template <typename Rhs>
 	HX_INLINE void operator=(const Rhs& rhs_) {
 		assign(rhs_.begin(), rhs_.end());
@@ -89,12 +90,14 @@ public:
 	HX_INLINE T& back() { hxAssert(size()); return *(m_end - 1); }
 
 	// Returns a const reference to the element at the specified index.
+	// Expects `index_` to be the index of the element.
 	HX_INLINE const T& operator[](size_t index_) const {
 		hxAssert(index_ < size());
 		return this->getStorage()[index_];
 	}
 
 	// Returns a reference to the element at the specified index.
+	// Expects `index_` to be the index of the element.
 	HX_INLINE T& operator[](size_t index_) {
 		hxAssert(index_ < size());
 		return this->getStorage()[index_];
@@ -107,6 +110,7 @@ public:
 	}
 
 	// Reserves storage for at least the specified number of elements.
+	// Expects `size_` to be the number of elements to reserve storage for.
 	HX_INLINE void reserve(size_t size_) {
 		T* prev = this->getStorage();
 		this->reserveStorage(size_);
@@ -129,6 +133,7 @@ public:
 	HX_INLINE bool empty() const { return m_end == this->getStorage(); }
 
 	// Resizes the array to the specified size, constructing or destroying elements as needed.
+	// Expects `size_` to be the new size of the array.
 	HX_INLINE void resize(size_t size_) {
 		reserve(size_);
 		if (size_ >= size()) {
@@ -141,6 +146,7 @@ public:
 	}
 
 	// Adds a copy of the specified element to the end of the array.
+	// Expects `t_` to be the element to add.
 	HX_INLINE void pushBack(const T& t_) {
 		hxAssert(size() < capacity());
 		::new (m_end++) T(t_);
@@ -159,6 +165,7 @@ public:
 	HX_INLINE T* data() { return this->getStorage(); }
 
 	// Assigns elements from a range defined by iterators to the array.
+	// Expects `first_` to be the beginning iterator and `last_` to be the end iterator.
 	template <typename Iter>
 	HX_INLINE void assign(Iter first_, Iter last_) {
 		reserve((size_t)(last_ - first_));
@@ -172,6 +179,7 @@ public:
 	// Non-standard but useful
 
 	// Constructs an array of T from an array of T2.
+	// Expects `a_` to be the array and `Sz_` to be its size.
 	template<typename T2_, size_t Sz_>
 	HX_INLINE void assign(const T2_(&a_)[Sz_]) { assign(a_ + 0, a_ + Sz_); }
 
@@ -182,6 +190,7 @@ public:
 	}
 
 	// Variant of erase() that moves the end element down to replace erased element.
+	// Expects `index_` to be the index of the element to erase.
 	HX_INLINE void eraseUnordered(size_t index_) {
 		hxAssert(index_ < size());
 		T* it_ = this->getStorage() + index_;
@@ -192,6 +201,7 @@ public:
 	}
 
 	// Variant of erase() that moves the end element down to replace the erased element.
+	// Expects `it_` to be a pointer to the element to erase.
 	HX_INLINE void eraseUnordered(T* it_) {
 		hxAssert((size_t)(it_ - this->getStorage()) < size());
 		if (it_ != --m_end) {
@@ -206,12 +216,16 @@ public:
 	}
 
 private:
+	// Constructs elements in the range [first_, last_]. Expects `first_` and `last_`
+	// to be pointers defining the range.
 	HX_INLINE void construct_(T* first_, T* last_) {
 		while (first_ != last_) {
 			::new (first_++) T;
 		}
 	}
 
+	// Destroys elements in the range [first_, last_]. Expects `first_` and `last_`
+	// to be pointers defining the range.
 	HX_INLINE void destruct_(T* first_, T* last_) {
 		while (first_ != last_) {
 			first_++->~T();

@@ -24,7 +24,10 @@ struct hxLess {
 //
 // The compare parameter is a function object that returns true if the first
 // argument is ordered before (i.e. is less than) the second.  See hxLess.
-
+// Parameters:
+// - begin_: Pointer to the beginning of the range to sort.
+// - end_: Pointer to one past the last element in the range to sort.
+// - compare_: Comparison function object.
 template<typename T_, typename Compare>
 HX_INLINE void hxInsertionSort(T_* begin_, T_* end_, const Compare& compare_) {
 	if(begin_ == end_) { return; } // don't add +1 to null.
@@ -51,6 +54,9 @@ HX_INLINE void hxInsertionSort(T_* begin_, T_* end_, const Compare& compare_) {
 
 // ----------------------------------------------------------------------------
 // A specialization of hxInsertionSort using hxLess.
+// Parameters:
+// - begin_: Pointer to the beginning of the range to sort.
+// - end_: Pointer to one past the last element in the range to sort.
 template<typename T_>
 HX_INLINE void hxInsertionSort(T_* begin_, T_* end_) {
 	hxInsertionSort(begin_, end_, hxLess());
@@ -65,7 +71,11 @@ HX_INLINE void hxInsertionSort(T_* begin_, T_* end_) {
 //
 // The compare parameter is a function object that returns true if the first
 // argument is ordered before (i.e. is less than) the second.  See hxLess.
-
+// Parameters:
+// - begin_: Pointer to the beginning of the range to search.
+// - end_: Pointer to one past the last element in the range to search.
+// - val_: The value to search for.
+// - compare_: Comparison function object.
 template<typename T_, typename Compare>
 HX_INLINE T_* hxBinarySearch(T_* begin_, T_* end_, const T_& val_, const Compare& compare_) {
 	if(begin_ == end_) { return hxnull; } // don't operate on null.
@@ -114,6 +124,8 @@ public:
 	HX_STATIC_ASSERT((int32_t)0x80000000u >> 31 == ~(int32_t)0, "arithmetic left shift expected");
 
 	// Reserves memory for the internal array to hold at least `sz_` elements.
+	// Parameters:
+	// - sz_: The number of elements to reserve memory for.
 	HX_INLINE void reserve(uint32_t sz_) { m_array.reserve(sz_); }
 
 	// Clears the internal array, removing all elements.
@@ -151,7 +163,7 @@ protected:
 		HX_INLINE bool operator<(const KeyValuePair& rhs_) const { return m_key < rhs_.m_key; }
 
 		uint32_t m_key; // The key used for sorting.
-		void* m_val;    // The associated value.
+		void* m_val;	// The associated value.
 	};
 
 	hxArray<KeyValuePair> m_array; // Internal array of key-value pairs.
@@ -266,6 +278,9 @@ public:
 	HX_INLINE bool empty() const { return m_array.empty(); }
 
 	// Adds a key and value pointer to the array.
+	// Parameters:
+	// - key_: The key used for sorting.
+	// - val_: Pointer to the value associated with the key.
 	HX_INLINE void insert(Key key_, Value* val_) {
 		// Perform casts safe for -Wcast-qual with a const and volatile Value type.
 		::new(m_array.emplaceBackUnconstructed()) KeyValuePair(key_, const_cast<void*>((const volatile void*)val_));

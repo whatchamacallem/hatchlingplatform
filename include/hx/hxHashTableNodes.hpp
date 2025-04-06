@@ -16,6 +16,9 @@ public:
 	typedef hxHashTableNodeBase<Key_> Base;
 
 	// Constructor: Initializes the node with a key and optional hash value.
+	// Parameters:
+	// - k_: The key to initialize the node with.
+	// - h_: An optional hash value (default is 0).
 	HX_INLINE hxHashTableNodeInteger(const Key_& k_, uint32_t h_=0u)
 		: Base(k_) { (void)h_; }
 
@@ -23,11 +26,17 @@ public:
 	HX_INLINE uint32_t hash() const { return hash(this->key); }
 
 	// Static method to compute the hash value for a given key.
+	// Parameters:
+	// - key_: The key for which the hash value is to be computed.
 	HX_INLINE static uint32_t hash(const Key_& key_) {
 		return (uint32_t)key_ * (uint32_t)0x61C88647u;
 	}
 
 	// Static method to compare two keys for equality.
+	// Parameters:
+	// - lhs_: The left-hand side node to compare.
+	// - rhs_: The right-hand side key to compare.
+	// - rhsHash_: The hash value of the right-hand side key.
 	HX_INLINE static bool keyEqual(const hxHashTableNodeInteger& lhs_, const Key_& rhs_, uint32_t rhsHash_) {
 		(void)rhsHash_; return lhs_.key == rhs_;
 	}
@@ -43,10 +52,15 @@ public:
 	typedef hxHashTableNodeBase<const char*> Base;
 
 	// Constructor: Initializes the node with a string key and computes its hash.
+	// Parameters:
+	// - k_: The string key to initialize the node with.
 	HX_INLINE hxHashTableNodeStringLiteral(const char* k_)
 		: Base(k_), m_hash(hash(k_)) { }
 
 	// Constructor: Initializes the node with a string key and a precomputed hash.
+	// Parameters:
+	// - k_: The string key to initialize the node with.
+	// - hash_: The precomputed hash value of the key.
 	HX_INLINE hxHashTableNodeStringLiteral(const char* k_, uint32_t hash_)
 		: Base(k_), m_hash(hash_) { }
 
@@ -56,6 +70,8 @@ public:
 	}
 
 	// Static method to compute the hash value for a given string key using FNV-1a.
+	// Parameters:
+	// - key_: The string key for which the hash value is to be computed.
 	HX_INLINE static uint32_t hash(const char*const& key_) {
 		const char* k_ = key_;
 		uint32_t x_ = (uint32_t)0x811c9dc5; // FNV-1a string hashing.
@@ -67,6 +83,10 @@ public:
 	}
 
 	// Static method to compare two string keys for equality, including hash comparison.
+	// Parameters:
+	// - lhs_: The left-hand side node to compare.
+	// - rhs_: The right-hand side string key to compare.
+	// - rhsHash_: The hash value of the right-hand side key.
 	HX_INLINE static bool keyEqual(const hxHashTableNodeStringLiteral& lhs_, const Key& rhs_, uint32_t rhsHash_) {
 		return lhs_.hash() == rhsHash_ && ::strcmp(lhs_.key, rhs_) == 0;
 	}
@@ -84,10 +104,15 @@ template <hxMemoryManagerId id_=hxMemoryManagerId_Heap>
 class hxHashTableNodeString : public hxHashTableNodeStringLiteral {
 public:
 	// Constructor: Allocates and duplicates the string key, then initializes the node.
+	// Parameters:
+	// - k_: The string key to allocate, duplicate, and initialize the node with.
 	HX_INLINE hxHashTableNodeString(const char* k_)
 		: hxHashTableNodeStringLiteral(hxStringDuplicate(k_, id_)) { }
 
 	// Constructor: Allocates and duplicates the string key with a precomputed hash.
+	// Parameters:
+	// - k_: The string key to allocate, duplicate, and initialize the node with.
+	// - hash_: The precomputed hash value of the key.
 	HX_INLINE hxHashTableNodeString(const char* k_, uint32_t hash_)
 		: hxHashTableNodeStringLiteral(hxStringDuplicate(k_, id_), hash_) { }
 

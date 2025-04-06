@@ -134,27 +134,47 @@ HX_ATTR_NORETURN void hxExit(const char* format_, ...);
 #endif
 
 // Enters formatted messages in the system log.
+// Parameters:
+// - level_: The log level (e.g., hxLogLevel_Log, hxLogLevel_Warning).
+// - format_: A printf-style format string.
+// - ...: Additional arguments for the format string.
 void hxLogHandler(enum hxLogLevel level_, const char* format_, ...) HX_ATTR_FORMAT(2, 3);
 
 // va_list version of hxLogHandler.
+// Parameters:
+// - level_: The log level (e.g., hxLogLevel_Log, hxLogLevel_Warning).
+// - format_: A printf-style format string.
+// - args_: A va_list containing the arguments for the format string.
 void hxLogHandlerV(enum hxLogLevel level_, const char* format_, va_list args_);
 
-// Prints an array of bytes formatted in hexadecimal.  Additional information
+// Prints an array of bytes formatted in hexadecimal. Additional information
 // provided when pretty is non-zero.
+// Parameters:
+// - address_: Pointer to the start of the byte array.
+// - bytes_: The number of bytes to print.
+// - pretty_: Non-zero to include additional formatting information.
 void hxHexDump(const void* address_, size_t bytes_, int pretty_);
 
 // Prints an array of floating point values.
+// Parameters:
+// - address_: Pointer to the start of the float array.
+// - floats_: The number of floats to print.
 void hxFloatDump(const float* address_, size_t floats_);
 
 // Returns a pointer to those characters following the last '\' or '/' character
 // or path if those are not present.
+// Parameters:
+// - path_: The file path as a null-terminated string.
 const char* hxBasename(const char* path_);
 
 // Calculates a string hash at runtime that is the same as hxStringLiteralHash.
+// Parameters:
+// - string_: The null-terminated string to hash.
 uint32_t hxStringLiteralHashDebug(const char* string_);
 
 #if (HX_RELEASE) < 1
-// Prints file name hashes registered with HX_REGISTER_FILENAME_HASH.  Use after main().
+// Prints file name hashes registered with HX_REGISTER_FILENAME_HASH. Use after main().
+// No parameters.
 void hxPrintFileHashes(void);
 #else
 #define hxPrintFileHashes() ((void)0)
@@ -167,18 +187,30 @@ void hxPrintFileHashes(void);
 // More portable versions of min(), max(), abs() and clamp() using the < operator.
 
 // Returns the minimum value of x and y using a < comparison.
+// Parameters:
+// - x_: The first value.
+// - y_: The second value.
 template<typename T_>
 HX_CONSTEXPR_FN const T_& hxmin(const T_& x_, const T_& y_) { return ((x_) < (y_)) ? (x_) : (y_); }
 
 // Returns the maximum value of x and y using a < comparison.
+// Parameters:
+// - x_: The first value.
+// - y_: The second value.
 template<typename T_>
 HX_CONSTEXPR_FN const T_& hxmax(const T_& x_, const T_& y_) { return ((y_) < (x_)) ? (x_) : (y_); }
 
 // Returns the absolute value of x using a < comparison.
+// Parameters:
+// - x_: The value to compute the absolute value for.
 template<typename T_>
 HX_CONSTEXPR_FN const T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - (x_)) : (x_); }
 
 // Returns x clamped between the minimum and maximum using < comparisons.
+// Parameters:
+// - x_: The value to clamp.
+// - minimum_: The minimum allowable value.
+// - maximum_: The maximum allowable value.
 template<typename T_>
 HX_CONSTEXPR_FN const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& maximum_) {
 	hxAssert(!((maximum_) < (minimum_)));

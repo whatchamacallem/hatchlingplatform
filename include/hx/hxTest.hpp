@@ -104,9 +104,13 @@ HX_INLINE void InitGoogleTest() { }
 struct hxTestRandom {
 public:
 	// Constructor to initialize the random number generator with a seed.
+	// Parameters:
+	// - seed_: Initial seed value for the random number generator.
 	HX_INLINE hxTestRandom(uint32_t seed_ = 1u) : m_seed(seed_) { }
 
 	// Generates the next random number in the sequence.
+	// Returns:
+	// - The next random number as a 32-bit unsigned integer.
 	HX_INLINE uint32_t operator()() { return (m_seed = 1664525u * m_seed + 1013904223u); }
 
 	// Current seed value used for generating random numbers.

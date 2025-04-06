@@ -16,15 +16,18 @@
 
 class hxTaskQueue {
 public:
-	// threadPoolSize -1 indicates using a hardware_concurrency()-1 size thread
-	// pool.  threadPoolSize 0 does not use threading. 
+	// Create a new task queue. threadPoolSize determines the size of the worker
+	// pool. A threadPoolSize of -1 indicates using a hardware_concurrency()-1 size
+	// thread pool. A threadPoolSize of 0 does not use threading. 
 	explicit hxTaskQueue(int32_t threadPoolSize_ = -1);
 
 	// Calls waitForAll before destructing.
 	~hxTaskQueue();
 
-	// Does not delete task after execution.  Thread safe and callable from
-	// running tasks.
+	// Queue a task for later execution.  Does not delete task after execution.
+	// Thread safe and callable from running tasks.
+	// Parameters:
+	// - task_: A pointer to the task to be enqueued for execution.
 	void enqueue(hxTask* task_);
 
 	// The thread calling waitForAll() will execute tasks as well.  Do not call

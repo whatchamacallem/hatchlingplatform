@@ -42,7 +42,7 @@ enum hxMemoryManagerId {
 	hxMemoryManagerId_ScratchPage1,
 	hxMemoryManagerId_ScratchPage2,
 	hxMemoryManagerId_ScratchTemp,
-	hxMemoryManagerId_ScratchAll,     // Must be last Scratch id_
+	hxMemoryManagerId_ScratchAll, 	// Must be last Scratch id_
 #endif
 	hxMemoryManagerId_MAX,
 	hxMemoryManagerId_Current = -1,

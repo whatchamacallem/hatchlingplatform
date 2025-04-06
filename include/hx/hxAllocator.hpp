@@ -18,7 +18,7 @@ public:
 	// Template specialization below should have been selected.
 	HX_STATIC_ASSERT(Capacity_ > 0u, "Capacity_ > 0");
 
-    // Initializes memory to 0xcd when HX_RELEASE < 1.
+	// Initializes memory to 0xcd when HX_RELEASE < 1.
 	HX_INLINE hxAllocator() {
 		if ((HX_RELEASE) < 1) {
 			::memset(m_allocator, 0xcd, sizeof m_allocator);
@@ -26,6 +26,7 @@ public:
 	}
 
 	// Used to ensure initial capacity as reserveStorage() will not reallocate.
+	// sz_: The number of elements of type T to allocate.
 	HX_INLINE void reserveStorage(size_t size_) {
 		hxAssertRelease(size_ <= Capacity_, "allocator overflowing fixed capacity."); (void)size_;
 	}
@@ -70,7 +71,7 @@ public:
 	}
 
 	// Calls hxFree() with any allocated memory.
-	HX_INLINE ~hxAllocator() {
+		HX_INLINE ~hxAllocator() {
 		if (m_allocator) {
 			m_capacity = 0;
 			hxFree(m_allocator);
@@ -79,6 +80,7 @@ public:
 	}
 
 	// Capacity is set by first call to reserveStorage() and may not be extended.
+	// sz_: The number of elements of type T to allocate.
 	HX_INLINE void reserveStorage(size_t sz_) {
 		if (sz_ <= m_capacity) { return; }
 		hxAssertRelease(m_capacity == 0, "allocator reallocation disallowed.");
@@ -87,6 +89,9 @@ public:
 	}
 
 	// Use hxArray::getAllocator() to access extended allocation semantics.
+	// sz_: The number of elements of type T to allocate.
+	// alId_: The memory manager ID to use for allocation (default: hxMemoryManagerId_Current).
+	// alignmentMask_: The alignment mask to apply to the allocation (default: HX_ALIGNMENT_MASK).
 	HX_INLINE void reserveStorageExt(size_t sz_,
 			hxMemoryManagerId alId_=hxMemoryManagerId_Current,
 			uintptr_t alignmentMask_=HX_ALIGNMENT_MASK) {

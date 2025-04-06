@@ -19,15 +19,24 @@
 // implement:
 //
 //   // Construct a new Node from a Key and associated hash value.
+//   // Parameters:
+//   // - key: The key associated with the Node.
+//   // - hash: The hash value associated with the key.
 //   Node(const Key& key, uint32_t hash);
 //
 //   // Calculate or return stored hash value for the key.
 //   uint32_t hash() const;
 //
 //   // Calculate hash value for the key.
+//   // Parameters:
+//   // - key: The key for which the hash value is calculated.
 //   static uint32_t hash(const Key& key) const;
 //
 //   // Compare a node with a key and its associated hash value.
+//   // Parameters:
+//   // - lhs: The Node to compare.
+//   // - rhs: The key to compare against.
+//   // - rhsHash: The hash value associated with the key.
 //   static bool keyEqual(const Node& lhs, const Key& rhs, uint32_t rhsHash) const;
 //
 // This interface is used to avoid the recalculation of hashes.  keyEqual is
@@ -182,10 +191,16 @@ public:
 	HX_INLINE bool empty() const { return m_size == 0u; }
 
 	// Returns a node containing key if any or allocates and returns a new one.
+	// Parameters:
+	// - key_: The key to search for or insert.
 	// Any allocation required uses hxMemoryManagerId_Current and HX_ALIGNMENT_MASK.
 	HX_INLINE Node& operator[](const Key& key_) { return insertUnique(key_); }
 
 	// Returns a node containing key if any or allocates and returns a new one.
+	// Parameters:
+	// - key_: The key to search for or insert.
+	// - id_: The memory manager ID to use for allocation.
+	// - alignmentMask_: The alignment mask to use for allocation.
 	// Any allocation required uses hxMemoryManagerId id_ and alignmentMask_.
 	HX_INLINE Node& insertUnique(const Key& key_,
 								  hxMemoryManagerId id_=hxMemoryManagerId_Current,
@@ -206,6 +221,8 @@ public:
 	}
 
 	// Inserts a Node into the hash table, allowing duplicate keys.
+	// Parameters:
+	// - node_: The Node to insert into the hash table.
 	HX_INLINE void insertNode(Node* node_) {
 		hxAssert(node_ != hxnull && m_size < ~(uint32_t)0);
 		uint32_t hash_ = node_->hash();
@@ -215,9 +232,12 @@ public:
 		++m_size;
 	}
 
-	// Returns a Node matching key if any.  If previous is non-null it must be
+	// Returns a Node matching key if any. If previous is non-null it must be
 	// a node previously returned from find() with the same key and that has not
-	// been removed.  Then find() will return a subsequent node if any.
+	// been removed. Then find() will return a subsequent node if any.
+	// Parameters:
+	// - key_: The key to search for in the hash table.
+	// - previous_: A previously found Node with the same key, or nullptr.
 	HX_INLINE Node* find(const Key& key_, const Node* previous_=hxnull) {
 		if (!previous_) {
 			uint32_t hash_ = Node::hash(key_);
@@ -240,12 +260,17 @@ public:
 	}
 
 	// Finds a Node matching the given key (const version). Returns nullptr if not found.
+	// Parameters:
+	// - key_: The key to search for in the hash table.
+	// - previous_: A previously found Node with the same key, or nullptr.
 	HX_INLINE const Node* find(const Key& key_, const Node* previous_=hxnull) const {
 		// This code calls the non-const version for brevity.
 		return const_cast<hxHashTable*>(this)->find(key_, previous_);
 	}
 
 	// Counts the number of Nodes with the given key.
+	// Parameters:
+	// - key_: The key to count occurrences of in the hash table.
 	HX_INLINE uint32_t count(const Key& key_) const {
 		uint32_t total_ = 0u;
 		uint32_t hash_ = Node::hash(key_);
@@ -258,6 +283,8 @@ public:
 	}
 
 	// Removes and returns the first Node with the given key.
+	// Parameters:
+	// - key_: The key to search for and remove from the hash table.
 	HX_INLINE Node* extract(const Key& key_) {
 		uint32_t hash_ = Node::hash(key_);
 		Node** next_ = getBucket_(hash_);
@@ -272,10 +299,13 @@ public:
 		return hxnull;
 	}
 
-	// Releases all Nodes matching key and calls deleter() on every node.  Returns
-	// the number of nodes released.  Deleter can be functions with signature "void
+	// Releases all Nodes matching key and calls deleter() on every node. Returns
+	// the number of nodes released. Deleter can be functions with signature "void
 	// deleter(Node*)" and functors supporting "operator()(Node*)" and with an
 	// "operator bool" returning true.
+	// Parameters:
+	// - key_: The key to search for and remove from the hash table.
+	// - deleter_: A function or functor to call on each removed Node.
 	template<typename Deleter_>
 	HX_INLINE uint32_t erase(const Key& key_, const Deleter_& deleter_) {
 		uint32_t count_ = 0u;
@@ -306,6 +336,8 @@ public:
 	// Removes all nodes and calls deleter() on every node.  Deleter can be
 	// function pointers with signature "void deleter(Node*)" or functors
 	// supporting "operator()(Node*) and operator (bool)."
+	// Parameters:
+	// - deleter_: A function or functor to call on each removed Node.
 	template<typename Deleter_>
 	HX_INLINE void clear(const Deleter_& deleter_) {
 		if (deleter_) {
@@ -343,6 +375,8 @@ public:
 	HX_INLINE uint32_t bucketCount() const { return m_table.getCapacity(); };
 
 	// Sets the number of hash bits (only for dynamic capacity).
+	// Parameters:
+	// - bits_: The number of hash bits to set for the hash table.
 	HX_INLINE void setHashBits(uint32_t bits_) { return m_table.setHashBits(bits_); };
 
 	// Returns the average number of Nodes per bucket.
