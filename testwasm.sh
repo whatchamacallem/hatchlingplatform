@@ -15,8 +15,8 @@ if [ ${PIPESTATUS[1]} -eq 0 ]; then
 	echo "emcc version is ok."
 else
 	echo "ERROR: emcc is missing or emcc version is too small."
-    echo "see: https://emscripten.org/docs/getting_started/downloads.html"
-    exit 1;
+	echo "see: https://emscripten.org/docs/getting_started/downloads.html"
+	exit 1;
 fi
 
 set -o errexit

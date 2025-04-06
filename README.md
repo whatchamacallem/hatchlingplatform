@@ -36,9 +36,9 @@ compiling to an embedded target with limited RAM.
    included.  Also `<new>` is used for placement new.
 
  * Logging and memory management available in plain C99. `<hx/hatchling.h>` is
-   available in C and provides memory management and string hashing as well.
+   available in C and C++.
 
-  * 64-bit clean.  Intended for but not limited to use with a 32-bit
+ * 64-bit clean.  Intended for but not limited to use with a 32-bit
    target.  size_t is fairly widely used.
 
  * Does not use exceptions or `std::type_info` as these are inefficient.

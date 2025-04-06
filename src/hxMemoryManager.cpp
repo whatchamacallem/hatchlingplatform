@@ -321,10 +321,10 @@ public:
 
 		// This could be made custom per-algorithm.
 		uintptr_t sizes[c_nSections] = {
-		  (HX_MEMORY_BUDGET_SCRATCH_PAGE),     // hxMemoryManagerId_ScratchPage0
-		  (HX_MEMORY_BUDGET_SCRATCH_PAGE),     // hxMemoryManagerId_ScratchPage1
-		  (HX_MEMORY_BUDGET_SCRATCH_PAGE),     // hxMemoryManagerId_ScratchPage2
-		  (HX_MEMORY_BUDGET_SCRATCH_TEMP)      // hxMemoryManagerId_ScratchTemp
+			(HX_MEMORY_BUDGET_SCRATCH_PAGE), // hxMemoryManagerId_ScratchPage0
+			(HX_MEMORY_BUDGET_SCRATCH_PAGE), // hxMemoryManagerId_ScratchPage1
+			(HX_MEMORY_BUDGET_SCRATCH_PAGE), // hxMemoryManagerId_ScratchPage2
+			(HX_MEMORY_BUDGET_SCRATCH_TEMP)  // hxMemoryManagerId_ScratchTemp
 		};
 
 		for (size_t i = 0; i < (size_t)c_allSection; ++i) {
