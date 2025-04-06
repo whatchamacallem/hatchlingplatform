@@ -19,36 +19,44 @@ public:
 		fallible = 1u << 2  // Skip asserts.
 	};
 
-	// Stream is closed by default.
+	// Constructor to initialize the file object with a specific mode.
 	hxFile(uint16_t mode_=0u);
 
+	// Constructor to initialize and open a file with a formatted filename.
 	// Opens a stream using a formatted filename.  Non-standard arg order.
 	hxFile(uint16_t mode_, const char* filename_, ...) HX_ATTR_FORMAT(3, 4);
 
-	// Closes stream.
+	// Destructor to ensure the file is closed when the object goes out of scope.
 	~hxFile();
 
-	// Opens a stream using a formatted filename.
+	// Opens a file with the specified mode and formatted filename.
 	bool open(uint16_t mode_, const char* filename_, ...) HX_ATTR_FORMAT(3, 4);
 
-	// Closes stream.
+	// Closes the currently open file.
 	void close();
 
+	// Checks if the file is open.
 	HX_INLINE bool isOpen() const { return m_filePImpl != hxnull; }
 
+	// Checks if the file stream is in a good state.
 	HX_INLINE bool good() const { return m_good; }
 
-	HX_INLINE bool eof() const { return m_eof; }   // Check for EOF only.
+	// Checks if the end of the file has been reached.
+	HX_INLINE bool eof() const { return m_eof; }
 
+	// Clears the state of the file stream.
 	HX_INLINE void clear() {
 		m_good = m_filePImpl != hxnull;
 		m_eof = false;
 	}
 
+	// Returns the current open mode of the file.
 	HX_INLINE uint16_t mode() const { return m_openMode; }
 
+	// Reads a specified number of bytes from the file into the provided buffer.
 	size_t read(void* bytes_, size_t count_);
 
+	// Writes a specified number of bytes from the provided buffer to the file.
 	size_t write(const void* bytes_, size_t count_);
 
 	// Reads an \n or EOF terminated character sequence.  Allowed to fail on
@@ -62,15 +70,14 @@ public:
 	// without needing to be hxFile::fallible.
 	bool getLine(char* buffer_, size_t bufferSize_);
 
-	// Formatted string write.  Must be less than HX_MAX_LINE characters.  gcc
-	// considers "this" to be argument 1.
+	// Writes a formatted string to the file. Must be less than HX_MAX_LINE characters.
 	bool print(const char* format_, ...) HX_ATTR_FORMAT(2, 3);
 
-	// Read a single unformatted native endian object.
+	// Reads a single unformatted native endian object from the file.
 	template<typename T_>
 	HX_INLINE bool read1(T_& t_) { return read(&t_, sizeof t_) == sizeof t_; }
 
-	// Write a single unformatted native endian object.
+	// Writes a single unformatted native endian object to the file.
 	template<typename T_>
 	HX_INLINE bool write1(const T_& t_) { return write(&t_, sizeof t_) == sizeof t_; }
 
@@ -90,7 +97,7 @@ public:
 		return *this;
 	}
 
-	// Write a string literal.  Supports Google Test style diagnostic messages.
+	// Writes a string literal to the file. Supports Google Test style diagnostic messages.
 	template<size_t StringLength_>
 	HX_INLINE hxFile& operator<<(const char(&str_)[StringLength_]) {
 		hxAssert(::strnlen(str_, StringLength_) == (StringLength_-1));
@@ -103,10 +110,11 @@ private:
 	void operator=(const hxFile&); // = delete
 	template<typename T_> HX_INLINE hxFile& operator>>(const T_* t_); // = delete
 
+	// Internal function to open a file with a formatted filename and variable arguments.
 	bool openv_(uint16_t mode_, const char* format_, va_list args_);
 
-	char* m_filePImpl;
-	uint16_t m_openMode;
-	bool m_good;
-	bool m_eof;
+	char* m_filePImpl;   // Pointer to the file implementation.
+	uint16_t m_openMode; // Current open mode of the file.
+	bool m_good;         // Indicates if the file stream is in a good state.
+	bool m_eof;	         // Indicates if the end of the file has been reached.
 };

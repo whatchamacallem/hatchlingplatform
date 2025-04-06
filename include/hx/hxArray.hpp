@@ -7,17 +7,13 @@
 // hxArray
 //
 // Implements some of std::vector.  Requires T to have a default constructor.
-// Undocumented functions follow std::vector.  Undocumented methods have a
-// standard interface.
 
 template<typename T_, size_t Capacity_=hxAllocatorDynamicCapacity>
 class hxArray : private hxAllocator<T_, Capacity_> {
 public:
-	typedef T_ T;
-	typedef T value_type;
+	typedef T_ T; // value type
 	typedef T* iterator; // Random access iterator.
 	typedef const T* constIterator; // Const random access iterator.
-	typedef hxAllocator<T, Capacity_> allocator_type; 
 
 	// Constructs an empty array with a capacity of Capacity.  m_end will be 0
 	// if Capacity is 0.
@@ -38,11 +34,12 @@ public:
 		assign(rhs_.begin(), rhs_.end());
 	}
 
-	// Destructs array.
+	// Destructs the array and destroys all elements.
 	HX_INLINE ~hxArray() {
 		destruct_(this->getStorage(), m_end);
 	}
 
+	// Assigns the contents of another hxArray to this array.
 	// Standard except reallocation is disallowed.
 	HX_INLINE void operator=(const hxArray& rhs_) {
 		assign(rhs_.begin(), rhs_.end());
@@ -55,40 +52,61 @@ public:
 		assign(rhs_.begin(), rhs_.end());
 	}
 
-	// Standard interface.
-	HX_INLINE const allocator_type& getAllocator() const { return *this; }
-	HX_INLINE       allocator_type& getAllocator() { return *this; }
-
+	// Returns a const iterator to the beginning of the array.
 	HX_INLINE const T* begin() const { return this->getStorage(); }
-	HX_INLINE       T* begin() { return this->getStorage(); }
+
+	// Returns an iterator to the beginning of the array.
+	HX_INLINE T* begin() { return this->getStorage(); }
+
+	// Returns a const iterator to the beginning of the array (alias for begin()).
 	HX_INLINE const T* cBegin() const { return this->getStorage(); }
+
+	// Returns a const iterator to the beginning of the array (alias for begin()).
 	HX_INLINE const T* cBegin() { return this->getStorage(); }
 
+	// Returns a const iterator to the end of the array.
 	HX_INLINE const T* end() const { return m_end; }
-	HX_INLINE       T* end() { return m_end; }
+
+	// Returns an iterator to the end of the array.
+	HX_INLINE T* end() { return m_end; }
+
+	// Returns a const iterator to the end of the array (alias for end()).
 	HX_INLINE const T* cEnd() const { return m_end; }
+
+	// Returns a const iterator to the end of the array (alias for end()).
 	HX_INLINE const T* cEnd() { return m_end; }
 
+	// Returns a const reference to the first element in the array.
 	HX_INLINE const T& front() const { hxAssert(size()); return *this->getStorage(); }
-	HX_INLINE       T& front() { hxAssert(size()); return *this->getStorage(); }
 
+	// Returns a reference to the first element in the array.
+	HX_INLINE T& front() { hxAssert(size()); return *this->getStorage(); }
+
+	// Returns a const reference to the last element in the array.
 	HX_INLINE const T& back() const { hxAssert(size()); return *(m_end - 1); }
-	HX_INLINE       T& back() { hxAssert(size()); return *(m_end - 1); }
 
+	// Returns a reference to the last element in the array.
+	HX_INLINE T& back() { hxAssert(size()); return *(m_end - 1); }
+
+	// Returns a const reference to the element at the specified index.
 	HX_INLINE const T& operator[](size_t index_) const {
 		hxAssert(index_ < size());
 		return this->getStorage()[index_];
 	}
-	HX_INLINE       T& operator[](size_t index_) {
+
+	// Returns a reference to the element at the specified index.
+	HX_INLINE T& operator[](size_t index_) {
 		hxAssert(index_ < size());
 		return this->getStorage()[index_];
 	}
 
+	// Returns the number of elements in the array.
 	HX_INLINE size_t size() const {
 		hxAssert(!m_end == !this->getStorage());
 		return (size_t)(m_end - this->getStorage());
 	}
 
+	// Reserves storage for at least the specified number of elements.
 	HX_INLINE void reserve(size_t size_) {
 		T* prev = this->getStorage();
 		this->reserveStorage(size_);
@@ -98,15 +116,19 @@ public:
 		}
 	}
 
+	// Returns the capacity of the array.
 	HX_INLINE size_t capacity() const { return this->getCapacity(); }
 
+	// Clears the array, destroying all elements.
 	HX_INLINE void clear() {
 		destruct_(this->getStorage(), m_end);
 		m_end = this->getStorage();
 	}
 
+	// Returns true if the array is empty.
 	HX_INLINE bool empty() const { return m_end == this->getStorage(); }
 
+	// Resizes the array to the specified size, constructing or destroying elements as needed.
 	HX_INLINE void resize(size_t size_) {
 		reserve(size_);
 		if (size_ >= size()) {
@@ -118,21 +140,25 @@ public:
 		m_end = this->getStorage() + size_;
 	}
 
+	// Adds a copy of the specified element to the end of the array.
 	HX_INLINE void pushBack(const T& t_) {
 		hxAssert(size() < capacity());
 		::new (m_end++) T(t_);
 	}
 
+	// Removes the last element from the array.
 	HX_INLINE void popBack() {
 		hxAssert(size());
 		(--m_end)->~T();
 	}
 
+	// Returns a const pointer to the array's data.
 	HX_INLINE const T* data() const { return this->getStorage(); }
-	HX_INLINE       T* data() { return this->getStorage(); }
 
-	// Copies the elements of a container with begin() and end() methods and a random
-	// access iterator.
+	// Returns a pointer to the array's data.
+	HX_INLINE T* data() { return this->getStorage(); }
+
+	// Assigns elements from a range defined by iterators to the array.
 	template <typename Iter>
 	HX_INLINE void assign(Iter first_, Iter last_) {
 		reserve((size_t)(last_ - first_));
@@ -155,8 +181,7 @@ public:
 		return (void*)m_end++;
 	}
 
-	// Variant of erase() that moves the end element down to replace erased
-	// element.
+	// Variant of erase() that moves the end element down to replace erased element.
 	HX_INLINE void eraseUnordered(size_t index_) {
 		hxAssert(index_ < size());
 		T* it_ = this->getStorage() + index_;
@@ -166,8 +191,7 @@ public:
 		m_end->~T();
 	}
 
-	// Variant of erase() that moves the end element down to replace the erased
-	// element.
+	// Variant of erase() that moves the end element down to replace the erased element.
 	HX_INLINE void eraseUnordered(T* it_) {
 		hxAssert((size_t)(it_ - this->getStorage()) < size());
 		if (it_ != --m_end) {
@@ -176,7 +200,7 @@ public:
 		m_end->~T();
 	}
 
-	// Returns true when size equals capacity.
+	// Returns true when the array is full (size equals capacity).
 	HX_INLINE bool full() {
 		return size() == capacity();
 	}

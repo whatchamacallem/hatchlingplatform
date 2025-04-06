@@ -312,7 +312,7 @@ HX_INLINE hxCommand_* hxCommandFactory_(R_(*fn_)(A1_, A2_, A3_, A4_)) {
 
 template<typename T_>
 HX_INLINE hxCommand_* hxVariableFactory_(volatile T_* var_) {
-    // Warning: Whole program optimization was breaking with this: return hxNew<hxVariable_<T_> >(var_);
+	// Warning: Whole program optimization was breaking with this: return hxNew<hxVariable_<T_> >(var_);
 	return ::new(hxMallocExt(sizeof(hxVariable_<T_>), hxMemoryManagerId_Console, HX_ALIGNMENT_MASK)) hxVariable_<T_>(var_);
 }
 

@@ -111,38 +111,51 @@ HX_INLINE const T_* hxBinarySearch(const T_* begin_, const T_* end_, const T_& v
 
 class hxRadixSortBase {
 public:
-	// Arithmetic left shift i >> 31 can be implemented with a negative unsigned
-	// left shift: -(u >> 31). 
 	HX_STATIC_ASSERT((int32_t)0x80000000u >> 31 == ~(int32_t)0, "arithmetic left shift expected");
 
+	// Reserves memory for the internal array to hold at least `sz_` elements.
 	HX_INLINE void reserve(uint32_t sz_) { m_array.reserve(sz_); }
+
+	// Clears the internal array, removing all elements.
 	HX_INLINE void clear() { m_array.clear(); }
+
+	// Sorts the internal array using the provided temporary memory allocator to
+	// store histograms.
 	void sort(hxMemoryManagerId tempMemory_);
 
 protected:
+	// Represents a key-value pair used in radix sorting.
 	struct KeyValuePair {
+		// Constructor for an 8-bit key and associated value.
 		HX_INLINE KeyValuePair(uint8_t key_, void* val_) : m_key(key_), m_val(val_) { }
+
+		// Constructor for a 16-bit key and associated value.
 		HX_INLINE KeyValuePair(uint16_t key_, void* val_) : m_key(key_), m_val(val_) { }
+
+		// Constructor for a 32-bit key and associated value.
 		HX_INLINE KeyValuePair(uint32_t key_, void* val_) : m_key(key_), m_val(val_) { }
-		// key_ + INT_MIN. (same as key_ ^ INT_MIN without room to carry.)
+
+		// Constructor for a signed 32-bit key and associated value.
+		// Adjusts the key to handle signed integers correctly.
 		HX_INLINE KeyValuePair(int32_t key_, void* val_) : m_val(val_) { m_key = (uint32_t)(key_ ^ 0x80000000); }
-		// Flip all the bits if the sign bit is set, flip only the sign otherwise.
+
+		// Constructor for a floating-point key and associated value.
+		// Adjusts the key to handle floating-point sorting correctly.
 		HX_INLINE KeyValuePair(float key_, void* val_) : m_val(val_) {
-			// Support strict aliasing.  And expect memcpy to inline fully.  
 			int32_t t_;
 			::memcpy(&t_, &key_, 4);
 			m_key = (uint32_t)(t_ ^ ((t_ >> 31) | 0x80000000));
 		}
 
+		// Comparison operator for sorting KeyValuePair objects by key.
 		HX_INLINE bool operator<(const KeyValuePair& rhs_) const { return m_key < rhs_.m_key; }
 
-		uint32_t m_key;
-		void* m_val;
+		uint32_t m_key; // The key used for sorting.
+		void* m_val;    // The associated value.
 	};
 
-	hxArray<KeyValuePair> m_array;
+	hxArray<KeyValuePair> m_array; // Internal array of key-value pairs.
 };
-
 
 // ----------------------------------------------------------------------------
 // hxRadixSort.  Sorts an array of value* by keys.  K is the key and V the value.
@@ -153,59 +166,106 @@ protected:
 template<typename K_, class V_>
 class hxRadixSort : public hxRadixSortBase {
 public:
-	typedef K_ Key;
-	typedef V_ Value;
+	typedef K_ Key;   // Type of the key used for sorting.
+	typedef V_ Value; // Type of the value associated with the key.
 
-	// ForwardIterator over Vales.  Not currently bound to std::iterator_traits
-	// or std::forward_iterator_tag. 
-	class constIterator
-	{
+	// ForwardIterator over Values. Not currently bound to std::iterator_traits
+	// or std::forward_iterator_tag.
+	class constIterator {
 	public:
+		// Constructs a constIterator from an hxArray<KeyValuePair>::constIterator.
 		HX_INLINE constIterator(hxArray<KeyValuePair>::constIterator it_) : m_ptr(it_) { }
-		HX_INLINE constIterator() : m_ptr(hxnull) { } // invalid
+
+		// Constructs an invalid constIterator.
+		HX_INLINE constIterator() : m_ptr(hxnull) { }
+
+		// Pre-increment operator. Moves the iterator to the next element.
 		HX_INLINE constIterator& operator++() { ++m_ptr; return *this; }
+
+		// Post-increment operator. Moves the iterator to the next element and returns the previous state.
 		HX_INLINE constIterator operator++(int) { constIterator t(*this); operator++(); return t; }
+
+		// Equality comparison operator.
 		HX_INLINE bool operator==(const constIterator& rhs_) const { return m_ptr == rhs_.m_ptr; }
+
+		// Inequality comparison operator.
 		HX_INLINE bool operator!=(const constIterator& rhs_) const { return m_ptr != rhs_.m_ptr; }
+
+		// Dereference operator. Returns a reference to the value pointed to by the iterator.
 		HX_INLINE const Value& operator*() const { return *(const Value*)m_ptr->m_val; }
+
+		// Arrow operator. Returns a pointer to the value pointed to by the iterator.
 		HX_INLINE const Value* operator->() const { return (const Value*)m_ptr->m_val; }
 
 	protected:
-		hxArray<KeyValuePair>::constIterator m_ptr;
+		hxArray<KeyValuePair>::constIterator m_ptr; // Internal pointer to the current element.
 	};
 
-	// can be cast to a constIterator
-	class iterator : public constIterator
-	{
+	// Iterator that can be cast to a constIterator.
+	class iterator : public constIterator {
 	public:
+		// Constructs an iterator from an hxArray<KeyValuePair>::iterator.
 		HX_INLINE iterator(hxArray<KeyValuePair>::iterator it_) : constIterator(it_) { }
+
+		// Constructs an invalid iterator.
 		HX_INLINE iterator() { }
+
+		// Pre-increment operator. Moves the iterator to the next element.
 		HX_INLINE iterator& operator++() { constIterator::operator++(); return *this; }
+
+		// Post-increment operator. Moves the iterator to the next element and returns the previous state.
 		HX_INLINE iterator operator++(int) { iterator t_(*this); constIterator::operator++(); return t_; }
+
+		// Dereference operator. Returns a reference to the value pointed to by the iterator.
 		HX_INLINE Value& operator*() const { return *(Value*)this->m_ptr->m_val; }
+
+		// Arrow operator. Returns a pointer to the value pointed to by the iterator.
 		HX_INLINE Value* operator->() const { return (Value*)this->m_ptr->m_val; }
 	};
 
+	// Accesses the value at the specified index (const version).
 	HX_INLINE const Value& operator[](uint32_t index_) const { return *(Value*)m_array[index_].m_val; }
-	HX_INLINE       Value& operator[](uint32_t index_) { return *(Value*)m_array[index_].m_val; }
 
+	// Accesses the value at the specified index (non-const version).
+	HX_INLINE Value& operator[](uint32_t index_) { return *(Value*)m_array[index_].m_val; }
+
+	// Returns a pointer to the value at the specified index (const version).
 	HX_INLINE const Value* get(uint32_t index_) const { return (Value*)m_array[index_].m_val; }
-	HX_INLINE       Value* get(uint32_t index_) { return (Value*)m_array[index_].m_val; }
 
+	// Returns a pointer to the value at the specified index (non-const version).
+	HX_INLINE Value* get(uint32_t index_) { return (Value*)m_array[index_].m_val; }
+
+	// Returns a constIterator to the beginning of the array.
 	HX_INLINE constIterator begin() const { return constIterator(m_array.cBegin()); }
+
+	// Returns an iterator to the beginning of the array.
 	HX_INLINE iterator begin() { return iterator(m_array.begin()); }
+
+	// Returns a constIterator to the beginning of the array (const version).
 	HX_INLINE constIterator cBegin() const { return constIterator(m_array.cBegin()); }
+
+	// Returns a constIterator to the beginning of the array (non-const version).
 	HX_INLINE constIterator cBegin() { return constIterator(m_array.cBegin()); }
 
+	// Returns a constIterator to the end of the array.
 	HX_INLINE constIterator end() const { return constIterator(m_array.cEnd()); }
+
+	// Returns an iterator to the end of the array.
 	HX_INLINE iterator end() { return iterator(m_array.end()); }
+
+	// Returns a constIterator to the end of the array (const version).
 	HX_INLINE constIterator cEnd() const { return constIterator(m_array.cEnd()); }
+
+	// Returns a constIterator to the end of the array (non-const version).
 	HX_INLINE constIterator cEnd() { return constIterator(m_array.cEnd()); }
 
+	// Returns the number of elements in the array.
 	HX_INLINE uint32_t size() const { return m_array.size(); }
+
+	// Returns true if the array is empty, false otherwise.
 	HX_INLINE bool empty() const { return m_array.empty(); }
 
-	// Adds a key and value pointer.
+	// Adds a key and value pointer to the array.
 	HX_INLINE void insert(Key key_, Value* val_) {
 		// Perform casts safe for -Wcast-qual with a const and volatile Value type.
 		::new(m_array.emplaceBackUnconstructed()) KeyValuePair(key_, const_cast<void*>((const volatile void*)val_));
