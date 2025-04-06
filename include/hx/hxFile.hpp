@@ -116,5 +116,5 @@ private:
 	char* m_filePImpl;   // Pointer to the file implementation.
 	uint16_t m_openMode; // Current open mode of the file.
 	bool m_good;         // Indicates if the file stream is in a good state.
-	bool m_eof;	         // Indicates if the end of the file has been reached.
+	bool m_eof;          // Indicates if the end of the file has been reached.
 };
