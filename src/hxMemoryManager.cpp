@@ -596,7 +596,7 @@ void hxMemoryManager::free(void* ptr) {
 #endif // HX_USE_MEMORY_SCRATCH
 
 	if (m_memoryAllocatorPermanent.contains(ptr)) {
-		hxWarnCheck(g_hxSettings.isShuttingDown, "ERROR: free from permanent");
+		hxWarnCheck(g_hxSettings.deallocatePermanent, "ERROR: free from permanent");
 		m_memoryAllocatorPermanent.onFreeNonVirtual(ptr);
 		return;
 	}

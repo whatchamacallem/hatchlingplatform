@@ -28,7 +28,7 @@ TEST(hxDeathTest, Fail) {
 	hxLog("TEST_EXPECTING_ASSERTS:\n");
 	SUCCEED();
 	for (int i = 10; i--;) {
-		FAIL() << "this message is logged on repeated assert failures.\n";
+		FAIL() << "this message is omitted.\n";
 	}
 }
 TEST(hxDeathTest, NothingAsserted) {
@@ -73,13 +73,9 @@ int main() {
 
 #if (HX_TEST_DIE_AT_THE_END)
 	hxAssertRelease(testsFailing == 2, "expected 2 tests to fail");
-#if (HX_RELEASE) < 3
-	g_hxSettings.deathTest = 1;
-	hxExit("Expected failures correct.\n");
-#else
-	// there are no asserts at level 4.
+	// there are no asserts at level 3.
+	hxLogHandler(hxLogLevel_Warning, "expected 2 tests to fail");
 	return (testsFailing == 2) ? EXIT_SUCCESS : EXIT_FAILURE;
-#endif
 #else
 	return (testsFailing == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 #endif

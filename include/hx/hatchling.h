@@ -39,64 +39,92 @@ enum hxLogLevel {
 // constant 0.  This header is C.  Use nullptr if you prefer it.
 #define hxnull 0
 
-// Macro for adding quotation marks.  Evaluates __LINE__ as a string containing
+// Macro for adding quotation marks. Evaluates __LINE__ as a string containing
 // a number instead of as "__LINE__".
+// Parameters:
+// - x_: The value to be quoted.
 #define HX_QUOTE(x_) HX_QUOTE_(x_)
 #define HX_QUOTE_(x_) #x_
 
-// Macro for concatenating arguments.  Evaluates __LINE__ as a number instead
+// Macro for concatenating arguments. Evaluates __LINE__ as a number instead
 // of as __LINE__.
+// Parameters:
+// - x_: The first value to concatenate.
+// - y_: The second value to concatenate.
 #define HX_CONCATENATE(x_, y_) HX_CONCATENATE_(x_, y_)
 #define HX_CONCATENATE_(x_, y_) x_ ## y_
 
 HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0..3]");
 
-#if (HX_RELEASE) == 0 // debug facilities
 // Initializes the platform.
 #define hxInit() (void)(g_hxIsInit || (hxInitInternal(), 0))
 
-// Enters formatted messages in the system log.  Does not add a newline.
-// HX_RELEASE < 1
+#if (HX_RELEASE) == 0 // debug facilities
+
+// Enters formatted messages in the system log. Does not add a newline.
+// This is only evaluated when HX_RELEASE == 0.
+// Parameters:
+// - ...: Variadic arguments for the formatted log message.
 #define hxLog(...) hxLogHandler(hxLogLevel_Log, __VA_ARGS__)
 
-// Does not evaluate message args unless condition fails.  HX_RELEASE < 1
+// Does not evaluate message args unless condition fails.
+// This is only evaluated when HX_RELEASE == 0.
+// Parameters:
+// - x_: The condition to evaluate.
+// - ...: Variadic arguments for the formatted log message.
 #define hxAssertMsg(x_, ...) (void)(!!(x_) || ((hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
 	hxAssertHandler(__FILE__, __LINE__)) || (HX_DEBUG_BREAK,0)))
 
-// Logs an error and terminates execution if x_ is false.  HX_RELEASE < 1
+// Logs an error and terminates execution if x_ is false.
+// This is only evaluated when HX_RELEASE == 0.
+// Parameters:
+// - x_: The condition to evaluate.
 #define hxAssert(x_) (void)((!!(x_)) || ((hxLogHandler(hxLogLevel_Assert, HX_QUOTE(x_)), \
 	hxAssertHandler(__FILE__, __LINE__)) || (HX_DEBUG_BREAK,0)))
 
 // Assert handler.  Do not call directly, signature changes and then is removed.
-// HX_RELEASE < 3
 int hxAssertHandler(const char* file_, size_t line_);
 
 // Logs an error and terminates execution if x is false up to release level 2.
-// HX_RELEASE < 3
+// This is only evaluated when HX_RELEASE < 3.
+// Parameters:
+// - x_: The condition to evaluate.
+// - ...: Variadic arguments for the formatted log message.
 #define hxAssertRelease(x_, ...) (void)(!!(x_) || ((hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
 	hxAssertHandler(__FILE__, __LINE__)) || (HX_DEBUG_BREAK,0)))
 
 #else // HX_RELEASE > 1
-#define hxInit() (void)(g_hxIsInit || (hxInitInternal(), 0))
 #define hxLog(...) ((void)0)
 #define hxAssertMsg(x_, ...) ((void)0)
 #define hxAssert(x_) ((void)0)
 HX_ATTR_NORETURN void hxAssertHandler(uint32_t file_, size_t line_);
 #endif
 
-
-#if (HX_RELEASE) < 2
-// Enters formatted messages in the system log up to release level 1.  No automatic
-// newline.  HX_RELEASE < 2
+#if (HX_RELEASE) <= 1
+// Enters formatted messages in the system log up to release level 1. No automatic
+// newline.
+// This is only evaluated when HX_RELEASE <= 1.
+// Parameters:
+// - ...: Variadic arguments for the formatted log message.
 #define hxLogRelease(...) hxLogHandler(hxLogLevel_Log, __VA_ARGS__)
 
-// Enters formatted messages in the console system log.  HX_RELEASE < 2
+// Enters formatted messages in the console system log.
+// This is only evaluated when HX_RELEASE <= 1.
+// Parameters:
+// - ...: Variadic arguments for the formatted console log message.
 #define hxLogConsole(...) hxLogHandler(hxLogLevel_Console, __VA_ARGS__)
 
-// Enters formatted warnings in the system log.  HX_RELEASE < 2
+// Enters formatted warnings in the system log.
+// This is only evaluated when HX_RELEASE <= 1.
+// Parameters:
+// - ...: Variadic arguments for the formatted warning message.
 #define hxWarn(...) hxLogHandler(hxLogLevel_Warning, __VA_ARGS__)
 
-// Enters formatted warnings in the system log when x_ is false.  HX_RELEASE < 2
+// Enters formatted warnings in the system log when x_ is false.
+// This is only evaluated when HX_RELEASE <= 1.
+// Parameters:
+// - x_: The condition to evaluate.
+// - ...: Variadic arguments for the formatted warning message.
 #define hxWarnCheck(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Warning, __VA_ARGS__), 0))
 
 #else // HX_RELEASE >= 2
@@ -106,7 +134,8 @@ HX_ATTR_NORETURN void hxAssertHandler(uint32_t file_, size_t line_);
 #define hxWarnCheck(x_, ...) ((void)0)
 #endif
 
-// hxAssertRelease has 4 variations
+// hxAssertRelease has 4 variations.  See above.
+// This is only evaluated when HX_RELEASE <= 2.
 #if (HX_RELEASE) == 1
 #define hxAssertRelease(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
 	hxAssertHandler(hxStringLiteralHash(__FILE__), __LINE__), 0))
@@ -127,20 +156,18 @@ extern int g_hxIsInit;
 // confirms all memory allocations have been released. HX_RELEASE < 3.
 // Does not clear g_hxIsInit, shutdown is final.
 void hxShutdown(void);
-
-// HX_RELEASE < 3.  Stops execution with a formatted message.  Format must end
-// with a \n.
-HX_ATTR_NORETURN void hxExit(const char* format_, ...);
 #endif
 
 // Enters formatted messages in the system log.
+// This is the only access to logging when when HX_RELEASE > 2.
 // Parameters:
 // - level_: The log level (e.g., hxLogLevel_Log, hxLogLevel_Warning).
 // - format_: A printf-style format string.
 // - ...: Additional arguments for the format string.
 void hxLogHandler(enum hxLogLevel level_, const char* format_, ...) HX_ATTR_FORMAT(2, 3);
 
-// va_list version of hxLogHandler.
+// A va_list version of hxLogHandler.
+// This is the only access to logging when when HX_RELEASE > 2.
 // Parameters:
 // - level_: The log level (e.g., hxLogLevel_Log, hxLogLevel_Warning).
 // - format_: A printf-style format string.
@@ -174,7 +201,6 @@ uint32_t hxStringLiteralHashDebug(const char* string_);
 
 #if (HX_RELEASE) < 1
 // Prints file name hashes registered with HX_REGISTER_FILENAME_HASH. Use after main().
-// No parameters.
 void hxPrintFileHashes(void);
 #else
 #define hxPrintFileHashes() ((void)0)

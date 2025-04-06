@@ -63,10 +63,10 @@ public:
 			}
 
 			// Allow quiet deletion of a resource.
-			g_hxSettings.isShuttingDown = true;
+			g_hxSettings.deallocatePermanent = true;
 			hxFree(ptr1);
 			hxFree(ptr2);
-			g_hxSettings.isShuttingDown = false;
+			g_hxSettings.deallocatePermanent = false;
 
 			// Special case for heaps that do not track free.
 			if (allocatorScope.getScopeBytesAllocated() != 0) {

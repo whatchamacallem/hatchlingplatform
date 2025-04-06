@@ -31,7 +31,7 @@ extern "C" {
 
 // hxMemoryManagerId. (See hxMemoryManager.cpp)
 // hxMemoryManagerId_Scratch* are tightly coupled with hxMemoryAllocatorScratchpad.
-// *** hxMemoryManagerId_Scratch* must be continuously assigned.  ***
+// *** hxMemoryManagerId_Scratch* must be contiguously assigned.  ***
 
 enum hxMemoryManagerId {
 	hxMemoryManagerId_Heap = 0,

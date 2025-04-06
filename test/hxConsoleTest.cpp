@@ -123,13 +123,13 @@ TEST(hxConsoleTest, CommandFactory) {
 
 	// The hxCommands are being routed to the permanent heap.  While that
 	// allocator is unable to reuse space, free them for correctness.
-	g_hxSettings.isShuttingDown = true;
+	g_hxSettings.deallocatePermanent = true;
 	hxFree(f0);
 	hxFree(f1);
 	hxFree(f2);
 	hxFree(f3);
 	hxFree(f4);
-	g_hxSettings.isShuttingDown = false;
+	g_hxSettings.deallocatePermanent = false;
 }
 
 // ----------------------------------------------------------------------------

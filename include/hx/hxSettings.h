@@ -27,7 +27,6 @@
 
 // Compiler detection and target specific C++11/C++14 polyfill.
 // Use #if(HX_...) instead of #ifdef(HX_...) for all HX_* macros. 
-// Except use #ifdef with HX_USE_...
 
 #if defined(__cplusplus)
 #define HX_CPLUSPLUS __cplusplus
@@ -243,16 +242,15 @@ extern "C" {
 #endif
 
 struct hxSettings {
-	uint8_t logLevel;
-	uint8_t isShuttingDown; // Allows destruction of permanent resources.
-	uint8_t deathTest; // Just for testing
+    uint8_t logLevel;              // Logging level for the application (e.g., verbosity of logs).
+    uint8_t deallocatePermanent;   // Allows deallocation of permanent resources at system shut down.
 
 #if (HX_MEM_DIAGNOSTIC_LEVEL) > 0
-	uint8_t disableMemoryManager;
+    uint8_t disableMemoryManager;  // Disables the memory manager when set, useful for debugging memory issues.
 #endif
 #if (HX_RELEASE) < 1
-	int assertsToBeSkipped; // Allows testing asserts.
-	float lightEmittingDiode; // Just for testing
+    int assertsToBeSkipped;        // Number of asserts to skip, useful for testing assert behavior.
+    float lightEmittingDiode;      // Placeholder for testing.
 #endif
 };
 

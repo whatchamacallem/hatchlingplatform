@@ -21,8 +21,7 @@ hxConsoleVariableNamed(g_hxSettings.lightEmittingDiode, lightEmittingDiode);
 
 void hxSettingsConstruct() {
 	g_hxSettings.logLevel = hxLogLevel_Log;
-	g_hxSettings.isShuttingDown = false;
-	g_hxSettings.deathTest = 0;
+	g_hxSettings.deallocatePermanent = false;
 
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	g_hxSettings.disableMemoryManager = false;

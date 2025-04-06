@@ -18,8 +18,6 @@ HX_REGISTER_FILENAME_HASH
 HX_STATIC_ASSERT(0, "exceptions should not be enabled");
 #endif
 
-#define HX_STDOUT_STR(x) ::fwrite(x, (sizeof x) - 1, 1, stdout)
-
 // ----------------------------------------------------------------------------
 // Implements HX_REGISTER_FILENAME_HASH in debug.  See hxStringLiteralHash.h.
 
@@ -95,6 +93,8 @@ void hxLogHandler(enum hxLogLevel level, const char* format, ...) {
 	va_end(args);
 }
 
+#define HX_STDOUT_STR_(x) ::fwrite(x, (sizeof x) - 1, 1, stdout)
+
 extern "C"
 void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 	if(g_hxSettings.logLevel > level) {
@@ -108,11 +108,11 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 		return;
 	}
 	if (level == hxLogLevel_Warning) {
-		HX_STDOUT_STR("WARNING ");
+		HX_STDOUT_STR_("WARNING ");
 		buf[sz++] = '\n';
 	}
 	else if (level == hxLogLevel_Assert) {
-		HX_STDOUT_STR("ASSERT_FAIL ");
+		HX_STDOUT_STR_("ASSERT_FAIL ");
 		buf[sz++] = '\n';
 	}
 	::fwrite(buf, 1, sz, stdout);
@@ -126,27 +126,11 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 extern "C"
 void hxShutdown(void) {
 	hxAssert(g_hxIsInit);
-	g_hxSettings.isShuttingDown = true;
+	g_hxSettings.deallocatePermanent = true;
 	hxProfilerEnd();
 	hxDmaShutDown();
 	hxConsoleDeregisterAll(); // Free console allocations.
 	hxMemoryManagerShutDown(); // Will trap further activity
-}
-
-extern "C"
-void hxExit(const char* format, ...) {
-	HX_STDOUT_STR("EXIT ");
-
-	char buf[HX_MAX_LINE];
-	va_list args;
-	va_start(args, format);
-	size_t len = format ? vsnprintf(buf, HX_MAX_LINE, format, args) : 1u;
-	va_end(args);
-
-	::fwrite(buf, 1, hxmax<size_t>(len, 0u), stdout);
-
-	// The deathTest flag is for coverage testing.
-	::exit(g_hxSettings.deathTest ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
 #if (HX_RELEASE) == 0
@@ -158,7 +142,7 @@ int hxAssertHandler(const char* file, size_t line) {
 			(unsigned int)hxStringLiteralHashDebug(file));
 		return 1;
 	}
-	hxLogHandler(hxLogLevel_Assert, "%s(%u) hash %08x\n", f, (unsigned int)line,
+	hxLogHandler(hxLogLevel_Assert, "%s(%u) hash %08x Triggering Breakpoint\n", f, (unsigned int)line,
 		(unsigned int)hxStringLiteralHashDebug(file));
 
 	// return to HX_DEBUG_BREAK at calling line.
@@ -167,7 +151,8 @@ int hxAssertHandler(const char* file, size_t line) {
 #else
 extern "C" HX_ATTR_NORETURN
 void hxAssertHandler(uint32_t file, size_t line) {
-	hxExit("ASSERT_FAIL %08x(%u)\n", (unsigned int)file, (unsigned int)line);
+	hxLogHandler(hxLogLevel_Assert, "file %08x line %u\n", (unsigned int)file, (unsigned int)line);
+	_Exit(EXIT_FAILURE);
 }
 #endif
 
