@@ -3,7 +3,7 @@
 #
 # Google Test and emcc need to be downloaded separately.
 
-dpkg --get-selections clang cmake g++ g++-multilib gcc-multilib gcovr python3 doxygen graphviz \
+dpkg --get-selections clang cmake g++ g++-multilib gcc-multilib gcovr python3 \
 	|& grep -e "no packages"
 
 # grep returns 1 if the pattern is not found.

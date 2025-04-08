@@ -242,4 +242,10 @@ HX_CONSTEXPR_FN const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& ma
 	hxAssert(!((maximum_) < (minimum_)));
 	return ((x_) < (minimum_)) ? (minimum_) : (((maximum_) < (x_)) ? (maximum_) : (x_));
 }
+#else
+#define hxmin(x_, y_) ((x_) < (y_)) ? (x_) : (y_)
+#define hxmax(x_, y_) ((y_) < (x_)) ? (x_) : (y_)
+#define hxabs(x_) ((x_) < 0) ? (0 - (x_)) : (x_)
+#define hxclamp(x_, minimum_, maximum_) \
+       ((x_) < (minimum_)) ? (minimum_) : (((maximum_) < (x_)) ? (maximum_) : (x_))
 #endif

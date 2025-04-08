@@ -74,11 +74,13 @@ HX_INLINE void InitGoogleTest() { }
 #define FAIL() hxTestSuiteExecutor_::singleton_().assertCheck_(__FILE__, __LINE__, false, "failed here")
 
 // EXPECT_*. Assertions for various conditions.
-// These macros evaluate their arguments only once and use basic operators for comparison.
 #define EXPECT_TRUE(x_) hxTestSuiteExecutor_::singleton_().assertCheck_(__FILE__, __LINE__, (x_), #x_)
 #define EXPECT_FALSE(x_) hxTestSuiteExecutor_::singleton_().assertCheck_(__FILE__, __LINE__, !(x_), "!" #x_)
+
+// Works with unsigned types.
 #define EXPECT_NEAR(expected_, actual_, absolute_range_) hxTestSuiteExecutor_::singleton_().assertCheck_( \
-	__FILE__, __LINE__, hxabs((expected_)-(actual_)) <= (absolute_range_), "abs(" #expected_ "-" #actual_ ")<=" #absolute_range_)
+	__FILE__, __LINE__,(((expected_) < (actual_)) ? ((actual_)-(expected_)) : ((expected_)-(actual_))) <= (absolute_range_), \
+	"abs(" #expected_ "-" #actual_ ")<=" #absolute_range_)
 #define EXPECT_LT(lhs_, rhs_) hxTestSuiteExecutor_::singleton_().assertCheck_(__FILE__, __LINE__, (lhs_) < (rhs_), #lhs_ "<" #rhs_)
 #define EXPECT_GT(lhs_, rhs_) hxTestSuiteExecutor_::singleton_().assertCheck_(__FILE__, __LINE__, (rhs_) < (lhs_), #lhs_ ">" #rhs_)
 #define EXPECT_LE(lhs_, rhs_) hxTestSuiteExecutor_::singleton_().assertCheck_(__FILE__, __LINE__, !((rhs_) < (lhs_)), #lhs_ "<=" #rhs_)
