@@ -69,7 +69,7 @@ void hxFree(void* ptr_);
 // - string_: The string to duplicate.
 // - id_: The memory manager ID to use for allocation (default is hxMemoryManagerId_Heap).
 // Returns: A pointer to the duplicated string.
-char* hxStringDuplicate(const char* string_, enum hxMemoryManagerId id_ /*=hxMemoryManagerId_Heap*/);
+char* hxStringDuplicate(const char* string_, enum hxMemoryManagerId id_ /*=hxMemoryManagerId_Current*/);
 
 // Checks if the given pointer belongs to a scratchpad memory allocator.
 // Parameters:
@@ -211,10 +211,10 @@ HX_INLINE void* hxMallocExt(size_t size_, hxMemoryManagerId id_) {
 	return hxMallocExt(size_, id_, HX_ALIGNMENT_MASK);
 }
 
-// Add default args to C++ interface: id_=hxMemoryManagerId_Heap
+// Add default args to C++ interface: id_=hxMemoryManagerId_Current
 // Duplicates a string using the default memory manager.
 HX_INLINE char* hxStringDuplicate(const char* s_) {
-	return hxStringDuplicate(s_, hxMemoryManagerId_Heap);
+	return hxStringDuplicate(s_, hxMemoryManagerId_Current);
 }
 
 #endif // HX_CPLUSPLUS

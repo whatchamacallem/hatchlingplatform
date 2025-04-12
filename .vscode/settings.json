@@ -40,5 +40,6 @@
         "Wunused",
         "Wwrite",
         "Xclang"
-    ]
+    ],
+    "editor.cursorBlinking": "solid"
 }

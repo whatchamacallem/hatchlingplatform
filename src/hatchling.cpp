@@ -97,7 +97,7 @@ void hxLogHandler(enum hxLogLevel level, const char* format, ...) {
 
 extern "C"
 void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
-	if(g_hxSettings.logLevel > level) {
+	if(g_hxIsInit && g_hxSettings.logLevel > level) {
 		return;
 	}
 
@@ -137,7 +137,8 @@ void hxShutdown(void) {
 extern "C"
 int hxAssertHandler(const char* file, size_t line) {
 	const char* f = hxBasename(file);
-	if (!g_hxIsInit || g_hxSettings.assertsToBeSkipped-- > 0) {
+	if (g_hxIsInit && g_hxSettings.assertsToBeSkipped > 0) {
+		--g_hxSettings.assertsToBeSkipped;
 		hxLogHandler(hxLogLevel_Assert, "(skipped) %s(%u) hash %08x", f, (unsigned int)line,
 			(unsigned int)hxStringLiteralHashDebug(file));
 		return 1;
@@ -157,5 +158,3 @@ void hxAssertHandler(uint32_t file, size_t line) {
 #endif
 
 #endif // HX_RELEASE < 3
-
-

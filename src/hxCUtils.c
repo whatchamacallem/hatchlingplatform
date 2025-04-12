@@ -54,12 +54,10 @@ void hxFloatDump(const float* address, size_t count) {
 }
 
 const char* hxBasename(const char* path) {
-	const char* result = path;
-	if (path) {
-		for (const char* it = path; *it != '\0'; ++it) {
-			if (*it == '/' || *it == '\\') {
-				result = it + 1;
-			}
+	const char* result = path ? path : "(null)";
+	for (const char* it = result; *it != '\0'; ++it) {
+		if (*it == '/' || *it == '\\') {
+			result = it + 1;
 		}
 	}
 	return result;

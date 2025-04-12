@@ -26,7 +26,7 @@ compiling to an embedded target with limited RAM.
 
  * Command line based console with simple C++ function binding. Allows debugging
    on the target without relinking and relaunching.
- 
+
  * Task Queue.  Provides an object oriented interface to multi-threading. The
    default implementation uses `<thread>` and allows for target specific
    implementations.
@@ -50,5 +50,5 @@ Tested using:
  * gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
  * Ubuntu clang version 18.1.3 (1ubuntu1) x86_64-pc-linux-gnu
  * emcc (Emscripten 4.0.5)
- * See `test.sh` 
-
+ * valgrind-3.22.0 (tested in 64-bit mode.)
+ * See `test.sh`

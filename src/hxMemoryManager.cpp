@@ -19,7 +19,10 @@ static HX_INLINE void* hxMallocChecked(size_t size) {
 	void* t = ::malloc(size);
 	hxAssertRelease(t, "malloc fail: %u bytes\n", (unsigned int)size);
 #if (HX_RELEASE) >= 3
-	if (!t) { ::_Exit(EXIT_FAILURE); }
+	if (!t) {
+		hxLogHandler(hxLogLevel_Assert, "malloc fail");
+		::_Exit(EXIT_FAILURE);
+	}
 #endif
 	return t;
 }
@@ -45,6 +48,7 @@ struct hxScratchpad {
 	uintptr_t m_storage[Bytes / sizeof(uintptr_t)]; // C++98 hack to align to pointer size.
 };
 
+// TODO: This needs a special linker section.
 HX_LINK_SCRATCHPAD hxScratchpad<((HX_MEMORY_BUDGET_SCRATCH_PAGE) * 3u
 	+ (HX_MEMORY_BUDGET_SCRATCH_TEMP))> g_hxScratchpadObject;
 
@@ -471,6 +475,10 @@ public:
 private:
 	friend class hxMemoryManagerScope;
 
+	// Nota bene:  While the current allocator is a thread local attribute, the
+	// memory manager does not support concurrent access to the same allocator.
+	// Either preallocate working buffers or arrange for locking around shared
+	// allocators.  
 	static HX_THREAD_LOCAL hxMemoryManagerId s_hxCurrentMemoryAllocator;
 
 	hxMemoryAllocatorBase* m_memoryAllocators[hxMemoryManagerId_MAX];
