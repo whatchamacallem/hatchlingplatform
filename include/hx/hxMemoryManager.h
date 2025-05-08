@@ -17,13 +17,10 @@ extern "C" {
 // Memory allocators are selected using an id.  These are the large system-wide
 // allocators, not the per-object hxAllocator which allocates from here.
 //
-// Nota bene:  While the current allocator is a thread local attribute, the
-// memory manager does not support concurrent access to the same allocator.
-// Either preallocate working buffers or arrange for locking around shared
-// allocators.  
+// Nota bene:  The current allocator is a thread local attribute.
 //
 // Alignment is specified using a mask of those LSB bits that must be 0.  Which
-// is a value 1 less than the actual power of two alignment.  
+// is a value 1 less than the actual power of two alignment.
 
 // The default alignment HX_ALIGNMENT_MASK allows for storing char pointers.
 // This alignment should work for most types except SIMD vectors.

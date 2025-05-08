@@ -10,6 +10,16 @@
 #include <hx/hatchling.h>
 #include <hx/hxMemoryManager.h>
 
+// All pathways are threadsafe by default. In theory locking could be removed
+// if threads avoided sharing allocators. But I don't want to scare anyone.
+#if HX_USE_CPP11_THREADS
+#include <mutex>
+static std::mutex s_hxMemoryManagerMutex;
+#define HX_MEMORY_MANAGER_LOCK_() std::unique_lock<std::mutex> hxMutexLock_(s_hxMemoryManagerMutex)
+#else
+#define HX_MEMORY_MANAGER_LOCK_() (void)0
+#endif
+
 HX_REGISTER_FILENAME_HASH
 
 // hxMallocChecked.  Always check malloc and halt on failure.  This is extremely
@@ -105,9 +115,9 @@ private:
 // hxMemoryAllocatorOsHeap
 //
 // Wraps heap allocations with a header and adds padding to obtain required
-// alignment.  This is only intended for large or debug allocations.  For lots
-// of small allocations use a small block allocator or check to see if C++17's
-// (or C11's) aligned_alloc() is available and efficient on your target.
+// alignment. This is only intended for large or debug allocations with small
+// alignment requirements. For lots of small allocations use a small block
+// allocator.  For large alignments see if aligned_alloc() is available.
 
 class hxMemoryAllocatorOsHeap : public hxMemoryAllocatorBase {
 public:
@@ -475,10 +485,7 @@ public:
 private:
 	friend class hxMemoryManagerScope;
 
-	// Nota bene:  While the current allocator is a thread local attribute, the
-	// memory manager does not support concurrent access to the same allocator.
-	// Either preallocate working buffers or arrange for locking around shared
-	// allocators.  
+	// Nota bene:  The current allocator is a thread local attribute.
 	static HX_THREAD_LOCAL hxMemoryManagerId s_hxCurrentMemoryAllocator;
 
 	hxMemoryAllocatorBase* m_memoryAllocators[hxMemoryManagerId_MAX];
@@ -534,6 +541,7 @@ void hxMemoryManager::destruct() {
 }
 
 size_t hxMemoryManager::allocationCount() {
+	HX_MEMORY_MANAGER_LOCK_();
 	size_t allocationCount = 0;
 	hxLog("memory manager allocation count:\n");
 	for (int32_t i = 0; i != hxMemoryManagerId_MAX; ++i) {
@@ -550,6 +558,7 @@ size_t hxMemoryManager::allocationCount() {
 hxMemoryManagerId hxMemoryManager::beginAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId newId) {
 	hxAssert((unsigned int)newId < (unsigned int)hxMemoryManagerId_MAX);
 
+	HX_MEMORY_MANAGER_LOCK_();
 	hxMemoryManagerId previousId = s_hxCurrentMemoryAllocator;
 	s_hxCurrentMemoryAllocator = newId;
 	m_memoryAllocators[s_hxCurrentMemoryAllocator]->beginAllocationScope(scope, newId);
@@ -559,11 +568,13 @@ hxMemoryManagerId hxMemoryManager::beginAllocationScope(hxMemoryManagerScope* sc
 void hxMemoryManager::endAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId previousId) {
 	hxAssert((unsigned int)previousId < (unsigned int)hxMemoryManagerId_MAX);
 
+	HX_MEMORY_MANAGER_LOCK_();
 	m_memoryAllocators[s_hxCurrentMemoryAllocator]->endAllocationScope(scope, previousId);
 	s_hxCurrentMemoryAllocator = previousId;
 }
 
 void* hxMemoryManager::allocate(size_t size) {
+	HX_MEMORY_MANAGER_LOCK_();
 	hxAssert(s_hxCurrentMemoryAllocator >= 0 && s_hxCurrentMemoryAllocator < hxMemoryManagerId_MAX);
 	hxAssert(m_memoryAllocators[s_hxCurrentMemoryAllocator]->label());
 	void* ptr = m_memoryAllocators[s_hxCurrentMemoryAllocator]->allocate(size, HX_ALIGNMENT_MASK);
@@ -582,6 +593,7 @@ void* hxMemoryManager::AllocateExtended(size_t size, hxMemoryManagerId id, uintp
 	hxAssert(((alignmentMask + 1) & (alignmentMask)) == 0u); // alignmentMask is ((1 << bits) - 1).
 	hxAssert((unsigned int)id < (unsigned int)hxMemoryManagerId_MAX);
 
+	HX_MEMORY_MANAGER_LOCK_();
 	void* ptr = m_memoryAllocators[id]->allocate(size, alignmentMask);
 	hxAssertMsg(((uintptr_t)ptr & alignmentMask) == 0, "alignment wrong %x from %d",
 		(unsigned int)(uintptr_t)ptr, (int)id);
@@ -592,6 +604,7 @@ void* hxMemoryManager::AllocateExtended(size_t size, hxMemoryManagerId id, uintp
 
 void hxMemoryManager::free(void* ptr) {
 	// this path is hard-coded for efficiency.
+	HX_MEMORY_MANAGER_LOCK_();
 
 	if (m_memoryAllocatorTemporaryStack.contains(ptr)) {
 		m_memoryAllocatorTemporaryStack.onFreeNonVirtual(ptr);
