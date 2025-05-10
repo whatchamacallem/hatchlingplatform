@@ -125,6 +125,10 @@ static int hxSortCompareTest(const int a, const int b) {
 	return a < b;
 }
 
+static int hxSortCompareReverseTest(const int a, const int b) {
+	return a > b;
+}
+
 TEST(hxInsertionSortTest, SortCompareCCase) {
 	int ints[5] = { 2, 1, 0, 4, -5 };
 
@@ -145,7 +149,16 @@ TEST(hxInsertionSortTest, SortCompareCCase) {
 	// sort all
 	hxInsertionSort(ints, ints + 5, hxSortCompareTest);
 	const int ints3[5] = { -5, 0, 1, 2, 4 };
-	ASSERT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0); // sorted
+	ASSERT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0);
+
+	// sort already sorted
+	hxInsertionSort(ints, ints + 5, hxSortCompareTest);
+	ASSERT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0);
+
+	// sort reversed
+	hxInsertionSort(ints, ints + 5, hxSortCompareReverseTest);
+	const int ints4[5] = { 4, 2, 1, 0, -5 };
+	ASSERT_TRUE(::memcmp(ints, ints4, sizeof ints) == 0);
 }
 
 TEST(hxBinarySearchTest, SimpleCase) {
@@ -168,5 +181,3 @@ TEST(hxBinarySearchTest, SimpleCase) {
 	result = hxBinarySearch(ints+0, ints+5, 7);
 	ASSERT_TRUE(result == hxnull);
 }
-
-
