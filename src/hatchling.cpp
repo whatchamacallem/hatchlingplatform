@@ -49,7 +49,7 @@ void hxPrintFileHashes(void) {
 	hxHashStringLiteral::constIterator it = hxStringLiteralHashes().cBegin();
 	hxHashStringLiteral::constIterator end = hxStringLiteralHashes().cEnd();
 	for (; it != end; ++it) {
-		filenames.pushBack(it->key);
+		filenames.pushBack(it->key());
 	}
 
 	hxInsertionSort(filenames.begin(), filenames.end(), hxFilenameLess());
@@ -119,7 +119,7 @@ void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 }
 
 // ----------------------------------------------------------------------------
-// HX_RELEASE < 3 facilities for testing tear down. Just call _Exit() otherwise. 
+// HX_RELEASE < 3 facilities for testing tear down. Just call _Exit() otherwise.
 
 #if (HX_RELEASE) < 3
 

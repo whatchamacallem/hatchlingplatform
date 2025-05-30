@@ -36,15 +36,13 @@ public:
 
 	class TestInteger : public hxHashTableNodeInteger<int32_t> {
 	public:
-		TestInteger(const int32_t& k) : hxHashTableNodeInteger(k) { }
-		TestInteger(const int32_t& k, uint32_t hash) : hxHashTableNodeInteger(k, hash) { }
+		TestInteger(int32_t k) : hxHashTableNodeInteger(k) { }
 		TestObject value;
 	};
 
 	class TestString : public hxHashTableNodeString<> {
 	public:
-		TestString(const char*const& k) : hxHashTableNodeString(k) { }
-		TestString(const char*const& k, uint32_t hash) : hxHashTableNodeString(k, hash) { }
+		TestString(const char* k) : hxHashTableNodeString(k) { }
 		TestObject value;
 	};
 
@@ -106,7 +104,7 @@ TEST_F(hxHashTableTest, Single) {
 		ASSERT_TRUE(++table.cBegin() == table.cEnd());
 		ASSERT_EQ(table.size(), 1u);
 		ASSERT_EQ(table.count(k), 1u);
-		ASSERT_TRUE(table[k].key == k);
+		ASSERT_TRUE(table[k].key() == k);
 		ASSERT_TRUE(table[k].value.id == node->value.id);
 		ASSERT_TRUE(table.insertUnique(k).value.id == node->value.id);
 		ASSERT_TRUE(table.find(k) == node);
@@ -131,7 +129,7 @@ TEST_F(hxHashTableTest, Single) {
 		ASSERT_TRUE(((const Table&)table).find(k) == hxnull);
 
 		// MODIFIES TABLE
-		ASSERT_TRUE(table[k].key == k);
+		ASSERT_TRUE(table[k].key() == k);
 
 		// Operations after a different node was allocated
 		ASSERT_TRUE(table[k].value.id != node->value.id);
@@ -156,7 +154,7 @@ TEST_F(hxHashTableTest, Multiple) {
 		// Insert N elements
 		for (int i = 0; i < N; ++i) {
 			ASSERT_EQ(table[i].value.id, i);
-			ASSERT_EQ(table[i].key, i);
+			ASSERT_EQ(table[i].key(), i);
 		}
 
 		// Check properties of N unique keys.
@@ -200,24 +198,24 @@ TEST_F(hxHashTableTest, Multiple) {
 		cit = table.begin();
 		for (int i = 0; i < N; ++i) {
 			TestInteger* ti = table.find(i);
-			ASSERT_EQ(ti->key, i);
+			ASSERT_EQ(ti->key(), i);
 			const TestInteger* ti2 = ((const hxHashTable<TestInteger>&)table).find(i, ti); // test const version
-			ASSERT_EQ(ti2->key, i);
+			ASSERT_EQ(ti2->key(), i);
 			ASSERT_TRUE(table.find(i, ti2) == hxnull);
 
 			ASSERT_EQ(table.count(i), 2u);
 
-			ASSERT_TRUE((unsigned int)it->key < (unsigned int)N);
-			keyHistogram[it->key]++;
+			ASSERT_TRUE((unsigned int)it->key() < (unsigned int)N);
+			keyHistogram[it->key()]++;
 			++it;
-			ASSERT_TRUE((unsigned int)it->key < (unsigned int)N);
-			keyHistogram[it->key]++;
+			ASSERT_TRUE((unsigned int)it->key() < (unsigned int)N);
+			keyHistogram[it->key()]++;
 			it++;
-			ASSERT_TRUE((unsigned int)cit->key < (unsigned int)N);
-			keyHistogram[cit->key]++;
+			ASSERT_TRUE((unsigned int)cit->key() < (unsigned int)N);
+			keyHistogram[cit->key()]++;
 			++cit;
-			ASSERT_TRUE((unsigned int)cit->key < (unsigned int)N);
-			keyHistogram[cit->key]++;
+			ASSERT_TRUE((unsigned int)cit->key() < (unsigned int)N);
+			keyHistogram[cit->key()]++;
 			cit++;
 		}
 		ASSERT_TRUE(table.end() == it);
@@ -235,7 +233,7 @@ TEST_F(hxHashTableTest, Multiple) {
 		}
 		for (int i = (N/2); i < N; ++i) {
 			TestInteger* ti = table.extract(i);
-			ASSERT_TRUE(ti->key == i);
+			ASSERT_TRUE(ti->key() == i);
 			hxDelete(ti);
 		}
 
@@ -246,7 +244,7 @@ TEST_F(hxHashTableTest, Multiple) {
 		}
 		for (int i = (N/2); i < N; ++i) {
 			TestInteger* ti = table.find(i);
-			ASSERT_EQ(ti->key, i);
+			ASSERT_EQ(ti->key(), i);
 			ASSERT_TRUE(table.find(i, ti) == hxnull);
 			ASSERT_EQ(table.count(i), 1u);
 		}
@@ -276,7 +274,7 @@ TEST_F(hxHashTableTest, Strings) {
 		Table table;
 
 		for (int i = sz; i--;) {
-			ASSERT_TRUE(::strcmp(table[colors[i]].key, colors[i]) == 0);
+			ASSERT_TRUE(::strcmp(table[colors[i]].key(), colors[i]) == 0);
 		}
 		ASSERT_TRUE(table.find("Cyan") != hxnull);
 		ASSERT_TRUE(table.find("Pink") == hxnull);
