@@ -19,7 +19,7 @@ public:
 	HX_STATIC_ASSERT(Capacity_ > 0u, "Capacity_ > 0");
 
 	// Initializes memory to 0xcd when HX_RELEASE < 1.
-	HX_INLINE hxAllocator() {
+	HX_CONSTEXPR_FN hxAllocator() {
 		if ((HX_RELEASE) < 1) {
 			::memset(m_allocator, 0xcd, sizeof m_allocator);
 		}
@@ -27,18 +27,18 @@ public:
 
 	// Used to ensure initial capacity as reserveStorage() will not reallocate.
 	// sz_: The number of elements of type T to allocate.
-	HX_INLINE void reserveStorage(size_t size_) {
+	HX_CONSTEXPR_FN void reserveStorage(size_t size_) {
 		hxAssertRelease(size_ <= Capacity_, "allocator overflowing fixed capacity."); (void)size_;
 	}
 
 	// Returns the number of elements of T allocated.
-	HX_INLINE size_t getCapacity() const { return Capacity_; }
+	HX_CONSTEXPR_FN size_t getCapacity() const { return Capacity_; }
 
 	// Returns const array of T.
-	HX_INLINE const T* getStorage() const { return reinterpret_cast<const T*>(m_allocator + 0); }
+	HX_CONSTEXPR_FN const T* getStorage() const { return reinterpret_cast<const T*>(m_allocator + 0); }
 
 	// Returns array of T.
-	HX_INLINE T* getStorage() { return reinterpret_cast<T*>(m_allocator + 0); }
+	HX_CONSTEXPR_FN T* getStorage() { return reinterpret_cast<T*>(m_allocator + 0); }
 
 private:
 	// Consistently show m_capacity in debugger.
@@ -65,13 +65,16 @@ public:
 	typedef T_ T;
 
 	// Does not allocate until reserveStorage() is called.
-	HX_INLINE hxAllocator() {
+	HX_CONSTEXPR_FN hxAllocator() {
 		m_allocator = hxnull;
 		m_capacity = 0;
 	}
 
 	// Calls hxFree() with any allocated memory.
-		HX_INLINE ~hxAllocator() {
+#if HX_CPLUSPLUS >= 202002L
+	constexpr
+#endif
+	~hxAllocator() {
 		if (m_allocator) {
 			m_capacity = 0;
 			hxFree(m_allocator);
@@ -81,7 +84,7 @@ public:
 
 	// Capacity is set by first call to reserveStorage() and may not be extended.
 	// sz_: The number of elements of type T to allocate.
-	HX_INLINE void reserveStorage(size_t sz_) {
+	HX_CONSTEXPR_FN void reserveStorage(size_t sz_) {
 		if (sz_ <= m_capacity) { return; }
 		hxAssertRelease(m_capacity == 0, "allocator reallocation disallowed.");
 		m_allocator = (T*)hxMalloc(sizeof(T) * sz_); // Never fails.
@@ -92,7 +95,7 @@ public:
 	// sz_: The number of elements of type T to allocate.
 	// alId_: The memory manager ID to use for allocation (default: hxMemoryManagerId_Current).
 	// alignmentMask_: The alignment mask to apply to the allocation (default: HX_ALIGNMENT_MASK).
-	HX_INLINE void reserveStorageExt(size_t sz_,
+	HX_CONSTEXPR_FN void reserveStorageExt(size_t sz_,
 			hxMemoryManagerId alId_=hxMemoryManagerId_Current,
 			uintptr_t alignmentMask_=HX_ALIGNMENT_MASK) {
 		if (sz_ <= m_capacity) { return; }
@@ -102,13 +105,13 @@ public:
 	}
 
 	// Returns the number of elements of T allocated.
-	HX_INLINE size_t getCapacity() const { return m_capacity; }
+	HX_CONSTEXPR_FN size_t getCapacity() const { return m_capacity; }
 
 	// Returns const array of T.
-	HX_INLINE const T* getStorage() const { return m_allocator; }
+	HX_CONSTEXPR_FN const T* getStorage() const { return m_allocator; }
 
 	// Returns array of T.
-	HX_INLINE T* getStorage() { return m_allocator; }
+	HX_CONSTEXPR_FN T* getStorage() { return m_allocator; }
 
 private:
 	hxAllocator(const hxAllocator&); // = delete

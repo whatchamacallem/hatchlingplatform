@@ -12,7 +12,7 @@
 
 struct hxLess {
 	template<typename T1_, typename T2_>
-	HX_INLINE bool operator()(const T1_& lhs_, const T2_& rhs_) const { return lhs_ < rhs_; }
+	HX_CONSTEXPR_FN bool operator()(const T1_& lhs_, const T2_& rhs_) const { return lhs_ < rhs_; }
 };
 
 // ----------------------------------------------------------------------------
@@ -29,7 +29,7 @@ struct hxLess {
 // - end_: Pointer to one past the last element in the range to sort.
 // - compare_: Comparison function object.
 template<typename T_, typename Compare>
-HX_INLINE void hxInsertionSort(T_* begin_, T_* end_, const Compare& compare_) {
+HX_CONSTEXPR_FN void hxInsertionSort(T_* begin_, T_* end_, const Compare& compare_) {
 	if(begin_ == end_) { return; } // don't add +1 to null.
 
 	// i points to value being inserted. j points to next unsorted value.
@@ -58,7 +58,7 @@ HX_INLINE void hxInsertionSort(T_* begin_, T_* end_, const Compare& compare_) {
 // - begin_: Pointer to the beginning of the range to sort.
 // - end_: Pointer to one past the last element in the range to sort.
 template<typename T_>
-HX_INLINE void hxInsertionSort(T_* begin_, T_* end_) {
+HX_CONSTEXPR_FN void hxInsertionSort(T_* begin_, T_* end_) {
 	hxInsertionSort(begin_, end_, hxLess());
 }
 
@@ -77,12 +77,12 @@ HX_INLINE void hxInsertionSort(T_* begin_, T_* end_) {
 // - val_: The value to search for.
 // - compare_: Comparison function object.
 template<typename T_, typename Compare>
-HX_INLINE T_* hxBinarySearch(T_* begin_, T_* end_, const T_& val_, const Compare& compare_) {
+HX_CONSTEXPR_FN T_* hxBinarySearch(T_* begin_, T_* end_, const T_& val_, const Compare& compare_) {
 	if(begin_ == end_) { return hxnull; } // don't operate on null.
 
 	ptrdiff_t a_ = 0;
 	ptrdiff_t b_ = end_ - begin_ - 1;
-	
+
 	while(a_ <= b_) {
 		ptrdiff_t mid_ = a_ + (b_ - a_) / 2;
 		if(!compare_(val_, begin_[mid_])) {
@@ -99,17 +99,17 @@ HX_INLINE T_* hxBinarySearch(T_* begin_, T_* end_, const T_& val_, const Compare
 }
 
 template<typename T_>
-HX_INLINE T_* hxBinarySearch(T_* begin_, T_* end_, const T_& val_) {
+HX_CONSTEXPR_FN T_* hxBinarySearch(T_* begin_, T_* end_, const T_& val_) {
 	return hxBinarySearch(begin_, end_, val_, hxLess());
 }
 
 template<typename T_, typename Compare>
-HX_INLINE const T_* hxBinarySearch(const T_* begin_, const T_* end_, const T_& val_, const Compare& compare_) {
+HX_CONSTEXPR_FN const T_* hxBinarySearch(const T_* begin_, const T_* end_, const T_& val_, const Compare& compare_) {
 	return hxBinarySearch(const_cast<T_*>(begin_), const_cast<T_*>(end_), val_, compare_);
 }
 
 template<typename T_>
-HX_INLINE const T_* hxBinarySearch(const T_* begin_, const T_* end_, const T_& val_) {
+HX_CONSTEXPR_FN const T_* hxBinarySearch(const T_* begin_, const T_* end_, const T_& val_) {
 	return hxBinarySearch(const_cast<T_*>(begin_), const_cast<T_*>(end_), val_, hxLess());
 }
 
@@ -126,10 +126,10 @@ public:
 	// Reserves memory for the internal array to hold at least `sz_` elements.
 	// Parameters:
 	// - sz_: The number of elements to reserve memory for.
-	HX_INLINE void reserve(uint32_t sz_) { m_array.reserve(sz_); }
+	HX_CONSTEXPR_FN void reserve(uint32_t sz_) { m_array.reserve(sz_); }
 
 	// Clears the internal array, removing all elements.
-	HX_INLINE void clear() { m_array.clear(); }
+	HX_CONSTEXPR_FN void clear() { m_array.clear(); }
 
 	// Sorts the internal array using the provided temporary memory allocator to
 	// store histograms.
@@ -139,28 +139,27 @@ protected:
 	// Represents a key-value pair used in radix sorting.
 	struct KeyValuePair {
 		// Constructor for an 8-bit key and associated value.
-		HX_INLINE KeyValuePair(uint8_t key_, void* val_) : m_key(key_), m_val(val_) { }
+		HX_CONSTEXPR_FN KeyValuePair(uint8_t key_, void* val_) : m_key(key_), m_val(val_) { }
 
 		// Constructor for a 16-bit key and associated value.
-		HX_INLINE KeyValuePair(uint16_t key_, void* val_) : m_key(key_), m_val(val_) { }
+		HX_CONSTEXPR_FN KeyValuePair(uint16_t key_, void* val_) : m_key(key_), m_val(val_) { }
 
 		// Constructor for a 32-bit key and associated value.
-		HX_INLINE KeyValuePair(uint32_t key_, void* val_) : m_key(key_), m_val(val_) { }
+		HX_CONSTEXPR_FN KeyValuePair(uint32_t key_, void* val_) : m_key(key_), m_val(val_) { }
 
 		// Constructor for a signed 32-bit key and associated value.
 		// Adjusts the key to handle signed integers correctly.
-		HX_INLINE KeyValuePair(int32_t key_, void* val_) : m_val(val_) { m_key = (uint32_t)(key_ ^ 0x80000000); }
+		HX_CONSTEXPR_FN KeyValuePair(int32_t key_, void* val_) : m_key((uint32_t)(key_ ^ 0x80000000)), m_val(val_) { }
 
 		// Constructor for a floating-point key and associated value.
 		// Adjusts the key to handle floating-point sorting correctly.
-		HX_INLINE KeyValuePair(float key_, void* val_) : m_val(val_) {
-			int32_t t_;
-			::memcpy(&t_, &key_, 4);
-			m_key = (uint32_t)(t_ ^ ((t_ >> 31) | 0x80000000));
+		HX_CONSTEXPR_FN KeyValuePair(float key_, void* val_)
+			: m_key((uint32_t)((uint32_t&)key_ ^ (((int32_t&)key_ >> 31) | 0x80000000))), m_val(val_)
+		{
 		}
 
 		// Comparison operator for sorting KeyValuePair objects by key.
-		HX_INLINE bool operator<(const KeyValuePair& rhs_) const { return m_key < rhs_.m_key; }
+		HX_CONSTEXPR_FN bool operator<(const KeyValuePair& rhs_) const { return m_key < rhs_.m_key; }
 
 		uint32_t m_key; // The key used for sorting.
 		void* m_val;	// The associated value.
@@ -186,28 +185,28 @@ public:
 	class constIterator {
 	public:
 		// Constructs a constIterator from an hxArray<KeyValuePair>::constIterator.
-		HX_INLINE constIterator(hxArray<KeyValuePair>::constIterator it_) : m_ptr(it_) { }
+		HX_CONSTEXPR_FN constIterator(hxArray<KeyValuePair>::constIterator it_) : m_ptr(it_) { }
 
 		// Constructs an invalid constIterator.
-		HX_INLINE constIterator() : m_ptr(hxnull) { }
+		HX_CONSTEXPR_FN constIterator() : m_ptr(hxnull) { }
 
 		// Pre-increment operator. Moves the iterator to the next element.
-		HX_INLINE constIterator& operator++() { ++m_ptr; return *this; }
+		HX_CONSTEXPR_FN constIterator& operator++() { ++m_ptr; return *this; }
 
 		// Post-increment operator. Moves the iterator to the next element and returns the previous state.
-		HX_INLINE constIterator operator++(int) { constIterator t(*this); operator++(); return t; }
+		HX_CONSTEXPR_FN constIterator operator++(int) { constIterator t(*this); operator++(); return t; }
 
 		// Equality comparison operator.
-		HX_INLINE bool operator==(const constIterator& rhs_) const { return m_ptr == rhs_.m_ptr; }
+		HX_CONSTEXPR_FN bool operator==(const constIterator& rhs_) const { return m_ptr == rhs_.m_ptr; }
 
 		// Inequality comparison operator.
-		HX_INLINE bool operator!=(const constIterator& rhs_) const { return m_ptr != rhs_.m_ptr; }
+		HX_CONSTEXPR_FN bool operator!=(const constIterator& rhs_) const { return m_ptr != rhs_.m_ptr; }
 
 		// Dereference operator. Returns a reference to the value pointed to by the iterator.
-		HX_INLINE const Value& operator*() const { return *(const Value*)m_ptr->m_val; }
+		HX_CONSTEXPR_FN const Value& operator*() const { return *(const Value*)m_ptr->m_val; }
 
 		// Arrow operator. Returns a pointer to the value pointed to by the iterator.
-		HX_INLINE const Value* operator->() const { return (const Value*)m_ptr->m_val; }
+		HX_CONSTEXPR_FN const Value* operator->() const { return (const Value*)m_ptr->m_val; }
 
 	protected:
 		hxArray<KeyValuePair>::constIterator m_ptr; // Internal pointer to the current element.
@@ -217,71 +216,71 @@ public:
 	class iterator : public constIterator {
 	public:
 		// Constructs an iterator from an hxArray<KeyValuePair>::iterator.
-		HX_INLINE iterator(hxArray<KeyValuePair>::iterator it_) : constIterator(it_) { }
+		HX_CONSTEXPR_FN iterator(hxArray<KeyValuePair>::iterator it_) : constIterator(it_) { }
 
 		// Constructs an invalid iterator.
-		HX_INLINE iterator() { }
+		HX_CONSTEXPR_FN iterator() { }
 
 		// Pre-increment operator. Moves the iterator to the next element.
-		HX_INLINE iterator& operator++() { constIterator::operator++(); return *this; }
+		HX_CONSTEXPR_FN iterator& operator++() { constIterator::operator++(); return *this; }
 
 		// Post-increment operator. Moves the iterator to the next element and returns the previous state.
-		HX_INLINE iterator operator++(int) { iterator t_(*this); constIterator::operator++(); return t_; }
+		HX_CONSTEXPR_FN iterator operator++(int) { iterator t_(*this); constIterator::operator++(); return t_; }
 
 		// Dereference operator. Returns a reference to the value pointed to by the iterator.
-		HX_INLINE Value& operator*() const { return *(Value*)this->m_ptr->m_val; }
+		HX_CONSTEXPR_FN Value& operator*() const { return *(Value*)this->m_ptr->m_val; }
 
 		// Arrow operator. Returns a pointer to the value pointed to by the iterator.
-		HX_INLINE Value* operator->() const { return (Value*)this->m_ptr->m_val; }
+		HX_CONSTEXPR_FN Value* operator->() const { return (Value*)this->m_ptr->m_val; }
 	};
 
 	// Accesses the value at the specified index (const version).
-	HX_INLINE const Value& operator[](uint32_t index_) const { return *(Value*)m_array[index_].m_val; }
+	HX_CONSTEXPR_FN const Value& operator[](uint32_t index_) const { return *(Value*)m_array[index_].m_val; }
 
 	// Accesses the value at the specified index (non-const version).
-	HX_INLINE Value& operator[](uint32_t index_) { return *(Value*)m_array[index_].m_val; }
+	HX_CONSTEXPR_FN Value& operator[](uint32_t index_) { return *(Value*)m_array[index_].m_val; }
 
 	// Returns a pointer to the value at the specified index (const version).
-	HX_INLINE const Value* get(uint32_t index_) const { return (Value*)m_array[index_].m_val; }
+	HX_CONSTEXPR_FN const Value* get(uint32_t index_) const { return (Value*)m_array[index_].m_val; }
 
 	// Returns a pointer to the value at the specified index (non-const version).
-	HX_INLINE Value* get(uint32_t index_) { return (Value*)m_array[index_].m_val; }
+	HX_CONSTEXPR_FN Value* get(uint32_t index_) { return (Value*)m_array[index_].m_val; }
 
 	// Returns a constIterator to the beginning of the array.
-	HX_INLINE constIterator begin() const { return constIterator(m_array.cBegin()); }
+	HX_CONSTEXPR_FN constIterator begin() const { return constIterator(m_array.cBegin()); }
 
 	// Returns an iterator to the beginning of the array.
-	HX_INLINE iterator begin() { return iterator(m_array.begin()); }
+	HX_CONSTEXPR_FN iterator begin() { return iterator(m_array.begin()); }
 
 	// Returns a constIterator to the beginning of the array (const version).
-	HX_INLINE constIterator cBegin() const { return constIterator(m_array.cBegin()); }
+	HX_CONSTEXPR_FN constIterator cBegin() const { return constIterator(m_array.cBegin()); }
 
 	// Returns a constIterator to the beginning of the array (non-const version).
-	HX_INLINE constIterator cBegin() { return constIterator(m_array.cBegin()); }
+	HX_CONSTEXPR_FN constIterator cBegin() { return constIterator(m_array.cBegin()); }
 
 	// Returns a constIterator to the end of the array.
-	HX_INLINE constIterator end() const { return constIterator(m_array.cEnd()); }
+	HX_CONSTEXPR_FN constIterator end() const { return constIterator(m_array.cEnd()); }
 
 	// Returns an iterator to the end of the array.
-	HX_INLINE iterator end() { return iterator(m_array.end()); }
+	HX_CONSTEXPR_FN iterator end() { return iterator(m_array.end()); }
 
 	// Returns a constIterator to the end of the array (const version).
-	HX_INLINE constIterator cEnd() const { return constIterator(m_array.cEnd()); }
+	HX_CONSTEXPR_FN constIterator cEnd() const { return constIterator(m_array.cEnd()); }
 
 	// Returns a constIterator to the end of the array (non-const version).
-	HX_INLINE constIterator cEnd() { return constIterator(m_array.cEnd()); }
+	HX_CONSTEXPR_FN constIterator cEnd() { return constIterator(m_array.cEnd()); }
 
 	// Returns the number of elements in the array.
-	HX_INLINE uint32_t size() const { return m_array.size(); }
+	HX_CONSTEXPR_FN uint32_t size() const { return m_array.size(); }
 
 	// Returns true if the array is empty, false otherwise.
-	HX_INLINE bool empty() const { return m_array.empty(); }
+	HX_CONSTEXPR_FN bool empty() const { return m_array.empty(); }
 
 	// Adds a key and value pointer to the array.
 	// Parameters:
 	// - key_: The key used for sorting.
 	// - val_: Pointer to the value associated with the key.
-	HX_INLINE void insert(Key key_, Value* val_) {
+	HX_CONSTEXPR_FN void insert(Key key_, Value* val_) {
 		// Perform casts safe for -Wcast-qual with a const and volatile Value type.
 		::new(m_array.emplaceBackUnconstructed()) KeyValuePair(key_, const_cast<void*>((const volatile void*)val_));
 	}

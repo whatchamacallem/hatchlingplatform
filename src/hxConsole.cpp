@@ -40,7 +40,7 @@ uint32_t hxKeyEqual(hxConsoleHashTableKey_ lhs_, hxConsoleHashTableKey_ rhs_)
 class hxConsoleHashTableNode_ : public hxHashTableMapNode<hxConsoleHashTableKey_, hxCommand_*> {
 public:
 	typedef hxHashTableMapNode<hxConsoleHashTableKey_, hxCommand_*> Base;
-	HX_INLINE hxConsoleHashTableNode_(hxConsoleHashTableKey_ key_)
+	inline hxConsoleHashTableNode_(hxConsoleHashTableKey_ key_)
 			: Base(key_, hxnull) {
 		if ((HX_RELEASE) < 1) {
 			const char* k = key_.str_;
@@ -51,11 +51,11 @@ public:
 		}
 	}
 
-	HX_INLINE ~hxConsoleHashTableNode_() { hxFree(value()); }
+	inline ~hxConsoleHashTableNode_() { hxFree(value()); }
 };
 
 struct hxConsoleLess_ {
-	HX_INLINE bool operator()(const hxConsoleHashTableNode_* lhs,
+	inline bool operator()(const hxConsoleHashTableNode_* lhs,
 			const hxConsoleHashTableNode_* rhs) const {
 		return ::strcasecmp(lhs->key().str_, rhs->key().str_) < 0;
 	}

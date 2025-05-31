@@ -52,7 +52,6 @@
 #endif
 
 #define HX_RESTRICT __restrict
-#define HX_INLINE __forceinline
 #define HX_LINK_SCRATCHPAD
 #define HX_ATTR_FORMAT(pos_, start_)
 #define HX_DEBUG_BREAK __debugbreak()
@@ -87,12 +86,6 @@
 #define HX_USE_CPP11_TIME (HX_CPLUSPLUS >= 201103L)
 #endif
 
-#if (HX_RELEASE) < 1
-#define HX_INLINE inline
-#else
-#define HX_INLINE inline __attribute__((always_inline))
-#endif
-
 #define HX_RESTRICT __restrict
 #define HX_LINK_SCRATCHPAD // TODO: Configure for target.  A linker section is required.
 
@@ -111,6 +104,14 @@
 
 // ----------------------------------------------------------------------------
 // Target independent C++11/C++14 polyfill.
+
+// HX_CONSTEXPR_FN indicates that a function is intended to be a C++14 constexpr
+// function when available.
+#if HX_CPLUSPLUS >= 201402L
+#define HX_CONSTEXPR_FN constexpr
+#else
+#define HX_CONSTEXPR_FN
+#endif
 
 // HX_THREAD_LOCAL.  A version of thread_local that compiles out when there is
 // no threading.

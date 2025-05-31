@@ -25,7 +25,7 @@ HX_REGISTER_FILENAME_HASH
 // hxMallocChecked.  Always check malloc and halt on failure.  This is extremely
 // important with hardware where 0 is a valid address and can be written to with
 // disastrous results.
-static HX_INLINE void* hxMallocChecked(size_t size) {
+static HX_CONSTEXPR_FN void* hxMallocChecked(size_t size) {
 	void* t = ::malloc(size);
 	hxAssertRelease(t, "malloc fail: %u bytes\n", (unsigned int)size);
 #if (HX_RELEASE) >= 3
@@ -51,8 +51,8 @@ class hxMemoryManager* s_hxMemoryManager = hxnull;
 #if HX_USE_MEMORY_SCRATCH
 template<size_t Bytes>
 struct hxScratchpad {
-	HX_INLINE void* data() { return &*m_storage; }
-	HX_INLINE bool contains(void* ptr) {
+	HX_CONSTEXPR_FN void* data() { return &*m_storage; }
+	HX_CONSTEXPR_FN bool contains(void* ptr) {
 		return ptr >= m_storage && ptr < (m_storage + (Bytes / sizeof(uintptr_t)));
 	}
 	uintptr_t m_storage[Bytes / sizeof(uintptr_t)]; // C++98 hack to align to pointer size.

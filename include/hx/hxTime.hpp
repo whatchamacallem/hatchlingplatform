@@ -6,7 +6,7 @@
 // Stores at least a seconds worth of CPU cycles.  Used when profiling.
 typedef size_t hx_cycles_t;
 
-// c_hxTimeDefaultTimingCutoff is 1 microsecond.  
+// c_hxTimeDefaultTimingCutoff is 1 microsecond.
 #if HX_USE_CPP11_TIME
 #include <chrono>
 
@@ -22,7 +22,7 @@ constexpr hx_cycles_t c_hxTimeDefaultTimingCutoff = (hx_cycles_t)(std::chrono::h
 extern std::chrono::high_resolution_clock::time_point g_hxTimeStart;
 
 // Read cycle counter register.  This version is a Linux fall-back.
-HX_INLINE static hx_cycles_t hxTimeSampleCycles() {
+static inline hx_cycles_t hxTimeSampleCycles() {
 	return (hx_cycles_t)(std::chrono::high_resolution_clock::now() - g_hxTimeStart).count();
 }
 
@@ -35,7 +35,7 @@ static const float c_hxTimeMillisecondsPerCycle = 1.0e-6f; // Also 1.e+6 cycles/
 
 static const hx_cycles_t c_hxTimeDefaultTimingCutoff = 1000;
 
-HX_INLINE static hx_cycles_t hxTimeSampleCycles() {
+HX_CONSTEXPR_FN static hx_cycles_t hxTimeSampleCycles() {
 	timespec ts_;
 	clock_gettime(CLOCK_MONOTONIC, &ts_);
 	return (hx_cycles_t)ts_.tv_nsec;

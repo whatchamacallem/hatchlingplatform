@@ -27,10 +27,10 @@ public:
 };
 
 // Initializes Google Test with command-line arguments. No-op in this implementation.
-HX_INLINE void InitGoogleTest(int *argc_, char **argv_) { (void)argc_; (void)argv_; }
+HX_CONSTEXPR_FN void InitGoogleTest(int *argc_, char **argv_) { (void)argc_; (void)argv_; }
 
 // Overloaded version of InitGoogleTest with no arguments. No-op in this implementation.
-HX_INLINE void InitGoogleTest() { }
+HX_CONSTEXPR_FN void InitGoogleTest() { }
 
 } // namespace testing
 
@@ -108,12 +108,12 @@ public:
 	// Constructor to initialize the random number generator with a seed.
 	// Parameters:
 	// - seed_: Initial seed value for the random number generator.
-	HX_INLINE hxTestRandom(uint32_t seed_ = 1u) : m_seed(seed_) { }
+	HX_CONSTEXPR_FN hxTestRandom(uint32_t seed_ = 1u) : m_seed(seed_) { }
 
 	// Generates the next random number in the sequence.
 	// Returns:
 	// - The next random number as a 32-bit unsigned integer.
-	HX_INLINE uint32_t operator()() { return (m_seed = 1664525u * m_seed + 1013904223u); }
+	HX_CONSTEXPR_FN uint32_t operator()() { return (m_seed = 1664525u * m_seed + 1013904223u); }
 
 	// Current seed value used for generating random numbers.
 	uint32_t m_seed;

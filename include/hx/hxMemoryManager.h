@@ -143,44 +143,44 @@ size_t hxMemoryManagerAllocationCount();
 // Allocates and constructs an object of type T_ using the default memory allocator.
 // Returns: A pointer to the newly constructed object.
 template <typename T_>
-HX_INLINE T_* hxNew() { return ::new(hxMalloc(sizeof(T_)))T_(); }
+HX_CONSTEXPR_FN T_* hxNew() { return ::new(hxMalloc(sizeof(T_)))T_(); }
 
 template <typename T_, typename A1_>
-HX_INLINE T_* hxNew(const A1_& a1_) { return ::new(hxMalloc(sizeof(T_)))T_(a1_); }
+HX_CONSTEXPR_FN T_* hxNew(const A1_& a1_) { return ::new(hxMalloc(sizeof(T_)))T_(a1_); }
 
 template <typename T_, typename A1_, typename A2_>
-HX_INLINE T_* hxNew(const A1_& a1_, const A2_& a2_) { return ::new(hxMalloc(sizeof(T_)))T_(a1_, a2_); }
+HX_CONSTEXPR_FN T_* hxNew(const A1_& a1_, const A2_& a2_) { return ::new(hxMalloc(sizeof(T_)))T_(a1_, a2_); }
 
 template <typename T_, typename A1_, typename A2_, typename A3_>
-HX_INLINE T_* hxNew(const A1_& a1_, const A2_& a2_, const A3_& a3_) { return ::new(hxMalloc(sizeof(T_)))T_(a1_, a2_, a3_); }
+HX_CONSTEXPR_FN T_* hxNew(const A1_& a1_, const A2_& a2_, const A3_& a3_) { return ::new(hxMalloc(sizeof(T_)))T_(a1_, a2_, a3_); }
 
 template <typename T_, typename A1_, typename A2_, typename A3_, typename A4_>
-HX_INLINE T_* hxNew(const A1_& a1_, const A2_& a2_, const A3_& a3_, const A4_& a4_) { return ::new(hxMalloc(sizeof(T_)))T_(a1_, a2_, a3_, a4_); }
+HX_CONSTEXPR_FN T_* hxNew(const A1_& a1_, const A2_& a2_, const A3_& a3_, const A4_& a4_) { return ::new(hxMalloc(sizeof(T_)))T_(a1_, a2_, a3_, a4_); }
 
 // Allocates and constructs an object of type T_ using a specific memory manager.
 // Parameters:
 // - id_: The memory manager ID to use for allocation.
 // Returns: A pointer to the newly constructed object.
 template <typename T_, hxMemoryManagerId id_>
-HX_INLINE T_* hxNewExt() { return ::new(hxMallocExt(sizeof(T_), id_, HX_ALIGNMENT_MASK))T_(); }
+HX_CONSTEXPR_FN T_* hxNewExt() { return ::new(hxMallocExt(sizeof(T_), id_, HX_ALIGNMENT_MASK))T_(); }
 
 template <typename T_, hxMemoryManagerId id_, typename A1_>
-HX_INLINE T_* hxNewExt(const A1_& a1_) { return ::new(hxMallocExt(sizeof(T_), id_, HX_ALIGNMENT_MASK))T_(a1_); }
+HX_CONSTEXPR_FN T_* hxNewExt(const A1_& a1_) { return ::new(hxMallocExt(sizeof(T_), id_, HX_ALIGNMENT_MASK))T_(a1_); }
 
 template <typename T_, hxMemoryManagerId id_, typename A1_, typename A2_>
-HX_INLINE T_* hxNewExt(const A1_& a1_, const A2_& a2_) { return ::new(hxMallocExt(sizeof(T_), id_, HX_ALIGNMENT_MASK))T_(a1_, a2_); }
+HX_CONSTEXPR_FN T_* hxNewExt(const A1_& a1_, const A2_& a2_) { return ::new(hxMallocExt(sizeof(T_), id_, HX_ALIGNMENT_MASK))T_(a1_, a2_); }
 
 template <typename T_, hxMemoryManagerId id_, typename A1_, typename A2_, typename A3_>
-HX_INLINE T_* hxNewExt(const A1_& a1_, const A2_& a2_, const A3_& a3_) { return ::new(hxMallocExt(sizeof(T_), id_, HX_ALIGNMENT_MASK))T_(a1_, a2_, a3_); }
+HX_CONSTEXPR_FN T_* hxNewExt(const A1_& a1_, const A2_& a2_, const A3_& a3_) { return ::new(hxMallocExt(sizeof(T_), id_, HX_ALIGNMENT_MASK))T_(a1_, a2_, a3_); }
 
 template <typename T_, hxMemoryManagerId id_, typename A1_, typename A2_, typename A3_, typename A4_>
-HX_INLINE T_* hxNewExt(const A1_& a1_, const A2_& a2_, const A3_& a3_, const A4_& a4_) { return ::new(hxMallocExt(sizeof(T_), id_, HX_ALIGNMENT_MASK))T_(a1_, a2_, a3_, a4_); }
+HX_CONSTEXPR_FN T_* hxNewExt(const A1_& a1_, const A2_& a2_, const A3_& a3_, const A4_& a4_) { return ::new(hxMallocExt(sizeof(T_), id_, HX_ALIGNMENT_MASK))T_(a1_, a2_, a3_, a4_); }
 
 // Deletes an object of type T_ and frees its memory using the memory manager.
 // Parameters:
 // - t_: Pointer to the object to delete.
 template <typename T_>
-HX_INLINE void hxDelete(T_* t_) {
+HX_CONSTEXPR_FN void hxDelete(T_* t_) {
 	if (t_) {
 		t_->~T_();
 		if ((HX_RELEASE) < 1) {
@@ -196,21 +196,21 @@ HX_INLINE void hxDelete(T_* t_) {
 struct hxDeleter {
 	// Deletes the object using hxDelete.
 	template <typename T_>
-	HX_INLINE void operator()(T_* t_) const { hxDelete(t_); }
+	HX_CONSTEXPR_FN void operator()(T_* t_) const { hxDelete(t_); }
 
 	// Always returns true, indicating the deleter is valid.
-	HX_INLINE operator bool() const { return true; }
+	HX_CONSTEXPR_FN operator bool() const { return true; }
 };
 
 // Add default args to C++ interface: alignmentMask=HX_ALIGNMENT_MASK.
 // Allocates memory with a specific memory manager and default alignment.
-HX_INLINE void* hxMallocExt(size_t size_, hxMemoryManagerId id_) {
+inline void* hxMallocExt(size_t size_, hxMemoryManagerId id_) {
 	return hxMallocExt(size_, id_, HX_ALIGNMENT_MASK);
 }
 
 // Add default args to C++ interface: id_=hxMemoryManagerId_Current
 // Duplicates a string using the default memory manager.
-HX_INLINE char* hxStringDuplicate(const char* s_) {
+inline char* hxStringDuplicate(const char* s_) {
 	return hxStringDuplicate(s_, hxMemoryManagerId_Current);
 }
 

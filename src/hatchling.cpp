@@ -25,7 +25,7 @@ HX_STATIC_ASSERT(0, "exceptions should not be enabled");
 typedef hxHashTable<hxHashTableNodeStringLiteral, 5> hxHashStringLiteral;
 
 struct hxFilenameLess {
-	HX_INLINE bool operator()(const char*& lhs, const char*& rhs) const {
+	inline bool operator()(const char*& lhs, const char*& rhs) const {
 		return hxStringLiteralHashDebug(lhs) < hxStringLiteralHashDebug(rhs);
 	}
 };

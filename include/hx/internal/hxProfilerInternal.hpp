@@ -34,12 +34,12 @@ public:
 	void writeToChromeTracing_(const char* filename);
 
 	// For testing
-	HX_INLINE size_t recordsSize_() { return m_records.size(); }
-	HX_INLINE void recordsClear_() { m_records.clear(); }
+	inline size_t recordsSize_() { return m_records.size(); }
+	inline void recordsClear_() { m_records.clear(); }
 
 private:
 	struct hxProfilerRecord_ {
-		HX_INLINE hxProfilerRecord_(hx_cycles_t begin_, hx_cycles_t end_, const char* label_, uint32_t threadId_)
+		inline hxProfilerRecord_(hx_cycles_t begin_, hx_cycles_t end_, const char* label_, uint32_t threadId_)
 			: m_label(label_), m_begin(begin_), m_end(end_), m_threadId(threadId_) {
 		}
 		const char* m_label;
@@ -64,7 +64,7 @@ template<hx_cycles_t MinCycles_=0u>
 class hxProfilerScopeInternal_ {
 public:
 	// See hxProfileScope() below.
-	HX_INLINE hxProfilerScopeInternal_(const char* labelStringLiteral)
+	inline hxProfilerScopeInternal_(const char* labelStringLiteral)
 		: m_label(labelStringLiteral)
 	{
 		HX_PROFILER_LOCK_();
@@ -72,7 +72,10 @@ public:
 		m_t0 = g_hxProfiler_.m_isStarted ? hxTimeSampleCycles() : ~(hx_cycles_t)0;
 	}
 
-	HX_INLINE ~hxProfilerScopeInternal_() {
+#if HX_CPLUSPLUS >= 202002L
+	constexpr
+#endif
+	~hxProfilerScopeInternal_() {
 		HX_PROFILER_LOCK_();
 
 		if (m_t0 != ~(hx_cycles_t)0) {
@@ -94,4 +97,3 @@ private:
 	const char* m_label;
 	hx_cycles_t m_t0;
 };
-
