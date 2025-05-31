@@ -15,7 +15,7 @@ public:
 	HX_INLINE hxHashTableInternalAllocator_() {
 		::memset(this->getStorage(), 0x00, sizeof(Node_*) * this->getCapacity());
 	}
-	HX_CONSTEXPR_FN uint32_t getHashBits() const { return HashBits_; }
+	HX_INLINE uint32_t getHashBits() const { return HashBits_; }
 	HX_INLINE void setHashBits(uint32_t bits) {
 		hxAssertMsg(bits == HashBits_, "resizing static hash table"); (void)bits;
 	}

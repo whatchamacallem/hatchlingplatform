@@ -19,12 +19,13 @@
 //   uint32_t hash();
 
 // ----------------------------------------------------------------------------
-// hxHash is used by the base class hash table node.  It needs to be overridden
-// for your key type.  This is only for use by hxHashTableSetNode.
+// hxKeyHash is used by the base class hash table node.  It needs to be
+// overridden for your key type.  This is only for use by hxHashTableSetNode.
 
 // Uses the well studied hash multiplier taken from Linux's hash.h
-HX_INLINE uint32_t hxKeyHash(uint32_t x_ ) {
-	return x_ * (uint32_t)0x61C88647u;
+template<typename T_>
+HX_INLINE uint32_t hxKeyHash(T_ x_ ) {
+	return (uint32_t)x_ * (uint32_t)0x61C88647u;
 };
 
 // Uses FNV-1a string hashing.
@@ -65,7 +66,7 @@ public:
 	HX_INLINE hxHashTableSetNode(const Key& key_)
 		: m_hashNext(hxnull), m_key(key_)
 	{
-		// NOTE: You need to implement hxHash for your Key type.
+		// NOTE: You need to implement hxKeyHash for your Key type.
 		m_hash = hxKeyHash(key_);
 	}
 

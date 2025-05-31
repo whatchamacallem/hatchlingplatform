@@ -17,12 +17,12 @@ namespace {
 
 // Wrap the string type because it does not behave normally.
 struct hxConsoleHashTableKey_ {
-	hxConsoleHashTableKey_(const char* s_) : str_(s_) { }
+	explicit hxConsoleHashTableKey_(const char* s_) : str_(s_) { }
 	const char* str_;
 };
 
 // Uses FNV-1a string hashing.
-static uint32_t hxKeyHash(hxConsoleHashTableKey_ k_) {
+uint32_t hxKeyHash(hxConsoleHashTableKey_ k_) {
 	uint32_t x_ = (uint32_t)0x811c9dc5;
 	while (!hxIsDelimiter_(*k_.str_)) {
 		x_ ^= (uint32_t)*k_.str_++;
@@ -31,7 +31,7 @@ static uint32_t hxKeyHash(hxConsoleHashTableKey_ k_) {
 	return x_;
 }
 
-HX_INLINE uint32_t hxKeyEqual(hxConsoleHashTableKey_ lhs_, hxConsoleHashTableKey_ rhs_)
+uint32_t hxKeyEqual(hxConsoleHashTableKey_ lhs_, hxConsoleHashTableKey_ rhs_)
 {
 	size_t len = hxmin(::strlen(lhs_.str_), ::strlen(rhs_.str_));
 	return ::strncmp(lhs_.str_, rhs_.str_, len) == 0;
@@ -73,13 +73,14 @@ hxCommandTable_& hxConsoleCommands_() { static hxCommandTable_ tbl; return tbl; 
 
 void hxConsoleRegister_(hxCommand_* fn, const char* id) {
 	hxAssertMsg(fn && id, "hxConsoleRegister_ args");
-	hxConsoleHashTableNode_& node = hxConsoleCommands_().insertUnique(id, hxMemoryManagerId_Heap);
+	hxConsoleHashTableNode_& node
+		= hxConsoleCommands_().insertUnique(hxConsoleHashTableKey_(id), hxMemoryManagerId_Heap);
 	hxAssertMsg(!node.value(), "command already registered: %s", id);
 	node.setValue(fn);
 }
 
 void hxConsoleDeregister(const char* id) {
-	hxConsoleCommands_().erase(id);
+	hxConsoleCommands_().erase(hxConsoleHashTableKey_(id));
 }
 
 void hxConsoleDeregisterAll() {
@@ -98,7 +99,7 @@ bool hxConsoleExecLine(const char* command) {
 		return true;
 	}
 
-	hxConsoleHashTableNode_* node = hxConsoleCommands_().find(pos);
+	hxConsoleHashTableNode_* node = hxConsoleCommands_().find(hxConsoleHashTableKey_(pos));
 	if (!node) {
 		hxWarn("command not found: %s", command);
 		return false;

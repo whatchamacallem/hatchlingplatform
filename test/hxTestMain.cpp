@@ -40,11 +40,11 @@ size_t hxTestMain() {
 	hxInit();
 
 	hxLogConsole("hatchling platform " HATCHLING_TAG "\n");
-	hxLogConsole("release %d profile %d flags %d%d%d%d build: " __DATE__ " " __TIME__ "\n",
+	hxLogConsole("release %d profile %d flags %d%d%d build: " __DATE__ " " __TIME__ "\n",
 		(int)(HX_RELEASE), (int)(HX_PROFILE), (int)(HX_USE_CPP11_THREADS),
-		(int)(HX_USE_CPP11_TIME), (int)(HX_USE_CPP14_CONSTEXPR), (int)(HX_MEM_DIAGNOSTIC_LEVEL));
-		hxLogConsole("sizeof(size_t) = %d\n", (int)sizeof(size_t));
-		hxLogConsole("PCH used = %d\n", (int)HX_HATCHLING_PCH_USED);
+		(int)(HX_USE_CPP11_TIME), (int)(HX_MEM_DIAGNOSTIC_LEVEL));
+	hxLogConsole("sizeof(size_t)=%d, ", (int)sizeof(size_t));
+	hxLogConsole("PCH used=%d, emoji=🐉🐉🐉\n", (int)HX_HATCHLING_PCH_USED);
 
 	char bytes[48] = { };
 	snprintf(bytes, 48, "%s", "The quick brown fox jumps over the lazy dog....");

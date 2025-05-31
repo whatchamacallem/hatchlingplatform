@@ -12,8 +12,8 @@
 #include <string.h>
 
 // Major, minor and patch versions.
-#define HATCHLING_VER 0x20118
-#define HATCHLING_TAG "v2.1.18"
+#define HATCHLING_VER 0x20119
+#define HATCHLING_TAG "v2.1.19"
 
 #include <hx/hxSettings.h>
 #include <hx/hxMemoryManager.h>
@@ -217,20 +217,20 @@ void hxPrintFileHashes(void);
 // - x_: The first value.
 // - y_: The second value.
 template<typename T_>
-HX_CONSTEXPR_FN const T_& hxmin(const T_& x_, const T_& y_) { return ((x_) < (y_)) ? (x_) : (y_); }
+HX_INLINE const T_& hxmin(const T_& x_, const T_& y_) { return ((x_) < (y_)) ? (x_) : (y_); }
 
 // Returns the maximum value of x and y using a < comparison.
 // Parameters:
 // - x_: The first value.
 // - y_: The second value.
 template<typename T_>
-HX_CONSTEXPR_FN const T_& hxmax(const T_& x_, const T_& y_) { return ((y_) < (x_)) ? (x_) : (y_); }
+HX_INLINE const T_& hxmax(const T_& x_, const T_& y_) { return ((y_) < (x_)) ? (x_) : (y_); }
 
 // Returns the absolute value of x using a < comparison.
 // Parameters:
 // - x_: The value to compute the absolute value for.
 template<typename T_>
-HX_CONSTEXPR_FN const T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - (x_)) : (x_); }
+HX_INLINE const T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - (x_)) : (x_); }
 
 // Returns x clamped between the minimum and maximum using < comparisons.
 // Parameters:
@@ -238,7 +238,7 @@ HX_CONSTEXPR_FN const T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - 
 // - minimum_: The minimum allowable value.
 // - maximum_: The maximum allowable value.
 template<typename T_>
-HX_CONSTEXPR_FN const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& maximum_) {
+HX_INLINE const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& maximum_) {
 	hxAssert(!((maximum_) < (minimum_)));
 	return ((x_) < (minimum_)) ? (minimum_) : (((maximum_) < (x_)) ? (maximum_) : (x_));
 }

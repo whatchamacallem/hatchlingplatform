@@ -22,7 +22,8 @@ struct hxConsoleConstructor_ {
 
 // Console tokens are delimited by any whitespace and non-printing low-ASCII
 // characters.  NUL is considered a delimiter and must be checked for separately.
-HX_INLINE static bool hxIsDelimiter_(char ch_) { return ch_ <= 32; }
+// This happens to be UTF-8 compatable because it ignores characters >= U+0100.
+HX_INLINE static bool hxIsDelimiter_(char ch_) { return ch_ <= 32 || ch_ == 127; }
 
 // Checks for printing characters.
 HX_INLINE static bool hxIsEndOfline_(const char* str_) {

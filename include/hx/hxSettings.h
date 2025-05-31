@@ -26,11 +26,11 @@
 #endif
 
 // Compiler detection and target specific C++11/C++14 polyfill.
-// Use #if(HX_...) instead of #ifdef(HX_...) for all HX_* macros. 
+// Use #if(HX_...) instead of #ifdef(HX_...) for all HX_* macros.
 
 #if defined(__cplusplus)
 #define HX_CPLUSPLUS __cplusplus
-#else 
+#else
 #define HX_CPLUSPLUS 0
 #endif
 
@@ -45,13 +45,10 @@
 #define HX_USE_WASM 0
 
 #if !defined(HX_USE_CPP11_THREADS)
-#define HX_USE_CPP11_THREADS __STDCPP_THREADS__ 
+#define HX_USE_CPP11_THREADS __STDCPP_THREADS__
 #endif
 #if !defined(HX_USE_CPP11_TIME)
 #define HX_USE_CPP11_TIME (_MSC_VER >= 1900)
-#endif
-#if !defined(HX_USE_CPP14_CONSTEXPR)
-#define HX_USE_CPP14_CONSTEXPR 0 // silently generating horrible assembly as of MSVC 15.8.9.
 #endif
 
 #define HX_RESTRICT __restrict
@@ -89,10 +86,6 @@
 #if !defined(HX_USE_CPP11_TIME)
 #define HX_USE_CPP11_TIME (HX_CPLUSPLUS >= 201103L)
 #endif
-#if !defined(HX_USE_CPP14_CONSTEXPR)
-// "__cpp_constexpr >= 201304" may not compile as C++
-#define HX_USE_CPP14_CONSTEXPR (HX_CPLUSPLUS >= 201402L)
-#endif
 
 #if (HX_RELEASE) < 1
 #define HX_INLINE inline
@@ -119,20 +112,9 @@
 // ----------------------------------------------------------------------------
 // Target independent C++11/C++14 polyfill.
 
-// HX_CONSTEXPR_FN indicates that a function is intended to be a C++14 constexpr
-// function when available and inlined otherwise.  The expectation here is that
-// by inlining a compiler will be able to perform similar optimizations when
-// C++14 is not present and that having the rules for C++14's constexpr checked
-// when available is useful.  Always check your generated assembly.
-#if HX_USE_CPP14_CONSTEXPR
-#define HX_CONSTEXPR_FN constexpr
-#else
-#define HX_CONSTEXPR_FN HX_INLINE
-#endif
-
 // HX_THREAD_LOCAL.  A version of thread_local that compiles out when there is
 // no threading.
-#if HX_USE_CPP11_THREADS
+#if HX_USE_CPP11_THREADS && !defined(HX_THREAD_LOCAL)
 #define HX_THREAD_LOCAL thread_local
 #else
 #define HX_THREAD_LOCAL // single threaded operation can ignore thread_local
