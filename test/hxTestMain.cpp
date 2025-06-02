@@ -1,6 +1,6 @@
 // Copyright 2017-2025 Adrian Johnston
 
-// Include everything to catch conflicts.
+// Include everything first to catch conflicts.
 #include <hx/hatchling.h>
 #include <hx/hxAllocator.hpp>
 #include <hx/hxArray.hpp>
@@ -18,11 +18,18 @@
 #include <hx/hxTest.hpp> // May include Google Test.
 #include <hx/hxTime.hpp>
 
-// Include standard headers last as a test.
 #include <stdio.h>
+
+#include "hxCTest.h"
 
 HX_REGISTER_FILENAME_HASH
 
+// Run all the C tests.
+TEST(hxCTest, AllTests) {
+	ASSERT_TRUE(hxCTestAll());
+}
+
+// These two tests test the test framework by failing.
 #if (HX_TEST_DIE_AT_THE_END)
 TEST(hxDeathTest, Fail) {
 	hxLog("TEST_EXPECTING_ASSERTS:\n");
@@ -41,8 +48,8 @@ size_t hxTestMain() {
 
 	hxLogConsole("hatchling platform " HATCHLING_TAG "\n");
 	hxLogConsole("release %d profile %d flags %d%d%d build: " __DATE__ " " __TIME__ "\n",
-		(int)(HX_RELEASE), (int)(HX_PROFILE), (int)(HX_USE_CPP11_THREADS),
-		(int)(HX_USE_CPP11_TIME), (int)(HX_MEM_DIAGNOSTIC_LEVEL));
+		(int)(HX_RELEASE), (int)(HX_PROFILE), (int)(HX_USE_CPP_THREADS),
+		(int)(HX_USE_CHRONO), (int)(HX_MEM_DIAGNOSTIC_LEVEL));
 	hxLogConsole("sizeof(size_t)=%d, ", (int)sizeof(size_t));
 	hxLogConsole("PCH used=%d, emoji=🐉🐉🐉\n", (int)HX_HATCHLING_PCH_USED);
 

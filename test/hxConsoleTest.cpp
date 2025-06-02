@@ -50,9 +50,8 @@ namespace {
 #define hxConsoleTestTypeCheck(T, t) hxConsoleTestTypeCheckT(t, HX_CONCATENATE(hxConsoleTestTypeID_, T), \
 	HX_CONCATENATE(c_hxConsoleTestExpected, T))
 
-	void* hxConsoleTestFn0() {
+	void hxConsoleTestFn0() {
 		c_hxConsoleTestCallFlags |= 1 << (int32_t)hxConsoleTestTypeID_Void;
-		return 0;
 	}
 
 	int8_t hxConsoleTestFn1(int8_t a0) {
@@ -164,7 +163,7 @@ TEST(hxConsoleTest, RegisterCommand) {
 	hxLogConsole("TEST_EXPECTING_WARNINGS:\n");
 
 	s_hxConsoleTestResultHook = 0.0f;
-	bool b0 = hxConsoleExecLine("hxConsoleTestRegister0 77 ..."); // 77 + 3 int8_t string 
+	bool b0 = hxConsoleExecLine("hxConsoleTestRegister0 77 ..."); // 77 + 3 int8_t string
 	ASSERT_TRUE(b0);
 	ASSERT_EQ(80.0f, s_hxConsoleTestResultHook);
 

@@ -7,6 +7,9 @@
 
 #if HX_CPLUSPLUS
 #include <new>
+#if HX_CPLUSPLUS >= 201103L // std::forward requires c++11 and <utility>
+#include <utility>
+#endif
 
 extern "C" {
 #endif
@@ -22,9 +25,9 @@ extern "C" {
 // Alignment is specified using a mask of those LSB bits that must be 0.  Which
 // is a value 1 less than the actual power of two alignment.
 
-// The default alignment HX_ALIGNMENT_MASK allows for storing char pointers.
-// This alignment should work for most types except SIMD vectors.
-#define HX_ALIGNMENT_MASK ((uintptr_t)(sizeof(char*)-1u)) // masks bits that must be zero.
+// The default alignment HX_ALIGNMENT allows for storing char pointers.
+// This alignment should work for most types except vectors.
+#define HX_ALIGNMENT ((uintptr_t)sizeof(char*))
 
 // hxMemoryManagerId. (See hxMemoryManager.cpp)
 // hxMemoryManagerId_Scratch* are tightly coupled with hxMemoryAllocatorScratchpad.
@@ -47,14 +50,20 @@ enum hxMemoryManagerId {
 };
 
 // Allocates memory of the specified size using the default memory manager.
+// A C++ overload optionally provides the same arguments as hxMallocExt.
+// - size_: The size of the memory to allocate.
+// - id_(C++ only): The memory manager ID to use for allocation. (Default is
+//   hxMemoryManagerId_Current.)
+// - alignment_(C++ only): The alignment for the allocation. (Default
+//   is HX_ALIGNMENT.)
 void* hxMalloc(size_t size_);
 
 // Allocates memory of the specified size with a specific memory manager and alignment.
 // Parameters:
 // - size_: The size of the memory to allocate.
-// - id_: The memory manager ID to use for allocation.
-// - alignmentMask_: The alignment mask for the allocation (default is HX_ALIGNMENT_MASK).
-void* hxMallocExt(size_t size_, enum hxMemoryManagerId id_, uintptr_t alignmentMask_/*=HX_ALIGNMENT_MASK*/);
+// - id_: The memory manager ID to use for allocation. (Default is hxMemoryManagerId_Current.)
+// - alignment_: The alignment for the allocation. (Default is HX_ALIGNMENT.)
+void* hxMallocExt(size_t size_, enum hxMemoryManagerId id_, uintptr_t alignment_/*=HX_ALIGNMENT*/);
 
 // Frees memory previously allocated with hxMalloc or hxMallocExt.
 // Parameters:
@@ -64,7 +73,8 @@ void hxFree(void* ptr_);
 // Allocates a copy of a string using the specified memory manager.
 // Parameters:
 // - string_: The string to duplicate.
-// - id_: The memory manager ID to use for allocation (default is hxMemoryManagerId_Heap).
+// - id_: The memory manager ID to use for allocation. Defaults to
+//   hxMemoryManagerId_Current in C++.
 // Returns: A pointer to the duplicated string.
 char* hxStringDuplicate(const char* string_, enum hxMemoryManagerId id_ /*=hxMemoryManagerId_Current*/);
 
@@ -115,10 +125,10 @@ public:
 
 private:
 	// Deleted copy constructor to prevent copying.
-	hxMemoryManagerScope(const hxMemoryManagerScope&); // = delete
+	hxMemoryManagerScope(const hxMemoryManagerScope&) HX_DELETE_FN;
 
 	// Deleted assignment operator to prevent copying.
-	void operator=(const hxMemoryManagerScope&); // = delete
+	void operator=(const hxMemoryManagerScope&) HX_DELETE_FN;
 
 	hxMemoryManagerId m_thisId; // The memory manager ID for this scope.
 	hxMemoryManagerId m_previousId; // The previous memory manager ID.
@@ -136,51 +146,33 @@ void hxMemoryManagerShutDown();
 // Returns: The total allocation count.
 size_t hxMemoryManagerAllocationCount();
 
-// hxNew.  An extended new().  hxMemoryManagerId_Current is the default.  C++11
-// perfect argument forwarding would be less of an eyesore.  Use hxArray to manage
-// a dynamically-allocated array of objects if you need automatic destruction.
-
-// Allocates and constructs an object of type T_ using the default memory allocator.
-// Returns: A pointer to the newly constructed object.
-template <typename T_>
-HX_INLINE T_* hxNew() { return ::new(hxMalloc(sizeof(T_)))T_(); }
-
-template <typename T_, typename A1_>
-HX_INLINE T_* hxNew(const A1_& a1_) { return ::new(hxMalloc(sizeof(T_)))T_(a1_); }
-
-template <typename T_, typename A1_, typename A2_>
-HX_INLINE T_* hxNew(const A1_& a1_, const A2_& a2_) { return ::new(hxMalloc(sizeof(T_)))T_(a1_, a2_); }
-
-template <typename T_, typename A1_, typename A2_, typename A3_>
-HX_INLINE T_* hxNew(const A1_& a1_, const A2_& a2_, const A3_& a3_) { return ::new(hxMalloc(sizeof(T_)))T_(a1_, a2_, a3_); }
-
-template <typename T_, typename A1_, typename A2_, typename A3_, typename A4_>
-HX_INLINE T_* hxNew(const A1_& a1_, const A2_& a2_, const A3_& a3_, const A4_& a4_) { return ::new(hxMalloc(sizeof(T_)))T_(a1_, a2_, a3_, a4_); }
-
+// hxNew.  An extended new().  hxMemoryManagerId_Current is the default.
 // Allocates and constructs an object of type T_ using a specific memory manager.
-// Parameters:
+// Template Parameters:
 // - id_: The memory manager ID to use for allocation.
+// - align_: A mask of low bits to be zero'd out when allocating new pointers.
 // Returns: A pointer to the newly constructed object.
-template <typename T_, hxMemoryManagerId id_>
-HX_INLINE T_* hxNewExt() { return ::new(hxMallocExt(sizeof(T_), id_, HX_ALIGNMENT_MASK))T_(); }
-
-template <typename T_, hxMemoryManagerId id_, typename A1_>
-HX_INLINE T_* hxNewExt(const A1_& a1_) { return ::new(hxMallocExt(sizeof(T_), id_, HX_ALIGNMENT_MASK))T_(a1_); }
-
-template <typename T_, hxMemoryManagerId id_, typename A1_, typename A2_>
-HX_INLINE T_* hxNewExt(const A1_& a1_, const A2_& a2_) { return ::new(hxMallocExt(sizeof(T_), id_, HX_ALIGNMENT_MASK))T_(a1_, a2_); }
-
-template <typename T_, hxMemoryManagerId id_, typename A1_, typename A2_, typename A3_>
-HX_INLINE T_* hxNewExt(const A1_& a1_, const A2_& a2_, const A3_& a3_) { return ::new(hxMallocExt(sizeof(T_), id_, HX_ALIGNMENT_MASK))T_(a1_, a2_, a3_); }
-
-template <typename T_, hxMemoryManagerId id_, typename A1_, typename A2_, typename A3_, typename A4_>
-HX_INLINE T_* hxNewExt(const A1_& a1_, const A2_& a2_, const A3_& a3_, const A4_& a4_) { return ::new(hxMallocExt(sizeof(T_), id_, HX_ALIGNMENT_MASK))T_(a1_, a2_, a3_, a4_); }
+#if HX_CPLUSPLUS >= 201103L // Argument forwarding requires c++11.
+template <typename T_, hxMemoryManagerId id_=hxMemoryManagerId_Current, uintptr_t align_=HX_ALIGNMENT, typename... Args_>
+HX_CONSTEXPR_FN T_* hxNew(Args_&&... args_) noexcept {
+	return ::new(hxMallocExt(sizeof(T_), id_, align_)) T_(args_...);
+}
+#else
+template <typename T_, hxMemoryManagerId id_=hxMemoryManagerId_Current, uintptr_t align_=HX_ALIGNMENT>
+HX_CONSTEXPR_FN T_* hxNew() {
+	return ::new(hxMallocExt(sizeof(T_), id_, align_))T_();
+}
+template <typename T_, hxMemoryManagerId id_=hxMemoryManagerId_Current, uintptr_t align_=HX_ALIGNMENT, typename Arg>
+HX_CONSTEXPR_FN T_* hxNew(const Arg& arg) {
+	return ::new(hxMallocExt(sizeof(T_), id_, align_))T_(arg);
+}
+#endif
 
 // Deletes an object of type T_ and frees its memory using the memory manager.
 // Parameters:
 // - t_: Pointer to the object to delete.
 template <typename T_>
-HX_INLINE void hxDelete(T_* t_) {
+HX_CONSTEXPR_FN void hxDelete(T_* t_) {
 	if (t_) {
 		t_->~T_();
 		if ((HX_RELEASE) < 1) {
@@ -196,21 +188,23 @@ HX_INLINE void hxDelete(T_* t_) {
 struct hxDeleter {
 	// Deletes the object using hxDelete.
 	template <typename T_>
-	HX_INLINE void operator()(T_* t_) const { hxDelete(t_); }
+	HX_CONSTEXPR_FN void operator()(T_* t_) const { hxDelete(t_); }
 
 	// Always returns true, indicating the deleter is valid.
-	HX_INLINE operator bool() const { return true; }
+	HX_CONSTEXPR_FN operator bool() const { return true; }
 };
 
-// Add default args to C++ interface: alignmentMask=HX_ALIGNMENT_MASK.
-// Allocates memory with a specific memory manager and default alignment.
-HX_INLINE void* hxMallocExt(size_t size_, hxMemoryManagerId id_) {
-	return hxMallocExt(size_, id_, HX_ALIGNMENT_MASK);
+// Add hxMallocExt args to hxMalloc C interface. Allocates memory with a
+// specific memory manager and alignment.
+inline void* hxMalloc( size_t size_,
+				enum hxMemoryManagerId id_,
+				uintptr_t alignment_=HX_ALIGNMENT) {
+	return hxMallocExt(size_, id_, alignment_);
 }
 
-// Add default args to C++ interface: id_=hxMemoryManagerId_Current
+// Add default args to C interface: id_=hxMemoryManagerId_Current
 // Duplicates a string using the default memory manager.
-HX_INLINE char* hxStringDuplicate(const char* s_) {
+inline char* hxStringDuplicate(const char* s_) {
 	return hxStringDuplicate(s_, hxMemoryManagerId_Current);
 }
 

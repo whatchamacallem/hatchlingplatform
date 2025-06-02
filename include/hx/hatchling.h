@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 
 // Major, minor and patch versions.
 #define HATCHLING_VER 0x20119
@@ -54,6 +55,9 @@ enum hxLogLevel {
 #define HX_CONCATENATE(x_, y_) HX_CONCATENATE_(x_, y_)
 #define HX_CONCATENATE_(x_, y_) x_ ## y_
 
+// Macro for concatenating 3 arguments.
+#define HX_CONCATENATE_3(x_, y_, z_) x_ ## y_ ## z_
+
 HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0..3]");
 
 // Initializes the platform.
@@ -72,32 +76,32 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 // Parameters:
 // - x_: The condition to evaluate.
 // - ...: Variadic arguments for the formatted log message.
-#define hxAssertMsg(x_, ...) (void)(!!(x_) || ((hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
-	hxAssertHandler(__FILE__, __LINE__)) || (HX_DEBUG_BREAK,0)))
+#define hxAssertMsg(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
+	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK)
 
 // Logs an error and terminates execution if x_ is false.
 // This is only evaluated when HX_RELEASE == 0.
 // Parameters:
 // - x_: The condition to evaluate.
-#define hxAssert(x_) (void)((!!(x_)) || ((hxLogHandler(hxLogLevel_Assert, HX_QUOTE(x_)), \
-	hxAssertHandler(__FILE__, __LINE__)) || (HX_DEBUG_BREAK,0)))
+#define hxAssert(x_) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Assert, HX_QUOTE(x_)), \
+	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK)
 
 // Assert handler.  Do not call directly, signature changes and then is removed.
-int hxAssertHandler(const char* file_, size_t line_);
+int hxAssertHandler(const char* file_, size_t line_) HX_NOEXCEPT;
 
-// Logs an error and terminates execution if x is false up to release level 2.
+// Logs an error and terminates execution if x_ is false up to release level 2.
 // This is only evaluated when HX_RELEASE < 3.
 // Parameters:
 // - x_: The condition to evaluate.
 // - ...: Variadic arguments for the formatted log message.
 #define hxAssertRelease(x_, ...) (void)(!!(x_) || ((hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
-	hxAssertHandler(__FILE__, __LINE__)) || (HX_DEBUG_BREAK,0)))
+	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK))
 
 #else // HX_RELEASE > 1
 #define hxLog(...) ((void)0)
 #define hxAssertMsg(x_, ...) ((void)0)
 #define hxAssert(x_) ((void)0)
-HX_ATTR_NORETURN void hxAssertHandler(uint32_t file_, size_t line_);
+HX_NORETURN void hxAssertHandler(uint32_t file_, size_t line_) HX_NOEXCEPT;
 #endif
 
 #if (HX_RELEASE) <= 1
@@ -146,7 +150,7 @@ HX_ATTR_NORETURN void hxAssertHandler(uint32_t file_, size_t line_);
 #endif
 
 // Use hxInit() instead. It checks g_hxIsInit.
-void hxInitInternal(void);
+void hxInitInternal(void) HX_NOEXCEPT;
 
 // Set to true by hxInitInternal().
 extern int g_hxIsInit;
@@ -155,7 +159,7 @@ extern int g_hxIsInit;
 // Terminates service.  Releases all resources acquired by the platform and
 // confirms all memory allocations have been released. HX_RELEASE < 3.
 // Does not clear g_hxIsInit, shutdown is final.
-void hxShutdown(void);
+void hxShutdown(void) HX_NOEXCEPT;
 #endif
 
 // Enters formatted messages in the system log.
@@ -164,7 +168,7 @@ void hxShutdown(void);
 // - level_: The log level (e.g., hxLogLevel_Log, hxLogLevel_Warning).
 // - format_: A printf-style format string.
 // - ...: Additional arguments for the format string.
-void hxLogHandler(enum hxLogLevel level_, const char* format_, ...) HX_ATTR_FORMAT(2, 3);
+void hxLogHandler(enum hxLogLevel level_, const char* format_, ...) HX_NOEXCEPT HX_ATTR_FORMAT(2, 3);
 
 // A va_list version of hxLogHandler.
 // This is the only access to logging when when HX_RELEASE > 2.
@@ -172,7 +176,7 @@ void hxLogHandler(enum hxLogLevel level_, const char* format_, ...) HX_ATTR_FORM
 // - level_: The log level (e.g., hxLogLevel_Log, hxLogLevel_Warning).
 // - format_: A printf-style format string.
 // - args_: A va_list containing the arguments for the format string.
-void hxLogHandlerV(enum hxLogLevel level_, const char* format_, va_list args_);
+void hxLogHandlerV(enum hxLogLevel level_, const char* format_, va_list args_) HX_NOEXCEPT;
 
 // Prints an array of bytes formatted in hexadecimal. Additional information
 // provided when pretty is non-zero.
@@ -180,28 +184,28 @@ void hxLogHandlerV(enum hxLogLevel level_, const char* format_, va_list args_);
 // - address_: Pointer to the start of the byte array.
 // - bytes_: The number of bytes to print.
 // - pretty_: Non-zero to include additional formatting information.
-void hxHexDump(const void* address_, size_t bytes_, int pretty_);
+void hxHexDump(const void* address_, size_t bytes_, int pretty_) HX_NOEXCEPT;
 
 // Prints an array of floating point values.
 // Parameters:
 // - address_: Pointer to the start of the float array.
 // - floats_: The number of floats to print.
-void hxFloatDump(const float* address_, size_t floats_);
+void hxFloatDump(const float* address_, size_t floats_) HX_NOEXCEPT;
 
 // Returns a pointer to those characters following the last '\' or '/' character
 // or path if those are not present.
 // Parameters:
 // - path_: The file path as a null-terminated string.
-const char* hxBasename(const char* path_);
+const char* hxBasename(const char* path_) HX_NOEXCEPT;
 
 // Calculates a string hash at runtime that is the same as hxStringLiteralHash.
 // Parameters:
 // - string_: The null-terminated string to hash.
-uint32_t hxStringLiteralHashDebug(const char* string_);
+uint32_t hxStringLiteralHashDebug(const char* string_) HX_NOEXCEPT;
 
 #if (HX_RELEASE) < 1
 // Prints file name hashes registered with HX_REGISTER_FILENAME_HASH. Use after main().
-void hxPrintFileHashes(void);
+void hxPrintFileHashes(void) HX_NOEXCEPT;
 #else
 #define hxPrintFileHashes() ((void)0)
 #endif
@@ -212,40 +216,54 @@ void hxPrintFileHashes(void);
 
 // More portable versions of min(), max(), abs() and clamp() using the < operator.
 
-// Returns the minimum value of x and y using a < comparison.
+// Returns the minimum value of x_ and y_ using a < comparison.
 // Parameters:
 // - x_: The first value.
 // - y_: The second value.
 template<typename T_>
-HX_INLINE const T_& hxmin(const T_& x_, const T_& y_) { return ((x_) < (y_)) ? (x_) : (y_); }
+HX_CONSTEXPR_FN const T_& hxmin(const T_& x_, const T_& y_) { return ((x_) < (y_)) ? (x_) : (y_); }
 
-// Returns the maximum value of x and y using a < comparison.
+// Returns the maximum value of x_ and y_ using a < comparison.
 // Parameters:
 // - x_: The first value.
 // - y_: The second value.
 template<typename T_>
-HX_INLINE const T_& hxmax(const T_& x_, const T_& y_) { return ((y_) < (x_)) ? (x_) : (y_); }
+HX_CONSTEXPR_FN const T_& hxmax(const T_& x_, const T_& y_) { return ((y_) < (x_)) ? (x_) : (y_); }
 
-// Returns the absolute value of x using a < comparison.
+// Returns the absolute value of x_ using a < comparison.
 // Parameters:
 // - x_: The value to compute the absolute value for.
 template<typename T_>
-HX_INLINE const T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - (x_)) : (x_); }
+HX_CONSTEXPR_FN const T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - (x_)) : (x_); }
 
-// Returns x clamped between the minimum and maximum using < comparisons.
+// Returns x_ clamped between the minimum and maximum using < comparisons.
 // Parameters:
 // - x_: The value to clamp.
 // - minimum_: The minimum allowable value.
 // - maximum_: The maximum allowable value.
 template<typename T_>
-HX_INLINE const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& maximum_) {
+HX_CONSTEXPR_FN const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& maximum_) {
 	hxAssert(!((maximum_) < (minimum_)));
 	return ((x_) < (minimum_)) ? (minimum_) : (((maximum_) < (x_)) ? (maximum_) : (x_));
 }
+
+// Exchanges the contents of x_ and y_ using a temporary.
+template<typename T_>
+HX_CONSTEXPR_FN void hxswap(T_& x_, T_& y_) {
+	T_ t_(x_);
+	x_ = y_;
+	y_ = t_;
+}
+
 #else
-#define hxmin(x_, y_) ((x_) < (y_)) ? (x_) : (y_)
-#define hxmax(x_, y_) ((y_) < (x_)) ? (x_) : (y_)
-#define hxabs(x_) ((x_) < 0) ? (0 - (x_)) : (x_)
+#define hxmin(x_, y_) ((x_) < (y_) ? (x_) : (y_))
+#define hxmax(x_, y_) ((y_) < (x_) ? (x_) : (y_))
+#define hxabs(x_) ((x_) < 0 ? (0 - (x_)) : (x_))
 #define hxclamp(x_, minimum_, maximum_) \
-       ((x_) < (minimum_)) ? (minimum_) : (((maximum_) < (x_)) ? (maximum_) : (x_))
+    ((x_) < (minimum_) ? (minimum_) : ((maximum_) < (x_) ? (maximum_) : (x_)))
+#define hxswap(x_,y_) do { \
+	 char t_[sizeof(x_) == sizeof(y_) ? (int)sizeof(x_) : -1]; \
+	memcpy((t_), &(y_), sizeof(x_)); \
+	memcpy(&(y_), &(x_), sizeof(x_)); \
+	memcpy(&(x_), (t_), sizeof(x_)); } while(false)
 #endif

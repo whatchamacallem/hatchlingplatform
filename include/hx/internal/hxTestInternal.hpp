@@ -126,8 +126,8 @@ private:
 		return f_;
 	}
 
-	hxTestSuiteExecutor_(const hxTestSuiteExecutor_&); // = delete
-	void operator=(const hxTestSuiteExecutor_&); // = delete
+	hxTestSuiteExecutor_(const hxTestSuiteExecutor_&) HX_DELETE_FN;
+	void operator=(const hxTestSuiteExecutor_&) HX_DELETE_FN;
 
 	hxTestCaseBase_* m_factories[HX_TEST_MAX_CASES];
 	size_t m_numFactories;

@@ -57,8 +57,8 @@ public:
 				ASSERT_EQ(allocatorScope.getScopeAllocationCount(), 2u);
 				ASSERT_EQ(allocatorScope.getPreviousAllocationCount(), startCount);
 				ASSERT_EQ(allocatorScope.getTotalAllocationCount(), 2u + startCount);
-				ASSERT_NEAR(allocatorScope.getScopeBytesAllocated(), 300u, 2u * HX_ALIGNMENT_MASK);
-				ASSERT_NEAR(allocatorScope.getTotalBytesAllocated(), startBytes + 300u, 2u * HX_ALIGNMENT_MASK);
+				ASSERT_NEAR(allocatorScope.getScopeBytesAllocated(), 300u, 2u * HX_ALIGNMENT);
+				ASSERT_NEAR(allocatorScope.getTotalBytesAllocated(), startBytes + 300u, 2u * HX_ALIGNMENT);
 				ASSERT_EQ(allocatorScope.getPreviousBytesAllocated(), startBytes);
 			}
 
@@ -74,7 +74,7 @@ public:
 				hxMemoryManagerScope spamGuard(hxMemoryManagerId_Heap);
 
 				// The debug heap requires HX_ALLOCATIONS_LOG_LEVEL enabled to track bytes allocated.
-				ASSERT_NEAR(allocatorScope.getScopeBytesAllocated(), 300, 2 * HX_ALIGNMENT_MASK);
+				ASSERT_NEAR(allocatorScope.getScopeBytesAllocated(), 300, 2 * HX_ALIGNMENT);
 			}
 			else {
 				hxMemoryManagerScope spamGuard(hxMemoryManagerId_Heap);

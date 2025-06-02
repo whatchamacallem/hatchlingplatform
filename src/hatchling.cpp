@@ -22,10 +22,11 @@ HX_STATIC_ASSERT(0, "exceptions should not be enabled");
 // Implements HX_REGISTER_FILENAME_HASH in debug.  See hxStringLiteralHash.h.
 
 #if (HX_RELEASE) < 1
+namespace {
 typedef hxHashTable<hxHashTableNodeStringLiteral, 5> hxHashStringLiteral;
 
 struct hxFilenameLess {
-	HX_INLINE bool operator()(const char*& lhs, const char*& rhs) const {
+	inline bool operator()(const char*& lhs, const char*& rhs) const {
 		return hxStringLiteralHashDebug(lhs) < hxStringLiteralHashDebug(rhs);
 	}
 };
@@ -34,6 +35,9 @@ hxHashStringLiteral& hxStringLiteralHashes() {
 	static hxHashStringLiteral s_hxStringLiteralHashes;
 	return s_hxStringLiteralHashes;
 }
+
+} // namespace {
+
 hxRegisterFileConstructor::hxRegisterFileConstructor(const char* s) {
 	hxInit();
 	hxStringLiteralHashes().insertUnique(s, hxMemoryManagerId_Heap);
@@ -67,7 +71,7 @@ void hxPrintFileHashes(void) {
 
 void hxSettingsConstruct();
 
-#if HX_USE_CPP11_TIME
+#if HX_USE_CHRONO
 std::chrono::high_resolution_clock::time_point g_hxTimeStart;
 #endif
 
@@ -76,7 +80,7 @@ void hxInitInternal(void) {
 	hxAssertRelease(!g_hxIsInit, "call hxInit() instead");
 	g_hxIsInit = 1;
 
-#if HX_USE_CPP11_TIME
+#if HX_USE_CHRONO
 	g_hxTimeStart = std::chrono::high_resolution_clock::now();
 #endif
 
@@ -150,7 +154,7 @@ int hxAssertHandler(const char* file, size_t line) {
 	return 0;
 }
 #else
-extern "C" HX_ATTR_NORETURN
+extern "C" HX_NORETURN
 void hxAssertHandler(uint32_t file, size_t line) {
 	hxLogHandler(hxLogLevel_Assert, "file %08x line %u\n", (unsigned int)file, (unsigned int)line);
 	_Exit(EXIT_FAILURE);

@@ -44,27 +44,24 @@
 
 #define HX_USE_WASM 0
 
-#if !defined(HX_USE_CPP11_THREADS)
-#define HX_USE_CPP11_THREADS __STDCPP_THREADS__
+#if !defined(HX_USE_CPP_THREADS)
+#define HX_USE_CPP_THREADS __STDCPP_THREADS__
 #endif
-#if !defined(HX_USE_CPP11_TIME)
-#define HX_USE_CPP11_TIME (_MSC_VER >= 1900)
+#if !defined(HX_USE_CHRONO)
+#define HX_USE_CHRONO (_MSC_VER >= 1900)
 #endif
 
 #define HX_RESTRICT __restrict
-#define HX_INLINE __forceinline
 #define HX_LINK_SCRATCHPAD
 #define HX_ATTR_FORMAT(pos_, start_)
 #define HX_DEBUG_BREAK __debugbreak()
-
-#if HX_CPLUSPLUS && _MSC_VER >= 1900
-#define HX_STATIC_ASSERT(x_,...) static_assert((bool)(x_), __VA_ARGS__)
-#define HX_OVERRIDE override
-#define HX_ATTR_NORETURN [[noreturn]]
-#else // !HX_CPLUSPLUS
-#define HX_STATIC_ASSERT(x_,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__COUNTER__) [!!(x_) ? 1 : -1]
-#define HX_OVERRIDE
 #define HX_ATTR_NORETURN
+
+// Unlike noexcept this is undefined when violated.
+#if HX_CPLUSPLUS >= 201103L
+#define HX_NOEXCEPT __declspec(nothrow)
+#else
+#define HX_NOEXCEPT
 #endif
 
 // ----------------------------------------------------------------------------
@@ -80,17 +77,11 @@
 #endif
 #endif
 
-#if !defined(HX_USE_CPP11_THREADS)
-#define HX_USE_CPP11_THREADS (HX_CPLUSPLUS >= 201103L && !HX_USE_WASM)
+#if !defined(HX_USE_CPP_THREADS)
+#define HX_USE_CPP_THREADS (HX_CPLUSPLUS >= 201103L)
 #endif
-#if !defined(HX_USE_CPP11_TIME)
-#define HX_USE_CPP11_TIME (HX_CPLUSPLUS >= 201103L)
-#endif
-
-#if (HX_RELEASE) < 1
-#define HX_INLINE inline
-#else
-#define HX_INLINE inline __attribute__((always_inline))
+#if !defined(HX_USE_CHRONO)
+#define HX_USE_CHRONO (HX_CPLUSPLUS >= 201103L)
 #endif
 
 #define HX_RESTRICT __restrict
@@ -98,23 +89,47 @@
 
 #define HX_ATTR_FORMAT(pos_, start_) __attribute__((format(printf, pos_, start_)))
 #define HX_ATTR_NORETURN __attribute__((noreturn))
-#define HX_DEBUG_BREAK __builtin_trap()
 
-#if HX_CPLUSPLUS >= 201103L
-#define HX_STATIC_ASSERT(x_,...) static_assert(x_, __VA_ARGS__)
-#define HX_OVERRIDE override
-#else // C/C++98
-#define HX_STATIC_ASSERT(x_,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__COUNTER__) [!!(x_) ? 1 : -1]
-#define HX_OVERRIDE
+// HX_DEBUG_BREAK can be conditionally evaluated with the && and || operators.
+#if defined(__has_builtin) && __has_builtin(__builtin_debugtrap)
+#define HX_DEBUG_BREAK (__builtin_debugtrap(),false)
+#else
+#define HX_DEBUG_BREAK (raise(SIGTRAP),false)
 #endif
+
+// Unlike noexcept this is undefined when violated.
+#if HX_CPLUSPLUS >= 201103L
+#define HX_NOEXCEPT __attribute__((nothrow))
+#else
+#define HX_NOEXCEPT
+#endif
+
 #endif // target settings
 
 // ----------------------------------------------------------------------------
 // Target independent C++11/C++14 polyfill.
 
+#if HX_CPLUSPLUS >= 201103L
+#define HX_STATIC_ASSERT(x_,...) static_assert((bool)(x_), __VA_ARGS__)
+#define HX_OVERRIDE override
+#define HX_DELETE_FN = delete
+#else // !HX_CPLUSPLUS
+#define HX_STATIC_ASSERT(x_,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__COUNTER__) [!!(x_) ? 1 : -1]
+#define HX_OVERRIDE
+#define HX_DELETE_FN
+#endif
+
+// HX_CONSTEXPR_FN indicates that a function is intended to be a C++14 constexpr
+// function when available.
+#if HX_CPLUSPLUS >= 201402L
+#define HX_CONSTEXPR_FN constexpr
+#else
+#define HX_CONSTEXPR_FN inline
+#endif
+
 // HX_THREAD_LOCAL.  A version of thread_local that compiles out when there is
 // no threading.
-#if HX_USE_CPP11_THREADS && !defined(HX_THREAD_LOCAL)
+#if HX_USE_CPP_THREADS && !defined(HX_THREAD_LOCAL)
 #define HX_THREAD_LOCAL thread_local
 #else
 #define HX_THREAD_LOCAL // single threaded operation can ignore thread_local

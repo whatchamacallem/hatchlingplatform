@@ -4,7 +4,7 @@
 #include <hx/hatchling.h>
 #include <hx/hxTask.hpp>
 
-#if HX_USE_CPP11_THREADS
+#if HX_USE_CPP_THREADS
 #include <mutex>
 #include <condition_variable>
 #include <thread>
@@ -18,7 +18,7 @@ class hxTaskQueue {
 public:
 	// Create a new task queue. threadPoolSize determines the size of the worker
 	// pool. A threadPoolSize of -1 indicates using a hardware_concurrency()-1 size
-	// thread pool. A threadPoolSize of 0 does not use threading. 
+	// thread pool. A threadPoolSize of 0 does not use threading.
 	explicit hxTaskQueue(int32_t threadPoolSize_ = -1);
 
 	// Calls waitForAll before destructing.
@@ -35,15 +35,15 @@ public:
 	void waitForAll();
 
 private:
-	hxTaskQueue(const hxTaskQueue&); // = delete
-	void operator=(const hxTaskQueue&); // = delete
+	hxTaskQueue(const hxTaskQueue&) HX_DELETE_FN;
+	void operator=(const hxTaskQueue&) HX_DELETE_FN;
 
 	static const uint32_t RunningQueueCheck_ = 0xc710b034u;
 
 	hxTask* m_nextTask;
 	uint32_t m_runningQueueCheck;
 
-#if HX_USE_CPP11_THREADS
+#if HX_USE_CPP_THREADS
 	enum class ExecutorMode_ { Pool_, Waiting_, Stopping_ };
 	static void executorThread_(hxTaskQueue* q_, ExecutorMode_ mode_);
 

@@ -16,13 +16,13 @@ class hxFile;
 // variables of a fundamental type are also supported.  const char* args will
 // capture the remainder of the line including #'s.
 
-// Registers a function.  Use in a global scope.
+// Registers a function using a global constructor.  Use in a global scope.
 //   E.g. hxConsoleCommand(srand);
 #define hxConsoleCommand(x_) hxConsoleConstructor_ \
 	HX_CONCATENATE(g_hxConsoleSymbol_,x_)(hxCommandFactory_(&(x_)), HX_QUOTE(x_))
 
-// Registers a named function.  Use in a global scope.  Provided name must be a
-// valid C identifier.
+// Registers a named function using a global constructor.  Use in a global scope.
+// Provided name must be a valid C identifier.
 #define hxConsoleCommandNamed(x_, name_) hxConsoleConstructor_ \
 	HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxCommandFactory_(&(x_)), HX_QUOTE(name_))
 
@@ -35,6 +35,11 @@ class hxFile;
 // valid C identifier.
 #define hxConsoleVariableNamed(x_, name_) hxConsoleConstructor_ \
 	HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxVariableFactory_(&(x_)), HX_QUOTE(name_))
+
+// Determines whether a console functions return value is OK. Override as needed.
+// Override must be consistent wherever your type is registered.
+template<typename T>
+bool hxConsoleIsOkResult(T t) { return (bool)t; }
 
 // Explicit de-registration of a console symbol.
 void hxConsoleDeregister(const char* id_);

@@ -17,7 +17,7 @@ I=0
 set -o xtrace
 
 gcc -Iinclude -O$I -g -pedantic-errors -Wfatal-errors $WARNINGS -DHX_RELEASE=$I "$@" \
-	-std=c99 -m32 -c src/*.c
+	-std=c99 -m32 -c src/*.c test/*.c
 gcc -Iinclude -O$I -g -pedantic-errors -Wfatal-errors $WARNINGS -DHX_RELEASE=$I "$@" -pthread \
 	-std=c++14 -fno-exceptions -fno-rtti */*.cpp *.o -lpthread -lstdc++ -m32 -o hxtest
 

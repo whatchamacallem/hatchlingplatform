@@ -12,7 +12,7 @@ class hxFile;
 class hxFile {
 public:
 	// openMode is a subset of std::ios_base::openmode with fallible added.
-	// fallible skips asserts and is similar to setting std::basic_ios::exceptions(0). 
+	// fallible skips asserts and is similar to setting std::basic_ios::exceptions(0).
 	enum openMode {
 		in = 1u << 0,   	// Open for binary reading.
 		out = 1u << 1,  	// Open for binary writing.
@@ -36,22 +36,22 @@ public:
 	void close();
 
 	// Checks if the file is open.
-	HX_INLINE bool isOpen() const { return m_filePImpl != hxnull; }
+	HX_CONSTEXPR_FN bool isOpen() const { return m_filePImpl != hxnull; }
 
 	// Checks if the file stream is in a good state.
-	HX_INLINE bool good() const { return m_good; }
+	HX_CONSTEXPR_FN bool good() const { return m_good; }
 
 	// Checks if the end of the file has been reached.
-	HX_INLINE bool eof() const { return m_eof; }
+	HX_CONSTEXPR_FN bool eof() const { return m_eof; }
 
 	// Clears the state of the file stream.
-	HX_INLINE void clear() {
+	HX_CONSTEXPR_FN void clear() {
 		m_good = m_filePImpl != hxnull;
 		m_eof = false;
 	}
 
 	// Returns the current open mode of the file.
-	HX_INLINE uint16_t mode() const { return m_openMode; }
+	HX_CONSTEXPR_FN uint16_t mode() const { return m_openMode; }
 
 	// Reads a specified number of bytes from the file into the provided buffer.
 	// Parameters:
@@ -71,7 +71,7 @@ public:
 	// Parameters:
 	// - buffer_: Reference to a char array where the line will be stored.
 	template<size_t BufferSize_>
-	HX_INLINE bool getLine(char(&buffer_)[BufferSize_]) { return getLine(buffer_, BufferSize_); }
+	HX_CONSTEXPR_FN bool getLine(char(&buffer_)[BufferSize_]) { return getLine(buffer_, BufferSize_); }
 
 	// Reads an \n or EOF terminated character sequence. Allowed to fail on EOF
 	// without needing to be hxFile::fallible.
@@ -90,20 +90,20 @@ public:
 	// Parameters:
 	// - t_: Reference to the object where the data will be stored.
 	template<typename T_>
-	HX_INLINE bool read1(T_& t_) { return read(&t_, sizeof t_) == sizeof t_; }
+	HX_CONSTEXPR_FN bool read1(T_& t_) { return read(&t_, sizeof t_) == sizeof t_; }
 
 	// Writes a single unformatted native endian object to the file.
 	// Parameters:
 	// - t_: Reference to the object containing the data to write.
 	template<typename T_>
-	HX_INLINE bool write1(const T_& t_) { return write(&t_, sizeof t_) == sizeof t_; }
+	HX_CONSTEXPR_FN bool write1(const T_& t_) { return write(&t_, sizeof t_) == sizeof t_; }
 
 	// Read a single unformatted native endian object from a stream. The operator
 	// >= is being used instead of >> to indicate there is no formatting.
 	// Parameters:
 	// - t_: Reference to the object where the data will be stored.
 	template<typename T_>
-	HX_INLINE hxFile& operator>=(T_& t_) {
+	HX_CONSTEXPR_FN hxFile& operator>=(T_& t_) {
 		read(&t_, sizeof t_);
 		return *this;
 	}
@@ -113,7 +113,7 @@ public:
 	// Parameters:
 	// - t_: Reference to the object containing the data to write.
 	template<typename T_>
-	HX_INLINE hxFile& operator<=(const T_& t_) {
+	HX_CONSTEXPR_FN hxFile& operator<=(const T_& t_) {
 		write(&t_, sizeof t_);
 		return *this;
 	}
@@ -122,16 +122,16 @@ public:
 	// Parameters:
 	// - str_: Reference to a string literal to write to the file.
 	template<size_t StringLength_>
-	HX_INLINE hxFile& operator<<(const char(&str_)[StringLength_]) {
+	HX_CONSTEXPR_FN hxFile& operator<<(const char(&str_)[StringLength_]) {
 		hxAssert(::strnlen(str_, StringLength_) == (StringLength_-1));
 		write(str_, StringLength_-1);
 		return *this;
 	}
 
 private:
-	hxFile(const hxFile&); // = delete
-	void operator=(const hxFile&); // = delete
-	template<typename T_> HX_INLINE hxFile& operator>>(const T_* t_); // = delete
+	hxFile(const hxFile&) HX_DELETE_FN;
+	void operator=(const hxFile&) HX_DELETE_FN;
+	template<typename T_> HX_CONSTEXPR_FN hxFile& operator>>(const T_* t_) HX_DELETE_FN;
 
 	// Internal function to open a file with a formatted filename and variable arguments.
 	bool openv_(uint16_t mode_, const char* format_, va_list args_);

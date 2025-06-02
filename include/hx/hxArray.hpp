@@ -11,225 +11,256 @@
 template<typename T_, size_t Capacity_=hxAllocatorDynamicCapacity>
 class hxArray : private hxAllocator<T_, Capacity_> {
 public:
-	typedef T_ T; // value type
-	typedef T* iterator; // Random access iterator.
-	typedef const T* constIterator; // Const random access iterator.
+    typedef T_ T; // value type
+    typedef T* iterator; // Random access iterator.
+    typedef const T* constIterator; // Const random access iterator.
+    typedef hxAllocator<T_, Capacity_> Allocator;
 
-	// Constructs an empty array with a capacity of Capacity. m_end will be 0
-	// if Capacity is 0.
-	HX_INLINE explicit hxArray() { m_end = this->getStorage(); }
+    // Constructs an empty array with a capacity of Capacity. m_end will be 0
+    // if Capacity is 0.
+    HX_CONSTEXPR_FN explicit hxArray() HX_NOEXCEPT : Allocator() { m_end = this->getStorage(); }
 
-	// Copy constructs an array. Does not allow movement of hxUniquePtrs. Use
-	// assign() for that. Expects `rhs_` to be a reference to another hxArray.
-	HX_INLINE explicit hxArray(const hxArray& rhs_) : hxAllocator<T, Capacity_>() {
-		m_end = this->getStorage();
-		assign(rhs_.cBegin(), rhs_.cEnd());
-	}
+    // Copy constructs an array. Does not allow movement of hxUniquePtrs. Use
+    // assign() for that. Expects `rhs_` to be a reference to another hxArray.
+    HX_CONSTEXPR_FN explicit hxArray(const hxArray& rhs_) HX_NOEXCEPT : Allocator() {
+        m_end = this->getStorage();
+        this->assign(rhs_.cBegin(), rhs_.cEnd());
+    }
 
-	// Copy constructs an array from a container with begin() and end() methods and
-	// a random access iterator. Expects `rhs_` to be a reference to a container.
-	template <typename Rhs>
-	HX_INLINE explicit hxArray(const Rhs& rhs_) : hxAllocator<T, Capacity_>() {
-		m_end = this->getStorage();
-		assign(rhs_.begin(), rhs_.end());
-	}
+    // Copy construct from temporary.  Only works with Capacity_ == hxAllocatorDynamicCapacity
+#if HX_CPLUSPLUS >= 201103L
+    HX_CONSTEXPR_FN explicit hxArray(hxArray&& rhs_) : hxArray() {
+        this->swap(rhs_);
+    }
 
-	// Destructs the array and destroys all elements.
-	HX_INLINE ~hxArray() {
-		destruct_(this->getStorage(), m_end);
-	}
+    // Pass values of std::initializer_list as initializers to an array of T of
+    // equal length.
+    template <typename Rhs>
+    HX_CONSTEXPR_FN explicit hxArray(std::initializer_list<Rhs> list_) : hxArray() {
+        this->assign(list_.begin(), list_.end());
+    }
+#endif
 
-	// Assigns the contents of another hxArray to this array.
-	// Standard except reallocation is disallowed. Expects `rhs_` to be a reference
-	// to another hxArray.
-	HX_INLINE void operator=(const hxArray& rhs_) {
-		assign(rhs_.begin(), rhs_.end());
-	}
+    // Copy constructs an array from a container with begin() and end() methods and
+    // a random access iterator. Expects `rhs_` to be a reference to a container.
+    template <typename Rhs>
+    HX_CONSTEXPR_FN explicit hxArray(const Rhs& rhs_) : hxAllocator<T, Capacity_>() {
+        m_end = this->getStorage();
+        this->assign(rhs_.begin(), rhs_.end());
+    }
 
-	// Copies the elements of a container with begin() and end() methods and a random
-	// access iterator. Expects `rhs_` to be a reference to a container.
-	template <typename Rhs>
-	HX_INLINE void operator=(const Rhs& rhs_) {
-		assign(rhs_.begin(), rhs_.end());
-	}
+    // Destructs the array and destroys all elements.
+#if HX_CPLUSPLUS >= 202002L
+    constexpr
+#endif
+    ~hxArray() HX_NOEXCEPT {
+        this->destruct_(this->getStorage(), m_end);
+    }
 
-	// Returns a const iterator to the beginning of the array.
-	HX_INLINE const T* begin() const { return this->getStorage(); }
+    // Assigns the contents of another hxArray to this array.
+    // Standard except reallocation is disallowed. Expects `rhs_` to be a reference
+    // to another hxArray.
+    HX_CONSTEXPR_FN void operator=(const hxArray& rhs_) HX_NOEXCEPT {
+        this->assign(rhs_.begin(), rhs_.end());
+    }
 
-	// Returns an iterator to the beginning of the array.
-	HX_INLINE T* begin() { return this->getStorage(); }
+#if HX_CPLUSPLUS >= 201103L
+    // Swap contents with temporary.  Only works with Capacity_ == hxAllocatorDynamicCapacity
+    HX_CONSTEXPR_FN void operator=(hxArray&& rhs_) HX_NOEXCEPT {
+        this->swap(rhs_);
+    }
+#endif
 
-	// Returns a const iterator to the beginning of the array (alias for begin()).
-	HX_INLINE const T* cBegin() const { return this->getStorage(); }
+    // Copies the elements of a container with begin() and end() methods and a random
+    // access iterator. Expects `rhs_` to be a reference to a container.
+    template <typename Rhs>
+    HX_CONSTEXPR_FN void operator=(const Rhs& rhs_) {
+        this->assign(rhs_.begin(), rhs_.end());
+    }
 
-	// Returns a const iterator to the beginning of the array (alias for begin()).
-	HX_INLINE const T* cBegin() { return this->getStorage(); }
+    // Returns a const iterator to the beginning of the array.
+    HX_CONSTEXPR_FN const T* begin() const HX_NOEXCEPT { return this->getStorage(); }
 
-	// Returns a const iterator to the end of the array.
-	HX_INLINE const T* end() const { return m_end; }
+    // Returns an iterator to the beginning of the array.
+    HX_CONSTEXPR_FN T* begin() HX_NOEXCEPT { return this->getStorage(); }
 
-	// Returns an iterator to the end of the array.
-	HX_INLINE T* end() { return m_end; }
+    // Returns a const iterator to the beginning of the array (alias for begin()).
+    HX_CONSTEXPR_FN const T* cBegin() const HX_NOEXCEPT { return this->getStorage(); }
 
-	// Returns a const iterator to the end of the array (alias for end()).
-	HX_INLINE const T* cEnd() const { return m_end; }
+    // Returns a const iterator to the beginning of the array (alias for begin()).
+    HX_CONSTEXPR_FN const T* cBegin() HX_NOEXCEPT { return this->getStorage(); }
 
-	// Returns a const iterator to the end of the array (alias for end()).
-	HX_INLINE const T* cEnd() { return m_end; }
+    // Returns a const iterator to the end of the array.
+    HX_CONSTEXPR_FN const T* end() const HX_NOEXCEPT { return m_end; }
 
-	// Returns a const reference to the first element in the array.
-	HX_INLINE const T& front() const { hxAssert(size()); return *this->getStorage(); }
+    // Returns an iterator to the end of the array.
+    HX_CONSTEXPR_FN T* end() HX_NOEXCEPT { return m_end; }
 
-	// Returns a reference to the first element in the array.
-	HX_INLINE T& front() { hxAssert(size()); return *this->getStorage(); }
+    // Returns a const iterator to the end of the array (alias for end()).
+    HX_CONSTEXPR_FN const T* cEnd() const HX_NOEXCEPT { return m_end; }
 
-	// Returns a const reference to the last element in the array.
-	HX_INLINE const T& back() const { hxAssert(size()); return *(m_end - 1); }
+    // Returns a const iterator to the end of the array (alias for end()).
+    HX_CONSTEXPR_FN const T* cEnd() HX_NOEXCEPT { return m_end; }
 
-	// Returns a reference to the last element in the array.
-	HX_INLINE T& back() { hxAssert(size()); return *(m_end - 1); }
+    // Returns a const reference to the first element in the array.
+    HX_CONSTEXPR_FN const T& front() const HX_NOEXCEPT { hxAssert(size()); return *this->getStorage(); }
 
-	// Returns a const reference to the element at the specified index.
-	// Expects `index_` to be the index of the element.
-	HX_INLINE const T& operator[](size_t index_) const {
-		hxAssert(index_ < size());
-		return this->getStorage()[index_];
-	}
+    // Returns a reference to the first element in the array.
+    HX_CONSTEXPR_FN T& front() HX_NOEXCEPT { hxAssert(size()); return *this->getStorage(); }
 
-	// Returns a reference to the element at the specified index.
-	// Expects `index_` to be the index of the element.
-	HX_INLINE T& operator[](size_t index_) {
-		hxAssert(index_ < size());
-		return this->getStorage()[index_];
-	}
+    // Returns a const reference to the last element in the array.
+    HX_CONSTEXPR_FN const T& back() const HX_NOEXCEPT { hxAssert(size()); return *(m_end - 1); }
 
-	// Returns the number of elements in the array.
-	HX_INLINE size_t size() const {
-		hxAssert(!m_end == !this->getStorage());
-		return (size_t)(m_end - this->getStorage());
-	}
+    // Returns a reference to the last element in the array.
+    HX_CONSTEXPR_FN T& back() HX_NOEXCEPT { hxAssert(size()); return *(m_end - 1); }
 
-	// Reserves storage for at least the specified number of elements.
-	// Expects `size_` to be the number of elements to reserve storage for.
-	HX_INLINE void reserve(size_t size_) {
-		T* prev = this->getStorage();
-		this->reserveStorage(size_);
-		hxAssertMsg(!prev || prev == this->getStorage(), "no reallocation"); (void)prev;
-		if (m_end == hxnull) {
-			m_end = this->getStorage();
-		}
-	}
+    // Returns a const reference to the element at the specified index.
+    // Expects `index_` to be the index of the element.
+    HX_CONSTEXPR_FN const T& operator[](size_t index_) const HX_NOEXCEPT {
+        hxAssert(index_ < this->size());
+        return this->getStorage()[index_];
+    }
 
-	// Returns the capacity of the array.
-	HX_INLINE size_t capacity() const { return this->getCapacity(); }
+    // Returns a reference to the element at the specified index.
+    // Expects `index_` to be the index of the element.
+    HX_CONSTEXPR_FN T& operator[](size_t index_) HX_NOEXCEPT {
+        hxAssert(index_ < this->size());
+        return this->getStorage()[index_];
+    }
 
-	// Clears the array, destroying all elements.
-	HX_INLINE void clear() {
-		destruct_(this->getStorage(), m_end);
-		m_end = this->getStorage();
-	}
+    // Returns the number of elements in the array.
+    HX_CONSTEXPR_FN size_t size() const HX_NOEXCEPT {
+        hxAssert(!m_end == !this->getStorage());
+        return (size_t)(m_end - this->getStorage());
+    }
 
-	// Returns true if the array is empty.
-	HX_INLINE bool empty() const { return m_end == this->getStorage(); }
+    // Reserves storage for at least the specified number of elements.
+    // Expects `size_` to be the number of elements to reserve storage for.
+    HX_CONSTEXPR_FN void reserve(size_t size_) HX_NOEXCEPT {
+        T* prev = this->getStorage();
+        this->reserveStorage(size_);
+        hxAssertMsg(!prev || prev == this->getStorage(), "no reallocation"); (void)prev;
+        if (m_end == hxnull) {
+            m_end = this->getStorage();
+        }
+    }
 
-	// Resizes the array to the specified size, constructing or destroying elements as needed.
-	// Expects `size_` to be the new size of the array.
-	HX_INLINE void resize(size_t size_) {
-		reserve(size_);
-		if (size_ >= size()) {
-			this->construct_(m_end, this->getStorage() + size_);
-		}
-		else {
-			destruct_(this->getStorage() + size_, m_end);
-		}
-		m_end = this->getStorage() + size_;
-	}
+    // Returns the capacity of the array.
+    HX_CONSTEXPR_FN size_t capacity() const HX_NOEXCEPT { return this->getCapacity(); }
 
-	// Adds a copy of the specified element to the end of the array.
-	// Expects `t_` to be the element to add.
-	HX_INLINE void pushBack(const T& t_) {
-		hxAssert(size() < capacity());
-		::new (m_end++) T(t_);
-	}
+    // Clears the array, destroying all elements.
+    HX_CONSTEXPR_FN void clear() HX_NOEXCEPT {
+        destruct_(this->getStorage(), m_end);
+        m_end = this->getStorage();
+    }
 
-	// Removes the last element from the array.
-	HX_INLINE void popBack() {
-		hxAssert(size());
-		(--m_end)->~T();
-	}
+    // Returns true if the array is empty.
+    HX_CONSTEXPR_FN bool empty() const HX_NOEXCEPT { return m_end == this->getStorage(); }
 
-	// Returns a const pointer to the array's data.
-	HX_INLINE const T* data() const { return this->getStorage(); }
+    // Resizes the array to the specified size, constructing or destroying elements as needed.
+    // Expects `size_` to be the new size of the array.
+    HX_CONSTEXPR_FN void resize(size_t size_) HX_NOEXCEPT {
+        this->reserve(size_);
+        if (size_ >= this->size()) {
+            this->construct_(m_end, this->getStorage() + size_);
+        }
+        else {
+            this->destruct_(this->getStorage() + size_, m_end);
+        }
+        m_end = this->getStorage() + size_;
+    }
 
-	// Returns a pointer to the array's data.
-	HX_INLINE T* data() { return this->getStorage(); }
+    // Adds a copy of the specified element to the end of the array.
+    // Expects `t_` to be the element to add.
+    HX_CONSTEXPR_FN void pushBack(const T& t_) HX_NOEXCEPT {
+        hxAssert(this->size() < this->capacity());
+        ::new (m_end++) T(t_);
+    }
 
-	// Assigns elements from a range defined by iterators to the array.
-	// Expects `first_` to be the beginning iterator and `last_` to be the end iterator.
-	template <typename Iter>
-	HX_INLINE void assign(Iter first_, Iter last_) {
-		reserve((size_t)(last_ - first_));
-		T* it_ = this->getStorage();
-		destruct_(it_, m_end);
-		while (first_ != last_) { ::new (it_++) T(*first_++); }
-		m_end = it_;
-	}
+    // Removes the last element from the array.
+    HX_CONSTEXPR_FN void popBack() HX_NOEXCEPT {
+        hxAssert(this->size());
+        (--m_end)->~T();
+    }
 
-	// --------------------------------------------------------------------------
-	// Non-standard but useful
+    // Returns a const pointer to the array's data.
+    HX_CONSTEXPR_FN const T* data() const HX_NOEXCEPT { return this->getStorage(); }
 
-	// Constructs an array of T from an array of T2.
-	// Expects `a_` to be the array and `Sz_` to be its size.
-	template<typename T2_, size_t Sz_>
-	HX_INLINE void assign(const T2_(&a_)[Sz_]) { assign(a_ + 0, a_ + Sz_); }
+    // Returns a pointer to the array's data.
+    HX_CONSTEXPR_FN T* data() HX_NOEXCEPT { return this->getStorage(); }
 
-	// Variant of emplace_back() that returns a pointer for use with placement new.
-	HX_INLINE void* emplaceBackUnconstructed() {
-		hxAssert(size() < capacity());
-		return (void*)m_end++;
-	}
+    // Assigns elements from a range defined by iterators to the array.
+    // Expects `first_` to be the beginning iterator and `last_` to be the end iterator.
+    template <typename Iter>
+    HX_CONSTEXPR_FN void assign(Iter first_, Iter last_) {
+        this->reserve((size_t)(last_ - first_));
+        T* it_ = this->getStorage();
+        this->destruct_(it_, m_end);
+        while (first_ != last_) { ::new (it_++) T(*first_++); }
+        m_end = it_;
+    }
 
-	// Variant of erase() that moves the end element down to replace erased element.
-	// Expects `index_` to be the index of the element to erase.
-	HX_INLINE void eraseUnordered(size_t index_) {
-		hxAssert(index_ < size());
-		T* it_ = this->getStorage() + index_;
-		if (it_ != --m_end) {
-			*it_ = *m_end;
-		}
-		m_end->~T();
-	}
+    // Swap.  Only works with Capacity_ == hxAllocatorDynamicCapacity
+    HX_CONSTEXPR_FN void swap(hxArray& rhs) HX_NOEXCEPT {
+        Allocator::swap(rhs);
+        hxswap(rhs.m_end, m_end);
+    }
 
-	// Variant of erase() that moves the end element down to replace the erased element.
-	// Expects `it_` to be a pointer to the element to erase.
-	HX_INLINE void eraseUnordered(T* it_) {
-		hxAssert((size_t)(it_ - this->getStorage()) < size());
-		if (it_ != --m_end) {
-			*it_ = *m_end;
-		}
-		m_end->~T();
-	}
+    // --------------------------------------------------------------------------
+    // Non-standard but useful
 
-	// Returns true when the array is full (size equals capacity).
-	HX_INLINE bool full() {
-		return size() == capacity();
-	}
+    // Constructs an array of T from an array of T2.
+    // Expects `a_` to be the array and `Sz_` to be its size.
+    template<typename T2_, size_t Sz_>
+    HX_CONSTEXPR_FN void assign(const T2_(&a_)[Sz_]) { this->assign(a_ + 0, a_ + Sz_); }
+
+    // Variant of emplace_back() that returns a pointer for use with placement new.
+    HX_CONSTEXPR_FN void* emplaceBackUnconstructed() HX_NOEXCEPT {
+        hxAssert(this->size() < this->capacity());
+        return (void*)m_end++;
+    }
+
+    // Variant of erase() that moves the end element down to replace erased element.
+    // Expects `index_` to be the index of the element to erase.
+    HX_CONSTEXPR_FN void eraseUnordered(size_t index_) HX_NOEXCEPT {
+        hxAssert(index_ < this->size());
+        T* it_ = this->getStorage() + index_;
+        if (it_ != --m_end) {
+            *it_ = *m_end;
+        }
+        m_end->~T();
+    }
+
+    // Variant of erase() that moves the end element down to replace the erased element.
+    // Expects `it_` to be a pointer to the element to erase.
+    HX_CONSTEXPR_FN void eraseUnordered(T* it_) HX_NOEXCEPT {
+        hxAssert((size_t)(it_ - this->getStorage()) < size());
+        if (it_ != --m_end) {
+            *it_ = *m_end;
+        }
+        m_end->~T();
+    }
+
+    // Returns true when the array is full (size equals capacity).
+    HX_CONSTEXPR_FN bool full() HX_NOEXCEPT {
+        return this->size() == this->capacity();
+    }
 
 private:
-	// Constructs elements in the range [first_, last_]. Expects `first_` and `last_`
-	// to be pointers defining the range.
-	HX_INLINE void construct_(T* first_, T* last_) {
-		while (first_ != last_) {
-			::new (first_++) T;
-		}
-	}
+    // Constructs elements in the range [first_, last_]. Expects `first_` and `last_`
+    // to be pointers defining the range.
+    HX_CONSTEXPR_FN void construct_(T* first_, T* last_) HX_NOEXCEPT {
+        while (first_ != last_) {
+            ::new (first_++) T;
+        }
+    }
 
-	// Destroys elements in the range [first_, last_]. Expects `first_` and `last_`
-	// to be pointers defining the range.
-	HX_INLINE void destruct_(T* first_, T* last_) {
-		while (first_ != last_) {
-			first_++->~T();
-		}
-	}
-	T* m_end;
+    // Destroys elements in the range [first_, last_]. Expects `first_` and `last_`
+    // to be pointers defining the range.
+    HX_CONSTEXPR_FN void destruct_(T* first_, T* last_) HX_NOEXCEPT {
+        while (first_ != last_) {
+            first_++->~T();
+        }
+    }
+    T* m_end;
 };

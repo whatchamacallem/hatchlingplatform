@@ -40,7 +40,7 @@ uint32_t hxKeyEqual(hxConsoleHashTableKey_ lhs_, hxConsoleHashTableKey_ rhs_)
 class hxConsoleHashTableNode_ : public hxHashTableMapNode<hxConsoleHashTableKey_, hxCommand_*> {
 public:
 	typedef hxHashTableMapNode<hxConsoleHashTableKey_, hxCommand_*> Base;
-	HX_INLINE hxConsoleHashTableNode_(hxConsoleHashTableKey_ key_)
+	inline hxConsoleHashTableNode_(hxConsoleHashTableKey_ key_)
 			: Base(key_, hxnull) {
 		if ((HX_RELEASE) < 1) {
 			const char* k = key_.str_;
@@ -51,11 +51,11 @@ public:
 		}
 	}
 
-	HX_INLINE ~hxConsoleHashTableNode_() { hxFree(value()); }
+	inline ~hxConsoleHashTableNode_() { hxFree(value()); }
 };
 
 struct hxConsoleLess_ {
-	HX_INLINE bool operator()(const hxConsoleHashTableNode_* lhs,
+	inline bool operator()(const hxConsoleHashTableNode_* lhs,
 			const hxConsoleHashTableNode_* rhs) const {
 		return ::strcasecmp(lhs->key().str_, rhs->key().str_) < 0;
 	}
@@ -95,11 +95,11 @@ bool hxConsoleExecLine(const char* command) {
 	}
 
 	// Skip comments and blank lines
-	if (*pos == '\0' || *pos == '#') {
+	if (hxIsEndOfline_(pos)) {
 		return true;
 	}
 
-	hxConsoleHashTableNode_* node = hxConsoleCommands_().find(hxConsoleHashTableKey_(pos));
+	const hxConsoleHashTableNode_* node = hxConsoleCommands_().find(hxConsoleHashTableKey_(pos));
 	if (!node) {
 		hxWarn("command not found: %s", command);
 		return false;
@@ -111,7 +111,7 @@ bool hxConsoleExecLine(const char* command) {
 	}
 
 	bool result = node->value()->execute_(pos); // skips leading whitespace.
-	hxWarnCheck(result, "cannot execute_: %s", command);
+	hxWarnCheck(result, "command failed: %s", command);
 	return result;
 }
 
@@ -164,19 +164,21 @@ void hxConsoleHelp() {
 
 #if (HX_RELEASE) < 2 && !HX_USE_WASM
 
-static void hxConsolePeek(size_t address, uint32_t bytes) {
+static void hxConsolePeek(uintptr_t address, uint32_t bytes) {
 	hxHexDump((const void*)address, bytes, 0);
 }
 
-static void hxConsolePoke(size_t address, uint8_t bytes, uint32_t littleEndianWord) {
+// Writes bytes from word in little endian format (LSB first).  word is repeated
+// every 8 bytes.
+static void hxConsolePoke(uintptr_t address, uint32_t bytes, uint64_t word) {
 	volatile uint8_t* t = (uint8_t*)address;
 	while (bytes--) {
-		*t++ = (uint8_t)littleEndianWord;
-		littleEndianWord >>= 8;
+		*t++ = (uint8_t)word;
+		word = (word >> 8) | (word << 56);
 	}
 }
 
-static void hxConsoleHexDump(size_t address, uint32_t bytes) {
+static void hxConsoleHexDump(uintptr_t address, size_t bytes) {
 	hxHexDump((const void*)address, bytes, 1);
 }
 

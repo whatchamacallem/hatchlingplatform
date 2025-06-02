@@ -19,50 +19,58 @@ namespace testing {
 // Base class for tests required by TEST_F.
 class Test {
 public:
-	// Virtual method to run the test case. Must be overridden by derived classes.
-	virtual void run_() = 0;
+	// User overrides for fixtures.
+	virtual ~Test() { };
+	virtual void SetUp() {}
+	virtual void TearDown() {};
 
-	// Virtual destructor to ensure proper cleanup of derived classes.
-	virtual ~Test() {}
+	// Provided and used by the TEST_F macro.
+	virtual void runCode_() = 0;
+
+	// Used by the TEST_F macro.
+	void run_() {
+		SetUp();
+		runCode_();
+		TearDown();
+	}
 };
 
 // Initializes Google Test with command-line arguments. No-op in this implementation.
-HX_INLINE void InitGoogleTest(int *argc_, char **argv_) { (void)argc_; (void)argv_; }
+HX_CONSTEXPR_FN void InitGoogleTest(int *argc_, char **argv_) { (void)argc_; (void)argv_; }
 
 // Overloaded version of InitGoogleTest with no arguments. No-op in this implementation.
-HX_INLINE void InitGoogleTest() { }
+HX_CONSTEXPR_FN void InitGoogleTest() { }
 
 } // namespace testing
 
 // TEST. Google Test reimplementation.
 // Defines a test case with a suite name and case name.
 #define TEST(suiteName_, caseName_) \
-	struct HX_CONCATENATE(suiteName_, caseName_) : hxTestCaseBase_ { \
-		struct hxTestCaseExecutor_ : testing::Test { virtual void run_() HX_OVERRIDE; }; \
-		HX_CONCATENATE(suiteName_, caseName_)() { hxTestSuiteExecutor_::singleton_().addTest_(this); } \
-		virtual void run_() HX_OVERRIDE { hxTestCaseExecutor_ executor_; executor_.run_(); } \
+	struct HX_CONCATENATE_3(hxTest_, suiteName_, caseName_) : public hxTestCaseBase_ { \
+		HX_CONCATENATE_3(hxTest_, suiteName_, caseName_)() { hxTestSuiteExecutor_::singleton_().addTest_(this); } \
+		virtual void run_() HX_OVERRIDE; \
 		virtual const char* suite_() HX_OVERRIDE { return #suiteName_; } \
 		virtual const char* case_() HX_OVERRIDE { return #caseName_; } \
 		virtual const char* file_() HX_OVERRIDE { return __FILE__; } \
 		virtual size_t line_() HX_OVERRIDE { return __LINE__; } \
 	}; \
-	static HX_CONCATENATE(suiteName_, caseName_) HX_CONCATENATE(s_hxTest, caseName_); \
-	void HX_CONCATENATE(suiteName_, caseName_)::hxTestCaseExecutor_::run_()
+	static HX_CONCATENATE_3(hxTest_, suiteName_, caseName_) HX_CONCATENATE_3(s_hxTest_, suiteName_, caseName_); \
+	void HX_CONCATENATE_3(hxTest_, suiteName_, caseName_)::run_()
 
 // TEST_F. Google Test reimplementation for fixture-based tests.
 // Defines a test case where the suite is a subclass of testing::Test.
 #define TEST_F(suiteName_, caseName_) \
-	struct HX_CONCATENATE(suiteName_, caseName_) : hxTestCaseBase_ { \
-		struct hxTestCaseExecutor_ : suiteName_ { virtual void run_() HX_OVERRIDE; }; \
-		HX_CONCATENATE(suiteName_, caseName_)() { hxTestSuiteExecutor_::singleton_().addTest_(this); } \
+	struct HX_CONCATENATE_3(hxTest_, suiteName_, caseName_) : public hxTestCaseBase_ { \
+		struct hxTestCaseExecutor_ : suiteName_ { virtual void runCode_() HX_OVERRIDE; }; \
+		HX_CONCATENATE_3(hxTest_, suiteName_, caseName_)() { hxTestSuiteExecutor_::singleton_().addTest_(this); } \
 		virtual void run_() HX_OVERRIDE { hxTestCaseExecutor_ executor_; executor_.run_(); } \
 		virtual const char* suite_() HX_OVERRIDE { return #suiteName_; } \
 		virtual const char* case_() HX_OVERRIDE { return #caseName_; } \
 		virtual const char* file_() HX_OVERRIDE { return __FILE__; } \
 		virtual size_t line_() HX_OVERRIDE { return __LINE__; } \
 	}; \
-	static HX_CONCATENATE(suiteName_, caseName_) HX_CONCATENATE(s_hxTest, caseName_); \
-	void HX_CONCATENATE(suiteName_, caseName_)::hxTestCaseExecutor_::run_()
+	static HX_CONCATENATE_3(hxTest_, suiteName_, caseName_) HX_CONCATENATE_3(s_hxTest, suiteName_, caseName_); \
+	void HX_CONCATENATE_3(hxTest_, suiteName_, caseName_)::hxTestCaseExecutor_::runCode_()
 
 // RUN_ALL_TESTS. Executes all registered test cases.
 #define RUN_ALL_TESTS() hxTestSuiteExecutor_::singleton_().executeAllTests_()
@@ -108,12 +116,12 @@ public:
 	// Constructor to initialize the random number generator with a seed.
 	// Parameters:
 	// - seed_: Initial seed value for the random number generator.
-	HX_INLINE hxTestRandom(uint32_t seed_ = 1u) : m_seed(seed_) { }
+	HX_CONSTEXPR_FN hxTestRandom(uint32_t seed_ = 1u) : m_seed(seed_) { }
 
 	// Generates the next random number in the sequence.
 	// Returns:
 	// - The next random number as a 32-bit unsigned integer.
-	HX_INLINE uint32_t operator()() { return (m_seed = 1664525u * m_seed + 1013904223u); }
+	HX_CONSTEXPR_FN uint32_t operator()() { return (m_seed = 1664525u * m_seed + 1013904223u); }
 
 	// Current seed value used for generating random numbers.
 	uint32_t m_seed;

@@ -12,11 +12,11 @@
 template<typename Node_, uint32_t HashBits_>
 class hxHashTableInternalAllocator_ : public hxAllocator<Node_*, 1u << HashBits_> {
 public:
-	HX_INLINE hxHashTableInternalAllocator_() {
+	HX_CONSTEXPR_FN hxHashTableInternalAllocator_() {
 		::memset(this->getStorage(), 0x00, sizeof(Node_*) * this->getCapacity());
 	}
-	HX_INLINE uint32_t getHashBits() const { return HashBits_; }
-	HX_INLINE void setHashBits(uint32_t bits) {
+	HX_CONSTEXPR_FN uint32_t getHashBits() const { return HashBits_; }
+	HX_CONSTEXPR_FN void setHashBits(uint32_t bits) {
 		hxAssertMsg(bits == HashBits_, "resizing static hash table"); (void)bits;
 	}
 };
@@ -25,14 +25,14 @@ template<typename Node_>
 class hxHashTableInternalAllocator_<Node_, hxAllocatorDynamicCapacity>
 	: public hxAllocator<Node_*, hxAllocatorDynamicCapacity> {
 public:
-	HX_INLINE hxHashTableInternalAllocator_() : m_hashBits_(0u) { }
+	HX_CONSTEXPR_FN hxHashTableInternalAllocator_() : m_hashBits_(0u) { }
 
-	HX_INLINE uint32_t getHashBits() const {
+	HX_CONSTEXPR_FN uint32_t getHashBits() const {
 		hxAssertMsg(m_hashBits_ != 0u, "hash table unallocated");
 		return m_hashBits_;
 	}
 
-	HX_INLINE void setHashBits(uint32_t bits_) {
+	HX_CONSTEXPR_FN void setHashBits(uint32_t bits_) {
 		hxAssertMsg(m_hashBits_ == 0u || bits_ == m_hashBits_, "resizing dynamic hash table");
 		if (m_hashBits_ == 0u) {
 			hxAssertMsg(bits_ > 0u && bits_ <= 31u, "hash bits must be [1..31]");

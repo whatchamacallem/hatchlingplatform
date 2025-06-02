@@ -21,7 +21,7 @@ fi
 
 set -o errexit
 
-emcc -Iinclude -O2 -c src/*.c
+emcc -Iinclude -O2 -c src/*.c test/*.c
 emcc -Iinclude -O2 -fno-exceptions *.o */*.cpp -o index.html
 
 python3 -m http.server 9876

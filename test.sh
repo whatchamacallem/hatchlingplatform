@@ -24,15 +24,15 @@ echo clang UBSan -O$I "$@"...
 # compile C
 clang -Iinclude -O$I -g $WARNINGS -pedantic-errors -DHX_RELEASE=$I "$@" \
 	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address \
-	-std=c99 -c src/*.c
-# generate pch. clang does this automatically when a c++ header file is the target. 
+	-std=c99 -c src/*.c test/*.c
+# generate pch. clang does this automatically when a c++ header file is the target.
 clang++ -Iinclude -O$I -g -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
-	-DHX_USE_CPP11_THREADS=$I -DHX_USE_CPP11_TIME=$I "$@" -pthread -std=c++14 \
+	-DHX_USE_CPP_THREADS=$I -DHX_USE_CHRONO=$I "$@" -pthread -std=c++14 \
 	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address \
 	-fno-exceptions include/hx/hatchlingPch.hpp -o hatchlingPch.hpp.pch
 # compile C++ and link
 clang++ -Iinclude -O$I -g -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
-	-DHX_USE_CPP11_THREADS=$I -DHX_USE_CPP11_TIME=$I "$@" -pthread -std=c++14 \
+	-DHX_USE_CPP_THREADS=$I -DHX_USE_CHRONO=$I "$@" -pthread -std=c++14 \
 	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address -lubsan \
 	-fno-exceptions -include-pch hatchlingPch.hpp.pch */*.cpp *.o -lpthread -lstdc++ -o hxtest
 ./hxtest | grep '\[  PASSED  \]' --color || ./hxtest
@@ -46,13 +46,13 @@ done
 # Test gcc with both -std=c++98 and -std=c++14.  Not using -pedantic-errors with
 # c++98 as "anonymous variadic macros were introduced in c++11."  (This code base
 # and gcc's defaults cheat slightly by pretending c99 was available in c++98.)
-# -Wno-unused-local-typedefs is only for the c++98 version of static_assert. 
+# -Wno-unused-local-typedefs is only for the c++98 version of static_assert.
 gcc --version | grep gcc
 for I in 0 1 2 3; do
 echo gcc c++98 -O$I "$@"...
 # -std=c99
 gcc -Iinclude -O$I -g -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" \
-	-std=c99 -m32 -c src/*.c
+	-std=c99 -m32 -c src/*.c test/*.c
 # -std=c++98
 gcc -Iinclude -O$I -g $WARNINGS -DHX_RELEASE=$I "$@" -std=c++98 -fno-exceptions \
 	-fno-rtti -Wno-unused-local-typedefs */*.cpp *.o -lstdc++ -m32 -o hxtest

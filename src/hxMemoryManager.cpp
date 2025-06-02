@@ -12,7 +12,7 @@
 
 // All pathways are threadsafe by default. In theory locking could be removed
 // if threads avoided sharing allocators. But I don't want to scare anyone.
-#if HX_USE_CPP11_THREADS
+#if HX_USE_CPP_THREADS
 #include <mutex>
 static std::mutex s_hxMemoryManagerMutex;
 #define HX_MEMORY_MANAGER_LOCK_() std::unique_lock<std::mutex> hxMutexLock_(s_hxMemoryManagerMutex)
@@ -25,7 +25,7 @@ HX_REGISTER_FILENAME_HASH
 // hxMallocChecked.  Always check malloc and halt on failure.  This is extremely
 // important with hardware where 0 is a valid address and can be written to with
 // disastrous results.
-static HX_INLINE void* hxMallocChecked(size_t size) {
+static HX_CONSTEXPR_FN void* hxMallocChecked(size_t size) {
 	void* t = ::malloc(size);
 	hxAssertRelease(t, "malloc fail: %u bytes\n", (unsigned int)size);
 #if (HX_RELEASE) >= 3
@@ -51,8 +51,8 @@ class hxMemoryManager* s_hxMemoryManager = hxnull;
 #if HX_USE_MEMORY_SCRATCH
 template<size_t Bytes>
 struct hxScratchpad {
-	HX_INLINE void* data() { return &*m_storage; }
-	HX_INLINE bool contains(void* ptr) {
+	HX_CONSTEXPR_FN void* data() { return &*m_storage; }
+	HX_CONSTEXPR_FN bool contains(void* ptr) {
 		return ptr >= m_storage && ptr < (m_storage + (Bytes / sizeof(uintptr_t)));
 	}
 	uintptr_t m_storage[Bytes / sizeof(uintptr_t)]; // C++98 hack to align to pointer size.
@@ -90,11 +90,11 @@ struct hxMemoryAllocationHeader {
 class hxMemoryAllocatorBase {
 public:
 	hxMemoryAllocatorBase() : m_label(hxnull) { }
-	void* allocate(size_t size, uintptr_t alignmentMask) {
+	void* allocate(size_t size, uintptr_t alignment) {
 		if (size == 0u) {
 			size = 1u; // Enforce unique pointer values.
 		}
-		return onAlloc(size, alignmentMask);
+		return onAlloc(size, alignment);
 	}
 
 	virtual void beginAllocationScope(hxMemoryManagerScope* scope, hxMemoryManagerId newId) = 0;
@@ -105,10 +105,10 @@ public:
 	const char* label() const { return m_label; }
 
 protected:
-	virtual void* onAlloc(size_t size, uintptr_t alignmentMask) = 0;
+	virtual void* onAlloc(size_t size, uintptr_t alignment) = 0;
 	const char* m_label;
 private:
-	void operator=(const hxMemoryAllocatorBase&); // = delete
+	void operator=(const hxMemoryAllocatorBase&) HX_DELETE_FN;
 };
 
 // ----------------------------------------------------------------------------
@@ -134,7 +134,7 @@ public:
 	virtual uintptr_t getBytesAllocated(hxMemoryManagerId id) const HX_OVERRIDE { (void)id; return m_bytesAllocated; }
 	virtual uintptr_t getHighWater(hxMemoryManagerId id) HX_OVERRIDE { (void)id; return m_highWater; }
 
-	virtual void* onAlloc(size_t size, uintptr_t alignmentMask) HX_OVERRIDE {
+	virtual void* onAlloc(size_t size, uintptr_t alignment) HX_OVERRIDE {
 		hxAssert(size != 0u); // hxMemoryAllocatorBase::allocate
 		++m_allocationCount;
 		m_bytesAllocated += size; // ignore overhead
@@ -142,14 +142,14 @@ public:
 			m_highWater = m_bytesAllocated;
 		}
 
-		// hxMemoryAllocationHeader has an HX_ALIGNMENT_MASK alignment mask as well.
-		if (alignmentMask < HX_ALIGNMENT_MASK) {
-			alignmentMask = HX_ALIGNMENT_MASK;
+		// hxMemoryAllocationHeader has an HX_ALIGNMENT alignment mask as well.
+		if (alignment < HX_ALIGNMENT) {
+			alignment = HX_ALIGNMENT;
 		}
 
 		// Place header immediately before aligned allocation.
-		uintptr_t actual = (uintptr_t)hxMallocChecked(size + sizeof(hxMemoryAllocationHeader) + alignmentMask);
-		uintptr_t aligned = (actual + sizeof(hxMemoryAllocationHeader) + alignmentMask) & ~alignmentMask;
+		uintptr_t actual = (uintptr_t)hxMallocChecked(size + sizeof(hxMemoryAllocationHeader) + alignment - (uintptr_t)1);
+		uintptr_t aligned = (actual + sizeof(hxMemoryAllocationHeader) + alignment) & ~(alignment - (uintptr_t)1);
 		hxMemoryAllocationHeader& hdr = ((hxMemoryAllocationHeader*)aligned)[-1];
 		hdr.size = size;
 		hdr.actual = actual;
@@ -229,8 +229,8 @@ public:
 		return t;
 	}
 
-	void* allocateNonVirtual(size_t size, uintptr_t alignmentMask) {
-		uintptr_t aligned = (m_current + alignmentMask) & ~alignmentMask;
+	void* allocateNonVirtual(size_t size, uintptr_t alignment) {
+		uintptr_t aligned = (m_current + (alignment - (uintptr_t)1)) & ~(alignment - (uintptr_t)1);
 		if ((aligned + size) > m_end) {
 			return hxnull;
 		}
@@ -250,8 +250,8 @@ public:
 	}
 
 protected:
-	virtual void* onAlloc(size_t size, uintptr_t alignmentMask) HX_OVERRIDE {
-		return allocateNonVirtual(size, alignmentMask);
+	virtual void* onAlloc(size_t size, uintptr_t alignment) HX_OVERRIDE {
+		return allocateNonVirtual(size, alignment);
 	}
 
 protected:
@@ -426,12 +426,12 @@ public:
 		return section.m_current ? (section.m_current - section.m_begin) : 0u;
 	}
 
-	virtual void* onAlloc(size_t size, uintptr_t alignmentMask) HX_OVERRIDE {
+	virtual void* onAlloc(size_t size, uintptr_t alignment) HX_OVERRIDE {
 		hxAssert(m_currentSection < c_nSections);
 		Section& section = m_sections[m_currentSection];
 		hxAssertMsg(section.m_current != 0u, "no open scope for scratchpad allocator %d",
 			(int)m_currentSection);
-		uintptr_t aligned = (section.m_current + alignmentMask) & ~alignmentMask;
+		uintptr_t aligned = (section.m_current + (alignment - (uintptr_t)1)) & ~(alignment - (uintptr_t)1);
 
 		if ((aligned + size) > section.m_end) {
 			hxWarn("%s overflow allocating %d bytes in section %d with %d bytes available",
@@ -478,8 +478,7 @@ public:
 		return *m_memoryAllocators[id];
 	}
 
-	void* allocate(size_t size);
-	void* AllocateExtended(size_t size, hxMemoryManagerId id, uintptr_t alignmentMask);
+	void* allocate(size_t size, hxMemoryManagerId id, uintptr_t alignment);
 	void free(void* ptr);
 
 private:
@@ -573,33 +572,26 @@ void hxMemoryManager::endAllocationScope(hxMemoryManagerScope* scope, hxMemoryMa
 	s_hxCurrentMemoryAllocator = previousId;
 }
 
-void* hxMemoryManager::allocate(size_t size) {
-	HX_MEMORY_MANAGER_LOCK_();
-	hxAssert(s_hxCurrentMemoryAllocator >= 0 && s_hxCurrentMemoryAllocator < hxMemoryManagerId_MAX);
-	hxAssert(m_memoryAllocators[s_hxCurrentMemoryAllocator]->label());
-	void* ptr = m_memoryAllocators[s_hxCurrentMemoryAllocator]->allocate(size, HX_ALIGNMENT_MASK);
-	hxAssertMsg(((uintptr_t)ptr & HX_ALIGNMENT_MASK) == 0, "alignment wrong %x, %s",
-		(unsigned int)(uintptr_t)ptr, m_memoryAllocators[s_hxCurrentMemoryAllocator]->label());
-	if (ptr) { return ptr; }
-	hxWarn("%s is overflowing to heap, size %d", m_memoryAllocators[s_hxCurrentMemoryAllocator]->label(), (int)size);
-	return m_memoryAllocatorHeap.allocate(size, HX_ALIGNMENT_MASK);
-}
-
-void* hxMemoryManager::AllocateExtended(size_t size, hxMemoryManagerId id, uintptr_t alignmentMask) {
+void* hxMemoryManager::allocate(size_t size, hxMemoryManagerId id, uintptr_t alignment) {
 	if (id == hxMemoryManagerId_Current) {
 		id = s_hxCurrentMemoryAllocator;
 	}
 
-	hxAssert(((alignmentMask + 1) & (alignmentMask)) == 0u); // alignmentMask is ((1 << bits) - 1).
-	hxAssert((unsigned int)id < (unsigned int)hxMemoryManagerId_MAX);
+	// code assumes that alignment-1 is a valid mask of unused bits.
+	if (alignment == 0) {
+		alignment = 1u;
+	}
+
+	hxAssertMsg(((alignment - 1) & (alignment)) == 0u, "alignment %d is not power of 2", alignment);
+	hxAssertMsg((unsigned int)id < (unsigned int)hxMemoryManagerId_MAX, "bad allocator: %ud", id);
 
 	HX_MEMORY_MANAGER_LOCK_();
-	void* ptr = m_memoryAllocators[id]->allocate(size, alignmentMask);
-	hxAssertMsg(((uintptr_t)ptr & alignmentMask) == 0, "alignment wrong %x from %d",
+	void* ptr = m_memoryAllocators[id]->allocate(size, alignment);
+	hxAssertMsg(((uintptr_t)ptr & (alignment - (uintptr_t)1)) == 0, "alignment wrong %x from %d",
 		(unsigned int)(uintptr_t)ptr, (int)id);
 	if (ptr) { return ptr; }
 	hxWarn("%s is overflowing to heap, size %d", m_memoryAllocators[id]->label(), (int)size);
-	return m_memoryAllocatorHeap.allocate(size, alignmentMask);
+	return m_memoryAllocatorHeap.allocate(size, alignment);
 }
 
 void hxMemoryManager::free(void* ptr) {
@@ -723,7 +715,7 @@ void* hxMalloc(size_t size) {
 		return hxMallocChecked(size);
 	}
 #endif
-	void* ptr = s_hxMemoryManager->allocate(size);
+	void* ptr = s_hxMemoryManager->allocate(size, hxMemoryManagerId_Current, HX_ALIGNMENT);
 	if ((HX_RELEASE) < 1) {
 		::memset(ptr, 0xab, size);
 	}
@@ -731,16 +723,16 @@ void* hxMalloc(size_t size) {
 }
 
 extern "C"
-void* hxMallocExt(size_t size, hxMemoryManagerId id, uintptr_t alignmentMask) {
+void* hxMallocExt(size_t size, hxMemoryManagerId id, uintptr_t alignment) {
 	hxInit();
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
 	if (!s_hxMemoryManager) {
-		hxAssert(alignmentMask <= HX_ALIGNMENT_MASK); // No support for alignment when disabled.
+		hxAssert(alignment <= HX_ALIGNMENT); // No support for alignment when disabled.
 		return hxMallocChecked(size);
 	}
 #endif
-	void* ptr = s_hxMemoryManager->AllocateExtended(size, (hxMemoryManagerId)id, alignmentMask);
+	void* ptr = s_hxMemoryManager->allocate(size, (hxMemoryManagerId)id, alignment);
 	if ((HX_RELEASE) < 1) {
 		::memset(ptr, 0xab, size);
 	}
@@ -822,9 +814,9 @@ void* hxMalloc(size_t size) {
 }
 
 extern "C"
-void* hxMallocExt(size_t size, hxMemoryManagerId id, uintptr_t alignmentMask) {
+void* hxMallocExt(size_t size, hxMemoryManagerId id, uintptr_t alignment) {
 	(void)id;
-	hxAssert(alignmentMask <= HX_ALIGNMENT_MASK); (void)alignmentMask; // No support for alignment when disabled.
+	hxAssert(alignment <= HX_ALIGNMENT); (void)alignment; // No support for alignment when disabled.
 	return hxMallocChecked(size);
 }
 

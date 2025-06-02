@@ -15,6 +15,7 @@
         "hxmax",
         "hxmin",
         "hxnull",
+        "hxswap",
         "hxtest",
         "Iinclude",
         "lpthread",
@@ -42,5 +43,8 @@
         "Wwrite",
         "Xclang"
     ],
-    "editor.cursorBlinking": "solid"
+    "editor.cursorBlinking": "solid",
+    "files.associations": {
+        "hatchling.h": "c"
+    }
 }

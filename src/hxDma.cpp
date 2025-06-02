@@ -3,7 +3,7 @@
 #include <hx/hxDma.hpp>
 #include <hx/hxArray.hpp>
 #include <hx/hxProfiler.hpp>
-#if HX_USE_CPP11_THREADS
+#if HX_USE_CPP_THREADS
 #include <mutex>
 #endif
 
@@ -24,7 +24,7 @@ struct hxDmaDebugRecord_ {
 hxArray<hxDmaDebugRecord_, HX_DEBUG_DMA_RECORDS> s_hxDmaDebugRecords;
 size_t s_hxDmaBarrierCounter = 0u;
 
-#if HX_USE_CPP11_THREADS
+#if HX_USE_CPP_THREADS
 std::mutex s_hxDmaDebugMutex;
 #define HX_DMA_DEBUG_MUTEX_LOCK std::lock_guard<std::mutex> debugGuard_(s_hxDmaDebugMutex)
 #else
