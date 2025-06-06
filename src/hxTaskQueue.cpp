@@ -49,8 +49,7 @@ hxTaskQueue::~hxTaskQueue() {
 }
 
 void hxTaskQueue::enqueue(hxTask* task) {
-	hxAssert(task);
-	task->setExclusiveOwner(this);
+	task->setTaskQueue(this);
 
 #if HX_USE_CPP_THREADS
 	if (m_threadPoolSize > 0) {
@@ -81,7 +80,7 @@ void hxTaskQueue::waitForAll() {
 			hxTask* task = m_nextTask;
 			m_nextTask = task->getNextTask();
 			task->setNextTask(hxnull);
-			task->setExclusiveOwner(hxnull);
+			task->setTaskQueue(hxnull);
 
 			// Last time this object is touched.  It may delete or re-enqueue itself, we
 			// don't care.
@@ -138,7 +137,7 @@ void hxTaskQueue::executorThread_(hxTaskQueue* q, ExecutorMode_ mode) {
 		}
 
 		task->setNextTask(hxnull);
-		task->setExclusiveOwner(hxnull);
+		task->setTaskQueue(hxnull);
 		hxProfileScope(task->getLabel());
 		// Last time this object is touched.  It may delete or re-enqueue itself.
 		task->execute(q);

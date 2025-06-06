@@ -12,7 +12,6 @@
 
 // A partial Google Test reimplementation.  Use -DHX_TEST_MAX_CASES to provide
 // enough room for all tests.
-// Use hxTestSuiteExecutor_::setFilterStringLiteral() to filter tests.
 
 namespace testing {
 
@@ -21,18 +20,18 @@ class Test {
 public:
 	// User overrides for fixtures.
 	virtual ~Test() { };
-	virtual void SetUp() {}
-	virtual void TearDown() {};
+	virtual void SetUp() { }
+	virtual void TearDown() { };
 
-	// Provided and used by the TEST_F macro.
-	virtual void runCode_() = 0;
-
-	// Used by the TEST_F macro.
+	// Standard
 	void run_() {
 		SetUp();
 		runCode_();
 		TearDown();
 	}
+
+	// Provided and used by the TEST_F macro.
+	virtual void runCode_() = 0;
 };
 
 // Initializes Google Test with command-line arguments. No-op in this implementation.
@@ -61,7 +60,7 @@ HX_CONSTEXPR_FN void InitGoogleTest() { }
 // Defines a test case where the suite is a subclass of testing::Test.
 #define TEST_F(suiteName_, caseName_) \
 	struct HX_CONCATENATE_3(hxTest_, suiteName_, caseName_) : public hxTestCaseBase_ { \
-		struct hxTestCaseExecutor_ : suiteName_ { virtual void runCode_() HX_OVERRIDE; }; \
+		struct hxTestCaseExecutor_ : public suiteName_ { virtual void runCode_() HX_OVERRIDE; }; \
 		HX_CONCATENATE_3(hxTest_, suiteName_, caseName_)() { hxTestSuiteExecutor_::singleton_().addTest_(this); } \
 		virtual void run_() HX_OVERRIDE { hxTestCaseExecutor_ executor_; executor_.run_(); } \
 		virtual const char* suite_() HX_OVERRIDE { return #suiteName_; } \

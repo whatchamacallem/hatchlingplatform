@@ -150,7 +150,7 @@ HX_NORETURN void hxAssertHandler(uint32_t file_, size_t line_) HX_NOEXCEPT;
 #endif
 
 // Use hxInit() instead. It checks g_hxIsInit.
-void hxInitInternal(void) HX_NOEXCEPT;
+void hxInitInternal(void);
 
 // Set to true by hxInitInternal().
 extern int g_hxIsInit;
@@ -159,7 +159,7 @@ extern int g_hxIsInit;
 // Terminates service.  Releases all resources acquired by the platform and
 // confirms all memory allocations have been released. HX_RELEASE < 3.
 // Does not clear g_hxIsInit, shutdown is final.
-void hxShutdown(void) HX_NOEXCEPT;
+void hxShutdown(void);
 #endif
 
 // Enters formatted messages in the system log.
@@ -184,24 +184,24 @@ void hxLogHandlerV(enum hxLogLevel level_, const char* format_, va_list args_) H
 // - address_: Pointer to the start of the byte array.
 // - bytes_: The number of bytes to print.
 // - pretty_: Non-zero to include additional formatting information.
-void hxHexDump(const void* address_, size_t bytes_, int pretty_) HX_NOEXCEPT;
+void hxHexDump(const void* address_, size_t bytes_, int pretty_);
 
 // Prints an array of floating point values.
 // Parameters:
 // - address_: Pointer to the start of the float array.
 // - floats_: The number of floats to print.
-void hxFloatDump(const float* address_, size_t floats_) HX_NOEXCEPT;
+void hxFloatDump(const float* address_, size_t floats_);
 
 // Returns a pointer to those characters following the last '\' or '/' character
 // or path if those are not present.
 // Parameters:
 // - path_: The file path as a null-terminated string.
-const char* hxBasename(const char* path_) HX_NOEXCEPT;
+const char* hxBasename(const char* path_);
 
 // Calculates a string hash at runtime that is the same as hxStringLiteralHash.
 // Parameters:
 // - string_: The null-terminated string to hash.
-uint32_t hxStringLiteralHashDebug(const char* string_) HX_NOEXCEPT;
+uint32_t hxStringLiteralHashDebug(const char* string_);
 
 #if (HX_RELEASE) < 1
 // Prints file name hashes registered with HX_REGISTER_FILENAME_HASH. Use after main().
@@ -265,5 +265,5 @@ HX_CONSTEXPR_FN void hxswap(T_& x_, T_& y_) {
 	 char t_[sizeof(x_) == sizeof(y_) ? (int)sizeof(x_) : -1]; \
 	memcpy((t_), &(y_), sizeof(x_)); \
 	memcpy(&(y_), &(x_), sizeof(x_)); \
-	memcpy(&(x_), (t_), sizeof(x_)); } while(false)
+	memcpy(&(x_), (t_), sizeof(x_)); } while(0)
 #endif

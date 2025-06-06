@@ -5,6 +5,10 @@
 
 #include <limits.h>
 
+#if HX_CPLUSPLUS >= 201103L
+#include <utility>
+#endif
+
 HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------
@@ -259,3 +263,29 @@ TEST_F(hxArrayTest, Assignment) {
 	ASSERT_TRUE(CheckTotals(6));
 }
 
+#if HX_CPLUSPLUS >= 201103L
+#include <utility>
+TEST_F(hxArrayTest, InitializerList) {
+	hxArray<int, 2> x = { 2, 7 };
+	ASSERT_EQ(x[1], 7);
+
+	hxArray<int> y { 12, 17 };
+	ASSERT_EQ(y[1], 17);
+}
+
+TEST_F(hxArrayTest, Temporaries) {
+	// test r-value dynamically allocated temporaries
+	{
+		hxMemoryAllocatorScope allocatorScope(hxMemoryAllocator_TemporaryStack);
+
+		hxArray<int> x(hxArray<int>({ 2, 7 }));
+		hxArray<int> y = std::move(x); // should swap
+		hxArray<int> z;
+		hxswap(y, z);
+		ASSERT_TRUE(x.empty());
+		ASSERT_TRUE(y.empty());
+		ASSERT_EQ(z[0], 2);
+		ASSERT_EQ(z[1], 7);
+	}
+}
+#endif

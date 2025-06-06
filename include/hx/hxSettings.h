@@ -52,10 +52,9 @@
 #endif
 
 #define HX_RESTRICT __restrict
-#define HX_LINK_SCRATCHPAD
 #define HX_ATTR_FORMAT(pos_, start_)
 #define HX_DEBUG_BREAK __debugbreak()
-#define HX_ATTR_NORETURN
+#define HX_NORETURN
 
 // Unlike noexcept this is undefined when violated.
 #if HX_CPLUSPLUS >= 201103L
@@ -85,10 +84,8 @@
 #endif
 
 #define HX_RESTRICT __restrict
-#define HX_LINK_SCRATCHPAD // TODO: Configure for target.  A linker section is required.
-
 #define HX_ATTR_FORMAT(pos_, start_) __attribute__((format(printf, pos_, start_)))
-#define HX_ATTR_NORETURN __attribute__((noreturn))
+#define HX_NORETURN __attribute__((noreturn))
 
 // HX_DEBUG_BREAK can be conditionally evaluated with the && and || operators.
 #if defined(__has_builtin) && __has_builtin(__builtin_debugtrap)
@@ -164,17 +161,6 @@
 #if !defined(HX_MEMORY_BUDGET_TEMPORARY_STACK)
 #define HX_MEMORY_BUDGET_TEMPORARY_STACK  (1u * HX_MIB)
 #endif
-#if !defined(HX_MEMORY_BUDGET_SCRATCH_PAGE)
-#define HX_MEMORY_BUDGET_SCRATCH_PAGE    (10u * HX_KIB)
-#endif
-#if !defined(HX_MEMORY_BUDGET_SCRATCH_TEMP)
-#define HX_MEMORY_BUDGET_SCRATCH_TEMP    (60u * HX_KIB)
-#endif
-
-// When set to 0 HX_USE_MEMORY_SCRATCH will disable the scratchpad code.
-#if !defined(HX_USE_MEMORY_SCRATCH)
-#define HX_USE_MEMORY_SCRATCH ((HX_MEMORY_BUDGET_SCRATCH_PAGE + HX_MEMORY_BUDGET_SCRATCH_TEMP) != 0u)
-#endif
 
 // ----------------------------------------------------------------------------
 // HX_PROFILE: 0 disables code for capturing profiling data
@@ -206,8 +192,8 @@
 #endif
 
 // Set by coverage.sh
-#if !defined(HX_TEST_DIE_AT_THE_END)
-#define HX_TEST_DIE_AT_THE_END 0
+#if !defined(HX_TEST_ERROR_HANDLING)
+#define HX_TEST_ERROR_HANDLING 0
 #endif
 
 // ----------------------------------------------------------------------------

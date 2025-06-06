@@ -8,7 +8,7 @@
 // g_hxIsInit. Do not initialize to 0. MSVC actually handles that differently.
 int g_hxIsInit;
 
-// g_hxSettings.  Declared here in plain C for maximum portability. 
+// g_hxSettings.  Declared here in plain C for maximum portability.
 struct hxSettings g_hxSettings;
 
 #if defined(__clang__)
@@ -63,7 +63,7 @@ const char* hxBasename(const char* path) {
 	return result;
 }
 
-char* hxStringDuplicate(const char* string, enum hxMemoryManagerId id) {
+char* hxStringDuplicate(const char* string, enum hxMemoryAllocator id) {
 	if (string) {
 		size_t len = strlen(string);
 		char* temp = (char*)hxMallocExt(len + 1, id, 0u);

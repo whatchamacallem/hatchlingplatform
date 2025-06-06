@@ -7,17 +7,17 @@
 // hxHashTable internals.  See hxHashTable.h instead
 
 // This is a hxHashTable specific subclass of hxAllocator.  C++98 requires this to be
-// declared outside hxHashTable.
+// declared outside hxHashTable. The table has a size of 2^TableSizeBits_.
 
-template<typename Node_, uint32_t HashBits_>
-class hxHashTableInternalAllocator_ : public hxAllocator<Node_*, 1u << HashBits_> {
+template<typename Node_, uint32_t TableSizeBits_>
+class hxHashTableInternalAllocator_ : public hxAllocator<Node_*, 1u << TableSizeBits_> {
 public:
 	HX_CONSTEXPR_FN hxHashTableInternalAllocator_() {
 		::memset(this->getStorage(), 0x00, sizeof(Node_*) * this->getCapacity());
 	}
-	HX_CONSTEXPR_FN uint32_t getHashBits() const { return HashBits_; }
+	HX_CONSTEXPR_FN uint32_t getTableSizeBits() const { return TableSizeBits_; }
 	HX_CONSTEXPR_FN void setHashBits(uint32_t bits) {
-		hxAssertMsg(bits == HashBits_, "resizing static hash table"); (void)bits;
+		hxAssertMsg(bits == TableSizeBits_, "resizing static hash table"); (void)bits;
 	}
 };
 
@@ -27,7 +27,7 @@ class hxHashTableInternalAllocator_<Node_, hxAllocatorDynamicCapacity>
 public:
 	HX_CONSTEXPR_FN hxHashTableInternalAllocator_() : m_hashBits_(0u) { }
 
-	HX_CONSTEXPR_FN uint32_t getHashBits() const {
+	HX_CONSTEXPR_FN uint32_t getTableSizeBits() const {
 		hxAssertMsg(m_hashBits_ != 0u, "hash table unallocated");
 		return m_hashBits_;
 	}

@@ -39,16 +39,16 @@ public:
 
 private:
 	struct hxProfilerRecord_ {
-		inline hxProfilerRecord_(hx_cycles_t begin_, hx_cycles_t end_, const char* label_, uint32_t threadId_)
+		inline hxProfilerRecord_(size_t begin_, size_t end_, const char* label_, uint32_t threadId_)
 			: m_label(label_), m_begin(begin_), m_end(end_), m_threadId(threadId_) {
 		}
 		const char* m_label;
-		hx_cycles_t m_begin;
-		hx_cycles_t m_end;
+		size_t m_begin;
+		size_t m_end;
 		uint32_t m_threadId;
 	};
 
-	template<hx_cycles_t MinCycles_> friend class hxProfilerScopeInternal_;
+	template<size_t MinCycles_> friend class hxProfilerScopeInternal_;
 
 	bool m_isStarted;
 #if HX_USE_CPP_THREADS
@@ -60,7 +60,7 @@ private:
 // ----------------------------------------------------------------------------
 // hxProfilerScopeInternal_
 
-template<hx_cycles_t MinCycles_=0u>
+template<size_t MinCycles_=0u>
 class hxProfilerScopeInternal_ {
 public:
 	// See hxProfileScope() below.
@@ -69,7 +69,7 @@ public:
 	{
 		HX_PROFILER_LOCK_();
 
-		m_t0 = g_hxProfiler_.m_isStarted ? hxTimeSampleCycles() : ~(hx_cycles_t)0;
+		m_t0 = g_hxProfiler_.m_isStarted ? hxTimeSampleCycles() : ~(size_t)0;
 	}
 
 #if HX_CPLUSPLUS >= 202002L
@@ -78,8 +78,8 @@ public:
 	~hxProfilerScopeInternal_() {
 		HX_PROFILER_LOCK_();
 
-		if (m_t0 != ~(hx_cycles_t)0) {
-			hx_cycles_t t1_ = hxTimeSampleCycles();
+		if (m_t0 != ~(size_t)0) {
+			size_t t1_ = hxTimeSampleCycles();
 			if ((t1_ - m_t0) >= MinCycles_) {
 				void* rec_ = g_hxProfiler_.m_records.emplaceBackUnconstructed();
 				if (rec_) {
@@ -95,5 +95,5 @@ private:
 	hxProfilerScopeInternal_(const hxProfilerScopeInternal_&) HX_DELETE_FN;
 	void operator=(const hxProfilerScopeInternal_&) HX_DELETE_FN;
 	const char* m_label;
-	hx_cycles_t m_t0;
+	size_t m_t0;
 };

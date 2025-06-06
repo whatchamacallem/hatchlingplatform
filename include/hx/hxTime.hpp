@@ -3,10 +3,7 @@
 
 #include <hx/hatchling.h>
 
-// Stores at least a seconds worth of CPU cycles.  Used when profiling, will wrap.
-typedef size_t hx_cycles_t;
-
-// c_hxTimeDefaultTimingCutoff is 1 microsecond.
+// c_hxTimeDefaultTimingCutoff is 0.1 millisecond.
 #if HX_USE_CHRONO
 #include <chrono>
 
@@ -15,15 +12,15 @@ constexpr float c_hxTimeMillisecondsPerCycle = ((float)std::chrono::high_resolut
 												/ (float)std::chrono::high_resolution_clock::period::den;
 
 // cutoff in cycles for samples that performed little to no processing.
-constexpr hx_cycles_t c_hxTimeDefaultTimingCutoff = (hx_cycles_t)(std::chrono::high_resolution_clock::period::den
+constexpr size_t c_hxTimeDefaultTimingCutoff = (size_t)(std::chrono::high_resolution_clock::period::den
 												/ (std::chrono::high_resolution_clock::period::num * 1.0e+4f));
 
 // internal use only
 extern std::chrono::high_resolution_clock::time_point g_hxTimeStart;
 
 // Read cycle counter register.  This version is a Linux fall-back.
-static inline hx_cycles_t hxTimeSampleCycles() {
-	return (hx_cycles_t)(std::chrono::high_resolution_clock::now() - g_hxTimeStart).count();
+static inline size_t hxTimeSampleCycles() {
+	return (size_t)(std::chrono::high_resolution_clock::now() - g_hxTimeStart).count();
 }
 
 #else
@@ -31,20 +28,13 @@ static inline hx_cycles_t hxTimeSampleCycles() {
 // TODO: This needs to be configured for the target.
 #include <time.h>
 
-#ifndef c_hxTimeMillisecondsPerCycle
 static const float c_hxTimeMillisecondsPerCycle = 1.0f/1e+9f;
-#endif
+static const size_t c_hxTimeDefaultTimingCutoff = 100000;
 
-#ifndef c_hxTimeDefaultTimingCutoff
-static const hx_cycles_t c_hxTimeDefaultTimingCutoff = 100000;
-#endif
-
-#ifndef hxTimeSampleCycles
-static inline hx_cycles_t hxTimeSampleCycles() {
+static inline size_t hxTimeSampleCycles() {
 	timespec ts_;
 	clock_gettime(CLOCK_MONOTONIC, &ts_);
-	return (hx_cycles_t)ts_.tv_nsec;
+	return (size_t)ts_.tv_nsec;
 }
-#endif
 
 #endif

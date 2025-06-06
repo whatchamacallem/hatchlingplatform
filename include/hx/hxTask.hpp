@@ -19,13 +19,13 @@ public:
 	// Parameters:
 	// - staticLabel_: A constant string literal or null to label the task.
 	inline explicit hxTask(const char* staticLabel_=hxnull)
-		: m_nextTask(hxnull), m_label(staticLabel_), m_exclusiveOwner(hxnull) {
+		: m_nextTask(hxnull), m_label(staticLabel_), m_taskQueue(hxnull) {
 	}
 
 	// Destructor for the task.
 	// Ensures that the task is not owned by any exclusive owner when deleted.
 	virtual ~hxTask() {
-		hxAssertRelease(!m_exclusiveOwner, "deleting queued task: %s", getLabel());
+		hxAssertRelease(!m_taskQueue, "deleting queued task: %s", getLabel());
 	}
 
 	// Executes the task. This is the main function to be implemented by derived classes.
@@ -57,15 +57,15 @@ public:
 	// - x_: A constant string literal or null to set as the task label.
 	inline void setLabel(const char* x_) { m_label = x_; }
 
-	// Sets the exclusive owner of the task.
+	// Sets the task queue which is to be the exclusive owner of the task.
 	// Parameters:
 	// - x_: Pointer to the new exclusive owner, or null to clear ownership.
 	// Notes:
 	// - Ensures that the task is not re-enqueued while already owned.
 	// - The task must not be part of a linked list when setting ownership.
-	inline void setExclusiveOwner(const void* x_) {
-		hxAssertRelease((!m_exclusiveOwner || !x_) && !m_nextTask, "re-enqueuing task: %s", getLabel());
-		m_exclusiveOwner = x_;
+	inline void setTaskQueue(hxTaskQueue* x_) {
+		hxAssertRelease((!m_taskQueue || !x_) && !m_nextTask, "re-enqueuing task: %s", getLabel());
+		m_taskQueue = x_;
 	}
 
 private:
@@ -82,5 +82,5 @@ private:
 	const char* m_label;
 
 	// Pointer to the exclusive owner of the task, if any.
-	const void* m_exclusiveOwner;
+	hxTaskQueue* m_taskQueue;
 };

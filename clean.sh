@@ -5,6 +5,5 @@ set -o errexit
 set -o xtrace
 
 rm -f profile.json hxConsoleTest_FileTest.txt hxFileTest_Operators.bin \
-		hxFileTest_ReadWrite.txt hxCUtils.o hxtest \
+		hxFileTest_ReadWrite.txt *.o hxtest \
 		index.* *.html coverage.css *.gcda *gcno hatchlingPch.hpp.pch
-

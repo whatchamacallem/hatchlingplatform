@@ -92,43 +92,26 @@ TEST(hxConsoleTest, CommandFactory) {
 
 	c_hxConsoleTestCallFlags = 0;
 
-	hxCommand_* f0 = hxCommandFactory_(hxConsoleTestFn0);
-	ASSERT_TRUE(f0->execute_(""));
-	ASSERT_FALSE(f0->execute_("unexpected text"));
+	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn0).execute_(""));
+	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn0).execute_("unexpected text"));
 
-	hxCommand_* f1 = hxCommandFactory_(hxConsoleTestFn1);
-	ASSERT_TRUE(f1->execute_("123"));
-	ASSERT_FALSE(f1->execute_("256"));
+	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn1).execute_("123"));
+	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn1).execute_("256"));
 
-	hxCommand_* f2 = hxCommandFactory_(hxConsoleTestFn2);
-	ASSERT_TRUE(f2->execute_("-234 -345"));
-	ASSERT_FALSE(f2->execute_("32768 -345"));
+	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn2).execute_("-234 -345"));
+	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn2).execute_("32768 -345"));
 
-	hxCommand_* f3 = hxCommandFactory_(hxConsoleTestFn3);
-	ASSERT_TRUE(f3->execute_("1 12"));
-	ASSERT_FALSE(f3->execute_("2 12"));
+	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn3).execute_("1 12"));
+	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn3).execute_("2 12"));
 
-	hxCommand_* f4 = hxCommandFactory_(hxConsoleTestFn4);
-	ASSERT_TRUE(f4->execute_("2345 3456 3456 6.78"));
-	ASSERT_FALSE(f4->execute_("$*"));
+	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn4).execute_("2345 3456 3456 6.78"));
+	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn4).execute_("$*"));
 
-	hxCommand_* ff = hxCommandFactory_(hxConsoleTestFn8);
-	ASSERT_TRUE(ff->execute_("56789 67890 7.89"));
-	ASSERT_FALSE(ff->execute_("56d789 67890 7.89"));
-	hxFree(ff);
+	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn8).execute_("56789 67890 7.89"));
+	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn8).execute_("56d789 67890 7.89"));
 
 	// Check that all flags have been set.
 	ASSERT_EQ(c_hxConsoleTestCallFlags, (1<<hxConsoleTestTypeID_MAX)-1);
-
-	// The hxCommands are being routed to the permanent heap.  While that
-	// allocator is unable to reuse space, free them for correctness.
-	g_hxSettings.deallocatePermanent = true;
-	hxFree(f0);
-	hxFree(f1);
-	hxFree(f2);
-	hxFree(f3);
-	hxFree(f4);
-	g_hxSettings.deallocatePermanent = false;
 }
 
 // ----------------------------------------------------------------------------
@@ -141,16 +124,19 @@ namespace {
 		s_hxConsoleTestResultHook = (float)a0 + (float)::strlen(a1);
 	}
 
-	void hxConsoleTestRegister1(float a0) {
+	bool hxConsoleTestRegister1(float a0) {
 		s_hxConsoleTestResultHook = a0;
+		return true;
 	}
 
-	void hxConsoleTestRegister2(float a0) {
+	int hxConsoleTestRegister2(float a0) {
 		s_hxConsoleTestResultHook = a0;
+		return 2;
 	}
 
-	void hxConsoleTestRegister3(uint32_t, float a1) {
+	float hxConsoleTestRegister3(uint32_t, float a1) {
 		s_hxConsoleTestResultHook = a1;
+		return 0.1f;
 	}
 } // namespace
 
@@ -329,19 +315,48 @@ TEST(hxConsoleTest, FileTest) {
 	ASSERT_EQ(s_hxConsoleTestFileVar2, 89.0f);
 }
 
+bool hxConsoleTestFailingCommand(void) {
+	return false;
+}
+
+hxConsoleCommandNamed(hxConsoleTestFailingCommand, hxConsoleTestFailingCommand);
+
+TEST(hxConsoleTest, FileFail) {
+	hxLogConsole("TEST_EXPECTING_WARNINGS:\n");
+
+	// test garbage in a script
+	{
+		hxFile(hxFile::out, "hxConsoleTest_FileTest.txt") << "<unknown symbols>\n";
+	}
+	ASSERT_FALSE(hxConsoleExecFilename("hxConsoleTest_FileTest.txt"));
+
+	// test a bad function call
+	{
+		hxFile(hxFile::out, "hxConsoleTest_FileTest.txt") << "exec\n";
+	}
+	ASSERT_FALSE(hxConsoleExecFilename("hxConsoleTest_FileTest.txt"));
+
+	// test a failing command
+	{
+		hxFile(hxFile::out, "hxConsoleTest_FileTest.txt") << "hxConsoleTestFailingCommand\n";
+	}
+	ASSERT_FALSE(hxConsoleExecFilename("hxConsoleTest_FileTest.txt"));
+}
+
 #if (HX_RELEASE) < 2 && !HX_USE_WASM
 TEST(hxConsoleTest, FilePeekPoke) {
-	int target[16] = { 137, 396 };
+	uint32_t target[] = { 111, 0, 333 };
 	{
 		hxFile f(hxFile::out, "hxConsoleTest_FileTest.txt");
-		f.print("peek %lld 4\n", (unsigned long long int)(target + 0));
-		f.print("hex %lld 4\n", (unsigned long long int)(target + 0));
-		f.print("poke %lld 4 175\n", (unsigned long long int)(target + 0));
+		f.print("peek %lld 4\n", (unsigned long long int)(target + 1));
+		f.print("hex %lld 4\n", (unsigned long long int)(target + 1));
+		f.print("poke %lld 4 222\n", (unsigned long long int)(target + 1));
 	}
 	bool isOk = hxConsoleExecLine("exec hxConsoleTest_FileTest.txt");
 	ASSERT_TRUE(isOk);
 
-	ASSERT_EQ(target[0], 175);
-	ASSERT_EQ(target[1], 396);
+	ASSERT_EQ(target[0], 111);
+	ASSERT_EQ(target[1], 222);
+	ASSERT_EQ(target[2], 333);
 }
 #endif

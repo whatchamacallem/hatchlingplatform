@@ -8,12 +8,40 @@
 #include <hx/hxHashTableNodes.hpp>
 #include <hx/hxProfiler.hpp>
 #include <hx/hxSort.hpp>
+#include <hx/hxSort.hpp>
 
 #include <stdio.h>
+#include <math.h>
 
 HX_REGISTER_FILENAME_HASH
 
-// Exceptions add overhead to c++ and add untested pathways.
+// HX_FLOATING_POINT_TRAPS traps (FE_DIVBYZERO|FE_INVALID|FE_OVERFLOW) in debug
+// so you can safely run without checks for them in release. Use -ffast-math in
+// release or -DHX_FLOATING_POINT_TRAPS=0 to disable this debug facility. There
+// is no C++ standard conforming way to disable floating point error checking.
+// It is a gcc/clang extension. -fno-math-errno -fno-trapping-math will work if
+// you require C++ conforming accuracy without the overhead of error checking.
+// You need the math library -lm. Causing.. or implicit checking for in a
+// release build.. or explicit checking for... floating point exceptions is not
+// recommended.
+#if (HX_CPLUSPLUS >= 201103L) && defined(__GLIBC__) && !defined(__FAST_MATH__)
+#include <fenv.h>
+#if !defined(HX_FLOATING_POINT_TRAPS)
+#define HX_FLOATING_POINT_TRAPS 1
+#endif
+#else
+#undef HX_FLOATING_POINT_TRAPS
+#define HX_FLOATING_POINT_TRAPS 0
+#endif
+
+// New rule. Use -ffast-math in release. Or set -DHX_FLOATING_POINT_TRAPS=0.
+HX_STATIC_ASSERT((HX_RELEASE) < 1 || !(HX_FLOATING_POINT_TRAPS),
+	"floating point exceptions in release. use -ffast-math.");
+
+// Use -fno-exceptions. Exceptions add overhead to c++ and add untested pathways.
+// In this codebase memory allocation cannot fail. It is designed to force you
+// to allocate enough memory for everything in advance. There are no exceptions
+// to handle.
 #if defined(__cpp_exceptions) && !defined(__INTELLISENSE__)
 HX_STATIC_ASSERT(0, "exceptions should not be enabled");
 #endif
@@ -40,7 +68,7 @@ hxHashStringLiteral& hxStringLiteralHashes() {
 
 hxRegisterFileConstructor::hxRegisterFileConstructor(const char* s) {
 	hxInit();
-	hxStringLiteralHashes().insertUnique(s, hxMemoryManagerId_Heap);
+	hxStringLiteralHashes().insertUnique(s, hxMemoryAllocator_Heap);
 }
 
 void hxPrintFileHashes(void) {
@@ -78,13 +106,18 @@ std::chrono::high_resolution_clock::time_point g_hxTimeStart;
 extern "C"
 void hxInitInternal(void) {
 	hxAssertRelease(!g_hxIsInit, "call hxInit() instead");
+	hxSettingsConstruct();
 	g_hxIsInit = 1;
 
 #if HX_USE_CHRONO
 	g_hxTimeStart = std::chrono::high_resolution_clock::now();
 #endif
 
-	hxSettingsConstruct();
+#if HX_FLOATING_POINT_TRAPS
+	// You need the math library -lm. This is nonstandard glibc/_GNU_SOURCE.
+    ::feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+#endif
+
 	hxMemoryManagerInit();
 	hxDmaInit();
 }
@@ -133,7 +166,6 @@ void hxShutdown(void) {
 	g_hxSettings.deallocatePermanent = true;
 	hxProfilerEnd();
 	hxDmaShutDown();
-	hxConsoleDeregisterAll(); // Free console allocations.
 	hxMemoryManagerShutDown(); // Will trap further activity
 }
 

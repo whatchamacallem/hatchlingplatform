@@ -17,35 +17,43 @@ class hxFile;
 // capture the remainder of the line including #'s.
 
 // Registers a function using a global constructor.  Use in a global scope.
+// Command will have the same name and args as the function.  x_ must be a
+// valid C identifier that evaluates to a function pointer.
 //   E.g. hxConsoleCommand(srand);
-#define hxConsoleCommand(x_) hxConsoleConstructor_ \
-	HX_CONCATENATE(g_hxConsoleSymbol_,x_)(hxCommandFactory_(&(x_)), HX_QUOTE(x_))
+#define hxConsoleCommand(x_) static hxConsoleConstructor_ \
+	HX_CONCATENATE(g_hxConsoleSymbol_,x_)(hxConsoleCommandFactory_(&(x_)), HX_QUOTE(x_))
 
 // Registers a named function using a global constructor.  Use in a global scope.
-// Provided name must be a valid C identifier.
-#define hxConsoleCommandNamed(x_, name_) hxConsoleConstructor_ \
-	HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxCommandFactory_(&(x_)), HX_QUOTE(name_))
+// Provided name_ must be a valid C identifier. x_ may be any expression that
+// evaluates to a function pointer.
+//   E.g. hxConsoleCommandNames(srand, seed_rand);
+#define hxConsoleCommandNamed(x_, name_) static hxConsoleConstructor_ \
+	HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxConsoleCommandFactory_(&(x_)), HX_QUOTE(name_))
 
-// Registers a variable.  Use in a global scope.
-//   E.g. bool g_isEnabled=false; hxConsoleVariable(g_isEnabled);
-#define hxConsoleVariable(x_) hxConsoleConstructor_ \
-	HX_CONCATENATE(g_hxConsoleSymbol_,x_)(hxVariableFactory_(&(x_)), HX_QUOTE(x_))
+// Registers a variable.  Use in a global scope.  Will have the same name as
+// the variable.
+//   E.g.
+//   static bool isMyHackEnabled=false;
+//   hxConsoleVariable(isMyHackEnabled);
+#define hxConsoleVariable(x_) static hxConsoleConstructor_ \
+	HX_CONCATENATE(g_hxConsoleSymbol_,x_)(hxConsoleVariableFactory_(&(x_)), HX_QUOTE(x_))
 
 // Registers a named variable.  Use in a global scope.  Provided name must be a
 // valid C identifier.
-#define hxConsoleVariableNamed(x_, name_) hxConsoleConstructor_ \
-	HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxVariableFactory_(&(x_)), HX_QUOTE(name_))
+//   E.g.
+//   static bool isMyHackEnabled=false;
+//   hxConsoleVariable(isMyHackEnabled, f_hack); // add "f_hack" to the console.
+#define hxConsoleVariableNamed(x_, name_) static hxConsoleConstructor_ \
+	HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxConsoleVariableFactory_(&(x_)), HX_QUOTE(name_))
 
-// Determines whether a console functions return value is OK. Override as needed.
-// Override must be consistent wherever your type is registered.
+// Determines whether a console function's return value is OK. Overload as needed.
+// Overload must be consistent wherever your type is registered. A void return is
+// separately handled as an OK result.
 template<typename T>
 bool hxConsoleIsOkResult(T t) { return (bool)t; }
 
 // Explicit de-registration of a console symbol.
 void hxConsoleDeregister(const char* id_);
-
-// Explicit de-registration of all console symbols.
-void hxConsoleDeregisterAll();
 
 // Evaluates a console command to either call a function or set a variable.
 //   E.g.: "srand 77" or "aVariable 5"
@@ -56,7 +64,7 @@ bool hxConsoleExecLine(const char* command_);
 bool hxConsoleExecFile(hxFile& file_);
 
 // Opens a configuration file by name and executes it.
-void hxConsoleExecFilename(const char* filename_);
+bool hxConsoleExecFilename(const char* filename_);
 
 // Logs all console symbols to the console log.
 void hxConsoleHelp();

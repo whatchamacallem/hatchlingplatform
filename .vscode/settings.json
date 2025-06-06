@@ -43,8 +43,5 @@
         "Wwrite",
         "Xclang"
     ],
-    "editor.cursorBlinking": "solid",
-    "files.associations": {
-        "hatchling.h": "c"
-    }
-}
+    "editor.cursorBlinking": "solid"
+ }

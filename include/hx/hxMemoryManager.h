@@ -7,9 +7,6 @@
 
 #if HX_CPLUSPLUS
 #include <new>
-#if HX_CPLUSPLUS >= 201103L // std::forward requires c++11 and <utility>
-#include <utility>
-#endif
 
 extern "C" {
 #endif
@@ -26,44 +23,36 @@ extern "C" {
 // is a value 1 less than the actual power of two alignment.
 
 // The default alignment HX_ALIGNMENT allows for storing char pointers.
-// This alignment should work for most types except vectors.
-#define HX_ALIGNMENT ((uintptr_t)sizeof(char*))
+// This alignment should work for most types.
+#define HX_ALIGNMENT sizeof(char*)
 
-// hxMemoryManagerId. (See hxMemoryManager.cpp)
-// hxMemoryManagerId_Scratch* are tightly coupled with hxMemoryAllocatorScratchpad.
-// *** hxMemoryManagerId_Scratch* must be contiguously assigned.  ***
+// hxMemoryAllocator. (See hxMemoryManager.cpp)
 
-enum hxMemoryManagerId {
-	hxMemoryManagerId_Heap = 0,
-	hxMemoryManagerId_Permanent,
-	hxMemoryManagerId_TemporaryStack, // Resets to previous depth at scope closure
-#if HX_USE_MEMORY_SCRATCH
-	hxMemoryManagerId_ScratchPage0,   // For triple buffered scratchpad algorithms
-	hxMemoryManagerId_ScratchPage1,
-	hxMemoryManagerId_ScratchPage2,
-	hxMemoryManagerId_ScratchTemp,
-	hxMemoryManagerId_ScratchAll, 	// Must be last Scratch id_
-#endif
-	hxMemoryManagerId_MAX,
-	hxMemoryManagerId_Current = -1,
-	hxMemoryManagerId_Console = hxMemoryManagerId_Heap
+enum hxMemoryAllocator {
+	hxMemoryAllocator_Heap,           // OS heap with alignment and stats.
+	hxMemoryAllocator_Permanent,      // Contigious allocations that must not be freed.
+	hxMemoryAllocator_TemporaryStack, // Resets to previous depth at scope closure
+	// ** hxMemoryAllocator_Current must be last in enum. **
+	hxMemoryAllocator_Current         // Use current allocation scope.
 };
 
 // Allocates memory of the specified size using the default memory manager.
 // A C++ overload optionally provides the same arguments as hxMallocExt.
+// Will not return on failure.
 // - size_: The size of the memory to allocate.
-// - id_(C++ only): The memory manager ID to use for allocation. (Default is
-//   hxMemoryManagerId_Current.)
+// - allocator_(C++ only): The memory manager ID to use for allocation. (Default is
+//   hxMemoryAllocator_Current.)
 // - alignment_(C++ only): The alignment for the allocation. (Default
 //   is HX_ALIGNMENT.)
 void* hxMalloc(size_t size_);
 
 // Allocates memory of the specified size with a specific memory manager and alignment.
+// Will not return on failure.
 // Parameters:
 // - size_: The size of the memory to allocate.
-// - id_: The memory manager ID to use for allocation. (Default is hxMemoryManagerId_Current.)
+// - allocator_: The memory manager ID to use for allocation. (Default is hxMemoryAllocator_Current.)
 // - alignment_: The alignment for the allocation. (Default is HX_ALIGNMENT.)
-void* hxMallocExt(size_t size_, enum hxMemoryManagerId id_, uintptr_t alignment_/*=HX_ALIGNMENT*/);
+void* hxMallocExt(size_t size_, enum hxMemoryAllocator allocator_, uintptr_t alignment_/*=HX_ALIGNMENT*/);
 
 // Frees memory previously allocated with hxMalloc or hxMallocExt.
 // Parameters:
@@ -73,16 +62,10 @@ void hxFree(void* ptr_);
 // Allocates a copy of a string using the specified memory manager.
 // Parameters:
 // - string_: The string to duplicate.
-// - id_: The memory manager ID to use for allocation. Defaults to
-//   hxMemoryManagerId_Current in C++.
+// - allocator_: The memory manager ID to use for allocation. Defaults to
+//   hxMemoryAllocator_Current in C++.
 // Returns: A pointer to the duplicated string.
-char* hxStringDuplicate(const char* string_, enum hxMemoryManagerId id_ /*=hxMemoryManagerId_Current*/);
-
-// Checks if the given pointer belongs to a scratchpad memory allocator.
-// Parameters:
-// - ptr_: The pointer to check.
-// Returns: An integer (boolean) indicating whether the pointer is from a scratchpad.
-int hxIsScratchpad(void* ptr_); // returns bool as int.
+char* hxStringDuplicate(const char* string_, enum hxMemoryAllocator allocator_ /*=hxMemoryAllocator_Current*/);
 
 #if HX_CPLUSPLUS
 } // extern "C"
@@ -90,20 +73,20 @@ int hxIsScratchpad(void* ptr_); // returns bool as int.
 // ----------------------------------------------------------------------------
 // Memory Manager C++ API
 
-// hxMemoryManagerScope
+// hxMemoryAllocatorScope
 //
 // RAII class to set the current memory manager allocator for a specific scope.
 // Automatically restores the previous allocator when the scope ends.
-class hxMemoryManagerScope
+class hxMemoryAllocatorScope
 {
 public:
 	// Constructor: Sets the current memory allocator to the specified ID.
 	// Parameters:
-	// - id_: The memory manager ID to set for this scope.
-	hxMemoryManagerScope(hxMemoryManagerId id_);
+	// - allocator_: The memory manager ID to set for this scope.
+	hxMemoryAllocatorScope(hxMemoryAllocator allocator_);
 
 	// Destructor: Restores the previous memory manager allocator ID.
-	~hxMemoryManagerScope();
+	~hxMemoryAllocatorScope();
 
 	// Gets the total number of allocations made by the memory allocator.
 	uintptr_t getTotalAllocationCount() const;
@@ -125,13 +108,13 @@ public:
 
 private:
 	// Deleted copy constructor to prevent copying.
-	hxMemoryManagerScope(const hxMemoryManagerScope&) HX_DELETE_FN;
+	hxMemoryAllocatorScope(const hxMemoryAllocatorScope&) HX_DELETE_FN;
 
 	// Deleted assignment operator to prevent copying.
-	void operator=(const hxMemoryManagerScope&) HX_DELETE_FN;
+	void operator=(const hxMemoryAllocatorScope&) HX_DELETE_FN;
 
-	hxMemoryManagerId m_thisId; // The memory manager ID for this scope.
-	hxMemoryManagerId m_previousId; // The previous memory manager ID.
+	hxMemoryAllocator m_thisAllocator; // The memory manager ID for this scope.
+	hxMemoryAllocator m_previousAllocator; // The previous memory manager ID.
 	uintptr_t m_previousAllocationCount; // Previous allocation count.
 	uintptr_t m_previousBytesAllocated; // Previous bytes allocated.
 };
@@ -146,26 +129,33 @@ void hxMemoryManagerShutDown();
 // Returns: The total allocation count.
 size_t hxMemoryManagerAllocationCount();
 
-// hxNew.  An extended new().  hxMemoryManagerId_Current is the default.
+// hxNew.  An extended new().  hxMemoryAllocator_Current is the default.
 // Allocates and constructs an object of type T_ using a specific memory manager.
 // Template Parameters:
-// - id_: The memory manager ID to use for allocation.
+// - allocator_: The memory manager ID to use for allocation.
 // - align_: A mask of low bits to be zero'd out when allocating new pointers.
-// Returns: A pointer to the newly constructed object.
+// Returns: A pointer to the newly constructed object.  Will not return on failure.
 #if HX_CPLUSPLUS >= 201103L // Argument forwarding requires c++11.
-template <typename T_, hxMemoryManagerId id_=hxMemoryManagerId_Current, uintptr_t align_=HX_ALIGNMENT, typename... Args_>
+template <typename T_, hxMemoryAllocator allocator_=hxMemoryAllocator_Current, uintptr_t align_=HX_ALIGNMENT, typename... Args_>
 HX_CONSTEXPR_FN T_* hxNew(Args_&&... args_) noexcept {
-	return ::new(hxMallocExt(sizeof(T_), id_, align_)) T_(args_...);
+	return ::new(hxMallocExt(sizeof(T_), allocator_, align_)) T_(args_...);
 }
 #else
-template <typename T_, hxMemoryManagerId id_=hxMemoryManagerId_Current, uintptr_t align_=HX_ALIGNMENT>
-HX_CONSTEXPR_FN T_* hxNew() {
-	return ::new(hxMallocExt(sizeof(T_), id_, align_))T_();
-}
-template <typename T_, hxMemoryManagerId id_=hxMemoryManagerId_Current, uintptr_t align_=HX_ALIGNMENT, typename Arg>
-HX_CONSTEXPR_FN T_* hxNew(const Arg& arg) {
-	return ::new(hxMallocExt(sizeof(T_), id_, align_))T_(arg);
-}
+// hxNew C++98 functor polyfill.  All template args default except the first.
+// Passing more than one arg requires C++11.
+template <typename T_, hxMemoryAllocator allocator_=hxMemoryAllocator_Current, uintptr_t align_=HX_ALIGNMENT>
+struct hxNew {
+	inline explicit hxNew(void ) {
+		m_tmp_ = ::new(hxMalloc(sizeof(T_)))T_();
+	}
+
+	template<typename Arg_>
+	inline explicit hxNew(const Arg_& arg_) {
+		m_tmp_ = ::new(hxMalloc(sizeof(T_)))T_(arg_);
+	}
+	operator T_*() { return m_tmp_; }
+	T_* m_tmp_;
+};
 #endif
 
 // Deletes an object of type T_ and frees its memory using the memory manager.
@@ -196,16 +186,14 @@ struct hxDeleter {
 
 // Add hxMallocExt args to hxMalloc C interface. Allocates memory with a
 // specific memory manager and alignment.
-inline void* hxMalloc( size_t size_,
-				enum hxMemoryManagerId id_,
-				uintptr_t alignment_=HX_ALIGNMENT) {
-	return hxMallocExt(size_, id_, alignment_);
+inline void* hxMalloc( size_t size_, enum hxMemoryAllocator allocator_, uintptr_t alignment_=HX_ALIGNMENT) {
+	return hxMallocExt(size_, allocator_, alignment_);
 }
 
-// Add default args to C interface: id_=hxMemoryManagerId_Current
+// Add default args to C interface: allocator_=hxMemoryAllocator_Current
 // Duplicates a string using the default memory manager.
 inline char* hxStringDuplicate(const char* s_) {
-	return hxStringDuplicate(s_, hxMemoryManagerId_Current);
+	return hxStringDuplicate(s_, hxMemoryAllocator_Current);
 }
 
 #endif // HX_CPLUSPLUS

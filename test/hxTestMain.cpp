@@ -30,7 +30,7 @@ TEST(hxCTest, AllTests) {
 }
 
 // These two tests test the test framework by failing.
-#if (HX_TEST_DIE_AT_THE_END)
+#if (HX_TEST_ERROR_HANDLING)
 TEST(hxDeathTest, Fail) {
 	hxLog("TEST_EXPECTING_ASSERTS:\n");
 	SUCCEED();
@@ -78,7 +78,7 @@ int main() {
 
 	size_t testsFailing = hxTestMain();
 
-#if (HX_TEST_DIE_AT_THE_END)
+#if (HX_TEST_ERROR_HANDLING)
 	hxAssertRelease(testsFailing == 2, "expected 2 tests to fail");
 	// there are no asserts at level 3.
 	hxLogHandler(hxLogLevel_Warning, "expected 2 tests to fail");

@@ -10,13 +10,13 @@ HX_REGISTER_FILENAME_HASH
 HX_STATIC_ASSERT(HX_RADIX_SORT_BITS == 8 || HX_RADIX_SORT_BITS == 11,
 	"Unsupported HX_RADIX_SORT_BITS");
 
-void hxRadixSortBase::sort(hxMemoryManagerId tempMemory) {
+void hxRadixSortBase::sort(hxMemoryAllocator tempMemory) {
 	if (m_array.size() <= HX_RADIX_SORT_MIN_SIZE) {
 		hxInsertionSort(m_array.begin(), m_array.end());
 		return;
 	}
 
-	hxMemoryManagerScope allocatorScope(tempMemory);
+	hxMemoryAllocatorScope allocatorScope(tempMemory);
 
 	if (HX_RADIX_SORT_BITS == 8) {
 		// 2 Working buffers
@@ -71,7 +71,7 @@ void hxRadixSortBase::sort(hxMemoryManagerId tempMemory) {
 		hxFree(buf1);
 	}
 	else if (HX_RADIX_SORT_BITS == 11) {
-		// 3 Working buffers
+		// 3 Working buffers.  Fox extremely large data sets.
 		KeyValuePair* HX_RESTRICT buf0 = m_array.data();
 		KeyValuePair* buf0End = buf0 + m_array.size();
 		KeyValuePair* HX_RESTRICT buf1 = (KeyValuePair*)hxMalloc(m_array.size() * sizeof(KeyValuePair) * 2u);

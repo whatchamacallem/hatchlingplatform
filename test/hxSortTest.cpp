@@ -37,7 +37,7 @@ public:
 
 	template<typename Key>
 	void test(uint32_t size, uint32_t mask, Key offset) {
-		hxMemoryManagerScope temporaryStack(hxMemoryManagerId_TemporaryStack);
+		hxMemoryAllocatorScope temporaryStack(hxMemoryAllocator_TemporaryStack);
 
 		// Generate test data
 		hxArray<TestObject<Key> > a;
@@ -53,7 +53,7 @@ public:
 			rs.insert(a[i].id, &a[i]);
 		}
 
-		rs.sort(hxMemoryManagerId_TemporaryStack);
+		rs.sort(hxMemoryAllocator_TemporaryStack);
 
 		ASSERT_EQ(b.size(), size);
 		ASSERT_EQ(rs.size(), size);
@@ -79,14 +79,14 @@ public:
 TEST_F(hxRadixSortTest, Null) {
 	hxRadixSort<uint32_t, const char> rs;
 
-	rs.sort(hxMemoryManagerId_TemporaryStack);
+	rs.sort(hxMemoryAllocator_TemporaryStack);
 	ASSERT_EQ(rs.size(), 0u);
 	ASSERT_TRUE(rs.empty());
 
 	rs.reserve(1u);
 	rs.insert(123u, "s");
 
-	rs.sort(hxMemoryManagerId_TemporaryStack);
+	rs.sort(hxMemoryAllocator_TemporaryStack);
 	ASSERT_EQ(rs.size(), 1u);
 	ASSERT_EQ(rs[0], 's');
 	ASSERT_EQ(*rs.get(0), 's');

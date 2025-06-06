@@ -10,6 +10,7 @@
 // ----------------------------------------------------------------------------
 // hxHashTableNodeInteger. Specialization of hxHashTableNodeBase for integer types.
 // See documentation of hxHashTable for interface documentation.
+// This is a great example of a node that doesn't require a base class.
 template<typename Key_>
 class hxHashTableNodeInteger {
 public:
@@ -18,18 +19,20 @@ public:
 	HX_CONSTEXPR_FN hxHashTableNodeInteger(const Key& key_) :
 		m_hashNext(hxnull), m_key(key_) { }
 
+	// Boilerplate for hxHashTable.
+	void* hashNext(void) const { return m_hashNext; }
+	void*& hashNext(void) { return m_hashNext; }
+
 	// The key and hash identify the Node and should not change once added.
-	const Key& key() const { return m_key; }
-	uint32_t hash() const { return hxKeyHash(m_key); };
+	HX_CONSTEXPR_FN const Key& key() const { return m_key; }
+	HX_CONSTEXPR_FN uint32_t hash() const { return hxKeyHash(m_key); };
 
 private:
 	hxHashTableNodeInteger(void) HX_DELETE_FN;
 	hxHashTableNodeInteger(const hxHashTableNodeInteger&) HX_DELETE_FN;
 	void operator=(const hxHashTableNodeInteger&) HX_DELETE_FN;
 
-	// The hash table uses m_hashNext to implement an embedded linked list.
-	template<typename, uint32_t> friend class hxHashTable;
-	hxHashTableNodeInteger* m_hashNext;
+	void* m_hashNext;
 	Key m_key;
 };
 
@@ -52,7 +55,7 @@ public:
 // Allocates a copy, resulting in a string pool per-hash table.  The key is
 // stored as a pointer to const to keep the hash table code const correct.
 
-template <hxMemoryManagerId allocator_=hxMemoryManagerId_Heap>
+template <hxMemoryAllocator allocator_=hxMemoryAllocator_Heap>
 class hxHashTableNodeString : public hxHashTableSetNode<const char*> {
 public:
 	// Constructor: Allocates and duplicates the string key, then initializes the node.

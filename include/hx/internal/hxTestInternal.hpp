@@ -50,6 +50,7 @@ public:
 	// message is required to end with an \n.  Returns equivalent of /dev/null on
 	// success and the system log otherwise.
 	hxFile& assertCheck_(const char* file_, size_t line_, bool condition_, const char* message_) {
+		hxAssertRelease(m_currentTest, "not testing");
 		++m_assertCount;
 		m_testState = (condition_ && m_testState != TEST_STATE_FAIL_) ? TEST_STATE_PASS_ : TEST_STATE_FAIL_;
 		if (!condition_) {
@@ -60,12 +61,11 @@ public:
 				return devNull_();
 			}
 
-			hxLogHandler(hxLogLevel_Console, "%s(%zu): ", file_, line_);
-			hxLogHandler(hxLogLevel_Console, "%s\n", message_);
-
-			hxAssertRelease(m_currentTest, "not testing");
+			// prints full path error messages that can be clicked on in an ide.
 			hxLogHandler(hxLogLevel_Assert, "%s.%s", m_currentTest->suite_(), m_currentTest->case_());
+			hxLogHandler(hxLogLevel_Assert, "%s(%zu): %s", file_, line_, message_);
 
+			hxAssertMsg(HX_TEST_ERROR_HANDLING, "unplanned test fail");
 			return devNull_();
 		}
 		return devNull_();
@@ -85,13 +85,12 @@ public:
 				{
 					// Tests should have no side effects.  Therefore all allocations must be
 					// safe to reset.
-					hxMemoryManagerScope temporaryStack(hxMemoryManagerId_TemporaryStack);
+					hxMemoryAllocatorScope temporaryStack(hxMemoryAllocator_TemporaryStack);
 					(*it_)->run_();
 				}
 
 				if (m_testState == TEST_STATE_NOTHING_ASSERTED_) {
-					assertCheck_(hxBasename((*it_)->file_()), (*it_)->line_(), false,
-						"NOTHING_ASSERTED");
+					this->assertCheck_((*it_)->file_(), (*it_)->line_(), false, "NOTHING_ASSERTED");
 					++m_failCount;
 				}
 				else if (m_testState == TEST_STATE_PASS_) {
