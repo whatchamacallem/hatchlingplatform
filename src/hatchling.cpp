@@ -75,11 +75,13 @@ hxRegisterFileConstructor::hxRegisterFileConstructor(const char* key_, uint32_t 
 }
 
 void hxPrintFileHashes(void) {
+	hxInit();
 	hxLog("filenames in hash order:\n");
 
+	hxMemoryAllocatorScope temporaryStack(hxMemoryAllocator_TemporaryStack);
+
 	typedef hxArray<const char*> Filenames;
-	Filenames filenames;
-	filenames.reserve(hxStringLiteralHashes_().size());
+	Filenames filenames; filenames.reserve(hxStringLiteralHashes_().size());
 
 	hxHashStringLiteral::constIterator it = hxStringLiteralHashes_().cBegin();
 	hxHashStringLiteral::constIterator end = hxStringLiteralHashes_().cEnd();

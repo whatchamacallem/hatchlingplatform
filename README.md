@@ -4,7 +4,8 @@
 # Hatchling Platform
 
 Small C++ run-time intended to be developed against on the desktop before cross
-compiling to an embedded target with limited RAM.
+compiling to an embedded target with limited RAM. Does not make allocations
+before main or on test failure.
 
  * A lightweight streamlined reimplementation of Google Test.  Allows running
    CI tests on a development board.

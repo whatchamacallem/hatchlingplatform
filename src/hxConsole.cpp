@@ -105,6 +105,7 @@ void hxConsoleHelp() {
 	if ((HX_RELEASE) < 2) {
 		hxMemoryAllocatorScope heap(hxMemoryAllocator_Heap);
 
+		hxMemoryAllocatorScope temporaryStack(hxMemoryAllocator_TemporaryStack);
 		hxArray<const hxConsoleHashTableNode_*> cmds;
 		cmds.reserve(hxConsoleCommands_().size());
 		for (hxConsoleCommandTable_::constIterator it = hxConsoleCommands_().cBegin();

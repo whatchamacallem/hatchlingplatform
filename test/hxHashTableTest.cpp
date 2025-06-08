@@ -40,7 +40,7 @@ public:
 		TestObject value;
 	};
 
-	class TestString : public hxHashTableNodeString<> {
+	class TestString : public hxHashTableNodeString<hxMemoryAllocator_TemporaryStack> {
 	public:
 		TestString(const char* k) : hxHashTableNodeString(k) { }
 		TestObject value;
