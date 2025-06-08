@@ -60,7 +60,7 @@ void hxProfilerInternal_::log_() {
 		const hxProfilerRecord_& rec = m_records[i];
 
 		hxcycles_t delta = rec.m_end - rec.m_begin;
-		hxLogRelease("profile %s: %.17gms cycles %.17g thread %x\n", hxBasename(rec.m_label),
+		hxLogRelease("profile %s: %.15gms cycles %.15g thread %x\n", hxBasename(rec.m_label),
 			(double)delta * c_hxMillisecondsPerCycle, (double)delta,
 			(unsigned int)rec.m_threadId);
 	}
@@ -80,9 +80,9 @@ void hxProfilerInternal_::writeToChromeTracing_(const char* filename) {
 			const hxProfilerRecord_& rec = m_records[i];
 			if (i != 0) { f.print(",\n"); }
 			const char* bn = hxBasename(rec.m_label);
-			f.print("{\"name\":\"%s\",\"cat\":\"PERF\",\"ph\":\"B\",\"pid\":0,\"tid\":%u,\"ts\":%.17g},\n",
+			f.print("{\"name\":\"%s\",\"cat\":\"PERF\",\"ph\":\"B\",\"pid\":0,\"tid\":%u,\"ts\":%.15g},\n",
 				bn, (unsigned int)rec.m_threadId, (double)(rec.m_begin - epoch) * c_hxMicrosecondsPerCycle);
-			f.print("{\"name\":\"%s\",\"cat\":\"PERF\",\"ph\":\"E\",\"pid\":0,\"tid\":%u,\"ts\":%.17g}",
+			f.print("{\"name\":\"%s\",\"cat\":\"PERF\",\"ph\":\"E\",\"pid\":0,\"tid\":%u,\"ts\":%.15g}",
 				bn, (unsigned int)rec.m_threadId, (double)(rec.m_end - epoch) * c_hxMicrosecondsPerCycle);
 		}
 	}
