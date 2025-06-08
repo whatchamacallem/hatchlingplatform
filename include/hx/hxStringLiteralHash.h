@@ -26,9 +26,27 @@
 
 #if HX_CPLUSPLUS && (HX_RELEASE) < 1
 // Do not use, this is just the implementation of HX_REGISTER_FILENAME_HASH.
-struct hxRegisterFileConstructor { hxRegisterFileConstructor(const char* s_); };
+// This code avoids any memory allocations.
+class hxRegisterFileConstructor {
+public:
+	typedef const char* Key;
 
-#define HX_REGISTER_FILENAME_HASH static hxRegisterFileConstructor s_hxRegisterFileConstructor(__FILE__);
+	// permanently add object to hxStringLiteralHashes__.
+	hxRegisterFileConstructor(const char* key_, uint32_t hash_);
+	void* hashNext(void) const { return m_hashNext; }
+	void*& hashNext(void) { return m_hashNext; }
+	const char* key() const { return m_key; }
+	uint32_t hash() const { return m_hash; };
+
+private:
+	void* m_hashNext;
+	const char* m_key;
+	uint32_t m_hash;
+};
+
+#define HX_REGISTER_FILENAME_HASH static hxRegisterFileConstructor \
+	s_hxRegisterFileConstructor(__FILE__, hxStringLiteralHash(__FILE__));
+
 #else
 #define HX_REGISTER_FILENAME_HASH
 #endif

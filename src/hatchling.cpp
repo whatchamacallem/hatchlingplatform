@@ -51,24 +51,27 @@ HX_STATIC_ASSERT(0, "exceptions should not be enabled");
 
 #if (HX_RELEASE) < 1
 namespace {
-typedef hxHashTable<hxHashTableNodeStringLiteral, 5> hxHashStringLiteral;
+struct hxHashStringLiteral : public hxHashTable<hxRegisterFileConstructor, 5> {
+	// the nodes are static global.  do not free.
+	~hxHashStringLiteral(void) { releaseAll(); }
+};
 
 struct hxFilenameLess {
-	inline bool operator()(const char*& lhs, const char*& rhs) const {
+	inline bool operator()(const char* lhs, const char* rhs) const {
 		return hxStringLiteralHashDebug(lhs) < hxStringLiteralHashDebug(rhs);
 	}
 };
 
-hxHashStringLiteral& hxStringLiteralHashes() {
-	static hxHashStringLiteral s_hxStringLiteralHashes;
-	return s_hxStringLiteralHashes;
+hxHashStringLiteral& hxStringLiteralHashes_() {
+	static hxHashStringLiteral s_hxStringLiteralHashes_;
+	return s_hxStringLiteralHashes_;
 }
 
 } // namespace {
 
-hxRegisterFileConstructor::hxRegisterFileConstructor(const char* s) {
-	hxInit();
-	hxStringLiteralHashes().insertUnique(s, hxMemoryAllocator_Heap);
+hxRegisterFileConstructor::hxRegisterFileConstructor(const char* key_, uint32_t hash_)
+		: m_hashNext(0), m_key(key_), m_hash(hash_) {
+	hxStringLiteralHashes_().insertNode(this);
 }
 
 void hxPrintFileHashes(void) {
@@ -76,10 +79,10 @@ void hxPrintFileHashes(void) {
 
 	typedef hxArray<const char*> Filenames;
 	Filenames filenames;
-	filenames.reserve(hxStringLiteralHashes().size());
+	filenames.reserve(hxStringLiteralHashes_().size());
 
-	hxHashStringLiteral::constIterator it = hxStringLiteralHashes().cBegin();
-	hxHashStringLiteral::constIterator end = hxStringLiteralHashes().cEnd();
+	hxHashStringLiteral::constIterator it = hxStringLiteralHashes_().cBegin();
+	hxHashStringLiteral::constIterator end = hxStringLiteralHashes_().cEnd();
 	for (; it != end; ++it) {
 		filenames.pushBack(it->key());
 	}
@@ -89,8 +92,6 @@ void hxPrintFileHashes(void) {
 	for (Filenames::iterator f = filenames.begin(); f != filenames.end(); ++f) {
 		hxLog("  %08x %s\n", hxStringLiteralHashDebug(*f), *f);
 	}
-
-	hxStringLiteralHashes().clear();
 }
 #endif
 

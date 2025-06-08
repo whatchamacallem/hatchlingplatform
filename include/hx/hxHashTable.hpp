@@ -240,10 +240,9 @@ public:
 	// - alignment_: The alignment for allocation.
 	// Any allocation required uses hxMemoryAllocator allocator_ and alignment_.
 	HX_CONSTEXPR_FN Node& insertUnique(const Key& key_,
-								  hxMemoryAllocator allocator_=hxMemoryAllocator_Current,
-								  uintptr_t alignment_=HX_ALIGNMENT) {
+										hxMemoryAllocator allocator_=hxMemoryAllocator_Current,
+										uintptr_t alignment_=HX_ALIGNMENT) {
 		Node** pos_ = this->getBucketHead_(hxKeyHash(key_));
-		// this may be a down cast and a const cast.
 		for (Node* n_ = *pos_; n_; n_ = (Node*)n_->hashNext()) {
 			if (hxKeyEqual(n_->key(), key_)) {
 				return *n_;

@@ -27,7 +27,7 @@ static const hxcycles_t c_hxDefaultCyclesCutoff = 1000;
 static inline hxcycles_t hxTimeSampleCycles(void) {
     uint64_t cycles_ = 0; (void)cycles_;
 #if defined(__x86_64__) || defined(__i386__)
-    cycles_ = __rdtsc(); // get a modern compiler.
+    cycles_ = __rdtsc();
 #elif defined(__aarch64__)  // ARMv8-A 64-bit.
     __asm__ volatile("mrs %0, cntvct_el0" : "=r"(cycles_));
 #elif defined(__arm__)  // ARMv7-A 32-bit.
