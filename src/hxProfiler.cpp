@@ -59,9 +59,9 @@ void hxProfilerInternal_::log_() {
 	for (size_t i = 0; i < m_records.size(); ++i) {
 		const hxProfilerRecord_& rec = m_records[i];
 
-		size_t delta = rec.m_end - rec.m_begin;
-		hxLogRelease("profile %s: %fms cycles %u thread %x\n", hxBasename(rec.m_label),
-			delta * (double)c_hxTimeMillisecondsPerCycle, (unsigned int)delta,
+		hxcycles_t delta = rec.m_end - rec.m_begin;
+		hxLogRelease("profile %s: %.17gms cycles %.17g thread %x\n", hxBasename(rec.m_label),
+			(double)delta * c_hxMillisecondsPerCycle, (double)delta,
 			(unsigned int)rec.m_threadId);
 	}
 }
@@ -73,16 +73,18 @@ void hxProfilerInternal_::writeToChromeTracing_(const char* filename) {
 	hxFile f(hxFile::out, "%s", filename);
 
 	f.print("[\n");
-	// Converting absolute values works better with integer precision.
-	size_t cyclesPerMicrosecond = (size_t)(1.0e-3f / c_hxTimeMillisecondsPerCycle);
-	for (size_t i = 0; i < m_records.size(); ++i) {
-		const hxProfilerRecord_& rec = m_records[i];
-		if (i != 0) { f.print(",\n"); }
-		const char* bn = hxBasename(rec.m_label);
-		f.print("{\"name\":\"%s\",\"cat\":\"PERF\",\"ph\":\"B\",\"pid\":0,\"tid\":%u,\"ts\":%u},\n",
-			bn, (unsigned int)rec.m_threadId, (unsigned int)(rec.m_begin / cyclesPerMicrosecond));
-		f.print("{\"name\":\"%s\",\"cat\":\"PERF\",\"ph\":\"E\",\"pid\":0,\"tid\":%u,\"ts\":%u}",
-			bn, (unsigned int)rec.m_threadId, (unsigned int)(rec.m_end / cyclesPerMicrosecond));
+	if(!m_records.empty()) {
+		// this works for 32-bit hxcycles_t too.
+		hxcycles_t epoch = m_records[0].m_begin;
+		for (size_t i = 0; i < m_records.size(); ++i) {
+			const hxProfilerRecord_& rec = m_records[i];
+			if (i != 0) { f.print(",\n"); }
+			const char* bn = hxBasename(rec.m_label);
+			f.print("{\"name\":\"%s\",\"cat\":\"PERF\",\"ph\":\"B\",\"pid\":0,\"tid\":%u,\"ts\":%.17g},\n",
+				bn, (unsigned int)rec.m_threadId, (double)(rec.m_begin - epoch) * c_hxMicrosecondsPerCycle);
+			f.print("{\"name\":\"%s\",\"cat\":\"PERF\",\"ph\":\"E\",\"pid\":0,\"tid\":%u,\"ts\":%.17g}",
+				bn, (unsigned int)rec.m_threadId, (double)(rec.m_end - epoch) * c_hxMicrosecondsPerCycle);
+		}
 	}
 	f.print("\n]\n");
 

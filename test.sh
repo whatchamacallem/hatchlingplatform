@@ -2,10 +2,11 @@
 # Copyright 2017-2025 Adrian Johnston
 #
 # Tests Hatchling Platform with gcc and clang in a variety of configurations.
+# Tests C99, C17, C++98, C++11 and C++17.
 #
 # Adds script args to compiler command line using "$@" so for example calling
 #
-#   ./test.sh -DHX_TEST_DIE_AT_THE_END=1
+#   ./test.sh -DHX_TEST_ERROR_HANDLING=1
 #
 # will run the tests with HX_TEST_ERROR_HANDLING defined to be 1.
 set -o errexit
@@ -17,28 +18,28 @@ export GREP_COLORS='mt=0;32' # green
 WARNINGS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter"
 
-# Test undefined behavior/address use with clang. Uses pch.
+# Test undefined behavior/address use with clang. Uses pch and allows exceptions
+# just to make sure there are none.
 clang --version | grep clang
 for I in 0 1 2 3; do
 echo clang UBSan -O$I "$@"...
 # compile C
-clang -Iinclude -O$I -ffast-math -ggdb $WARNINGS -pedantic-errors -DHX_RELEASE=$I "$@" \
+clang -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" \
 	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address \
-	-std=c99 -c src/*.c test/*.c
+	-std=c17 -c src/*.c test/*.c
 # generate pch. clang does this automatically when a c++ header file is the target.
 clang++ -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
-	-DHX_USE_CPP_THREADS=$I -DHX_USE_CHRONO=$I "$@" -pthread -std=c++14 \
+	-DHX_USE_CPP_THREADS=$I -DHX_USE_CHRONO=$I "$@" -pthread -std=c++17 -fno-exceptions \
 	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address \
-	-fno-exceptions include/hx/hatchlingPch.hpp -o hatchlingPch.hpp.pch
+	include/hx/hatchlingPch.hpp -o hatchlingPch.hpp.pch
 # compile C++ and link
 clang++ -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
-	-DHX_USE_CPP_THREADS=$I -DHX_USE_CHRONO=$I "$@" -pthread -std=c++14 \
+	-DHX_USE_CPP_THREADS=$I -DHX_USE_CHRONO=$I "$@" -pthread -std=c++17 -fno-exceptions \
 	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address -lubsan \
-	-fno-exceptions -include-pch hatchlingPch.hpp.pch */*.cpp *.o -lpthread -lstdc++ -o hxtest
+	-include-pch hatchlingPch.hpp.pch */*.cpp *.o -lpthread -lstdc++ -o hxtest
 ./hxtest | grep '\[  PASSED  \]' --color || ./hxtest
 rm hxtest *.o
 done
-
 
 # The -m32 switch enables 32-bit compilation.  You will need these packages on Ubuntu:
 #   sudo apt-get install gcc-multilib g++-multilib

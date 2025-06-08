@@ -85,7 +85,7 @@ void hxDmaStartLabeled(void* dst, const void* src, size_t bytes, const char* lab
 void hxDmaAwaitSyncPointLabeled(struct hxDmaSyncPoint& syncPoint, const char* labelStringLiteral) {
 	(void)syncPoint;
 	hxProfileScopeMin((labelStringLiteral ? labelStringLiteral : "dma await"),
-		c_hxTimeDefaultTimingCutoff); (void)labelStringLiteral;
+		c_hxDefaultCyclesCutoff); (void)labelStringLiteral;
 	HX_STATIC_ASSERT(!HX_USE_DMA_HARDWARE, "TODO: Configure for target.");
 
 #if HX_DEBUG_DMA

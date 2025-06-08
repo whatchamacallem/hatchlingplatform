@@ -10,7 +10,8 @@
 //
 // Sorts the elements in the range [begin_, end_) in comparison order using
 // the insertion sort algorithm.  The end_ parameter points past the end of
-// the array.
+// the array. Exceptions during operation are not supported. Declare your
+// copy constructor and assignment operator noexcept or turn off exceptions.
 //
 // The compare parameter is a function object that returns true if the first
 // argument is ordered before (i.e. is less than) the second.  See hxKeyLess.
@@ -62,7 +63,8 @@ void hxInsertionSort(T_* begin_, T_* end_) {
 // - less_: Comparison function object.
 template<typename T_, typename Less_>
 T_* hxBinarySearch(T_* begin_, T_* end_, const T_& val_, const Less_& less_) {
-    if(begin_ == end_) { return hxnull; } // don't operate on null.
+    // don't operate on null pointer args. unallocated containers have this.
+    if(begin_ == end_) { return hxnull; }
 
     ptrdiff_t a_ = 0;
     ptrdiff_t b_ = end_ - begin_ - 1;
@@ -140,8 +142,11 @@ protected:
         // Constructor for a floating-point key and associated value.
         // Adjusts the key to handle floating-point sorting correctly.
         KeyValuePair(float key_, void* val_)
-            : m_key((uint32_t)((uint32_t&)key_ ^ (((int32_t&)key_ >> 31) | 0x80000000))), m_val(val_)
+            : m_val(val_)
         {
+            uint32_t t_;
+            ::memcpy(&t_, &key_, sizeof t_);
+            m_key = t_ ^ (uint32_t)(((int32_t)t_ >> 31) | 0x80000000);
         }
 
         // Comparison operator for sorting KeyValuePair objects by key.
@@ -262,13 +267,18 @@ public:
     // Returns true if the array is empty, false otherwise.
     bool empty() const { return m_array.empty(); }
 
+    // Returns true if the array is full, false otherwise.
+    bool full() const { return m_array.full(); }
+
     // Adds a key and value pointer to the array. Ownership is not taken.
     // Parameters:
     // - key_: The key used for sorting.
     // - val_: Pointer to the value associated with the key.
     void insert(Key key_, Value* val_) {
-        // std::remove_cv would be better but it isn't worth the ifdef.
-        // the radix sort uses void* to avoid template bloat.
+        hxAssertMsg(!this->full(), "cannot reallocate");
+
+        // This radix sort uses void* to avoid template bloat. The casts are not
+        // required by the standard, but fix -Wcast-qual for a const Value.
         ::new(m_array.emplaceBackUnconstructed())
             KeyValuePair(key_, const_cast<void*>((const void*)val_));
     }

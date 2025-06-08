@@ -149,7 +149,7 @@ TEST_F(hxHashTableTest, Multiple) {
 		// Table will be overloaded.
 		typedef hxHashTable<TestInteger> Table;
 		Table table;
-		table.setHashBits(5);
+		table.setTableSizeBits(5);
 
 		// Insert N elements
 		for (int i = 0; i < N; ++i) {

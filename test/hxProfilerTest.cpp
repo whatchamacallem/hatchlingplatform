@@ -42,8 +42,8 @@ public:
 		}
 
 		virtual void generateScopes(float targetMs) {
-			size_t startCycles = hxTimeSampleCycles();
-			size_t delta = 0u;
+			hxcycles_t startCycles = hxTimeSampleCycles();
+			hxcycles_t delta = 0u;
 
 			// Open up a sub-scope if time allows.
 			if (targetMs >= 2.0f) {
@@ -53,7 +53,7 @@ public:
 				generateScopes(subtarget);
 			}
 
-			while ((float)delta * c_hxTimeMillisecondsPerCycle < targetMs) {
+			while ((double)delta * c_hxMillisecondsPerCycle < targetMs) {
 				// Perform work that might not be optimized away by the compiler.
 				size_t ops = (m_accumulator & 0xf) + 1;
 				for (size_t i = 0; i < ops; ++i) {

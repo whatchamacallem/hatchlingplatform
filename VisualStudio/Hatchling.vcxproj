@@ -53,7 +53,6 @@
     <ClInclude Include="..\include\hx\hxTask.hpp" />
     <ClInclude Include="..\include\hx\hxTaskQueue.hpp" />
     <ClInclude Include="..\include\hx\hxTest.hpp" />
-    <ClInclude Include="..\include\hx\hxTime.hpp" />
     <ClInclude Include="..\include\hx\internal\hxConsoleInternal.h" />
     <ClInclude Include="..\include\hx\internal\hxHashTableInternal.h" />
     <ClInclude Include="..\include\hx\internal\hxProfilerInternal.h" />

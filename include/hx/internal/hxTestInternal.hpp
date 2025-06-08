@@ -25,7 +25,7 @@ public:
 	enum {
 		TEST_MAX_FAIL_MESSAGES_ = 5,
 #if !defined(HX_TEST_MAX_CASES)
-		HX_TEST_MAX_CASES = 256
+		HX_TEST_MAX_CASES = 1024
 #endif
 	};
 
@@ -44,7 +44,9 @@ public:
 	void addTest_(hxTestCaseBase_* fn_) {
 		// Use -DHX_TEST_MAX_CASES to provide enough room for all tests.
 		hxAssertRelease(m_numFactories < HX_TEST_MAX_CASES, "HX_TEST_MAX_CASES overflow\n");
-		m_factories[m_numFactories++] = fn_;
+		if(m_numFactories < HX_TEST_MAX_CASES) {
+			m_factories[m_numFactories++] = fn_;
+		}
 	}
 
 	// message is required to end with an \n.  Returns equivalent of /dev/null on
@@ -58,7 +60,7 @@ public:
 				if (m_assertFailCount == TEST_MAX_FAIL_MESSAGES_) {
 					hxLogConsole("remaining asserts will fail silently...\n");
 				}
-				return devNull_();
+				return fileNull_();
 			}
 
 			// prints full path error messages that can be clicked on in an ide.
@@ -66,9 +68,9 @@ public:
 			hxLogHandler(hxLogLevel_Assert, "%s(%zu): %s", file_, line_, message_);
 
 			hxAssertMsg(HX_TEST_ERROR_HANDLING, "unplanned test fail");
-			return devNull_();
+			return fileLog_();
 		}
-		return devNull_();
+		return fileNull_();
 	}
 
 	size_t executeAllTests_() {
@@ -120,10 +122,8 @@ public:
 	}
 
 private:
-	hxFile& devNull_() {
-		static hxFile f_(hxFile::out | hxFile::fallible); // Allows writes to fail.
-		return f_;
-	}
+	hxFile& fileNull_() { static hxFile f_(hxFile::out | hxFile::failable); return f_; }
+	hxFile& fileLog_()  { static hxFile f_(hxFile::out | hxFile::stdio); return f_; }
 
 	hxTestSuiteExecutor_(const hxTestSuiteExecutor_&) HX_DELETE_FN;
 	void operator=(const hxTestSuiteExecutor_&) HX_DELETE_FN;

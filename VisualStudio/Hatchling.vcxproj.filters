@@ -91,9 +91,6 @@
     <ClInclude Include="..\include\hx\hxTest.hpp">
       <Filter>include\hx</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\hx\hxTime.hpp">
-      <Filter>include\hx</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\hx\internal\hxConsoleInternal.h">
       <Filter>include\hx\internal</Filter>
     </ClInclude>

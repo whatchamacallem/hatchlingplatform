@@ -2,38 +2,67 @@
 // Copyright 2017-2025 Adrian Johnston
 
 #include <hx/hatchling.h>
-#include <hx/hxTime.hpp>
-#include <hx/hxArray.hpp>
+
+// hxcycles_t stores approx. 3 seconds to 300 years worth of processor cycles
+// starting from an unspecified origin and wrapping using unsigned rules. this is
+// intended for profiling, not calendaring.
+typedef size_t hxcycles_t;
 
 #if HX_PROFILE
 #include <hx/internal/hxProfilerInternal.hpp>
 #define HX_PROFILE_ONLY_(x_) x_
-#else // !HX_PROFILE
+#else
 #define HX_PROFILE_ONLY_(x_) ((void)0)
 #endif
 
-// ----------------------------------------------------------------------------
-// hxProfilerInternal_ API
-//
-// hxProfileScope declares an RAII-style profiling sample.  WARNING: A pointer
-// to labelStringLiteral is kept.  c_hxProfilerDefaultSamplingCutoff is provided
-// in hxTime.h as a recommended MinCycles cutoff.
+// TODO: customize for your processor speed. This assumes 2ghz. These are really
+// only used with printf which promotes everything to double anyhow.
+static const double c_hxCyclesPerSecond = 2.0e+6;
+static const double c_hxMillisecondsPerCycle = 1.0e+3 / c_hxCyclesPerSecond;
+static const double c_hxMicrosecondsPerCycle = 1.0e+6 / c_hxCyclesPerSecond;
+static const hxcycles_t c_hxDefaultCyclesCutoff = 1000;
 
-// hxProfileScope(const char* labelStringLiteral)
+// TODO: Set up the processor cycle counter for your architecture. This is
+// callable without enabling HX_PROFILE.
+static inline hxcycles_t hxTimeSampleCycles(void) {
+    uint64_t cycles_ = 0; (void)cycles_;
+#if defined(__x86_64__) || defined(__i386__)
+    cycles_ = __rdtsc(); // get a modern compiler.
+#elif defined(__aarch64__)  // ARMv8-A 64-bit.
+    __asm__ volatile("mrs %0, cntvct_el0" : "=r"(cycles_));
+#elif defined(__arm__)  // ARMv7-A 32-bit.
+    uint32_t t_;
+    __asm__ volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(t_));
+    cycles_ = (uint64_t)t_;
+#elif defined(__riscv) && (__riscv_xlen == 64)
+    __asm__ volatile("rdcycle %0" : "=r"(cycles_));
+#elif defined(__powerpc__) || defined(__ppc__)
+    __asm__ volatile("mftb %0" : "=r"(cycles_));
+#else
+HX_STATIC_ASSERT(0, "implement hxTimeSampleCycles");
+#endif
+    return (hxcycles_t)cycles_;
+}
+
+// hxProfileScope(const char* labelStringLiteral) declares an RAII-style profiling
+// sample.  WARNING: A pointer to labelStringLiteral is kept.
+// c_hxProfilerDefaultSamplingCutoff is provided. as a recommended MinCycles cutoff.
+// Compiles to a NOP when not in use.
 #define hxProfileScope(labelStringLiteral_) \
 	HX_PROFILE_ONLY_( hxProfilerScopeInternal_<> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral_) )
 
-// hxProfileScopeMin(const char* labelStringLiteral, size_t minCycles)
+// hxProfileScopeMin(const char* labelStringLiteral, hxcycles_t minCycles). Compiles
+// to a NOP when not in use.
 #define hxProfileScopeMin(labelStringLiteral_, minCycles_) \
 	HX_PROFILE_ONLY_( hxProfilerScopeInternal_<minCycles_> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral_) )
 
-// Clears samples and begins sampling.
+// Clears samples and begins sampling. Compiles to a NOP when not in use.
 #define hxProfilerBegin() HX_PROFILE_ONLY_( g_hxProfiler_.start_() )
 
-// Ends sampling.  Does not clear samples.
+// Ends sampling.  Does not clear samples. Compiles to a NOP when not in use.
 #define hxProfilerEnd() HX_PROFILE_ONLY_( g_hxProfiler_.stop_() )
 
-// Stops sampling and writes samples to the system log.
+// Stops sampling and writes samples to the system log. Compiles to a NOP when not in use.
 #define hxProfilerLog() HX_PROFILE_ONLY_( g_hxProfiler_.log_() )
 
 // Stops sampling and writes samples to the provided filename.
@@ -41,4 +70,6 @@
 // data in a format usable by Chrome's chrome://tracing view.  Usage: In Chrome
 // go to "chrome://tracing/". Load the generated json file.  Use the W/A/S/D keys.
 // See http://www.chromium.org/developers/how-tos/trace-event-profiling-tool
-#define hxProfilerWriteToChromeTracing(filename_) HX_PROFILE_ONLY_( g_hxProfiler_.writeToChromeTracing_(filename_) )
+// Compiles to a NOP when not in use.
+#define hxProfilerWriteToChromeTracing(filename_) \
+	HX_PROFILE_ONLY_( g_hxProfiler_.writeToChromeTracing_(filename_) )

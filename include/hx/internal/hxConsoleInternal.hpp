@@ -125,7 +125,7 @@ template<> struct hxConsoleArg_<const char*> {
 		value_ = str_;
 
 		// the end of line pointer must be valid to compare < with str_.
-		while(*str_ != '\n') { ++str_; }
+		while(*str_ != '\0') { ++str_; }
 		*next_ = const_cast<char*>(str_);
 	}
 	HX_CONSTEXPR_FN static const char* getLabel_() { return "char*"; }

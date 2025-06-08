@@ -87,7 +87,7 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK)
 
 // Assert handler.  Do not call directly, signature changes and then is removed.
-int hxAssertHandler(const char* file_, size_t line_) HX_NOEXCEPT;
+HX_NOEXCEPT int hxAssertHandler(const char* file_, size_t line_);
 
 // Logs an error and terminates execution if x_ is false up to release level 2.
 // This is only evaluated when HX_RELEASE < 3.
@@ -101,7 +101,7 @@ int hxAssertHandler(const char* file_, size_t line_) HX_NOEXCEPT;
 #define hxLog(...) ((void)0)
 #define hxAssertMsg(x_, ...) ((void)0)
 #define hxAssert(x_) ((void)0)
-HX_NORETURN void hxAssertHandler(uint32_t file_, size_t line_) HX_NOEXCEPT;
+HX_NOEXCEPT HX_NORETURN void hxAssertHandler(uint32_t file_, size_t line_);
 #endif
 
 #if (HX_RELEASE) <= 1
@@ -168,7 +168,7 @@ void hxShutdown(void);
 // - level_: The log level (e.g., hxLogLevel_Log, hxLogLevel_Warning).
 // - format_: A printf-style format string.
 // - ...: Additional arguments for the format string.
-void hxLogHandler(enum hxLogLevel level_, const char* format_, ...) HX_NOEXCEPT HX_ATTR_FORMAT(2, 3);
+HX_NOEXCEPT void hxLogHandler(enum hxLogLevel level_, const char* format_, ...) HX_ATTR_FORMAT(2, 3);
 
 // A va_list version of hxLogHandler.
 // This is the only access to logging when when HX_RELEASE > 2.
@@ -176,7 +176,7 @@ void hxLogHandler(enum hxLogLevel level_, const char* format_, ...) HX_NOEXCEPT 
 // - level_: The log level (e.g., hxLogLevel_Log, hxLogLevel_Warning).
 // - format_: A printf-style format string.
 // - args_: A va_list containing the arguments for the format string.
-void hxLogHandlerV(enum hxLogLevel level_, const char* format_, va_list args_) HX_NOEXCEPT;
+HX_NOEXCEPT void hxLogHandlerV(enum hxLogLevel level_, const char* format_, va_list args_);
 
 // Prints an array of bytes formatted in hexadecimal. Additional information
 // provided when pretty is non-zero.
@@ -205,7 +205,7 @@ uint32_t hxStringLiteralHashDebug(const char* string_);
 
 #if (HX_RELEASE) < 1
 // Prints file name hashes registered with HX_REGISTER_FILENAME_HASH. Use after main().
-void hxPrintFileHashes(void) HX_NOEXCEPT;
+void hxPrintFileHashes(void);
 #else
 #define hxPrintFileHashes() ((void)0)
 #endif

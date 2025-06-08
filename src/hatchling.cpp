@@ -99,19 +99,11 @@ void hxPrintFileHashes(void) {
 
 void hxSettingsConstruct();
 
-#if HX_USE_CHRONO
-std::chrono::high_resolution_clock::time_point g_hxTimeStart;
-#endif
-
 extern "C"
 void hxInitInternal(void) {
 	hxAssertRelease(!g_hxIsInit, "call hxInit() instead");
 	hxSettingsConstruct();
 	g_hxIsInit = 1;
-
-#if HX_USE_CHRONO
-	g_hxTimeStart = std::chrono::high_resolution_clock::now();
-#endif
 
 #if HX_FLOATING_POINT_TRAPS
 	// You need the math library -lm. This is nonstandard glibc/_GNU_SOURCE.
@@ -123,7 +115,7 @@ void hxInitInternal(void) {
 }
 
 extern "C"
-void hxLogHandler(enum hxLogLevel level, const char* format, ...) {
+HX_NOEXCEPT void hxLogHandler(enum hxLogLevel level, const char* format, ...) {
 	va_list args;
 	va_start(args, format);
 	hxLogHandlerV(level, format, args);
@@ -133,7 +125,7 @@ void hxLogHandler(enum hxLogLevel level, const char* format, ...) {
 #define HX_STDOUT_STR_(x) ::fwrite(x, (sizeof x) - 1, 1, stdout)
 
 extern "C"
-void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
+HX_NOEXCEPT void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
 	if(g_hxIsInit && g_hxSettings.logLevel > level) {
 		return;
 	}
@@ -171,7 +163,7 @@ void hxShutdown(void) {
 
 #if (HX_RELEASE) == 0
 extern "C"
-int hxAssertHandler(const char* file, size_t line) {
+HX_NOEXCEPT int hxAssertHandler(const char* file, size_t line) {
 	const char* f = hxBasename(file);
 	if (g_hxIsInit && g_hxSettings.assertsToBeSkipped > 0) {
 		--g_hxSettings.assertsToBeSkipped;
@@ -187,7 +179,7 @@ int hxAssertHandler(const char* file, size_t line) {
 }
 #else
 extern "C" HX_NORETURN
-void hxAssertHandler(uint32_t file, size_t line) {
+HX_NOEXCEPT void hxAssertHandler(uint32_t file, size_t line) {
 	hxLogHandler(hxLogLevel_Assert, "file %08x line %u\n", (unsigned int)file, (unsigned int)line);
 	_Exit(EXIT_FAILURE);
 }

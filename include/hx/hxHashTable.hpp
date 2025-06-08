@@ -102,7 +102,7 @@ protected:
 //
 // Node must be a subclass of hxHashTableNode with the interface described above.
 // If non-zero TableSizeBits_ configures the size of the hash table to be HashBits^2.
-// Otherwise use setHashBits() to configure hash bits dynamically.
+// Otherwise use setTableSizeBits() to configure hash bits dynamically.
 
 template<typename Node_, uint32_t TableSizeBits_=hxAllocatorDynamicCapacity>
 class hxHashTable {
@@ -151,8 +151,8 @@ public:
 		// Advances the iterator to the next non-empty bucket.
 		HX_CONSTEXPR_FN void nextBucket() {
 			hxAssert(m_hashTable && !m_currentNode);
-			while (m_nextIndex < m_hashTable->m_table.getCapacity()) {
-				if (Node* n_ = m_hashTable->m_table.getStorage()[m_nextIndex++]) {
+			while (m_nextIndex < m_hashTable->m_table.capacity()) {
+				if (Node* n_ = m_hashTable->m_table.data()[m_nextIndex++]) {
 					m_currentNode = n_;
 					return;
 				}
@@ -377,8 +377,8 @@ public:
 	HX_CONSTEXPR_FN void clear(const Deleter_& deleter_) {
 		if (deleter_) {
 			if (m_size != 0u) {
-				Node** itEnd_ = m_table.getStorage() + m_table.getCapacity();
-				for (Node** it_ = m_table.getStorage(); it_ != itEnd_; ++it_) {
+				Node** itEnd_ = m_table.data() + m_table.capacity();
+				for (Node** it_ = m_table.data(); it_ != itEnd_; ++it_) {
 					if (Node* n_ = *it_) {
 						*it_ = 0;
 						while (Node* t_ = n_) {
@@ -401,18 +401,18 @@ public:
 	// Clears the hash table without deleting any Nodes.
 	HX_CONSTEXPR_FN void releaseAll() {
 		if (m_size != 0u) {
-			::memset(m_table.getStorage(), 0x00, sizeof(Node*) * m_table.getCapacity());
+			::memset(m_table.data(), 0x00, sizeof(Node*) * m_table.capacity());
 			m_size = 0u;
 		}
 	}
 
 	// Returns the number of buckets in the hash table.
-	HX_CONSTEXPR_FN uint32_t bucketCount() const { return m_table.getCapacity(); };
+	HX_CONSTEXPR_FN uint32_t bucketCount() const { return m_table.capacity(); };
 
 	// Sets the number of hash bits (only for dynamic capacity).
 	// Parameters:
 	// - bits_: The number of hash bits to set for the hash table.
-	HX_CONSTEXPR_FN void setHashBits(uint32_t bits_) { return m_table.setHashBits(bits_); };
+	HX_CONSTEXPR_FN void setTableSizeBits(uint32_t bits_) { return m_table.setTableSizeBits(bits_); };
 
 	// Returns the average number of Nodes per bucket.
 	HX_CONSTEXPR_FN float loadFactor() const { return (float)m_size / (float)this->bucketCount(); }
@@ -421,8 +421,8 @@ public:
 	uint32_t loadMax() const {
 		// An unallocated table will be ok.
 		uint32_t maximum_=0u;
-		const Node*const* itEnd_ = m_table.getStorage() + m_table.getCapacity();
-		for (const Node*const* it_ = m_table.getStorage(); it_ != itEnd_; ++it_) {
+		const Node*const* itEnd_ = m_table.data() + m_table.capacity();
+		for (const Node*const* it_ = m_table.data(); it_ != itEnd_; ++it_) {
 			uint32_t count_=0u;
 			for (const Node* n_ = *it_; n_; n_ = (const Node*)n_->hashNext()) {
 				++count_;
@@ -441,14 +441,14 @@ private:
 	// Pointer to head of singly-linked list for key's hash value.
 	HX_CONSTEXPR_FN Node** getBucketHead_(uint32_t hash_) {
 		uint32_t index_ = hash_ >> (32u - m_table.getTableSizeBits());
-		hxAssert(index_ < m_table.getCapacity());
-		return m_table.getStorage() + index_;
+		hxAssert(index_ < m_table.capacity());
+		return m_table.data() + index_;
 	}
 
 	HX_CONSTEXPR_FN const Node*const* getBucketHead_(uint32_t hash_) const {
 		uint32_t index_ = hash_ >> (32u - m_table.getTableSizeBits());
-		hxAssert(index_ < m_table.getCapacity());
-		return m_table.getStorage() + index_;
+		hxAssert(index_ < m_table.capacity());
+		return m_table.data() + index_;
 	}
 
 	uint32_t m_size;

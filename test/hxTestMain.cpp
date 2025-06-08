@@ -16,7 +16,6 @@
 #include <hx/hxTask.hpp>
 #include <hx/hxTaskQueue.hpp>
 #include <hx/hxTest.hpp> // May include Google Test.
-#include <hx/hxTime.hpp>
 
 #include <stdio.h>
 
@@ -35,7 +34,7 @@ TEST(hxDeathTest, Fail) {
 	hxLog("TEST_EXPECTING_ASSERTS:\n");
 	SUCCEED();
 	for (int i = 10; i--;) {
-		FAIL() << "this message is omitted.\n";
+		FAIL() << "this message is intentionally blank.\n";
 	}
 }
 TEST(hxDeathTest, NothingAsserted) {
@@ -46,12 +45,10 @@ TEST(hxDeathTest, NothingAsserted) {
 size_t hxTestMain() {
 	hxInit();
 
-	hxLogConsole("hatchling platform " HATCHLING_TAG "\n");
-	hxLogConsole("release %d profile %d flags %d%d%d build: " __DATE__ " " __TIME__ "\n",
-		(int)(HX_RELEASE), (int)(HX_PROFILE), (int)(HX_USE_CPP_THREADS),
-		(int)(HX_USE_CHRONO), (int)(HX_MEM_DIAGNOSTIC_LEVEL));
-	hxLogConsole("sizeof(size_t)=%d, ", (int)sizeof(size_t));
-	hxLogConsole("PCH used=%d, emoji=🐉🐉🐉\n", (int)HX_HATCHLING_PCH_USED);
+	hxLogConsole("hatchling platform 🐉🐉🐉 " HATCHLING_TAG "\n");
+	hxLogConsole("release: %d profile: %d " __DATE__ " " __TIME__ "\n",
+		(int)(HX_RELEASE), (int)(HX_PROFILE));
+	hxWarnCheck(HX_HATCHLING_PCH_USED, "pch not used");
 
 	char bytes[48] = { };
 	snprintf(bytes, 48, "%s", "The quick brown fox jumps over the lazy dog....");

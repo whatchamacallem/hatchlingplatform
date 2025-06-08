@@ -11,15 +11,19 @@ class hxFile;
 
 class hxFile {
 public:
-	// openMode is a subset of std::ios_base::openmode with fallible added.
-	// fallible skips asserts and is similar to setting std::basic_ios::exceptions(0).
+	// openMode::in/out are from std::ios_base::openmode and indicate I/O mode.
+	// openMode::stdio provides access to stdio.
+	// failable skips asserts and is similar to setting std::basic_ios::exceptions(0).
 	enum openMode {
-		in = 1u << 0,   	// Open for binary reading.
-		out = 1u << 1,  	// Open for binary writing.
-		fallible = 1u << 2  // Skip asserts.
+		in = 1u,         // Open for binary reading.
+		out = 2u,        // Open for binary writing.
+		stdio = 4u,      // Access stdio as in or out but not both.
+		failable = 8u    // Skip asserts.
 	};
 
 	// Constructor to initialize the file object with a specific mode.
+	// For an unopened file use 0.  For stdio use (stdio|in), (stdio|out).
+	// stdio may be failble.
 	hxFile(uint16_t mode_=0u);
 
 	// Constructor to initialize and open a file with a formatted filename.
@@ -66,7 +70,7 @@ public:
 	size_t write(const void* bytes_, size_t count_);
 
 	// Reads an \n or EOF terminated character sequence. Allowed to fail on
-	// EOF without needing to be hxFile::fallible. Automatically determines
+	// EOF without needing to be hxFile::failable. Automatically determines
 	// the size of the provided char array.
 	// Parameters:
 	// - buffer_: Reference to a char array where the line will be stored.
@@ -74,7 +78,7 @@ public:
 	HX_CONSTEXPR_FN bool getLine(char(&buffer_)[BufferSize_]) { return getLine(buffer_, BufferSize_); }
 
 	// Reads an \n or EOF terminated character sequence. Allowed to fail on EOF
-	// without needing to be hxFile::fallible.
+	// without needing to be hxFile::failable.
 	// Parameters:
 	// - buffer_: Pointer to a char array where the line will be stored.
 	// - bufferSize_: Size of the buffer array.

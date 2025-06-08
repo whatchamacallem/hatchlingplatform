@@ -13,10 +13,10 @@ template<typename Node_, uint32_t TableSizeBits_>
 class hxHashTableInternalAllocator_ : public hxAllocator<Node_*, 1u << TableSizeBits_> {
 public:
 	HX_CONSTEXPR_FN hxHashTableInternalAllocator_() {
-		::memset(this->getStorage(), 0x00, sizeof(Node_*) * this->getCapacity());
+		::memset(this->data(), 0x00, sizeof(Node_*) * this->capacity());
 	}
 	HX_CONSTEXPR_FN uint32_t getTableSizeBits() const { return TableSizeBits_; }
-	HX_CONSTEXPR_FN void setHashBits(uint32_t bits) {
+	HX_CONSTEXPR_FN void setTableSizeBits(uint32_t bits) {
 		hxAssertMsg(bits == TableSizeBits_, "resizing static hash table"); (void)bits;
 	}
 };
@@ -32,13 +32,13 @@ public:
 		return m_hashBits_;
 	}
 
-	HX_CONSTEXPR_FN void setHashBits(uint32_t bits_) {
+	HX_CONSTEXPR_FN void setTableSizeBits(uint32_t bits_) {
 		hxAssertMsg(m_hashBits_ == 0u || bits_ == m_hashBits_, "resizing dynamic hash table");
 		if (m_hashBits_ == 0u) {
 			hxAssertMsg(bits_ > 0u && bits_ <= 31u, "hash bits must be [1..31]");
 			m_hashBits_ = bits_;
 			this->reserveStorage(1u << bits_);
-			::memset(this->getStorage(), 0x00, sizeof(Node_*) * this->getCapacity());
+			::memset(this->data(), 0x00, sizeof(Node_*) * this->capacity());
 		}
 	}
 

@@ -7,6 +7,16 @@
 #error #include <hx/hxProfiler.h> instead
 #endif
 
+#include <hx/hxArray.hpp>
+
+#if defined(__x86_64__) || defined(__i386__)
+#ifdef _MSC_VER
+#include <intrin.h>
+#else
+#include <x86intrin.h>
+#endif
+#endif
+
 #if HX_USE_CPP_THREADS
 #include <mutex>
 
@@ -14,6 +24,8 @@
 #else
 #define HX_PROFILER_LOCK_() (void)0
 #endif
+
+static inline hxcycles_t hxTimeSampleCycles(void);
 
 // Use direct access to an object with static linkage for speed.
 extern class hxProfilerInternal_ g_hxProfiler_;
@@ -43,12 +55,12 @@ private:
 			: m_label(label_), m_begin(begin_), m_end(end_), m_threadId(threadId_) {
 		}
 		const char* m_label;
-		size_t m_begin;
-		size_t m_end;
+		hxcycles_t m_begin;
+		hxcycles_t m_end;
 		uint32_t m_threadId;
 	};
 
-	template<size_t MinCycles_> friend class hxProfilerScopeInternal_;
+	template<hxcycles_t MinCycles_> friend class hxProfilerScopeInternal_;
 
 	bool m_isStarted;
 #if HX_USE_CPP_THREADS
@@ -60,26 +72,26 @@ private:
 // ----------------------------------------------------------------------------
 // hxProfilerScopeInternal_
 
-template<size_t MinCycles_=0u>
+template<hxcycles_t MinCycles_=0u>
 class hxProfilerScopeInternal_ {
 public:
 	// See hxProfileScope() below.
 	inline hxProfilerScopeInternal_(const char* labelStringLiteral)
 		: m_label(labelStringLiteral)
 	{
-		HX_PROFILER_LOCK_();
-
-		m_t0 = g_hxProfiler_.m_isStarted ? hxTimeSampleCycles() : ~(size_t)0;
+		// fastest not to check if the profiler is running.
+		m_t0 = hxTimeSampleCycles();
 	}
 
 #if HX_CPLUSPLUS >= 202002L
 	constexpr
 #endif
 	~hxProfilerScopeInternal_() {
+		hxcycles_t t1_ = hxTimeSampleCycles();
+
 		HX_PROFILER_LOCK_();
 
-		if (m_t0 != ~(size_t)0) {
-			size_t t1_ = hxTimeSampleCycles();
+		if (g_hxProfiler_.m_isStarted) {
 			if ((t1_ - m_t0) >= MinCycles_) {
 				void* rec_ = g_hxProfiler_.m_records.emplaceBackUnconstructed();
 				if (rec_) {
@@ -95,5 +107,5 @@ private:
 	hxProfilerScopeInternal_(const hxProfilerScopeInternal_&) HX_DELETE_FN;
 	void operator=(const hxProfilerScopeInternal_&) HX_DELETE_FN;
 	const char* m_label;
-	size_t m_t0;
+	hxcycles_t m_t0;
 };
