@@ -3,8 +3,8 @@
 
 #include <hx/hatchling.h>
 
-// hxcycles_t stores approx. 3 seconds to 300 years worth of processor cycles
-// starting from an unspecified origin and wrapping using unsigned rules. this is
+// hxcycles_t - Stores approx. 3 seconds to 300 years worth of processor cycles
+// starting from an unspecified origin and wrapping using unsigned rules. This is
 // intended for profiling, not calendaring.
 typedef size_t hxcycles_t;
 
@@ -15,8 +15,9 @@ typedef size_t hxcycles_t;
 #define HX_PROFILE_ONLY_(x_) ((void)0)
 #endif
 
-// TODO: customize for your processor speed. This assumes 2ghz. These are really
-// only used with printf which promotes everything to double anyhow.
+// c_hxCyclesPerSecond - TODO: customize for your processor speed. This assumes
+// 2ghz. These are really only used with printf which promotes everything to
+// double anyhow.
 static const double c_hxCyclesPerSecond = 2.0e+9;
 static const double c_hxMillisecondsPerCycle = 1.0e+3 / c_hxCyclesPerSecond;
 static const double c_hxMicrosecondsPerCycle = 1.0e+6 / c_hxCyclesPerSecond;
@@ -49,12 +50,12 @@ HX_STATIC_ASSERT(0, "implement hxTimeSampleCycles");
 // c_hxProfilerDefaultSamplingCutoff is provided. as a recommended MinCycles cutoff.
 // Compiles to a NOP when not in use.
 #define hxProfileScope(labelStringLiteral_) \
-	HX_PROFILE_ONLY_( hxProfilerScopeInternal_<> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral_) )
+    HX_PROFILE_ONLY_( hxProfilerScopeInternal_<> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral_) )
 
 // hxProfileScopeMin(const char* labelStringLiteral, hxcycles_t minCycles). Compiles
 // to a NOP when not in use.
 #define hxProfileScopeMin(labelStringLiteral_, minCycles_) \
-	HX_PROFILE_ONLY_( hxProfilerScopeInternal_<minCycles_> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral_) )
+    HX_PROFILE_ONLY_( hxProfilerScopeInternal_<minCycles_> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral_) )
 
 // Clears samples and begins sampling. Compiles to a NOP when not in use.
 #define hxProfilerBegin() HX_PROFILE_ONLY_( g_hxProfiler_.start_() )
@@ -72,4 +73,4 @@ HX_STATIC_ASSERT(0, "implement hxTimeSampleCycles");
 // See http://www.chromium.org/developers/how-tos/trace-event-profiling-tool
 // Compiles to a NOP when not in use.
 #define hxProfilerWriteToChromeTracing(filename_) \
-	HX_PROFILE_ONLY_( g_hxProfiler_.writeToChromeTracing_(filename_) )
+    HX_PROFILE_ONLY_( g_hxProfiler_.writeToChromeTracing_(filename_) )

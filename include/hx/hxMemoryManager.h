@@ -12,18 +12,17 @@ extern "C" {
 #endif
 
 // ----------------------------------------------------------------------------
-// Memory Manager C API
+// hxMemoryAllocator - Memory Manager C API. Memory allocators are selected using
+// an id. These are the large system-wide allocators, not the per-object
+// hxAllocator which allocates from here.
 //
-// Memory allocators are selected using an id.  These are the large system-wide
-// allocators, not the per-object hxAllocator which allocates from here.
+// Nota bene: The current allocator is a thread local attribute.
 //
-// Nota bene:  The current allocator is a thread local attribute.
-//
-// Alignment is specified using a mask of those LSB bits that must be 0.  Which
+// Alignment is specified using a mask of those LSB bits that must be 0. Which
 // is a value 1 less than the actual power of two alignment.
 
-// The default alignment HX_ALIGNMENT allows for storing char pointers.
-// This alignment should work for most types.
+// HX_ALIGNMENT - The default alignment allows for storing char pointers. This
+// alignment should work for most types.
 #define HX_ALIGNMENT sizeof(char*)
 
 // hxMemoryAllocator. (See hxMemoryManager.cpp)
@@ -46,8 +45,8 @@ enum hxMemoryAllocator {
 //   is HX_ALIGNMENT.)
 void* hxMalloc(size_t size_);
 
-// Allocates memory of the specified size with a specific memory manager and alignment.
-// Will not return on failure.
+// hxMallocExt - Allocates memory of the specified size with a specific memory
+// manager and alignment. Will not return on failure.
 // Parameters:
 // - size_: The size of the memory to allocate.
 // - allocator_: The memory manager ID to use for allocation. (Default is hxMemoryAllocator_Current.)

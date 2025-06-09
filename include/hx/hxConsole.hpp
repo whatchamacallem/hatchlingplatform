@@ -6,29 +6,27 @@
 class hxFile;
 
 // ----------------------------------------------------------------------------
-// hxConsole API
-//
-// Implements a simple console for remote use or to implement configuration
-// files.  Output is directed to the system log with hxLogLevel_Console.  A
-// remote console will require forwarding commands to the target and reporting
-// the system log back.  Configuration files only require file I/O.  All calls
-// with up to 4 args which are fundamental types are supported.  Setting
-// variables of a fundamental type are also supported.  const char* args will
-// capture the remainder of the line including #'s.
+// hxConsole API - Implements a simple console for remote use or to implement
+// configuration files. Output is directed to the system log with
+// hxLogLevel_Console. A remote console will require forwarding commands to the
+// target and reporting the system log back. Configuration files only require
+// file I/O. All calls with up to 4 args which are fundamental types are
+// supported. Setting variables of a fundamental type are also supported.
+// const char* args will capture the remainder of the line including #'s.
 
-// Registers a function using a global constructor.  Use in a global scope.
-// Command will have the same name and args as the function.  x_ must be a
-// valid C identifier that evaluates to a function pointer.
+// hxConsoleCommand - Registers a function using a global constructor. Use in a
+// global scope. Command will have the same name and args as the function. x_
+// must be a valid C identifier that evaluates to a function pointer.
 //   E.g. hxConsoleCommand(srand);
 #define hxConsoleCommand(x_) static hxConsoleConstructor_ \
-	HX_CONCATENATE(g_hxConsoleSymbol_,x_)(hxConsoleCommandFactory_(&(x_)), HX_QUOTE(x_))
+    HX_CONCATENATE(g_hxConsoleSymbol_,x_)(hxConsoleCommandFactory_(&(x_)), HX_QUOTE(x_))
 
 // Registers a named function using a global constructor.  Use in a global scope.
 // Provided name_ must be a valid C identifier. x_ may be any expression that
 // evaluates to a function pointer.
 //   E.g. hxConsoleCommandNames(srand, seed_rand);
 #define hxConsoleCommandNamed(x_, name_) static hxConsoleConstructor_ \
-	HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxConsoleCommandFactory_(&(x_)), HX_QUOTE(name_))
+    HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxConsoleCommandFactory_(&(x_)), HX_QUOTE(name_))
 
 // Registers a variable.  Use in a global scope.  Will have the same name as
 // the variable.
@@ -36,7 +34,7 @@ class hxFile;
 //   static bool isMyHackEnabled=false;
 //   hxConsoleVariable(isMyHackEnabled);
 #define hxConsoleVariable(x_) static hxConsoleConstructor_ \
-	HX_CONCATENATE(g_hxConsoleSymbol_,x_)(hxConsoleVariableFactory_(&(x_)), HX_QUOTE(x_))
+    HX_CONCATENATE(g_hxConsoleSymbol_,x_)(hxConsoleVariableFactory_(&(x_)), HX_QUOTE(x_))
 
 // Registers a named variable.  Use in a global scope.  Provided name must be a
 // valid C identifier.
@@ -44,7 +42,7 @@ class hxFile;
 //   static bool isMyHackEnabled=false;
 //   hxConsoleVariable(isMyHackEnabled, f_hack); // add "f_hack" to the console.
 #define hxConsoleVariableNamed(x_, name_) static hxConsoleConstructor_ \
-	HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxConsoleVariableFactory_(&(x_)), HX_QUOTE(name_))
+    HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxConsoleVariableFactory_(&(x_)), HX_QUOTE(name_))
 
 // Determines whether a console function's return value is OK. Overload as needed.
 // Overload must be consistent wherever your type is registered. A void return is

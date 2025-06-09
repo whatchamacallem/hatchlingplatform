@@ -5,7 +5,7 @@
 #error #include <hx/hatchling.h> instead
 #endif
 
-// hxStringLiteralHash. Compile time string hashing. To log filename hashes in
+// hxStringLiteralHash - Compile time string hashing. To log filename hashes in
 // a debug build, add HX_REGISTER_FILENAME_HASH to C++ source files. Compiles
 // string constants up to length 192 to a hash value without a constexpr.
 // constexpr isn't enough to force the compiler to run this at compile time.
@@ -17,29 +17,29 @@
 
 #if HX_CPLUSPLUS && (HX_RELEASE) < 1
 // HX_REGISTER_FILENAME_HASH - Registers hash of __FILE__ to be logged in a debug
-// build.  This information will be needed to identify file name hashes in release
+// build. This information will be needed to identify file name hashes in release
 // builds.
 #define HX_REGISTER_FILENAME_HASH static hxRegisterFilenameHash_ \
-	s_hxRegisterFilenameHash(__FILE__);
+    s_hxRegisterFilenameHash(__FILE__);
 
-// Do not use, this is just the implementation of HX_REGISTER_FILENAME_HASH.
-// This code avoids any memory allocations.
+// hxRegisterFilenameHash_ - Do not use, this is just the implementation of
+// HX_REGISTER_FILENAME_HASH. This code avoids any memory allocations.
 class hxRegisterFilenameHash_ {
 public:
-	typedef uint32_t Key;
+    typedef uint32_t Key;
 
 	// permanently add object to hxStringLiteralHashes__.
-	hxRegisterFilenameHash_(const char* file_);
-	void* hashNext(void) const { return m_hashNext; }
-	void*& hashNext(void) { return m_hashNext; }
-	uint32_t key() const { return m_hash; };
-	uint32_t hash() const { return m_hash; };
-	const char* file() const { return m_file; }
+    hxRegisterFilenameHash_(const char* file_);
+    void* hashNext(void) const { return m_hashNext; }
+    void*& hashNext(void) { return m_hashNext; }
+    uint32_t key() const { return m_hash; };
+    uint32_t hash() const { return m_hash; };
+    const char* file() const { return m_file; }
 
 private:
-	void* m_hashNext;
-	uint32_t m_hash;
-	const char* m_file;
+    void* m_hashNext;
+    uint32_t m_hash;
+    const char* m_file;
 };
 #else
 #define HX_REGISTER_FILENAME_HASH
@@ -49,7 +49,8 @@ private:
 extern "C" {
 #endif
 
-// Calculates a string hash at runtime that is the same as hxStringLiteralHash.
+// hxStringLiteralHashDebug - Calculates a string hash at runtime that is the
+// same as hxStringLiteralHash.
 // Parameters:
 // - string_: The null-terminated string to hash.
 uint32_t hxStringLiteralHashDebug(const char* string_);

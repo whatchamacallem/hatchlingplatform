@@ -8,31 +8,30 @@
 // type safety. Use std::less<void> if you want a functor that takes mixed types.
 
 // ----------------------------------------------------------------------------
-// hxKeyLess. User overloadable function for performing comparisons.  Invokes operator <.
-
+// hxKeyLess - User overloadable function for performing comparisons. Invokes
+// operator <.
 template<typename T_>
 HX_CONSTEXPR_FN bool hxKeyLess(const T_& lhs_, const T_& rhs_) { return lhs_ < rhs_; }
 
 HX_CONSTEXPR_FN bool hxKeyLess(const char* a_, const char* b_) {
-	// this is a constexpr "strcmp(a, b) < 0".
-	while(*a_ != '\0' && *a_ == *b_) { ++a_; ++b_; }
-	return *a_ < *b_;
+    // this is a constexpr "strcmp(a, b) < 0".
+    while(*a_ != '\0' && *a_ == *b_) { ++a_; ++b_; }
+    return *a_ < *b_;
 }
 
 // ----------------------------------------------------------------------------
-// hxKeyHash is used by the base class hash table node.  It needs to be
-// overridden for your key type. Overrides are evaluated when and where the
-// hash table is instantiated. Uses the well studied hash multiplier taken from
-// Linux's hash.h
+// hxKeyHash - Used by the base class hash table node. It needs to be overridden
+// for your key type. Overrides are evaluated when and where the hash table is
+// instantiated. Uses the well studied hash multiplier taken from Linux's hash.h
 template<typename T_>
 HX_CONSTEXPR_FN uint32_t hxKeyHash(const T_& x_ ) {
 	return (uint32_t)x_ * (uint32_t)0x61C88647u;
 };
 
-// Uses FNV-1a string hashing.
+// hxKeyHash (const char*) - Uses FNV-1a string hashing.
 HX_CONSTEXPR_FN uint32_t hxKeyHash(const char* k_) {
-	uint32_t x_ = (uint32_t)0x811c9dc5;
-	while (*k_ != '\0') {
+    uint32_t x_ = (uint32_t)0x811c9dc5;
+    while (*k_ != '\0') {
 		x_ ^= (uint32_t)*k_++;
 		x_ *= (uint32_t)0x01000193;
 	}
@@ -40,14 +39,13 @@ HX_CONSTEXPR_FN uint32_t hxKeyHash(const char* k_) {
 }
 
 // ----------------------------------------------------------------------------
-// hxKeyEqual is used by the hash table.  If your key type doesn't support
+// hxKeyEqual - Used by the hash table. If your key type doesn't support
 // operator== then this function needs to be overridden for your key type.
 // Overrides are evaluated when and where the hash table is instantiated.
-
 template<typename T>
-HX_CONSTEXPR_FN bool hxKeyEqual(const T& a_, const T& b_ ) {
+HX_CONSTEXPR_FN bool hxKeyEqual(const T& a_, const T& b_) {
 	return a_ == b_;
-};
+}
 
 HX_CONSTEXPR_FN bool hxKeyEqual(const char* a_, const char* b_) {
 	// this is a constexpr strcmp.

@@ -1,16 +1,15 @@
 #pragma once
-// Copyright 2017-2025 Adrian Johnston
 
 #include <hx/internal/hxHashTableInternal.hpp>
 #include <hx/hxKey.hpp>
 
-// hxHashTable.h - This header implements a hash table that operates without
-// reallocating memory or copying around data.  Each bucket is implemented
-// using an embedded linked list.  Hash tables can be used as either an
-// unordered map or an unordered set and have operations that allow for unique
-// or duplicate keys.  While this interface is designed to be familiar,
-// changes will be required to switch over code using standard containers.
-// In particular, all modification of the table is non-standard.
+// hxHashTable - This header implements a hash table that operates without
+// reallocating memory or copying around data. Each bucket is implemented using
+// an embedded linked list. Hash tables can be used as either an unordered map or
+// an unordered set and have operations that allow for unique or duplicate keys.
+// While this interface is designed to be familiar, changes will be required to
+// switch over code using standard containers. In particular, all modification of
+// the table is non-standard.
 //
 // Note that any node T using key K will work as long as it has the following
 // fields and K has an operator== or an hxKeyEqual overload.
@@ -26,9 +25,9 @@
 //
 
 // ----------------------------------------------------------------------------
-// hxHashTableSetNode - Base class for unordered set entries.  Caches the hash
-// value. Copying and modification are disallowed to protect the integrity of
-// the hash table. See hxHashTableMapNode if you need a mutable node.
+// hxHashTableSetNode - Base class for unordered set entries. Caches the hash
+// value. Copying and modification are disallowed to protect the integrity of the
+// hash table. See hxHashTableMapNode if you need a mutable node.
 
 template<typename Key_>
 class hxHashTableSetNode {
@@ -434,9 +433,6 @@ public:
 private:
 	HX_STATIC_ASSERT(HashBits <= 31u, "hxHashTable: hash bits must be [0..31]");
 
-	hxHashTable(const hxHashTable&) HX_DELETE_FN; // Disables copy and assign.
-	void operator=(const hxHashTable&) HX_DELETE_FN;
-
 	// Pointer to head of singly-linked list for key's hash value.
 	HX_CONSTEXPR_FN Node** getBucketHead_(uint32_t hash_) {
 		uint32_t index_ = hash_ >> (32u - m_table.getTableSizeBits());
@@ -453,3 +449,7 @@ private:
 	uint32_t m_size;
 	hxHashTableInternalAllocator_<Node, HashBits> m_table;
 };
+
+#if HX_CPLUSPLUS >= 202002L
+    hxHashTable(const hxHashTable&) = delete;
+#endif

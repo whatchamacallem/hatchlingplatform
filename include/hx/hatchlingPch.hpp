@@ -1,8 +1,8 @@
 #pragma once
 // Copyright 2017-2025 Adrian Johnston
 
-// Includes all the Hatchling headers for use building a C++ precompiled header.
-// Use hx/hatchling.h for building a C precompiled header.
+// hatchlingPch.hpp - Includes all the Hatchling headers for use building a C++
+// precompiled header. Use hx/hatchling.h for building a C precompiled header.
 // See test.sh. Set gcc/clangs target to a .pch file e.g. -o "sdks.pch".
 
 #define HX_HATCHLING_PCH_USED 1

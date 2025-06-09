@@ -8,10 +8,8 @@
 #endif
 
 // ----------------------------------------------------------------------------
-// hxArray
-//
-// Implements some of std::vector.  Requires T to have a default constructor.
-
+// hxArray - Implements some of std::vector. Requires T to have a default
+// constructor.
 template<typename T_, size_t Capacity_=hxAllocatorDynamicCapacity>
 class hxArray : public hxAllocator<T_, Capacity_> {
 public:
