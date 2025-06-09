@@ -106,7 +106,54 @@ const T_* hxBinarySearch(const T_* begin_, const T_* end_, const T_& val_) {
 
 class hxRadixSortBase {
 public:
-    HX_STATIC_ASSERT((int32_t)0x80000000u >> 31 == ~(int32_t)0, "hxRadixSortBase: right shift sign extension");
+    HX_STATIC_ASSERT((int32_t)0x80000000u >> 31 == ~(int32_t)0, "arithmetic left shift expected");
+
+    // Reserves memory for the internal array to hold at least `size_` elements.
+    // Parameters:
+    // - size_: The number of elements to reserve memory for.
+    void reserve(uint32_t size_) { m_array.reserve(size_); }
+
+    // Clears the internal array, removing all elements.
+    void clear() { m_array.clear(); }
+
+    // Sorts the internal array using the provided temporary memory allocator to
+    // store histograms.
+    void sort(hxMemoryAllocator tempMemory_);
+
+protected:
+    // Represents a key-value pair used in radix sorting.
+    struct KeyValuePair {
+        // Constructor for an 8-bit key and associated value.
+        KeyValuePair(uint8_t key_, void* val_) : m_key(key_), m_val(val_) { }
+
+        // Constructor for a 16-bit key and associated value.
+        KeyValuePair(uint16_t key_, void* val_) : m_key(key_), m_val(val_) { }
+
+        // Constructor for a 32-bit key and associated value.
+        KeyValuePair(uint32_t key_, void* val_) : m_key(key_), m_val(val_) { }
+
+        // Constructor for a signed 32-bit key and associated value.
+        // Adjusts the key to handle signed integers correctly.
+        KeyValuePair(int32_t key_, void* val_) : m_key((uint32_t)(key_ ^ 0x80000000)), m_val(val_) { }
+
+        // Constructor for a floating-point key and associated value.
+        // Adjusts the key to handle floating-point sorting correctly.
+        KeyValuePair(float key_, void* val_)
+            : m_val(val_)
+        {
+            uint32_t t_;
+            ::memcpy(&t_, &key_, sizeof t_);
+            m_key = t_ ^ (uint32_t)(((int32_t)t_ >> 31) | 0x80000000);
+        }
+
+        // Comparison operator for sorting KeyValuePair objects by key.
+        bool operator<(const KeyValuePair& rhs_) const { return m_key < rhs_.m_key; }
+
+        uint32_t m_key; // The key used for sorting.
+        void* m_val;	// The associated value.
+    };
+
+    hxArray<KeyValuePair> m_array; // Internal array of key-value pairs.
 };
 
 // ----------------------------------------------------------------------------
