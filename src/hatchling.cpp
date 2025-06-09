@@ -41,7 +41,7 @@ HX_STATIC_ASSERT((HX_RELEASE) < 1 || !(HX_FLOATING_POINT_TRAPS),
 // Use -fno-exceptions. Exceptions add overhead to c++ and add untested pathways.
 // In this codebase memory allocation cannot fail. It is designed to force you
 // to allocate enough memory for everything in advance. There are no exceptions
-// to handle.
+// to handle. There are exception handling intrinsics in use in case they are on.
 #if defined(__cpp_exceptions) && !defined(__INTELLISENSE__)
 HX_STATIC_ASSERT(0, "exceptions should not be enabled");
 #endif
@@ -51,9 +51,9 @@ HX_STATIC_ASSERT(0, "exceptions should not be enabled");
 
 #if (HX_RELEASE) < 1
 namespace {
-struct hxHashStringLiteral : public hxHashTable<hxRegisterFileConstructor, 5> {
+struct hxHashStringLiteral_ : public hxHashTable<hxRegisterFilenameHash_, 5> {
 	// the nodes are static global.  do not free.
-	~hxHashStringLiteral(void) { releaseAll(); }
+	~hxHashStringLiteral_(void) { releaseAll(); }
 };
 
 struct hxFilenameLess {
@@ -62,15 +62,15 @@ struct hxFilenameLess {
 	}
 };
 
-hxHashStringLiteral& hxStringLiteralHashes_() {
-	static hxHashStringLiteral s_hxStringLiteralHashes_;
+hxHashStringLiteral_& hxStringLiteralHashes_() {
+	static hxHashStringLiteral_ s_hxStringLiteralHashes_;
 	return s_hxStringLiteralHashes_;
 }
 
 } // namespace {
 
-hxRegisterFileConstructor::hxRegisterFileConstructor(const char* key_, uint32_t hash_)
-		: m_hashNext(0), m_key(key_), m_hash(hash_) {
+hxRegisterFilenameHash_::hxRegisterFilenameHash_(const char* file_)
+		: m_hashNext(0), m_hash(hxStringLiteralHashDebug(file_)), m_file(file_) {
 	hxStringLiteralHashes_().insertNode(this);
 }
 
@@ -83,10 +83,10 @@ void hxPrintFileHashes(void) {
 	typedef hxArray<const char*> Filenames;
 	Filenames filenames; filenames.reserve(hxStringLiteralHashes_().size());
 
-	hxHashStringLiteral::constIterator it = hxStringLiteralHashes_().cBegin();
-	hxHashStringLiteral::constIterator end = hxStringLiteralHashes_().cEnd();
+	hxHashStringLiteral_::constIterator it = hxStringLiteralHashes_().cBegin();
+	hxHashStringLiteral_::constIterator end = hxStringLiteralHashes_().cEnd();
 	for (; it != end; ++it) {
-		filenames.pushBack(it->key());
+		filenames.pushBack(it->file());
 	}
 
 	hxInsertionSort(filenames.begin(), filenames.end(), hxFilenameLess());
@@ -95,6 +95,24 @@ void hxPrintFileHashes(void) {
 		hxLog("  %08x %s\n", hxStringLiteralHashDebug(*f), *f);
 	}
 }
+
+void hxCheckHash(uint32_t hash_) {
+	hxRegisterFilenameHash_* node = hxStringLiteralHashes_().find(hash_);
+	if(node) {
+		while(node) {
+			hxLogConsole("%08x: %s\n", (unsigned int)hash_, node->file());
+			node = hxStringLiteralHashes_().find(hash_, node);
+		}
+	}
+	else {
+		hxLogConsole("%08x: not found\n", (unsigned int)hash_);
+	}
+}
+
+// use the debug console to emit and check file hashes.
+hxConsoleCommandNamed(hxPrintFileHashes, filehashes);
+hxConsoleCommandNamed(hxCheckHash, checkhash);
+
 #endif
 
 // ----------------------------------------------------------------------------
@@ -150,18 +168,14 @@ HX_NOEXCEPT void hxLogHandlerV(enum hxLogLevel level, const char* format, va_lis
 	::fwrite(buf, 1, sz, stdout);
 }
 
-// ----------------------------------------------------------------------------
 // HX_RELEASE < 3 facilities for testing tear down. Just call _Exit() otherwise.
-
-#if (HX_RELEASE) < 3
-
 extern "C"
 void hxShutdown(void) {
 	hxAssert(g_hxIsInit);
-	g_hxSettings.deallocatePermanent = true;
-	hxProfilerEnd();
-	hxDmaShutDown();
-	hxMemoryManagerShutDown(); // Will trap further activity
+#if (HX_RELEASE) < 3
+	// Will trap further activity and leaks.
+	hxMemoryManagerShutDown();
+#endif
 }
 
 #if (HX_RELEASE) == 0
@@ -181,11 +195,9 @@ HX_NOEXCEPT int hxAssertHandler(const char* file, size_t line) {
 	return 0;
 }
 #else
-extern "C" HX_NORETURN
-HX_NOEXCEPT void hxAssertHandler(uint32_t file, size_t line) {
+extern "C"
+HX_NOEXCEPT HX_NORETURN void hxAssertHandler(uint32_t file, size_t line) {
 	hxLogHandler(hxLogLevel_Assert, "file %08x line %u\n", (unsigned int)file, (unsigned int)line);
 	_Exit(EXIT_FAILURE);
 }
 #endif
-
-#endif // HX_RELEASE < 3

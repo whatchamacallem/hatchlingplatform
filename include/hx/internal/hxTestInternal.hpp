@@ -107,7 +107,7 @@ public:
 		hxLogConsole("skipped %zu tests.  checked %zu assertions.\n",
 			m_numFactories - m_passCount - m_failCount, m_assertCount);
 
-		hxWarnCheck(m_passCount + m_failCount, "NOTHING TESTED");
+		hxWarnMsg(m_passCount + m_failCount, "NOTHING TESTED");
 
 		if (m_passCount != 0 && m_failCount == 0) {
 			hxLogHandler(hxLogLevel_Console, "[  PASSED  ] %zu test%s.\n", m_passCount,

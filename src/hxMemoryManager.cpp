@@ -388,7 +388,7 @@ void* hxMemoryManager::allocate(size_t size, hxMemoryAllocator id, size_t alignm
 	hxAssertMsg(((uintptr_t)ptr & (alignment - (uintptr_t)1)) == 0, "alignment wrong %x from %d",
 		(unsigned int)(uintptr_t)ptr, (int)id);
 	if (ptr) { return ptr; }
-	hxWarn("%s is overflowing to heap, size %d", m_memoryAllocators[id]->label(), (int)size);
+	hxLogWarning("%s is overflowing to heap, size %d", m_memoryAllocators[id]->label(), (int)size);
 	return m_memoryAllocatorHeap.allocate(size, alignment);
 }
 
@@ -402,7 +402,7 @@ void hxMemoryManager::free(void* ptr) {
 	}
 
 	if (m_memoryAllocatorPermanent.contains(ptr)) {
-		hxWarnCheck(g_hxSettings.deallocatePermanent, "ERROR: free from permanent");
+		hxWarnMsg(g_hxSettings.deallocatePermanent, "ERROR: free from permanent");
 		m_memoryAllocatorPermanent.onFreeNonVirtual(ptr);
 		return;
 	}

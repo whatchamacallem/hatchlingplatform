@@ -48,7 +48,7 @@ size_t hxTestMain() {
 	hxLogConsole("hatchling platform 🐉🐉🐉 " HATCHLING_TAG "\n");
 	hxLogConsole("release: %d profile: %d " __DATE__ " " __TIME__ "\n",
 		(int)(HX_RELEASE), (int)(HX_PROFILE));
-	hxWarnCheck(HX_HATCHLING_PCH_USED, "pch not used");
+	hxWarnMsg(HX_HATCHLING_PCH_USED, "pch not used");
 
 	char bytes[48] = { };
 	snprintf(bytes, 48, "%s", "The quick brown fox jumps over the lazy dog....");
@@ -69,11 +69,12 @@ size_t hxTestMain() {
 }
 
 int main() {
-	hxPrintFileHashes();
-
 	::testing::InitGoogleTest();
 
 	size_t testsFailing = hxTestMain();
+
+	hxFile commands(hxFile::in|hxFile::stdio);
+	hxConsoleExecFile(commands);
 
 #if (HX_TEST_ERROR_HANDLING)
 	hxAssertRelease(testsFailing == 2, "expected 2 tests to fail");

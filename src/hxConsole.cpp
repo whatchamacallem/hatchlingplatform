@@ -63,7 +63,7 @@ bool hxConsoleExecLine(const char* command) {
 
 	const hxConsoleHashTableNode_* node = hxConsoleCommands_().find(hxConsoleHashTableKey_(pos));
 	if (!node) {
-		hxWarn("unknown command: %s", command);
+		hxLogWarning("unknown command: %s", command);
 		return false;
 	}
 
@@ -73,7 +73,7 @@ bool hxConsoleExecLine(const char* command) {
 	}
 
 	bool result = node->value()->execute_(pos); // skips leading whitespace.
-	hxWarnCheck(result, "command failed: %s", command);
+	hxWarnMsg(result, "command failed: %s", command);
 	return result;
 }
 
@@ -88,10 +88,10 @@ bool hxConsoleExecFile(hxFile& file) {
 
 bool hxConsoleExecFilename(const char* filename) {
 	hxFile file(hxFile::in, "%s", filename);
-	hxWarnCheck(file.isOpen(), "cannot open: %s", filename);
+	hxWarnMsg(file.isOpen(), "cannot open: %s", filename);
 	if (file.isOpen()) {
 		bool isOk = hxConsoleExecFile(file);
-		hxWarnCheck(isOk, "encountering errors: %s", filename);
+		hxWarnMsg(isOk, "encountering errors: %s", filename);
 		return isOk;
 	}
 	return false;
@@ -103,8 +103,7 @@ bool hxConsoleExecFilename(const char* filename) {
 // Lists variables and commands in order.
 void hxConsoleHelp() {
 	if ((HX_RELEASE) < 2) {
-		hxMemoryAllocatorScope heap(hxMemoryAllocator_Heap);
-
+		hxInit();
 		hxMemoryAllocatorScope temporaryStack(hxMemoryAllocator_TemporaryStack);
 		hxArray<const hxConsoleHashTableNode_*> cmds;
 		cmds.reserve(hxConsoleCommands_().size());

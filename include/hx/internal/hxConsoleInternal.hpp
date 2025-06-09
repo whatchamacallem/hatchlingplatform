@@ -29,7 +29,7 @@ template <typename T_, typename R_>
 HX_CONSTEXPR_FN void hxConsoleArgParse_(T_& val_, const char* str_, char** next_, R_(*parser_)(char const*, char**, int)) {
 	R_ r_ = parser_(str_, next_, 10);
 	if(r_ != (T_)r_) {
-		hxWarn("console operand overflow: %s", str_);
+		hxLogWarning("console operand overflow: %s", str_);
 		*next_ = const_cast<char*>(str_); // reject input.
 	}
 	val_ = (T_)r_;

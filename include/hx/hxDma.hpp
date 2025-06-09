@@ -24,11 +24,6 @@ struct hxDmaSyncPoint {
 // Acquires and initializes resources required for DMA.  Called by hxInit().
 void hxDmaInit();
 
-#if (HX_RELEASE) < 3
-// Releases resources required for DMA.  Called by hxShutdown();
-void hxDmaShutDown();
-#endif
-
 // Waits for all DMA and invalidates all synchronization points.  Must be called
 // intermittently when HX_DEBUG_DMA != 0 to recycle resources.
 void hxDmaEndFrame();

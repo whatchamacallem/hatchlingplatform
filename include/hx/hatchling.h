@@ -82,12 +82,9 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 // Logs an error and terminates execution if x_ is false.
 // This is only evaluated when HX_RELEASE == 0.
 // Parameters:
-// - x_: The condition to evaluate.
-#define hxAssert(x_) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Assert, HX_QUOTE(x_)), \
+// - ...: The condition to evaluate.
+#define hxAssert(...) (void)(!!(__VA_ARGS__) || (hxLogHandler(hxLogLevel_Assert, HX_QUOTE(__VA_ARGS__)), \
 	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK)
-
-// Assert handler.  Do not call directly, signature changes and then is removed.
-HX_NOEXCEPT int hxAssertHandler(const char* file_, size_t line_);
 
 // Logs an error and terminates execution if x_ is false up to release level 2.
 // This is only evaluated when HX_RELEASE < 3.
@@ -96,6 +93,9 @@ HX_NOEXCEPT int hxAssertHandler(const char* file_, size_t line_);
 // - ...: Variadic arguments for the formatted log message.
 #define hxAssertRelease(x_, ...) (void)(!!(x_) || ((hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
 	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK))
+
+// Assert handler.  Do not call directly, signature changes and then is removed.
+HX_NOEXCEPT int hxAssertHandler(const char* file_, size_t line_);
 
 #else // HX_RELEASE > 1
 #define hxLog(...) ((void)0)
@@ -122,20 +122,20 @@ HX_NOEXCEPT HX_NORETURN void hxAssertHandler(uint32_t file_, size_t line_);
 // This is only evaluated when HX_RELEASE <= 1.
 // Parameters:
 // - ...: Variadic arguments for the formatted warning message.
-#define hxWarn(...) hxLogHandler(hxLogLevel_Warning, __VA_ARGS__)
+#define hxLogWarning(...) hxLogHandler(hxLogLevel_Warning, __VA_ARGS__)
 
 // Enters formatted warnings in the system log when x_ is false.
 // This is only evaluated when HX_RELEASE <= 1.
 // Parameters:
 // - x_: The condition to evaluate.
 // - ...: Variadic arguments for the formatted warning message.
-#define hxWarnCheck(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Warning, __VA_ARGS__), 0))
+#define hxWarnMsg(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Warning, __VA_ARGS__), 0))
 
 #else // HX_RELEASE >= 2
 #define hxLogRelease(...) ((void)0)
 #define hxLogConsole(...) ((void)0)
-#define hxWarn(...) ((void)0)
-#define hxWarnCheck(x_, ...) ((void)0)
+#define hxLogWarning(...) ((void)0)
+#define hxWarnMsg(x_, ...) ((void)0)
 #endif
 
 // hxAssertRelease has 4 variations.  See above.
@@ -155,12 +155,10 @@ void hxInitInternal(void);
 // Set to true by hxInitInternal().
 extern int g_hxIsInit;
 
-#if (HX_RELEASE) < 3
 // Terminates service.  Releases all resources acquired by the platform and
 // confirms all memory allocations have been released. HX_RELEASE < 3.
 // Does not clear g_hxIsInit, shutdown is final.
 void hxShutdown(void);
-#endif
 
 // Enters formatted messages in the system log.
 // This is the only access to logging when when HX_RELEASE > 2.
@@ -197,18 +195,6 @@ void hxFloatDump(const float* address_, size_t floats_);
 // Parameters:
 // - path_: The file path as a null-terminated string.
 const char* hxBasename(const char* path_);
-
-// Calculates a string hash at runtime that is the same as hxStringLiteralHash.
-// Parameters:
-// - string_: The null-terminated string to hash.
-uint32_t hxStringLiteralHashDebug(const char* string_);
-
-#if (HX_RELEASE) < 1
-// Prints file name hashes registered with HX_REGISTER_FILENAME_HASH. Use after main().
-void hxPrintFileHashes(void);
-#else
-#define hxPrintFileHashes() ((void)0)
-#endif
 
 // ----------------------------------------------------------------------------
 #if HX_CPLUSPLUS

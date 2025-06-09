@@ -38,12 +38,6 @@ void hxDmaInit() {
 	HX_STATIC_ASSERT(!HX_USE_DMA_HARDWARE, "TODO: Configure for target.");
 }
 
-#if (HX_RELEASE) < 3
-void hxDmaShutDown() {
-	HX_STATIC_ASSERT(!HX_USE_DMA_HARDWARE, "TODO: Configure for target.");
-}
-#endif
-
 void hxDmaEndFrame() {
 	hxDmaAwaitAll("end frame");
 	HX_STATIC_ASSERT(!HX_USE_DMA_HARDWARE, "TODO: Configure for target.");
