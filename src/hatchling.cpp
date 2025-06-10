@@ -70,8 +70,8 @@ hxHashStringLiteral_& hxStringLiteralHashes_() {
 } // namespace {
 
 hxRegisterFilenameHash_::hxRegisterFilenameHash_(const char* file_)
-		: m_hashNext(0), m_hash(hxStringLiteralHashDebug(file_)), m_file(file_) {
-	hxStringLiteralHashes_().insertNode(this);
+        : m_hashNext_(0), m_hash_(hxStringLiteralHashDebug(file_)), m_file_(file_) {
+    hxStringLiteralHashes_().insertNode(this);
 }
 
 void hxPrintFileHashes(void) {

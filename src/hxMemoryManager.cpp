@@ -66,7 +66,7 @@ struct hxMemoryAllocationHeader {
 
 class hxMemoryAllocatorBase {
 public:
-	hxMemoryAllocatorBase() : m_label(hxnull) { }
+	hxMemoryAllocatorBase() : m_label_(hxnull) { }
 	void* allocate(size_t size, size_t alignment) {
 		return onAlloc(size, alignment);
 	}
@@ -76,11 +76,11 @@ public:
 	virtual size_t getAllocationCount(hxMemoryAllocator id) const = 0;
 	virtual size_t getBytesAllocated(hxMemoryAllocator id) const = 0;
 	virtual size_t getHighWater(hxMemoryAllocator id) = 0;
-	const char* label() const { return m_label; }
+	const char* label() const { return m_label_; }
 
 protected:
 	virtual void* onAlloc(size_t size, size_t alignment) = 0;
-	const char* m_label;
+	const char* m_label_;
 private:
 	void operator=(const hxMemoryAllocatorBase&) HX_DELETE_FN;
 };
@@ -96,7 +96,7 @@ private:
 class hxMemoryAllocatorOsHeap : public hxMemoryAllocatorBase {
 public:
 	void construct(const char* label) {
-		m_label = label;
+		m_label_ = label;
 		m_allocationCount = 0u;
 		m_bytesAllocated = 0u;
 		m_highWater = 0u;
@@ -127,7 +127,7 @@ public:
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 3
 		// Record the size of the allocation in debug. Cast via (uintptr_t)
 		// because %p is not portable.
-		hxLog("%s: %d at %x  (count %d, bytes %d)\n", m_label, (int)size, (unsigned int)aligned,
+		hxLog("%s: %d at %x  (count %d, bytes %d)\n", m_label_, (int)size, (unsigned int)aligned,
 			(int)m_allocationCount, (int)m_bytesAllocated);
 #endif
 		++m_allocationCount;
@@ -153,7 +153,7 @@ public:
 		#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 3
 		// Record the size of the allocation in debug. Cast via (uintptr_t) because
 		// Mac and supporting %p.
-		hxLog("%s: -%d at %x  (count %d, bytes %d)\n", m_label, (int)hdr.size,
+		hxLog("%s: -%d at %x  (count %d, bytes %d)\n", m_label_, (int)hdr.size,
 			(unsigned int)(uintptr_t)p, (int)m_allocationCount, (int)m_bytesAllocated);
 #endif
 		uintptr_t actual = hdr.actual;
@@ -175,11 +175,11 @@ private:
 class hxMemoryAllocatorStack : public hxMemoryAllocatorBase {
 public:
 	void construct(void* ptr, size_t size, const char* label) {
-		m_label = label;
+		m_label_ = label;
 
 		m_allocationCount = 0u;
-		m_begin = ((uintptr_t)ptr);
-		m_end = ((uintptr_t)ptr + size);
+		m_begin_ = ((uintptr_t)ptr);
+		m_end_ = ((uintptr_t)ptr + size);
 		m_current = ((uintptr_t)ptr);
 
 		if ((HX_RELEASE) < 1) {
@@ -189,21 +189,21 @@ public:
 
 	virtual void beginAllocationScope(hxMemoryAllocatorScope* scope, hxMemoryAllocator newId) HX_OVERRIDE { (void)scope; (void)newId; }
 	virtual void endAllocationScope(hxMemoryAllocatorScope* scope, hxMemoryAllocator oldId) HX_OVERRIDE { (void)scope; (void)oldId; }
-	bool contains(void* ptr) { return (uintptr_t)ptr >= m_begin && (uintptr_t)ptr < m_end; }
+	bool contains(void* ptr) { return (uintptr_t)ptr >= m_begin_ && (uintptr_t)ptr < m_end_; }
 	virtual size_t getAllocationCount(hxMemoryAllocator id) const HX_OVERRIDE { (void)id; return m_allocationCount; }
-	virtual size_t getBytesAllocated(hxMemoryAllocator id) const HX_OVERRIDE { (void)id; return m_current - m_begin; }
-	virtual size_t getHighWater(hxMemoryAllocator id) HX_OVERRIDE { (void)id; return m_current - m_begin; }
+	virtual size_t getBytesAllocated(hxMemoryAllocator id) const HX_OVERRIDE { (void)id; return m_current - m_begin_; }
+	virtual size_t getHighWater(hxMemoryAllocator id) HX_OVERRIDE { (void)id; return m_current - m_begin_; }
 
 	void* release() {
-		void* t = (void*)m_begin;
-		m_begin = 0;
+		void* t = (void*)m_begin_;
+		m_begin_ = 0;
 		return t;
 	}
 
 	void* allocateNonVirtual(size_t size, size_t alignment) {
 		--alignment; // use as a mask.
 		uintptr_t aligned = (m_current + alignment) & ~alignment;
-		if ((aligned + size) > m_end) {
+		if ((aligned + size) > m_end_) {
 			return hxnull;
 		}
 
@@ -213,8 +213,8 @@ public:
 	}
 
 	void onFreeNonVirtual(void* ptr) {
-		hxAssertMsg(m_allocationCount > 0 && (uintptr_t)ptr >= m_begin
-			&& (uintptr_t)ptr < m_current, "unexpected free: %s", m_label);
+		hxAssertMsg(m_allocationCount > 0 && (uintptr_t)ptr >= m_begin_
+			&& (uintptr_t)ptr < m_current, "unexpected free: %s", m_label_);
 		--m_allocationCount; (void)ptr;
 		return;
 	}
@@ -225,8 +225,8 @@ protected:
 	}
 
 protected:
-	uintptr_t m_begin;
-	uintptr_t m_end;
+	uintptr_t m_begin_;
+	uintptr_t m_end_;
 	uintptr_t m_current;
 	size_t m_allocationCount;
 };
@@ -244,24 +244,24 @@ public:
 	virtual void endAllocationScope(hxMemoryAllocatorScope* scope, hxMemoryAllocator oldId) HX_OVERRIDE {
 		(void)oldId;
 		hxAssertMsg(m_allocationCount <= scope->getPreviousAllocationCount(),
-			"%s leaked %d allocations", m_label, (int)(m_allocationCount - scope->getPreviousAllocationCount()));
+			"%s leaked %d allocations", m_label_, (int)(m_allocationCount - scope->getPreviousAllocationCount()));
 
 		m_highWater = hxmax(m_highWater, m_current);
 
-		uintptr_t previousCurrent = m_begin + scope->getPreviousBytesAllocated();
+		uintptr_t previousCurrent = m_begin_ + scope->getPreviousBytesAllocated();
 		if ((HX_RELEASE) < 1) {
 			::memset((void*)previousCurrent, 0xdd, (size_t)(m_current - previousCurrent));
 		}
 		m_current = previousCurrent;
 
 		// This assert indicates overwriting the stack trashing *scope.
-		hxAssertRelease(m_current <= m_end, "error resetting temp stack");
+		hxAssertRelease(m_current <= m_end_, "error resetting temp stack");
 	}
 
 	virtual size_t getHighWater(hxMemoryAllocator id) HX_OVERRIDE {
 		(void)id;
 		m_highWater = hxmax(m_highWater, m_current);
-		return m_highWater - m_begin;
+		return m_highWater - m_begin_;
 	}
 
 protected:
@@ -426,11 +426,11 @@ hxMemoryAllocatorScope::hxMemoryAllocatorScope(hxMemoryAllocator id)
 #endif
 
 	// sets CurrentAllocator():
-	m_thisAllocator = id;
-	m_previousAllocator = s_hxMemoryManager->beginAllocationScope(this, id);
+	m_thisAllocator_ = id;
+	m_previousAllocator_ = s_hxMemoryManager->beginAllocationScope(this, id);
 	hxMemoryAllocatorBase& al = s_hxMemoryManager->getAllocator(id);
-	m_previousAllocationCount = al.getAllocationCount(id);
-	m_previousBytesAllocated = al.getBytesAllocated(id);
+	m_previousAllocationCount_ = al.getAllocationCount(id);
+	m_previousBytesAllocated_ = al.getBytesAllocated(id);
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 2
 	hxLog(" => %s, count %d, size %d\n", al.label(), (int)getTotalAllocationCount(), (int)getTotalBytesAllocated());
 #endif
@@ -440,16 +440,16 @@ hxMemoryAllocatorScope::~hxMemoryAllocatorScope() {
 	hxAssertRelease(g_hxIsInit, "call hxInit");
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
-	if (!s_hxMemoryManager || m_previousAllocator == hxMemoryAllocator_Current) {
+	if (!s_hxMemoryManager || m_previousAllocator_ == hxMemoryAllocator_Current) {
 		return;
 	}
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 2
-	hxLog(" <= %s, count %d/%d, size %d/%d\n", s_hxMemoryManager->getAllocator(m_thisAllocator).label(),
+	hxLog(" <= %s, count %d/%d, size %d/%d\n", s_hxMemoryManager->getAllocator(m_thisAllocator_).label(),
 		(int)getScopeAllocationCount(), (int)getTotalAllocationCount(), (int)getScopeBytesAllocated(),
 		(int)getTotalBytesAllocated());
 #endif
 #endif
-	s_hxMemoryManager->endAllocationScope(this, m_previousAllocator);
+	s_hxMemoryManager->endAllocationScope(this, m_previousAllocator_);
 }
 
 size_t hxMemoryAllocatorScope::getTotalAllocationCount() const {
@@ -460,7 +460,7 @@ size_t hxMemoryAllocatorScope::getTotalAllocationCount() const {
 		return 0;
 	}
 #endif
-	return s_hxMemoryManager->getAllocator(m_thisAllocator).getAllocationCount(m_thisAllocator);
+	return s_hxMemoryManager->getAllocator(m_thisAllocator_).getAllocationCount(m_thisAllocator_);
 }
 
 size_t hxMemoryAllocatorScope::getTotalBytesAllocated() const {
@@ -471,7 +471,7 @@ size_t hxMemoryAllocatorScope::getTotalBytesAllocated() const {
 		return 0;
 	}
 #endif
-	return s_hxMemoryManager->getAllocator(m_thisAllocator).getBytesAllocated(m_thisAllocator);
+	return s_hxMemoryManager->getAllocator(m_thisAllocator_).getBytesAllocated(m_thisAllocator_);
 }
 
 size_t hxMemoryAllocatorScope::getScopeAllocationCount() const {
@@ -482,7 +482,7 @@ size_t hxMemoryAllocatorScope::getScopeAllocationCount() const {
 		return 0;
 	}
 #endif
-	return s_hxMemoryManager->getAllocator(m_thisAllocator).getAllocationCount(m_thisAllocator) - m_previousAllocationCount;
+	return s_hxMemoryManager->getAllocator(m_thisAllocator_).getAllocationCount(m_thisAllocator_) - m_previousAllocationCount_;
 }
 
 size_t hxMemoryAllocatorScope::getScopeBytesAllocated() const {
@@ -493,7 +493,7 @@ size_t hxMemoryAllocatorScope::getScopeBytesAllocated() const {
 		return 0;
 	}
 #endif
-	return s_hxMemoryManager->getAllocator(m_thisAllocator).getBytesAllocated(m_thisAllocator) - m_previousBytesAllocated;
+	return s_hxMemoryManager->getAllocator(m_thisAllocator_).getBytesAllocated(m_thisAllocator_) - m_previousBytesAllocated_;
 }
 
 // ----------------------------------------------------------------------------
@@ -629,8 +629,8 @@ size_t hxMemoryManagerAllocationCount() { return 0; }
 hxMemoryAllocatorScope::hxMemoryAllocatorScope(hxMemoryAllocator id)
 {
 	(void)id;
-	m_previousAllocationCount = 0;
-	m_previousBytesAllocated = 0;
+	m_previousAllocationCount_ = 0;
+	m_previousBytesAllocated_ = 0;
 }
 
 hxMemoryAllocatorScope::~hxMemoryAllocatorScope() { }

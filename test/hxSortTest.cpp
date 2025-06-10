@@ -19,14 +19,14 @@ public:
 		Key id;
 	};
 
-	template<typename Key>
-	void generate(hxArray<TestObject<Key> >& a, uint32_t size, uint32_t mask, Key offset) {
-		a.reserve(size);
-		for(uint32_t i= size;i--;) {
-			uint32_t x = m_prng() & mask;
-			a.pushBack((Key)x - offset);
-		}
-	}
+    template<typename Key>
+    void generate(hxArray<TestObject<Key> >& a, uint32_t size, uint32_t mask, Key offset) {
+        a.reserve(size);
+        for(uint32_t i= size;i--;) {
+            uint32_t x = m_prng_() & mask;
+            a.pushBack((Key)x - offset);
+        }
+    }
 
 	template<typename Key>
 	static int qSortCompare(const void* a, const void* b) {
@@ -71,7 +71,7 @@ public:
 		ASSERT_EQ(cit, rs.cEnd());
 	}
 
-	hxTestRandom m_prng;
+    hxTestRandom m_prng_;
 };
 
 // ----------------------------------------------------------------------------

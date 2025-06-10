@@ -40,22 +40,22 @@ public:
 	void close();
 
 	// Checks if the file is open.
-	HX_CONSTEXPR_FN bool isOpen() const { return m_filePImpl != hxnull; }
+	HX_CONSTEXPR_FN bool isOpen() const { return m_filePImpl_ != hxnull; }
 
 	// Checks if the file stream is in a good state.
-	HX_CONSTEXPR_FN bool good() const { return m_good; }
+	HX_CONSTEXPR_FN bool good() const { return m_good_; }
 
 	// Checks if the end of the file has been reached.
-	HX_CONSTEXPR_FN bool eof() const { return m_eof; }
+	HX_CONSTEXPR_FN bool eof() const { return m_eof_; }
 
 	// Clears the state of the file stream.
 	HX_CONSTEXPR_FN void clear() {
-		m_good = m_filePImpl != hxnull;
-		m_eof = false;
+		m_good_ = m_filePImpl_ != hxnull;
+		m_eof_ = false;
 	}
 
 	// Returns the current open mode of the file.
-	HX_CONSTEXPR_FN uint16_t mode() const { return m_openMode; }
+	HX_CONSTEXPR_FN uint16_t mode() const { return m_openMode_; }
 
 	// Reads a specified number of bytes from the file into the provided buffer.
 		// - bytes_: Pointer to the buffer where the read bytes will be stored.
@@ -130,8 +130,8 @@ private:
 	// Internal function to open a file with a formatted filename and variable arguments.
 	bool openv_(uint16_t mode_, const char* format_, va_list args_);
 
-	char* m_filePImpl;   // Pointer to the file implementation.
-	uint16_t m_openMode; // Current open mode of the file.
-	bool m_good; 		 // Indicates if the file stream is in a good state.
-	bool m_eof;  		 // Indicates if the end of the file has been reached.
+    char* m_filePImpl_;   // Pointer to the file implementation.
+    uint16_t m_openMode_; // Current open mode of the file.
+    bool m_good_; 		 // Indicates if the file stream is in a good state.
+    bool m_eof_;  		 // Indicates if the end of the file has been reached.
 };

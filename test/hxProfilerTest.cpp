@@ -27,19 +27,19 @@ class hxProfilerTest :
 	public testing::Test
 {
 public:
-	struct hxProfilerTaskTest : public hxTask {
-		hxProfilerTaskTest() : m_targetMs(0.0f), m_accumulator(0) { }
+    struct hxProfilerTaskTest : public hxTask {
+        hxProfilerTaskTest() : m_targetMs_(0.0f), m_accumulator_(0) { }
 
-		void construct(const char* label, float targetMs) {
-			setLabel(label);
-			m_targetMs = targetMs;
-			m_accumulator = 0;
-		}
+        void construct(const char* label, float targetMs) {
+            setLabel(label);
+            m_targetMs_ = targetMs;
+            m_accumulator_ = 0;
+        }
 
-		virtual void execute(hxTaskQueue* q) HX_OVERRIDE {
-			(void)q;
-			generateScopes(m_targetMs);
-		}
+        virtual void execute(hxTaskQueue* q) HX_OVERRIDE {
+            (void)q;
+            generateScopes(m_targetMs_);
+        }
 
 		virtual void generateScopes(float targetMs) {
 			hxcycles_t startCycles = hxTimeSampleCycles();
@@ -53,22 +53,22 @@ public:
 				generateScopes(subtarget);
 			}
 
-			while ((double)delta * c_hxMillisecondsPerCycle < targetMs) {
-				// Perform work that might not be optimized away by the compiler.
-				size_t ops = (m_accumulator & 0xf) + 1;
-				for (size_t i = 0; i < ops; ++i) {
-					m_accumulator ^= m_testPrng();
-				}
+            while ((double)delta * c_hxMillisecondsPerCycle < targetMs) {
+                // Perform work that might not be optimized away by the compiler.
+                size_t ops = (m_accumulator_ & 0xf) + 1;
+                for (size_t i = 0; i < ops; ++i) {
+                    m_accumulator_ ^= m_testPrng_();
+                }
 
 				// Unsigned arithmetic handles clock wrapping correctly.
 				delta = hxTimeSampleCycles() - startCycles;
 			}
 		}
 
-		float m_targetMs;
-		size_t m_accumulator;
-		hxTestRandom m_testPrng;
-	};
+        float m_targetMs_;
+        size_t m_accumulator_;
+        hxTestRandom m_testPrng_;
+    };
 };
 
 // ----------------------------------------------------------------------------

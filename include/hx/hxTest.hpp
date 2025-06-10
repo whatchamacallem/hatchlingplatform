@@ -23,7 +23,7 @@ public:
     virtual void SetUp() { }
     virtual void TearDown() { };
 
-    // Standard
+    // Standard invocation protocol.
     void run_() {
         SetUp();
         runCode_();
@@ -136,12 +136,13 @@ struct hxTestRandom {
 public:
 	// Constructor to initialize the random number generator with a seed.
     // - seed_: Initial seed value for the random number generator.
-    HX_CONSTEXPR_FN hxTestRandom(uint32_t seed_ = 1u) : m_seed(seed_) { }
+    HX_CONSTEXPR_FN hxTestRandom(uint32_t seed_ = 1u) : m_seed_(seed_) { }
 
 	// Generates the next random number in the sequence.
     // Returns the next random number as a 32-bit unsigned integer.
-    HX_CONSTEXPR_FN uint32_t operator()() { return (m_seed = 1664525u * m_seed + 1013904223u); }
+    HX_CONSTEXPR_FN uint32_t operator()() { return (m_seed_ = 1664525u * m_seed_ + 1013904223u); }
 
+private:
     // Current seed value used for generating random numbers.
-    uint32_t m_seed;
+    uint32_t m_seed_;
 };

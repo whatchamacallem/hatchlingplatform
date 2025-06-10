@@ -21,7 +21,7 @@ public:
 	// Initializes memory to 0xcd when HX_RELEASE < 1.
     HX_CONSTEXPR_FN hxAllocator() {
         if ((HX_RELEASE) < 1) {
-            ::memset(m_allocator, 0xcd, sizeof m_allocator);
+            ::memset(m_allocator_, 0xcd, sizeof m_allocator_);
         }
     }
 
@@ -29,10 +29,10 @@ public:
     HX_CONSTEXPR_FN size_t capacity() const { return Capacity_; }
 
 	// Returns a const array of T.
-    HX_CONSTEXPR_FN const T* data() const { return reinterpret_cast<const T*>(m_allocator + 0); }
+    HX_CONSTEXPR_FN const T* data() const { return reinterpret_cast<const T*>(m_allocator_ + 0); }
 
 	// Returns an array of T.
-    HX_CONSTEXPR_FN T* data() { return reinterpret_cast<T*>(m_allocator + 0); }
+    HX_CONSTEXPR_FN T* data() { return reinterpret_cast<T*>(m_allocator_ + 0); }
 
 protected:
     // Used to ensure initial capacity as reserveStorage() will not reallocate.
@@ -45,13 +45,13 @@ private:
 	// *** The static allocator does not support swapping allocations or
 	// assignments from temporaries. ***
     HX_CONSTEXPR_FN void swap(hxAllocator& rhs) HX_DELETE_FN;
-    static const size_t m_capacity = Capacity_;
+    static const size_t m_capacity_ = Capacity_;
 
 	// Using union to implement alignas(char *).
     union {
-		// Char arrays are the least likely to encounter undefined behavior.
-        char m_allocator[m_capacity * sizeof(T)];
-		char* m_charPointerAlign; // char pointers have the strictest alignment requirement.
+        // Char arrays are the least likely to encounter undefined behavior.
+        char m_allocator_[m_capacity_ * sizeof(T)];
+        char* m_charPointerAlign_; // char pointers have the strictest alignment requirement.
     };
 };
 
@@ -65,8 +65,8 @@ public:
 
     // Does not allocate until reserveStorage() is called.
     HX_CONSTEXPR_FN hxAllocator() {
-        m_allocator = hxnull;
-        m_capacity = 0;
+        m_allocator_ = hxnull;
+        m_capacity_ = 0;
     }
 
     // Calls hxFree() with any allocated memory.
@@ -74,26 +74,26 @@ public:
     constexpr
 #endif
     ~hxAllocator() {
-        if (m_allocator) {
-            m_capacity = 0;
-            hxFree(m_allocator);
-            m_allocator = hxnull;
+        if (m_allocator_) {
+            m_capacity_ = 0;
+            hxFree(m_allocator_);
+            m_allocator_ = hxnull;
         }
     }
 
     // Returns the number of elements of T allocated.
-    HX_CONSTEXPR_FN size_t capacity() const { return m_capacity; }
+    HX_CONSTEXPR_FN size_t capacity() const { return m_capacity_; }
 
     // Returns a const array of T.
-    HX_CONSTEXPR_FN const T* data() const { return m_allocator; }
+    HX_CONSTEXPR_FN const T* data() const { return m_allocator_; }
 
     // Returns an array of T.
-    HX_CONSTEXPR_FN T* data() { return m_allocator; }
+    HX_CONSTEXPR_FN T* data() { return m_allocator_; }
 
     // Swap. Only works with Capacity_ == hxAllocatorDynamicCapacity
     HX_CONSTEXPR_FN void swap(hxAllocator& rhs) {
-        hxswap(m_capacity, rhs.m_capacity);
-        hxswap(m_allocator, rhs.m_allocator);
+        hxswap(m_capacity_, rhs.m_capacity_);
+        hxswap(m_allocator_, rhs.m_allocator_);
     }
 
 protected:
@@ -104,16 +104,16 @@ protected:
     HX_CONSTEXPR_FN void reserveStorage(size_t size_,
             hxMemoryAllocator allocator_=hxMemoryAllocator_Current,
             uintptr_t alignment_=HX_ALIGNMENT) {
-        if (size_ <= m_capacity) { return; }
-        hxAssertRelease(m_capacity == 0, "allocator reallocation disallowed.");
-        m_allocator = (T*)hxMallocExt(sizeof(T) * size_, allocator_, alignment_);
-        m_capacity = size_;
+        if (size_ <= m_capacity_) { return; }
+        hxAssertRelease(m_capacity_ == 0, "allocator reallocation disallowed.");
+        m_allocator_ = (T*)hxMallocExt(sizeof(T) * size_, allocator_, alignment_);
+        m_capacity_ = size_;
     }
 
 private:
     hxAllocator(const hxAllocator&) HX_DELETE_FN;
     void operator=(const hxAllocator&) HX_DELETE_FN;
 
-    size_t m_capacity;
-    T_* m_allocator;
+    size_t m_capacity_;
+    T_* m_allocator_;
 };

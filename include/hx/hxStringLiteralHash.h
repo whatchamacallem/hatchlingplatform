@@ -30,16 +30,16 @@ public:
 
 	// permanently add object to hxStringLiteralHashes__.
     hxRegisterFilenameHash_(const char* file_);
-    void* hashNext(void) const { return m_hashNext; }
-    void*& hashNext(void) { return m_hashNext; }
-    uint32_t key() const { return m_hash; };
-    uint32_t hash() const { return m_hash; };
-    const char* file() const { return m_file; }
+    void* hashNext(void) const { return m_hashNext_; }
+    void*& hashNext(void) { return m_hashNext_; }
+    uint32_t key() const { return m_hash_; };
+    uint32_t hash() const { return m_hash_; };
+    const char* file() const { return m_file_; }
 
 private:
-    void* m_hashNext;
-    uint32_t m_hash;
-    const char* m_file;
+    void* m_hashNext_;
+    uint32_t m_hash_;
+    const char* m_file_;
 };
 #else
 #define HX_REGISTER_FILENAME_HASH

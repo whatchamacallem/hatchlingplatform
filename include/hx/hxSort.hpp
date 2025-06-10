@@ -15,7 +15,8 @@
 // argument is ordered before (i.e. is less than) the second. See hxKeyLess.
 // - begin_: Pointer to the beginning of the range to sort.
 // - end_: Pointer to one past the last element in the range to sort.
-// - less_: Comparison function object.
+// - less_: Comparison function object that takes two const T_& parameters and
+// returns a bool.
 template<typename T_, typename Less_>
 void hxInsertionSort(T_* begin_, T_* end_, const Less_& less_) {
     if(begin_ == end_) { return; } // don't add +1 to null.
@@ -107,49 +108,49 @@ public:
 
     // Reserves memory for the internal array to hold at least `size_` elements.
         // - size_: The number of elements to reserve memory for.
-    void reserve(uint32_t size_) { m_array.reserve(size_); }
+    void reserve(uint32_t size_) { m_array_.reserve(size_); }
 
     // Clears the internal array, removing all elements.
-    void clear() { m_array.clear(); }
+    void clear() { m_array_.clear(); }
 
     // Sorts the internal array using the provided temporary memory allocator to
     // store histograms.
-    void sort(hxMemoryAllocator tempMemory_);
+    void sort(hxMemoryAllocator tempMemory);
 
 protected:
     // Represents a key-value pair used in radix sorting.
     struct KeyValuePair {
         // Constructor for an 8-bit key and associated value.
-        KeyValuePair(uint8_t key_, void* val_) : m_key(key_), m_val(val_) { }
+        KeyValuePair(uint8_t key_, void* val_) : m_key_(key_), m_val_(val_) { }
 
         // Constructor for a 16-bit key and associated value.
-        KeyValuePair(uint16_t key_, void* val_) : m_key(key_), m_val(val_) { }
+        KeyValuePair(uint16_t key_, void* val_) : m_key_(key_), m_val_(val_) { }
 
         // Constructor for a 32-bit key and associated value.
-        KeyValuePair(uint32_t key_, void* val_) : m_key(key_), m_val(val_) { }
+        KeyValuePair(uint32_t key_, void* val_) : m_key_(key_), m_val_(val_) { }
 
         // Constructor for a signed 32-bit key and associated value.
         // Adjusts the key to handle signed integers correctly.
-        KeyValuePair(int32_t key_, void* val_) : m_key((uint32_t)(key_ ^ 0x80000000)), m_val(val_) { }
+        KeyValuePair(int32_t key_, void* val_) : m_key_((uint32_t)(key_ ^ 0x80000000)), m_val_(val_) { }
 
         // Constructor for a floating-point key and associated value.
         // Adjusts the key to handle floating-point sorting correctly.
         KeyValuePair(float key_, void* val_)
-            : m_val(val_)
+            : m_val_(val_)
         {
             uint32_t t_;
             ::memcpy(&t_, &key_, sizeof t_);
-            m_key = t_ ^ (uint32_t)(((int32_t)t_ >> 31) | 0x80000000);
+            m_key_ = t_ ^ (uint32_t)(((int32_t)t_ >> 31) | 0x80000000);
         }
 
         // Comparison operator for sorting KeyValuePair objects by key.
-        bool operator<(const KeyValuePair& rhs_) const { return m_key < rhs_.m_key; }
+        bool operator<(const KeyValuePair& rhs_) const { return m_key_ < rhs_.m_key_; }
 
-        uint32_t m_key; // The key used for sorting.
-        void* m_val;	// The associated value.
+        uint32_t m_key_; // The key used for sorting.
+        void* m_val_;	// The associated value.
     };
 
-    hxArray<KeyValuePair> m_array; // Internal array of key-value pairs.
+    hxArray<KeyValuePair> m_array_; // Internal array of key-value pairs.
 };
 
 // ----------------------------------------------------------------------------
@@ -187,10 +188,10 @@ public:
         bool operator!=(const constIterator& rhs_) const { return m_ptr != rhs_.m_ptr; }
 
         // Dereference operator. Returns a reference to the value pointed to by the iterator.
-        const Value& operator*() const { return *(const Value*)m_ptr->m_val; }
+        const Value& operator*() const { return *(const Value*)m_ptr->m_val_; }
 
         // Arrow operator. Returns a pointer to the value pointed to by the iterator.
-        const Value* operator->() const { return (const Value*)m_ptr->m_val; }
+        const Value* operator->() const { return (const Value*)m_ptr->m_val_; }
 
     protected:
         hxArray<KeyValuePair>::constIterator m_ptr; // Internal pointer to the current element.
@@ -212,56 +213,56 @@ public:
         iterator operator++(int) { iterator t_(*this); constIterator::operator++(); return t_; }
 
         // Dereference operator. Returns a reference to the value pointed to by the iterator.
-        Value& operator*() const { return *(Value*)this->m_ptr->m_val; }
+        Value& operator*() const { return *(Value*)this->m_ptr->m_val_; }
 
         // Arrow operator. Returns a pointer to the value pointed to by the iterator.
-        Value* operator->() const { return (Value*)this->m_ptr->m_val; }
+        Value* operator->() const { return (Value*)this->m_ptr->m_val_; }
     };
 
     // Accesses the value at the specified index (const version).
-    const Value& operator[](uint32_t index_) const { return *(Value*)m_array[index_].m_val; }
+    const Value& operator[](uint32_t index_) const { return *(Value*)m_array_[index_].m_val_; }
 
     // Accesses the value at the specified index (non-const version).
-    Value& operator[](uint32_t index_) { return *(Value*)m_array[index_].m_val; }
+    Value& operator[](uint32_t index_) { return *(Value*)m_array_[index_].m_val_; }
 
     // Returns a pointer to the value at the specified index (const version).
-    const Value* get(uint32_t index_) const { return (Value*)m_array[index_].m_val; }
+    const Value* get(uint32_t index_) const { return (Value*)m_array_[index_].m_val_; }
 
     // Returns a pointer to the value at the specified index (non-const version).
-    Value* get(uint32_t index_) { return (Value*)m_array[index_].m_val; }
+    Value* get(uint32_t index_) { return (Value*)m_array_[index_].m_val_; }
 
     // Returns a constIterator to the beginning of the array.
-    constIterator begin() const { return constIterator(m_array.cBegin()); }
+    constIterator begin() const { return constIterator(m_array_.cBegin()); }
 
     // Returns an iterator to the beginning of the array.
-    iterator begin() { return iterator(m_array.begin()); }
+    iterator begin() { return iterator(m_array_.begin()); }
 
     // Returns a constIterator to the beginning of the array (const version).
-    constIterator cBegin() const { return constIterator(m_array.cBegin()); }
+    constIterator cBegin() const { return constIterator(m_array_.cBegin()); }
 
     // Returns a constIterator to the beginning of the array (non-const version).
-    constIterator cBegin() { return constIterator(m_array.cBegin()); }
+    constIterator cBegin() { return constIterator(m_array_.cBegin()); }
 
     // Returns a constIterator to the end of the array.
-    constIterator end() const { return constIterator(m_array.cEnd()); }
+    constIterator end() const { return constIterator(m_array_.cEnd()); }
 
     // Returns an iterator to the end of the array.
-    iterator end() { return iterator(m_array.end()); }
+    iterator end() { return iterator(m_array_.end()); }
 
     // Returns a constIterator to the end of the array (const version).
-    constIterator cEnd() const { return constIterator(m_array.cEnd()); }
+    constIterator cEnd() const { return constIterator(m_array_.cEnd()); }
 
     // Returns a constIterator to the end of the array (non-const version).
-    constIterator cEnd() { return constIterator(m_array.cEnd()); }
+    constIterator cEnd() { return constIterator(m_array_.cEnd()); }
 
     // Returns the number of elements in the array.
-    uint32_t size() const { return m_array.size(); }
+    uint32_t size() const { return m_array_.size(); }
 
     // Returns true if the array is empty, false otherwise.
-    bool empty() const { return m_array.empty(); }
+    bool empty() const { return m_array_.empty(); }
 
     // Returns true if the array is full, false otherwise.
-    bool full() const { return m_array.full(); }
+    bool full() const { return m_array_.full(); }
 
     // Adds a key and value pointer to the array. Ownership is not taken.
         // - key_: The key used for sorting.
@@ -271,7 +272,7 @@ public:
 
         // This radix sort uses void* to avoid template bloat. The casts are not
         // required by the standard, but fix -Wcast-qual for a const Value.
-        ::new(m_array.emplaceBackUnconstructed())
+        ::new(m_array_.emplaceBackUnconstructed())
             KeyValuePair(key_, const_cast<void*>((const void*)val_));
     }
 };

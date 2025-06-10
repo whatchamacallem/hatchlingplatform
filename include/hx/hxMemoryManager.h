@@ -76,7 +76,7 @@ class hxMemoryAllocatorScope
 {
 public:
     // hxMemoryAllocatorScope - Constructor: Sets the current memory allocator to the specified ID.
-        // - allocator_: The memory manager ID to set for this scope.
+    // - allocator_: The memory manager ID to set for this scope.
     hxMemoryAllocatorScope(hxMemoryAllocator allocator_);
 
 	// Destructor restores the previous memory manager allocator ID.
@@ -95,10 +95,10 @@ public:
 	uintptr_t getScopeBytesAllocated() const;
 
 	// Gets the number of allocations made before this scope was entered.
-	uintptr_t getPreviousAllocationCount() const { return m_previousAllocationCount; }
+	uintptr_t getPreviousAllocationCount() const { return m_previousAllocationCount_; }
 
 	// Gets the number of bytes allocated before this scope was entered.
-	uintptr_t getPreviousBytesAllocated() const { return m_previousBytesAllocated; }
+	uintptr_t getPreviousBytesAllocated() const { return m_previousBytesAllocated_; }
 
 private:
 	// Deleted copy constructor to prevent copying.
@@ -107,17 +107,18 @@ private:
 	// Deleted assignment operator to prevent copying.
 	void operator=(const hxMemoryAllocatorScope&) HX_DELETE_FN;
 
-	hxMemoryAllocator m_thisAllocator; // The memory manager ID for this scope.
-	hxMemoryAllocator m_previousAllocator; // The previous memory manager ID.
-	uintptr_t m_previousAllocationCount; // Previous allocation count.
-	uintptr_t m_previousBytesAllocated; // Previous bytes allocated.
+    hxMemoryAllocator m_thisAllocator_; // The memory manager ID for this scope.
+    hxMemoryAllocator m_previousAllocator_; // The previous memory manager ID.
+    uintptr_t m_previousAllocationCount_; // Previous allocation count.
+    uintptr_t m_previousBytesAllocated_; // Previous bytes allocated.
 };
 
 // hxMemoryManagerInit - Initializes the memory manager. Must be called before
 // using any memory manager functions.
 void hxMemoryManagerInit();
 
-// hxMemoryManagerShutDown - Shuts down the memory manager. Frees any remaining resources.
+// hxMemoryManagerShutDown - Shuts down the memory manager. Frees any remaining
+// resources.
 void hxMemoryManagerShutDown();
 
 // hxMemoryManagerAllocationCount - Gets the total number of allocations made by

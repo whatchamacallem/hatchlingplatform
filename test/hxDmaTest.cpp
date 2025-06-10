@@ -11,10 +11,10 @@ class hxDmaTest :
 	public testing::Test
 {
 public:
-	hxDmaTest() {
-		::memset(m_buf + 0, 0x00, sizeof m_buf);
-		setBuf();
-	}
+    hxDmaTest() {
+        ::memset(m_buf_ + 0, 0x00, sizeof m_buf_);
+        setBuf();
+    }
 
 	~hxDmaTest() {
 		hxDmaAwaitAll("end test");
@@ -23,21 +23,21 @@ public:
 	}
 
 	void setBuf(uint8_t* buf=hxnull) {
-		buf = buf ? buf : m_buf;
+		buf = buf ? buf : m_buf_;
 		for (size_t i = BufSize; i--;) {
 			buf[i] = (uint8_t)i;
 		}
 	}
 
 	void checkBuf(const uint8_t* buf = 0) const {
-		buf = buf ? buf : m_buf;
+		buf = buf ? buf : m_buf_;
 		for (size_t i = BufSize; i--;) {
 			ASSERT_EQ(buf[i], (uint8_t)i);
 		}
 	}
 
-	static const size_t BufSize = 100;
-	uint8_t m_buf[BufSize];
+    static const size_t BufSize = 100;
+    uint8_t m_buf_[BufSize];
 };
 
 // ----------------------------------------------------------------------------
@@ -45,7 +45,7 @@ public:
 TEST_F(hxDmaTest, Single) {
 	uint8_t dst[BufSize];
 	::memset(dst, 0x33, sizeof dst);
-	hxDmaStart(dst, m_buf, BufSize, "start");
+	hxDmaStart(dst, m_buf_, BufSize, "start");
 	hxDmaAwaitAll("await");
 	checkBuf(dst);
 }
@@ -56,7 +56,7 @@ TEST_F(hxDmaTest, Multiple) {
 
 	::memset(dst, 0x33, sizeof dst);
 	for (size_t i = OPS; i--;) {
-		hxDmaStart(dst[i], m_buf, BufSize, "start");
+		hxDmaStart(dst[i], m_buf_, BufSize, "start");
 	}
 	hxDmaAwaitAll("await");
 	for (size_t i = OPS; i--;) {
@@ -73,7 +73,7 @@ TEST_F(hxDmaTest, Simultaneous) {
 	for (size_t j = REPS; j--;) {
 		::memset(dst, 0x33, sizeof dst);
 		for (size_t i = OPS; i--;) {
-			hxDmaStart(dst[i], m_buf, BufSize, "start");
+			hxDmaStart(dst[i], m_buf_, BufSize, "start");
 			hxDmaAddSyncPoint(sp[i]);
 		}
 		for (size_t i = OPS; i--;) {
@@ -82,7 +82,3 @@ TEST_F(hxDmaTest, Simultaneous) {
 		}
 	}
 }
-
-
-
-

@@ -17,23 +17,23 @@ public:
 	typedef Key_ Key;
 
 	HX_CONSTEXPR_FN hxHashTableNodeInteger(const Key& key_) :
-		m_hashNext(hxnull), m_key(key_) { }
+		m_hashNext_(hxnull), m_key_(key_) { }
 
 	// Boilerplate for hxHashTable.
-	void* hashNext(void) const { return m_hashNext; }
-	void*& hashNext(void) { return m_hashNext; }
+	void* hashNext(void) const { return m_hashNext_; }
+	void*& hashNext(void) { return m_hashNext_; }
 
 	// The key and hash identify the Node and should not change once added.
-	HX_CONSTEXPR_FN const Key& key() const { return m_key; }
-	HX_CONSTEXPR_FN uint32_t hash() const { return hxKeyHash(m_key); };
+	HX_CONSTEXPR_FN const Key& key() const { return m_key_; }
+	HX_CONSTEXPR_FN uint32_t hash() const { return hxKeyHash(m_key_); };
 
 private:
 	hxHashTableNodeInteger(void) HX_DELETE_FN;
 	hxHashTableNodeInteger(const hxHashTableNodeInteger&) HX_DELETE_FN;
 	void operator=(const hxHashTableNodeInteger&) HX_DELETE_FN;
 
-	void* m_hashNext;
-	Key m_key;
+    void* m_hashNext_;
+    Key m_key_;
 };
 
 // ----------------------------------------------------------------------------

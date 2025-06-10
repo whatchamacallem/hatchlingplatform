@@ -38,18 +38,18 @@ private:
 
     static const uint32_t RunningQueueCheck_ = 0xc710b034u;
 
-    hxTask* m_nextTask;
-    uint32_t m_runningQueueCheck;
+    hxTask* m_nextTask_;
+    uint32_t m_runningQueueCheck_;
 
 #if HX_USE_CPP_THREADS
     enum class ExecutorMode_ { Pool_, Waiting_, Stopping_ };
     static void executorThread_(hxTaskQueue* q_, ExecutorMode_ mode_);
 
-    int32_t m_threadPoolSize = 0;
-    std::thread* m_threads = hxnull;
-    std::mutex m_mutex;
-    std::condition_variable m_condVarTasks;
-    std::condition_variable m_condVarWaiting;
-    int32_t m_executingCount = 0;
+    int32_t m_threadPoolSize_ = 0;
+    std::thread* m_threads_ = hxnull;
+    std::mutex m_mutex_;
+    std::condition_variable m_condVarTasks_;
+    std::condition_variable m_condVarWaiting_;
+    int32_t m_executingCount_ = 0;
 #endif
 };

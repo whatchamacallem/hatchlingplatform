@@ -379,7 +379,7 @@ public:
 	typedef hxConsoleHashTableKey_ Key;
 
 	inline hxConsoleHashTableNode_(hxConsoleHashTableKey_ key_)
-			: m_hashNext(hxnull), m_key(key_), m_hash(hxKeyHash(key_)), m_command(hxnull) {
+			: m_hashNext_(hxnull), m_key_(key_), m_hash_(hxKeyHash(key_)), m_command_(hxnull) {
 		if ((HX_RELEASE) < 1) {
 			const char* k_ = key_.str_;
 			while (!hxConsoleIsDelimiter_(*k_)) {
@@ -390,19 +390,19 @@ public:
 	}
 
 	// Boilerplate required by hxHashTable.
-	void* hashNext(void) const { return m_hashNext; }
-	void*& hashNext(void) { return m_hashNext; }
+	void* hashNext(void) const { return m_hashNext_; }
+	void*& hashNext(void) { return m_hashNext_; }
 
-	hxConsoleHashTableKey_ key(void) const { return m_key; }
-	uint32_t hash(void) const { return m_hash; }
-	hxConsoleCommand_* value(void) const { return m_command; }
-	void setValue(hxConsoleCommand_* x_) { m_command = x_; }
+	hxConsoleHashTableKey_ key(void) const { return m_key_; }
+	uint32_t hash(void) const { return m_hash_; }
+	hxConsoleCommand_* value(void) const { return m_command_; }
+	void setValue(hxConsoleCommand_* x_) { m_command_ = x_; }
 
 private:
-	void* m_hashNext;
-	hxConsoleHashTableKey_ m_key;
-	uint32_t m_hash;
-	hxConsoleCommand_* m_command;
+	void* m_hashNext_;
+	hxConsoleHashTableKey_ m_key_;
+	uint32_t m_hash_;
+	hxConsoleCommand_* m_command_;
 };
 
 void hxConsoleRegister_(hxConsoleHashTableNode_* node);
@@ -413,13 +413,13 @@ struct hxConsoleConstructor_ {
 
 	template<typename Command_>
 	inline hxConsoleConstructor_(Command_ fn_, const char* id_)
-			: m_node(hxConsoleHashTableKey_(id_)) {
-		::new(m_storage + 0) Command_(fn_);
-		m_node.setValue((Command_*)(m_storage + 0));
-		hxConsoleRegister_(&m_node);
+			: m_node_(hxConsoleHashTableKey_(id_)) {
+		::new(m_storage_ + 0) Command_(fn_);
+		m_node_.setValue((Command_*)(m_storage_ + 0));
+		hxConsoleRegister_(&m_node_);
 	}
 
 	// Provide static storage instead of using allocator before main.
-	hxConsoleHashTableNode_ m_node;
-	char m_storage[sizeof(hxConsoleCommand0_<void>)]; // .vtable and user function pointer
+	hxConsoleHashTableNode_ m_node_;
+	char m_storage_[sizeof(hxConsoleCommand0_<void>)]; // .vtable and user function pointer
 };

@@ -16,22 +16,22 @@ public:
 		MAX_TASKS = 20
 	};
 
-	~hxTaskQueueTest() {
-	}
-	struct TaskTest : public hxTask {
-		TaskTest() : m_execCount(0), m_reenqueueCount(0) { }
+    ~hxTaskQueueTest() {
+    }
+    struct TaskTest : public hxTask {
+        TaskTest() : m_execCount_(0), m_reenqueueCount_(0) { }
 
-		virtual void execute(hxTaskQueue* q) HX_OVERRIDE {
-			++m_execCount;
-			if (m_reenqueueCount > 0) {
-				--m_reenqueueCount;
-				q->enqueue(this);
-			}
-		}
+        virtual void execute(hxTaskQueue* q) HX_OVERRIDE {
+            ++m_execCount_;
+            if (m_reenqueueCount_ > 0) {
+                --m_reenqueueCount_;
+                q->enqueue(this);
+            }
+        }
 
-		size_t m_execCount;
-		size_t m_reenqueueCount;
-	};
+        size_t m_execCount_;
+        size_t m_reenqueueCount_;
+    };
 };
 
 // ----------------------------------------------------------------------------
@@ -58,17 +58,17 @@ TEST_F(hxTaskQueueTest, Single) {
 			q.enqueue(&task0);
 			q.waitForAll();
 			q.enqueue(&task1);
-			ASSERT_TRUE(task0.m_execCount == 1);
+			ASSERT_TRUE(task0.m_execCount_ == 1);
 		}
-		ASSERT_TRUE(task0.m_execCount == 1);
-		ASSERT_TRUE(task1.m_execCount == 1);
+		ASSERT_TRUE(task0.m_execCount_ == 1);
+		ASSERT_TRUE(task1.m_execCount_ == 1);
 
 		TaskTest task2;
 		{
 			hxTaskQueue q(i);
 			q.enqueue(&task2);
 		}
-		ASSERT_TRUE(task2.m_execCount == 1);
+		ASSERT_TRUE(task2.m_execCount_ == 1);
 	}
 }
 
@@ -82,9 +82,9 @@ TEST_F(hxTaskQueueTest, SingleStepping) {
 					q.enqueue(&task0);
 					q.waitForAll();
 				}
-				ASSERT_TRUE(task0.m_execCount == j);
+				ASSERT_TRUE(task0.m_execCount_ == j);
 			}
-			ASSERT_TRUE(task0.m_execCount == j);
+			ASSERT_TRUE(task0.m_execCount_ == j);
 		}
 	}
 }
@@ -103,12 +103,12 @@ TEST_F(hxTaskQueueTest, Multiple) {
 				q.waitForAll();
 				for (size_t k = 0; k <= j; ++k) {
 					q.enqueue(&tasks1[k]);
-					ASSERT_TRUE(tasks0[k].m_execCount == 1);
+					ASSERT_TRUE(tasks0[k].m_execCount_ == 1);
 				}
 			}
 			for (size_t k = 0; k <= j; ++k) {
-				ASSERT_TRUE(tasks0[k].m_execCount == 1);
-				ASSERT_TRUE(tasks1[k].m_execCount == 1);
+				ASSERT_TRUE(tasks0[k].m_execCount_ == 1);
+				ASSERT_TRUE(tasks1[k].m_execCount_ == 1);
 			}
 
 			TaskTest tasks2[MAX_TASKS];
@@ -119,7 +119,7 @@ TEST_F(hxTaskQueueTest, Multiple) {
 				}
 			}
 			for (size_t k = 0; k <= j; ++k) {
-				ASSERT_TRUE(tasks2[k].m_execCount == 1);
+				ASSERT_TRUE(tasks2[k].m_execCount_ == 1);
 			}
 		}
 	}
@@ -140,7 +140,7 @@ TEST_F(hxTaskQueueTest, MultipleStepping) {
 				}
 			}
 			for (size_t l = 0; l <= j; ++l) {
-				ASSERT_TRUE(tasks0[l].m_execCount == j);
+				ASSERT_TRUE(tasks0[l].m_execCount_ == j);
 			}
 		}
 	}
@@ -155,18 +155,18 @@ TEST_F(hxTaskQueueTest, MultipleReenqueuing) {
 			{
 				hxTaskQueue q(i);
 				for (size_t k = 0; k <= j; ++k) {
-					tasks0[k].m_reenqueueCount = k;
+					tasks0[k].m_reenqueueCount_ = k;
 					q.enqueue(&tasks0[k]);
 				}
 				q.waitForAll();
 				for (size_t k = 0; k <= j; ++k) {
-					tasks1[k].m_reenqueueCount = k;
+					tasks1[k].m_reenqueueCount_ = k;
 					q.enqueue(&tasks1[k]);
 				}
 			}
 			for (size_t k = 0; k <= j; ++k) {
-				ASSERT_TRUE(tasks0[k].m_execCount == (k + 1));
-				ASSERT_TRUE(tasks1[k].m_execCount == (k + 1));
+				ASSERT_TRUE(tasks0[k].m_execCount_ == (k + 1));
+				ASSERT_TRUE(tasks1[k].m_execCount_ == (k + 1));
 			}
 
 			// Tests reenqueuing in destructor
@@ -174,12 +174,12 @@ TEST_F(hxTaskQueueTest, MultipleReenqueuing) {
 			{
 				hxTaskQueue q(i);
 				for (size_t k = 0; k <= j; ++k) {
-					tasks2[k].m_reenqueueCount = k;
+					tasks2[k].m_reenqueueCount_ = k;
 					q.enqueue(&tasks2[k]);
 				}
 			}
 			for (size_t k = 0; k <= j; ++k) {
-				ASSERT_TRUE(tasks2[k].m_execCount == (k + 1));
+				ASSERT_TRUE(tasks2[k].m_execCount_ == (k + 1));
 			}
 		}
 	}

@@ -33,38 +33,38 @@ public:
 	static hxTestSuiteExecutor_& singleton_() { static hxTestSuiteExecutor_ s_hxTestRunner; return s_hxTestRunner; }
 
 	hxTestSuiteExecutor_() {
-		m_numFactories = 0;
-		m_currentTest = hxnull;
-		m_searchTermStringLiteral = hxnull;
-		::memset(m_factories + 0, 0x00, sizeof m_factories);
+		m_numFactories_ = 0;
+		m_currentTest_ = hxnull;
+		m_searchTermStringLiteral_ = hxnull;
+		::memset(m_factories_ + 0, 0x00, sizeof m_factories_);
 	}
 
-	void setSearchTerm_(const char* searchTermStringLiteral_) { m_searchTermStringLiteral = searchTermStringLiteral_; }
+	void setSearchTerm_(const char* searchTermStringLiteral_) { m_searchTermStringLiteral_ = searchTermStringLiteral_; }
 
 	void addTest_(hxTestCaseBase_* fn_) {
 		// Use -DHX_TEST_MAX_CASES to provide enough room for all tests.
-		hxAssertRelease(m_numFactories < HX_TEST_MAX_CASES, "HX_TEST_MAX_CASES overflow\n");
-		if(m_numFactories < HX_TEST_MAX_CASES) {
-			m_factories[m_numFactories++] = fn_;
+		hxAssertRelease(m_numFactories_ < HX_TEST_MAX_CASES, "HX_TEST_MAX_CASES overflow\n");
+		if(m_numFactories_ < HX_TEST_MAX_CASES) {
+			m_factories_[m_numFactories_++] = fn_;
 		}
 	}
 
 	// message is required to end with an \n. Returns equivalent of /dev/null on
 	// success and the system log otherwise.
 	hxFile& assertCheck_(const char* file_, size_t line_, bool condition_, const char* message_) {
-		hxAssertRelease(m_currentTest, "not testing");
-		++m_assertCount;
-		m_testState = (condition_ && m_testState != TEST_STATE_FAIL_) ? TEST_STATE_PASS_ : TEST_STATE_FAIL_;
+		hxAssertRelease(m_currentTest_, "not testing");
+		++m_assertCount_;
+		m_testState_ = (condition_ && m_testState_ != TEST_STATE_FAIL_) ? TEST_STATE_PASS_ : TEST_STATE_FAIL_;
 		if (!condition_) {
-			if(++m_assertFailCount >= TEST_MAX_FAIL_MESSAGES_) {
-				if (m_assertFailCount == TEST_MAX_FAIL_MESSAGES_) {
+			if(++m_assertFailCount_ >= TEST_MAX_FAIL_MESSAGES_) {
+				if (m_assertFailCount_ == TEST_MAX_FAIL_MESSAGES_) {
 					hxLogConsole("remaining asserts will fail silently...\n");
 				}
 				return fileNull_();
 			}
 
 			// prints full path error messages that can be clicked on in an ide.
-			hxLogHandler(hxLogLevel_Assert, "%s.%s", m_currentTest->suite_(), m_currentTest->case_());
+			hxLogHandler(hxLogLevel_Assert, "%s.%s", m_currentTest_->suite_(), m_currentTest_->case_());
 			hxLogHandler(hxLogLevel_Assert, "%s(%zu): %s", file_, line_, message_);
 
 			hxAssertMsg(HX_TEST_ERROR_HANDLING, "unplanned test fail");
@@ -74,15 +74,15 @@ public:
 	}
 
 	size_t executeAllTests_() {
-		m_passCount = m_failCount = m_assertCount = 0;
-		hxLogConsole("RUNNING_TESTS (%s)\n", (m_searchTermStringLiteral ? m_searchTermStringLiteral : "ALL"));
-		for (hxTestCaseBase_** it_ = m_factories; it_ != (m_factories + m_numFactories); ++it_) {
-			if (!m_searchTermStringLiteral || ::strstr(m_searchTermStringLiteral, (*it_)->suite_()) != hxnull) {
+		m_passCount_ = m_failCount_ = m_assertCount_ = 0;
+		hxLogConsole("RUNNING_TESTS (%s)\n", (m_searchTermStringLiteral_ ? m_searchTermStringLiteral_ : "ALL"));
+		for (hxTestCaseBase_** it_ = m_factories_; it_ != (m_factories_ + m_numFactories_); ++it_) {
+			if (!m_searchTermStringLiteral_ || ::strstr(m_searchTermStringLiteral_, (*it_)->suite_()) != hxnull) {
 				hxLogConsole("%s.%s...\n", (*it_)->suite_(), (*it_)->case_());
 
-				m_currentTest = *it_;
-				m_testState = TEST_STATE_NOTHING_ASSERTED_;
-				m_assertFailCount = 0;
+				m_currentTest_ = *it_;
+				m_testState_ = TEST_STATE_NOTHING_ASSERTED_;
+				m_assertFailCount_ = 0;
 
 				{
 					// Tests should have no side effects. Therefore all allocations must be
@@ -91,34 +91,34 @@ public:
 					(*it_)->run_();
 				}
 
-				if (m_testState == TEST_STATE_NOTHING_ASSERTED_) {
+				if (m_testState_ == TEST_STATE_NOTHING_ASSERTED_) {
 					this->assertCheck_((*it_)->file_(), (*it_)->line_(), false, "NOTHING_ASSERTED");
-					++m_failCount;
+					++m_failCount_;
 				}
-				else if (m_testState == TEST_STATE_PASS_) {
-					++m_passCount;
+				else if (m_testState_ == TEST_STATE_PASS_) {
+					++m_passCount_;
 				}
 				else {
-					++m_failCount;
+					++m_failCount_;
 				}
 			}
 		}
 
 		hxLogConsole("skipped %zu tests. checked %zu assertions.\n",
-			m_numFactories - m_passCount - m_failCount, m_assertCount);
+			m_numFactories_ - m_passCount_ - m_failCount_, m_assertCount_);
 
-		hxWarnMsg(m_passCount + m_failCount, "NOTHING TESTED");
+		hxWarnMsg(m_passCount_ + m_failCount_, "NOTHING TESTED");
 
-		if (m_passCount != 0 && m_failCount == 0) {
-			hxLogHandler(hxLogLevel_Console, "[  PASSED  ] %zu test%s.\n", m_passCount,
-				((m_passCount != 1) ? "s" : ""));
+		if (m_passCount_ != 0 && m_failCount_ == 0) {
+			hxLogHandler(hxLogLevel_Console, "[  PASSED  ] %zu test%s.\n", m_passCount_,
+				((m_passCount_ != 1) ? "s" : ""));
 		}
 		else {
-			hxLogHandler(hxLogLevel_Console, " %zu FAILED TEST%s\n", m_failCount,
-				((m_failCount != 1) ? "S" : ""));
-			m_failCount = hxmax(m_failCount, (size_t)1u); // Nothing tested is failure.
+			hxLogHandler(hxLogLevel_Console, " %zu FAILED TEST%s\n", m_failCount_,
+				((m_failCount_ != 1) ? "S" : ""));
+			m_failCount_ = hxmax(m_failCount_, (size_t)1u); // Nothing tested is failure.
 		}
-		return m_failCount;
+		return m_failCount_;
 	}
 
 private:
@@ -128,13 +128,13 @@ private:
 	hxTestSuiteExecutor_(const hxTestSuiteExecutor_&) HX_DELETE_FN;
 	void operator=(const hxTestSuiteExecutor_&) HX_DELETE_FN;
 
-	hxTestCaseBase_* m_factories[HX_TEST_MAX_CASES];
-	size_t m_numFactories;
-	hxTestCaseBase_* m_currentTest;
-	TestState_ m_testState;
-	size_t m_passCount;
-	size_t m_failCount;
-	const char* m_searchTermStringLiteral;
-	size_t m_assertCount;
-	size_t m_assertFailCount;
+	hxTestCaseBase_* m_factories_[HX_TEST_MAX_CASES];
+	size_t m_numFactories_;
+	hxTestCaseBase_* m_currentTest_;
+	TestState_ m_testState_;
+	size_t m_passCount_;
+	size_t m_failCount_;
+	const char* m_searchTermStringLiteral_;
+	size_t m_assertCount_;
+	size_t m_assertFailCount_;
 };

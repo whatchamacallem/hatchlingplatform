@@ -11,19 +11,19 @@ HX_STATIC_ASSERT(HX_RADIX_SORT_BITS == 8 || HX_RADIX_SORT_BITS == 11,
 	"Unsupported HX_RADIX_SORT_BITS");
 
 void hxRadixSortBase::sort(hxMemoryAllocator tempMemory) {
-	if (m_array.size() <= HX_RADIX_SORT_MIN_SIZE) {
-		hxInsertionSort(m_array.begin(), m_array.end());
-		return;
-	}
+    if (m_array_.size() <= HX_RADIX_SORT_MIN_SIZE) {
+        hxInsertionSort(m_array_.begin(), m_array_.end());
+        return;
+    }
 
 	hxMemoryAllocatorScope allocatorScope(tempMemory);
 
 	if (HX_RADIX_SORT_BITS == 8) {
 		// 2 Working buffers
-		KeyValuePair* HX_RESTRICT buf0 = m_array.data();
-		KeyValuePair* buf0End = buf0 + m_array.size();
-		KeyValuePair* HX_RESTRICT buf1 = (KeyValuePair*)hxMalloc(m_array.size() * sizeof(KeyValuePair));
-		KeyValuePair* buf1End = buf1 + m_array.size();
+		KeyValuePair* HX_RESTRICT buf0 = m_array_.data();
+		KeyValuePair* buf0End = buf0 + m_array_.size();
+		KeyValuePair* HX_RESTRICT buf1 = (KeyValuePair*)hxMalloc(m_array_.size() * sizeof(KeyValuePair));
+		KeyValuePair* buf1End = buf1 + m_array_.size();
 
 		uint32_t* histograms = (uint32_t*)hxMalloc(256u * 4u * sizeof(uint32_t));
 		::memset(histograms, 0x00, 256u * 4u * sizeof(uint32_t)); // 4k
@@ -35,7 +35,7 @@ void hxRadixSortBase::sort(hxMemoryAllocator tempMemory) {
 		uint32_t* HX_RESTRICT hist3 = histograms + (256 * 3);
 
 		for (const KeyValuePair* HX_RESTRICT it = buf0; it != buf0End; ++it) {
-			uint32_t x = it->m_key;
+			uint32_t x = it->m_key_;
 			++hist0[x & 0xffu];
 			++hist1[(x >> 8) & 0xffu];
 			++hist2[(x >> 16) & 0xffu];
@@ -53,17 +53,17 @@ void hxRadixSortBase::sort(hxMemoryAllocator tempMemory) {
 
 		// 2 or 4 pass radix sort
 		for (const KeyValuePair* HX_RESTRICT it = buf0; it != buf0End; ++it) {
-			buf1[hist0[it->m_key & 0xffu]++] = *it;
+			buf1[hist0[it->m_key_ & 0xffu]++] = *it;
 		}
 		for (const KeyValuePair* HX_RESTRICT it = buf1; it != buf1End; ++it) {
-			buf0[hist1[(it->m_key >> 8) & 0xffu]++] = *it;
+			buf0[hist1[(it->m_key_ >> 8) & 0xffu]++] = *it;
 		}
-		if (hist2[1] != m_array.size() || hist3[1] != m_array.size()) {
+		if (hist2[1] != m_array_.size() || hist3[1] != m_array_.size()) {
 			for (const KeyValuePair* HX_RESTRICT it = buf0; it != buf0End; ++it) {
-				buf1[hist2[(it->m_key >> 16) & 0xffu]++] = *it;
+				buf1[hist2[(it->m_key_ >> 16) & 0xffu]++] = *it;
 			}
 			for (const KeyValuePair* HX_RESTRICT it = buf1; it != buf1End; ++it) {
-				buf0[hist3[it->m_key >> 24]++] = *it;
+				buf0[hist3[it->m_key_ >> 24]++] = *it;
 			}
 		}
 
@@ -72,12 +72,12 @@ void hxRadixSortBase::sort(hxMemoryAllocator tempMemory) {
 	}
 	else if (HX_RADIX_SORT_BITS == 11) {
 		// 3 Working buffers. Fox extremely large data sets.
-		KeyValuePair* HX_RESTRICT buf0 = m_array.data();
-		KeyValuePair* buf0End = buf0 + m_array.size();
-		KeyValuePair* HX_RESTRICT buf1 = (KeyValuePair*)hxMalloc(m_array.size() * sizeof(KeyValuePair) * 2u);
-		KeyValuePair* buf1End = buf1 + m_array.size();
+		KeyValuePair* HX_RESTRICT buf0 = m_array_.data();
+		KeyValuePair* buf0End = buf0 + m_array_.size();
+		KeyValuePair* HX_RESTRICT buf1 = (KeyValuePair*)hxMalloc(m_array_.size() * sizeof(KeyValuePair) * 2u);
+		KeyValuePair* buf1End = buf1 + m_array_.size();
 		KeyValuePair* buf2 = buf1End;
-		KeyValuePair* buf2End = buf2 + m_array.size();
+		KeyValuePair* buf2End = buf2 + m_array_.size();
 
 		uint32_t* histograms = (uint32_t*)hxMalloc(5120u * sizeof(uint32_t)); // 5120: 2048*2.5
 		::memset(histograms, 0x00, 5120u * sizeof(uint32_t));
@@ -87,7 +87,7 @@ void hxRadixSortBase::sort(hxMemoryAllocator tempMemory) {
 		uint32_t* HX_RESTRICT hist2 = histograms + 4096u; // 1024 values
 
 		for (const KeyValuePair* HX_RESTRICT it = buf0; it != buf0End; ++it) {
-			uint32_t x = it->m_key;
+			uint32_t x = it->m_key_;
 			++hist0[x & 0x7ffu];
 			++hist1[(x >> 11) & 0x7ffu];
 			++hist2[x >> 22];
@@ -107,15 +107,15 @@ void hxRadixSortBase::sort(hxMemoryAllocator tempMemory) {
 
 		// 2 or 3 pass radix sort
 		for (const KeyValuePair* HX_RESTRICT it = buf0; it != buf0End; ++it) {
-			buf1[hist0[it->m_key & 0x7ffu]++] = *it;
+			buf1[hist0[it->m_key_ & 0x7ffu]++] = *it;
 		}
-		KeyValuePair* HX_RESTRICT buf20 = (hist2[1] != m_array.size()) ? buf2 : buf0;
+		KeyValuePair* HX_RESTRICT buf20 = (hist2[1] != m_array_.size()) ? buf2 : buf0;
 		for (const KeyValuePair* HX_RESTRICT it = buf1; it != buf1End; ++it) {
-			buf20[hist1[(it->m_key >> 11) & 0x7ffu]++] = *it;
+			buf20[hist1[(it->m_key_ >> 11) & 0x7ffu]++] = *it;
 		}
-		if (hist2[1] != m_array.size()) {
+		if (hist2[1] != m_array_.size()) {
 			for (const KeyValuePair* HX_RESTRICT it = buf2; it != buf2End; ++it) {
-				buf0[hist2[it->m_key >> 22]++] = *it;
+				buf0[hist2[it->m_key_ >> 22]++] = *it;
 			}
 		}
 
