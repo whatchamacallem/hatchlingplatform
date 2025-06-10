@@ -43,7 +43,7 @@ void hxInsertionSort(T_* begin_, T_* end_) {
 }
 
 // hxBinarySearch - Performs a binary search in the range [first, last). Returns
-// HX_NULL if the value is not found. Unsorted data will lead to errors.
+// hxnull if the value is not found. Unsorted data will lead to errors.
 // Non-unique values will be selected between arbitrarily.
 //
 // The compare parameter is a function object that returns true if the first
@@ -110,6 +110,7 @@ public:
 
     // Sorts the internal array using the provided temporary memory allocator to
     // store histograms.
+    // - tempMemory: A hxMemoryAllocator id.
     void sort(hxMemoryAllocator tempMemory);
 
 protected:
@@ -142,7 +143,7 @@ protected:
         bool operator<(const KeyValuePair& rhs_) const { return m_key_ < rhs_.m_key_; }
 
         uint32_t m_key_; // The key used for sorting.
-        void* m_val_;	// The associated value.
+        void* m_val_;	 // The associated value.
     };
 
     hxArray<KeyValuePair> m_array_; // Internal array of key-value pairs.
@@ -151,7 +152,7 @@ protected:
 // hxRadixSort. Sorts an array of value* by keys. K is the key and V the value.
 //
 // Nota bene: Keys of double, int64_t and uint64_t are not supported. Keys
-// are stored as uint32_t.
+// are stored as uint32_t to reduce generated code.
 
 template<typename K_, class V_>
 class hxRadixSort : public hxRadixSortBase {
@@ -164,31 +165,31 @@ public:
     class constIterator {
     public:
         // Constructs a constIterator from an hxArray<KeyValuePair>::constIterator.
-        constIterator(hxArray<KeyValuePair>::constIterator it_) : m_ptr(it_) { }
+        constIterator(hxArray<KeyValuePair>::constIterator it_) : m_ptr_(it_) { }
 
         // Constructs an invalid constIterator.
-        constIterator() : m_ptr(hxnull) { }
+        constIterator() : m_ptr_(hxnull) { }
 
         // Pre-increment operator. Moves the iterator to the next element.
-        constIterator& operator++() { ++m_ptr; return *this; }
+        constIterator& operator++() { ++m_ptr_; return *this; }
 
         // Post-increment operator. Moves the iterator to the next element and returns the previous state.
-        constIterator operator++(int) { constIterator t(*this); operator++(); return t; }
+        constIterator operator++(int) { constIterator t_(*this); operator++(); return t_; }
 
         // Equality comparison operator.
-        bool operator==(const constIterator& rhs_) const { return m_ptr == rhs_.m_ptr; }
+        bool operator==(const constIterator& rhs_) const { return m_ptr_ == rhs_.m_ptr_; }
 
         // Inequality comparison operator.
-        bool operator!=(const constIterator& rhs_) const { return m_ptr != rhs_.m_ptr; }
+        bool operator!=(const constIterator& rhs_) const { return m_ptr_ != rhs_.m_ptr_; }
 
         // Dereference operator. Returns a reference to the value pointed to by the iterator.
-        const Value& operator*() const { return *(const Value*)m_ptr->m_val_; }
+        const Value& operator*() const { return *(const Value*)m_ptr_->m_val_; }
 
         // Arrow operator. Returns a pointer to the value pointed to by the iterator.
-        const Value* operator->() const { return (const Value*)m_ptr->m_val_; }
+        const Value* operator->() const { return (const Value*)m_ptr_->m_val_; }
 
     protected:
-        hxArray<KeyValuePair>::constIterator m_ptr; // Internal pointer to the current element.
+        hxArray<KeyValuePair>::constIterator m_ptr_; // Internal pointer to the current element.
     };
 
     // Iterator that can be cast to a constIterator.
@@ -207,10 +208,10 @@ public:
         iterator operator++(int) { iterator t_(*this); constIterator::operator++(); return t_; }
 
         // Dereference operator. Returns a reference to the value pointed to by the iterator.
-        Value& operator*() const { return *(Value*)this->m_ptr->m_val_; }
+        Value& operator*() const { return *(Value*)this->m_ptr_->m_val_; }
 
         // Arrow operator. Returns a pointer to the value pointed to by the iterator.
-        Value* operator->() const { return (Value*)this->m_ptr->m_val_; }
+        Value* operator->() const { return (Value*)this->m_ptr_->m_val_; }
     };
 
     // Accesses the value at the specified index (const version).

@@ -49,12 +49,15 @@ HX_STATIC_ASSERT(0, "implement hxTimeSampleCycles");
 // profiling sample. WARNING: A pointer to labelStringLiteral is kept.
 // c_hxProfilerDefaultSamplingCutoff is provided as a recommended MinCycles
 // cutoff. Compiles to a NOP when not in use.
+// - labelStringLiteral: A string literal label for the sample.
 #define hxProfileScope(labelStringLiteral_) \
     HX_PROFILE_ONLY_( hxProfilerScopeInternal_<> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral_) )
 
 // hxProfileScopeMin(const char* labelStringLiteral, hxcycles_t minCycles) -
 // Declares an RAII-style profiling sample with a minimum cycle cutoff. Compiles
 // to a NOP when not in use.
+// - labelStringLiteral: A string literal label for the sample.
+// - minCycles_: A minimum number of cycles required for a sample to be recorded.
 #define hxProfileScopeMin(labelStringLiteral_, minCycles_) \
     HX_PROFILE_ONLY_( hxProfilerScopeInternal_<minCycles_> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral_) )
 
@@ -70,11 +73,10 @@ HX_STATIC_ASSERT(0, "implement hxTimeSampleCycles");
 // Compiles to a NOP when not in use.
 #define hxProfilerLog() HX_PROFILE_ONLY_( g_hxProfiler_.log_() )
 
-// hxProfilerWriteToChromeTracing(const char* filename_) - Stops sampling and
-// writes samples to the provided filename. filename is a C string representing a
-// writable destination. Writes profiling data in a format usable by Chrome's
-// chrome://tracing view. Usage: In Chrome go to "chrome://tracing/". Load the
-// generated json file. Use the W/A/S/D keys. See
+// hxProfilerWriteToChromeTracing(const char* filename) - Stops sampling and
+// writes samples to the provided file. Writes profiling data in a format usable
+// by Chrome's chrome://tracing view. Usage: In Chrome go to "chrome://tracing/".
+// Load the generated json file. Use the W/A/S/D keys. See
 // http://www.chromium.org/developers/how-tos/trace-event-profiling-tool
 // Compiles to a NOP when not in use.
 #define hxProfilerWriteToChromeTracing(filename_) \

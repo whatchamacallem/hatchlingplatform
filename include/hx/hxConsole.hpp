@@ -14,21 +14,23 @@ class hxFile;
 // const char* args will capture the remainder of the line including #'s.
 
 // hxConsoleCommand - Registers a function using a global constructor. Use in a
-// global scope. Command will have the same name and args as the function. x_
-// must be a valid C identifier that evaluates to a function pointer.
+// global scope. Command will have the same name and args as the function.
+// - x: Valid C identifier that evaluates to a function pointer.
 //   E.g. hxConsoleCommand(srand);
 #define hxConsoleCommand(x_) static hxConsoleConstructor_ \
     HX_CONCATENATE(g_hxConsoleSymbol_,x_)(hxConsoleCommandFactory_(&(x_)), HX_QUOTE(x_))
 
 // hxConsoleCommandNamed - Registers a named function using a global constructor.
-// Use in a global scope. Provided name_ must be a valid C identifier. x_ may be
-// any expression that evaluates to a function pointer.
+// Use in a global scope. Provided name_ must be a valid C identifier.
+// - x: Any expression that evaluates to a function pointer.
+// - name: Valid C identifier that identifies the command.
 //   E.g. hxConsoleCommandNamed(srand, seed_rand);
 #define hxConsoleCommandNamed(x_, name_) static hxConsoleConstructor_ \
     HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxConsoleCommandFactory_(&(x_)), HX_QUOTE(name_))
 
 // hxConsoleVariable - Registers a variable. Use in a global scope. Will have the
 // same name as the variable.
+// - x: Valid C identifier that evaluates to a variable.
 //   E.g.
 //   static bool isMyHackEnabled=false;
 //   hxConsoleVariable(isMyHackEnabled);
@@ -37,6 +39,8 @@ class hxFile;
 
 // hxConsoleVariableNamed - Registers a named variable. Use in a global scope.
 // Provided name must be a valid C identifier.
+// - x: Any expression that evaluates to a variable.
+// - name: Valid C identifier that identifies the variable.
 //   E.g.
 //   static bool isMyHackEnabled=false;
 //   hxConsoleVariableNamed(isMyHackEnabled, f_hack); // add "f_hack" to the console.
@@ -46,21 +50,26 @@ class hxFile;
 // hxConsoleIsOkResult - Determines whether a console function's return value is
 // OK. Overload as needed. Overload must be consistent wherever your type is
 // registered. A void return is separately handled as an OK result.
+// - t: A type that can be converted to bool.
 template<typename T>
 bool hxConsoleIsOkResult(T t) { return (bool)t; }
 
 // hxConsoleDeregister - Explicit de-registration of a console symbol.
+// - id: Valid C identifier that identifies the variable.
 void hxConsoleDeregister(const char* id_);
 
 // hxConsoleExecLine - Evaluates a console command to either call a function or
 // set a variable. E.g.: "srand 77" or "aVariable 5"
+// - command: A string executed by the console.
 bool hxConsoleExecLine(const char* command_);
 
 // hxConsoleExecFile - Executes a configuration file which is opened for reading.
 // Ignores blank lines and comments starting with #.
+// - file: A file containing commands.
 bool hxConsoleExecFile(hxFile& file_);
 
 // hxConsoleExecFilename - Opens a configuration file by name and executes it.
+// - filename: A file containing commands.
 bool hxConsoleExecFilename(const char* filename_);
 
 // hxConsoleHelp - Logs all console symbols to the console log.

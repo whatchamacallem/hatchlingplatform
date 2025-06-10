@@ -181,7 +181,6 @@ void hxFloatDump(const float* address_, size_t floats_);
 // - path: The file path as a null-terminated string.
 const char* hxBasename(const char* path_);
 
-
 // ----------------------------------------------------------------------------
 // C++ utility template API
 #if HX_CPLUSPLUS
@@ -224,7 +223,7 @@ HX_CONSTEXPR_FN void hxswap(T_& x_, T_& y_) {
 	y_ = t_;
 }
 
-#else
+#else // !HX_CPLUSPLUS
 // ----------------------------------------------------------------------------
 // C utility macro API - Does it all backwards in heels.
 

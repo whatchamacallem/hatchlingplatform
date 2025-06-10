@@ -56,11 +56,10 @@ void* hxMallocExt(size_t size_, enum hxMemoryAllocator allocator_, uintptr_t ali
 void hxFree(void* ptr_);
 
 // hxStringDuplicate - Allocates a copy of a string using the specified memory
-// manager.
+// manager. Returns a pointer to the duplicated string.
 // - string: The string to duplicate.
 // - allocator: The memory manager ID to use for allocation. Defaults to
 //   hxMemoryAllocator_Current in C++.
-// Returns: A pointer to the duplicated string.
 char* hxStringDuplicate(const char* string_, enum hxMemoryAllocator allocator_ /*=hxMemoryAllocator_Current*/);
 
 #if HX_CPLUSPLUS
@@ -120,17 +119,15 @@ void hxMemoryManagerInit();
 // resources.
 void hxMemoryManagerShutDown();
 
-// hxMemoryManagerAllocationCount - Gets the total number of allocations made by
+// hxMemoryManagerAllocationCount - Returns the total number of allocations made by
 // the memory manager.
-// Returns: The total allocation count.
 size_t hxMemoryManagerAllocationCount();
 
-// hxNew - An extended new(). hxMemoryAllocator_Current is the default.
-// Allocates and constructs an object of type T using a specific memory manager.
-// Template Parameters:
-// - allocator: The memory manager ID to use for allocation.
-// - align: A mask of low bits to be zero'd out when allocating new pointers.
-// Returns: A pointer to the newly constructed object. Will not return on failure.
+// hxNew<T, allocator, align>(...) - Allocates and constructs an object of type
+// T using an optional memory allocator and alignment. Returns a pointer to the
+// newly constructed object. Will not return on failure.
+// - allocator: The memory manager ID to use for allocation. Defaults to hxMemoryAllocator_Current.
+// - align: A mask of low bits to be zero'd out when allocating new pointers. Defaults to HX_ALIGNMENT.
 #if HX_CPLUSPLUS >= 201103L // Argument forwarding requires c++11.
 template <typename T_, hxMemoryAllocator allocator_=hxMemoryAllocator_Current, uintptr_t align_=HX_ALIGNMENT, typename... Args_>
 HX_CONSTEXPR_FN T_* hxNew(Args_&&... args_) noexcept {
