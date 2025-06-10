@@ -115,14 +115,14 @@ public:
     HX_CONSTEXPR_FN T& back() { hxAssert(size()); return *(m_end_ - 1); }
 
     // Returns a const reference to the element at the specified index.
-    // Expects `index_` to be the index of the element.
+    // - index: The index of the element.
     HX_CONSTEXPR_FN const T& operator[](size_t index_) const {
         hxAssert(index_ < this->size());
         return this->data()[index_];
     }
 
     // Returns a reference to the element at the specified index.
-    // Expects `index_` to be the index of the element.
+    // - index: The index of the element.
     HX_CONSTEXPR_FN T& operator[](size_t index_) {
         hxAssert(index_ < this->size());
         return this->data()[index_];
@@ -135,7 +135,7 @@ public:
     }
 
     // Reserves storage for at least the specified number of elements.
-    // Expects `size_` to be the number of elements to reserve storage for.
+    // - size: The number of elements to reserve storage for.
     HX_CONSTEXPR_FN void reserve(size_t size_) {
         T* prev = this->data();
         this->reserveStorage(size_);
@@ -158,7 +158,7 @@ public:
     HX_CONSTEXPR_FN bool full() const { return m_end_ == this->data() + this->capacity(); }
 
     // Resizes the array to the specified size, constructing or destroying elements as needed.
-    // Expects `size_` to be the new size of the array.
+    // - size: The new size of the array.
     HX_CONSTEXPR_FN void resize(size_t size_) {
         this->reserve(size_);
         if (size_ >= this->size()) {
@@ -171,7 +171,7 @@ public:
     }
 
     // Adds a copy of the specified element to the end of the array.
-    // Expects `t_` to be the element to add.
+    // - t: The element to add.
     HX_CONSTEXPR_FN void pushBack(const T& t_) {
         hxAssert(this->size() < this->capacity());
         ::new (m_end_++) T(t_);
@@ -184,7 +184,8 @@ public:
     }
 
     // Assigns elements from a range defined by iterators to the array.
-    // Expects `first_` to be the beginning iterator and `last_` to be the end iterator.
+    // - first: The beginning iterator.
+    // - last: The end iterator.
     template <typename Iter>
     HX_CONSTEXPR_FN void assign(Iter first_, Iter last_) {
         this->reserve((size_t)(last_ - first_));
@@ -195,6 +196,7 @@ public:
     }
 
     // Swap. Only works with Capacity_ == hxAllocatorDynamicCapacity
+    // - rhs: The array to swap with.
     HX_CONSTEXPR_FN void swap(hxArray& rhs) {
         Allocator::swap(rhs); // *** Only hxAllocatorDynamicCapacity works here. ***
         hxswap(rhs.m_end_, m_end_);
@@ -204,7 +206,8 @@ public:
     // Non-standard but useful
 
     // Constructs an array of T from an array of T2.
-    // Expects `a_` to be the array and `Sz_` to be its size.
+    // - a: The array.
+    // - Sz: Its size.
     template<typename T2_, size_t Sz_>
     HX_CONSTEXPR_FN void assign(const T2_(&a_)[Sz_]) { this->assign(a_ + 0, a_ + Sz_); }
 
@@ -215,7 +218,7 @@ public:
     }
 
     // Variant of erase() that moves the end element down to replace erased element.
-    // Expects `index_` to be the index of the element to erase.
+    // - index: The index of the element to erase.
     HX_CONSTEXPR_FN void eraseUnordered(size_t index_) {
         hxAssert(index_ < this->size());
         T* it_ = this->data() + index_;
@@ -226,7 +229,7 @@ public:
     }
 
     // Variant of erase() that moves the end element down to replace the erased element.
-    // Expects `it_` to be a pointer to the element to erase.
+    // - it: Pointer to the element to erase.
     HX_CONSTEXPR_FN void eraseUnordered(T* it_) {
         hxAssert((size_t)(it_ - this->data()) < size());
         if (it_ != --m_end_) {
@@ -241,16 +244,18 @@ public:
     }
 
 private:
-    // Constructs elements in the range [first_, last_]. Expects `first_` and `last_`
-    // to be pointers defining the range.
+    // Constructs elements in the range [first, last].
+    // - first: Pointer to the beginning of the range.
+    // - last: Pointer to the end of the range.
     HX_CONSTEXPR_FN void construct_(T* first_, T* last_) {
         while (first_ != last_) {
             ::new (first_++) T;
         }
     }
 
-    // Destroys elements in the range [first_, last_]. Expects `first_` and `last_`
-    // to be pointers defining the range.
+    // Destroys elements in the range [first, last].
+    // - first: Pointer to the beginning of the range.
+    // - last: Pointer to the end of the range.
     HX_CONSTEXPR_FN void destruct_(T* first_, T* last_) {
         while (first_ != last_) {
             first_++->~T();
