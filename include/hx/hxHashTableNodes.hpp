@@ -3,11 +3,10 @@
 
 #include <hx/hxHashTable.hpp>
 
-// Usable implementations of the hxHashTable Node template parameter.
+// These are usable implementations of the hxHashTable Node template parameter.
 // These are the keys for a set. Subclasses will give you associated
 // values which is a mapping.
 
-// ----------------------------------------------------------------------------
 // hxHashTableNodeInteger - Specialization of hxHashTableNodeBase for integer
 // types. See documentation of hxHashTable for interface documentation.
 // This is a great example of a node that doesn't require a base class.
@@ -36,11 +35,9 @@ private:
     Key m_key_;
 };
 
-// ----------------------------------------------------------------------------
 // hxHashTableNodeStringLiteral - Specialization of hxHashTableSetNode for
 // static C strings. This code expects the provided strings to outlive the
 // container because it is intended for use with string literals.
-
 class hxHashTableNodeStringLiteral : public hxHashTableSetNode<const char*> {
 public:
 	// Constructor initializes the node with a string key and computes its hash.
@@ -49,11 +46,9 @@ public:
 		: hxHashTableSetNode<const char*>(k_) { }
 };
 
-// ----------------------------------------------------------------------------
 // hxHashTableNodeString - Specialization of hxHashTableSetNode for C strings.
 // Allocates a copy, resulting in a string pool per-hash table. The key is
 // stored as a pointer to const to keep the hash table code const correct.
-
 template <hxMemoryAllocator allocator_=hxMemoryAllocator_Heap>
 class hxHashTableNodeString : public hxHashTableSetNode<const char*> {
 public:

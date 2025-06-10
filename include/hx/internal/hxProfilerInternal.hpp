@@ -33,9 +33,7 @@ extern class hxProfilerInternal_ g_hxProfiler_;
 // Address of s_hxProfilerThreadIdAddress_ used to uniquely identify thread.
 extern HX_THREAD_LOCAL uint8_t s_hxProfilerThreadIdAddress_;
 
-// ----------------------------------------------------------------------------
-// hxProfilerInternal_
-
+// hxProfilerInternal_ - Manager object for internal use.
 class hxProfilerInternal_ {
 public:
 	hxProfilerInternal_() : m_isStarted_(false) { };
@@ -69,9 +67,7 @@ private:
 	hxArray<hxProfilerRecord_, HX_PROFILER_MAX_RECORDS> m_records;
 };
 
-// ----------------------------------------------------------------------------
-// hxProfilerScopeInternal_
-
+// hxProfilerScopeInternal_ - RIAA object for internal use.
 template<hxcycles_t MinCycles_=0u>
 class hxProfilerScopeInternal_ {
 public:

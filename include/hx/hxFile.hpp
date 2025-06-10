@@ -5,7 +5,6 @@
 
 class hxFile;
 
-// ----------------------------------------------------------------------------
 // hxFile: RAII wrapper for file I/O. A mixture of unformatted std::basic_fstream
 // operations and formatted C-style text printing.
 

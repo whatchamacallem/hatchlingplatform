@@ -11,8 +11,6 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------
-
 static class hxArrayTest* s_hxTestCurrent = hxnull;
 
 class hxArrayTest :
@@ -21,24 +19,24 @@ class hxArrayTest :
 public:
 	struct TestObject {
 		TestObject() {
-			++s_hxTestCurrent->m_constructed_;
+			++s_hxTestCurrent->m_constructed;
 			id = (INT_MIN < s_hxTestCurrent->m_nextId) ? s_hxTestCurrent->m_nextId-- : 0;
 			constructor = 0;
 		}
 
 		TestObject(const TestObject& rhs) {
-			++s_hxTestCurrent->m_constructed_;
+			++s_hxTestCurrent->m_constructed;
 			id = rhs.id;
 			constructor = rhs.constructor;
 		}
 		explicit TestObject(int32_t x) {
 			hxAssert(x >= 0); // User supplied IDs are positive
-			++s_hxTestCurrent->m_constructed_;
+			++s_hxTestCurrent->m_constructed;
 			id = x;
 			constructor = 0;
 		}
 		~TestObject() {
-			++s_hxTestCurrent->m_destructed_;
+			++s_hxTestCurrent->m_destructed;
 			id = ~0u;
 		}
 
@@ -51,8 +49,8 @@ public:
 
 	hxArrayTest() {
 		hxAssert(s_hxTestCurrent == hxnull);
-		m_constructed_ = 0;
-		m_destructed_ = 0;
+		m_constructed = 0;
+		m_destructed = 0;
 		m_nextId = -1;
 		s_hxTestCurrent = this;
 	}
@@ -61,15 +59,13 @@ public:
 	}
 
 	bool CheckTotals(size_t total) const {
-		return m_constructed_ == total && m_destructed_ == total;
+		return m_constructed == total && m_destructed == total;
 	}
 
-	size_t m_constructed_;
-	size_t m_destructed_;
+	size_t m_constructed;
+	size_t m_destructed;
 	int32_t m_nextId;
 };
-
-// ----------------------------------------------------------------------------
 
 TEST_F(hxArrayTest, Null) {
 	{

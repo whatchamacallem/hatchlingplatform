@@ -3,7 +3,6 @@
 
 #include <hx/hxAllocator.hpp>
 
-// ----------------------------------------------------------------------------
 // hxHashTable internals. See hxHashTable.h instead
 
 // This is a hxHashTable specific subclass of hxAllocator. C++98 requires this to be

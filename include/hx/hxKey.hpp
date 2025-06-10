@@ -7,7 +7,6 @@
 // cannot be instantiated without deducing the arg type. This provides better
 // type safety. Use std::less<void> if you want a functor that takes mixed types.
 
-// ----------------------------------------------------------------------------
 // hxKeyLess - User overloadable function for performing comparisons. Invokes
 // operator <.
 template<typename T_>
@@ -19,7 +18,6 @@ HX_CONSTEXPR_FN bool hxKeyLess(const char* a_, const char* b_) {
     return *a_ < *b_;
 }
 
-// ----------------------------------------------------------------------------
 // hxKeyHash - Used by the base class hash table node. It needs to be overridden
 // for your key type. Overrides are evaluated when and where the hash table is
 // instantiated. Uses the well studied hash multiplier taken from Linux's hash.h
@@ -38,7 +36,6 @@ HX_CONSTEXPR_FN uint32_t hxKeyHash(const char* k_) {
 	return x_;
 }
 
-// ----------------------------------------------------------------------------
 // hxKeyEqual - Used by the hash table. If your key type doesn't support
 // operator== then this function needs to be overridden for your key type.
 // Overrides are evaluated when and where the hash table is instantiated.

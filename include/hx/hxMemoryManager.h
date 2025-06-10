@@ -11,7 +11,6 @@
 extern "C" {
 #endif
 
-// ----------------------------------------------------------------------------
 // hxMemoryAllocator - Memory Manager C API. Memory allocators are selected using
 // an id. These are the large system-wide allocators, not the per-object
 // hxAllocator which allocates from here.

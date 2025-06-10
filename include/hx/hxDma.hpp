@@ -3,7 +3,6 @@
 
 #include <hx/hatchling.h>
 
-// ----------------------------------------------------------------------------
 // Internally profiling and validating DMA API. This code is intended to be
 // customized for your platform. If HX_PROFILE != 0 then hxDmaStart(),
 // hxDmaAwaitSyncPoint() and hxDmaAwaitAll() calls generate descriptive labels.

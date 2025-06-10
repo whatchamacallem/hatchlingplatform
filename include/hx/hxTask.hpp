@@ -5,7 +5,6 @@
 
 class hxTaskQueue;
 
-// ----------------------------------------------------------------------------
 // hxTask - Base class for operations to be performed on a different thread or
 // at a later time. Nota bene: While the current allocator is a thread local
 // attribute, the memory manager does not support concurrent access to the

@@ -3,7 +3,7 @@
 #include <hx/internal/hxHashTableInternal.hpp>
 #include <hx/hxKey.hpp>
 
-// hxHashTable - This header implements a hash table that operates without
+// hxHashTable API - This header implements a hash table that operates without
 // reallocating memory or copying around data. Each bucket is implemented using
 // an embedded linked list. Hash tables can be used as either an unordered map or
 // an unordered set and have operations that allow for unique or duplicate keys.
@@ -24,7 +24,6 @@
 // };
 //
 
-// ----------------------------------------------------------------------------
 // hxHashTableSetNode - Base class for unordered set entries. Caches the hash
 // value. Copying and modification are disallowed to protect the integrity of the
 // hash table. See hxHashTableMapNode if you need a mutable node.
@@ -96,7 +95,6 @@ protected:
 	Value m_value_;
 };
 
-// ----------------------------------------------------------------------------
 // hxHashTable - See top of this file for description.
 //
 // Node must be a subclass of hxHashTableNode with the interface described above.

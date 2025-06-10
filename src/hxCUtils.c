@@ -2,7 +2,6 @@
 
 #include <hx/hatchling.h>
 
-// ----------------------------------------------------------------------------
 // C utils
 
 // g_hxIsInit. Do not initialize to 0. MSVC actually handles that differently.

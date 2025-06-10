@@ -5,8 +5,6 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------
-
 class hxTaskQueueTest :
 	public testing::Test
 {
@@ -33,8 +31,6 @@ public:
         size_t m_reenqueueCount_;
     };
 };
-
-// ----------------------------------------------------------------------------
 
 TEST_F(hxTaskQueueTest, Nop) {
 	for (size_t i = 0; i <= MAX_POOL; ++i) {

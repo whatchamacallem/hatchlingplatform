@@ -5,9 +5,10 @@
 
 // hxAllocator - Similar to std::allocator. Allows for static or dynamic
 // allocation.
+
+// A capacity value that allows for dynamic allocation.
 #define hxAllocatorDynamicCapacity 0u
 
-// ----------------------------------------------------------------------------
 // hxAllocator<1+> - Provides static allocation when capacity is greater than
 // zero.
 template<typename T_, size_t Capacity_>
@@ -55,7 +56,6 @@ private:
     };
 };
 
-// ----------------------------------------------------------------------------
 // hxAllocator<0> - Capacity is set by first call to reserveStorage() and may not
 // be extended.
 template<typename T_>

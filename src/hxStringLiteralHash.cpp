@@ -4,7 +4,6 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------
 // hxStringLiteralHashDebug - A run time version of hxStringLiteralHash.
 
 extern "C"

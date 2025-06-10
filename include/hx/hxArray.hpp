@@ -7,7 +7,6 @@
 #include <initializer_list>
 #endif
 
-// ----------------------------------------------------------------------------
 // hxArray - Implements some of std::vector. Requires T to have a default
 // constructor.
 template<typename T_, size_t Capacity_=hxAllocatorDynamicCapacity>

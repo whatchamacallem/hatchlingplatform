@@ -10,7 +10,6 @@
 #include <thread>
 #endif
 
-// ----------------------------------------------------------------------------
 // hxTaskQueue - Execute supplied tasks in arbitrary order without cancellation
 // using an optional thread pool. See <hx/hxTask.hpp>.
 class hxTaskQueue {

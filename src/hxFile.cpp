@@ -10,11 +10,8 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------
-// hxFile
-//
-// Target will require an implementation of fopen(), fclose(), fread(), fwrite(),
-// fgets() and feof().
+// hxFile - Target will require an implementation of fopen(), fclose(), fread(),
+// fwrite(), fgets() and feof().
 
 hxFile::hxFile(uint16_t mode) {
 	m_openMode_ = mode;

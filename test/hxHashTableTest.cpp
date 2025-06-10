@@ -6,8 +6,6 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------
-
 static class hxHashTableTest* s_hxTestCurrent = 0;
 
 class hxHashTableTest :
@@ -16,11 +14,11 @@ class hxHashTableTest :
 public:
     struct TestObject {
         TestObject() {
-            ++s_hxTestCurrent->m_constructed_;
-            id = s_hxTestCurrent->m_nextId_++;
+            ++s_hxTestCurrent->m_constructed;
+            id = s_hxTestCurrent->m_nextId++;
         }
         ~TestObject() {
-            ++s_hxTestCurrent->m_destructed_;
+            ++s_hxTestCurrent->m_destructed;
             id = ~0u;
         }
 
@@ -48,9 +46,9 @@ public:
 
     hxHashTableTest() {
         hxAssert(s_hxTestCurrent == hxnull);
-        m_constructed_ = 0;
-        m_destructed_ = 0;
-        m_nextId_ = 0;
+        m_constructed = 0;
+        m_destructed = 0;
+        m_nextId = 0;
         s_hxTestCurrent = this;
     }
     ~hxHashTableTest() {
@@ -58,15 +56,13 @@ public:
     }
 
     bool CheckTotals(int32_t total) const {
-        return m_constructed_ == total && m_destructed_ == total;
+        return m_constructed == total && m_destructed == total;
     }
 
-    int32_t m_constructed_;
-    int32_t m_destructed_;
-    int32_t m_nextId_;
+    int32_t m_constructed;
+    int32_t m_destructed;
+    int32_t m_nextId;
 };
-
-// ----------------------------------------------------------------------------
 
 TEST_F(hxHashTableTest, Null) {
 	{
@@ -85,8 +81,8 @@ TEST_F(hxHashTableTest, Null) {
 		ASSERT_EQ(table.loadFactor(), 0.0f);
 
 	}
-	ASSERT_EQ(m_constructed_, 0);
-	ASSERT_EQ(m_destructed_, 0);
+	ASSERT_EQ(m_constructed, 0);
+	ASSERT_EQ(m_destructed, 0);
 }
 
 TEST_F(hxHashTableTest, Single) {
@@ -139,8 +135,8 @@ TEST_F(hxHashTableTest, Single) {
 		// MODIFIES TABLE: destructor also frees allocated item.
 		hxDelete(node);
 	}
-	ASSERT_EQ(m_constructed_, 2);
-	ASSERT_EQ(m_destructed_, 2);
+	ASSERT_EQ(m_constructed, 2);
+	ASSERT_EQ(m_destructed, 2);
 }
 
 TEST_F(hxHashTableTest, Multiple) {
@@ -258,8 +254,8 @@ TEST_F(hxHashTableTest, Multiple) {
 		ASSERT_TRUE(table.end() == it);
 		ASSERT_TRUE(table.cEnd() == cit);
 	}
-	ASSERT_EQ(m_constructed_, 2*N);
-	ASSERT_EQ(m_destructed_, 2*N);
+	ASSERT_EQ(m_constructed, 2*N);
+	ASSERT_EQ(m_destructed, 2*N);
 }
 
 TEST_F(hxHashTableTest, Strings) {
@@ -280,6 +276,6 @@ TEST_F(hxHashTableTest, Strings) {
 		ASSERT_TRUE(table.find("Pink") == hxnull);
 
 	}
-	ASSERT_EQ(m_constructed_, sz);
-	ASSERT_EQ(m_destructed_, sz);
+	ASSERT_EQ(m_constructed, sz);
+	ASSERT_EQ(m_destructed, sz);
 }

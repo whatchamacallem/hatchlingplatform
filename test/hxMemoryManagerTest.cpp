@@ -5,12 +5,13 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------
-
-TEST(hxMemoryManagerTestF, ZeroBytes) {
-	void* p = hxMalloc(0u);
-	ASSERT_TRUE(p != hxnull);
-	hxFree(p);
+TEST(hxMemoryManagerTestF, Bytes) {
+	for(size_t i=0u; i<10u; ++i) {
+		void* p = hxMalloc(i);
+		ASSERT_TRUE(p != hxnull);
+		::memset(p, 0x66, i);
+		hxFree(p);
+	}
 }
 
 TEST(hxMemoryManagerTestF, StringDuplicateNull) {
@@ -26,8 +27,6 @@ TEST(hxMemoryManagerTestF, StringDuplicate) {
 	ASSERT_TRUE(::strcmp(p, "str") == 0);
 	hxFree(p);
 }
-
-// ----------------------------------------------------------------------------
 
 #if (HX_MEM_DIAGNOSTIC_LEVEL) != -1
 

@@ -3,7 +3,6 @@
 
 #include <hx/hatchling.h>
 
-// ----------------------------------------------------------------------------
 // hxConsole internals. See hxConsole.h instead.
 
 struct hxConsoleCommand_ {

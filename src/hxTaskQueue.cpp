@@ -5,7 +5,6 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------
 // hxTaskQueue
 
 hxTaskQueue::hxTaskQueue(int32_t threadPoolSize_)

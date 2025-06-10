@@ -5,8 +5,6 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------
-
 class hxDmaTest :
 	public testing::Test
 {
@@ -39,8 +37,6 @@ public:
     static const size_t BufSize = 100;
     uint8_t m_buf_[BufSize];
 };
-
-// ----------------------------------------------------------------------------
 
 TEST_F(hxDmaTest, Single) {
 	uint8_t dst[BufSize];

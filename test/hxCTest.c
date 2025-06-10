@@ -7,7 +7,6 @@
 
 #include "hxCTest.h"
 
-// ----------------------------------------------------------------------------
 // C utils
 
 bool hxCTestMath(void) {
@@ -56,6 +55,7 @@ bool hxCTestMemory(void) {
 	return result;
 }
 
+// A test harness in 2 lines of C.
 #define HX_CTEST_PRINT(x) fwrite(x, (sizeof x) - 1, 1, stdout)
 #define HX_CTEST_EXEC(fn) (fn() || (HX_CTEST_PRINT(#fn ": test fail\n"), false))
 

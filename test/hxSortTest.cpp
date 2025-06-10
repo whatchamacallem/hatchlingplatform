@@ -5,8 +5,6 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------
-
 class hxRadixSortTest :
 	public testing::Test
 {
@@ -73,8 +71,6 @@ public:
 
     hxTestRandom m_prng_;
 };
-
-// ----------------------------------------------------------------------------
 
 TEST_F(hxRadixSortTest, Null) {
 	hxRadixSort<uint32_t, const char> rs;

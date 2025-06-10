@@ -5,7 +5,6 @@
 #include <hx/hxKey.hpp>
 #include <hx/hxArray.hpp>
 
-// ----------------------------------------------------------------------------
 // hxInsertionSort - Sorts the elements in the range [begin_, end_) in comparison
 // order using the insertion sort algorithm. The end_ parameter points past the
 // end of the array. Exceptions during operation are not supported. Declare your
@@ -35,7 +34,6 @@ void hxInsertionSort(T_* begin_, T_* end_, const Less_& less_) {
     }
 }
 
-// ----------------------------------------------------------------------------
 // hxInsertionSort (specialization) - A specialization of hxInsertionSort using
 // hxKeyLess. c++98 junk.
 // - begin_: Pointer to the beginning of the range to sort.
@@ -45,7 +43,6 @@ void hxInsertionSort(T_* begin_, T_* end_) {
     hxInsertionSort(begin_, end_, hxKeyLess<T_>);
 }
 
-// ----------------------------------------------------------------------------
 // hxBinarySearch - Performs a binary search in the range [first, last). Returns
 // HX_NULL if the value is not found. Unsorted data will lead to errors.
 // Non-unique values will be selected between arbitrarily.
@@ -97,7 +94,6 @@ const T_* hxBinarySearch(const T_* begin_, const T_* end_, const T_& val_) {
     return hxBinarySearch(const_cast<T_*>(begin_), const_cast<T_*>(end_), val_, hxKeyLess<T_>);
 }
 
-// ----------------------------------------------------------------------------
 // hxRadixSortBase. Operations that are independent of hxRadixSort type.
 //
 // See hxRadixSort<K, V> below.
@@ -153,7 +149,6 @@ protected:
     hxArray<KeyValuePair> m_array_; // Internal array of key-value pairs.
 };
 
-// ----------------------------------------------------------------------------
 // hxRadixSort. Sorts an array of value* by keys. K is the key and V the value.
 //
 // Nota bene: Keys of double, int64_t and uint64_t are not supported. Keys

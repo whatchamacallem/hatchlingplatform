@@ -132,13 +132,11 @@
 #define HX_THREAD_LOCAL // single threaded operation can ignore thread_local
 #endif
 
-// ----------------------------------------------------------------------------
 // Maximum length for formatted messages printed with this platform.
 #if !defined(HX_MAX_LINE)
 #define HX_MAX_LINE 500
 #endif
 
-// ----------------------------------------------------------------------------
 // HX_MEM_DIAGNOSTIC_LEVEL. Memory management debug mode.
 //
 // -1: remove code entirely
@@ -162,7 +160,6 @@
 #define HX_MEMORY_BUDGET_TEMPORARY_STACK  (1u * HX_MIB)
 #endif
 
-// ----------------------------------------------------------------------------
 // HX_PROFILE: 0 disables code for capturing profiling data
 //             1 compiles in code. See hxProfileScope().
 #if !defined(HX_PROFILE)
@@ -174,7 +171,6 @@
 #define HX_PROFILER_MAX_RECORDS 4096
 #endif
 
-// ----------------------------------------------------------------------------
 // HX_DEBUG_DMA. Internal validation, set to 1 or 0 as needed
 #if !defined(HX_DEBUG_DMA)
 #define HX_DEBUG_DMA (HX_RELEASE) < 1
@@ -185,7 +181,6 @@
 #define HX_DEBUG_DMA_RECORDS 16
 #endif
 
-// ----------------------------------------------------------------------------
 // HX_USE_GOOGLE_TEST:  In case you need to use Google Test.
 #if !defined(HX_USE_GOOGLE_TEST)
 #define HX_USE_GOOGLE_TEST 0
@@ -196,7 +191,6 @@
 #define HX_TEST_ERROR_HANDLING 0
 #endif
 
-// ----------------------------------------------------------------------------
 // HX_RADIX_SORT_*. Tuning radix sort algorithm.
 // These need to be determined by benchmarking on the target platform. The 8-
 // bit version tries to be memory efficient, the 11-bit version optimizes for
@@ -209,21 +203,17 @@
 #define HX_RADIX_SORT_MIN_SIZE 8u // uses hxInsertionSort() below this.
 #endif
 
-// ----------------------------------------------------------------------------
 // Default undetected HX_USE_* features.
-
 #if !defined(HX_USE_DMA_HARDWARE)
 #define HX_USE_DMA_HARDWARE 0
 #endif
-
-// ----------------------------------------------------------------------------
-// hxSettings. Constructed by first call to hxInit() which happens when or
-// before the memory allocator constructs.
 
 #if HX_CPLUSPLUS
 extern "C" {
 #endif
 
+// hxSettings. Constructed by first call to hxInit() which happens when or
+// before the memory allocator constructs.
 struct hxSettings {
     uint8_t logLevel;              // Logging level for the application (e.g., verbosity of logs).
     uint8_t deallocatePermanent;   // Allows deallocation of permanent resources at system shut down.

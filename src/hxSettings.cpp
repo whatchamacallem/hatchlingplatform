@@ -5,10 +5,7 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------
-// hxSettings
-//
-// g_hxSettings is declared in hxCUtils.c for maximum portability. 
+// hxSettings - g_hxSettings is declared in hxCUtils.c for maximum portability.
 
 namespace {
 hxConsoleVariableNamed(g_hxSettings.logLevel, loglevel);

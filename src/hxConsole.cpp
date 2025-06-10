@@ -8,7 +8,7 @@
 HX_REGISTER_FILENAME_HASH
 
 // ----------------------------------------------------------------------------
-// hxConsoleHashTableNode_
+// hxConsoleCommandTable_
 //
 // Compares command lines to static strings. Hashing stops at first non-printing
 // character on command line.

@@ -3,7 +3,6 @@
 
 #include <hx/hatchling.h>
 
-// ----------------------------------------------------------------------------
 // hxTestSuiteExecutor_ - Enable this to use Google Test instead of hxTestSuiteExecutor_.
 #if HX_USE_GOOGLE_TEST
 #include <gtest/gtest.h>
@@ -129,7 +128,6 @@ HX_CONSTEXPR_FN void InitGoogleTest() { }
 
 #endif // !HX_USE_GOOGLE_TEST
 
-// ----------------------------------------------------------------------------
 // hxTestRandom - The linear congruential random number generator from Numerical
 // Recipes.
 struct hxTestRandom {
