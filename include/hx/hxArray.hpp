@@ -12,17 +12,16 @@
 template<typename T_, size_t Capacity_=hxAllocatorDynamicCapacity>
 class hxArray : public hxAllocator<T_, Capacity_> {
 public:
-    typedef T_ T; // value type
+    typedef T_ T; // Contained type.
     typedef T_* iterator; // Random access iterator.
     typedef const T_* constIterator; // Const random access iterator.
-    typedef hxAllocator<T_, Capacity_> Allocator;
 
     // Constructs an empty array with a capacity of Capacity. m_end_ will be 0
     // if Capacity is 0.
-    HX_CONSTEXPR_FN explicit hxArray() : Allocator() { m_end_ = this->data(); }
+    HX_CONSTEXPR_FN explicit hxArray() : hxAllocator<T_, Capacity_>() { m_end_ = this->data(); }
 
     // Copy constructs an array. Non-explicit to allow assignment constructor.
-    HX_CONSTEXPR_FN hxArray(const hxArray& rhs_) : Allocator() {
+    HX_CONSTEXPR_FN hxArray(const hxArray& rhs_) : hxAllocator<T_, Capacity_>() {
         m_end_ = this->data();
         this->assign(rhs_.cBegin(), rhs_.cEnd());
     }
@@ -44,7 +43,7 @@ public:
     // Copy constructs an array from a container with begin() and end() methods and
     // a random access iterator. Expects `rhs_` to be a reference to a container.
     template <typename Rhs>
-    HX_CONSTEXPR_FN hxArray(const Rhs& rhs_) : Allocator() {
+    HX_CONSTEXPR_FN hxArray(const Rhs& rhs_) : hxAllocator<T_, Capacity_>() {
         m_end_ = this->data();
         this->assign(rhs_.begin(), rhs_.end());
     }
@@ -78,28 +77,28 @@ public:
         this->assign(rhs_.begin(), rhs_.end());
     }
 
-    // Returns a const iterator to the beginning of the array.
+    // Returns a constIterator to the beginning of the array.
     HX_CONSTEXPR_FN const T_* begin() const { return this->data(); }
 
     // Returns an iterator to the beginning of the array.
     HX_CONSTEXPR_FN T_* begin() { return this->data(); }
 
-    // Returns a const iterator to the beginning of the array (alias for begin()).
+    // Returns a constIterator to the beginning of the array (alias for begin()).
     HX_CONSTEXPR_FN const T_* cBegin() const { return this->data(); }
 
-    // Returns a const iterator to the beginning of the array (alias for begin()).
+    // Returns a constIterator to the beginning of the array (alias for begin()).
     HX_CONSTEXPR_FN const T_* cBegin() { return this->data(); }
 
-    // Returns a const iterator to the end of the array.
+    // Returns a constIterator to the end of the array.
     HX_CONSTEXPR_FN const T_* end() const { return m_end_; }
 
     // Returns an iterator to the end of the array.
     HX_CONSTEXPR_FN T_* end() { return m_end_; }
 
-    // Returns a const iterator to the end of the array (alias for end()).
+    // Returns a constIterator to the end of the array (alias for end()).
     HX_CONSTEXPR_FN const T_* cEnd() const { return m_end_; }
 
-    // Returns a const iterator to the end of the array (alias for end()).
+    // Returns a constIterator to the end of the array (alias for end()).
     HX_CONSTEXPR_FN const T_* cEnd() { return m_end_; }
 
     // Returns a const reference to the first element in the array.
@@ -198,7 +197,7 @@ public:
     // Swap. Only works with Capacity_ == hxAllocatorDynamicCapacity
     // - rhs: The array to swap with.
     HX_CONSTEXPR_FN void swap(hxArray& rhs) {
-        Allocator::swap(rhs); // *** Only hxAllocatorDynamicCapacity works here. ***
+        hxAllocator<T_, Capacity_>::swap(rhs); // *** Only hxAllocatorDynamicCapacity works here. ***
         hxswap(rhs.m_end_, m_end_);
     }
 

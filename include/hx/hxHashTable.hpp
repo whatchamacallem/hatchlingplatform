@@ -98,17 +98,15 @@ protected:
 // hxHashTable - See top of this file for description.
 //
 // Node must be a subclass of hxHashTableNode with the interface described above.
-// If non-zero TableSizeBits_ configures the size of the hash table to be HashBits^2.
+// If non-zero TableSizeBits configures the size of the hash table to be TableSizeBits^2.
 // Otherwise use setTableSizeBits() to configure hash bits dynamically.
-
 template<typename Node_, uint32_t TableSizeBits_=hxAllocatorDynamicCapacity>
 class hxHashTable {
 public:
 	typedef Node_ Node;
 	typedef typename Node_::Key Key;
-	static const uint32_t HashBits = TableSizeBits_;
 
-	// A forward iterator. Iteration is O(n + (1 << HashBits)).
+	// A forward iterator. Iteration is O(n + (1 << TableSizeBits)).
 	// Iterators are only invalidated by the removal of the Node referenced.
 	class constIterator
 	{
@@ -184,7 +182,7 @@ public:
 		HX_CONSTEXPR_FN Node_* operator->() const { return this->m_currentNode; }
 	};
 
-	// Constructs an empty hash table with a capacity of HashBits^2.
+	// Constructs an empty hash table with a capacity of TableSizeBits^2.
 	HX_CONSTEXPR_FN explicit hxHashTable() { m_size_ = 0u; }
 
 	// Destructs the hash table and releases all resources.
@@ -418,7 +416,7 @@ public:
 	}
 
 private:
-	HX_STATIC_ASSERT(HashBits <= 31u, "hxHashTable: hash bits must be [0..31]");
+	HX_STATIC_ASSERT(TableSizeBits_ <= 31u, "hxHashTable: hash bits must be [0..31]");
 
 	// Pointer to head of singly-linked list for key's hash value.
 	HX_CONSTEXPR_FN Node_** getBucketHead_(uint32_t hash_) {
@@ -434,7 +432,7 @@ private:
 	}
 
 	uint32_t m_size_;
-	hxHashTableInternalAllocator_<Node_, HashBits> m_table;
+	hxHashTableInternalAllocator_<Node_, TableSizeBits_> m_table;
 };
 
 #if HX_CPLUSPLUS >= 202002L
