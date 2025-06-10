@@ -152,7 +152,7 @@ struct hxConsoleCommand0_ : public hxConsoleCommand_ {
 		return false;
 	}
 	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
-		hxLogConsole("%s\n", id_ ? id_ : "usage_: no args"); (void)id_;
+		hxLogConsole("%s\n", id_ ? id_ : "usage: no args"); (void)id_;
 	}
 	R_(*m_fn_)();
 };

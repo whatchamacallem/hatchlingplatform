@@ -23,7 +23,7 @@ static const double c_hxMillisecondsPerCycle = 1.0e+3 / c_hxCyclesPerSecond;
 static const double c_hxMicrosecondsPerCycle = 1.0e+6 / c_hxCyclesPerSecond;
 static const hxcycles_t c_hxDefaultCyclesCutoff = 1000;
 
-// hxTimeSampleCycles(void) - Set up the processor cycle counter for your
+// hxTimeSampleCycles() - Set up the processor cycle counter for your
 // architecture. This is callable without enabling HX_PROFILE.
 static inline hxcycles_t hxTimeSampleCycles(void) {
     uint64_t cycles_ = 0; (void)cycles_;

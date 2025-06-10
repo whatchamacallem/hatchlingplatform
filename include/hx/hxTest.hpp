@@ -43,10 +43,10 @@ HX_CONSTEXPR_FN void InitGoogleTest() { }
 
 } // namespace testing
 
-// TEST(suiteName_, caseName_) - Google Test reimplementation. Defines a test
+// TEST(suiteName, caseName) - Google Test reimplementation. Defines a test
 // case with a suite name and case name.
-// - suiteName_: A C valid identifier for the test suite.
-// - caseName_: A C valid identifier for the test case.
+// - suiteName: A C valid identifier for the test suite.
+// - caseName: A C valid identifier for the test case.
 #define TEST(suiteName_, caseName_) \
     struct HX_CONCATENATE_3(hxTest_, suiteName_, caseName_) : public hxTestCaseBase_ { \
         HX_CONCATENATE_3(hxTest_, suiteName_, caseName_)() { hxTestSuiteExecutor_::singleton_().addTest_(this); } \
@@ -59,10 +59,10 @@ HX_CONSTEXPR_FN void InitGoogleTest() { }
     static HX_CONCATENATE_3(hxTest_, suiteName_, caseName_) HX_CONCATENATE_3(s_hxTest_, suiteName_, caseName_); \
     void HX_CONCATENATE_3(hxTest_, suiteName_, caseName_)::run_()
 
-// TEST_F(suiteName_, caseName_) - Google Test reimplementation for fixture-based tests.
+// TEST_F(suiteName, caseName) - Google Test reimplementation for fixture-based tests.
 // Defines a test case where the suite is a subclass of testing::Test.
-// - suiteName_: A C valid identifier for the test suite.
-// - caseName_: A C valid identifier for the test case.
+// - suiteName: A C valid identifier for the test suite.
+// - caseName: A C valid identifier for the test case.
 #define TEST_F(suiteName_, caseName_) \
     struct HX_CONCATENATE_3(hxTest_, suiteName_, caseName_) : public hxTestCaseBase_ { \
         struct hxTestCaseExecutor_ : public suiteName_ { virtual void runCode_() HX_OVERRIDE; }; \
@@ -133,7 +133,7 @@ HX_CONSTEXPR_FN void InitGoogleTest() { }
 struct hxTestRandom {
 public:
 	// Constructor to initialize the random number generator with a seed.
-    // - seed_: Initial seed value for the random number generator.
+    // - seed: Initial seed value for the random number generator.
     HX_CONSTEXPR_FN hxTestRandom(uint32_t seed_ = 1u) : m_seed_(seed_) { }
 
 	// Generates the next random number in the sequence.

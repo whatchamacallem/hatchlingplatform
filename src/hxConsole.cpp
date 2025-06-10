@@ -158,5 +158,5 @@ hxConsoleCommandNamed(hxConsolePoke, poke);
 hxConsoleCommandNamed(hxConsoleHexDump, hex);
 #endif
 
-// Executes commands and settings in file. usage_: "exec <filename>"
+// Executes commands and settings in file. usage: "exec <filename>"
 hxConsoleCommandNamed(hxConsoleExecFilename, exec);

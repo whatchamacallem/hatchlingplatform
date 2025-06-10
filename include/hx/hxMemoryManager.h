@@ -37,7 +37,7 @@ enum hxMemoryAllocator {
 // hxMalloc - Allocates memory of the specified size using the default memory
 // manager. A C++ overload optionally provides the same arguments as hxMallocExt.
 // Will not return on failure.
-// - size_: The size of the memory to allocate.
+// - size: The size of the memory to allocate.
 // - allocator_(C++ only): The memory manager ID to use for allocation. (Default is
 //   hxMemoryAllocator_Current.)
 // - alignment_(C++ only): The alignment for the allocation. (Default
@@ -46,19 +46,19 @@ void* hxMalloc(size_t size_);
 
 // hxMallocExt - Allocates memory of the specified size with a specific memory
 // manager and alignment. Will not return on failure.
-// - size_: The size of the memory to allocate.
-// - allocator_: The memory manager ID to use for allocation. (Default is hxMemoryAllocator_Current.)
-// - alignment_: The alignment for the allocation. (Default is HX_ALIGNMENT.)
+// - size: The size of the memory to allocate.
+// - allocator: The memory manager ID to use for allocation. (Default is hxMemoryAllocator_Current.)
+// - alignment: The alignment for the allocation. (Default is HX_ALIGNMENT.)
 void* hxMallocExt(size_t size_, enum hxMemoryAllocator allocator_, uintptr_t alignment_/*=HX_ALIGNMENT*/);
 
 // hxFree - Frees memory previously allocated with hxMalloc or hxMallocExt.
-// - ptr_: Pointer to the memory to free.
+// - ptr: Pointer to the memory to free.
 void hxFree(void* ptr_);
 
 // hxStringDuplicate - Allocates a copy of a string using the specified memory
 // manager.
-// - string_: The string to duplicate.
-// - allocator_: The memory manager ID to use for allocation. Defaults to
+// - string: The string to duplicate.
+// - allocator: The memory manager ID to use for allocation. Defaults to
 //   hxMemoryAllocator_Current in C++.
 // Returns: A pointer to the duplicated string.
 char* hxStringDuplicate(const char* string_, enum hxMemoryAllocator allocator_ /*=hxMemoryAllocator_Current*/);
@@ -75,7 +75,7 @@ class hxMemoryAllocatorScope
 {
 public:
     // hxMemoryAllocatorScope - Constructor: Sets the current memory allocator to the specified ID.
-    // - allocator_: The memory manager ID to set for this scope.
+    // - allocator: The memory manager ID to set for this scope.
     hxMemoryAllocatorScope(hxMemoryAllocator allocator_);
 
 	// Destructor restores the previous memory manager allocator ID.
@@ -128,8 +128,8 @@ size_t hxMemoryManagerAllocationCount();
 // hxNew - An extended new(). hxMemoryAllocator_Current is the default.
 // Allocates and constructs an object of type T_ using a specific memory manager.
 // Template Parameters:
-// - allocator_: The memory manager ID to use for allocation.
-// - align_: A mask of low bits to be zero'd out when allocating new pointers.
+// - allocator: The memory manager ID to use for allocation.
+// - align: A mask of low bits to be zero'd out when allocating new pointers.
 // Returns: A pointer to the newly constructed object. Will not return on failure.
 #if HX_CPLUSPLUS >= 201103L // Argument forwarding requires c++11.
 template <typename T_, hxMemoryAllocator allocator_=hxMemoryAllocator_Current, uintptr_t align_=HX_ALIGNMENT, typename... Args_>
@@ -156,7 +156,7 @@ struct hxNew {
 
 // hxDelete - Deletes an object of type T_ and frees its memory using the memory
 // manager.
-// - t_: Pointer to the object to delete.
+// - t: Pointer to the object to delete.
 template <typename T_>
 HX_CONSTEXPR_FN void hxDelete(T_* t_) {
 	if (t_) {

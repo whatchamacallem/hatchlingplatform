@@ -41,7 +41,7 @@ private:
 class hxHashTableNodeStringLiteral : public hxHashTableSetNode<const char*> {
 public:
 	// Constructor initializes the node with a string key and computes its hash.
-	// - k_: The string key to initialize the node with.
+	// - k: The string key to initialize the node with.
 	HX_CONSTEXPR_FN hxHashTableNodeStringLiteral(const char* k_)
 		: hxHashTableSetNode<const char*>(k_) { }
 };
@@ -54,7 +54,7 @@ class hxHashTableNodeString : public hxHashTableSetNode<const char*> {
 public:
 	// Constructor allocates and duplicates the string key, then initializes the
 	// node.
-	// - k_: The string key to allocate, duplicate, and initialize the node with.
+	// - k: The string key to allocate, duplicate, and initialize the node with.
 	HX_CONSTEXPR_FN hxHashTableNodeString(const char* k_)
 		: hxHashTableSetNode(hxStringDuplicate(k_, allocator_)) { }
 

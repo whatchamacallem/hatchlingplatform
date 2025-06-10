@@ -13,8 +13,8 @@ class hxTaskQueue;
 
 class hxTask {
 public:
-    // Construct task. staticLabel must be a static string.
-    // - staticLabel_: A constant string literal or null to label the task.
+    // Construct task. staticLabel_ must be a static string.
+    // - staticLabel: A constant string literal or null to label the task.
     inline explicit hxTask(const char* staticLabel_=hxnull)
         : m_nextTask_(hxnull), m_label_(staticLabel_), m_taskQueue_(hxnull) {
     }
@@ -29,7 +29,7 @@ public:
     // derived classes. This call is the last time this object is touched by
     // hxTaskQueue. It may delete or re-enqueue itself. Will also be wrapped in
     // hxProfileScope(getLabel());
-    // - q_: Pointer to the task queue managing this task.
+    // - q: Pointer to the task queue managing this task.
     // Notes:
     // - This function may delete or re-enqueue the task.
     virtual void execute(hxTaskQueue* q_) = 0;
@@ -39,7 +39,7 @@ public:
     inline hxTask* getNextTask() const { return m_nextTask_; }
 
 	// Sets the next task in the linked list.
-    // - x_: Pointer to the task to set as the next task.
+    // - x: Pointer to the task to set as the next task.
     inline void setNextTask(hxTask* x_) { m_nextTask_ = x_; }
 
 	// Gets the label of the task.
@@ -47,11 +47,11 @@ public:
     inline const char* getLabel() const { return m_label_ ? m_label_ : "task"; }
 
 	// Sets the label of the task.
-    // - x_: A constant string literal or null to set as the task label.
+    // - x: A constant string literal or null to set as the task label.
     inline void setLabel(const char* x_) { m_label_ = x_; }
 
 	// Sets the task queue which is to be the exclusive owner of the task.
-    // - x_: Pointer to the new exclusive owner, or null to clear ownership.
+    // - x: Pointer to the new exclusive owner, or null to clear ownership.
     // Notes:
     // - Ensures that the task is not re-enqueued while already owned.
     // - The task must not be part of a linked list when setting ownership.

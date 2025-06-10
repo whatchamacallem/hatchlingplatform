@@ -37,8 +37,9 @@ public:
 
 protected:
     // Used to ensure initial capacity as reserveStorage() will not reallocate.
-    // size_: The number of elements of type T to allocate.
-	HX_CONSTEXPR_FN void reserveStorage(size_t size_) {
+    // size: The number of elements of type T to allocate.
+
+    HX_CONSTEXPR_FN void reserveStorage(size_t size_) {
 		hxAssertRelease(size_ <= Capacity_, "allocator overflowing fixed capacity."); (void)size_;
 	}
 
@@ -98,9 +99,9 @@ public:
 
 protected:
     // Capacity is set by first call to reserveStorage and may not be extended.
-    // size_: The number of elements of type T to allocate space for.
-    // allocator_: The memory manager ID to use for allocation (default: hxMemoryAllocator_Current)
-    // alignment_: The alignment to for the allocation. (default: HX_ALIGNMENT)
+    // size: The number of elements of type T to allocate space for.
+    // allocator: The memory manager ID to use for allocation (default: hxMemoryAllocator_Current)
+    // alignment: The alignment to for the allocation. (default: HX_ALIGNMENT)
     HX_CONSTEXPR_FN void reserveStorage(size_t size_,
             hxMemoryAllocator allocator_=hxMemoryAllocator_Current,
             uintptr_t alignment_=HX_ALIGNMENT) {

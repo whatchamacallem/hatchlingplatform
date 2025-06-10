@@ -9,12 +9,11 @@
 // order using the insertion sort algorithm. The end_ parameter points past the
 // end of the array. Exceptions during operation are not supported. Declare your
 // copy constructor and assignment operator noexcept or turn off exceptions.
-//
 // The compare parameter is a function object that returns true if the first
 // argument is ordered before (i.e. is less than) the second. See hxKeyLess.
-// - begin_: Pointer to the beginning of the range to sort.
-// - end_: Pointer to one past the last element in the range to sort.
-// - less_: Comparison function object that takes two const T_& parameters and
+// - begin: Pointer to the beginning of the range to sort.
+// - end: Pointer to one past the last element in the range to sort.
+// - less: Comparison function object that takes two const T_& parameters and
 // returns a bool.
 template<typename T_, typename Less_>
 void hxInsertionSort(T_* begin_, T_* end_, const Less_& less_) {
@@ -36,8 +35,8 @@ void hxInsertionSort(T_* begin_, T_* end_, const Less_& less_) {
 
 // hxInsertionSort (specialization) - A specialization of hxInsertionSort using
 // hxKeyLess. c++98 junk.
-// - begin_: Pointer to the beginning of the range to sort.
-// - end_: Pointer to one past the last element in the range to sort.
+// - begin: Pointer to the beginning of the range to sort.
+// - end: Pointer to one past the last element in the range to sort.
 template<typename T_>
 void hxInsertionSort(T_* begin_, T_* end_) {
     hxInsertionSort(begin_, end_, hxKeyLess<T_>);
@@ -49,10 +48,10 @@ void hxInsertionSort(T_* begin_, T_* end_) {
 //
 // The compare parameter is a function object that returns true if the first
 // argument is ordered before (i.e. is less than) the second. See hxKeyLess.
-// - begin_: Pointer to the beginning of the range to search.
-// - end_: Pointer to one past the last element in the range to search.
-// - val_: The value to search for.
-// - less_: Comparison function object.
+// - begin: Pointer to the beginning of the range to search.
+// - end: Pointer to one past the last element in the range to search.
+// - val: The value to search for.
+// - less: Comparison function object.
 template<typename T_, typename Less_>
 T_* hxBinarySearch(T_* begin_, T_* end_, const T_& val_, const Less_& less_) {
     // don't operate on null pointer args. unallocated containers have this.
@@ -103,7 +102,7 @@ public:
     HX_STATIC_ASSERT((int32_t)0x80000000u >> 31 == ~(int32_t)0, "arithmetic left shift expected");
 
     // Reserves memory for the internal array to hold at least `size_` elements.
-        // - size_: The number of elements to reserve memory for.
+        // - size: The number of elements to reserve memory for.
     void reserve(uint32_t size_) { m_array_.reserve(size_); }
 
     // Clears the internal array, removing all elements.
@@ -260,8 +259,8 @@ public:
     bool full() const { return m_array_.full(); }
 
     // Adds a key and value pointer to the array. Ownership is not taken.
-        // - key_: The key used for sorting.
-    // - val_: Pointer to the value associated with the key.
+    // - key: The key used for sorting.
+    // - val: Pointer to the value associated with the key.
     void insert(Key key_, Value* val_) {
         hxAssertMsg(!this->full(), "cannot reallocate");
 

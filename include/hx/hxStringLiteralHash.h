@@ -52,7 +52,7 @@ extern "C" {
 // hxStringLiteralHashDebug - Calculates a string hash at runtime that is the
 // same as hxStringLiteralHash.
 // Parameters:
-// - string_: The null-terminated string to hash.
+// - string: The null-terminated string to hash.
 uint32_t hxStringLiteralHashDebug(const char* string_);
 
 #if HX_CPLUSPLUS

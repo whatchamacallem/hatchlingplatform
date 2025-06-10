@@ -42,14 +42,14 @@ enum hxLogLevel {
 
 // HX_QUOTE - Macro for adding quotation marks. Evaluates __LINE__ as a string
 // containing a number instead of as "__LINE__".
-// - x_: The value to be quoted.
+// - x: The value to be quoted.
 #define HX_QUOTE(x_) HX_QUOTE_(x_)
 #define HX_QUOTE_(x_) #x_
 
 // HX_CONCATENATE - Macro for concatenating arguments. Evaluates __LINE__ as a
 // number instead of as __LINE__.
-// - x_: The first value to concatenate.
-// - y_: The second value to concatenate.
+// - x: The first value to concatenate.
+// - y: The second value to concatenate.
 #define HX_CONCATENATE(x_, y_) HX_CONCATENATE_(x_, y_)
 #define HX_CONCATENATE_(x_, y_) x_ ## y_
 
@@ -71,7 +71,7 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 
 // hxAssertMsg(bool x_, ...) - Does not evaluate message args unless condition fails. This is
 // only evaluated when HX_RELEASE == 0.
-// - x_: The condition to evaluate.
+// - x: The condition to evaluate.
 // - ...: Variadic arguments for the formatted log message.
 #define hxAssertMsg(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
 	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK)
@@ -84,7 +84,7 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 
 // hxAssertRelease(bool x_, ...) - Logs an error and terminates execution if x_ is false up to
 // release level 2. This is only evaluated when HX_RELEASE < 3.
-// - x_: The condition to evaluate.
+// - x: The condition to evaluate.
 // - ...: Variadic arguments for the formatted log message.
 #define hxAssertRelease(x_, ...) (void)(!!(x_) || ((hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
 	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK))
@@ -117,7 +117,7 @@ HX_NOEXCEPT HX_NORETURN void hxAssertHandler(uint32_t file_, size_t line_);
 
 // hxWarnMsg(bool x_, ...) - Enters formatted warnings in the system log when
 // x_ is false. This is only evaluated when HX_RELEASE <= 1.
-// - x_: The condition to evaluate.
+// - x: The condition to evaluate.
 // - ...: Variadic arguments for the formatted warning message.
 #define hxWarnMsg(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Warning, __VA_ARGS__), 0))
 
@@ -152,33 +152,33 @@ void hxShutdown(void);
 
 // hxLogHandler - Enters formatted messages in the system log. This is the only
 // access to logging when HX_RELEASE > 2.
-// - level_: The log level (e.g., hxLogLevel_Log, hxLogLevel_Warning).
-// - format_: A printf-style format string.
+// - level: The log level (e.g., hxLogLevel_Log, hxLogLevel_Warning).
+// - format: A printf-style format string.
 // - ...: Additional arguments for the format string.
 HX_NOEXCEPT void hxLogHandler(enum hxLogLevel level_, const char* format_, ...) HX_ATTR_FORMAT(2, 3);
 
 // hxLogHandlerV - A va_list version of hxLogHandler. This is the only access to
 // logging when HX_RELEASE > 2.
-// - level_: The log level (e.g., hxLogLevel_Log, hxLogLevel_Warning).
-// - format_: A printf-style format string.
-// - args_: A va_list containing the arguments for the format string.
+// - level: The log level (e.g., hxLogLevel_Log, hxLogLevel_Warning).
+// - format: A printf-style format string.
+// - args: A va_list containing the arguments for the format string.
 HX_NOEXCEPT void hxLogHandlerV(enum hxLogLevel level_, const char* format_, va_list args_);
 
 // hxHexDump - Prints an array of bytes formatted in hexadecimal. Additional
 // information provided when pretty is non-zero.
-// - address_: Pointer to the start of the byte array.
-// - bytes_: The number of bytes to print.
-// - pretty_: Non-zero to include additional formatting information.
+// - address: Pointer to the start of the byte array.
+// - bytes: The number of bytes to print.
+// - pretty: Non-zero to include additional formatting information.
 void hxHexDump(const void* address_, size_t bytes_, int pretty_);
 
 // hxFloatDump - Prints an array of floating point values.
-// - address_: Pointer to the start of the float array.
-// - floats_: The number of floats to print.
+// - address: Pointer to the start of the float array.
+// - floats: The number of floats to print.
 void hxFloatDump(const float* address_, size_t floats_);
 
 // hxBasename - Returns a pointer to those characters following the last '\' or
 // '/' character or path if those are not present.
-// - path_: The file path as a null-terminated string.
+// - path: The file path as a null-terminated string.
 const char* hxBasename(const char* path_);
 
 
@@ -189,27 +189,27 @@ const char* hxBasename(const char* path_);
 
 // hxmin - More portable versions of min(), max(), abs() and clamp() using the <
 // operator. Returns the minimum value of x_ and y_ using a < comparison.
-// - x_: The first value.
-// - y_: The second value.
+// - x: The first value.
+// - y: The second value.
 template<typename T_>
 HX_CONSTEXPR_FN const T_& hxmin(const T_& x_, const T_& y_) { return ((x_) < (y_)) ? (x_) : (y_); }
 
 // hxmax - Returns the maximum value of x_ and y_ using a < comparison.
-// - x_: The first value.
-// - y_: The second value.
+// - x: The first value.
+// - y: The second value.
 template<typename T_>
 HX_CONSTEXPR_FN const T_& hxmax(const T_& x_, const T_& y_) { return ((y_) < (x_)) ? (x_) : (y_); }
 
 // hxabs - Returns the absolute value of x_ using a < comparison.
-// - x_: The value to compute the absolute value for.
+// - x: The value to compute the absolute value for.
 template<typename T_>
 HX_CONSTEXPR_FN const T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - (x_)) : (x_); }
 
 // hxclamp - Returns x_ clamped between the minimum and maximum using <
 // comparisons.
-// - x_: The value to clamp.
-// - minimum_: The minimum allowable value.
-// - maximum_: The maximum allowable value.
+// - x: The value to clamp.
+// - minimum: The minimum allowable value.
+// - maximum: The maximum allowable value.
 template<typename T_>
 HX_CONSTEXPR_FN const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& maximum_) {
 	hxAssert(!((maximum_) < (minimum_)));
@@ -230,24 +230,24 @@ HX_CONSTEXPR_FN void hxswap(T_& x_, T_& y_) {
 
 // hxmin - More portable versions of min(), max(), abs() and clamp() using the <
 // operator. Returns the minimum value of x_ and y_ using a < comparison.
-// - x_: The first value.
-// - y_: The second value.
+// - x: The first value.
+// - y: The second value.
 #define hxmin(x_, y_) ((x_) < (y_) ? (x_) : (y_))
 
 // hxmax - Returns the maximum value of x_ and y_ using a < comparison.
-// - x_: The first value.
-// - y_: The second value.
+// - x: The first value.
+// - y: The second value.
 #define hxmax(x_, y_) ((y_) < (x_) ? (x_) : (y_))
 
 // hxabs - Returns the absolute value of x_ using a < comparison.
-// - x_: The value to compute the absolute value for.
+// - x: The value to compute the absolute value for.
 #define hxabs(x_) ((x_) < 0 ? (0 - (x_)) : (x_))
 
 // hxclamp - Returns x_ clamped between the minimum and maximum using <
 // comparisons.
-// - x_: The value to clamp.
-// - minimum_: The minimum allowable value.
-// - maximum_: The maximum allowable value.
+// - x: The value to clamp.
+// - minimum: The minimum allowable value.
+// - maximum: The maximum allowable value.
 #define hxclamp(x_, minimum_, maximum_) \
     ((x_) < (minimum_) ? (minimum_) : ((maximum_) < (x_) ? (maximum_) : (x_)))
 
