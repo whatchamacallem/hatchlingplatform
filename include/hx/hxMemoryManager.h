@@ -38,9 +38,9 @@ enum hxMemoryAllocator {
 // manager. A C++ overload optionally provides the same arguments as hxMallocExt.
 // Will not return on failure.
 // - size: The size of the memory to allocate.
-// - allocator_(C++ only): The memory manager ID to use for allocation. (Default is
+// - allocator(C++ only): The memory manager ID to use for allocation. (Default is
 //   hxMemoryAllocator_Current.)
-// - alignment_(C++ only): The alignment for the allocation. (Default
+// - alignment(C++ only): The alignment for the allocation. (Default
 //   is HX_ALIGNMENT.)
 void* hxMalloc(size_t size_);
 
@@ -126,7 +126,7 @@ void hxMemoryManagerShutDown();
 size_t hxMemoryManagerAllocationCount();
 
 // hxNew - An extended new(). hxMemoryAllocator_Current is the default.
-// Allocates and constructs an object of type T_ using a specific memory manager.
+// Allocates and constructs an object of type T using a specific memory manager.
 // Template Parameters:
 // - allocator: The memory manager ID to use for allocation.
 // - align: A mask of low bits to be zero'd out when allocating new pointers.
@@ -154,7 +154,7 @@ struct hxNew {
 };
 #endif
 
-// hxDelete - Deletes an object of type T_ and frees its memory using the memory
+// hxDelete - Deletes an object of type T and frees its memory using the memory
 // manager.
 // - t: Pointer to the object to delete.
 template <typename T_>
@@ -169,7 +169,7 @@ HX_CONSTEXPR_FN void hxDelete(T_* t_) {
 	}
 }
 
-// hxDeleter - A functor that deletes objects of type T_ using hxDelete.
+// hxDeleter - A functor that deletes objects of type T using hxDelete.
 // Implements std::default_delete.
 struct hxDeleter {
 	// Deletes the object using hxDelete.
@@ -187,7 +187,7 @@ inline void* hxMalloc( size_t size_, enum hxMemoryAllocator allocator_, uintptr_
 }
 
 // hxStringDuplicate - Add default args to C interface:
-//   allocator_=hxMemoryAllocator_Current
+//   allocator=hxMemoryAllocator_Current
 // Duplicates a string using the default memory manager.
 inline char* hxStringDuplicate(const char* s_) {
 	return hxStringDuplicate(s_, hxMemoryAllocator_Current);

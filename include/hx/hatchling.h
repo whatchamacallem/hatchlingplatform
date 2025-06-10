@@ -69,20 +69,20 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 // - ...: Variadic arguments for the formatted log message.
 #define hxLog(...) hxLogHandler(hxLogLevel_Log, __VA_ARGS__)
 
-// hxAssertMsg(bool x_, ...) - Does not evaluate message args unless condition fails. This is
+// hxAssertMsg(bool x, ...) - Does not evaluate message args unless condition fails. This is
 // only evaluated when HX_RELEASE == 0.
 // - x: The condition to evaluate.
 // - ...: Variadic arguments for the formatted log message.
 #define hxAssertMsg(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
 	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK)
 
-// hxAssert(bool x_, ...) - Logs an error and terminates execution if x_ is false. This is only
+// hxAssert(bool x, ...) - Logs an error and terminates execution if x is false. This is only
 // evaluated when HX_RELEASE == 0.
 // - ...: The condition to evaluate.
 #define hxAssert(...) (void)(!!(__VA_ARGS__) || (hxLogHandler(hxLogLevel_Assert, HX_QUOTE(__VA_ARGS__)), \
 	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK)
 
-// hxAssertRelease(bool x_, ...) - Logs an error and terminates execution if x_ is false up to
+// hxAssertRelease(bool x, ...) - Logs an error and terminates execution if x is false up to
 // release level 2. This is only evaluated when HX_RELEASE < 3.
 // - x: The condition to evaluate.
 // - ...: Variadic arguments for the formatted log message.
@@ -115,8 +115,8 @@ HX_NOEXCEPT HX_NORETURN void hxAssertHandler(uint32_t file_, size_t line_);
 // - ...: Variadic arguments for the formatted warning message.
 #define hxLogWarning(...) hxLogHandler(hxLogLevel_Warning, __VA_ARGS__)
 
-// hxWarnMsg(bool x_, ...) - Enters formatted warnings in the system log when
-// x_ is false. This is only evaluated when HX_RELEASE <= 1.
+// hxWarnMsg(bool x, ...) - Enters formatted warnings in the system log when
+// x is false. This is only evaluated when HX_RELEASE <= 1.
 // - x: The condition to evaluate.
 // - ...: Variadic arguments for the formatted warning message.
 #define hxWarnMsg(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Warning, __VA_ARGS__), 0))
@@ -188,24 +188,24 @@ const char* hxBasename(const char* path_);
 } // extern "C"
 
 // hxmin - More portable versions of min(), max(), abs() and clamp() using the <
-// operator. Returns the minimum value of x_ and y_ using a < comparison.
+// operator. Returns the minimum value of x and y using a < comparison.
 // - x: The first value.
 // - y: The second value.
 template<typename T_>
 HX_CONSTEXPR_FN const T_& hxmin(const T_& x_, const T_& y_) { return ((x_) < (y_)) ? (x_) : (y_); }
 
-// hxmax - Returns the maximum value of x_ and y_ using a < comparison.
+// hxmax - Returns the maximum value of x and y using a < comparison.
 // - x: The first value.
 // - y: The second value.
 template<typename T_>
 HX_CONSTEXPR_FN const T_& hxmax(const T_& x_, const T_& y_) { return ((y_) < (x_)) ? (x_) : (y_); }
 
-// hxabs - Returns the absolute value of x_ using a < comparison.
+// hxabs - Returns the absolute value of x using a < comparison.
 // - x: The value to compute the absolute value for.
 template<typename T_>
 HX_CONSTEXPR_FN const T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - (x_)) : (x_); }
 
-// hxclamp - Returns x_ clamped between the minimum and maximum using <
+// hxclamp - Returns x clamped between the minimum and maximum using <
 // comparisons.
 // - x: The value to clamp.
 // - minimum: The minimum allowable value.
@@ -216,7 +216,7 @@ HX_CONSTEXPR_FN const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& ma
 	return ((x_) < (minimum_)) ? (minimum_) : (((maximum_) < (x_)) ? (maximum_) : (x_));
 }
 
-// hxswap - Exchanges the contents of x_ and y_ using a temporary.
+// hxswap - Exchanges the contents of x and y using a temporary.
 template<typename T_>
 HX_CONSTEXPR_FN void hxswap(T_& x_, T_& y_) {
 	T_ t_(x_);
@@ -229,21 +229,21 @@ HX_CONSTEXPR_FN void hxswap(T_& x_, T_& y_) {
 // C utility macro API - Does it all backwards in heels.
 
 // hxmin - More portable versions of min(), max(), abs() and clamp() using the <
-// operator. Returns the minimum value of x_ and y_ using a < comparison.
+// operator. Returns the minimum value of x and y using a < comparison.
 // - x: The first value.
 // - y: The second value.
 #define hxmin(x_, y_) ((x_) < (y_) ? (x_) : (y_))
 
-// hxmax - Returns the maximum value of x_ and y_ using a < comparison.
+// hxmax - Returns the maximum value of x and y using a < comparison.
 // - x: The first value.
 // - y: The second value.
 #define hxmax(x_, y_) ((y_) < (x_) ? (x_) : (y_))
 
-// hxabs - Returns the absolute value of x_ using a < comparison.
+// hxabs - Returns the absolute value of x using a < comparison.
 // - x: The value to compute the absolute value for.
 #define hxabs(x_) ((x_) < 0 ? (0 - (x_)) : (x_))
 
-// hxclamp - Returns x_ clamped between the minimum and maximum using <
+// hxclamp - Returns x clamped between the minimum and maximum using <
 // comparisons.
 // - x: The value to clamp.
 // - minimum: The minimum allowable value.
@@ -251,7 +251,7 @@ HX_CONSTEXPR_FN void hxswap(T_& x_, T_& y_) {
 #define hxclamp(x_, minimum_, maximum_) \
     ((x_) < (minimum_) ? (minimum_) : ((maximum_) < (x_) ? (maximum_) : (x_)))
 
-// hxswap - Exchanges the contents of x_ and y_ using a temporary.
+// hxswap - Exchanges the contents of x and y using a temporary.
 #define hxswap(x_,y_) do { \
 	char t_[sizeof(x_) == sizeof(y_) ? (int)sizeof(x_) : -1]; \
 	memcpy((t_), &(y_), sizeof(x_)); \
