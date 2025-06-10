@@ -13,8 +13,8 @@
 template<typename T_>
 HX_CONSTEXPR_FN bool hxKeyLess(const T_& lhs_, const T_& rhs_) { return lhs_ < rhs_; }
 
+// hxKeyHash (const char*) - Uses a constexpr "strcmp(a, b) < 0".
 HX_CONSTEXPR_FN bool hxKeyLess(const char* a_, const char* b_) {
-    // this is a constexpr "strcmp(a, b) < 0".
     while(*a_ != '\0' && *a_ == *b_) { ++a_; ++b_; }
     return *a_ < *b_;
 }
@@ -47,8 +47,8 @@ HX_CONSTEXPR_FN bool hxKeyEqual(const T& a_, const T& b_) {
 	return a_ == b_;
 }
 
+// hxKeyHash (const char*) - Uses a constexpr strcmp.
 HX_CONSTEXPR_FN bool hxKeyEqual(const char* a_, const char* b_) {
-	// this is a constexpr strcmp.
 	while(*a_ != '\0' && *a_ == *b_) { ++a_; ++b_; }
 	return *a_ == '\0' && *b_ == '\0';
 }

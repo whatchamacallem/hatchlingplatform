@@ -23,8 +23,8 @@ static const double c_hxMillisecondsPerCycle = 1.0e+3 / c_hxCyclesPerSecond;
 static const double c_hxMicrosecondsPerCycle = 1.0e+6 / c_hxCyclesPerSecond;
 static const hxcycles_t c_hxDefaultCyclesCutoff = 1000;
 
-// TODO: Set up the processor cycle counter for your architecture. This is
-// callable without enabling HX_PROFILE.
+// hxTimeSampleCycles(void) - Set up the processor cycle counter for your
+// architecture. This is callable without enabling HX_PROFILE.
 static inline hxcycles_t hxTimeSampleCycles(void) {
     uint64_t cycles_ = 0; (void)cycles_;
 #if defined(__x86_64__) || defined(__i386__)
@@ -45,32 +45,37 @@ HX_STATIC_ASSERT(0, "implement hxTimeSampleCycles");
     return (hxcycles_t)cycles_;
 }
 
-// hxProfileScope(const char* labelStringLiteral) declares an RAII-style profiling
-// sample.  WARNING: A pointer to labelStringLiteral is kept.
-// c_hxProfilerDefaultSamplingCutoff is provided. as a recommended MinCycles cutoff.
-// Compiles to a NOP when not in use.
+// hxProfileScope(const char* labelStringLiteral) - Declares an RAII-style
+// profiling sample. WARNING: A pointer to labelStringLiteral is kept.
+// c_hxProfilerDefaultSamplingCutoff is provided as a recommended MinCycles
+// cutoff. Compiles to a NOP when not in use.
 #define hxProfileScope(labelStringLiteral_) \
     HX_PROFILE_ONLY_( hxProfilerScopeInternal_<> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral_) )
 
-// hxProfileScopeMin(const char* labelStringLiteral, hxcycles_t minCycles). Compiles
+// hxProfileScopeMin(const char* labelStringLiteral, hxcycles_t minCycles) -
+// Declares an RAII-style profiling sample with a minimum cycle cutoff. Compiles
 // to a NOP when not in use.
 #define hxProfileScopeMin(labelStringLiteral_, minCycles_) \
     HX_PROFILE_ONLY_( hxProfilerScopeInternal_<minCycles_> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral_) )
 
-// Clears samples and begins sampling. Compiles to a NOP when not in use.
+// hxProfilerBegin() - Clears samples and begins sampling. Compiles to a NOP when
+// not in use.
 #define hxProfilerBegin() HX_PROFILE_ONLY_( g_hxProfiler_.start_() )
 
-// Ends sampling.  Does not clear samples. Compiles to a NOP when not in use.
+// hxProfilerEnd() - Ends sampling. Does not clear samples. Compiles to a NOP
+// when not in use.
 #define hxProfilerEnd() HX_PROFILE_ONLY_( g_hxProfiler_.stop_() )
 
-// Stops sampling and writes samples to the system log. Compiles to a NOP when not in use.
+// hxProfilerLog() - Stops sampling and writes samples to the system log.
+// Compiles to a NOP when not in use.
 #define hxProfilerLog() HX_PROFILE_ONLY_( g_hxProfiler_.log_() )
 
-// Stops sampling and writes samples to the provided filename.
-// filename is a C string representing a writable destination.  Writes profiling
-// data in a format usable by Chrome's chrome://tracing view.  Usage: In Chrome
-// go to "chrome://tracing/". Load the generated json file.  Use the W/A/S/D keys.
-// See http://www.chromium.org/developers/how-tos/trace-event-profiling-tool
+// hxProfilerWriteToChromeTracing(const char* filename_) - Stops sampling and
+// writes samples to the provided filename. filename is a C string representing a
+// writable destination. Writes profiling data in a format usable by Chrome's
+// chrome://tracing view. Usage: In Chrome go to "chrome://tracing/". Load the
+// generated json file. Use the W/A/S/D keys. See
+// http://www.chromium.org/developers/how-tos/trace-event-profiling-tool
 // Compiles to a NOP when not in use.
 #define hxProfilerWriteToChromeTracing(filename_) \
     HX_PROFILE_ONLY_( g_hxProfiler_.writeToChromeTracing_(filename_) )

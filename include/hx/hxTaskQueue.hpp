@@ -25,7 +25,6 @@ public:
 
 	// Queue a task for later execution.  Does not delete task after execution.
 	// Thread safe and callable from running tasks.
-    // Parameters:
     // - task_: A pointer to the task to be enqueued for execution.
     void enqueue(hxTask* task_);
 

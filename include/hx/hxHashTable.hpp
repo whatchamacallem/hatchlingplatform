@@ -226,14 +226,12 @@ public:
 	HX_CONSTEXPR_FN bool empty() const { return m_size == 0u; }
 
 	// Returns a node containing key if any or allocates and returns a new one.
-	// Parameters:
 	// - key_: The key to search for or insert.
 	// Any allocation required uses hxMemoryAllocator_Current and HX_ALIGNMENT.
 	HX_CONSTEXPR_FN Node& operator[](const Key& key_) { return this->insertUnique(key_); }
 
 	// Returns a node containing key if any or allocates and returns a new one.
 	// Unfortunately this code may calculate the hash twice.
-	// Parameters:
 	// - key_: The key to search for or insert.
 	// - allocator_: The memory manager ID to use for allocation.
 	// - alignment_: The alignment for allocation.
@@ -256,7 +254,6 @@ public:
 	}
 
 	// Inserts a Node into the hash table, allowing duplicate keys.
-	// Parameters:
 	// - node_: The Node to insert into the hash table.
 	HX_CONSTEXPR_FN void insertNode(Node* node_) {
 		hxAssert(node_ != hxnull && m_size < ~(uint32_t)0);
@@ -271,7 +268,6 @@ public:
 	// a node previously returned from find() with the same key and that has not
 	// been removed. Then find() will return a subsequent node if any.
 	// The previous object is non-const as it may be modified
-	// Parameters:
 	// - key_: The key to search for in the hash table.
 	// - previous_: A previously found Node with the same key, or nullptr.
 	HX_CONSTEXPR_FN Node* find(const Key& key_, const Node* previous_=hxnull) {
@@ -301,7 +297,6 @@ public:
 	}
 
 	// Counts the number of Nodes with the given key.
-	// Parameters:
 	// - key_: The key to count occurrences of in the hash table.
 	HX_CONSTEXPR_FN uint32_t count(const Key& key_) const {
 		uint32_t total_ = 0u;
@@ -315,7 +310,6 @@ public:
 	}
 
 	// Removes and returns the first Node with the given key.
-	// Parameters:
 	// - key_: The key to search for and remove from the hash table.
 	HX_CONSTEXPR_FN Node* extract(const Key& key_) {
 		uint32_t hash_ = hxKeyHash(key_);
@@ -336,7 +330,6 @@ public:
 	// the number of nodes released. Deleter can be functions with signature "void
 	// deleter(Node*)" and functors supporting "operator()(Node*)" and with an
 	// "operator bool" returning true.
-	// Parameters:
 	// - key_: The key to search for and remove from the hash table.
 	// - deleter_: A function or functor to call on each removed Node.
 	template<typename Deleter_>
@@ -369,7 +362,6 @@ public:
 	// Removes all nodes and calls deleter() on every node.  Deleter can be
 	// function pointers with signature "void deleter(Node*)" or functors
 	// supporting "operator()(Node*) and operator (bool)."
-	// Parameters:
 	// - deleter_: A function or functor to call on each removed Node.
 	template<typename Deleter_>
 	HX_CONSTEXPR_FN void clear(const Deleter_& deleter_) {
@@ -408,7 +400,6 @@ public:
 	HX_CONSTEXPR_FN uint32_t bucketCount() const { return m_table.capacity(); };
 
 	// Sets the number of hash bits (only for dynamic capacity).
-	// Parameters:
 	// - bits_: The number of hash bits to set for the hash table.
 	HX_CONSTEXPR_FN void setTableSizeBits(uint32_t bits_) { return m_table.setTableSizeBits(bits_); };
 

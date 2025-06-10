@@ -15,14 +15,13 @@ class hxTaskQueue;
 class hxTask {
 public:
     // hxTask - Construct task. staticLabel must be a static string.
-    // Parameters:
     // - staticLabel_: A constant string literal or null to label the task.
     inline explicit hxTask(const char* staticLabel_=hxnull)
         : m_nextTask(hxnull), m_label(staticLabel_), m_taskQueue(hxnull) {
     }
 
-    // ~hxTask - Destructor for the task.
-    // Ensures that the task is not owned by any exclusive owner when deleted.
+    // ~hxTask - Destructor for the task. Ensures that the task is not owned by
+    // any exclusive owner when deleted.
     virtual ~hxTask() {
         hxAssertRelease(!m_taskQueue, "deleting queued task: %s", getLabel());
     }
@@ -31,34 +30,28 @@ public:
     // derived classes. This call is the last time this object is touched by
     // hxTaskQueue. It may delete or re-enqueue itself. Will also be wrapped in
     // hxProfileScope(getLabel());
-    // Parameters:
     // - q_: Pointer to the task queue managing this task.
     // Notes:
     // - This function may delete or re-enqueue the task.
     virtual void execute(hxTaskQueue* q_) = 0;
 
 	// Gets the next task in the linked list.
-    // Returns:
-    // - Pointer to the next task, or null if there is no next task.
+    // Returns pointer to the next task, or null if there is no next task.
     inline hxTask* getNextTask() const { return m_nextTask; }
 
 	// Sets the next task in the linked list.
-    // Parameters:
     // - x_: Pointer to the task to set as the next task.
     inline void setNextTask(hxTask* x_) { m_nextTask = x_; }
 
 	// Gets the label of the task.
-    // Returns:
-    // - The label of the task, or "task" if no label is set.
+    // Returns the label of the task, or "task" if no label is set.
     inline const char* getLabel() const { return m_label ? m_label : "task"; }
 
 	// Sets the label of the task.
-    // Parameters:
     // - x_: A constant string literal or null to set as the task label.
     inline void setLabel(const char* x_) { m_label = x_; }
 
 	// Sets the task queue which is to be the exclusive owner of the task.
-    // Parameters:
     // - x_: Pointer to the new exclusive owner, or null to clear ownership.
     // Notes:
     // - Ensures that the task is not re-enqueued while already owned.

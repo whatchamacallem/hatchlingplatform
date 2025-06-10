@@ -35,8 +35,8 @@ enum hxMemoryAllocator {
 	hxMemoryAllocator_Current         // Use current allocation scope.
 };
 
-// Allocates memory of the specified size using the default memory manager.
-// A C++ overload optionally provides the same arguments as hxMallocExt.
+// hxMalloc - Allocates memory of the specified size using the default memory
+// manager. A C++ overload optionally provides the same arguments as hxMallocExt.
 // Will not return on failure.
 // - size_: The size of the memory to allocate.
 // - allocator_(C++ only): The memory manager ID to use for allocation. (Default is
@@ -47,19 +47,17 @@ void* hxMalloc(size_t size_);
 
 // hxMallocExt - Allocates memory of the specified size with a specific memory
 // manager and alignment. Will not return on failure.
-// Parameters:
 // - size_: The size of the memory to allocate.
 // - allocator_: The memory manager ID to use for allocation. (Default is hxMemoryAllocator_Current.)
 // - alignment_: The alignment for the allocation. (Default is HX_ALIGNMENT.)
 void* hxMallocExt(size_t size_, enum hxMemoryAllocator allocator_, uintptr_t alignment_/*=HX_ALIGNMENT*/);
 
-// Frees memory previously allocated with hxMalloc or hxMallocExt.
-// Parameters:
+// hxFree - Frees memory previously allocated with hxMalloc or hxMallocExt.
 // - ptr_: Pointer to the memory to free.
 void hxFree(void* ptr_);
 
-// Allocates a copy of a string using the specified memory manager.
-// Parameters:
+// hxStringDuplicate - Allocates a copy of a string using the specified memory
+// manager.
 // - string_: The string to duplicate.
 // - allocator_: The memory manager ID to use for allocation. Defaults to
 //   hxMemoryAllocator_Current in C++.
@@ -69,20 +67,17 @@ char* hxStringDuplicate(const char* string_, enum hxMemoryAllocator allocator_ /
 #if HX_CPLUSPLUS
 } // extern "C"
 
-// ----------------------------------------------------------------------------
 // Memory Manager C++ API
 
-// hxMemoryAllocatorScope
-//
-// RAII class to set the current memory manager allocator for a specific scope.
-// Automatically restores the previous allocator when the scope ends.
+// hxMemoryAllocatorScope - RAII class to set the current memory manager allocator
+// for a specific scope. Automatically restores the previous allocator when the
+// scope ends.
 class hxMemoryAllocatorScope
 {
 public:
-	// Constructor: Sets the current memory allocator to the specified ID.
-	// Parameters:
-	// - allocator_: The memory manager ID to set for this scope.
-	hxMemoryAllocatorScope(hxMemoryAllocator allocator_);
+    // hxMemoryAllocatorScope - Constructor: Sets the current memory allocator to the specified ID.
+        // - allocator_: The memory manager ID to set for this scope.
+    hxMemoryAllocatorScope(hxMemoryAllocator allocator_);
 
 	// Destructor: Restores the previous memory manager allocator ID.
 	~hxMemoryAllocatorScope();
@@ -118,17 +113,19 @@ private:
 	uintptr_t m_previousBytesAllocated; // Previous bytes allocated.
 };
 
-// Initializes the memory manager. Must be called before using any memory manager functions.
+// hxMemoryManagerInit - Initializes the memory manager. Must be called before
+// using any memory manager functions.
 void hxMemoryManagerInit();
 
-// Shuts down the memory manager. Frees any remaining resources.
+// hxMemoryManagerShutDown - Shuts down the memory manager. Frees any remaining resources.
 void hxMemoryManagerShutDown();
 
-// Gets the total number of allocations made by the memory manager.
+// hxMemoryManagerAllocationCount - Gets the total number of allocations made by
+// the memory manager.
 // Returns: The total allocation count.
 size_t hxMemoryManagerAllocationCount();
 
-// hxNew.  An extended new().  hxMemoryAllocator_Current is the default.
+// hxNew - An extended new().  hxMemoryAllocator_Current is the default.
 // Allocates and constructs an object of type T_ using a specific memory manager.
 // Template Parameters:
 // - allocator_: The memory manager ID to use for allocation.
@@ -140,7 +137,7 @@ HX_CONSTEXPR_FN T_* hxNew(Args_&&... args_) noexcept {
 	return ::new(hxMallocExt(sizeof(T_), allocator_, align_)) T_(args_...);
 }
 #else
-// hxNew C++98 functor polyfill.  All template args default except the first.
+// hxNew - C++98 functor polyfill.  All template args default except the first.
 // Passing more than one arg requires C++11.
 template <typename T_, hxMemoryAllocator allocator_=hxMemoryAllocator_Current, uintptr_t align_=HX_ALIGNMENT>
 struct hxNew {
@@ -157,8 +154,8 @@ struct hxNew {
 };
 #endif
 
-// Deletes an object of type T_ and frees its memory using the memory manager.
-// Parameters:
+// hxDelete - Deletes an object of type T_ and frees its memory using the memory
+// manager.
 // - t_: Pointer to the object to delete.
 template <typename T_>
 HX_CONSTEXPR_FN void hxDelete(T_* t_) {
@@ -172,7 +169,7 @@ HX_CONSTEXPR_FN void hxDelete(T_* t_) {
 	}
 }
 
-// A functor that deletes objects of type T_ using hxDelete.
+// hxDeleter - A functor that deletes objects of type T_ using hxDelete.
 // Implements std::default_delete.
 struct hxDeleter {
 	// Deletes the object using hxDelete.
@@ -183,13 +180,14 @@ struct hxDeleter {
 	HX_CONSTEXPR_FN operator bool() const { return true; }
 };
 
-// Add hxMallocExt args to hxMalloc C interface. Allocates memory with a
+// hxMalloc - Add hxMallocExt args to hxMalloc C interface. Allocates memory with a
 // specific memory manager and alignment.
 inline void* hxMalloc( size_t size_, enum hxMemoryAllocator allocator_, uintptr_t alignment_=HX_ALIGNMENT) {
 	return hxMallocExt(size_, allocator_, alignment_);
 }
 
-// Add default args to C interface: allocator_=hxMemoryAllocator_Current
+// hxStringDuplicate - Add default args to C interface:
+//   allocator_=hxMemoryAllocator_Current
 // Duplicates a string using the default memory manager.
 inline char* hxStringDuplicate(const char* s_) {
 	return hxStringDuplicate(s_, hxMemoryAllocator_Current);
