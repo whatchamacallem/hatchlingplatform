@@ -5,7 +5,6 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------
 TEST(hxStringHashTest, Equality) {
 	uint32_t hash1 = hxStringLiteralHash("");
 	uint32_t hash2 = hxStringLiteralHash("abc");

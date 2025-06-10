@@ -25,8 +25,7 @@
 extern "C" {
 #endif
 
-// ----------------------------------------------------------------------------
-// Hatchling Platform C API
+// Hatchling Platform C and C++ API. Above headers are C and C++ too.
 
 // hxLogLevel - Runtime setting for verbosity of log messages. Independently
 // controls what messages are compiled in. See g_hxSettings.logLevel.
@@ -116,8 +115,8 @@ HX_NOEXCEPT HX_NORETURN void hxAssertHandler(uint32_t file_, size_t line_);
 // - ...: Variadic arguments for the formatted warning message.
 #define hxLogWarning(...) hxLogHandler(hxLogLevel_Warning, __VA_ARGS__)
 
-// hxWarnMsg(bool x_, ...) - Enters formatted warnings in the system log when x_ is false.
-// This is only evaluated when HX_RELEASE <= 1.
+// hxWarnMsg(bool x_, ...) - Enters formatted warnings in the system log when
+// x_ is false. This is only evaluated when HX_RELEASE <= 1.
 // - x_: The condition to evaluate.
 // - ...: Variadic arguments for the formatted warning message.
 #define hxWarnMsg(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Warning, __VA_ARGS__), 0))
@@ -182,7 +181,9 @@ void hxFloatDump(const float* address_, size_t floats_);
 // - path_: The file path as a null-terminated string.
 const char* hxBasename(const char* path_);
 
+
 // ----------------------------------------------------------------------------
+// C++ utility template API
 #if HX_CPLUSPLUS
 } // extern "C"
 
@@ -224,13 +225,35 @@ HX_CONSTEXPR_FN void hxswap(T_& x_, T_& y_) {
 }
 
 #else
+// ----------------------------------------------------------------------------
+// C utility macro API - Does it all backwards in heels.
+
+// hxmin - More portable versions of min(), max(), abs() and clamp() using the <
+// operator. Returns the minimum value of x_ and y_ using a < comparison.
+// - x_: The first value.
+// - y_: The second value.
 #define hxmin(x_, y_) ((x_) < (y_) ? (x_) : (y_))
+
+// hxmax - Returns the maximum value of x_ and y_ using a < comparison.
+// - x_: The first value.
+// - y_: The second value.
 #define hxmax(x_, y_) ((y_) < (x_) ? (x_) : (y_))
+
+// hxabs - Returns the absolute value of x_ using a < comparison.
+// - x_: The value to compute the absolute value for.
 #define hxabs(x_) ((x_) < 0 ? (0 - (x_)) : (x_))
+
+// hxclamp - Returns x_ clamped between the minimum and maximum using <
+// comparisons.
+// - x_: The value to clamp.
+// - minimum_: The minimum allowable value.
+// - maximum_: The maximum allowable value.
 #define hxclamp(x_, minimum_, maximum_) \
     ((x_) < (minimum_) ? (minimum_) : ((maximum_) < (x_) ? (maximum_) : (x_)))
+
+// hxswap - Exchanges the contents of x_ and y_ using a temporary.
 #define hxswap(x_,y_) do { \
-	 char t_[sizeof(x_) == sizeof(y_) ? (int)sizeof(x_) : -1]; \
+	char t_[sizeof(x_) == sizeof(y_) ? (int)sizeof(x_) : -1]; \
 	memcpy((t_), &(y_), sizeof(x_)); \
 	memcpy(&(y_), &(x_), sizeof(x_)); \
 	memcpy(&(x_), (t_), sizeof(x_)); } while(0)
