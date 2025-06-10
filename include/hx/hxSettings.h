@@ -67,7 +67,7 @@
 #else // target settings (clang and gcc.)
 // Other compilers will require customization.
 
-// WebAssembly.  Support use with any compiler front end.
+// WebAssembly. Support use with any compiler front end.
 #if !defined(HX_USE_WASM)
 #if defined(__EMSCRIPTEN__)
 #define HX_USE_WASM 1
@@ -124,7 +124,7 @@
 #define HX_CONSTEXPR_FN inline
 #endif
 
-// HX_THREAD_LOCAL.  A version of thread_local that compiles out when there is
+// HX_THREAD_LOCAL. A version of thread_local that compiles out when there is
 // no threading.
 #if HX_USE_CPP_THREADS && !defined(HX_THREAD_LOCAL)
 #define HX_THREAD_LOCAL thread_local
@@ -139,7 +139,7 @@
 #endif
 
 // ----------------------------------------------------------------------------
-// HX_MEM_DIAGNOSTIC_LEVEL.  Memory management debug mode.
+// HX_MEM_DIAGNOSTIC_LEVEL. Memory management debug mode.
 //
 // -1: remove code entirely
 //  0: normal target operation
@@ -164,18 +164,18 @@
 
 // ----------------------------------------------------------------------------
 // HX_PROFILE: 0 disables code for capturing profiling data
-//             1 compiles in code.  See hxProfileScope().
+//             1 compiles in code. See hxProfileScope().
 #if !defined(HX_PROFILE)
 #define HX_PROFILE (HX_RELEASE) < 2
 #endif
 
-// The profiler doesn't reallocate.  This is the maximum.
+// The profiler doesn't reallocate. This is the maximum.
 #if !defined(HX_PROFILER_MAX_RECORDS)
 #define HX_PROFILER_MAX_RECORDS 4096
 #endif
 
 // ----------------------------------------------------------------------------
-// HX_DEBUG_DMA.  Internal validation, set to 1 or 0 as needed
+// HX_DEBUG_DMA. Internal validation, set to 1 or 0 as needed
 #if !defined(HX_DEBUG_DMA)
 #define HX_DEBUG_DMA (HX_RELEASE) < 1
 #endif
@@ -197,8 +197,8 @@
 #endif
 
 // ----------------------------------------------------------------------------
-// HX_RADIX_SORT_*.  Tuning radix sort algorithm.
-// These need to be determined by benchmarking on the target platform.  The 8-
+// HX_RADIX_SORT_*. Tuning radix sort algorithm.
+// These need to be determined by benchmarking on the target platform. The 8-
 // bit version tries to be memory efficient, the 11-bit version optimizes for
 // speed over memory.
 #if !defined(HX_RADIX_SORT_BITS)
@@ -217,7 +217,7 @@
 #endif
 
 // ----------------------------------------------------------------------------
-// hxSettings.  Constructed by first call to hxInit() which happens when or
+// hxSettings. Constructed by first call to hxInit() which happens when or
 // before the memory allocator constructs.
 
 #if HX_CPLUSPLUS
@@ -237,7 +237,7 @@ struct hxSettings {
 #endif
 };
 
-// g_hxSettings.  Global struct constructed by hxInit().
+// g_hxSettings. Global struct constructed by hxInit().
 extern struct hxSettings g_hxSettings;
 
 #if HX_CPLUSPLUS

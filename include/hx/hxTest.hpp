@@ -10,7 +10,7 @@
 #else // !HX_USE_GOOGLE_TEST
 #include <hx/internal/hxTestInternal.hpp>
 
-// testing::Test - A partial Google Test reimplementation.  Use -DHX_TEST_MAX_CASES
+// testing::Test - A partial Google Test reimplementation. Use -DHX_TEST_MAX_CASES
 // to provide enough room for all tests.
 
 namespace testing {

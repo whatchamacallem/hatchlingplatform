@@ -10,7 +10,7 @@ HX_RELEASE="-DHX_RELEASE=0 -m32"
 # Compiler optimization level. Allows a fast debug build.
 HX_OPTIMIZATION=-O0
 
-# The -m32 switch enables 32-bit compilation.  You will need these packages on Ubuntu:
+# The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:
 #   sudo apt-get install gcc-multilib g++-multilib
 
 # c++ warning flags.

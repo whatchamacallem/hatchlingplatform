@@ -50,7 +50,7 @@ void hxInsertionSort(T_* begin_, T_* end_) {
 // Non-unique values will be selected between arbitrarily.
 //
 // The compare parameter is a function object that returns true if the first
-// argument is ordered before (i.e. is less than) the second.  See hxKeyLess.
+// argument is ordered before (i.e. is less than) the second. See hxKeyLess.
 // - begin_: Pointer to the beginning of the range to search.
 // - end_: Pointer to one past the last element in the range to search.
 // - val_: The value to search for.
@@ -97,7 +97,7 @@ const T_* hxBinarySearch(const T_* begin_, const T_* end_, const T_& val_) {
 }
 
 // ----------------------------------------------------------------------------
-// hxRadixSortBase.  Operations that are independent of hxRadixSort type.
+// hxRadixSortBase. Operations that are independent of hxRadixSort type.
 //
 // See hxRadixSort<K, V> below.
 
@@ -153,9 +153,9 @@ protected:
 };
 
 // ----------------------------------------------------------------------------
-// hxRadixSort.  Sorts an array of value* by keys.  K is the key and V the value.
+// hxRadixSort. Sorts an array of value* by keys. K is the key and V the value.
 //
-// Nota bene: Keys of double, int64_t and uint64_t are not supported.  Keys
+// Nota bene: Keys of double, int64_t and uint64_t are not supported. Keys
 // are stored as uint32_t.
 
 template<typename K_, class V_>

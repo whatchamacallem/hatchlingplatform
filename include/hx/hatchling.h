@@ -1,6 +1,6 @@
 #pragma once
 
-// Hatchling Platform.  <hx/hatchling.h> is both C and C++.
+// Hatchling Platform. <hx/hatchling.h> is both C and C++.
 //
 // Copyright 2017-2025 Adrian Johnston
 // https://github.com/whatchamacallem/HatchlingPlatform
@@ -89,7 +89,7 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 #define hxAssertRelease(x_, ...) (void)(!!(x_) || ((hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
 	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK))
 
-// Assert handler.  Do not call directly, signature changes and then is removed.
+// Assert handler. Do not call directly, signature changes and then is removed.
 HX_NOEXCEPT int hxAssertHandler(const char* file_, size_t line_);
 
 #else // HX_RELEASE > 1

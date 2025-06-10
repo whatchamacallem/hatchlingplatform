@@ -14,19 +14,19 @@ class hxTaskQueue;
 
 class hxTask {
 public:
-    // hxTask - Construct task. staticLabel must be a static string.
+    // Construct task. staticLabel must be a static string.
     // - staticLabel_: A constant string literal or null to label the task.
     inline explicit hxTask(const char* staticLabel_=hxnull)
         : m_nextTask(hxnull), m_label(staticLabel_), m_taskQueue(hxnull) {
     }
 
-    // ~hxTask - Destructor for the task. Ensures that the task is not owned by
+    // Destructor for the task. Ensures that the task is not owned by
     // any exclusive owner when deleted.
     virtual ~hxTask() {
         hxAssertRelease(!m_taskQueue, "deleting queued task: %s", getLabel());
     }
 
-    // execute - Executes the task. This is the main function to be implemented by
+    // Executes the task. This is the main function to be implemented by
     // derived classes. This call is the last time this object is touched by
     // hxTaskQueue. It may delete or re-enqueue itself. Will also be wrapped in
     // hxProfileScope(getLabel());

@@ -4,9 +4,9 @@
 #include <hx/hxAllocator.hpp>
 
 // ----------------------------------------------------------------------------
-// hxHashTable internals.  See hxHashTable.h instead
+// hxHashTable internals. See hxHashTable.h instead
 
-// This is a hxHashTable specific subclass of hxAllocator.  C++98 requires this to be
+// This is a hxHashTable specific subclass of hxAllocator. C++98 requires this to be
 // declared outside hxHashTable. The table has a size of 2^TableSizeBits_.
 
 template<typename Node_, uint32_t TableSizeBits_>

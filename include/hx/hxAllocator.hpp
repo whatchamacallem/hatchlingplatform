@@ -90,7 +90,7 @@ public:
     // Returns an array of T.
     HX_CONSTEXPR_FN T* data() { return m_allocator; }
 
-    // Swap.  Only works with Capacity_ == hxAllocatorDynamicCapacity
+    // Swap. Only works with Capacity_ == hxAllocatorDynamicCapacity
     HX_CONSTEXPR_FN void swap(hxAllocator& rhs) {
         hxswap(m_capacity, rhs.m_capacity);
         hxswap(m_allocator, rhs.m_allocator);

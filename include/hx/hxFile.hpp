@@ -6,7 +6,7 @@
 class hxFile;
 
 // ----------------------------------------------------------------------------
-// hxFile: RAII wrapper for file I/O.  A mixture of unformatted std::basic_fstream
+// hxFile: RAII wrapper for file I/O. A mixture of unformatted std::basic_fstream
 // operations and formatted C-style text printing.
 
 class hxFile {
@@ -22,12 +22,12 @@ public:
 	};
 
 	// Constructor to initialize the file object with a specific mode.
-	// For an unopened file use 0.  For stdio use (stdio|in), (stdio|out).
+	// For an unopened file use 0. For stdio use (stdio|in), (stdio|out).
 	// stdio may be failble.
 	hxFile(uint16_t mode_=0u);
 
 	// Constructor to initialize and open a file with a formatted filename.
-	// Opens a stream using a formatted filename.  Non-standard arg order.
+	// Opens a stream using a formatted filename. Non-standard arg order.
 	hxFile(uint16_t mode_, const char* filename_, ...) HX_ATTR_FORMAT(3, 4);
 
 	// Destructor to ensure the file is closed when the object goes out of scope.

@@ -1,7 +1,7 @@
 #pragma once
 // Copyright 2017-2025 Adrian Johnston
 //
-// hxProfilerInternal_ internals.  See hxProfiler.h instead
+// hxProfilerInternal_ internals. See hxProfiler.h instead
 
 #if !defined(HX_PROFILE)
 #error #include <hx/hxProfiler.h> instead

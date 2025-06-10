@@ -16,7 +16,7 @@
 //
 // struct T {
 //   typedef K Key;          // tell the hash table what key to use.
-//   T(Key);                 // construct from key.  e.g. for operator[].
+//   T(Key);                 // construct from key. e.g. for operator[].
 //   T*& hashNext();         // used by hxHashTable for embedded linked list.
 //   T* hashNext() const;    // const version of hashNext.
 //   const Key& key() const; // returns key constructed with.
@@ -359,7 +359,7 @@ public:
 	// Removes all Nodes matching the given key without deleting them.
 	HX_CONSTEXPR_FN uint32_t releaseKey(const Key& key_) { return erase(key_, (void(*)(Node*))0); }
 
-	// Removes all nodes and calls deleter() on every node.  Deleter can be
+	// Removes all nodes and calls deleter() on every node. Deleter can be
 	// function pointers with signature "void deleter(Node*)" or functors
 	// supporting "operator()(Node*) and operator (bool)."
 	// - deleter_: A function or functor to call on each removed Node.

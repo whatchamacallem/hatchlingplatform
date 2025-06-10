@@ -4,7 +4,7 @@
 #include <hx/hatchling.h>
 
 // ----------------------------------------------------------------------------
-// hxConsole internals.  See hxConsole.h instead.
+// hxConsole internals. See hxConsole.h instead.
 
 struct hxConsoleCommand_ {
 	virtual bool execute_(const char* str_) = 0; // Return false for parse errors.
@@ -12,7 +12,7 @@ struct hxConsoleCommand_ {
 };
 
 // Console tokens are delimited by any whitespace and non-printing low-ASCII
-// characters.  NUL is considered a delimiter and must be checked for separately.
+// characters. NUL is considered a delimiter and must be checked for separately.
 // This happens to be UTF-8 compatable because it ignores characters >= U+0100.
 HX_CONSTEXPR_FN static bool hxConsoleIsDelimiter_(char ch_) { return ch_ <= 32 || ch_ == 127; }
 
@@ -35,7 +35,7 @@ HX_CONSTEXPR_FN void hxConsoleArgParse_(T_& val_, const char* str_, char** next_
 	val_ = (T_)r_;
 }
 
-// hxConsoleArg_<T_>. Binds string parsing operations to function args.  Invalid arguments are
+// hxConsoleArg_<T_>. Binds string parsing operations to function args. Invalid arguments are
 // set to 0, arguments out of range result in the maximum representable values.
 
 template<typename T_> struct hxConsoleArg_; // Undefined. Specialization required.

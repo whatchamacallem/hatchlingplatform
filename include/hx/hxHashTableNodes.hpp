@@ -4,12 +4,12 @@
 #include <hx/hxHashTable.hpp>
 
 // Usable implementations of the hxHashTable Node template parameter.
-// These are the keys for a set.  Subclasses will give you associated
+// These are the keys for a set. Subclasses will give you associated
 // values which is a mapping.
 
 // ----------------------------------------------------------------------------
-// hxHashTableNodeInteger. Specialization of hxHashTableNodeBase for integer types.
-// See documentation of hxHashTable for interface documentation.
+// hxHashTableNodeInteger - Specialization of hxHashTableNodeBase for integer
+// types. See documentation of hxHashTable for interface documentation.
 // This is a great example of a node that doesn't require a base class.
 template<typename Key_>
 class hxHashTableNodeInteger {
@@ -37,8 +37,8 @@ private:
 };
 
 // ----------------------------------------------------------------------------
-// hxHashTableNodeStringLiteral. Specialization of hxHashTableSetNode for
-// static C strings.  This code expects the provided strings to outlive the
+// hxHashTableNodeStringLiteral - Specialization of hxHashTableSetNode for
+// static C strings. This code expects the provided strings to outlive the
 // container because it is intended for use with string literals.
 
 class hxHashTableNodeStringLiteral : public hxHashTableSetNode<const char*> {
@@ -50,19 +50,20 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-// hxHashTableNodeString. Specialization of hxHashTableSetNode for C strings.
-// Allocates a copy, resulting in a string pool per-hash table.  The key is
+// hxHashTableNodeString - Specialization of hxHashTableSetNode for C strings.
+// Allocates a copy, resulting in a string pool per-hash table. The key is
 // stored as a pointer to const to keep the hash table code const correct.
 
 template <hxMemoryAllocator allocator_=hxMemoryAllocator_Heap>
 class hxHashTableNodeString : public hxHashTableSetNode<const char*> {
 public:
-	// Constructor allocates and duplicates the string key, then initializes the node.
+	// Constructor allocates and duplicates the string key, then initializes the
+	// node.
 	// - k_: The string key to allocate, duplicate, and initialize the node with.
 	HX_CONSTEXPR_FN hxHashTableNodeString(const char* k_)
 		: hxHashTableSetNode(hxStringDuplicate(k_, allocator_)) { }
 
-	// Destructor: Frees the allocated string key.
+	// Destructor frees the allocated string key.
 #if HX_CPLUSPLUS >= 202002L
 	constexpr
 #endif

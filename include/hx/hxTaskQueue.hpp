@@ -23,12 +23,12 @@ public:
 	// Calls waitForAll before destructing.
     ~hxTaskQueue();
 
-	// Queue a task for later execution.  Does not delete task after execution.
+	// Queue a task for later execution. Does not delete task after execution.
 	// Thread safe and callable from running tasks.
     // - task_: A pointer to the task to be enqueued for execution.
     void enqueue(hxTask* task_);
 
-	// The thread calling waitForAll() will execute tasks as well.  Do not call
+	// The thread calling waitForAll() will execute tasks as well. Do not call
 	// from hxTask::execute().
     void waitForAll();
 

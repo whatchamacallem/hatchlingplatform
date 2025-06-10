@@ -10,7 +10,7 @@ HX_REGISTER_FILENAME_HASH
 // ----------------------------------------------------------------------------
 // hxConsoleHashTableNode_
 //
-// Compares command lines to static strings.  Hashing stops at first non-printing
+// Compares command lines to static strings. Hashing stops at first non-printing
 // character on command line.
 
 namespace {
@@ -23,7 +23,7 @@ struct hxConsoleLess_ {
 };
 
 struct hxConsoleCommandTable_ : public hxHashTable<hxConsoleHashTableNode_, 4> {
-	// do not delete the nodes.  they are statically allocated.
+	// do not delete the nodes. they are statically allocated.
 	~hxConsoleCommandTable_(void) {
 		this->releaseAll();
 	}
@@ -44,7 +44,7 @@ void hxConsoleRegister_(hxConsoleHashTableNode_* node) {
 	hxConsoleCommands_().insertNode(node);
 }
 
-// Nodes are statically allocated.  Do not delete.
+// Nodes are statically allocated. Do not delete.
 void hxConsoleDeregister(const char* id) {
 	hxConsoleCommands_().releaseKey(hxConsoleHashTableKey_(id));
 }
@@ -131,7 +131,7 @@ static void hxConsolePeek(uintptr_t address, uint32_t bytes) {
 	hxHexDump((const void*)address, bytes, 0);
 }
 
-// Writes bytes from word in little endian format (LSB first).  word is repeated
+// Writes bytes from word in little endian format (LSB first). word is repeated
 // every 8 bytes.
 static void hxConsolePoke(uintptr_t address, uint32_t bytes, uint64_t word) {
 	volatile uint8_t* t = (uint8_t*)address;
@@ -158,5 +158,5 @@ hxConsoleCommandNamed(hxConsolePoke, poke);
 hxConsoleCommandNamed(hxConsoleHexDump, hex);
 #endif
 
-// Executes commands and settings in file.  usage_: "exec <filename>"
+// Executes commands and settings in file. usage_: "exec <filename>"
 hxConsoleCommandNamed(hxConsoleExecFilename, exec);

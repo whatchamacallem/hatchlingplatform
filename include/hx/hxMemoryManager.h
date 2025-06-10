@@ -79,7 +79,7 @@ public:
         // - allocator_: The memory manager ID to set for this scope.
     hxMemoryAllocatorScope(hxMemoryAllocator allocator_);
 
-	// Destructor: Restores the previous memory manager allocator ID.
+	// Destructor restores the previous memory manager allocator ID.
 	~hxMemoryAllocatorScope();
 
 	// Gets the total number of allocations made by the memory allocator.
@@ -125,19 +125,19 @@ void hxMemoryManagerShutDown();
 // Returns: The total allocation count.
 size_t hxMemoryManagerAllocationCount();
 
-// hxNew - An extended new().  hxMemoryAllocator_Current is the default.
+// hxNew - An extended new(). hxMemoryAllocator_Current is the default.
 // Allocates and constructs an object of type T_ using a specific memory manager.
 // Template Parameters:
 // - allocator_: The memory manager ID to use for allocation.
 // - align_: A mask of low bits to be zero'd out when allocating new pointers.
-// Returns: A pointer to the newly constructed object.  Will not return on failure.
+// Returns: A pointer to the newly constructed object. Will not return on failure.
 #if HX_CPLUSPLUS >= 201103L // Argument forwarding requires c++11.
 template <typename T_, hxMemoryAllocator allocator_=hxMemoryAllocator_Current, uintptr_t align_=HX_ALIGNMENT, typename... Args_>
 HX_CONSTEXPR_FN T_* hxNew(Args_&&... args_) noexcept {
 	return ::new(hxMallocExt(sizeof(T_), allocator_, align_)) T_(args_...);
 }
 #else
-// hxNew - C++98 functor polyfill.  All template args default except the first.
+// hxNew - C++98 functor polyfill. All template args default except the first.
 // Passing more than one arg requires C++11.
 template <typename T_, hxMemoryAllocator allocator_=hxMemoryAllocator_Current, uintptr_t align_=HX_ALIGNMENT>
 struct hxNew {

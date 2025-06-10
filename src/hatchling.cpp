@@ -47,12 +47,12 @@ HX_STATIC_ASSERT(0, "exceptions should not be enabled");
 #endif
 
 // ----------------------------------------------------------------------------
-// Implements HX_REGISTER_FILENAME_HASH in debug.  See hxStringLiteralHash.h.
+// Implements HX_REGISTER_FILENAME_HASH in debug. See hxStringLiteralHash.h.
 
 #if (HX_RELEASE) < 1
 namespace {
 struct hxHashStringLiteral_ : public hxHashTable<hxRegisterFilenameHash_, 5> {
-	// the nodes are static global.  do not free.
+	// the nodes are static global. do not free.
 	~hxHashStringLiteral_(void) { releaseAll(); }
 };
 

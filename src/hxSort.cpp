@@ -71,7 +71,7 @@ void hxRadixSortBase::sort(hxMemoryAllocator tempMemory) {
 		hxFree(buf1);
 	}
 	else if (HX_RADIX_SORT_BITS == 11) {
-		// 3 Working buffers.  Fox extremely large data sets.
+		// 3 Working buffers. Fox extremely large data sets.
 		KeyValuePair* HX_RESTRICT buf0 = m_array.data();
 		KeyValuePair* buf0End = buf0 + m_array.size();
 		KeyValuePair* HX_RESTRICT buf1 = (KeyValuePair*)hxMalloc(m_array.size() * sizeof(KeyValuePair) * 2u);

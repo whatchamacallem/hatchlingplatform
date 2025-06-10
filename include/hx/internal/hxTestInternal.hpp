@@ -49,7 +49,7 @@ public:
 		}
 	}
 
-	// message is required to end with an \n.  Returns equivalent of /dev/null on
+	// message is required to end with an \n. Returns equivalent of /dev/null on
 	// success and the system log otherwise.
 	hxFile& assertCheck_(const char* file_, size_t line_, bool condition_, const char* message_) {
 		hxAssertRelease(m_currentTest, "not testing");
@@ -85,7 +85,7 @@ public:
 				m_assertFailCount = 0;
 
 				{
-					// Tests should have no side effects.  Therefore all allocations must be
+					// Tests should have no side effects. Therefore all allocations must be
 					// safe to reset.
 					hxMemoryAllocatorScope temporaryStack(hxMemoryAllocator_TemporaryStack);
 					(*it_)->run_();
@@ -104,7 +104,7 @@ public:
 			}
 		}
 
-		hxLogConsole("skipped %zu tests.  checked %zu assertions.\n",
+		hxLogConsole("skipped %zu tests. checked %zu assertions.\n",
 			m_numFactories - m_passCount - m_failCount, m_assertCount);
 
 		hxWarnMsg(m_passCount + m_failCount, "NOTHING TESTED");

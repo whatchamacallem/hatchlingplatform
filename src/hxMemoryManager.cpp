@@ -16,7 +16,7 @@ HX_REGISTER_FILENAME_HASH
 #include <mutex>
 #endif
 
-// hxMallocChecked.  Always check malloc and halt on failure.  This is extremely
+// hxMallocChecked. Always check malloc and halt on failure. This is extremely
 // important with hardware where 0 is a valid address and can be written to with
 // disastrous results.
 static HX_CONSTEXPR_FN void* hxMallocChecked(size_t size) {
@@ -31,7 +31,7 @@ static HX_CONSTEXPR_FN void* hxMallocChecked(size_t size) {
 	return t;
 }
 
-// HX_MEM_DIAGNOSTIC_LEVEL.  See hxSettings.h.
+// HX_MEM_DIAGNOSTIC_LEVEL. See hxSettings.h.
 #if (HX_MEM_DIAGNOSTIC_LEVEL) != -1
 
 // All pathways are threadsafe by default. In theory locking could be removed
@@ -91,7 +91,7 @@ private:
 // Wraps heap allocations with a header and adds padding to obtain required
 // alignment. This is only intended for large or debug allocations with small
 // alignment requirements. For lots of small allocations use a small block
-// allocator.  For large alignments see if aligned_alloc() is available.
+// allocator. For large alignments see if aligned_alloc() is available.
 
 class hxMemoryAllocatorOsHeap : public hxMemoryAllocatorBase {
 public:
@@ -125,7 +125,7 @@ public:
 		hdr.guard = hxMemoryAllocationHeader::c_guard;
 #endif
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 3
-		// Record the size of the allocation in debug.  Cast via (uintptr_t)
+		// Record the size of the allocation in debug. Cast via (uintptr_t)
 		// because %p is not portable.
 		hxLog("%s: %d at %x  (count %d, bytes %d)\n", m_label, (int)size, (unsigned int)aligned,
 			(int)m_allocationCount, (int)m_bytesAllocated);
@@ -151,7 +151,7 @@ public:
 		m_bytesAllocated -= hdr.size;
 
 		#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 3
-		// Record the size of the allocation in debug.  Cast via (uintptr_t) because
+		// Record the size of the allocation in debug. Cast via (uintptr_t) because
 		// Mac and supporting %p.
 		hxLog("%s: -%d at %x  (count %d, bytes %d)\n", m_label, (int)hdr.size,
 			(unsigned int)(uintptr_t)p, (int)m_allocationCount, (int)m_bytesAllocated);
@@ -545,7 +545,7 @@ void hxFree(void *ptr) {
 	else
 #endif
 	{
-		// Nothing allocated from the OS memory manager can be freed here.   Not even
+		// Nothing allocated from the OS memory manager can be freed here.  Not even
 		// from hxMemoryAllocatorOsHeap.
 		s_hxMemoryManager->free(ptr);
 	}

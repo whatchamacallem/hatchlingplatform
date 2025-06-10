@@ -82,7 +82,7 @@ void hxTaskQueue::waitForAll() {
 			task->setNextTask(hxnull);
 			task->setTaskQueue(hxnull);
 
-			// Last time this object is touched.  It may delete or re-enqueue itself, we
+			// Last time this object is touched. It may delete or re-enqueue itself, we
 			// don't care.
 			hxProfileScope(task->getLabel());
 			task->execute(this);
@@ -139,7 +139,7 @@ void hxTaskQueue::executorThread_(hxTaskQueue* q, ExecutorMode_ mode) {
 		task->setNextTask(hxnull);
 		task->setTaskQueue(hxnull);
 		hxProfileScope(task->getLabel());
-		// Last time this object is touched.  It may delete or re-enqueue itself.
+		// Last time this object is touched. It may delete or re-enqueue itself.
 		task->execute(q);
 	}
 }

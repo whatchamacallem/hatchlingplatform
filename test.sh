@@ -14,7 +14,7 @@ set -o errexit
 
 export GREP_COLORS='mt=0;32' # green
 
-# c++ warning flags.  preceded by -pedantic-errors except with c++98.
+# c++ warning flags. preceded by -pedantic-errors except with c++98.
 WARNINGS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter"
 
@@ -41,10 +41,10 @@ clang++ -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE
 rm hxtest *.o
 done
 
-# The -m32 switch enables 32-bit compilation.  You will need these packages on Ubuntu:
+# The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:
 #   sudo apt-get install gcc-multilib g++-multilib
 #
-# Test gcc with both -std=c++98 and -std=c++14.  Not using -pedantic-errors with
+# Test gcc with both -std=c++98 and -std=c++14. Not using -pedantic-errors with
 # c++98 as "anonymous variadic macros were introduced in c++11."  (This code base
 # and gcc's defaults cheat slightly by pretending c99 was available in c++98.)
 # -Wno-unused-local-typedefs is only for the c++98 version of static_assert.
@@ -67,7 +67,7 @@ gcc -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I 
 rm hxtest *.o
 done
 
-# Remove output.  Fails if output is not present.
+# Remove output. Fails if output is not present.
 rm profile.json hxConsoleTest_FileTest.txt hxFileTest_Operators.bin \
 	hxFileTest_ReadWrite.txt hatchlingPch.hpp.pch
 

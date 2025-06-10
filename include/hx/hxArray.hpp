@@ -30,7 +30,7 @@ public:
 
     // C++11 constructors
 #if HX_CPLUSPLUS >= 201103L
-    // Copy construct from temporary.  Only works with Capacity_ == hxAllocatorDynamicCapacity
+    // Copy construct from temporary. Only works with Capacity_ == hxAllocatorDynamicCapacity
     HX_CONSTEXPR_FN hxArray(hxArray&& rhs_) : hxArray() {
         this->swap(rhs_);
     }
@@ -66,7 +66,7 @@ public:
     }
 
 #if HX_CPLUSPLUS >= 201103L
-    // Swap contents with temporary.  Only works with Capacity_ == hxAllocatorDynamicCapacity
+    // Swap contents with temporary. Only works with Capacity_ == hxAllocatorDynamicCapacity
     HX_CONSTEXPR_FN void operator=(hxArray&& rhs_) {
         this->swap(rhs_);
     }
@@ -195,7 +195,7 @@ public:
         m_end = it_;
     }
 
-    // Swap.  Only works with Capacity_ == hxAllocatorDynamicCapacity
+    // Swap. Only works with Capacity_ == hxAllocatorDynamicCapacity
     HX_CONSTEXPR_FN void swap(hxArray& rhs) {
         Allocator::swap(rhs); // *** Only hxAllocatorDynamicCapacity works here. ***
         hxswap(rhs.m_end, m_end);
