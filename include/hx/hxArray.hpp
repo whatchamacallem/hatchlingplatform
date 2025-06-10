@@ -13,8 +13,8 @@ template<typename T_, size_t Capacity_=hxAllocatorDynamicCapacity>
 class hxArray : public hxAllocator<T_, Capacity_> {
 public:
     typedef T_ T; // value type
-    typedef T* iterator; // Random access iterator.
-    typedef const T* constIterator; // Const random access iterator.
+    typedef T_* iterator; // Random access iterator.
+    typedef const T_* constIterator; // Const random access iterator.
     typedef hxAllocator<T_, Capacity_> Allocator;
 
     // Constructs an empty array with a capacity of Capacity. m_end_ will be 0
@@ -79,51 +79,51 @@ public:
     }
 
     // Returns a const iterator to the beginning of the array.
-    HX_CONSTEXPR_FN const T* begin() const { return this->data(); }
+    HX_CONSTEXPR_FN const T_* begin() const { return this->data(); }
 
     // Returns an iterator to the beginning of the array.
-    HX_CONSTEXPR_FN T* begin() { return this->data(); }
+    HX_CONSTEXPR_FN T_* begin() { return this->data(); }
 
     // Returns a const iterator to the beginning of the array (alias for begin()).
-    HX_CONSTEXPR_FN const T* cBegin() const { return this->data(); }
+    HX_CONSTEXPR_FN const T_* cBegin() const { return this->data(); }
 
     // Returns a const iterator to the beginning of the array (alias for begin()).
-    HX_CONSTEXPR_FN const T* cBegin() { return this->data(); }
+    HX_CONSTEXPR_FN const T_* cBegin() { return this->data(); }
 
     // Returns a const iterator to the end of the array.
-    HX_CONSTEXPR_FN const T* end() const { return m_end_; }
+    HX_CONSTEXPR_FN const T_* end() const { return m_end_; }
 
     // Returns an iterator to the end of the array.
-    HX_CONSTEXPR_FN T* end() { return m_end_; }
+    HX_CONSTEXPR_FN T_* end() { return m_end_; }
 
     // Returns a const iterator to the end of the array (alias for end()).
-    HX_CONSTEXPR_FN const T* cEnd() const { return m_end_; }
+    HX_CONSTEXPR_FN const T_* cEnd() const { return m_end_; }
 
     // Returns a const iterator to the end of the array (alias for end()).
-    HX_CONSTEXPR_FN const T* cEnd() { return m_end_; }
+    HX_CONSTEXPR_FN const T_* cEnd() { return m_end_; }
 
     // Returns a const reference to the first element in the array.
-    HX_CONSTEXPR_FN const T& front() const { hxAssert(size()); return *this->data(); }
+    HX_CONSTEXPR_FN const T_& front() const { hxAssert(size()); return *this->data(); }
 
     // Returns a reference to the first element in the array.
-    HX_CONSTEXPR_FN T& front() { hxAssert(size()); return *this->data(); }
+    HX_CONSTEXPR_FN T_& front() { hxAssert(size()); return *this->data(); }
 
     // Returns a const reference to the last element in the array.
-    HX_CONSTEXPR_FN const T& back() const { hxAssert(size()); return *(m_end_ - 1); }
+    HX_CONSTEXPR_FN const T_& back() const { hxAssert(size()); return *(m_end_ - 1); }
 
     // Returns a reference to the last element in the array.
-    HX_CONSTEXPR_FN T& back() { hxAssert(size()); return *(m_end_ - 1); }
+    HX_CONSTEXPR_FN T_& back() { hxAssert(size()); return *(m_end_ - 1); }
 
     // Returns a const reference to the element at the specified index.
     // - index: The index of the element.
-    HX_CONSTEXPR_FN const T& operator[](size_t index_) const {
+    HX_CONSTEXPR_FN const T_& operator[](size_t index_) const {
         hxAssert(index_ < this->size());
         return this->data()[index_];
     }
 
     // Returns a reference to the element at the specified index.
     // - index: The index of the element.
-    HX_CONSTEXPR_FN T& operator[](size_t index_) {
+    HX_CONSTEXPR_FN T_& operator[](size_t index_) {
         hxAssert(index_ < this->size());
         return this->data()[index_];
     }
@@ -137,7 +137,7 @@ public:
     // Reserves storage for at least the specified number of elements.
     // - size: The number of elements to reserve storage for.
     HX_CONSTEXPR_FN void reserve(size_t size_) {
-        T* prev = this->data();
+        T_* prev = this->data();
         this->reserveStorage(size_);
         hxAssertMsg(!prev || prev == this->data(), "no reallocation"); (void)prev;
         if (m_end_ == hxnull) {
@@ -172,15 +172,15 @@ public:
 
     // Adds a copy of the specified element to the end of the array.
     // - t: The element to add.
-    HX_CONSTEXPR_FN void pushBack(const T& t_) {
+    HX_CONSTEXPR_FN void pushBack(const T_& t_) {
         hxAssert(this->size() < this->capacity());
-        ::new (m_end_++) T(t_);
+        ::new (m_end_++) T_(t_);
     }
 
     // Removes the last element from the array.
     HX_CONSTEXPR_FN void popBack() {
         hxAssert(this->size());
-        (--m_end_)->~T();
+        (--m_end_)->~T_();
     }
 
     // Assigns elements from a range defined by iterators to the array.
@@ -189,9 +189,9 @@ public:
     template <typename Iter>
     HX_CONSTEXPR_FN void assign(Iter first_, Iter last_) {
         this->reserve((size_t)(last_ - first_));
-        T* it_ = this->data();
+        T_* it_ = this->data();
         this->destruct_(it_, m_end_);
-        while (first_ != last_) { ::new (it_++) T(*first_++); }
+        while (first_ != last_) { ::new (it_++) T_(*first_++); }
         m_end_ = it_;
     }
 
@@ -221,21 +221,21 @@ public:
     // - index: The index of the element to erase.
     HX_CONSTEXPR_FN void eraseUnordered(size_t index_) {
         hxAssert(index_ < this->size());
-        T* it_ = this->data() + index_;
+        T_* it_ = this->data() + index_;
         if (it_ != --m_end_) {
             *it_ = *m_end_;
         }
-        m_end_->~T();
+        m_end_->~T_();
     }
 
     // Variant of erase() that moves the end element down to replace the erased element.
     // - it: Pointer to the element to erase.
-    HX_CONSTEXPR_FN void eraseUnordered(T* it_) {
+    HX_CONSTEXPR_FN void eraseUnordered(T_* it_) {
         hxAssert((size_t)(it_ - this->data()) < size());
         if (it_ != --m_end_) {
             *it_ = *m_end_;
         }
-        m_end_->~T();
+        m_end_->~T_();
     }
 
     // Returns true when the array is full (size equals capacity).
@@ -247,19 +247,19 @@ private:
     // Constructs elements in the range [first, last].
     // - first: Pointer to the beginning of the range.
     // - last: Pointer to the end of the range.
-    HX_CONSTEXPR_FN void construct_(T* first_, T* last_) {
+    HX_CONSTEXPR_FN void construct_(T_* first_, T_* last_) {
         while (first_ != last_) {
-            ::new (first_++) T;
+            ::new (first_++) T_;
         }
     }
 
     // Destroys elements in the range [first, last].
     // - first: Pointer to the beginning of the range.
     // - last: Pointer to the end of the range.
-    HX_CONSTEXPR_FN void destruct_(T* first_, T* last_) {
+    HX_CONSTEXPR_FN void destruct_(T_* first_, T_* last_) {
         while (first_ != last_) {
-            first_++->~T();
+            first_++->~T_();
         }
     }
-    T* m_end_;
+    T_* m_end_;
 };

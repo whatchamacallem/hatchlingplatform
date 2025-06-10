@@ -1,19 +1,23 @@
 #pragma once
 
-// Hatchling Platform. <hx/hatchling.h> is both C and C++.
+// Hatchling Platform. <hx/hatchling.h> requires C99. If compiled as C++98 it
+// will include C99 headers. Those headers were only added to C++11. All the
+// C++98 compilers allow C99 headers without complaint. In particular this
+// codebase relies on stdint.h for fixed width integers which is not in C++98.
+// Features from C++17 and a few compiler intrinsics are used when available.
 //
 // Copyright 2017-2025 Adrian Johnston
 // https://github.com/whatchamacallem/HatchlingPlatform
 
 #include <stdarg.h>
 #include <stddef.h>
-#include <stdint.h>
+#include <stdint.h> // Requires C99, not just C++98.
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
 
 // HATCHLING_VER - Major, minor and patch versions.
-#define HATCHLING_VER 0x20119
+#define HATCHLING_VER 0x020119u
 // HATCHLING_TAG - Major, minor and patch version tag.
 #define HATCHLING_TAG "v2.1.19"
 

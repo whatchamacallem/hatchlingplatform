@@ -15,11 +15,11 @@
 // fields and K has an operator== or an hxKeyEqual overload.
 //
 // struct T {
-//   typedef K Key;          // tell the hash table what key to use.
-//   T(Key);                 // construct from key. e.g. for operator[].
+//   typedef K Key_;          // tell the hash table what key to use.
+//   T(Key_);                 // construct from key. e.g. for operator[].
 //   T*& hashNext();         // used by hxHashTable for embedded linked list.
 //   T* hashNext() const;    // const version of hashNext.
-//   const Key& key() const; // returns key constructed with.
+//   const Key_& key() const; // returns key constructed with.
 //   uint32_t hash() const;  // returns hash of key constructed with.
 // };
 //
@@ -33,18 +33,18 @@ class hxHashTableSetNode {
 public:
 	typedef Key_ Key;
 
-	HX_CONSTEXPR_FN hxHashTableSetNode(const Key& key_)
+	HX_CONSTEXPR_FN hxHashTableSetNode(const Key_& key_)
 		: m_hashNext_(hxnull), m_key_(key_)
 	{
-		// NOTE: You need to implement hxKeyHash for your Key type.
+		// NOTE: You need to implement hxKeyHash for your Key_ type.
 		m_hash_ = hxKeyHash(key_);
 	}
 
 #if HX_CPLUSPLUS >= 201103L
-	HX_CONSTEXPR_FN hxHashTableSetNode(Key&& key_)
+	HX_CONSTEXPR_FN hxHashTableSetNode(Key_&& key_)
 		: m_hashNext_(hxnull), m_key_(key_)
 	{
-		// NOTE: You need to implement hxKeyHash for your Key type.
+		// NOTE: You need to implement hxKeyHash for your Key_ type.
 		m_hash_ = hxKeyHash(m_key_);
 	}
 #endif
@@ -54,7 +54,7 @@ public:
 	void*& hashNext(void) { return m_hashNext_; }
 
 	// The key and hash identify the Node and should not change once added.
-	HX_CONSTEXPR_FN const Key& key(void) const { return m_key_; }
+	HX_CONSTEXPR_FN const Key_& key(void) const { return m_key_; }
 
 	// Hash is not required to be unique
 	HX_CONSTEXPR_FN uint32_t hash(void) const { return m_hash_; };
@@ -67,7 +67,7 @@ private:
 
 	// The hash table uses m_hashNext_ to implement an embedded linked list.
 	void* m_hashNext_;
-	Key m_key_;
+	Key_ m_key_;
 	uint32_t m_hash_;
 };
 
@@ -78,21 +78,21 @@ public:
 	typedef Key_ Key;
 	typedef Value_ Value;
 
-	// Value must default construct when using operator[].
-	HX_CONSTEXPR_FN hxHashTableMapNode(const Key& key_) :
-		hxHashTableSetNode<Key>(key_) { }
+	// Value_ must default construct when using operator[].
+	HX_CONSTEXPR_FN hxHashTableMapNode(const Key_& key_) :
+		hxHashTableSetNode<Key_>(key_) { }
 
-	HX_CONSTEXPR_FN hxHashTableMapNode(const Key& key_, const Value& value_) :
-		hxHashTableSetNode<Key>(key_), m_value_(value_) { }
+	HX_CONSTEXPR_FN hxHashTableMapNode(const Key_& key_, const Value_& value_) :
+		hxHashTableSetNode<Key_>(key_), m_value_(value_) { }
 
-	const Value& value() const { return m_value_; }
-	Value& value() { return m_value_; }
-	void setValue(const Value& v_) { m_value_ = v_; }
+	const Value_& value() const { return m_value_; }
+	Value_& value() { return m_value_; }
+	void setValue(const Value_& v_) { m_value_ = v_; }
 #if HX_CPLUSPLUS >= 201103L
-	void setValue(Value&& v_) { m_value_ = v_; }
+	void setValue(Value_&& v_) { m_value_ = v_; }
 #endif
 protected:
-	Value m_value_;
+	Value_ m_value_;
 };
 
 // hxHashTable - See top of this file for description.
@@ -105,7 +105,7 @@ template<typename Node_, uint32_t TableSizeBits_=hxAllocatorDynamicCapacity>
 class hxHashTable {
 public:
 	typedef Node_ Node;
-	typedef typename Node::Key Key;
+	typedef typename Node_::Key Key;
 	static const uint32_t HashBits = TableSizeBits_;
 
 	// A forward iterator. Iteration is O(n + (1 << HashBits)).
@@ -123,7 +123,7 @@ public:
 		// Advances the iterator to the next element.
 		HX_CONSTEXPR_FN constIterator& operator++() {
 			hxAssertMsg(m_currentNode, "iterator invalid"); // !end
-			if (!(m_currentNode = (Node*)m_currentNode->hashNext())) {
+			if (!(m_currentNode = (Node_*)m_currentNode->hashNext())) {
 				nextBucket();
 			}
 			return *this;
@@ -139,17 +139,17 @@ public:
 		HX_CONSTEXPR_FN bool operator!=(const constIterator& rhs_) const { return m_currentNode != rhs_.m_currentNode; }
 
 		// Dereferences the iterator to access the current Node.
-		HX_CONSTEXPR_FN const Node& operator*() const { return *m_currentNode; }
+		HX_CONSTEXPR_FN const Node_& operator*() const { return *m_currentNode; }
 
 		// Dereferences the iterator to access the current Node's pointer.
-		HX_CONSTEXPR_FN const Node* operator->() const { return m_currentNode; }
+		HX_CONSTEXPR_FN const Node_* operator->() const { return m_currentNode; }
 
 	protected:
 		// Advances the iterator to the next non-empty bucket.
 		HX_CONSTEXPR_FN void nextBucket() {
 			hxAssert(m_hashTable_ && !m_currentNode);
 			while (m_nextIndex_ < m_hashTable_->m_table.capacity()) {
-				if (Node* n_ = m_hashTable_->m_table.data()[m_nextIndex_++]) {
+				if (Node_* n_ = m_hashTable_->m_table.data()[m_nextIndex_++]) {
 					m_currentNode = n_;
 					return;
 				}
@@ -158,7 +158,7 @@ public:
 
 		hxHashTable* m_hashTable_;
 		uint32_t m_nextIndex_;
-		Node* m_currentNode;
+		Node_* m_currentNode;
 	};
 
 	// A mutable iterator that can modify the elements of the hash table.
@@ -178,10 +178,10 @@ public:
 		HX_CONSTEXPR_FN iterator operator++(int) { iterator cit_(*this); constIterator::operator++(); return cit_; }
 
 		// Dereferences the iterator to access the current Node.
-		HX_CONSTEXPR_FN Node& operator*() const { return *this->m_currentNode; }
+		HX_CONSTEXPR_FN Node_& operator*() const { return *this->m_currentNode; }
 
 		// Dereferences the iterator to access the current Node's pointer.
-		HX_CONSTEXPR_FN Node* operator->() const { return this->m_currentNode; }
+		HX_CONSTEXPR_FN Node_* operator->() const { return this->m_currentNode; }
 	};
 
 	// Constructs an empty hash table with a capacity of HashBits^2.
@@ -224,39 +224,41 @@ public:
 	HX_CONSTEXPR_FN bool empty() const { return m_size_ == 0u; }
 
 	// Returns a node containing key if any or allocates and returns a new one.
-	// - key: The key to search for or insert.
 	// Any allocation required uses hxMemoryAllocator_Current and HX_ALIGNMENT.
-	HX_CONSTEXPR_FN Node& operator[](const Key& key_) { return this->insertUnique(key_); }
+	// - key: The key to search for or insert.
+	HX_CONSTEXPR_FN Node_& operator[](const typename Node_::Key& key_) { return this->insertUnique(key_); }
 
 	// Returns a node containing key if any or allocates and returns a new one.
 	// Unfortunately this code may calculate the hash twice.
 	// - key: The key to search for or insert.
-	// - allocator: The memory manager ID to use for allocation.
-	// - alignment: The alignment for allocation.
-	// Any allocation required uses hxMemoryAllocator allocator_ and alignment_.
-	HX_CONSTEXPR_FN Node& insertUnique(const Key& key_,
+	// - allocator: The memory manager ID to use for allocation. Defaults to hxMemoryAllocator_Current.
+	// - alignment: The alignment for allocation. Defaults to HX_ALIGNMENT.
+	HX_CONSTEXPR_FN Node_& insertUnique(const typename Node_::Key& key_,
 										hxMemoryAllocator allocator_=hxMemoryAllocator_Current,
 										uintptr_t alignment_=HX_ALIGNMENT) {
-		Node** pos_ = this->getBucketHead_(hxKeyHash(key_));
-		for (Node* n_ = *pos_; n_; n_ = (Node*)n_->hashNext()) {
+		Node_** pos_ = this->getBucketHead_(hxKeyHash(key_));
+		for (Node_* n_ = *pos_; n_; n_ = (Node_*)n_->hashNext()) {
 			if (hxKeyEqual(n_->key(), key_)) {
 				return *n_;
 			}
 		}
 		hxAssert(m_size_ < ~(uint32_t)0);
-		Node* n_ = ::new(hxMallocExt(sizeof(Node), allocator_, alignment_))Node(key_);
+		Node_* n_ = ::new(hxMallocExt(sizeof(Node_), allocator_, alignment_))Node_(key_);
 		n_->hashNext() = *pos_;
 		*pos_ = n_;
 		++m_size_;
 		return *n_;
 	}
 
-	// Inserts a Node into the hash table, allowing duplicate keys.
+	// Inserts a Node into the hash table, allowing duplicate keys. Nodes that
+	// have non-null hash pointers are allowed because they may have been released
+	// from a table that way.
 	// - node: The Node to insert into the hash table.
-	HX_CONSTEXPR_FN void insertNode(Node* node_) {
+	HX_CONSTEXPR_FN void insertNode(Node_* node_) {
 		hxAssert(node_ != hxnull && m_size_ < ~(uint32_t)0);
+		hxAssert(this->find(node_->key()) != node_);
 		uint32_t hash_ = node_->hash();
-		Node** pos_ = this->getBucketHead_(hash_);
+		Node_** pos_ = this->getBucketHead_(hash_);
 		node_->hashNext() = *pos_;
 		*pos_ = node_;
 		++m_size_;
@@ -268,9 +270,9 @@ public:
 	// The previous object is non-const as it may be modified
 	// - key: The key to search for in the hash table.
 	// - previous: A previously found Node with the same key, or nullptr.
-	HX_CONSTEXPR_FN Node* find(const Key& key_, const Node* previous_=hxnull) {
+	HX_CONSTEXPR_FN Node_* find(const typename Node_::Key& key_, const Node_* previous_=hxnull) {
 		if (!previous_) {
-			for (Node* n_ = *this->getBucketHead_(hxKeyHash(key_)); n_; n_ = (Node*)n_->hashNext()) {
+			for (Node_* n_ = *this->getBucketHead_(hxKeyHash(key_)); n_; n_ = (Node_*)n_->hashNext()) {
 				if (hxKeyEqual(n_->key(), key_)) {
 					return n_;
 				}
@@ -279,7 +281,7 @@ public:
 		else {
 			hxAssert(hxKeyEqual(key_, previous_->key()));
 			hxAssert(hxKeyHash(key_) == previous_->hash());
-			for (Node* n_ = (Node*)previous_->hashNext(); n_; n_ = (Node*)n_->hashNext()) {
+			for (Node_* n_ = (Node_*)previous_->hashNext(); n_; n_ = (Node_*)n_->hashNext()) {
 				if (hxKeyEqual(n_->key(), key_)) {
 					return n_;
 				}
@@ -289,17 +291,17 @@ public:
 	}
 
 	// Const version.
-	HX_CONSTEXPR_FN const Node* find(const Key& key_, const Node* previous_=hxnull) const {
+	HX_CONSTEXPR_FN const Node_* find(const typename Node_::Key& key_, const Node_* previous_=hxnull) const {
 		// This code calls the non-const version for brevity.
 		return const_cast<hxHashTable*>(this)->find(key_, previous_);
 	}
 
 	// Counts the number of Nodes with the given key.
 	// - key: The key to count occurrences of in the hash table.
-	HX_CONSTEXPR_FN uint32_t count(const Key& key_) const {
+	HX_CONSTEXPR_FN uint32_t count(const typename Node_::Key& key_) const {
 		uint32_t total_ = 0u;
 		uint32_t hash_ = hxKeyHash(key_);
-		for (const Node* n_ = *this->getBucketHead_(hash_); n_; n_ = (Node*)n_->hashNext()) {
+		for (const Node_* n_ = *this->getBucketHead_(hash_); n_; n_ = (Node_*)n_->hashNext()) {
 			if (hxKeyEqual(n_->key(), key_)) {
 				++total_;
 			}
@@ -309,17 +311,17 @@ public:
 
 	// Removes and returns the first Node with the given key.
 	// - key: The key to search for and remove from the hash table.
-	HX_CONSTEXPR_FN Node* extract(const Key& key_) {
+	HX_CONSTEXPR_FN Node_* extract(const typename Node_::Key& key_) {
 		uint32_t hash_ = hxKeyHash(key_);
-		Node** current_ = this->getBucketHead_(hash_);
-		while (Node* n_ = *current_) {
+		Node_** current_ = this->getBucketHead_(hash_);
+		while (Node_* n_ = *current_) {
 			if (hxKeyEqual(n_->key(), key_)) {
-				*current_ = (Node*)n_->hashNext();
+				*current_ = (Node_*)n_->hashNext();
 				--m_size_;
 				return n_;
 			}
 			// This avoids special case code for the head pointer.
-			current_ = (Node**)&n_->hashNext();
+			current_ = (Node_**)&n_->hashNext();
 		}
 		return hxnull;
 	}
@@ -331,20 +333,20 @@ public:
 	// - key: The key to search for and remove from the hash table.
 	// - deleter: A function or functor to call on each removed Node.
 	template<typename Deleter_>
-	HX_CONSTEXPR_FN uint32_t erase(const Key& key_, const Deleter_& deleter_) {
+	HX_CONSTEXPR_FN uint32_t erase(const typename Node_::Key& key_, const Deleter_& deleter_) {
 		uint32_t count_ = 0u;
 		uint32_t hash_ = hxKeyHash(key_);
-		Node** current_ = this->getBucketHead_(hash_);
-		while (Node* n_ = *current_) {
+		Node_** current_ = this->getBucketHead_(hash_);
+		while (Node_* n_ = *current_) {
 			if (hxKeyEqual(n_->key(), key_)) {
-				*current_ = (Node*)n_->hashNext();
+				*current_ = (Node_*)n_->hashNext();
 				if (deleter_) {
 					deleter_(n_);
 				}
 				++count_;
 			}
 			else {
-				current_ = (Node**)&n_->hashNext();
+				current_ = (Node_**)&n_->hashNext();
 			}
 		}
 		m_size_ -= count_;
@@ -352,10 +354,10 @@ public:
 	}
 
 	// Removes and calls hxDelete() on nodes with an equivalent key.
-	HX_CONSTEXPR_FN uint32_t erase(const Key& key_) { return erase(key_, hxDeleter()); }
+	HX_CONSTEXPR_FN uint32_t erase(const typename Node_::Key& key_) { return erase(key_, hxDeleter()); }
 
 	// Removes all Nodes matching the given key without deleting them.
-	HX_CONSTEXPR_FN uint32_t releaseKey(const Key& key_) { return erase(key_, (void(*)(Node*))0); }
+	HX_CONSTEXPR_FN uint32_t releaseKey(const typename Node_::Key& key_) { return erase(key_, (void(*)(Node_*))0); }
 
 	// Removes all nodes and calls deleter() on every node. Deleter can be
 	// function pointers with signature "void deleter(Node*)" or functors
@@ -363,22 +365,18 @@ public:
 	// - deleter: A function or functor to call on each removed Node.
 	template<typename Deleter_>
 	HX_CONSTEXPR_FN void clear(const Deleter_& deleter_) {
-		if (deleter_) {
-			if (m_size_ != 0u) {
-				Node** itEnd_ = m_table.data() + m_table.capacity();
-				for (Node** it_ = m_table.data(); it_ != itEnd_; ++it_) {
-					if (Node* n_ = *it_) {
-						*it_ = 0;
-						while (Node* t_ = n_) {
-							n_ = (Node*)n_->hashNext();
-							deleter_(t_);
-						}
+		if (m_size_ != 0u) {
+			if (deleter_) {
+				Node_** itEnd_ = m_table.data() + m_table.capacity();
+				for (Node_** it_ = m_table.data(); it_ != itEnd_; ++it_) {
+					Node_* n_ = *it_;
+					while (Node_* t_ = n_) {
+						n_ = (Node_*)n_->hashNext();
+						deleter_(t_);
 					}
 				}
-				m_size_ = 0u;
 			}
-		}
-		else {
+			// zero the table either way.
 			this->releaseAll();
 		}
 	}
@@ -408,10 +406,10 @@ public:
 	uint32_t loadMax() const {
 		// An unallocated table will be ok.
 		uint32_t maximum_=0u;
-		const Node*const* itEnd_ = m_table.data() + m_table.capacity();
-		for (const Node*const* it_ = m_table.data(); it_ != itEnd_; ++it_) {
+		const Node_*const* itEnd_ = m_table.data() + m_table.capacity();
+		for (const Node_*const* it_ = m_table.data(); it_ != itEnd_; ++it_) {
 			uint32_t count_=0u;
-			for (const Node* n_ = *it_; n_; n_ = (const Node*)n_->hashNext()) {
+			for (const Node_* n_ = *it_; n_; n_ = (const Node_*)n_->hashNext()) {
 				++count_;
 			}
 			maximum_ = hxmax(maximum_, count_);
@@ -423,20 +421,20 @@ private:
 	HX_STATIC_ASSERT(HashBits <= 31u, "hxHashTable: hash bits must be [0..31]");
 
 	// Pointer to head of singly-linked list for key's hash value.
-	HX_CONSTEXPR_FN Node** getBucketHead_(uint32_t hash_) {
+	HX_CONSTEXPR_FN Node_** getBucketHead_(uint32_t hash_) {
 		uint32_t index_ = hash_ >> (32u - m_table.getTableSizeBits());
 		hxAssert(index_ < m_table.capacity());
 		return m_table.data() + index_;
 	}
 
-	HX_CONSTEXPR_FN const Node*const* getBucketHead_(uint32_t hash_) const {
+	HX_CONSTEXPR_FN const Node_*const* getBucketHead_(uint32_t hash_) const {
 		uint32_t index_ = hash_ >> (32u - m_table.getTableSizeBits());
 		hxAssert(index_ < m_table.capacity());
 		return m_table.data() + index_;
 	}
 
 	uint32_t m_size_;
-	hxHashTableInternalAllocator_<Node, HashBits> m_table;
+	hxHashTableInternalAllocator_<Node_, HashBits> m_table;
 };
 
 #if HX_CPLUSPLUS >= 202002L

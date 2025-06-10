@@ -4,8 +4,32 @@
 # Hatchling Platform
 
 Small C++ run-time intended to be developed against on the desktop before cross
-compiling to an embedded target with limited RAM. Does not make allocations
-before main or on test failure.
+compiling to an embedded target with limited RAM. Does not make dynamic allocations
+except when allocating allocators.
+
+Lately I am using this to learn about C++ library design in the context of core
+C++ runtime features. These are things I might suggest to the realtime working
+group some day. Although a few of my concerns have been addressed by recent
+versions of the standard library. The latest versions of the standard have
+been refining const correctness which still does nothing for the compiler it
+wasn't already doing. And the compilers are refusing to evaluate the kind of
+template bloat in the standard at compile time because they have time limits.
+So I don't think this codebase is obsolete yet. It might be perfect for
+WASM actually.
+
+What makes this codebase really shine is Clang's Undefined Behavior Sanitizer
+(UBSan) because it allows you to write code the way C++ was originally designed
+to be written and debugged using pointers and then have the compiler provide
+you with the same runtime guarantees that managed languages have. Why spend
+our days mending fences when we belong roaming the open prairie. That said,
+this codebase should be compatible with all warning flags and sanitizers on
+gcc/clang/msvc. No type was punned in the making of this library.
+
+hx/hatchling.h requires C99. If compiled as C++98 it will include C99 headers.
+Those headers were only added to C++11. All the C++98 compilers allow C99 headers
+without complaint. In particular this codebase relies on stdint.h for fixed width
+integers which is not in C++98. Features from C++17 and a few compiler intrinsics
+are used when available.
 
  * A lightweight streamlined reimplementation of Google Test. Allows running
    CI tests on a development board.
@@ -23,10 +47,10 @@ before main or on test failure.
 
  * Containers and algorithms. Provides a small non-reallocating subset of
    `std::vector` `std::allocator` and `std::unordered_{ map, set, multimap,
-   multiset }.`  These are integrated with the memory manager.
+   multiset }.` These are integrated with the memory manager.
 
  * Command line based console with simple C++ function binding. Allows debugging
-   on the target without relinking and relaunching.
+   on the target without relinking and relaunching. Uses no allocations.
 
  * Task Queue. Provides an object oriented interface to multi-threading. The
    default implementation uses `<thread>` and allows for target specific
