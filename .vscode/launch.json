@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/hxtest",
-            "args": [],
+            "args": ["runtests"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

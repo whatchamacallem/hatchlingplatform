@@ -151,7 +151,7 @@ extern int g_hxIsInit;
 
 // hxShutdown - Terminates service. Releases all resources acquired by the
 // platform and confirms all memory allocations have been released. HX_RELEASE < 3.
-// Does not clear g_hxIsInit, shutdown is final.
+// Does not clear g_hxIsInit, shutdown is final. Logging and asserts are unaffected.
 void hxShutdown(void);
 
 // hxLogHandler - Enters formatted messages in the system log. This is the only
@@ -172,7 +172,7 @@ HX_NOEXCEPT void hxLogHandlerV(enum hxLogLevel level_, const char* format_, va_l
 // information provided when pretty is non-zero.
 // - address: Pointer to the start of the byte array.
 // - bytes: The number of bytes to print.
-// - pretty: Non-zero to include additional formatting information.
+// - pretty: Set non-zero to include extended visualization.
 void hxHexDump(const void* address_, size_t bytes_, int pretty_);
 
 // hxFloatDump - Prints an array of floating point values.

@@ -9,7 +9,7 @@ g++ -Iinclude --coverage -Og -Wall -DHX_RELEASE=0 -DHX_USE_CPP_THREADS=1 \
 	-fno-exceptions -pthread -lpthread -std=c++11 -lstdc++ \
 	*/*.cpp *.o -o hxtest
 
-./hxtest
+./hxtest runtests
 
 gcovr --html-details coverage.html
 

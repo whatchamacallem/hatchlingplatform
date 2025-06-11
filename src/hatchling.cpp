@@ -135,7 +135,7 @@ void hxInitInternal(void) {
 }
 
 extern "C"
-HX_NOEXCEPT void hxLogHandler(enum hxLogLevel level, const char* format, ...) {
+HX_NOEXCEPT void hxLogHandler(hxLogLevel level, const char* format, ...) {
 	va_list args;
 	va_start(args, format);
 	hxLogHandlerV(level, format, args);
@@ -145,7 +145,7 @@ HX_NOEXCEPT void hxLogHandler(enum hxLogLevel level, const char* format, ...) {
 #define HX_STDOUT_STR_(x) ::fwrite(x, (sizeof x) - 1, 1, stdout)
 
 extern "C"
-HX_NOEXCEPT void hxLogHandlerV(enum hxLogLevel level, const char* format, va_list args) {
+HX_NOEXCEPT void hxLogHandlerV(hxLogLevel level, const char* format, va_list args) {
 	if(g_hxIsInit && g_hxSettings.logLevel > level) {
 		return;
 	}
@@ -170,11 +170,12 @@ HX_NOEXCEPT void hxLogHandlerV(enum hxLogLevel level, const char* format, va_lis
 // HX_RELEASE < 3 facilities for testing tear down. Just call _Exit() otherwise.
 extern "C"
 void hxShutdown(void) {
-	hxAssert(g_hxIsInit);
+	if(g_hxIsInit) {
 #if (HX_RELEASE) < 3
-	// Will trap further activity and leaks.
-	hxMemoryManagerShutDown();
+		// Will trap further activity and leaks.
+		hxMemoryManagerShutDown();
 #endif
+	}
 }
 
 #if (HX_RELEASE) == 0

@@ -15,11 +15,11 @@
 // fields and K has an operator== or an hxKeyEqual overload.
 //
 // struct T {
-//   typedef K Key_;          // tell the hash table what key to use.
-//   T(Key_);                 // construct from key. e.g. for operator[].
-//   T*& hashNext();         // used by hxHashTable for embedded linked list.
-//   T* hashNext() const;    // const version of hashNext.
-//   const Key_& key() const; // returns key constructed with.
+//   typedef K Key;          // tell the hash table what key to use.
+//   T(Key);                 // construct from key. e.g. for operator[].
+//   void*& hashNext();      // used by hxHashTable for embedded linked list.
+//   void* hashNext() const; // const version of hashNext.
+//   const Key& key() const; // returns key constructed with.
 //   uint32_t hash() const;  // returns hash of key constructed with.
 // };
 //
@@ -27,7 +27,6 @@
 // hxHashTableSetNode - Base class for unordered set entries. Caches the hash
 // value. Copying and modification are disallowed to protect the integrity of the
 // hash table. See hxHashTableMapNode if you need a mutable node.
-
 template<typename Key_>
 class hxHashTableSetNode {
 public:

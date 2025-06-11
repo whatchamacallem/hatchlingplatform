@@ -37,8 +37,10 @@ HX_CONSTEXPR_FN void hxConsoleArgParse_(T_& val_, const char* str_, char** next_
 // hxConsoleArg_<T_>. Binds string parsing operations to function args. Invalid arguments are
 // set to 0, arguments out of range result in the maximum representable values.
 
-template<typename T_> struct hxConsoleArg_; // Undefined. Specialization required.
-
+template<typename T_> struct hxConsoleArg_ {
+private:
+    hxConsoleArg_() HX_DELETE_FN; // Prevent instantiation
+};
 template<> struct hxConsoleArg_<signed char> {
 	inline hxConsoleArg_(const char* str_, char** next_) { hxConsoleArgParse_(value_, str_, next_, ::strtol); }
 	HX_CONSTEXPR_FN static const char* getLabel_() { return "s8"; }

@@ -2,19 +2,8 @@
 
 // Include everything first to catch conflicts.
 #include <hx/hatchling.h>
-#include <hx/hxAllocator.hpp>
-#include <hx/hxArray.hpp>
 #include <hx/hxConsole.hpp>
-#include <hx/hxDma.hpp>
 #include <hx/hxFile.hpp>
-#include <hx/hxHashTable.hpp>
-#include <hx/hxHashTableNodes.hpp>
-#include <hx/hxMemoryManager.h>
-#include <hx/hxProfiler.hpp>
-#include <hx/hxSort.hpp>
-#include <hx/hxStringLiteralHash.h>
-#include <hx/hxTask.hpp>
-#include <hx/hxTaskQueue.hpp>
 #include <hx/hxTest.hpp> // May include Google Test.
 
 #include <stdio.h>
@@ -42,46 +31,46 @@ TEST(hxDeathTest, NothingAsserted) {
 }
 #endif
 
-size_t hxTestMain() {
-	hxInit();
+bool hxRunAllTests(void) {
+	::testing::InitGoogleTest();
 
 	hxLogConsole("hatchling platform 🐉🐉🐉 " HATCHLING_TAG "\n");
 	hxLogConsole("release: %d profile: %d " __DATE__ " " __TIME__ "\n",
 		(int)(HX_RELEASE), (int)(HX_PROFILE));
-	hxWarnMsg(HX_HATCHLING_PCH_USED, "pch not used");
-
-	char bytes[48] = { };
-	snprintf(bytes, 48, "%s", "The quick brown fox jumps over the lazy dog....");
-	hxHexDump(bytes, 48, 1);
-
-	const float floats[] = { 0.0f, 1.0f, 2.0f };
-	hxFloatDump(floats, sizeof(floats) / sizeof(float));
-
-	hxConsoleHelp();
+	hxWarnMsg(HX_HATCHLING_PCH_USED, "note pch not used");
 
 	// RUN_ALL_TESTS is a Google Test symbol.
 	size_t testsFailing = (size_t)RUN_ALL_TESTS();
-
-#if (HX_RELEASE) < 3
-	hxShutdown();
-#endif
-	return testsFailing;
-}
-
-int main() {
-	::testing::InitGoogleTest();
-
-	size_t testsFailing = hxTestMain();
-
-	hxFile commands(hxFile::in|hxFile::stdio);
-	hxConsoleExecFile(commands);
 
 #if (HX_TEST_ERROR_HANDLING)
 	hxAssertRelease(testsFailing == 2, "expected 2 tests to fail");
 	// there are no asserts at level 3.
 	hxLogHandler(hxLogLevel_Warning, "expected 2 tests to fail");
-	return (testsFailing == 2) ? EXIT_SUCCESS : EXIT_FAILURE;
+	return testsFailing == 2;
 #else
-	return (testsFailing == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+	return testsFailing == 0;
+#endif
+}
+
+hxConsoleCommandNamed(hxRunAllTests, runtests);
+
+// hxtest - Command line console command dispatcher. Each parameter is treated
+// as a separate command.
+int main(int argc, char**argv) {
+	hxInit();
+
+	if(argc != 0) {
+		for(int i=1; i<argc; ++i) {
+			hxConsoleExecLine(argv[i]);
+		}
+	}
+	else {
+		hxLogWarning("usage: hxtest <command>...");
+		hxLogWarning("try: hxtest help");
+	}
+
+	// Logging and asserts are actually unaffected by a shutdown.
+#if (HX_RELEASE) < 3
+	hxShutdown();
 #endif
 }

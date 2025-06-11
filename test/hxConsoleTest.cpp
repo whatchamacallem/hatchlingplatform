@@ -345,17 +345,31 @@ TEST(hxConsoleTest, FileFail) {
 
 #if (HX_RELEASE) < 2 && !HX_USE_WASM
 TEST(hxConsoleTest, FilePeekPoke) {
-	uint32_t target[] = { 111, 0, 333 };
+	uint32_t target[] = { 111, 777, 333 };
 	{
 		hxFile f(hxFile::out, "hxConsoleTest_FileTest.txt");
-		f.print("peek %lld 4\n", (unsigned long long int)(target + 1));
-		f.print("hex %lld 4\n", (unsigned long long int)(target + 1));
+		f.print("peek %lld 4\n", (unsigned long long int)(target));
 		f.print("poke %lld 4 222\n", (unsigned long long int)(target + 1));
+		f.print("hexdump %lld 12\n", (unsigned long long int)(target));
 	}
 	bool isOk = hxConsoleExecLine("exec hxConsoleTest_FileTest.txt");
 	ASSERT_TRUE(isOk);
 
 	ASSERT_EQ(target[0], 111);
+	ASSERT_EQ(target[1], 222);
+	ASSERT_EQ(target[2], 333);
+}
+TEST(hxConsoleTest, FilePeekPokeFloats) {
+	float target[] = { 111.0f, 222.0f, 333.0f };
+	{
+		hxFile f(hxFile::out, "hxConsoleTest_FileTest.txt");
+		f.print("poke %lld 4 1130233856\n", (unsigned long long int)(target + 1));
+		f.print("floatdump %lld 3\n", (unsigned long long int)(target + 0));
+	}
+	bool isOk = hxConsoleExecLine("exec hxConsoleTest_FileTest.txt");
+	ASSERT_TRUE(isOk);
+
+	ASSERT_EQ(target[0], 111.0f);
 	ASSERT_EQ(target[1], 222);
 	ASSERT_EQ(target[2], 333);
 }

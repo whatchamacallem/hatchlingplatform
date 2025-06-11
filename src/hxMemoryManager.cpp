@@ -275,7 +275,7 @@ class hxMemoryManager {
 public:
 	void construct();
 	void destruct();
-	size_t allocationCount();
+	size_t leakCount();
 
 	hxMemoryAllocator beginAllocationScope(hxMemoryAllocatorScope* scope, hxMemoryAllocator newId);
 	void endAllocationScope(hxMemoryAllocatorScope* scope, hxMemoryAllocator previousId);
@@ -304,8 +304,6 @@ private:
 HX_THREAD_LOCAL hxMemoryAllocator hxMemoryManager::s_hxCurrentMemoryAllocator = hxMemoryAllocator_Heap;
 
 void hxMemoryManager::construct() {
-	hxLog("memory manager init.\n");
-
 	s_hxCurrentMemoryAllocator = hxMemoryAllocator_Heap;
 
 	m_memoryAllocators[hxMemoryAllocator_Heap] = &m_memoryAllocatorHeap;
@@ -333,19 +331,20 @@ void hxMemoryManager::destruct() {
 	::free(m_memoryAllocatorTemporaryStack.release());
 }
 
-size_t hxMemoryManager::allocationCount() {
-	size_t allocationCount = 0;
+size_t hxMemoryManager::leakCount() {
+	size_t leakCount = 0;
 	HX_MEMORY_MANAGER_LOCK_();
-	hxLog("memory manager allocation count:\n");
 	for (int32_t i = 0; i != hxMemoryAllocator_Current; ++i) {
 		hxMemoryAllocatorBase& al = *m_memoryAllocators[i];
-		hxLog("  %s count %u size %u high_water %u\n", al.label(),
-			(unsigned int)al.getAllocationCount((hxMemoryAllocator)i),
-			(unsigned int)al.getBytesAllocated((hxMemoryAllocator)i),
-			(unsigned int)al.getHighWater((hxMemoryAllocator)i));
-		allocationCount += (size_t)al.getAllocationCount((hxMemoryAllocator)i);
+		if(al.getAllocationCount((hxMemoryAllocator)i)) {
+			hxLogWarning("LEAK IN ALLOCATOR %s count %u size %u high_water %u", al.label(),
+				(unsigned int)al.getAllocationCount((hxMemoryAllocator)i),
+				(unsigned int)al.getBytesAllocated((hxMemoryAllocator)i),
+				(unsigned int)al.getHighWater((hxMemoryAllocator)i));
+		}
+		leakCount += (size_t)al.getAllocationCount((hxMemoryAllocator)i);
 	}
-	return allocationCount;
+	return leakCount;
 }
 
 hxMemoryAllocator hxMemoryManager::beginAllocationScope(hxMemoryAllocatorScope* scope, hxMemoryAllocator newId) {
@@ -575,8 +574,8 @@ void hxMemoryManagerShutDown() {
 	}
 #endif
 	// Any allocations made while active will crash when free'd.
-	size_t allocationCount = hxMemoryManagerAllocationCount();
-	hxAssertRelease(allocationCount == 0, "memory leaks: %d", (int)allocationCount); (void)allocationCount;
+	size_t leakCount = hxMemoryManagerLeakCount();
+	hxAssertRelease(leakCount == 0, "memory leaks: %d", (int)leakCount); (void)leakCount;
 
 	s_hxMemoryManager->destruct();
 
@@ -588,7 +587,7 @@ void hxMemoryManagerShutDown() {
 	s_hxMemoryManager = hxnull;
 }
 
-size_t hxMemoryManagerAllocationCount() {
+size_t hxMemoryManagerLeakCount() {
 	hxAssertRelease(g_hxIsInit, "call hxInit");
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager,
@@ -597,7 +596,7 @@ size_t hxMemoryManagerAllocationCount() {
 		return 0u;
 	}
 #endif
-	return s_hxMemoryManager->allocationCount();
+	return s_hxMemoryManager->leakCount();
 }
 
 // ----------------------------------------------------------------------------
@@ -624,7 +623,7 @@ void hxMemoryManagerInit() { }
 
 void hxMemoryManagerShutDown() { }
 
-size_t hxMemoryManagerAllocationCount() { return 0; }
+size_t hxMemoryManagerLeakCount() { return 0; }
 
 hxMemoryAllocatorScope::hxMemoryAllocatorScope(hxMemoryAllocator id)
 {

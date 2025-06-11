@@ -145,6 +145,10 @@ static void hxConsoleHexDump(uintptr_t address, size_t bytes) {
 	hxHexDump((const void*)address, bytes, 1);
 }
 
+static void hxConsoleFloatDump(uintptr_t address, size_t bytes) {
+	hxFloatDump((const float*)address, bytes);
+}
+
 // List console commands and argument types.
 hxConsoleCommandNamed(hxConsoleHelp, help);
 
@@ -155,7 +159,10 @@ hxConsoleCommandNamed(hxConsolePeek, peek);
 hxConsoleCommandNamed(hxConsolePoke, poke);
 
 // Write bytes to console with pretty formatting.
-hxConsoleCommandNamed(hxConsoleHexDump, hex);
+hxConsoleCommandNamed(hxConsoleHexDump, hexdump);
+
+// Write floats to console.
+hxConsoleCommandNamed(hxConsoleFloatDump, floatdump);
 #endif
 
 // Executes commands and settings in file. usage: "exec <filename>"

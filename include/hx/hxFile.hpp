@@ -3,16 +3,13 @@
 
 #include <hx/hatchling.h>
 
-class hxFile;
-
-// hxFile: RAII wrapper for file I/O. A mixture of unformatted std::basic_fstream
+// hxFile - RAII wrapper for file I/O. A mixture of unformatted std::basic_fstream
 // operations and formatted C-style text printing.
-
 class hxFile {
 public:
 	// openMode::in/out are from std::ios_base::openmode and indicate I/O mode.
-	// openMode::stdio provides access to stdio.
-	// failable skips asserts and is similar to setting std::basic_ios::exceptions(0).
+	// openMode::stdio provides access to stdio. openMode::failable skips asserts
+	// and is similar to setting std::basic_ios::exceptions(0).
 	enum openMode {
 		in = 1u,         // Open for binary reading.
 		out = 2u,        // Open for binary writing.

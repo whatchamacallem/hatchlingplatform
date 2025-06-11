@@ -119,9 +119,9 @@ void hxMemoryManagerInit();
 // resources.
 void hxMemoryManagerShutDown();
 
-// hxMemoryManagerAllocationCount - Returns the total number of allocations made by
-// the memory manager.
-size_t hxMemoryManagerAllocationCount();
+// hxMemoryManagerLeakCount - Returns the total number of allocations outstanding
+// made by the memory manager.
+size_t hxMemoryManagerLeakCount();
 
 // hxNew<T, allocator, align>(...) - Allocates and constructs an object of type
 // T using an optional memory allocator and alignment. Returns a pointer to the

@@ -37,7 +37,7 @@ clang++ -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE
 	-DHX_USE_CPP_THREADS=$I -DHX_USE_CHRONO=$I "$@" -pthread -std=c++17 -fno-exceptions \
 	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address -lubsan \
 	-include-pch hatchlingPch.hpp.pch */*.cpp *.o -lpthread -lstdc++ -o hxtest
-./hxtest | grep '\[  PASSED  \]' --color || ./hxtest
+./hxtest runtests | grep '\[  PASSED  \]' --color || ./hxtest runtests
 rm hxtest *.o
 done
 
@@ -57,13 +57,13 @@ gcc -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I 
 # -std=c++98
 gcc -Iinclude -O$I -ffast-math -ggdb $WARNINGS -DHX_RELEASE=$I "$@" -std=c++98 -fno-exceptions \
 	-fno-rtti -Wno-unused-local-typedefs */*.cpp *.o -lstdc++ -m32 -o hxtest
-./hxtest | grep '\[  PASSED  \]' --color || ./hxtest
+./hxtest runtests | grep '\[  PASSED  \]' --color || ./hxtest runtests
 rm hxtest
 echo gcc c++14 -O$I "$@"...
 # -std=c++14
 gcc -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" -pthread \
 	-std=c++14 -fno-exceptions -fno-rtti */*.cpp *.o -lpthread -lstdc++ -m32 -o hxtest
-./hxtest | grep '\[  PASSED  \]' --color || ./hxtest
+./hxtest runtests | grep '\[  PASSED  \]' --color || ./hxtest runtests
 rm hxtest *.o
 done
 
