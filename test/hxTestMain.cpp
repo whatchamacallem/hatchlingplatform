@@ -54,14 +54,15 @@ bool hxRunAllTests(void) {
 
 hxConsoleCommandNamed(hxRunAllTests, runtests);
 
-// hxtest - Command line console command dispatcher. Each parameter is treated
+// hxTestMain - Command line console command dispatcher. Each parameter is treated
 // as a separate command.
-int main(int argc, char**argv) {
+int hxTestMain(int argc, char**argv) {
 	hxInit();
 
+	bool isOk = true;
 	if(argc != 0) {
 		for(int i=1; i<argc; ++i) {
-			hxConsoleExecLine(argv[i]);
+			isOk = isOk && hxConsoleExecLine(argv[i]);
 		}
 	}
 	else {
@@ -73,4 +74,10 @@ int main(int argc, char**argv) {
 #if (HX_RELEASE) < 3
 	hxShutdown();
 #endif
+	return isOk ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+// main - calls hxTestMain.
+int main(int argc, char**argv) {
+	return hxTestMain(argc, argv);
 }
