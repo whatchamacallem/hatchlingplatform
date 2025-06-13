@@ -50,7 +50,7 @@ HX_STATIC_ASSERT(0, "exceptions should not be enabled");
 #if (HX_RELEASE) < 1
 // Implements HX_REGISTER_FILENAME_HASH in debug. See hxStringLiteralHash.h.
 namespace {
-struct hxHashStringLiteral_ : public hxHashTable<hxRegisterFilenameHash_, 5> {
+struct hxHashStringLiteral_ : public hxHashTable<hxRegisterStringLiteralHash, 5> {
 	// the nodes are static global. do not free.
 	~hxHashStringLiteral_(void) { releaseAll(); }
 };
@@ -68,15 +68,24 @@ hxHashStringLiteral_& hxStringLiteralHashes_() {
 
 } // namespace {
 
-hxRegisterFilenameHash_::hxRegisterFilenameHash_(const char* file_)
-        : m_hashNext_(0), m_hash_(hxStringLiteralHashDebug(file_)), m_file_(file_) {
+// The key for the table is a string hash.
+hxRegisterStringLiteralHash::hxRegisterStringLiteralHash(const char* str_)
+        : m_hashNext_(0), m_hash_(hxStringLiteralHashDebug(str_)), m_str_(str_) {
     hxStringLiteralHashes_().insertNode(this);
 }
 
-void hxPrintFileHashes(void) {
-	hxInit();
-	hxLog("filenames in hash order:\n");
+// The hash table code expects to be able to hash a Key and compare it equal
+// to the Node::hash value. That results in double hashing here. It is just
+// another multiply.
+uint32_t hxRegisterStringLiteralHash::hash() const {
+	return hxKeyHash(m_hash_);
+};
 
+void hxPrintHashes(void) {
+	hxInit();
+
+	// sort by hash.
+	hxLogConsole("string literals in hash order:\n");
 	hxMemoryAllocatorScope temporaryStack(hxMemoryAllocator_TemporaryStack);
 
 	typedef hxArray<const char*> Filenames;
@@ -85,7 +94,7 @@ void hxPrintFileHashes(void) {
 	hxHashStringLiteral_::constIterator it = hxStringLiteralHashes_().cBegin();
 	hxHashStringLiteral_::constIterator end = hxStringLiteralHashes_().cEnd();
 	for (; it != end; ++it) {
-		filenames.pushBack(it->file());
+		filenames.pushBack(it->str());
 	}
 
 	hxInsertionSort(filenames.begin(), filenames.end(), hxFilenameLess());
@@ -95,11 +104,11 @@ void hxPrintFileHashes(void) {
 	}
 }
 
-void hxCheckHash(uint32_t hash_) {
-	hxRegisterFilenameHash_* node = hxStringLiteralHashes_().find(hash_);
+void hxCheckHash(hxconsolehex_t hash_) {
+	hxRegisterStringLiteralHash* node = hxStringLiteralHashes_().find(hash_);
 	if(node) {
 		while(node) {
-			hxLogConsole("%08x: %s\n", (unsigned int)hash_, node->file());
+			hxLogConsole("%08x: %s\n", (unsigned int)hash_, node->str());
 			node = hxStringLiteralHashes_().find(hash_, node);
 		}
 	}
@@ -109,7 +118,7 @@ void hxCheckHash(uint32_t hash_) {
 }
 
 // use the debug console to emit and check file hashes.
-hxConsoleCommandNamed(hxPrintFileHashes, filehashes);
+hxConsoleCommandNamed(hxPrintHashes, printhashes);
 hxConsoleCommandNamed(hxCheckHash, checkhash);
 
 #endif

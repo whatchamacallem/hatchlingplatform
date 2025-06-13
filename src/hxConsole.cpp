@@ -127,25 +127,26 @@ void hxConsoleHelp() {
 
 #if (HX_RELEASE) < 2 && !HX_USE_WASM
 
-static void hxConsolePeek(uintptr_t address, uint32_t bytes) {
+static void hxConsolePeek(hxconsolehex_t address, uint32_t bytes) {
 	hxHexDump((const void*)address, bytes, 0);
 }
 
-// Writes bytes from word in little endian format (LSB first). word is repeated
-// every 8 bytes.
-static void hxConsolePoke(uintptr_t address, uint32_t bytes, uint64_t word) {
+// Writes bytes from hex value in little endian format (LSB first). hex value is
+// repeated every 8 bytes/64-bits in memory. hex is also 64-bit.
+static void hxConsolePoke(hxconsolehex_t address, uint32_t bytes, hxconsolehex_t hex) {
+	uint64_t value = hex;
 	volatile uint8_t* t = (uint8_t*)address;
 	while (bytes--) {
-		*t++ = (uint8_t)word;
-		word = (word >> 8) | (word << 56);
+		*t++ = (uint8_t)value;
+		value = (value >> 8) | (value << 56);
 	}
 }
 
-static void hxConsoleHexDump(uintptr_t address, size_t bytes) {
+static void hxConsoleHexDump(hxconsolehex_t address, size_t bytes) {
 	hxHexDump((const void*)address, bytes, 1);
 }
 
-static void hxConsoleFloatDump(uintptr_t address, size_t bytes) {
+static void hxConsoleFloatDump(hxconsolehex_t address, size_t bytes) {
 	hxFloatDump((const float*)address, bytes);
 }
 

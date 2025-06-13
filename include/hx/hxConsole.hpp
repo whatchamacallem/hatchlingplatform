@@ -1,7 +1,7 @@
 #pragma once
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/internal/hxConsoleInternal.hpp>
+#include <hx/hatchling.h>
 
 class hxFile;
 
@@ -12,6 +12,20 @@ class hxFile;
 // file I/O. All calls with up to 4 args which are fundamental types are
 // supported. Setting variables of a fundamental type are also supported.
 // const char* args will capture the remainder of the line including #'s.
+
+// hxconsolehex_t - This type of command parameter parses hex and is designed
+// to pass pointers and hash values via the console. Always 64-bit.
+class hxconsolehex_t {
+public:
+    hxconsolehex_t(void) { }
+    hxconsolehex_t(uint64_t x_) : m_x_(x_) { }
+
+	// Automatically C-style casts to any type.
+	template<typename T_> operator T_() const { return (T_)m_x_; }
+private:
+    HX_STATIC_ASSERT(sizeof(uint64_t) >= sizeof(uintptr_t), "pointers too big");
+	uint64_t m_x_;
+};
 
 // hxConsoleCommand - Registers a function using a global constructor. Use in a
 // global scope. Command will have the same name and args as the function.
@@ -74,3 +88,6 @@ bool hxConsoleExecFilename(const char* filename_);
 
 // hxConsoleHelp - Logs all console symbols to the console log.
 void hxConsoleHelp();
+
+// Include internals after hxconsolehex_t
+#include <hx/internal/hxConsoleInternal.hpp>

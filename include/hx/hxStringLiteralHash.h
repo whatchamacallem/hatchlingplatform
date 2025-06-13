@@ -16,31 +16,34 @@
 #define hxStringLiteralHash(s_) (uint32_t)HX_H64(s_,0,HX_H64(s_,64,HX_H64(s_,128,(uint32_t)0)))
 
 #if HX_CPLUSPLUS && (HX_RELEASE) < 1
-// HX_REGISTER_FILENAME_HASH - Registers hash of __FILE__ to be logged in a debug
-// build. This information will be needed to identify file name hashes in release
-// builds.
-#define HX_REGISTER_FILENAME_HASH static hxRegisterFilenameHash_ \
-    s_hxRegisterFilenameHash(__FILE__);
-
-// hxRegisterFilenameHash_ - Do not use, this is just the implementation of
-// HX_REGISTER_FILENAME_HASH. This code avoids any memory allocations.
-class hxRegisterFilenameHash_ {
+// hxRegisterStringLiteralHash - Intended for use as a global constructor to
+// register the hashes of string literals in debug so they can be identified
+// when part of release mode messages. Used to implement HX_REGISTER_FILENAME_HASH.
+// This code avoids any memory allocations. See console commands "printhashes"
+// and "checkhash".
+class hxRegisterStringLiteralHash {
 public:
     typedef uint32_t Key;
 
-	// permanently add object to hxStringLiteralHashes__.
-    hxRegisterFilenameHash_(const char* file_);
+	// permanently adds object to hxStringLiteralHashes_.
+    hxRegisterStringLiteralHash(const char* str_);
     void* hashNext(void) const { return m_hashNext_; }
     void*& hashNext(void) { return m_hashNext_; }
     uint32_t key() const { return m_hash_; };
-    uint32_t hash() const { return m_hash_; };
-    const char* file() const { return m_file_; }
+    uint32_t hash() const; // this is rehashed.
+    const char* str() const { return m_str_; }
 
 private:
     void* m_hashNext_;
     uint32_t m_hash_;
-    const char* m_file_;
+    const char* m_str_;
 };
+
+// HX_REGISTER_FILENAME_HASH - Registers hash of __FILE__ to be logged in a debug
+// build. This information will be needed to identify file name hashes in release
+// builds.
+#define HX_REGISTER_FILENAME_HASH static hxRegisterStringLiteralHash \
+    s_hxRegisterFilenameHash(__FILE__);
 #else
 #define HX_REGISTER_FILENAME_HASH
 #endif

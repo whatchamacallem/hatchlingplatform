@@ -3,50 +3,66 @@
 
 # Hatchling Platform
 
-Small C++ run-time intended to be developed against on the desktop before cross
-compiling to an embedded target with limited RAM. Does not make dynamic allocations
-except when allocating allocators.
+This is a small C++ run-time intended to be developed against on the desktop
+before cross compiling to an embedded target with limited RAM. Does not make
+dynamic allocations except when allocating system allocators. Requires C99
+libraries, a C++98 compiler and may require customization for profiling and DMA.
 
 Lately I am using this to learn about C++ library design in the context of core
 C++ runtime features. These are things I might suggest to the realtime working
 group some day. Although a few of my concerns have been addressed by recent
-versions of the standard library. The latest versions of the standard have
-been refining const correctness which still does nothing for the compiler it
-wasn't already doing. And the compilers are refusing to evaluate the kind of
-template bloat in the standard at compile time because they have time limits.
-So I don't think this codebase is obsolete yet. It might be perfect for
-WASM actually.
+versions of the standard library. The latest versions of the standard have been
+refining const correctness which still does nothing for the compiler it wasn't
+already doing. And the compilers are still refusing to evaluate the kind of
+template bloat in the standard 100% at compile time because they don't seem to
+think it is a priority. So I don't think this codebase is obsolete yet. It might
+be perfect for WASM actually.
 
 What makes this codebase really shine is Clang's Undefined Behavior Sanitizer
 (UBSan) because it allows you to write code the way C++ was originally designed
-to be written and debugged using pointers and then have the compiler provide
-you with the same runtime guarantees that managed languages have. Why spend
-our days mending fences when we belong roaming the open prairie. That said,
-this codebase should be compatible with all warning flags and sanitizers on
-gcc/clang/msvc. No type was punned in the making of this library.
+to be written and debugged using pointers and then have the compiler provide you
+with the same runtime guarantees that managed languages have. Why spend our days
+mending fences when we belong roaming the open prairie. That said, this codebase
+should be compatible with all warning flags and sanitizers on gcc/clang/msvc. No
+type was punned in the making of this library.
 
 hx/hatchling.h requires C99. If compiled as C++98 it will include C99 headers.
-Those headers were only added to C++11. All the C++98 compilers allow C99 headers
-without complaint. In particular this codebase relies on stdint.h for fixed width
-integers which is not in C++98. Features from C++17 and a few compiler intrinsics
-are used when available.
+Those headers were only added to C++11. However all the C++98 compilers allow
+C99 headers without complaint. In particular this codebase relies on stdint.h
+for fixed width integers which is not in C++98. Features from C++17 and a few
+compiler intrinsics are used when available.
 
- * A lightweight streamlined reimplementation of Google Test. Allows running
-   CI tests on a development board.
+HX_RELEASE - This the C/C++ optimization level. Compiler optimization may be
+adjusted separately if you want to debug unoptimized versions of these settings.
+It is also possible to have compiler optimization turned on for this platform
+when it is configured to generate code for debug.
+0 - Is a debug build with creature comforts, all asserts and verbose strings.
+This build may not fit on the target platform but it has the diagnostics needed
+to make a build that does so.
+1 - Is a release build with critical asserts and verbose warnings. E.g. for
+CMake's "RelWithDebInfo". Might be good for internal use.
+2 - Is a release build with only critical asserts using minimal strings. This
+build is for profiling and capturing assert call-stacks in the wild. E.g. for
+CMake's "MinSizeRel". Filenames are hashed at compile time.
+3 - Nothing sacred. No asserts or tear down and very minimal logging. This build
+is only for releasing to customers after testing with the above.
 
- * Profiling. Captures a hierarchical time-line view with a minimum of
-   overhead. Generates output that can be viewed with Chrome's
-   `about://tracing` view. (Use the WASD keys to move around.)
+ * Testing. Provides a lightweight streamlined reimplementation of Google Test.
+   Allows running CI tests on a development board.
 
- * Memory Management. Abstracts a range of allocation strategies behind an
-   RAII interface. This is intended for targets where memory fragmentation
-   is not allowed. This may save up to 30% of memory and 30% execution time.
+ * Profiling. Captures a hierarchical time-line view with a minimum of overhead.
+   Generates output that can be viewed with Chrome's `about://tracing` view.
+   (Use the WASD keys to move around.)
+
+ * Memory Management. Abstracts a range of allocation strategies behind an RAII
+   interface. This is intended for targets where memory fragmentation is not
+   allowed. This may save up to 30% of memory and 30% execution time.
 
  * DMA. Cross platform DMA wrapper which allows validation on the host before
    deploying to a target. Provides profiling information.
 
  * Containers and algorithms. Provides a small non-reallocating subset of
-   `std::vector` `std::allocator` and `std::unordered_{ map, set, multimap,
+   `std::vector`, `std::allocator` and `std::unordered_{ map, set, multimap,
    multiset }.` These are integrated with the memory manager.
 
  * Command line based console with simple C++ function binding. Allows debugging
@@ -63,8 +79,8 @@ are used when available.
  * Logging and memory management available in plain C99. `<hx/hatchling.h>` is
    available in C and C++.
 
- * 64-bit clean. Intended for but not limited to use with a 32-bit
-   target. size_t is fairly widely used.
+ * 64-bit clean. Intended for but not limited to use with a 32-bit target.
+   size_t is fairly widely used.
 
  * Does not use exceptions or `std::type_info` as these are inefficient.
 

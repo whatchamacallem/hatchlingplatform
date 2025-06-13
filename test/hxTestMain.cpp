@@ -52,7 +52,16 @@ bool hxRunAllTests(void) {
 #endif
 }
 
+bool hxExecuteStdin(void) {
+	hxFile f(hxFile::in | hxFile::stdio);
+	return hxConsoleExecFile(f);
+}
+
+// Comand line parameter to run all tests.
 hxConsoleCommandNamed(hxRunAllTests, runtests);
+
+// Comand line parameter to execute stdin.
+hxConsoleCommandNamed(hxExecuteStdin, execstdin);
 
 // hxTestMain - Command line console command dispatcher. Each parameter is treated
 // as a separate command.
@@ -60,14 +69,17 @@ int hxTestMain(int argc, char**argv) {
 	hxInit();
 
 	bool isOk = true;
-	if(argc != 0) {
+	if(HX_USE_WASM) {
+		isOk = hxRunAllTests();
+	}
+	else if(argc > 1) {
 		for(int i=1; i<argc; ++i) {
 			isOk = isOk && hxConsoleExecLine(argv[i]);
 		}
 	}
 	else {
-		hxLogWarning("usage: hxtest <command>...");
-		hxLogWarning("try: hxtest help");
+		hxLogWarning("usage: hxtest <command>...\n"
+		             "try: hxtest help");
 	}
 
 	// Logging and asserts are actually unaffected by a shutdown.

@@ -348,9 +348,9 @@ TEST(hxConsoleTest, FilePeekPoke) {
 	uint32_t target[] = { 111, 777, 333 };
 	{
 		hxFile f(hxFile::out, "hxConsoleTest_FileTest.txt");
-		f.print("peek %lld 4\n", (unsigned long long int)(target));
-		f.print("poke %lld 4 222\n", (unsigned long long int)(target + 1));
-		f.print("hexdump %lld 12\n", (unsigned long long int)(target));
+		f.print("peek %llx 4\n", (unsigned long long int)target);
+		f.print("poke %llx 4 de\n", (unsigned long long int)(target + 1));
+		f.print("hexdump %llx 12\n", (unsigned long long int)target);
 	}
 	bool isOk = hxConsoleExecLine("exec hxConsoleTest_FileTest.txt");
 	ASSERT_TRUE(isOk);
@@ -360,17 +360,17 @@ TEST(hxConsoleTest, FilePeekPoke) {
 	ASSERT_EQ(target[2], 333);
 }
 TEST(hxConsoleTest, FilePeekPokeFloats) {
-	float target[] = { 111.0f, 222.0f, 333.0f };
+	float target[] = { 111.0f, 777.0f, 333.0f };
 	{
 		hxFile f(hxFile::out, "hxConsoleTest_FileTest.txt");
-		f.print("poke %lld 4 1130233856\n", (unsigned long long int)(target + 1));
-		f.print("floatdump %lld 3\n", (unsigned long long int)(target + 0));
+		f.print("poke %llx 4 435E0000\n", (unsigned long long int)(target + 1));
+		f.print("floatdump %llx 3\n", (unsigned long long int)target);
 	}
 	bool isOk = hxConsoleExecLine("exec hxConsoleTest_FileTest.txt");
 	ASSERT_TRUE(isOk);
 
 	ASSERT_EQ(target[0], 111.0f);
-	ASSERT_EQ(target[1], 222);
-	ASSERT_EQ(target[2], 333);
+	ASSERT_EQ(target[1], 222.0f);
+	ASSERT_EQ(target[2], 333.0f);
 }
 #endif

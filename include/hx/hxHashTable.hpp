@@ -264,7 +264,7 @@ public:
 	// Returns a Node matching key if any. If previous is non-null it must be
 	// a node previously returned from find() with the same key and that has not
 	// been removed. Then find() will return a subsequent node if any.
-	// The previous object is non-const as it may be modified
+	// The previous object is non-const as it may be modified.
 	// - key: The key to search for in the hash table.
 	// - previous: A previously found Node with the same key, or nullptr.
 	HX_CONSTEXPR_FN Node_* find(const typename Node_::Key& key_, const Node_* previous_=hxnull) {

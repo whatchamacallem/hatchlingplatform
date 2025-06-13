@@ -3,6 +3,14 @@
 
 #include <hx/hatchling.h>
 
+#if defined(__x86_64__) || defined(__i386__)
+#ifdef _MSC_VER
+#include <intrin.h>
+#else
+#include <x86intrin.h>
+#endif
+#endif
+
 // hxcycles_t - Stores approx. 3 seconds to 300 years worth of processor cycles
 // starting from an unspecified origin and wrapping using unsigned rules. This is
 // intended for profiling, not calendaring.

@@ -1,8 +1,6 @@
 #pragma once
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hatchling.h>
-
 // hxConsole internals. See hxConsole.h instead.
 
 struct hxConsoleCommand_ {
@@ -25,21 +23,23 @@ HX_CONSTEXPR_FN static bool hxConsoleIsEndOfline_(const char* str_) {
 
 // Wrapper for C/strtol style parsers.
 template <typename T_, typename R_>
-HX_CONSTEXPR_FN void hxConsoleArgParse_(T_& val_, const char* str_, char** next_, R_(*parser_)(char const*, char**, int)) {
+HX_CONSTEXPR_FN void hxConsoleArgParse_(T_& value_, const char* str_, char** next_, R_(*parser_)(char const*, char**, int)) {
 	R_ r_ = parser_(str_, next_, 10);
 	if(r_ != (T_)r_) {
 		hxLogWarning("console operand overflow: %s", str_);
 		*next_ = const_cast<char*>(str_); // reject input.
 	}
-	val_ = (T_)r_;
+	value_ = (T_)r_;
 }
 
 // hxConsoleArg_<T_>. Binds string parsing operations to function args. Invalid arguments are
 // set to 0, arguments out of range result in the maximum representable values.
-
 template<typename T_> struct hxConsoleArg_ {
 private:
-    hxConsoleArg_() HX_DELETE_FN; // Prevent instantiation
+	// Unsupported parameter type. No struct, class or reference args
+	// allowed. Use hxconsolehex_t for pointers and hashes or one of
+	// the following intrinsic type overloads.
+    hxConsoleArg_(const char* str_, char** next_) HX_DELETE_FN;
 };
 template<> struct hxConsoleArg_<signed char> {
 	inline hxConsoleArg_(const char* str_, char** next_) { hxConsoleArgParse_(value_, str_, next_, ::strtol); }
@@ -115,7 +115,11 @@ template<> struct hxConsoleArg_<bool> {
 	HX_CONSTEXPR_FN static const char* getLabel_() { return "0/1"; }
 	bool value_;
 };
-
+template<> struct hxConsoleArg_<hxconsolehex_t> {
+	inline hxConsoleArg_(const char* str_, char** next_) { value_ = hxconsolehex_t(::strtoull(str_, next_, 16)); }
+	HX_CONSTEXPR_FN static const char* getLabel_() { return "hex"; }
+	hxconsolehex_t value_;
+};
 // const char* args capture remainder of line including comments starting with #'s.
 // Leading whitespace is discarded and string may be empty.
 template<> struct hxConsoleArg_<const char*> {

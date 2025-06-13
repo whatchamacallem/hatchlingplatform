@@ -9,14 +9,6 @@
 
 #include <hx/hxArray.hpp>
 
-#if defined(__x86_64__) || defined(__i386__)
-#ifdef _MSC_VER
-#include <intrin.h>
-#else
-#include <x86intrin.h>
-#endif
-#endif
-
 #if HX_USE_CPP_THREADS
 #include <mutex>
 
