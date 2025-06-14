@@ -72,9 +72,20 @@ bool hxConsoleExecLine(const char* command) {
 		++pos;
 	}
 
-	bool result = node->value()->execute_(pos); // skips leading whitespace.
-	hxWarnMsg(result, "command failed: %s", command);
-	return result;
+#ifdef __cpp_exceptions
+	try
+#endif
+	{
+		bool result = node->value()->execute_(pos);
+		hxWarnMsg(result, "command failed: %s", command);
+		return result;
+	}
+#ifdef __cpp_exceptions
+	catch (...) {
+		hxLogWarning("unexpected exception");
+		return false;
+	}
+#endif
 }
 
 bool hxConsoleExecFile(hxFile& file) {

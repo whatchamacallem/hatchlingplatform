@@ -87,12 +87,20 @@ public:
 				m_testState_ = TEST_STATE_NOTHING_ASSERTED_;
 				m_assertFailCount_ = 0;
 
+#ifdef __cpp_exceptions
+				try
+#endif
 				{
 					// Tests should have no side effects. Therefore all allocations must be
 					// safe to reset.
 					hxMemoryAllocatorScope temporaryStack(hxMemoryAllocator_TemporaryStack);
 					(*it_)->run_();
 				}
+#ifdef __cpp_exceptions
+				catch (...) {
+					this->assertCheck_((*it_)->file_(), (*it_)->line_(), false, "unexpected exception");
+				}
+#endif
 
 				if (m_testState_ == TEST_STATE_NOTHING_ASSERTED_) {
 					this->assertCheck_((*it_)->file_(), (*it_)->line_(), false, "NOTHING_ASSERTED");

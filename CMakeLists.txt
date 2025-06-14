@@ -7,8 +7,8 @@ cmake_minimum_required(VERSION 3.10)
 project(Hatchling)
 
 
-file(GLOB SOURCES "src/*.cpp" "src/*.c")
-file(GLOB TEST_SOURCES "test/*.cpp")
+file(GLOB SOURCES "src/*.c" "src/*.cpp")
+file(GLOB TEST_SOURCES "test/*.c" "test/*.cpp")
 
 # Add the executable for tests
 add_executable(
@@ -25,7 +25,6 @@ target_link_libraries(
 target_include_directories(hxtest SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_compile_definitions(hxtest PRIVATE HX_USE_GOOGLE_TEST)
 target_compile_options(hxtest PRIVATE -fno-exceptions)
-
 
 # Download GoogleTest instead of using system version.
 include(FetchContent)
