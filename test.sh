@@ -29,12 +29,12 @@ clang -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$
 	-std=c17 -c src/*.c test/*.c
 # generate pch. clang does this automatically when a c++ header file is the target.
 clang++ -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
-	-DHX_USE_CPP_THREADS=$I -DHX_USE_CHRONO=$I "$@" -pthread -std=c++17 -fno-exceptions \
+	-DHX_USE_CPP_THREADS=$I "$@" -pthread -std=c++17 -fno-exceptions \
 	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address \
 	include/hx/hatchlingPch.hpp -o hatchlingPch.hpp.pch
 # compile C++ and link
 clang++ -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
-	-DHX_USE_CPP_THREADS=$I -DHX_USE_CHRONO=$I "$@" -pthread -std=c++17 -fno-exceptions \
+	-DHX_USE_CPP_THREADS=$I "$@" -pthread -std=c++17 -fno-exceptions \
 	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address -lubsan \
 	-include-pch hatchlingPch.hpp.pch */*.cpp *.o -lpthread -lstdc++ -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' --color || ./hxtest runtests

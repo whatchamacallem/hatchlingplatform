@@ -343,7 +343,7 @@ TEST(hxConsoleTest, FileFail) {
 	ASSERT_FALSE(hxConsoleExecFilename("hxConsoleTest_FileTest.txt"));
 }
 
-#if (HX_RELEASE) < 2 && !HX_USE_WASM
+#if (HX_RELEASE) < 2 && !defined(__EMSCRIPTEN__)
 TEST(hxConsoleTest, FilePeekPoke) {
 	uint32_t target[] = { 111, 777, 333 };
 	{

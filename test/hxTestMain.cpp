@@ -18,7 +18,7 @@ TEST(hxCTest, AllTests) {
 }
 
 // These two tests test the test framework by failing.
-#if (HX_TEST_ERROR_HANDLING)
+#if HX_TEST_ERROR_HANDLING
 TEST(hxDeathTest, Fail) {
 	hxLog("TEST_EXPECTING_ASSERTS:\n");
 	SUCCEED();
@@ -31,7 +31,7 @@ TEST(hxDeathTest, NothingAsserted) {
 }
 #endif
 
-bool hxRunAllTests(void) {
+static bool hxRunAllTests(void) {
 	::testing::InitGoogleTest();
 
 	hxLogConsole("hatchling platform 🐉🐉🐉 " HATCHLING_TAG "\n");
@@ -52,7 +52,7 @@ bool hxRunAllTests(void) {
 #endif
 }
 
-bool hxExecuteStdin(void) {
+static bool hxExecuteStdin(void) {
 	hxFile f(hxFile::in | hxFile::stdio);
 	return hxConsoleExecFile(f);
 }
@@ -69,10 +69,7 @@ int hxTestMain(int argc, char**argv) {
 	hxInit();
 
 	bool isOk = true;
-	if(HX_USE_WASM) {
-		isOk = hxRunAllTests();
-	}
-	else if(argc > 1) {
+	if(argc > 1) {
 		for(int i=1; i<argc; ++i) {
 			isOk = isOk && hxConsoleExecLine(argv[i]);
 		}
@@ -80,6 +77,7 @@ int hxTestMain(int argc, char**argv) {
 	else {
 		hxLogWarning("usage: hxtest <command>...\n"
 		             "try: hxtest help");
+		isOk = false;
 	}
 
 	// Logging and asserts are actually unaffected by a shutdown.
@@ -91,5 +89,9 @@ int hxTestMain(int argc, char**argv) {
 
 // main - calls hxTestMain.
 int main(int argc, char**argv) {
+#ifdef __EMSCRIPTEN__
+	return hxRunAllTests() ? EXIT_SUCCESS : EXIT_FAILURE;
+#else
 	return hxTestMain(argc, argv);
+#endif
 }

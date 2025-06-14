@@ -36,13 +36,8 @@
 #define _HAS_EXCEPTIONS 0 // must be included before standard headers
 #endif
 
-#define HX_USE_WASM 0
-
 #if !defined(HX_USE_CPP_THREADS)
 #define HX_USE_CPP_THREADS __STDCPP_THREADS__
-#endif
-#if !defined(HX_USE_CHRONO)
-#define HX_USE_CHRONO (_MSC_VER >= 1900)
 #endif
 
 #define HX_RESTRICT __restrict
@@ -61,20 +56,13 @@
 #else // target settings (clang and gcc.)
 // Other compilers will require customization.
 
-// WebAssembly. Support use with any compiler front end.
-#if !defined(HX_USE_WASM)
-#if defined(__EMSCRIPTEN__)
-#define HX_USE_WASM 1
-#else
-#define HX_USE_WASM 0
-#endif
-#endif
-
 #if !defined(HX_USE_CPP_THREADS)
+#ifdef __EMSCRIPTEN__
+// C++11 threads in WASM needs more glue.
+#define HX_USE_CPP_THREADS 0
+#else
 #define HX_USE_CPP_THREADS (HX_CPLUSPLUS >= 201103L)
 #endif
-#if !defined(HX_USE_CHRONO)
-#define HX_USE_CHRONO (HX_CPLUSPLUS >= 201103L)
 #endif
 
 #define HX_RESTRICT __restrict

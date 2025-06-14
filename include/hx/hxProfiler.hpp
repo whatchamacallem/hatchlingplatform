@@ -3,7 +3,10 @@
 
 #include <hx/hatchling.h>
 
-#if defined(__x86_64__) || defined(__i386__)
+#if defined(__EMSCRIPTEN__)
+// from "emscripten/emscripten.h"
+extern "C" double emscripten_get_now(void);
+#elif defined(__x86_64__) || defined(__i386__)
 #ifdef _MSC_VER
 #include <intrin.h>
 #else
@@ -35,7 +38,10 @@ static const hxcycles_t c_hxDefaultCyclesCutoff = 1000;
 // architecture. This is callable without enabling HX_PROFILE.
 static inline hxcycles_t hxTimeSampleCycles(void) {
     uint64_t cycles_ = 0; (void)cycles_;
-#if defined(__x86_64__) || defined(__i386__)
+#if defined(__EMSCRIPTEN__)
+    double t_ = emscripten_get_now() * 1.0e+6;
+    cycles_ = (uint64_t)t_;
+#elif defined(__x86_64__) || defined(__i386__)
     cycles_ = __rdtsc();
 #elif defined(__aarch64__)  // ARMv8-A 64-bit.
     __asm__ volatile("mrs %0, cntvct_el0" : "=r"(cycles_));

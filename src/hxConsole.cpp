@@ -125,7 +125,7 @@ void hxConsoleHelp() {
 	}
 }
 
-#if (HX_RELEASE) < 2 && !HX_USE_WASM
+#if (HX_RELEASE) < 2 && !defined(__EMSCRIPTEN__)
 
 static void hxConsolePeek(hxconsolehex_t address, uint32_t bytes) {
 	hxHexDump((const void*)address, bytes, 0);

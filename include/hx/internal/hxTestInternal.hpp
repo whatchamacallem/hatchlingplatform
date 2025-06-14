@@ -33,13 +33,15 @@ public:
 	static hxTestSuiteExecutor_& singleton_() { static hxTestSuiteExecutor_ s_hxTestRunner; return s_hxTestRunner; }
 
 	hxTestSuiteExecutor_() {
+		m_searchTermStringLiteral_ = hxnull;
 		m_numFactories_ = 0;
 		m_currentTest_ = hxnull;
-		m_searchTermStringLiteral_ = hxnull;
 		::memset(m_factories_ + 0, 0x00, sizeof m_factories_);
 	}
 
-	void setSearchTerm_(const char* searchTermStringLiteral_) { m_searchTermStringLiteral_ = searchTermStringLiteral_; }
+	void setSearchTerm_(const char* searchTermStringLiteral_) {
+		m_searchTermStringLiteral_ = searchTermStringLiteral_;
+	}
 
 	void addTest_(hxTestCaseBase_* fn_) {
 		// Use -DHX_TEST_MAX_CASES to provide enough room for all tests.
@@ -74,6 +76,7 @@ public:
 	}
 
 	size_t executeAllTests_() {
+		hxInit(); // RUN_ALL_TESTS could be called first.
 		m_passCount_ = m_failCount_ = m_assertCount_ = 0;
 		hxLogConsole("RUNNING_TESTS (%s)\n", (m_searchTermStringLiteral_ ? m_searchTermStringLiteral_ : "ALL"));
 		for (hxTestCaseBase_** it_ = m_factories_; it_ != (m_factories_ + m_numFactories_); ++it_) {
@@ -128,13 +131,13 @@ private:
 	hxTestSuiteExecutor_(const hxTestSuiteExecutor_&) HX_DELETE_FN;
 	void operator=(const hxTestSuiteExecutor_&) HX_DELETE_FN;
 
+	const char* m_searchTermStringLiteral_;
 	hxTestCaseBase_* m_factories_[HX_TEST_MAX_CASES];
 	size_t m_numFactories_;
 	hxTestCaseBase_* m_currentTest_;
 	TestState_ m_testState_;
 	size_t m_passCount_;
 	size_t m_failCount_;
-	const char* m_searchTermStringLiteral_;
 	size_t m_assertCount_;
 	size_t m_assertFailCount_;
 };
