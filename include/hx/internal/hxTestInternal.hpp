@@ -70,7 +70,7 @@ public:
 			hxLogHandler(hxLogLevel_Assert, "%s(%zu): %s", file_, line_, message_);
 
 			// Implements GTEST_FLAG_SET(break_on_failure, true);
-#if (HX_TEST_ERROR_HANDLING) && (HX_RELEASE) == 0
+#if (HX_TEST_ERROR_HANDLING) == 0 && (HX_RELEASE) == 0
 			HX_DEBUG_BREAK();
 #endif
 			return fileLog_();

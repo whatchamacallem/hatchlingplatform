@@ -26,7 +26,7 @@ HX_CONSTEXPR_FN uint32_t hxKeyHash(const T_& x_ ) {
 	return (uint32_t)x_ * (uint32_t)0x61C88647u;
 };
 
-// hxKeyHash (const char*) - Uses FNV-1a string hashing.
+// hxKeyHash(const char*) - Uses FNV-1a string hashing.
 HX_CONSTEXPR_FN uint32_t hxKeyHash(const char* k_) {
     uint32_t x_ = (uint32_t)0x811c9dc5;
     while (*k_ != '\0') {
@@ -44,7 +44,7 @@ HX_CONSTEXPR_FN bool hxKeyEqual(const T& a_, const T& b_) {
 	return a_ == b_;
 }
 
-// hxKeyHash (const char*) - Uses a constexpr strcmp.
+// hxKeyHash(const char*) - Uses a constexpr strcmp.
 HX_CONSTEXPR_FN bool hxKeyEqual(const char* a_, const char* b_) {
 	while(*a_ != '\0' && *a_ == *b_) { ++a_; ++b_; }
 	return *a_ == '\0' && *b_ == '\0';

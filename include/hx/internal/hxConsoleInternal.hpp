@@ -362,7 +362,7 @@ struct hxConsoleHashTableKey_ {
 	const char* str_;
 };
 
-// Uses FNV-1a string hashing.
+// Uses FNV-1a string hashing. Stops at whitespace.
 inline uint32_t hxKeyHash(hxConsoleHashTableKey_ k_) {
 	uint32_t x_ = (uint32_t)0x811c9dc5;
 	while (!hxConsoleIsDelimiter_(*k_.str_)) {
@@ -372,10 +372,10 @@ inline uint32_t hxKeyHash(hxConsoleHashTableKey_ k_) {
 	return x_;
 }
 
-inline uint32_t hxKeyEqual(hxConsoleHashTableKey_ lhs_, hxConsoleHashTableKey_ rhs_)
-{
-	size_t len_ = hxmin(::strlen(lhs_.str_), ::strlen(rhs_.str_));
-	return ::strncmp(lhs_.str_, rhs_.str_, len_) == 0;
+// A version of ::strcmp that stops at whitespace or NUL.
+inline uint32_t hxKeyEqual(hxConsoleHashTableKey_ a_, hxConsoleHashTableKey_ b_) {
+	while(!hxConsoleIsDelimiter_(*a_.str_) && *a_.str_ == *b_.str_) { ++a_.str_; ++b_.str_; }
+	return hxConsoleIsDelimiter_(*a_.str_) && hxConsoleIsDelimiter_(*b_.str_);
 };
 
 // this is how to write a hash node without including hash table code.

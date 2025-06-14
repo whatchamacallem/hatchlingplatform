@@ -67,8 +67,7 @@ gcc -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I 
 rm hxtest *.o
 done
 
-# Remove output. Fails if output is not present.
-rm profile.json hxConsoleTest_FileTest.txt hxFileTest_Operators.bin \
-	hxFileTest_ReadWrite.txt hatchlingPch.hpp.pch
+# Remove output.
+./clean.sh
 
 echo all tests passed.

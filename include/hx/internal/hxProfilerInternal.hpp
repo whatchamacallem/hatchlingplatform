@@ -59,7 +59,7 @@ private:
 	hxArray<hxProfilerRecord_, HX_PROFILER_MAX_RECORDS> m_records;
 };
 
-// hxProfilerScopeInternal_ - RIAA object for internal use.
+// hxProfilerScopeInternal_ - RAII object for internal use.
 template<hxcycles_t MinCycles_=0u>
 class hxProfilerScopeInternal_ {
 public:
