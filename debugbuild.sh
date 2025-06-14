@@ -18,13 +18,13 @@ HX_ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
 	-pedantic-errors -Wfatal-errors"
 
-set -o xtrace
+set -x
 
-# leave floating point exceptions enabled and provide full gdb info.
+# Leave floating point exceptions enabled and provide full gdb info.
 clang $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS -Iinclude -ggdb3 \
 	-std=c17 -m32 -c src/*.c test/*.c
 
-# make a pch just in case it helps
+# Make a pch just in case it helps.
 clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS -Iinclude -ggdb3 \
 	-std=c++17 -m32 -pthread -fno-exceptions -fno-rtti include/hx/hatchlingPch.hpp \
 	-o hatchlingPch.hpp.pch
@@ -32,3 +32,7 @@ clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS -Iinclude -ggdb3 \
 clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS -Iinclude -ggdb3 \
 	-std=c++17 -m32 -pthread -fno-exceptions -fno-rtti -include-pch hatchlingPch.hpp.pch \
 	*/*.cpp *.o -lpthread -lstdc++ -lm -o hxtest
+
+# turn off tracing silently and make sure the command returns 0.
+{ set +x; } 2> /dev/null
+echo 🐉🐉🐉

@@ -42,7 +42,7 @@
 
 #define HX_RESTRICT __restrict
 #define HX_ATTR_FORMAT(pos_, start_)
-#define HX_DEBUG_BREAK __debugbreak()
+#define HX_DEBUG_BREAK() __debugbreak()
 #define HX_NORETURN
 
 // Unlike noexcept this is undefined when violated.
@@ -71,9 +71,9 @@
 
 // HX_DEBUG_BREAK can be conditionally evaluated with the && and || operators.
 #if defined(__has_builtin) && __has_builtin(__builtin_debugtrap)
-#define HX_DEBUG_BREAK (__builtin_debugtrap(),false)
+#define HX_DEBUG_BREAK() (__builtin_debugtrap(),false)
 #else
-#define HX_DEBUG_BREAK (raise(SIGTRAP),false)
+#define HX_DEBUG_BREAK() (raise(SIGTRAP),false)
 #endif
 
 // Unlike noexcept this is undefined when violated.

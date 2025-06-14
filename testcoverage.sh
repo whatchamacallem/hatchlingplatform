@@ -13,5 +13,9 @@ echo runtests | ./hxtest printhashes help execstdin
 
 gcovr --html-details coverage.html
 
+# turn off tracing silently and make sure the command returns 0.
+{ set +x; } 2> /dev/null
+echo 🐉🐉🐉
+
 # clean up with:
 # git clean -f -d

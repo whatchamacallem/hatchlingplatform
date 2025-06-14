@@ -32,8 +32,6 @@ TEST(hxDeathTest, NothingAsserted) {
 #endif
 
 static bool hxRunAllTests(void) {
-	::testing::InitGoogleTest();
-
 	hxLogConsole("hatchling platform 🐉🐉🐉 " HATCHLING_TAG "\n");
 	hxLogConsole("release: %d profile: %d " __DATE__ " " __TIME__ "\n",
 		(int)(HX_RELEASE), (int)(HX_PROFILE));
@@ -75,9 +73,7 @@ int hxTestMain(int argc, char**argv) {
 		}
 	}
 	else {
-		hxLogWarning("usage: hxtest <command>...\n"
-		             "try: hxtest help");
-		isOk = false;
+		hxRunAllTests();
 	}
 
 	// Logging and asserts are actually unaffected by a shutdown.
@@ -89,9 +85,11 @@ int hxTestMain(int argc, char**argv) {
 
 // main - calls hxTestMain.
 int main(int argc, char**argv) {
-#ifdef __EMSCRIPTEN__
-	return hxRunAllTests() ? EXIT_SUCCESS : EXIT_FAILURE;
-#else
-	return hxTestMain(argc, argv);
+	testing::InitGoogleTest(&argc, argv);
+
+#if (HX_USE_GOOGLE_TEST) && (HX_RELEASE) == 0
+    GTEST_FLAG_SET(break_on_failure, true);
 #endif
+
+	return hxTestMain(argc, argv);
 }

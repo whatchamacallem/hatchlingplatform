@@ -49,32 +49,30 @@ HX_CONSTEXPR_FN void InitGoogleTest() { }
 // - caseName: A C valid identifier for the test case.
 #define TEST(suiteName_, caseName_) \
     struct HX_CONCATENATE_3(hxTest_, suiteName_, caseName_) : public hxTestCaseBase_ { \
-        HX_CONCATENATE_3(hxTest_, suiteName_, caseName_)() { hxTestSuiteExecutor_::singleton_().addTest_(this); } \
-        virtual void run_() HX_OVERRIDE; \
-        virtual const char* suite_() HX_OVERRIDE { return #suiteName_; } \
-        virtual const char* case_() HX_OVERRIDE { return #caseName_; } \
-        virtual const char* file_() HX_OVERRIDE { return __FILE__; } \
-        virtual size_t line_() HX_OVERRIDE { return __LINE__; } \
-    }; \
-    static HX_CONCATENATE_3(hxTest_, suiteName_, caseName_) HX_CONCATENATE_3(s_hxTest_, suiteName_, caseName_); \
-    void HX_CONCATENATE_3(hxTest_, suiteName_, caseName_)::run_()
+        HX_CONCATENATE_3(hxTest_, suiteName_, caseName_)(void) { hxTestSuiteExecutor_::singleton_().addTest_(this); } \
+        virtual void run_(void) HX_OVERRIDE; \
+        virtual const char* suite_(void) HX_OVERRIDE { return #suiteName_; } \
+        virtual const char* case_(void) HX_OVERRIDE { return #caseName_; } \
+        virtual const char* file_(void) HX_OVERRIDE { return __FILE__; } \
+        virtual size_t line_(void) HX_OVERRIDE { return __LINE__; } \
+    } static HX_CONCATENATE_3(s_hxTest_, suiteName_, caseName_); \
+    void HX_CONCATENATE_3(hxTest_, suiteName_, caseName_)::run_(void)
 
 // TEST_F(suiteName, caseName) - Google Test reimplementation for fixture-based tests.
-// Defines a test case where the suite is a subclass of testing::Test.
+// Defines a test case where the suiteName is a subclass of testing::Test.
 // - suiteName: A C valid identifier for the test suite.
 // - caseName: A C valid identifier for the test case.
 #define TEST_F(suiteName_, caseName_) \
     struct HX_CONCATENATE_3(hxTest_, suiteName_, caseName_) : public hxTestCaseBase_ { \
-        struct hxTestCaseExecutor_ : public suiteName_ { virtual void runCode_() HX_OVERRIDE; }; \
-        HX_CONCATENATE_3(hxTest_, suiteName_, caseName_)() { hxTestSuiteExecutor_::singleton_().addTest_(this); } \
-        virtual void run_() HX_OVERRIDE { hxTestCaseExecutor_ executor_; executor_.run_(); } \
-        virtual const char* suite_() HX_OVERRIDE { return #suiteName_; } \
-        virtual const char* case_() HX_OVERRIDE { return #caseName_; } \
-        virtual const char* file_() HX_OVERRIDE { return __FILE__; } \
-        virtual size_t line_() HX_OVERRIDE { return __LINE__; } \
-    }; \
-    static HX_CONCATENATE_3(hxTest_, suiteName_, caseName_) HX_CONCATENATE_3(s_hxTest, suiteName_, caseName_); \
-    void HX_CONCATENATE_3(hxTest_, suiteName_, caseName_)::hxTestCaseExecutor_::runCode_()
+        struct hxTestCaseExecutor_ : public suiteName_ { virtual void runCode_(void) HX_OVERRIDE; }; \
+        HX_CONCATENATE_3(hxTest_, suiteName_, caseName_)(void) { hxTestSuiteExecutor_::singleton_().addTest_(this); } \
+        virtual void run_(void) HX_OVERRIDE { hxTestCaseExecutor_ executor_; executor_.run_(); } \
+        virtual const char* suite_(void) HX_OVERRIDE { return #suiteName_; } \
+        virtual const char* case_(void) HX_OVERRIDE { return #caseName_; } \
+        virtual const char* file_(void) HX_OVERRIDE { return __FILE__; } \
+        virtual size_t line_(void) HX_OVERRIDE { return __LINE__; } \
+    } static HX_CONCATENATE_3(s_hxTest, suiteName_, caseName_); \
+    void HX_CONCATENATE_3(hxTest_, suiteName_, caseName_)::hxTestCaseExecutor_::runCode_(void)
 
 // int RUN_ALL_TESTS() - Executes all registered test cases.
 #define RUN_ALL_TESTS() hxTestSuiteExecutor_::singleton_().executeAllTests_()
@@ -138,7 +136,7 @@ public:
 
 	// Generates the next random number in the sequence.
     // Returns the next random number as a 32-bit unsigned integer.
-    HX_CONSTEXPR_FN uint32_t operator()() { return (m_seed_ = 1664525u * m_seed_ + 1013904223u); }
+    HX_CONSTEXPR_FN uint32_t operator()(void) { return (m_seed_ = 1664525u * m_seed_ + 1013904223u); }
 
 private:
     // Current seed value used for generating random numbers.

@@ -24,7 +24,7 @@ target_link_libraries(
 
 target_include_directories(hxtest SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_compile_definitions(hxtest PRIVATE HX_USE_GOOGLE_TEST)
-target_compile_options(hxtest PRIVATE -fno-exceptions)
+target_compile_options(hxtest PRIVATE -fno-exceptions -ggdb3)
 
 # Download GoogleTest instead of using system version.
 include(FetchContent)

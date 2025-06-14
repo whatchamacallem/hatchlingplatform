@@ -104,8 +104,12 @@ public:
 		{
 			hxMemoryAllocatorScope allocatorScope(id);
 
-			startCount = allocatorScope.getScopeAllocationCount();
-			startBytes = allocatorScope.getScopeBytesAllocated();
+			ASSERT_EQ(0u, allocatorScope.getScopeAllocationCount());
+			ASSERT_EQ(0u, allocatorScope.getScopeBytesAllocated());
+
+			// Track the starting state to see how it is affected by a leak.
+			startCount = allocatorScope.getPreviousAllocationCount();
+			startBytes = allocatorScope.getPreviousBytesAllocated();
 
 			void* ptr1 = hxMalloc(100);
 			ptr2 = hxMalloc(200);

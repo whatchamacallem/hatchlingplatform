@@ -12,6 +12,7 @@
         "gcda",
         "gcno",
         "gcovr",
+        "ggdb",
         "googletest",
         "gtest",
         "hxabs",

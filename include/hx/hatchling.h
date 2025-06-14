@@ -78,20 +78,20 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 // - x: The condition to evaluate.
 // - ...: Variadic arguments for the formatted log message.
 #define hxAssertMsg(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
-	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK)
+	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK())
 
 // hxAssert(bool x, ...) - Logs an error and terminates execution if x is false. This is only
 // evaluated when HX_RELEASE == 0.
 // - ...: The condition to evaluate.
 #define hxAssert(...) (void)(!!(__VA_ARGS__) || (hxLogHandler(hxLogLevel_Assert, HX_QUOTE(__VA_ARGS__)), \
-	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK)
+	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK())
 
 // hxAssertRelease(bool x, ...) - Logs an error and terminates execution if x is false up to
 // release level 2. This is only evaluated when HX_RELEASE < 3.
 // - x: The condition to evaluate.
 // - ...: Variadic arguments for the formatted log message.
 #define hxAssertRelease(x_, ...) (void)(!!(x_) || ((hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
-	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK))
+	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK()))
 
 // Assert handler. Do not call directly, signature changes and then is removed.
 HX_NOEXCEPT int hxAssertHandler(const char* file_, size_t line_);

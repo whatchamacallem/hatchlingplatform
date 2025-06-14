@@ -69,7 +69,10 @@ public:
 			hxLogHandler(hxLogLevel_Assert, "%s.%s", m_currentTest_->suite_(), m_currentTest_->case_());
 			hxLogHandler(hxLogLevel_Assert, "%s(%zu): %s", file_, line_, message_);
 
-			hxAssertMsg(HX_TEST_ERROR_HANDLING, "unplanned test fail");
+			// Implements GTEST_FLAG_SET(break_on_failure, true);
+#if (HX_TEST_ERROR_HANDLING) && (HX_RELEASE) == 0
+			HX_DEBUG_BREAK();
+#endif
 			return fileLog_();
 		}
 		return fileNull_();

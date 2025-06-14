@@ -353,7 +353,7 @@ hxMemoryAllocator hxMemoryManager::beginAllocationScope(hxMemoryAllocatorScope* 
 	HX_MEMORY_MANAGER_LOCK_();
 	hxMemoryAllocator previousId = s_hxCurrentMemoryAllocator;
 	s_hxCurrentMemoryAllocator = newId;
-	m_memoryAllocators[s_hxCurrentMemoryAllocator]->beginAllocationScope(scope, newId);
+	m_memoryAllocators[s_hxCurrentMemoryAllocator]->beginAllocationScope(scope, s_hxCurrentMemoryAllocator);
 	return previousId;
 }
 
@@ -361,7 +361,7 @@ void hxMemoryManager::endAllocationScope(hxMemoryAllocatorScope* scope, hxMemory
 	hxAssert((unsigned int)previousId < (unsigned int)hxMemoryAllocator_Current);
 
 	HX_MEMORY_MANAGER_LOCK_();
-	m_memoryAllocators[s_hxCurrentMemoryAllocator]->endAllocationScope(scope, previousId);
+	m_memoryAllocators[s_hxCurrentMemoryAllocator]->endAllocationScope(scope, s_hxCurrentMemoryAllocator);
 	s_hxCurrentMemoryAllocator = previousId;
 }
 
@@ -439,7 +439,7 @@ hxMemoryAllocatorScope::~hxMemoryAllocatorScope() {
 	hxAssertRelease(g_hxIsInit, "call hxInit");
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
 	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
-	if (!s_hxMemoryManager || m_previousAllocator_ == hxMemoryAllocator_Current) {
+	if (!s_hxMemoryManager) {
 		return;
 	}
 #if (HX_MEM_DIAGNOSTIC_LEVEL) >= 2
