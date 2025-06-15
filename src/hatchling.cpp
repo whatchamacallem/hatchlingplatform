@@ -140,7 +140,11 @@ void hxInitInternal(void) {
 #endif
 
 	hxMemoryManagerInit();
+
+	// No DMA in a web browser.  The DMA code is just scaffolding.
+#ifndef __EMSCRIPTEN__
 	hxDmaInit();
+#endif
 }
 
 extern "C"
