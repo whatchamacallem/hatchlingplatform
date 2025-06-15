@@ -43,7 +43,6 @@ readelf --wide --symbols --demangle hxtest \
 
 echo ==========================================================================
 strip --strip-unneeded hxtest
-
 size hxtest
 
 echo 🐉🐉🐉

@@ -1,5 +1,8 @@
 // Copyright 2017-2025 Adrian Johnston
 
+// No DMA in a web browser.  The DMA code is just scaffolding.
+#ifdef __EMSCRIPTEN__
+
 #include <hx/hxDma.hpp>
 #include <hx/hxArray.hpp>
 #include <hx/hxProfiler.hpp>
@@ -107,3 +110,5 @@ void hxDmaAwaitAllLabeled(const char* labelStringLiteral) {
 		(labelStringLiteral ? labelStringLiteral : ""));
 #endif
 }
+
+#endif // __EMSCRIPTEN__

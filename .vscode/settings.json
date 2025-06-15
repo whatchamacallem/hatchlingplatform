@@ -13,6 +13,7 @@
         "feenableexcept",
         "ffast",
         "ffunction",
+        "fpic",
         "fsanitize",
         "gcda",
         "gcno",

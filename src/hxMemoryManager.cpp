@@ -607,10 +607,10 @@ void* hxMalloc(size_t size) {
 	return hxMallocChecked(size);
 }
 
+// No support for alignment when disabled. This makes sense for WASM.
 extern "C"
 void* hxMallocExt(size_t size, hxMemoryAllocator id, size_t alignment) {
-	(void)id;
-	hxAssert(alignment <= HX_ALIGNMENT); (void)alignment; // No support for alignment when disabled.
+	(void)id; (void)alignment;
 	return hxMallocChecked(size);
 }
 

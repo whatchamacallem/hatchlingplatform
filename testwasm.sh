@@ -2,8 +2,7 @@
 #
 # After building the emsdk these commands need to be run in the emsdk directory:
 #
-#   ./emsdk activate latest
-#   source ./emsdk_env.sh
+#   ./emsdk activate latest && source ./emsdk_env.sh
 
 # Use the sort command to do a version aware comparison of two strings on two
 # different lines.
@@ -20,8 +19,22 @@ else
 fi
 
 set -o errexit
+set -m # job control
 
-emcc -Iinclude -O2 -c src/*.c test/*.c
-emcc -Iinclude -O2 -fno-exceptions *.o */*.cpp -o index.html
+emcc -Iinclude -O2 -fpic -c src/*.c test/*.c
 
-python3 -m http.server 9876
+# -sMAIN_MODULE=2 dead-strips without leaving code for other modules.
+# Dump the memory manager because a web browser doesn't need that.
+emcc -Iinclude -O2 -fpic -sMAIN_MODULE=2 -fno-exceptions -fno-rtti \
+	-DHX_MEM_DIAGNOSTIC_LEVEL=-1 *.o */*.cpp -o index.html
+
+ls -l index.wasm
+
+# Start a webserver in the background.
+python3 -m http.server 9876 &
+
+# Launch Chrome if it is installed.
+[ -x /usr/bin/google-chrome ] && /usr/bin/google-chrome http://0.0.0.0:9876/ &>/dev/null
+
+# Bring the webserver to the foreground so it can be killed.
+fg %$(jobs | grep 'python3' | sed -E 's/^\[([0-9]+)\].*/\1/')

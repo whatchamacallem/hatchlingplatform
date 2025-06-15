@@ -1,5 +1,8 @@
 // Copyright 2017-2025 Adrian Johnston
 
+// No DMA in a web browser.  The DMA code is just scaffolding.
+#ifdef __EMSCRIPTEN__
+
 #include <hx/hxDma.hpp>
 #include <hx/hxTest.hpp>
 
@@ -78,3 +81,5 @@ TEST_F(hxDmaTest, Simultaneous) {
 		}
 	}
 }
+
+#endif // __EMSCRIPTEN__

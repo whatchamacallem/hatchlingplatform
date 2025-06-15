@@ -13,10 +13,10 @@ echo runtests | ./hxtest printhashes help execstdin
 gcovr --html-details coverage.html
 
 # turn off tracing silently.
-{ set +x; } 2> /dev/null
+{ set +x; } &>/dev/null
 
 # Launch Chrome if it is installed.
-[ -x /usr/bin/google-chrome ] && /usr/bin/google-chrome coverage.html
+[ -x /usr/bin/google-chrome ] && /usr/bin/google-chrome coverage.html &>/dev/null
 
 # Make sure the script returns 0.
 echo 🐉🐉🐉
