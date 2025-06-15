@@ -400,8 +400,8 @@ public:
 
 	hxConsoleHashTableKey_ key(void) const { return m_key_; }
 	uint32_t hash(void) const { return m_hash_; }
-	hxConsoleCommand_* value(void) const { return m_command_; }
-	void setValue(hxConsoleCommand_* x_) { m_command_ = x_; }
+	hxConsoleCommand_* command_(void) const { return m_command_; }
+	void setCommand_(hxConsoleCommand_* x_) { m_command_ = x_; }
 
 private:
 	void* m_hashNext_;
@@ -420,7 +420,7 @@ struct hxConsoleConstructor_ {
 	inline hxConsoleConstructor_(Command_ fn_, const char* id_)
 			: m_node_(hxConsoleHashTableKey_(id_)) {
 		::new(m_storage_ + 0) Command_(fn_);
-		m_node_.setValue((Command_*)(m_storage_ + 0));
+		m_node_.setCommand_((Command_*)(m_storage_ + 0));
 		hxConsoleRegister_(&m_node_);
 	}
 

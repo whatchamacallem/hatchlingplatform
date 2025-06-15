@@ -21,6 +21,7 @@ public:
     HX_CONSTEXPR_FN explicit hxArray() : hxAllocator<T_, Capacity_>() { m_end_ = this->data(); }
 
     // Copy constructs an array. Non-explicit to allow assignment constructor.
+    // rhs - A non-temporary Array<T>.
     HX_CONSTEXPR_FN hxArray(const hxArray& rhs_) : hxAllocator<T_, Capacity_>() {
         m_end_ = this->data();
         this->assign(rhs_.cBegin(), rhs_.cEnd());
@@ -29,21 +30,23 @@ public:
     // C++11 constructors
 #if HX_CPLUSPLUS >= 201103L
     // Copy construct from temporary. Only works with Capacity_ == hxAllocatorDynamicCapacity
+    // rhs - A temporary Array<T>.
     HX_CONSTEXPR_FN hxArray(hxArray&& rhs_) : hxArray() {
         this->swap(rhs_);
     }
 
     // Pass values of std::initializer_list as initializers to an array of T.
-    template <typename Rhs>
-    HX_CONSTEXPR_FN hxArray(std::initializer_list<Rhs> list_) : hxArray() {
+    // rhs - A std::initializer_list<Rhs>.
+    template <typename Rhs_>
+    HX_CONSTEXPR_FN hxArray(std::initializer_list<Rhs_> list_) : hxArray() {
         this->assign(list_.begin(), list_.end());
     }
 #endif
-
-    // Copy constructs an array from a container with begin() and end() methods and
-    // a random access iterator. Expects `rhs_` to be a reference to a container.
-    template <typename Rhs>
-    HX_CONSTEXPR_FN hxArray(const Rhs& rhs_) : hxAllocator<T_, Capacity_>() {
+    // Copy constructs an array from the elements of a container with random
+    // access iterators.
+    // rhs - Any container implementing begin and end.
+    template <typename Rhs_>
+    HX_CONSTEXPR_FN hxArray(const Rhs_& rhs_) : hxAllocator<T_, Capacity_>() {
         m_end_ = this->data();
         this->assign(rhs_.begin(), rhs_.end());
     }
@@ -57,23 +60,24 @@ public:
     }
 
     // Assigns the contents of another hxArray to this array.
-    // Standard except reallocation is disallowed. Expects `rhs_` to be a reference
-    // to another hxArray.
+    // Standard except reallocation is disallowed.
+    // rhs - A non-temporary Array<T>.
     HX_CONSTEXPR_FN void operator=(const hxArray& rhs_) {
         this->assign(rhs_.begin(), rhs_.end());
     }
 
 #if HX_CPLUSPLUS >= 201103L
     // Swap contents with temporary. Only works with Capacity_ == hxAllocatorDynamicCapacity
+    // rhs - A temporary Array<T>.
     HX_CONSTEXPR_FN void operator=(hxArray&& rhs_) {
         this->swap(rhs_);
     }
 #endif
 
-    // Copies the elements of a container with begin() and end() methods and a random
-    // access iterator. Expects `rhs_` to be a reference to a container.
-    template <typename Rhs>
-    HX_CONSTEXPR_FN void operator=(const Rhs& rhs_) {
+    // Copies the elements of a container with random access iterators.
+    // rhs - Any container implementing begin and end.
+    template <typename Rhs_>
+    HX_CONSTEXPR_FN void operator=(const Rhs_& rhs_) {
         this->assign(rhs_.begin(), rhs_.end());
     }
 
@@ -262,3 +266,10 @@ private:
     }
     T_* m_end_;
 };
+
+// hxswap(hxArray<T>&, hxArray<T>&) - Exchanges the contents of x and y using a
+// temporary.
+template<typename T_>
+HX_CONSTEXPR_FN void hxswap(hxArray<T_>& x_, hxArray<T_>& y_) {
+	x_.swap(y_);
+}

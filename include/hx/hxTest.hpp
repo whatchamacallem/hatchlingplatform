@@ -126,19 +126,22 @@ HX_CONSTEXPR_FN void InitGoogleTest() { }
 
 #endif // !HX_USE_GOOGLE_TEST
 
-// hxTestRandom - The linear congruential random number generator from Numerical
-// Recipes.
+// hxTestRandom - MMIX LCG. Knuth, D. E. 2002 (Modified)
 struct hxTestRandom {
 public:
 	// Constructor to initialize the random number generator with a seed.
     // - seed: Initial seed value for the random number generator.
-    HX_CONSTEXPR_FN hxTestRandom(uint32_t seed_ = 1u) : m_seed_(seed_) { }
+    HX_CONSTEXPR_FN hxTestRandom(uint32_t seed_ = 1u) : m_state_(seed_) { }
 
-	// Generates the next random number in the sequence.
     // Returns the next random number as a 32-bit unsigned integer.
-    HX_CONSTEXPR_FN uint32_t operator()(void) { return (m_seed_ = 1664525u * m_seed_ + 1013904223u); }
+    HX_CONSTEXPR_FN uint32_t operator()(void) {
+        m_state_ = 0x5851F42D4C957F2Dull * m_state_ + 0x14057B7EF767814Full;
 
+        // MODIFICATION. Use the 4 msb bits as a 0..16 bit variable shift control.
+        // Ignores the low 12 bits because they are low quality. Returns 32 bits
+        // chosen at a random [0..16) offset from between bits 13 and 60.
+        return (uint32_t)(m_state_ >> ((m_state_ >> 60) + 12));
+    }
 private:
-    // Current seed value used for generating random numbers.
-    uint32_t m_seed_;
+    uint64_t m_state_;
 };

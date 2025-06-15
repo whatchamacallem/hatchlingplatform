@@ -84,12 +84,13 @@ public:
 	HX_CONSTEXPR_FN hxHashTableMapNode(const Key_& key_, const Value_& value_) :
 		hxHashTableSetNode<Key_>(key_), m_value_(value_) { }
 
+#if HX_CPLUSPLUS >= 201103L
+	HX_CONSTEXPR_FN hxHashTableMapNode(const Key_& key_, Value_&& value_) :
+		hxHashTableSetNode<Key_>(key_), m_value_(value_) { }
+#endif
+
 	const Value_& value() const { return m_value_; }
 	Value_& value() { return m_value_; }
-	void setValue(const Value_& v_) { m_value_ = v_; }
-#if HX_CPLUSPLUS >= 201103L
-	void setValue(Value_&& v_) { m_value_ = v_; }
-#endif
 protected:
 	Value_ m_value_;
 };
@@ -417,6 +418,9 @@ public:
 private:
 	HX_STATIC_ASSERT(TableSizeBits_ <= 31u, "hxHashTable: hash bits must be [0..31]");
 
+	// Not ideal.
+    hxHashTable(const hxHashTable&) HX_DELETE_FN;
+
 	// Pointer to head of singly-linked list for key's hash value.
 	HX_CONSTEXPR_FN Node_** getBucketHead_(uint32_t hash_) {
 		uint32_t index_ = hash_ >> (32u - m_table.getTableSizeBits());
@@ -433,7 +437,3 @@ private:
 	uint32_t m_size_;
 	hxHashTableInternalAllocator_<Node_, TableSizeBits_> m_table;
 };
-
-#if HX_CPLUSPLUS >= 202002L
-    hxHashTable(const hxHashTable&) = delete;
-#endif

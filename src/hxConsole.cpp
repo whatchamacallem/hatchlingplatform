@@ -22,7 +22,7 @@ struct hxConsoleLess_ {
 	}
 };
 
-struct hxConsoleCommandTable_ : public hxHashTable<hxConsoleHashTableNode_, 4> {
+struct hxConsoleCommandTable_ : public hxHashTable<hxConsoleHashTableNode_, 2> {
 	// do not delete the nodes. they are statically allocated.
 	~hxConsoleCommandTable_(void) {
 		this->releaseAll();
@@ -38,7 +38,7 @@ hxConsoleCommandTable_& hxConsoleCommands_() { static hxConsoleCommandTable_ tbl
 // Console API
 
 void hxConsoleRegister_(hxConsoleHashTableNode_* node) {
-	hxAssertMsg(node->key().str_ && node->value(), "hxConsoleRegister_ args");
+	hxAssertMsg(node->key().str_ && node->command_(), "hxConsoleRegister_ args");
 	hxAssertMsg(!hxConsoleCommands_().find(node->key()), "command already registered: %s", node->key().str_);
 
 	hxConsoleCommands_().insertNode(node);
@@ -76,7 +76,7 @@ bool hxConsoleExecLine(const char* command) {
 	try
 #endif
 	{
-		bool result = node->value()->execute_(pos);
+		bool result = node->command_()->execute_(pos);
 		hxWarnMsg(result, "command failed: %s", command);
 		return result;
 	}
@@ -131,7 +131,7 @@ void hxConsoleHelp() {
 
 		for (hxArray<const hxConsoleHashTableNode_*>::iterator it = cmds.begin();
 				it != cmds.end(); ++it) {
-			(*it)->value()->usage_((*it)->key().str_);
+			(*it)->command_()->usage_((*it)->key().str_);
 		}
 	}
 }

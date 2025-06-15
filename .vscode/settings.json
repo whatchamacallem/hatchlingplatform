@@ -35,6 +35,7 @@
         "lstdc",
         "lubsan",
         "mftb",
+        "MMIX",
         "msvc",
         "multilib",
         "multiset",

@@ -101,8 +101,10 @@ class hxRadixSortBase {
 public:
     HX_STATIC_ASSERT((int32_t)0x80000000u >> 31 == ~(int32_t)0, "arithmetic left shift expected");
 
+    explicit hxRadixSortBase(uint32_t size_=0u) : m_array_() { m_array_.reserve(size_); }
+
     // Reserves memory for the internal array to hold at least `size_` elements.
-        // - size: The number of elements to reserve memory for.
+    // - size: The number of elements to reserve memory for.
     void reserve(uint32_t size_) { m_array_.reserve(size_); }
 
     // Clears the internal array, removing all elements.
@@ -147,6 +149,10 @@ protected:
     };
 
     hxArray<KeyValuePair_> m_array_; // Internal array of key-value pairs.
+
+private:
+    hxRadixSortBase(const hxRadixSortBase&) HX_DELETE_FN;
+    void operator=(const hxRadixSortBase&) HX_DELETE_FN;
 };
 
 // hxRadixSort. Sorts an array of value* by keys. K is the key and V the value.
@@ -214,6 +220,8 @@ public:
         Value_* operator->() const { return (Value_*)this->m_ptr_->m_val_; }
     };
 
+    explicit hxRadixSort(uint32_t size_=0u) : hxRadixSortBase(size_) { }
+
     // Accesses the value at the specified index (const version).
     const Value_& operator[](uint32_t index_) const { return *(Value_*)m_array_[index_].m_val_; }
 
@@ -263,11 +271,15 @@ public:
     // - key: The key used for sorting.
     // - val: Pointer to the value associated with the key.
     void insert(Key_ key_, Value_* val_) {
-        hxAssertMsg(!this->full(), "cannot reallocate");
+        hxAssertRelease(!this->full(), "cannot reallocate");
 
         // This radix sort uses void* to avoid template bloat. The casts are not
         // required by the standard, but fix -Wcast-qual for a const Value_.
         ::new(m_array_.emplaceBackUnconstructed())
             KeyValuePair_(key_, const_cast<void*>((const void*)val_));
     }
+
+private:
+    hxRadixSort(const hxRadixSort&) HX_DELETE_FN;
+    void operator=(const hxRadixSort&) HX_DELETE_FN;
 };

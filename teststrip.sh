@@ -38,11 +38,11 @@ clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -Iinclude \
 echo ==========================================================================
 echo = Largest elf symbols...
 echo ==========================================================================
-readelf --wide --symbols --demangle hxtest \
-	| awk "$HX_AWK_HACK" | sort -nr | head -n 100
+readelf --wide --symbols --demangle hxtest | awk "$HX_AWK_HACK" | sort -nr | grep -v Test | head -n 128
 
 echo ==========================================================================
-strip --strip-unneeded hxtest
-size hxtest
+# prints summary stats for the necessary components of the executable.
+strip -o hxtest-strip --strip-unneeded hxtest
+size hxtest-strip
 
 echo 🐉🐉🐉
