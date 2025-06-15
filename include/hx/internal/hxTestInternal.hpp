@@ -71,7 +71,7 @@ public:
 
 			// Implements GTEST_FLAG_SET(break_on_failure, true);
 #if (HX_TEST_ERROR_HANDLING) == 0 && (HX_RELEASE) == 0
-			HX_DEBUG_BREAK();
+			HX_BREAKPOINT();
 #endif
 			return fileLog_();
 		}

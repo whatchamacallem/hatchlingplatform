@@ -10,10 +10,35 @@
 #include <hx/hatchling.h>
 #include <hx/hxMemoryManager.h>
 
-HX_REGISTER_FILENAME_HASH
-
 #if HX_USE_CPP_THREADS
 #include <mutex>
+#endif
+
+HX_REGISTER_FILENAME_HASH
+
+#if !HX_HOSTED
+void* operator new(size_t size) {
+    void* ptr = ::malloc(size);
+	hxAssertRelease(ptr, "malloc fail: %u bytes\n", (unsigned int)size);
+    return ptr;
+}
+void* operator new[](size_t size) {
+    void* ptr = ::malloc(size);
+	hxAssertRelease(ptr, "malloc fail: %u bytes\n", (unsigned int)size);
+    return ptr;
+}
+void operator delete(void* ptr) HX_NOEXCEPT {
+    ::free(ptr);
+}
+void operator delete(void* ptr, size_t) HX_NOEXCEPT {
+    ::free(ptr);
+}
+void operator delete[](void* ptr) HX_NOEXCEPT {
+    ::free(ptr);
+}
+void operator delete[](void* ptr, size_t) HX_NOEXCEPT {
+    ::free(ptr);
+}
 #endif
 
 // hxMallocChecked. Always check malloc and halt on failure. This is extremely

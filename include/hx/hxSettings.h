@@ -40,15 +40,20 @@
 #define HX_USE_CPP_THREADS __STDCPP_THREADS__
 #endif
 
+// A hosted environment has an OS and C++ standard library.
+#define HX_HOSTED 1
+
 #define HX_RESTRICT __restrict
 #define HX_ATTR_FORMAT(pos_, start_)
-#define HX_DEBUG_BREAK() __debugbreak()
+#define HX_BREAKPOINT() (__debugbreak(),false)
 #define HX_NORETURN
 
 // Unlike noexcept this is undefined when violated.
 #if HX_CPLUSPLUS >= 201103L
-#define HX_NOEXCEPT __declspec(nothrow)
+#define HX_NOEXCEPT_INTRINSIC __declspec(nothrow)
+#define HX_NOEXCEPT noexcept
 #else
+#define HX_NOEXCEPT_INTRINSIC
 #define HX_NOEXCEPT
 #endif
 
@@ -65,21 +70,30 @@
 #endif
 #endif
 
+// Standard C++ headers are only available when glibc is.
+#ifdef __GLIBC__
+#define HX_HOSTED 1
+#else
+#define HX_HOSTED 0
+#endif
+
 #define HX_RESTRICT __restrict
 #define HX_ATTR_FORMAT(pos_, start_) __attribute__((format(printf, pos_, start_)))
 #define HX_NORETURN __attribute__((noreturn))
 
-// HX_DEBUG_BREAK can be conditionally evaluated with the && and || operators.
+// HX_BREAKPOINT can be conditionally evaluated with the && and || operators.
 #if defined(__has_builtin) && __has_builtin(__builtin_debugtrap)
-#define HX_DEBUG_BREAK() (__builtin_debugtrap(),false)
+#define HX_BREAKPOINT() (__builtin_debugtrap(),false)
 #else
-#define HX_DEBUG_BREAK() (raise(SIGTRAP),false)
+#define HX_BREAKPOINT() (raise(SIGTRAP),false)
 #endif
 
 // Unlike noexcept this is undefined when violated.
 #if HX_CPLUSPLUS >= 201103L
-#define HX_NOEXCEPT __attribute__((nothrow))
+#define HX_NOEXCEPT_INTRINSIC __attribute__((nothrow))
+#define HX_NOEXCEPT noexcept
 #else
+#define HX_NOEXCEPT_INTRINSIC
 #define HX_NOEXCEPT
 #endif
 

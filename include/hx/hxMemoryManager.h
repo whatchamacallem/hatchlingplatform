@@ -6,7 +6,9 @@
 #endif
 
 #if HX_CPLUSPLUS
+#if HX_HOSTED
 #include <new>
+#endif
 
 extern "C" {
 #endif
@@ -66,6 +68,14 @@ char* hxStringDuplicate(const char* string_, enum hxMemoryAllocator allocator_ /
 } // extern "C"
 
 // Memory Manager C++ API
+
+#if !HX_HOSTED
+// Declare placement new.
+inline void* operator new(size_t, void* ptr_) HX_NOEXCEPT { return ptr_; }
+inline void* operator new[](size_t, void* ptr_) HX_NOEXCEPT { return ptr_; }
+inline void operator delete(void*, void*) HX_NOEXCEPT { }
+inline void operator delete[](void*, void*) HX_NOEXCEPT { }
+#endif
 
 // hxMemoryAllocatorScope - RAII class to set the current memory manager allocator
 // for a specific scope. Automatically restores the previous allocator when the

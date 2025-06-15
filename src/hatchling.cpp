@@ -47,6 +47,34 @@ HX_STATIC_ASSERT(0, "exceptions should not be enabled");
 #endif
 
 // ----------------------------------------------------------------------------
+// When not hosted, provide no locking around the initialization of function
+// scope static variables. The linker should optimize this away.
+#if !HX_HOSTED
+extern "C"
+void __cxa_guard_release(size_t *guard) {
+	// Flag constructor as done. Clear in progress flag.
+	*guard = 1u;
+}
+extern "C"
+int __cxa_guard_acquire(size_t *guard) {
+	// Return 0 if already constructed.
+	if(*guard & 1u) { return 0; }
+
+	// Check if the constructor is in progress.
+	hxAssertRelease((*guard & 2u) == 0, "race constructing function scope static");
+
+	// Run the constructor.
+	*guard = 2u;
+	return 1;
+}
+extern "C"
+void __cxa_guard_abort(uint64_t *guard) {
+	hxAssertRelease(0, "exception constructing function scope static");
+	*guard = 0u;
+}
+#endif
+
+// ----------------------------------------------------------------------------
 #if (HX_RELEASE) < 1
 // Implements HX_REGISTER_FILENAME_HASH in debug. See hxStringLiteralHash.h.
 namespace {
@@ -148,7 +176,7 @@ void hxInitInternal(void) {
 }
 
 extern "C"
-HX_NOEXCEPT void hxLogHandler(hxLogLevel level, const char* format, ...) {
+HX_NOEXCEPT_INTRINSIC void hxLogHandler(hxLogLevel level, const char* format, ...) {
 	va_list args;
 	va_start(args, format);
 	hxLogHandlerV(level, format, args);
@@ -158,7 +186,7 @@ HX_NOEXCEPT void hxLogHandler(hxLogLevel level, const char* format, ...) {
 #define HX_STDOUT_STR_(x) ::fwrite(x, (sizeof x) - 1, 1, stdout)
 
 extern "C"
-HX_NOEXCEPT void hxLogHandlerV(hxLogLevel level, const char* format, va_list args) {
+HX_NOEXCEPT_INTRINSIC void hxLogHandlerV(hxLogLevel level, const char* format, va_list args) {
 	if(g_hxIsInit && g_hxSettings.logLevel > level) {
 		return;
 	}
@@ -193,7 +221,7 @@ void hxShutdown(void) {
 
 #if (HX_RELEASE) == 0
 extern "C"
-HX_NOEXCEPT int hxAssertHandler(const char* file, size_t line) {
+HX_NOEXCEPT_INTRINSIC int hxAssertHandler(const char* file, size_t line) {
 	const char* f = hxBasename(file);
 	if (g_hxIsInit && g_hxSettings.assertsToBeSkipped > 0) {
 		--g_hxSettings.assertsToBeSkipped;
@@ -204,12 +232,12 @@ HX_NOEXCEPT int hxAssertHandler(const char* file, size_t line) {
 	hxLogHandler(hxLogLevel_Assert, "%s(%u) hash %08x Triggering Breakpoint\n", f, (unsigned int)line,
 		(unsigned int)hxStringLiteralHashDebug(file));
 
-	// return to HX_DEBUG_BREAK at calling line.
+	// return to HX_BREAKPOINT at calling line.
 	return 0;
 }
 #else
 extern "C"
-HX_NOEXCEPT HX_NORETURN void hxAssertHandler(uint32_t file, size_t line) {
+HX_NOEXCEPT_INTRINSIC HX_NORETURN void hxAssertHandler(uint32_t file, size_t line) {
 	hxLogHandler(hxLogLevel_Assert, "file %08x line %u\n", (unsigned int)file, (unsigned int)line);
 	_Exit(EXIT_FAILURE);
 }

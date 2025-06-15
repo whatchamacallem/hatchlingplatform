@@ -3,7 +3,7 @@
 
 #include <hx/hxAllocator.hpp>
 
-#if HX_CPLUSPLUS >= 201103L
+#if HX_CPLUSPLUS >= 201103L && HX_HOSTED
 #include <initializer_list>
 #endif
 
@@ -27,14 +27,15 @@ public:
         this->assign(rhs_.cBegin(), rhs_.cEnd());
     }
 
-    // C++11 constructors
 #if HX_CPLUSPLUS >= 201103L
     // Copy construct from temporary. Only works with Capacity_ == hxAllocatorDynamicCapacity
     // rhs - A temporary Array<T>.
     HX_CONSTEXPR_FN hxArray(hxArray&& rhs_) : hxArray() {
         this->swap(rhs_);
     }
+#endif
 
+#if HX_CPLUSPLUS >= 201103L && HX_HOSTED
     // Pass values of std::initializer_list as initializers to an array of T.
     // rhs - A std::initializer_list<Rhs>.
     template <typename Rhs_>

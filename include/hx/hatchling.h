@@ -78,29 +78,29 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 // - x: The condition to evaluate.
 // - ...: Variadic arguments for the formatted log message.
 #define hxAssertMsg(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
-	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK())
+	hxAssertHandler(__FILE__, __LINE__)) || HX_BREAKPOINT())
 
 // hxAssert(bool x, ...) - Logs an error and terminates execution if x is false. This is only
 // evaluated when HX_RELEASE == 0.
 // - ...: The condition to evaluate.
 #define hxAssert(...) (void)(!!(__VA_ARGS__) || (hxLogHandler(hxLogLevel_Assert, HX_QUOTE(__VA_ARGS__)), \
-	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK())
+	hxAssertHandler(__FILE__, __LINE__)) || HX_BREAKPOINT())
 
 // hxAssertRelease(bool x, ...) - Logs an error and terminates execution if x is false up to
 // release level 2. This is only evaluated when HX_RELEASE < 3.
 // - x: The condition to evaluate.
 // - ...: Variadic arguments for the formatted log message.
 #define hxAssertRelease(x_, ...) (void)(!!(x_) || ((hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
-	hxAssertHandler(__FILE__, __LINE__)) || HX_DEBUG_BREAK()))
+	hxAssertHandler(__FILE__, __LINE__)) || HX_BREAKPOINT()))
 
 // Assert handler. Do not call directly, signature changes and then is removed.
-HX_NOEXCEPT int hxAssertHandler(const char* file_, size_t line_);
+HX_NOEXCEPT_INTRINSIC int hxAssertHandler(const char* file_, size_t line_);
 
 #else // HX_RELEASE > 1
 #define hxLog(...) ((void)0)
 #define hxAssertMsg(x_, ...) ((void)0)
 #define hxAssert(x_) ((void)0)
-HX_NOEXCEPT HX_NORETURN void hxAssertHandler(uint32_t file_, size_t line_);
+HX_NOEXCEPT_INTRINSIC HX_NORETURN void hxAssertHandler(uint32_t file_, size_t line_);
 #endif
 
 #if (HX_RELEASE) <= 1
@@ -159,14 +159,14 @@ void hxShutdown(void);
 // - level: The log level (e.g., hxLogLevel_Log, hxLogLevel_Warning).
 // - format: A printf-style format string.
 // - ...: Additional arguments for the format string.
-HX_NOEXCEPT void hxLogHandler(enum hxLogLevel level_, const char* format_, ...) HX_ATTR_FORMAT(2, 3);
+HX_NOEXCEPT_INTRINSIC void hxLogHandler(enum hxLogLevel level_, const char* format_, ...) HX_ATTR_FORMAT(2, 3);
 
 // hxLogHandlerV - A va_list version of hxLogHandler. This is the only access to
 // logging when HX_RELEASE > 2.
 // - level: The log level (e.g., hxLogLevel_Log, hxLogLevel_Warning).
 // - format: A printf-style format string.
 // - args: A va_list containing the arguments for the format string.
-HX_NOEXCEPT void hxLogHandlerV(enum hxLogLevel level_, const char* format_, va_list args_);
+HX_NOEXCEPT_INTRINSIC void hxLogHandlerV(enum hxLogLevel level_, const char* format_, va_list args_);
 
 // hxHexDump - Prints an array of bytes formatted in hexadecimal. Additional
 // information provided when pretty is non-zero.

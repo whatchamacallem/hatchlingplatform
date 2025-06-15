@@ -5,7 +5,7 @@
 
 #include <limits.h>
 
-#if HX_CPLUSPLUS >= 201103L
+#if HX_CPLUSPLUS >= 201103L && HX_HOSTED
 #include <utility>
 #endif
 
@@ -259,8 +259,7 @@ TEST_F(hxArrayTest, Assignment) {
 	ASSERT_TRUE(CheckTotals(6));
 }
 
-#if HX_CPLUSPLUS >= 201103L
-#include <utility>
+#if HX_CPLUSPLUS >= 201103L && HX_HOSTED
 TEST_F(hxArrayTest, InitializerList) {
 	hxArray<int, 2> x = { 2, 7 };
 	ASSERT_EQ(x[1], 7);

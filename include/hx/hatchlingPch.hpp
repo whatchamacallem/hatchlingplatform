@@ -1,10 +1,12 @@
-#pragma once
+#ifndef HX_HATCHLING_PCH_USED
 // Copyright 2017-2025 Adrian Johnston
 
 // hatchlingPch.hpp - Includes all the Hatchling headers for use building a C++
 // precompiled header. Use hx/hatchling.h for building a C precompiled header.
-// See test.sh. Set gcc/clangs target to a .pch file e.g. -o "sdks.pch".
+// See test.sh.
 
+// HX_HATCHLING_PCH_USED - Non-zero if this header is correctly included before
+// the other hx headers.
 #define HX_HATCHLING_PCH_USED 1
 
 #include <hx/hatchling.h>
@@ -23,3 +25,5 @@
 #include <hx/hxTask.hpp>
 #include <hx/hxTaskQueue.hpp>
 #include <hx/hxTest.hpp> // May include Google Test.
+
+#endif // HX_HATCHLING_PCH_USED
