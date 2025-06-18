@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Copyright 2017-2025 Adrian Johnston
 #
 # The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:

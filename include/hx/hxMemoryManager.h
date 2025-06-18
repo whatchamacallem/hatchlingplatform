@@ -91,22 +91,22 @@ public:
 	~hxMemoryAllocatorScope();
 
 	// Gets the total number of allocations made by the memory allocator.
-	uintptr_t getTotalAllocationCount() const;
+	size_t getTotalAllocationCount() const;
 
 	// Gets the total number of bytes allocated by the memory allocator.
-	uintptr_t getTotalBytesAllocated() const;
+	size_t getTotalBytesAllocated() const;
 
 	// Gets the number of allocations made within this scope.
-	uintptr_t getScopeAllocationCount() const;
+	size_t getScopeAllocationCount() const;
 
 	// Gets the number of bytes allocated within this scope.
-	uintptr_t getScopeBytesAllocated() const;
+	size_t getScopeBytesAllocated() const;
 
 	// Gets the number of allocations made before this scope was entered.
-	uintptr_t getPreviousAllocationCount() const { return m_previousAllocationCount_; }
+	size_t getPreviousAllocationCount() const { return m_previousAllocationCount_; }
 
 	// Gets the number of bytes allocated before this scope was entered.
-	uintptr_t getPreviousBytesAllocated() const { return m_previousBytesAllocated_; }
+	size_t getPreviousBytesAllocated() const { return m_previousBytesAllocated_; }
 
 private:
 	// Deleted copy constructor to prevent copying.
@@ -117,8 +117,8 @@ private:
 
     hxMemoryAllocator m_thisAllocator_; // The memory manager ID for this scope.
     hxMemoryAllocator m_previousAllocator_; // The previous memory manager ID.
-    uintptr_t m_previousAllocationCount_; // Previous allocation count.
-    uintptr_t m_previousBytesAllocated_; // Previous bytes allocated.
+    size_t m_previousAllocationCount_; // Previous allocation count.
+    size_t m_previousBytesAllocated_; // Previous bytes allocated.
 };
 
 // hxMemoryManagerInit - Initializes the memory manager. Must be called before

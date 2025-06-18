@@ -75,20 +75,14 @@ void __cxa_guard_abort(uint64_t *guard) {
 #endif
 
 // ----------------------------------------------------------------------------
-// Hook Clang's sanitizers in the debugger.
+// Hook Clang's sanitizers in the debugger. This overrides a weak library symbol
+// in the sanitizer support library. This provides clickable error messages
+// in vscode. Unused otherwise.
 
 extern "C"
-void __ubsan_on_report() {
-	hxAssertRelease(0, "ubsan");
-}
-
-extern "C"
-void __asan_on_error() {
-	hxAssertRelease(0, "asan");
-}
-extern "C"
-void __tsan_on_report() {
-	hxAssertRelease(0, "tsan");
+void __sanitizer_report_error_summary(const char *error_summary) {
+	// A clickable message has already been printed to standard out.
+	HX_BREAKPOINT(); (void)error_summary;
 }
 
 // ----------------------------------------------------------------------------
@@ -126,7 +120,7 @@ uint32_t hxRegisterStringLiteralHash::hash() const {
 	return hxKeyHash(m_hash_);
 };
 
-void hxPrintHashes(void) {
+bool hxPrintHashes(void) {
 	hxInit();
 
 	// sort by hash.
@@ -147,9 +141,10 @@ void hxPrintHashes(void) {
 	for (Filenames::iterator f = filenames.begin(); f != filenames.end(); ++f) {
 		hxLog("  %08x %s\n", hxStringLiteralHashDebug(*f), *f);
 	}
+	return true;
 }
 
-void hxCheckHash(hxconsolehex_t hash_) {
+bool hxCheckHash(hxconsolehex_t hash_) {
 	hxRegisterStringLiteralHash* node = hxStringLiteralHashes_().find(hash_);
 	if(node) {
 		while(node) {
@@ -160,6 +155,7 @@ void hxCheckHash(hxconsolehex_t hash_) {
 	else {
 		hxLogConsole("%08x: not found\n", (unsigned int)hash_);
 	}
+	return true;
 }
 
 // use the debug console to emit and check file hashes.

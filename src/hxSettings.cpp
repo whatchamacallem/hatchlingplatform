@@ -20,9 +20,6 @@ void hxSettingsConstruct() {
 	g_hxSettings.logLevel = hxLogLevel_Log;
 	g_hxSettings.deallocatePermanent = false;
 
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	g_hxSettings.disableMemoryManager = false;
-#endif
 #if (HX_RELEASE) < 1
 	g_hxSettings.assertsToBeSkipped = 0;
 	g_hxSettings.lightEmittingDiode = 0.7f;

@@ -56,13 +56,14 @@ struct hxConsoleCommand_ {
 	virtual bool execute_(const char* str_) = 0; // Return false for parse errors.
 	virtual void usage_(const char* id_=hxnull) = 0; // Expects command name.
 
-	// Returns 0 if there was an error. 1 if a single valid number was found and
-	// 2 if no parameter. Moved here to avoid template bloat.
+	// Returns 0 if no parameter. Returns 1 if a single number was found. Returns
+	// 2 to indicate a parse error. This avoids template bloat by being in a
+	// base class.
 	// str - Parameters.
-	// number - Overwritten with the parsed value or an error code.
+	// number - Overwritten with the parsed value or undefined.
 	static int executeNumber_(const char* str_, double* number_) {
 		if(hxConsoleIsEndOfline_(str_)) {
-			return 2; // success, do not modify
+			return 0; // success, do not modify
 		}
 
 		char* ptr_ = const_cast<char*>(str_);
@@ -72,25 +73,16 @@ struct hxConsoleCommand_ {
 		}
 
 		hxLogConsole("parse error: %s", str_);
-		return 0; // failure, do not modify
+		return 2; // failure, do not modify
 	}
 };
 
-// Defined in hxConsole.hpp. User overloadable in following templates.
-template<typename R_> bool hxConsoleIsOkResult(R_ r_);
-
-// Interpret functions returning void as having a successful result.
-// Mixing variadic templates with specialization is not working.
-template<typename R_> inline bool hxConsoleCommandIsOk0_(R_(*fn_)()) { return hxConsoleIsOkResult(fn_()); }
-template<> inline bool hxConsoleCommandIsOk0_<void>(void(*fn_)()) { fn_(); return true; };
-
-template<typename R_>
 struct hxConsoleCommand0_ : public hxConsoleCommand_ {
-	inline hxConsoleCommand0_(R_(*fn_)()) : m_fn_(fn_) { }
+	inline hxConsoleCommand0_(bool(*fn_)()) : m_fn_(fn_) { }
 
 	virtual bool execute_(const char* str_) HX_OVERRIDE {
 		if(hxConsoleIsEndOfline_(str_)) {
-			return hxConsoleCommandIsOk0_<R_>(m_fn_);
+			return m_fn_();
 		}
 
 		usage_();
@@ -99,25 +91,17 @@ struct hxConsoleCommand0_ : public hxConsoleCommand_ {
 	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
 		hxLogConsole("%s\n", id_ ? id_ : "usage: no args"); (void)id_;
 	}
-	R_(*m_fn_)();
+	bool(*m_fn_)();
 };
 
-template<typename R_, typename A_>
-struct hxConsoleCommandIsOk1_{
-	static bool execute_(R_(*fn_)(A_), A_ a_) { return hxConsoleIsOkResult(fn_(a_)); }
-};
 template<typename A_>
-struct hxConsoleCommandIsOk1_<void, A_> {
-	static bool execute_(void(*fn_)(A_), A_ a_) { fn_(a_); return true; };
-};
-template<typename R_, typename A_>
 struct hxConsoleCommand1_ : public hxConsoleCommand_ {
-	inline hxConsoleCommand1_(R_(*fn_)(A_)) : m_fn_(fn_) { }
+	inline hxConsoleCommand1_(bool(*fn_)(A_)) : m_fn_(fn_) { }
 	virtual bool execute_(const char* str_) HX_OVERRIDE {
 		char* ptr_ = const_cast<char*>(str_);
 		hxConsoleArg_<A_> arg1_(str_, &ptr_);
 		if (str_ < ptr_ && hxConsoleIsEndOfline_(ptr_)) {
-			return hxConsoleCommandIsOk1_<R_, A_>::execute_(m_fn_, arg1_.value_);
+			return m_fn_(arg1_.value_);
 		}
 		usage_();
 		return false;
@@ -125,20 +109,12 @@ struct hxConsoleCommand1_ : public hxConsoleCommand_ {
 	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
 		hxLogConsole("%s %s\n", id_ ? id_ : "usage:", hxConsoleArg_<A_>::getLabel_()); (void)id_;
 	}
-	R_(*m_fn_)(A_);
+	bool(*m_fn_)(A_);
 };
 
-template<typename R_, typename A1_, typename A2_>
-struct hxConsoleCommandIsOk2_{
-	static bool execute_(R_(*fn_)(A1_, A2_), A1_ a1_, A2_ a2_) { return hxConsoleIsOkResult(fn_(a1_, a2_)); }
-};
 template<typename A1_, typename A2_>
-struct hxConsoleCommandIsOk2_<void, A1_, A2_> {
-	static bool execute_(void(*fn_)(A1_, A2_), A1_ a1_, A2_ a2_) { fn_(a1_, a2_); return true; };
-};
-template<typename R_, typename A1_, typename A2_>
 struct hxConsoleCommand2_ : public hxConsoleCommand_ {
-	inline hxConsoleCommand2_(R_(*fn_)(A1_, A2_)) : m_fn_(fn_) { }
+	inline hxConsoleCommand2_(bool(*fn_)(A1_, A2_)) : m_fn_(fn_) { }
 	virtual bool execute_(const char* str_) HX_OVERRIDE {
 		char* pA_ = const_cast<char*>(str_);
 		char* pB_ = const_cast<char*>(str_);
@@ -146,7 +122,7 @@ struct hxConsoleCommand2_ : public hxConsoleCommand_ {
 		if (str_ < pA_) {
 			hxConsoleArg_<A2_> arg2_(pA_, &pB_);
 			if (pA_ < pB_ && hxConsoleIsEndOfline_(pB_)) {
-				return hxConsoleCommandIsOk2_<R_, A1_, A2_>::execute_(m_fn_, arg1_.value_, arg2_.value_);
+				return m_fn_(arg1_.value_, arg2_.value_);
 			}
 		}
 		usage_();
@@ -155,20 +131,12 @@ struct hxConsoleCommand2_ : public hxConsoleCommand_ {
 	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
 		hxLogConsole("%s %s %s\n", id_ ? id_ : "usage:", hxConsoleArg_<A1_>::getLabel_(), hxConsoleArg_<A2_>::getLabel_()); (void)id_;
 	}
-	R_(*m_fn_)(A1_, A2_);
+	bool(*m_fn_)(A1_, A2_);
 };
 
-template<typename R_, typename A1_, typename A2_, typename A3_>
-struct hxConsoleCommandIsOk3_{
-	static bool execute_(R_(*fn_)(A1_, A2_, A3_), A1_ a1_, A2_ a2_, A3_ a3_) { return hxConsoleIsOkResult(fn_(a1_, a2_, a3_)); }
-};
 template<typename A1_, typename A2_, typename A3_>
-struct hxConsoleCommandIsOk3_<void, A1_, A2_, A3_> {
-	static bool execute_(void(*fn_)(A1_, A2_, A3_), A1_ a1_, A2_ a2_, A3_ a3_) { fn_(a1_, a2_, a3_); return true; };
-};
-template<typename R_, typename A1_, typename A2_, typename A3_>
 struct hxConsoleCommand3_ : public hxConsoleCommand_ {
-	inline hxConsoleCommand3_(R_(*fn_)(A1_, A2_, A3_)) : m_fn_(fn_) { }
+	inline hxConsoleCommand3_(bool(*fn_)(A1_, A2_, A3_)) : m_fn_(fn_) { }
 	virtual bool execute_(const char* str_) HX_OVERRIDE {
 		char* pA_ = const_cast<char*>(str_);
 		char* pB_ = const_cast<char*>(str_);
@@ -178,7 +146,7 @@ struct hxConsoleCommand3_ : public hxConsoleCommand_ {
 			if (pA_ < pB_) {
 				hxConsoleArg_<A3_> arg3_(pB_, &pA_);
 				if (pB_ < pA_ && hxConsoleIsEndOfline_(pA_)) {
-					return hxConsoleCommandIsOk3_<R_, A1_, A2_, A3_>::execute_(m_fn_, arg1_.value_, arg2_.value_, arg3_.value_);
+					m_fn_(arg1_.value_, arg2_.value_, arg3_.value_);
 				}
 			}
 		}
@@ -189,20 +157,12 @@ struct hxConsoleCommand3_ : public hxConsoleCommand_ {
 	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
 		hxLogConsole("%s %s %s %s\n", id_ ? id_ : "usage:", hxConsoleArg_<A1_>::getLabel_(), hxConsoleArg_<A2_>::getLabel_(), hxConsoleArg_<A3_>::getLabel_()); (void)id_;
 	}
-	R_(*m_fn_)(A1_, A2_, A3_);
+	bool(*m_fn_)(A1_, A2_, A3_);
 };
 
-template<typename R_, typename A1_, typename A2_, typename A3_, typename A4_>
-struct hxConsoleCommandIsOk4_{
-	static bool execute_(R_(*fn_)(A1_, A2_, A3_, A4_), A1_ a1_, A2_ a2_, A3_ a3_, A4_ a4_) { return hxConsoleIsOkResult(fn_(a1_, a2_, a3_, a4_)); }
-};
 template<typename A1_, typename A2_, typename A3_, typename A4_>
-struct hxConsoleCommandIsOk4_<void, A1_, A2_, A3_, A4_> {
-	static bool execute_(void(*fn_)(A1_, A2_, A3_, A4_), A1_ a1_, A2_ a2_, A3_ a3_, A4_ a4_) { fn_(a1_, a2_, a3_, a4_); return true; };
-};
-template<typename R_, typename A1_, typename A2_, typename A3_, typename A4_>
 struct hxConsoleCommand4_ : public hxConsoleCommand_ {
-	inline hxConsoleCommand4_(R_(*fn_)(A1_, A2_, A3_, A4_)) : m_fn_(fn_) { }
+	inline hxConsoleCommand4_(bool(*fn_)(A1_, A2_, A3_, A4_)) : m_fn_(fn_) { }
 	virtual bool execute_(const char* str_) HX_OVERRIDE {
 		char* pA_ = const_cast<char*>(str_);
 		char* pB_ = const_cast<char*>(str_);
@@ -214,7 +174,7 @@ struct hxConsoleCommand4_ : public hxConsoleCommand_ {
 				if (pB_ < pA_) {
 					hxConsoleArg_<A4_> arg4_(pA_, &pB_);
 					if (pA_ < pB_ && hxConsoleIsEndOfline_(pB_)) {
-						return hxConsoleCommandIsOk4_<R_, A1_, A2_, A3_, A4_>::execute_(m_fn_, arg1_.value_, arg2_.value_, arg3_.value_, arg4_.value_);
+						return m_fn_(arg1_.value_, arg2_.value_, arg3_.value_, arg4_.value_);
 					}
 				}
 			}
@@ -226,7 +186,7 @@ struct hxConsoleCommand4_ : public hxConsoleCommand_ {
 		hxLogConsole("%s %s %s %s %s\n", id_ ? id_ : "usage:", hxConsoleArg_<A1_>::getLabel_(), hxConsoleArg_<A2_>::getLabel_(), hxConsoleArg_<A3_>::getLabel_(),
 			hxConsoleArg_<A4_>::getLabel_()); (void)id_;
 	}
-	R_(*m_fn_)(A1_, A2_, A3_, A4_);
+	bool(*m_fn_)(A1_, A2_, A3_, A4_);
 };
 
 template<typename T_>
@@ -252,33 +212,32 @@ struct hxConsoleVariable_ : public hxConsoleCommand_ {
 	volatile T_* m_var_;
 };
 
-template<typename R_>
-HX_CONSTEXPR_FN hxConsoleCommand0_<R_> hxConsoleCommandFactory_(R_(*fn_)(void)) {
-	return hxConsoleCommand0_<R_>(fn_);
+inline hxConsoleCommand0_ hxConsoleCommandFactory_(bool(*fn_)(void)) {
+	return hxConsoleCommand0_(fn_);
 }
 
-template<typename R_, typename A1_>
-HX_CONSTEXPR_FN hxConsoleCommand1_<R_, A1_> hxConsoleCommandFactory_(R_(*fn_)(A1_)) {
-	return hxConsoleCommand1_<R_, A1_>(fn_);
+template<typename A1_>
+inline hxConsoleCommand1_<A1_> hxConsoleCommandFactory_(bool(*fn_)(A1_)) {
+	return hxConsoleCommand1_<A1_>(fn_);
 }
 
-template<typename R_, typename A1_, typename A2_>
-HX_CONSTEXPR_FN hxConsoleCommand2_<R_, A1_, A2_> hxConsoleCommandFactory_(R_(*fn_)(A1_, A2_)) {
-	return hxConsoleCommand2_<R_, A1_, A2_>(fn_);
+template<typename A1_, typename A2_>
+inline hxConsoleCommand2_<A1_, A2_> hxConsoleCommandFactory_(bool(*fn_)(A1_, A2_)) {
+	return hxConsoleCommand2_<A1_, A2_>(fn_);
 }
 
-template<typename R_, typename A1_, typename A2_, typename A3_>
-HX_CONSTEXPR_FN hxConsoleCommand3_<R_, A1_, A2_, A3_> hxConsoleCommandFactory_(R_(*fn_)(A1_, A2_, A3_)) {
-	return hxConsoleCommand3_<R_, A1_, A2_, A3_>(fn_);
+template<typename A1_, typename A2_, typename A3_>
+inline hxConsoleCommand3_<A1_, A2_, A3_> hxConsoleCommandFactory_(bool(*fn_)(A1_, A2_, A3_)) {
+	return hxConsoleCommand3_<A1_, A2_, A3_>(fn_);
 }
 
-template<typename R_, typename A1_, typename A2_, typename A3_, typename A4_>
-HX_CONSTEXPR_FN hxConsoleCommand4_<R_, A1_, A2_, A3_, A4_> hxConsoleCommandFactory_(R_(*fn_)(A1_, A2_, A3_, A4_)) {
-	return hxConsoleCommand4_<R_, A1_, A2_, A3_, A4_>(fn_);
+template<typename A1_, typename A2_, typename A3_, typename A4_>
+inline hxConsoleCommand4_<A1_, A2_, A3_, A4_> hxConsoleCommandFactory_(bool(*fn_)(A1_, A2_, A3_, A4_)) {
+	return hxConsoleCommand4_<A1_, A2_, A3_, A4_>(fn_);
 }
 
 template<typename T_>
-HX_CONSTEXPR_FN hxConsoleVariable_<T_> hxConsoleVariableFactory_(volatile T_* var_) {
+inline hxConsoleVariable_<T_> hxConsoleVariableFactory_(volatile T_* var_) {
 	return hxConsoleVariable_<T_>(var_);
 }
 
@@ -358,5 +317,5 @@ struct hxConsoleConstructor_ {
 
 	// Provide static storage instead of using allocator before main.
 	hxConsoleHashTableNode_ m_node_;
-	char m_storage_[sizeof(hxConsoleCommand0_<void>)]; // .vtable and user function pointer
+	char m_storage_[sizeof(hxConsoleCommand0_)]; // .vtable and user function pointer
 };

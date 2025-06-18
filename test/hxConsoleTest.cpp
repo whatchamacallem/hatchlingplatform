@@ -107,12 +107,12 @@ TEST(hxConsoleTest, CommandFactory) {
 	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn8).execute_("56789 67890 7.89"));
 	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn8).execute_("56d789 67890 7.89"));
 
-#if HX_TEST_ERROR_HANDLING
+//#if HX_TEST_ERROR_HANDLING
 	// These all fail due to precision.
 	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn1).execute_("256"));
 	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn2).execute_("32768 -345"));
 	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn3).execute_("2 12"));
-#endif
+//#endif
 
 	// Check that all flags have been set.
 	ASSERT_EQ(c_hxConsoleTestCallFlags, (1<<hxConsoleTestTypeID_MAX)-1);
@@ -124,8 +124,9 @@ TEST(hxConsoleTest, CommandFactory) {
 namespace {
 	float s_hxConsoleTestResultHook = 0.0f;
 
-	void hxConsoleTestRegister0(hxconsolenumber_t a0, const char* a1) {
+	bool hxConsoleTestRegister0(hxconsolenumber_t a0, const char* a1) {
 		s_hxConsoleTestResultHook = (float)a0 + (float)::strlen(a1);
+		return true;
 	}
 
 	bool hxConsoleTestRegister1(hxconsolenumber_t a0) {
@@ -133,14 +134,14 @@ namespace {
 		return true;
 	}
 
-	int hxConsoleTestRegister2(hxconsolenumber_t a0) {
+	bool hxConsoleTestRegister2(hxconsolenumber_t a0) {
 		s_hxConsoleTestResultHook = a0;
-		return 2;
+		return true;
 	}
 
-	float hxConsoleTestRegister3(hxconsolenumber_t, hxconsolenumber_t a1) {
+	bool hxConsoleTestRegister3(hxconsolenumber_t, hxconsolenumber_t a1) {
 		s_hxConsoleTestResultHook = a1;
-		return 0.1f;
+		return true;
 	}
 } // namespace
 
@@ -277,8 +278,9 @@ namespace {
 	volatile float s_hxConsoleTestFileVar1 = 0.0f;
 	volatile float s_hxConsoleTestFileVar2 = 0.0f;
 
-	void hxConsoleTestFileFn(hxconsolenumber_t f) {
+	bool hxConsoleTestFileFn(hxconsolenumber_t f) {
 		s_hxConsoleTestFileVar2 = f;
+		return true;
 	}
 } // namespace
 
@@ -354,9 +356,9 @@ TEST(hxConsoleTest, FilePeekPoke) {
 	uint32_t target[] = { 111, 777, 333 };
 	{
 		hxFile f(hxFile::out, "hxConsoleTest_FileTest.txt");
-		f.print("peek %llx 4\n", (unsigned long long int)target);
-		f.print("poke %llx 4 de\n", (unsigned long long int)(target + 1));
-		f.print("hexdump %llx 12\n", (unsigned long long int)target);
+		f.print("peek %zx 4\n", (size_t)target);
+		f.print("poke %zx 4 de\n", (size_t)(target + 1));
+		f.print("hexdump %zx 12\n", (size_t)target);
 	}
 	bool isOk = hxConsoleExecLine("exec hxConsoleTest_FileTest.txt");
 	ASSERT_TRUE(isOk);
@@ -369,8 +371,8 @@ TEST(hxConsoleTest, FilePeekPokeFloats) {
 	float target[] = { 111.0f, 777.0f, 333.0f };
 	{
 		hxFile f(hxFile::out, "hxConsoleTest_FileTest.txt");
-		f.print("poke %llx 4 435E0000\n", (unsigned long long int)(target + 1));
-		f.print("floatdump %llx 3\n", (unsigned long long int)target);
+		f.print("poke %zx 4 435E0000\n", (size_t)(target + 1));
+		f.print("floatdump %zx 3\n", (size_t)target);
 	}
 	bool isOk = hxConsoleExecLine("exec hxConsoleTest_FileTest.txt");
 	ASSERT_TRUE(isOk);

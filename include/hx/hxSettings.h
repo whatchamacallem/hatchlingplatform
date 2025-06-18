@@ -149,16 +149,13 @@
 #define HX_MAX_LINE 500
 #endif
 
-// HX_MEM_DIAGNOSTIC_LEVEL - Memory management debug mode.
-//
-// -1: remove code entirely
+// HX_MEMORY_MANAGER_DISABLE - Disables memory management for debugging and for
+// platforms like wasm where extra system allocations are probably cheaper than
+// code size.
 //  0: normal target operation
-//  1: enable checking g_hxSettings.disableMemoryManager.
-//  2: log allocator scopes
-//  3: also log heap utilization
-//
-#if !defined HX_MEM_DIAGNOSTIC_LEVEL
-#define HX_MEM_DIAGNOSTIC_LEVEL ((HX_RELEASE) < 2) ? 1 : 0
+//  1: remove code entirely
+#if !defined HX_MEMORY_MANAGER_DISABLE
+#define HX_MEMORY_MANAGER_DISABLE 0
 #endif
 
 #define HX_KIB (1u << 10) // HX_KIB - A KiB is 1024 bytes.
@@ -231,9 +228,6 @@ struct hxSettings {
     uint8_t logLevel;              // Logging level for the application (e.g., verbosity of logs).
     uint8_t deallocatePermanent;   // Allows deallocation of permanent resources at system shut down.
 
-#if (HX_MEM_DIAGNOSTIC_LEVEL) > 0
-    uint8_t disableMemoryManager;  // Disables the memory manager when set, useful for debugging memory issues.
-#endif
 #if (HX_RELEASE) < 1
     int assertsToBeSkipped;        // Number of asserts to skip, useful for testing assert behavior.
     float lightEmittingDiode;      // Placeholder for testing.

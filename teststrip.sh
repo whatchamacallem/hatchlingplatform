@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Copyright 2017-2025 Adrian Johnston
 #
 # sudo apt install musl musl-dev musl-tools
@@ -41,7 +41,5 @@ echo ==========================================================================
 # prints summary stats for the necessary components of the executable.
 strip -o hxtest-strip --strip-unneeded hxtest
 size hxtest-strip
-
-readelf -S ./hxtest-strip | grep .rodata
 
 echo 🐉🐉🐉

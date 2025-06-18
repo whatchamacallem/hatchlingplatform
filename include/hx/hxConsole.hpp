@@ -9,8 +9,9 @@ class hxFile;
 // configuration files. Output is directed to the system log with
 // hxLogLevel_Console. A remote console will require forwarding commands to the
 // target and reporting the system log back. Configuration files only require
-// file I/O. C-style calls with up to 4 args using "const char*",
-// hxconsolenumber_t or hxconsolehex_t are required for the bindings to work.
+// file I/O. C-style calls returning bool with up to 4 args using "const char*",
+// hxconsolenumber_t or hxconsolehex_t as parameter types are required for the
+// bindings to work.
 
 // hxconsolenumber_t - A number. Uses double as an intermediate type. This
 // reduces template bloat by limiting parameter types. This is the same type of
@@ -42,7 +43,8 @@ public:
     hxconsolehex_t(uint64_t x_) : m_x_(x_) { }
 	template<typename T_> operator T_() const {
         T_ t = (T_)m_x_;
-        hxWarnMsg((uint64_t)t == m_x_, "precision error: %llx -> %llx", (unsigned long long)m_x_, (unsigned long long)t);
+        hxWarnMsg((uint64_t)t == m_x_, "precision error: %llx -> %llx",
+            (unsigned long long)m_x_, (unsigned long long)t);
         return t;
     }
 
@@ -85,13 +87,6 @@ private:
 #define hxConsoleVariableNamed(x_, name_) static hxConsoleConstructor_ \
     HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxConsoleVariableFactory_(&(x_)), HX_QUOTE(name_))
 
-// hxConsoleIsOkResult - Determines whether a console function's return value is
-// OK. Overload as needed. Overload must be consistent wherever your type is
-// registered. A void return is separately handled as an OK result.
-// - t: A type that can be converted to bool.
-template<typename T>
-bool hxConsoleIsOkResult(T t) { return (bool)t; }
-
 // hxConsoleDeregister - Explicit de-registration of a console symbol.
 // - id: Valid C identifier that identifies the variable.
 void hxConsoleDeregister(const char* id_);
@@ -111,7 +106,7 @@ bool hxConsoleExecFile(hxFile& file_);
 bool hxConsoleExecFilename(const char* filename_);
 
 // hxConsoleHelp - Logs all console symbols to the console log.
-void hxConsoleHelp();
+bool hxConsoleHelp();
 
 // Include internals after hxconsolehex_t
 #include <hx/internal/hxConsoleInternal.hpp>

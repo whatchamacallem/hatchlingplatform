@@ -19,7 +19,8 @@ void hxHexDump(const void* address, size_t bytes, int pretty) {
 		const uint8_t* addr = (const uint8_t*)address;
 		for (size_t i = 0; i < bytes;) {
 			if (pretty) {
-				hxLogConsole("%08x: ", (unsigned int)(uintptr_t)addr);
+				// Adjust the number of leading zeros for pointers to match uintptr_t.
+				hxLogConsole("%0*zx: ", (int)sizeof(uintptr_t), (size_t)addr);
 			}
 			const uint8_t* str = addr;
 			for (size_t maximum = 4; i < bytes && maximum--; i += 4) {

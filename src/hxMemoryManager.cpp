@@ -46,7 +46,7 @@ void operator delete[](void* ptr, size_t) HX_NOEXCEPT {
 // disastrous results.
 static HX_CONSTEXPR_FN void* hxMallocChecked(size_t size) {
 	void* t = ::malloc(size);
-	hxAssertRelease(t, "malloc fail: %u bytes\n", (unsigned int)size);
+	hxAssertRelease(t, "malloc fail: %zu bytes\n", size);
 #if (HX_RELEASE) >= 3
 	if (!t) {
 		hxLogHandler(hxLogLevel_Assert, "malloc fail");
@@ -56,8 +56,8 @@ static HX_CONSTEXPR_FN void* hxMallocChecked(size_t size) {
 	return t;
 }
 
-// HX_MEM_DIAGNOSTIC_LEVEL. See hxSettings.h.
-#if (HX_MEM_DIAGNOSTIC_LEVEL) != -1
+// HX_MEMORY_MANAGER_DISABLE. See hxSettings.h.
+#if !(HX_MEMORY_MANAGER_DISABLE)
 
 // All pathways are threadsafe by default. In theory locking could be removed
 // if threads avoided sharing allocators. But I don't want to scare anyone.
@@ -149,12 +149,6 @@ public:
 #if (HX_RELEASE) < 2
 		hdr.guard = hxMemoryAllocationHeader::c_guard;
 #endif
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 3
-		// Record the size of the allocation in debug. Cast via (uintptr_t)
-		// because %p is not portable.
-		hxLog("%s: %d at %x  (count %d, bytes %d)\n", m_label_, (int)size, (unsigned int)aligned,
-			(int)m_allocationCount, (int)m_bytesAllocated);
-#endif
 		++m_allocationCount;
 		m_bytesAllocated += size; // ignore overhead
 		m_highWater = hxmax(m_highWater, m_bytesAllocated);
@@ -175,12 +169,6 @@ public:
 		--m_allocationCount;
 		m_bytesAllocated -= hdr.size;
 
-		#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 3
-		// Record the size of the allocation in debug. Cast via (uintptr_t) because
-		// Mac and supporting %p.
-		hxLog("%s: -%d at %x  (count %d, bytes %d)\n", m_label_, (int)hdr.size,
-			(unsigned int)(uintptr_t)p, (int)m_allocationCount, (int)m_bytesAllocated);
-#endif
 		uintptr_t actual = hdr.actual;
 		if ((HX_RELEASE) < 1) {
 			::memset((void*)&hdr, 0xee, hdr.size + sizeof(hxMemoryAllocationHeader));
@@ -269,7 +257,7 @@ public:
 	virtual void endAllocationScope(hxMemoryAllocatorScope* scope, hxMemoryAllocator oldId) HX_OVERRIDE {
 		(void)oldId;
 		hxAssertMsg(m_allocationCount <= scope->getPreviousAllocationCount(),
-			"%s leaked %d allocations", m_label_, (int)(m_allocationCount - scope->getPreviousAllocationCount()));
+			"%s leaked %zd allocations", m_label_, m_allocationCount - scope->getPreviousAllocationCount());
 
 		m_highWater = hxmax(m_highWater, m_current);
 
@@ -362,10 +350,10 @@ size_t hxMemoryManager::leakCount() {
 	for (int32_t i = 0; i != hxMemoryAllocator_Current; ++i) {
 		hxMemoryAllocatorBase& al = *m_memoryAllocators[i];
 		if(al.getAllocationCount((hxMemoryAllocator)i)) {
-			hxLogWarning("LEAK IN ALLOCATOR %s count %u size %u high_water %u", al.label(),
-				(unsigned int)al.getAllocationCount((hxMemoryAllocator)i),
-				(unsigned int)al.getBytesAllocated((hxMemoryAllocator)i),
-				(unsigned int)al.getHighWater((hxMemoryAllocator)i));
+			hxLogWarning("LEAK IN ALLOCATOR %s count %zu size %zu high_water %zu", al.label(),
+				al.getAllocationCount((hxMemoryAllocator)i),
+				al.getBytesAllocated((hxMemoryAllocator)i),
+				al.getHighWater((hxMemoryAllocator)i));
 		}
 		leakCount += (size_t)al.getAllocationCount((hxMemoryAllocator)i);
 	}
@@ -404,15 +392,15 @@ void* hxMemoryManager::allocate(size_t size, hxMemoryAllocator id, size_t alignm
 		alignment = 1u;
 	}
 
-	hxAssertMsg(((alignment - 1) & (alignment)) == 0u, "alignment %d is not power of 2", (int)alignment);
+	hxAssertMsg(((alignment - 1) & (alignment)) == 0u, "alignment %zd is not power of 2", alignment);
 	hxAssertMsg((unsigned int)id < (unsigned int)hxMemoryAllocator_Current, "bad allocator: %ud", id);
 
 	HX_MEMORY_MANAGER_LOCK_();
 	void* ptr = m_memoryAllocators[id]->allocate(size, alignment);
-	hxAssertMsg(((uintptr_t)ptr & (alignment - (uintptr_t)1)) == 0, "alignment wrong %x from %d",
-		(unsigned int)(uintptr_t)ptr, (int)id);
+	hxAssertMsg(((uintptr_t)ptr & (alignment - (uintptr_t)1)) == 0, "alignment wrong %zx from %d",
+		(size_t)(uintptr_t)ptr, id);
 	if (ptr) { return ptr; }
-	hxLogWarning("%s is overflowing to heap, size %d", m_memoryAllocators[id]->label(), (int)size);
+	hxLogWarning("%s is overflowing to heap, size %zd", m_memoryAllocators[id]->label(), size);
 	return m_memoryAllocatorHeap.allocate(size, alignment);
 }
 
@@ -441,13 +429,7 @@ void hxMemoryManager::free(void* ptr) {
 
 hxMemoryAllocatorScope::hxMemoryAllocatorScope(hxMemoryAllocator id)
 {
-	hxAssertRelease(g_hxIsInit, "call hxInit");
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
-	if (!s_hxMemoryManager) {
-		return;
-	}
-#endif
+	hxAssertRelease(s_hxMemoryManager, "no memory manager");
 
 	// sets CurrentAllocator():
 	m_thisAllocator_ = id;
@@ -455,68 +437,30 @@ hxMemoryAllocatorScope::hxMemoryAllocatorScope(hxMemoryAllocator id)
 	hxMemoryAllocatorBase& al = s_hxMemoryManager->getAllocator(id);
 	m_previousAllocationCount_ = al.getAllocationCount(id);
 	m_previousBytesAllocated_ = al.getBytesAllocated(id);
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 2
-	hxLog(" => %s, count %d, size %d\n", al.label(), (int)getTotalAllocationCount(), (int)getTotalBytesAllocated());
-#endif
 }
 
 hxMemoryAllocatorScope::~hxMemoryAllocatorScope() {
-	hxAssertRelease(g_hxIsInit, "call hxInit");
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
-	if (!s_hxMemoryManager) {
-		return;
-	}
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 2
-	hxLog(" <= %s, count %d/%d, size %d/%d\n", s_hxMemoryManager->getAllocator(m_thisAllocator_).label(),
-		(int)getScopeAllocationCount(), (int)getTotalAllocationCount(), (int)getScopeBytesAllocated(),
-		(int)getTotalBytesAllocated());
-#endif
-#endif
+	hxAssertRelease(s_hxMemoryManager, "no memory manager");
 	s_hxMemoryManager->endAllocationScope(this, m_previousAllocator_);
 }
 
 size_t hxMemoryAllocatorScope::getTotalAllocationCount() const {
-	hxAssertRelease(g_hxIsInit, "call hxInit");
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
-	if (!s_hxMemoryManager) {
-		return 0;
-	}
-#endif
+	hxAssertRelease(s_hxMemoryManager, "no memory manager");
 	return s_hxMemoryManager->getAllocator(m_thisAllocator_).getAllocationCount(m_thisAllocator_);
 }
 
 size_t hxMemoryAllocatorScope::getTotalBytesAllocated() const {
-	hxAssertRelease(g_hxIsInit, "call hxInit");
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
-	if (!s_hxMemoryManager) {
-		return 0;
-	}
-#endif
+	hxAssertRelease(s_hxMemoryManager, "no memory manager");
 	return s_hxMemoryManager->getAllocator(m_thisAllocator_).getBytesAllocated(m_thisAllocator_);
 }
 
 size_t hxMemoryAllocatorScope::getScopeAllocationCount() const {
-	hxAssertRelease(g_hxIsInit, "call hxInit");
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
-	if (!s_hxMemoryManager) {
-		return 0;
-	}
-#endif
+	hxAssertRelease(s_hxMemoryManager, "no memory manager");
 	return s_hxMemoryManager->getAllocator(m_thisAllocator_).getAllocationCount(m_thisAllocator_) - m_previousAllocationCount_;
 }
 
 size_t hxMemoryAllocatorScope::getScopeBytesAllocated() const {
-	hxAssertRelease(g_hxIsInit, "call hxInit");
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
-	if (!s_hxMemoryManager) {
-		return 0;
-	}
-#endif
+	hxAssertRelease(s_hxMemoryManager, "no memory manager");
 	return s_hxMemoryManager->getAllocator(m_thisAllocator_).getBytesAllocated(m_thisAllocator_) - m_previousBytesAllocated_;
 }
 
@@ -526,12 +470,7 @@ size_t hxMemoryAllocatorScope::getScopeBytesAllocated() const {
 extern "C"
 void* hxMalloc(size_t size) {
 	hxInit();
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
-	if (!s_hxMemoryManager) {
-		return hxMallocChecked(size);
-	}
-#endif
+	hxAssertRelease(s_hxMemoryManager, "no memory manager");
 	void* ptr = s_hxMemoryManager->allocate(size, hxMemoryAllocator_Current, HX_ALIGNMENT);
 	if ((HX_RELEASE) < 1) {
 		::memset(ptr, 0xab, size);
@@ -544,13 +483,7 @@ void* hxMalloc(size_t size) {
 extern "C"
 void* hxMallocExt(size_t size, hxMemoryAllocator id, size_t alignment) {
 	hxInit();
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
-	if (!s_hxMemoryManager) {
-		hxAssert(alignment <= HX_ALIGNMENT); // No support for alignment when disabled.
-		return hxMallocChecked(size);
-	}
-#endif
+	hxAssertRelease(s_hxMemoryManager, "no memory manager");
 	void* ptr = s_hxMemoryManager->allocate(size, (hxMemoryAllocator)id, alignment);
 	if ((HX_RELEASE) < 1) {
 		::memset(ptr, 0xab, size);
@@ -560,72 +493,42 @@ void* hxMallocExt(size_t size, hxMemoryAllocator id, size_t alignment) {
 
 extern "C"
 void hxFree(void *ptr) {
-	hxAssertRelease(g_hxIsInit, "call hxInit");
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
-	if (!s_hxMemoryManager) {
-		::free(ptr);
-	}
-	else
-#endif
-	{
-		// Nothing allocated from the OS memory manager can be freed here.  Not even
-		// from hxMemoryAllocatorOsHeap.
-		s_hxMemoryManager->free(ptr);
-	}
+	hxAssertRelease(s_hxMemoryManager, "no memory manager");
+
+	// Nothing allocated from the OS memory manager can be freed here.  Not unless
+	// it is wrapped with hxMemoryAllocatorOsHeap.
+	s_hxMemoryManager->free(ptr);
 }
 
 void hxMemoryManagerInit() {
-	hxAssertRelease(g_hxIsInit, "call hxInit");
-	hxAssert(!s_hxMemoryManager);
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	if (g_hxSettings.disableMemoryManager) {
-		return;
-	}
-#endif
+	hxAssertRelease(!s_hxMemoryManager, "re-init memory manager");
+
 	s_hxMemoryManager = (hxMemoryManager*)hxMallocChecked(sizeof(hxMemoryManager));
 	::memset((void*)s_hxMemoryManager, 0x00, sizeof(hxMemoryManager));
 
-	// Contains disableMemoryManager checks
 	s_hxMemoryManager->construct();
 }
 
 void hxMemoryManagerShutDown() {
-	hxAssertRelease(g_hxIsInit, "call hxInit");
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager, "disableMemoryManager inconsistent");
-	if (!s_hxMemoryManager) {
-		return;
-	}
-#endif
+	hxAssertRelease(s_hxMemoryManager, "no memory manager");
+
 	// Any allocations made while active will crash when free'd.
 	size_t leakCount = hxMemoryManagerLeakCount();
-	hxAssertRelease(leakCount == 0, "memory leaks: %d", (int)leakCount); (void)leakCount;
+	hxAssertRelease(leakCount == 0, "memory leaks: %zd", leakCount); (void)leakCount;
 
+	// Return everything to the system allocator.
 	s_hxMemoryManager->destruct();
-
-	// All subsequent calls to hxFree had best come from the heap.
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	g_hxSettings.disableMemoryManager = true;
-#endif
 	::free(s_hxMemoryManager);
 	s_hxMemoryManager = hxnull;
 }
 
 size_t hxMemoryManagerLeakCount() {
-	hxAssertRelease(g_hxIsInit, "call hxInit");
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	hxAssertMsg(!s_hxMemoryManager == !!g_hxSettings.disableMemoryManager,
-		"disableMemoryManager inconsistent");
-	if (!s_hxMemoryManager) {
-		return 0u;
-	}
-#endif
+	hxAssertRelease(s_hxMemoryManager, "no memory manager");
 	return s_hxMemoryManager->leakCount();
 }
 
 // ----------------------------------------------------------------------------
-#else // HX_MEM_DIAGNOSTIC_LEVEL == -1
+#else // HX_MEMORY_MANAGER_DISABLE
 
 extern "C"
 void* hxMalloc(size_t size) {
@@ -667,4 +570,4 @@ size_t hxMemoryAllocatorScope::getScopeAllocationCount() const { return 0; }
 
 size_t hxMemoryAllocatorScope::getScopeBytesAllocated() const { return 0; }
 
-#endif // HX_MEM_DIAGNOSTIC_LEVEL == -1
+#endif // HX_MEMORY_MANAGER_DISABLE

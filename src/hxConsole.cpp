@@ -112,7 +112,7 @@ bool hxConsoleExecFilename(const char* filename) {
 // Built-in console commands
 
 // Lists variables and commands in order.
-void hxConsoleHelp() {
+bool hxConsoleHelp() {
 	if ((HX_RELEASE) < 2) {
 		hxInit();
 		hxMemoryAllocatorScope temporaryStack(hxMemoryAllocator_TemporaryStack);
@@ -134,17 +134,19 @@ void hxConsoleHelp() {
 			(*it)->command_()->usage_((*it)->key().str_);
 		}
 	}
+	return true;
 }
 
 #if (HX_RELEASE) < 2 && !defined __EMSCRIPTEN__
 
-static void hxConsolePeek(hxconsolehex_t address, hxconsolenumber_t bytes) {
+static bool hxConsolePeek(hxconsolehex_t address, hxconsolenumber_t bytes) {
 	hxHexDump((const void*)address, bytes, 0);
+	return true;
 }
 
 // Writes bytes from hex value in little endian format (LSB first). hex value is
 // repeated every 8 bytes/64-bits in memory. hex is also 64-bit.
-static void hxConsolePoke(hxconsolehex_t address_, hxconsolenumber_t bytes_, hxconsolehex_t hex_) {
+static bool hxConsolePoke(hxconsolehex_t address_, hxconsolenumber_t bytes_, hxconsolehex_t hex_) {
 	volatile uint8_t* address = address_;
 	uint32_t bytes = bytes_;
 	uint64_t hex = hex_;
@@ -152,14 +154,17 @@ static void hxConsolePoke(hxconsolehex_t address_, hxconsolenumber_t bytes_, hxc
 		*address++ = (uint8_t)hex;
 		hex = (hex >> 8) | (hex << 56);
 	}
+	return true;
 }
 
-static void hxConsoleHexDump(hxconsolehex_t address, hxconsolenumber_t bytes) {
+static bool hxConsoleHexDump(hxconsolehex_t address, hxconsolenumber_t bytes) {
 	hxHexDump((const void*)address, bytes, 1);
+	return true;
 }
 
-static void hxConsoleFloatDump(hxconsolehex_t address, hxconsolenumber_t bytes) {
+static bool hxConsoleFloatDump(hxconsolehex_t address, hxconsolenumber_t bytes) {
 	hxFloatDump((const float*)address, bytes);
+	return true;
 }
 
 // List console commands and argument types.

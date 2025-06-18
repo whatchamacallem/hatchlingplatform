@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Copyright 2017-2025 Adrian Johnston
 
 set -o errexit

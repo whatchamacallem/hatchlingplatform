@@ -28,7 +28,7 @@ TEST(hxMemoryManagerTestF, StringDuplicate) {
 	hxFree(p);
 }
 
-#if (HX_MEM_DIAGNOSTIC_LEVEL) != -1
+#if !(HX_MEMORY_MANAGER_DISABLE)
 
 class hxMemoryManagerTest :
 	public testing::Test
@@ -39,7 +39,6 @@ public:
 		uintptr_t startBytes;
 
 		{
-			hxLog("id %d...\n", (int)id);
 			hxMemoryAllocatorScope allocatorScope(id);
 
 			startCount = allocatorScope.getTotalAllocationCount();
@@ -144,19 +143,17 @@ public:
 };
 
 TEST_F(hxMemoryManagerTest, Execute) {
-#if (HX_MEM_DIAGNOSTIC_LEVEL) >= 1
-	if (g_hxSettings.disableMemoryManager) {
-		return; // Test fails because the hxMemoryManager code is disabled.
-	}
-#endif
-	hxLog("TEST_EXPECTING_ASSERTS:\n");
-
+	// The API should still work while stubbed out.
 	for (size_t i = 0; i < hxMemoryAllocator_Current; ++i) {
 		TestMemoryAllocatorNormal((hxMemoryAllocator)i);
 	}
 
+	// Leak checking requires the memory manager.
+#if !(HX_MEMORY_MANAGER_DISABLE)
+	hxLog("TEST_EXPECTING_ASSERTS:\n");
 	// Only the TemporaryStack expects all allocations to be free()'d.
 	TestMemoryAllocatorLeak(hxMemoryAllocator_TemporaryStack);
+#endif
 }
 
 TEST_F(hxMemoryManagerTest, TempOverflow) {
@@ -171,4 +168,4 @@ TEST_F(hxMemoryManagerTest, TempOverflow) {
 	hxFree(p);
 }
 
-#endif // HX_MEM_DIAGNOSTIC_LEVEL == -1
+#endif // !HX_MEMORY_MANAGER_DISABLE

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # After building the emsdk these commands need to be run in the emsdk directory:
 #
@@ -26,7 +26,7 @@ emcc -Iinclude -O2 -fpic -c src/*.c test/*.c
 # -sMAIN_MODULE=2 dead-strips without leaving code for other modules.
 # Dump the memory manager because a web browser doesn't need that.
 emcc -Iinclude -O2 -fpic -sMAIN_MODULE=2 -fno-exceptions -fno-rtti \
-	-U_GNU_SOURCE -DHX_MEM_DIAGNOSTIC_LEVEL=-1 *.o */*.cpp -o index.html
+	-U_GNU_SOURCE -DHX_MEMORY_MANAGER_DISABLE=1 *.o */*.cpp -o index.html
 
 ls -l index.wasm
 

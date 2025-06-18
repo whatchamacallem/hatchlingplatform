@@ -13,14 +13,15 @@ HX_REGISTER_FILENAME_HASH
 
 namespace {
 
-void hxProfileBeginCommand_() { hxProfilerBegin(); }
+bool hxProfileBeginCommand_() { hxProfilerBegin(); return true; }
 
-void hxProfileEndCommand_() { hxProfilerEnd(); }
+bool hxProfileEndCommand_() { hxProfilerEnd(); return true; }
 
-void hxProfilerLogCommand_() { hxProfilerLog(); }
+bool hxProfilerLogCommand_() { hxProfilerLog(); return true; }
 
-void hxProfilerWriteToChromeTracingCommand_(const char* filename) {
+bool hxProfilerWriteToChromeTracingCommand_(const char* filename) {
 	hxProfilerWriteToChromeTracing(filename);
+	return true;
 }
 
 hxConsoleCommandNamed(hxProfileBeginCommand_, profilebegin);
