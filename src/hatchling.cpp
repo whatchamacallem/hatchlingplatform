@@ -24,9 +24,9 @@ HX_REGISTER_FILENAME_HASH
 // You need the math library -lm. Causing.. or implicit checking for in a
 // release build.. or explicit checking for... floating point exceptions is not
 // recommended.
-#if (HX_CPLUSPLUS >= 201103L) && defined(__GLIBC__) && !defined(__FAST_MATH__)
+#if (HX_CPLUSPLUS >= 201103L) && defined __GLIBC__ && !defined __FAST_MATH__
 #include <fenv.h>
-#if !defined(HX_FLOATING_POINT_TRAPS)
+#if !defined HX_FLOATING_POINT_TRAPS
 #define HX_FLOATING_POINT_TRAPS 1
 #endif
 #else
@@ -36,13 +36,13 @@ HX_REGISTER_FILENAME_HASH
 
 // New rule. Use -ffast-math in release. Or set -DHX_FLOATING_POINT_TRAPS=0.
 HX_STATIC_ASSERT((HX_RELEASE) < 1 || !(HX_FLOATING_POINT_TRAPS),
-	"floating point exceptions in release. use -ffast-math.");
+	"floating point exceptions enabled in release. use -ffast-math.");
 
 // Use -fno-exceptions. Exceptions add overhead to c++ and add untested pathways.
 // In this codebase memory allocation cannot fail. It is designed to force you
 // to allocate enough memory for everything in advance. There are no exceptions
 // to handle. There are exception handling intrinsics in use in case they are on.
-#if defined(__cpp_exceptions) && !defined(__INTELLISENSE__)
+#if defined __cpp_exceptions && !defined __INTELLISENSE__
 HX_STATIC_ASSERT(0, "exceptions should not be enabled");
 #endif
 
@@ -73,6 +73,23 @@ void __cxa_guard_abort(uint64_t *guard) {
 	*guard = 0u;
 }
 #endif
+
+// ----------------------------------------------------------------------------
+// Hook Clang's sanitizers in the debugger.
+
+extern "C"
+void __ubsan_on_report() {
+	hxAssertRelease(0, "ubsan");
+}
+
+extern "C"
+void __asan_on_error() {
+	hxAssertRelease(0, "asan");
+}
+extern "C"
+void __tsan_on_report() {
+	hxAssertRelease(0, "tsan");
+}
 
 // ----------------------------------------------------------------------------
 #if (HX_RELEASE) < 1

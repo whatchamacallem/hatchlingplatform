@@ -80,7 +80,7 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 #define hxAssertMsg(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
 	hxAssertHandler(__FILE__, __LINE__)) || HX_BREAKPOINT())
 
-// hxAssert(bool x, ...) - Logs an error and terminates execution if x is false. This is only
+// hxAssert(bool x) - Logs an error and terminates execution if x is false. This is only
 // evaluated when HX_RELEASE == 0.
 // - ...: The condition to evaluate.
 #define hxAssert(...) (void)(!!(__VA_ARGS__) || (hxLogHandler(hxLogLevel_Assert, HX_QUOTE(__VA_ARGS__)), \
@@ -96,7 +96,7 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 // Assert handler. Do not call directly, signature changes and then is removed.
 HX_NOEXCEPT_INTRINSIC int hxAssertHandler(const char* file_, size_t line_);
 
-#else // HX_RELEASE > 1
+#else // HX_RELEASE >= 1
 #define hxLog(...) ((void)0)
 #define hxAssertMsg(x_, ...) ((void)0)
 #define hxAssert(x_) ((void)0)
@@ -132,15 +132,14 @@ HX_NOEXCEPT_INTRINSIC HX_NORETURN void hxAssertHandler(uint32_t file_, size_t li
 #define hxWarnMsg(x_, ...) ((void)0)
 #endif
 
-// hxAssertRelease has 4 variations. See above. This is only
-// evaluated when HX_RELEASE <= 2.
+// hxAssertRelease has 4 variations. See above. It is only evaluated when HX_RELEASE < 3.
 #if (HX_RELEASE) == 1
 #define hxAssertRelease(x_, ...) (void)(!!(x_) || (hxLogHandler(hxLogLevel_Assert, __VA_ARGS__), \
 	hxAssertHandler(hxStringLiteralHash(__FILE__), __LINE__), 0))
 #elif (HX_RELEASE) == 2
 #define hxAssertRelease(x_, ...) (void)(!!(x_) || (hxAssertHandler(hxStringLiteralHash(__FILE__), __LINE__), 0))
 #elif (HX_RELEASE) == 3
-#define hxAssertRelease(x_, ...) ((void)0) // hxAssertRelease - no asserts at level 3.
+#define hxAssertRelease(x_, ...) ((void)0)
 #endif
 
 // hxInitInternal - Use hxInit instead. It checks g_hxIsInit.

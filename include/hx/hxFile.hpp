@@ -113,7 +113,7 @@ public:
 	// - str: Reference to a string literal to write to the file.
 	template<size_t StringLength_>
 	HX_CONSTEXPR_FN hxFile& operator<<(const char(&str_)[StringLength_]) {
-		hxAssert(::strnlen(str_, StringLength_) == (StringLength_-1));
+		hxAssert(::strlen(str_) == (StringLength_-1));
 		write(str_, StringLength_-1);
 		return *this;
 	}

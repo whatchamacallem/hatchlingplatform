@@ -10,7 +10,7 @@ int g_hxIsInit;
 // g_hxSettings. Declared here in plain C for maximum portability.
 struct hxSettings g_hxSettings;
 
-#if defined(__clang__)
+#if defined __clang__
 __attribute__((no_sanitize("address")))
 #endif
 void hxHexDump(const void* address, size_t bytes, int pretty) {
@@ -37,7 +37,7 @@ void hxHexDump(const void* address, size_t bytes, int pretty) {
 	}
 }
 
-#if defined(__clang__)
+#if defined __clang__
 __attribute__((no_sanitize("address")))
 #endif
 void hxFloatDump(const float* address, size_t count) {

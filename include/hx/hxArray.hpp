@@ -18,7 +18,23 @@ public:
 
     // Constructs an empty array with a capacity of Capacity. m_end_ will be 0
     // if Capacity is 0.
-    HX_CONSTEXPR_FN explicit hxArray() : hxAllocator<T_, Capacity_>() { m_end_ = this->data(); }
+    HX_CONSTEXPR_FN explicit hxArray()
+        : hxAllocator<T_, Capacity_>(), m_end_(this->data()) { }
+
+    // Constructs an array of a given size using T_'s default constructor.
+    // - size: Sets array size as if resize(size) were called.
+    HX_CONSTEXPR_FN explicit hxArray(size_t size_)
+            : hxAllocator<T_, Capacity_>(), m_end_(this->data()) {
+        this->resize(size_);
+    }
+
+    // Constructs an array of a given size by making copies of t.
+    // - size: Sets array size as if resize(size, t) were called.
+    // - t: The const T& to be duplicated.
+    HX_CONSTEXPR_FN explicit hxArray(size_t size_, const T_& t_)
+            : hxAllocator<T_, Capacity_>(), m_end_(this->data()) {
+        this->resize(size_, t_);
+    }
 
     // Copy constructs an array. Non-explicit to allow assignment constructor.
     // rhs - A non-temporary Array<T>.
@@ -161,17 +177,40 @@ public:
     // Returns true if the array is full.
     HX_CONSTEXPR_FN bool full() const { return m_end_ == this->data() + this->capacity(); }
 
-    // Resizes the array to the specified size, constructing or destroying elements as needed.
+    // Resizes the array to the specified size, constructing or destroying
+    // elements as needed. Requires a default constructor. Integers and floats
+    // will be value-initialized to zero as per the standard.
     // - size: The new size of the array.
     HX_CONSTEXPR_FN void resize(size_t size_) {
         this->reserve(size_);
+        T_* end_ = this->data() + size_;
         if (size_ >= this->size()) {
-            this->construct_(m_end_, this->data() + size_);
+            while (m_end_ != end_) {
+                ::new (m_end_++) T_();
+            }
         }
         else {
-            this->destruct_(this->data() + size_, m_end_);
+            this->destruct_(end_, m_end_);
         }
-        m_end_ = this->data() + size_;
+        m_end_ = end_;
+    }
+
+    // An overload with an initial value for new elements. Resizes the array to
+    // the specified size, copy constructing or destroying elements as needed.
+    // - size: The new size of the array.
+    // - t: Initial value for new elements.
+    HX_CONSTEXPR_FN void resize(size_t size_, const T_& t_) {
+        this->reserve(size_);
+        T_* end_ = this->data() + size_;
+        if (size_ >= this->size()) {
+            while (m_end_ != end_) {
+                ::new (m_end_++) T_(t_);
+            }
+        }
+        else {
+            this->destruct_(end_, m_end_);
+        }
+        m_end_ = end_;
     }
 
     // Adds a copy of the specified element to the end of the array.
@@ -212,8 +251,8 @@ public:
     // Constructs an array of T from an array of T2.
     // - a: The array.
     // - Sz: Its size.
-    template<typename T2_, size_t Sz_>
-    HX_CONSTEXPR_FN void assign(const T2_(&a_)[Sz_]) { this->assign(a_ + 0, a_ + Sz_); }
+    template<typename T2_, size_t Size_>
+    HX_CONSTEXPR_FN void assign(const T2_(&a_)[Size_]) { this->assign(a_ + 0, a_ + Size_); }
 
     // Variant of emplace_back() that returns a pointer for use with placement new.
     HX_CONSTEXPR_FN void* emplaceBackUnconstructed() {
@@ -248,15 +287,6 @@ public:
     }
 
 private:
-    // Constructs elements in the range [first, last].
-    // - first: Pointer to the beginning of the range.
-    // - last: Pointer to the end of the range.
-    HX_CONSTEXPR_FN void construct_(T_* first_, T_* last_) {
-        while (first_ != last_) {
-            ::new (first_++) T_;
-        }
-    }
-
     // Destroys elements in the range [first, last].
     // - first: Pointer to the beginning of the range.
     // - last: Pointer to the end of the range.
@@ -268,8 +298,7 @@ private:
     T_* m_end_;
 };
 
-// hxswap(hxArray<T>&, hxArray<T>&) - Exchanges the contents of x and y using a
-// temporary.
+// hxswap(hxArray<T>&, hxArray<T>&) - Exchanges the contents of x and y.
 template<typename T_>
 HX_CONSTEXPR_FN void hxswap(hxArray<T_>& x_, hxArray<T_>& y_) {
 	x_.swap(y_);

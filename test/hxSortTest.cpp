@@ -1,5 +1,6 @@
 // Copyright 2017-2025 Adrian Johnston
 
+#include <hx/hxRandom.hpp>
 #include <hx/hxSort.hpp>
 #include <hx/hxTest.hpp>
 
@@ -69,7 +70,7 @@ public:
 		ASSERT_EQ(cit, rs.cEnd());
 	}
 
-    hxTestRandom m_prng_;
+    hxRandom m_prng_;
 };
 
 TEST_F(hxRadixSortTest, Null) {

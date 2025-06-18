@@ -9,21 +9,45 @@ class hxFile;
 // configuration files. Output is directed to the system log with
 // hxLogLevel_Console. A remote console will require forwarding commands to the
 // target and reporting the system log back. Configuration files only require
-// file I/O. All calls with up to 4 args which are fundamental types are
-// supported. Setting variables of a fundamental type are also supported.
-// const char* args will capture the remainder of the line including #'s.
+// file I/O. C-style calls with up to 4 args using "const char*",
+// hxconsolenumber_t or hxconsolehex_t are required for the bindings to work.
 
-// hxconsolehex_t - This type of command parameter parses hex and is designed
-// to pass pointers and hash values via the console. Always 64-bit.
+// hxconsolenumber_t - A number. Uses double as an intermediate type. This
+// reduces template bloat by limiting parameter types. This is the same type of
+// generic number approach JavaScript uses. Always 64-bit.
+class hxconsolenumber_t {
+public:
+    hxconsolenumber_t(void) : m_x_(0.0) { }
+    template<typename T_> hxconsolenumber_t(T_ x_) : m_x_((double)x_) { }
+	template<typename T_> operator T_() const {
+        T_ t = (T_)m_x_;
+        hxWarnMsg((double)t == m_x_, "precision error: %lf -> %lf", m_x_, (double)t);
+        return t;
+    }
+
+private:
+    // ERROR - Numbers are not pointers or references.
+    template<typename T_> operator T_*() const HX_DELETE_FN;
+
+    double m_x_;
+};
+
+// hxconsolehex_t - A hex value. Uses uint64_t as an intermediate type. This
+// type of command parameter parses hex and then uses a C-style cast to
+// convert to any type. Useful for passing pointers and hash values via the
+// console. Always 64-bit.
 class hxconsolehex_t {
 public:
-    hxconsolehex_t(void) { }
+    hxconsolehex_t(void) : m_x_(0u) { }
     hxconsolehex_t(uint64_t x_) : m_x_(x_) { }
+	template<typename T_> operator T_() const {
+        T_ t = (T_)m_x_;
+        hxWarnMsg((uint64_t)t == m_x_, "precision error: %llx -> %llx", (unsigned long long)m_x_, (unsigned long long)t);
+        return t;
+    }
 
-	// Automatically C-style casts to any type.
-	template<typename T_> operator T_() const { return (T_)m_x_; }
 private:
-    HX_STATIC_ASSERT(sizeof(uint64_t) >= sizeof(uintptr_t), "pointers too big");
+    HX_STATIC_ASSERT(sizeof(uint64_t) >= sizeof(uintptr_t), "128-bit pointers?");
 	uint64_t m_x_;
 };
 

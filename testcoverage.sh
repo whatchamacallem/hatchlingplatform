@@ -8,7 +8,7 @@ g++ -Iinclude --coverage -O0 -DHX_RELEASE=0 -DHX_TEST_ERROR_HANDLING=1 \
 	-fno-exceptions -pthread -lpthread -std=c++17 -lstdc++ \
 	*/*.cpp *.o -o hxtest
 
-echo runtests | ./hxtest printhashes help execstdin
+echo runtests | ./hxtest printhashes help "checkhash 0" execstdin
 
 gcovr --html-details coverage.html
 

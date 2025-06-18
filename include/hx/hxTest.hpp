@@ -125,24 +125,3 @@ HX_CONSTEXPR_FN void InitGoogleTest() { }
 #define ASSERT_NE EXPECT_NE
 
 #endif // !HX_USE_GOOGLE_TEST
-
-// hxTestRandom - MMIX LCG. Knuth, D. 2002 (Modified to perturb return.)
-struct hxTestRandom {
-public:
-	// Constructor to initialize the random number generator with a seed.
-    // - seed: Initial seed value for the random number generator.
-    HX_CONSTEXPR_FN hxTestRandom(uint32_t seed_ = 1u) : m_state_(seed_) { }
-
-    // Returns the next random number as a 32-bit unsigned integer.
-    HX_CONSTEXPR_FN uint32_t operator()(void) {
-        m_state_ = 0x5851f42d4c957f2dull * m_state_ + 0x14057b7ef767814full;
-
-        // MODIFICATION: Use the 4 msb bits as a 0..15 bit variable shift control.
-        // Ignores the low 13 bits because they are low quality. Returns 32 bits
-        // chosen at a random offset starting between the 13th and 28th bits.
-        // 4 bits shift control + 32 returned + up to 15 shifted + 13 discarded.
-        return (uint32_t)(m_state_ >> ((unsigned int)(m_state_ >> 60) + 13u));
-    }
-private:
-    uint64_t m_state_;
-};

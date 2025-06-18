@@ -18,7 +18,7 @@ namespace {
 struct hxConsoleLess_ {
 	inline bool operator()(const hxConsoleHashTableNode_* lhs,
 			const hxConsoleHashTableNode_* rhs) const {
-		return ::strcasecmp(lhs->key().str_, rhs->key().str_) < 0;
+		return hxKeyLess(lhs->key().str_, rhs->key().str_);
 	}
 };
 
@@ -82,7 +82,7 @@ bool hxConsoleExecLine(const char* command) {
 	}
 #ifdef __cpp_exceptions
 	catch (...) {
-		hxLogWarning("unexpected exception");
+		hxLogWarning("unexpected exception: %s", command);
 		return false;
 	}
 #endif
@@ -136,28 +136,29 @@ void hxConsoleHelp() {
 	}
 }
 
-#if (HX_RELEASE) < 2 && !defined(__EMSCRIPTEN__)
+#if (HX_RELEASE) < 2 && !defined __EMSCRIPTEN__
 
-static void hxConsolePeek(hxconsolehex_t address, uint32_t bytes) {
+static void hxConsolePeek(hxconsolehex_t address, hxconsolenumber_t bytes) {
 	hxHexDump((const void*)address, bytes, 0);
 }
 
 // Writes bytes from hex value in little endian format (LSB first). hex value is
 // repeated every 8 bytes/64-bits in memory. hex is also 64-bit.
-static void hxConsolePoke(hxconsolehex_t address, uint32_t bytes, hxconsolehex_t hex) {
-	uint64_t value = hex;
-	volatile uint8_t* t = (uint8_t*)address;
+static void hxConsolePoke(hxconsolehex_t address_, hxconsolenumber_t bytes_, hxconsolehex_t hex_) {
+	volatile uint8_t* address = address_;
+	uint32_t bytes = bytes_;
+	uint64_t hex = hex_;
 	while (bytes--) {
-		*t++ = (uint8_t)value;
-		value = (value >> 8) | (value << 56);
+		*address++ = (uint8_t)hex;
+		hex = (hex >> 8) | (hex << 56);
 	}
 }
 
-static void hxConsoleHexDump(hxconsolehex_t address, size_t bytes) {
+static void hxConsoleHexDump(hxconsolehex_t address, hxconsolenumber_t bytes) {
 	hxHexDump((const void*)address, bytes, 1);
 }
 
-static void hxConsoleFloatDump(hxconsolehex_t address, size_t bytes) {
+static void hxConsoleFloatDump(hxconsolehex_t address, hxconsolenumber_t bytes) {
 	hxFloatDump((const float*)address, bytes);
 }
 

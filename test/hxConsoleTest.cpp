@@ -50,45 +50,46 @@ namespace {
 #define hxConsoleTestTypeCheck(T, t) hxConsoleTestTypeCheckT(t, HX_CONCATENATE(hxConsoleTestTypeID_, T), \
 	HX_CONCATENATE(c_hxConsoleTestExpected, T))
 
-	void hxConsoleTestFn0() {
+	bool hxConsoleTestFn0() {
 		c_hxConsoleTestCallFlags |= 1 << (int32_t)hxConsoleTestTypeID_Void;
+		return true;
 	}
 
-	int8_t hxConsoleTestFn1(int8_t a0) {
-		hxConsoleTestTypeCheck(Char, a0);
-		return '1';
+	bool hxConsoleTestFn1(hxconsolenumber_t a0) {
+		hxConsoleTestTypeCheck(Char, (int8_t)a0);
+		return true;
 	}
 
-	int16_t hxConsoleTestFn2(const int16_t a0, int32_t a1) {
-		hxConsoleTestTypeCheck(Short, a0);
-		hxConsoleTestTypeCheck(Int, a1);
-		return 2;
+	bool hxConsoleTestFn2(hxconsolenumber_t a0, hxconsolenumber_t a1) {
+		hxConsoleTestTypeCheck(Short, (int16_t)a0);
+		hxConsoleTestTypeCheck(Int, (int32_t)a1);
+		return true;
 	}
 
-	int32_t hxConsoleTestFn3(const bool a0, const uint8_t a1) {
-		hxConsoleTestTypeCheck(Bool, a0);
-		hxConsoleTestTypeCheck(UChar, a1);
-		return 3;
+	bool hxConsoleTestFn3(hxconsolenumber_t a0, hxconsolenumber_t a1) {
+		hxConsoleTestTypeCheck(Bool, (bool)a0);
+		hxConsoleTestTypeCheck(UChar, (uint8_t)a1);
+		return true;
 	}
 
-	int32_t hxConsoleTestFn4(uint16_t a0, const uint32_t a1, uint32_t a2, float a3) {
-		hxConsoleTestTypeCheck(UShort, a0);
-		hxConsoleTestTypeCheck(UInt, a1);
-		hxConsoleTestTypeCheck(UInt, a2);
-		hxConsoleTestTypeCheck(Float, a3);
+	bool hxConsoleTestFn4(hxconsolenumber_t a0, hxconsolenumber_t a1, hxconsolenumber_t a2, hxconsolenumber_t a3) {
+		hxConsoleTestTypeCheck(UShort, (uint16_t)a0);
+		hxConsoleTestTypeCheck(UInt, (uint32_t)a1);
+		hxConsoleTestTypeCheck(UInt, (uint32_t)a2);
+		hxConsoleTestTypeCheck(Float, (float)a3);
 		return 4;
 	}
-	void hxConsoleTestFn8(int64_t a0, uint64_t a1, double a2) {
-		hxConsoleTestTypeCheck(LongLong, a0);
-		hxConsoleTestTypeCheck(ULongLong, a1);
-		hxConsoleTestTypeCheck(Double, a2);
+	bool hxConsoleTestFn8(hxconsolenumber_t a0, hxconsolenumber_t a1, hxconsolenumber_t a2) {
+		hxConsoleTestTypeCheck(LongLong, (int64_t)a0);
+		hxConsoleTestTypeCheck(ULongLong, (uint64_t)a1);
+		hxConsoleTestTypeCheck(Double, (double)a2);
+		return true;
 	}
 
 #undef hxConsoleTestTypeCheck
 } // namespace
 
 TEST(hxConsoleTest, CommandFactory) {
-	hxLogConsole("TEST_EXPECTING_WARNINGS:\n");
 
 	c_hxConsoleTestCallFlags = 0;
 
@@ -96,19 +97,22 @@ TEST(hxConsoleTest, CommandFactory) {
 	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn0).execute_("unexpected text"));
 
 	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn1).execute_("123"));
-	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn1).execute_("256"));
-
 	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn2).execute_("-234 -345"));
-	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn2).execute_("32768 -345"));
 
 	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn3).execute_("1 12"));
-	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn3).execute_("2 12"));
 
 	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn4).execute_("2345 3456 3456 6.78"));
 	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn4).execute_("$*"));
 
 	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn8).execute_("56789 67890 7.89"));
 	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn8).execute_("56d789 67890 7.89"));
+
+#if HX_TEST_ERROR_HANDLING
+	// These all fail due to precision.
+	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn1).execute_("256"));
+	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn2).execute_("32768 -345"));
+	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn3).execute_("2 12"));
+#endif
 
 	// Check that all flags have been set.
 	ASSERT_EQ(c_hxConsoleTestCallFlags, (1<<hxConsoleTestTypeID_MAX)-1);
@@ -120,21 +124,21 @@ TEST(hxConsoleTest, CommandFactory) {
 namespace {
 	float s_hxConsoleTestResultHook = 0.0f;
 
-	void hxConsoleTestRegister0(int32_t a0, const char* a1) {
+	void hxConsoleTestRegister0(hxconsolenumber_t a0, const char* a1) {
 		s_hxConsoleTestResultHook = (float)a0 + (float)::strlen(a1);
 	}
 
-	bool hxConsoleTestRegister1(float a0) {
+	bool hxConsoleTestRegister1(hxconsolenumber_t a0) {
 		s_hxConsoleTestResultHook = a0;
 		return true;
 	}
 
-	int hxConsoleTestRegister2(float a0) {
+	int hxConsoleTestRegister2(hxconsolenumber_t a0) {
 		s_hxConsoleTestResultHook = a0;
 		return 2;
 	}
 
-	float hxConsoleTestRegister3(uint32_t, float a1) {
+	float hxConsoleTestRegister3(hxconsolenumber_t, hxconsolenumber_t a1) {
 		s_hxConsoleTestResultHook = a1;
 		return 0.1f;
 	}
@@ -243,9 +247,11 @@ TEST(hxConsoleTest, RegisterVariable) {
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestULongLong 5678"));
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestDouble 789.0"));
 
+#if HX_TEST_ERROR_HANDLING
 	hxLogConsole("TEST_EXPECTING_WARNINGS:\n");
 	ASSERT_FALSE(hxConsoleExecLine("s_hxConsoleTestInt 3.5"));
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestInt"));
+#endif
 
 	ASSERT_EQ(s_hxConsoleTestChar, 123);
 	ASSERT_EQ(s_hxConsoleTestShort, 234);
@@ -271,7 +277,7 @@ namespace {
 	volatile float s_hxConsoleTestFileVar1 = 0.0f;
 	volatile float s_hxConsoleTestFileVar2 = 0.0f;
 
-	void hxConsoleTestFileFn(float f) {
+	void hxConsoleTestFileFn(hxconsolenumber_t f) {
 		s_hxConsoleTestFileVar2 = f;
 	}
 } // namespace
@@ -279,7 +285,7 @@ namespace {
 hxConsoleVariableNamed(s_hxConsoleTestFileVar1, hxConsoleTestFileVar);
 hxConsoleCommandNamed(hxConsoleTestFileFn, hxConsoleTestFileFnName);
 
-#if defined(__GNUC__)
+#if defined __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
 #endif
@@ -294,7 +300,7 @@ TEST(hxConsoleTest, NullTest) {
 	SUCCEED();
 }
 
-#if defined(__GNUC__)
+#if defined __GNUC__
 #pragma GCC diagnostic pop
 #endif
 
@@ -343,7 +349,7 @@ TEST(hxConsoleTest, FileFail) {
 	ASSERT_FALSE(hxConsoleExecFilename("hxConsoleTest_FileTest.txt"));
 }
 
-#if (HX_RELEASE) < 2 && !defined(__EMSCRIPTEN__)
+#if (HX_RELEASE) < 2 && !defined __EMSCRIPTEN__
 TEST(hxConsoleTest, FilePeekPoke) {
 	uint32_t target[] = { 111, 777, 333 };
 	{

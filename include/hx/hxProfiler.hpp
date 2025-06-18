@@ -3,10 +3,10 @@
 
 #include <hx/hatchling.h>
 
-#if defined(__EMSCRIPTEN__)
+#if defined __EMSCRIPTEN__
 // from "emscripten/emscripten.h"
 extern "C" double emscripten_get_now(void);
-#elif defined(__x86_64__) || defined(__i386__)
+#elif defined __x86_64__ || defined __i386__
 #ifdef _MSC_VER
 #include <intrin.h>
 #else
@@ -38,20 +38,20 @@ static const hxcycles_t c_hxDefaultCyclesCutoff = 1000;
 // architecture. This is callable without enabling HX_PROFILE.
 static inline hxcycles_t hxTimeSampleCycles(void) {
     uint64_t cycles_ = 0; (void)cycles_;
-#if defined(__EMSCRIPTEN__)
+#if defined __EMSCRIPTEN__
     double t_ = emscripten_get_now() * 1.0e+6;
     cycles_ = (uint64_t)t_;
-#elif defined(__x86_64__) || defined(__i386__)
+#elif defined __x86_64__ || defined __i386__
     cycles_ = __rdtsc();
-#elif defined(__aarch64__)  // ARMv8-A 64-bit.
+#elif defined __aarch64__  // ARMv8-A 64-bit.
     __asm__ volatile("mrs %0, cntvct_el0" : "=r"(cycles_));
-#elif defined(__arm__)  // ARMv7-A 32-bit.
+#elif defined __arm__  // ARMv7-A 32-bit.
     uint32_t t_;
     __asm__ volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(t_));
     cycles_ = (uint64_t)t_;
-#elif defined(__riscv) && (__riscv_xlen == 64)
+#elif defined __riscv && (__riscv_xlen == 64)
     __asm__ volatile("rdcycle %0" : "=r"(cycles_));
-#elif defined(__powerpc__) || defined(__ppc__)
+#elif defined __powerpc__ || defined __ppc__
     __asm__ volatile("mftb %0" : "=r"(cycles_));
 #else
 HX_STATIC_ASSERT(0, "implement hxTimeSampleCycles");

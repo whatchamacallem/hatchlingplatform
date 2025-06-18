@@ -25,17 +25,17 @@ for I in 0 1 2 3; do
 echo clang UBSan -O$I "$@"...
 # compile C
 clang -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" \
-	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address \
+	-fsanitize=undefined,address -fsanitize-recover=undefined,address \
 	-std=c17 -c src/*.c test/*.c
 # generate pch. clang does this automatically when a c++ header file is the target.
 clang++ -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
 	-DHX_USE_CPP_THREADS=$I "$@" -pthread -std=c++17 -fno-exceptions \
-	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address \
+	-fsanitize=undefined,address -fsanitize-recover=undefined,address \
 	include/hx/hatchlingPch.hpp -o hatchlingPch.hpp.pch
 # compile C++ and link
 clang++ -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
 	-DHX_USE_CPP_THREADS=$I "$@" -pthread -std=c++17 -fno-exceptions \
-	-fsanitize=undefined,address -fno-sanitize-recover=undefined,address -lubsan \
+	-fsanitize=undefined,address -fsanitize-recover=undefined,address -lubsan \
 	-include-pch hatchlingPch.hpp.pch */*.cpp *.o -lpthread -lstdc++ -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' --color || ./hxtest runtests
 rm hxtest *.o
@@ -52,16 +52,16 @@ gcc --version | grep gcc
 for I in 0 1 2 3; do
 echo gcc c++98 -O$I "$@"...
 # -std=c99
-gcc -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" \
+gcc -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I -U_GNU_SOURCE "$@" \
 	-std=c99 -m32 -c src/*.c test/*.c
 # -std=c++98
-gcc -Iinclude -O$I -ffast-math -ggdb $WARNINGS -DHX_RELEASE=$I "$@" -std=c++98 -fno-exceptions \
+gcc -Iinclude -O$I -ffast-math -ggdb $WARNINGS -DHX_RELEASE=$I "$@" -std=c++98 -fno-exceptions -U_GNU_SOURCE \
 	-fno-rtti -Wno-unused-local-typedefs */*.cpp *.o -lstdc++ -m32 -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' --color || ./hxtest runtests
 rm hxtest
 echo gcc c++14 -O$I "$@"...
 # -std=c++14
-gcc -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" -pthread \
+gcc -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" -pthread -U_GNU_SOURCE \
 	-std=c++14 -fno-exceptions -fno-rtti */*.cpp *.o -lpthread -lstdc++ -m32 -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' --color || ./hxtest runtests
 rm hxtest *.o

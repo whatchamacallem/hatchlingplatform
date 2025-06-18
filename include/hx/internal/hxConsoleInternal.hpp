@@ -3,120 +3,35 @@
 
 // hxConsole internals. See hxConsole.h instead.
 
-struct hxConsoleCommand_ {
-	virtual bool execute_(const char* str_) = 0; // Return false for parse errors.
-	virtual void usage_(const char* id_=hxnull) = 0; // Expects command name.
-};
-
 // Console tokens are delimited by any whitespace and non-printing low-ASCII
 // characters. NUL is considered a delimiter and must be checked for separately.
 // This happens to be UTF-8 compatable because it ignores characters >= U+0100.
-HX_CONSTEXPR_FN static bool hxConsoleIsDelimiter_(char ch_) { return ch_ <= 32 || ch_ == 127; }
+HX_CONSTEXPR_FN static bool hxConsoleIsDelimiter_(char ch_) { return ch_ <= 32; }
 
 // Checks for printing characters.
 HX_CONSTEXPR_FN static bool hxConsoleIsEndOfline_(const char* str_) {
-	while (*str_ != 0 && hxConsoleIsDelimiter_(*str_)) {
+	while (*str_ != '\0' && hxConsoleIsDelimiter_(*str_)) {
 		++str_;
 	}
-	return *str_ == 0 || *str_ == '#'; // Skip comments
+	return *str_ == '\0' || *str_ == '#'; // Skip comments
 }
 
-// Wrapper for C/strtol style parsers.
-template <typename T_, typename R_>
-HX_CONSTEXPR_FN void hxConsoleArgParse_(T_& value_, const char* str_, char** next_, R_(*parser_)(char const*, char**, int)) {
-	R_ r_ = parser_(str_, next_, 10);
-	if(r_ != (T_)r_) {
-		hxLogWarning("console operand overflow: %s", str_);
-		*next_ = const_cast<char*>(str_); // reject input.
-	}
-	value_ = (T_)r_;
-}
-
-// hxConsoleArg_<T_>. Binds string parsing operations to function args. Invalid arguments are
-// set to 0, arguments out of range result in the maximum representable values.
+// hxConsoleArg_<T_>. Binds string parsing operations to function args. Invalid
+// arguments are set to 0, arguments out of range result in the maximum
+// representable values.
 template<typename T_> struct hxConsoleArg_ {
 private:
-	// Unsupported parameter type. No struct, class or reference args
-	// allowed. Use hxconsolehex_t for pointers and hashes or one of
-	// the following intrinsic type overloads.
+	// Unsupported parameter type. No struct, class or reference args allowed.
+	// Use the following overloads.
     hxConsoleArg_(const char* str_, char** next_) HX_DELETE_FN;
 };
-template<> struct hxConsoleArg_<signed char> {
-	inline hxConsoleArg_(const char* str_, char** next_) { hxConsoleArgParse_(value_, str_, next_, ::strtol); }
-	HX_CONSTEXPR_FN static const char* getLabel_() { return "s8"; }
-	signed char value_;
-};
-template<> struct hxConsoleArg_<signed short> {
-	inline hxConsoleArg_(const char* str_, char** next_) { hxConsoleArgParse_(value_, str_, next_, ::strtol); }
-	HX_CONSTEXPR_FN static const char* getLabel_() { return "s16"; }
-	signed short value_;
-};
-template<> struct hxConsoleArg_<signed int> {
-	inline hxConsoleArg_(const char* str_, char** next_) { hxConsoleArgParse_(value_, str_, next_, ::strtol); }
-	HX_CONSTEXPR_FN static const char* getLabel_() { return "s32"; }
-	signed int value_;
-};
-template<> struct hxConsoleArg_<signed long int> {
-	inline hxConsoleArg_(const char* str_, char** next_) { hxConsoleArgParse_(value_, str_, next_, ::strtol); }
-	HX_CONSTEXPR_FN static const char* getLabel_() { return "s32"; }
-	signed long int value_;
-};
-template<> struct hxConsoleArg_<signed long long int> {
-	inline hxConsoleArg_(const char* str_, char** next_) { hxConsoleArgParse_(value_, str_, next_, ::strtoll); }
-	HX_CONSTEXPR_FN static const char* getLabel_() { return "s64"; }
-	signed long long int value_;
-};
-template<> struct hxConsoleArg_<unsigned char> {
-	inline hxConsoleArg_(const char* str_, char** next_) { hxConsoleArgParse_(value_, str_, next_, ::strtoul); }
-	HX_CONSTEXPR_FN static const char* getLabel_() { return "u8"; }
-	unsigned char value_;
-};
-template<> struct hxConsoleArg_<unsigned short> {
-	inline hxConsoleArg_(const char* str_, char** next_) { hxConsoleArgParse_(value_, str_, next_, ::strtoul); }
-	HX_CONSTEXPR_FN static const char* getLabel_() { return "u16"; }
-	unsigned short value_;
-};
-template<> struct hxConsoleArg_<unsigned int> {
-	inline hxConsoleArg_(const char* str_, char** next_) { hxConsoleArgParse_(value_, str_, next_, ::strtoul); }
-	HX_CONSTEXPR_FN static const char* getLabel_() { return "u32"; }
-	unsigned int value_;
-};
-template<> struct hxConsoleArg_<unsigned long int> {
-	inline hxConsoleArg_(const char* str_, char** next_) { hxConsoleArgParse_(value_, str_, next_, ::strtoul); }
-	HX_CONSTEXPR_FN static const char* getLabel_() { return "u32"; }
-	unsigned long int value_;
-};
-template<> struct hxConsoleArg_<unsigned long long int> {
-	inline hxConsoleArg_(const char* str_, char** next_) { hxConsoleArgParse_(value_, str_, next_, ::strtoull); }
-	HX_CONSTEXPR_FN static const char* getLabel_() { return "u64"; }
-	unsigned long long int value_;
-};
-template<> struct hxConsoleArg_<char> {
-	inline hxConsoleArg_(const char* str_, char** next_) { hxConsoleArgParse_(value_, str_, next_, ::strtol); }
-	HX_CONSTEXPR_FN static const char* getLabel_() { return "s8"; }
-	char value_;
-};
-template<> struct hxConsoleArg_<float> {
-	inline hxConsoleArg_(const char* str_, char** next_) : value_(::strtof(str_, next_)) { }
-	HX_CONSTEXPR_FN static const char* getLabel_() { return "f32"; }
-	float value_;
-};
-template<> struct hxConsoleArg_<double> {
+template<> struct hxConsoleArg_<hxconsolenumber_t> {
 	inline hxConsoleArg_(const char* str_, char** next_) : value_(::strtod(str_, next_)) { }
 	HX_CONSTEXPR_FN static const char* getLabel_() { return "f64"; }
-	double value_;
-};
-// bool params must be 0 or 1.
-template<> struct hxConsoleArg_<bool> {
-	inline hxConsoleArg_(const char* str_, char** next_) {
-		unsigned long t_ = ::strtoul(str_, next_, 2);
-		value_ = (t_ != 0ul);
-	}
-	HX_CONSTEXPR_FN static const char* getLabel_() { return "0/1"; }
-	bool value_;
+	hxconsolenumber_t value_;
 };
 template<> struct hxConsoleArg_<hxconsolehex_t> {
-	inline hxConsoleArg_(const char* str_, char** next_) { value_ = hxconsolehex_t(::strtoull(str_, next_, 16)); }
+	inline hxConsoleArg_(const char* str_, char** next_) : value_(::strtoull(str_, next_, 16)) { }
 	HX_CONSTEXPR_FN static const char* getLabel_() { return "hex"; }
 	hxconsolehex_t value_;
 };
@@ -135,6 +50,30 @@ template<> struct hxConsoleArg_<const char*> {
 	}
 	HX_CONSTEXPR_FN static const char* getLabel_() { return "char*"; }
 	const char* value_;
+};
+
+struct hxConsoleCommand_ {
+	virtual bool execute_(const char* str_) = 0; // Return false for parse errors.
+	virtual void usage_(const char* id_=hxnull) = 0; // Expects command name.
+
+	// Returns 0 if there was an error. 1 if a single valid number was found and
+	// 2 if no parameter. Moved here to avoid template bloat.
+	// str - Parameters.
+	// number - Overwritten with the parsed value or an error code.
+	static int executeNumber_(const char* str_, double* number_) {
+		if(hxConsoleIsEndOfline_(str_)) {
+			return 2; // success, do not modify
+		}
+
+		char* ptr_ = const_cast<char*>(str_);
+		*number_ = ::strtod(str_, &ptr_);
+		if(str_ < ptr_ && hxConsoleIsEndOfline_(ptr_)) {
+			return 1; // success, do modify
+		}
+
+		hxLogConsole("parse error: %s", str_);
+		return 0; // failure, do not modify
+	}
 };
 
 // Defined in hxConsole.hpp. User overloadable in following templates.
@@ -200,11 +139,11 @@ struct hxConsoleCommandIsOk2_<void, A1_, A2_> {
 template<typename R_, typename A1_, typename A2_>
 struct hxConsoleCommand2_ : public hxConsoleCommand_ {
 	inline hxConsoleCommand2_(R_(*fn_)(A1_, A2_)) : m_fn_(fn_) { }
-	virtual bool execute_(const char* p_) HX_OVERRIDE {
-		char* pA_ = const_cast<char*>(p_);
-		char* pB_ = const_cast<char*>(p_);
-		hxConsoleArg_<A1_> arg1_(p_, &pA_);
-		if (p_ < pA_) {
+	virtual bool execute_(const char* str_) HX_OVERRIDE {
+		char* pA_ = const_cast<char*>(str_);
+		char* pB_ = const_cast<char*>(str_);
+		hxConsoleArg_<A1_> arg1_(str_, &pA_);
+		if (str_ < pA_) {
 			hxConsoleArg_<A2_> arg2_(pA_, &pB_);
 			if (pA_ < pB_ && hxConsoleIsEndOfline_(pB_)) {
 				return hxConsoleCommandIsOk2_<R_, A1_, A2_>::execute_(m_fn_, arg1_.value_, arg2_.value_);
@@ -230,11 +169,11 @@ struct hxConsoleCommandIsOk3_<void, A1_, A2_, A3_> {
 template<typename R_, typename A1_, typename A2_, typename A3_>
 struct hxConsoleCommand3_ : public hxConsoleCommand_ {
 	inline hxConsoleCommand3_(R_(*fn_)(A1_, A2_, A3_)) : m_fn_(fn_) { }
-	virtual bool execute_(const char* p_) HX_OVERRIDE {
-		char* pA_ = const_cast<char*>(p_);
-		char* pB_ = const_cast<char*>(p_);
-		hxConsoleArg_<A1_> arg1_(p_, &pA_);
-		if (p_ < pA_) {
+	virtual bool execute_(const char* str_) HX_OVERRIDE {
+		char* pA_ = const_cast<char*>(str_);
+		char* pB_ = const_cast<char*>(str_);
+		hxConsoleArg_<A1_> arg1_(str_, &pA_);
+		if (str_ < pA_) {
 			hxConsoleArg_<A2_> arg2_(pA_, &pB_);
 			if (pA_ < pB_) {
 				hxConsoleArg_<A3_> arg3_(pB_, &pA_);
@@ -264,11 +203,11 @@ struct hxConsoleCommandIsOk4_<void, A1_, A2_, A3_, A4_> {
 template<typename R_, typename A1_, typename A2_, typename A3_, typename A4_>
 struct hxConsoleCommand4_ : public hxConsoleCommand_ {
 	inline hxConsoleCommand4_(R_(*fn_)(A1_, A2_, A3_, A4_)) : m_fn_(fn_) { }
-	virtual bool execute_(const char* p_) HX_OVERRIDE {
-		char* pA_ = const_cast<char*>(p_);
-		char* pB_ = const_cast<char*>(p_);
-		hxConsoleArg_<A1_> arg1_(p_, &pA_);
-		if (p_ < pA_) {
+	virtual bool execute_(const char* str_) HX_OVERRIDE {
+		char* pA_ = const_cast<char*>(str_);
+		char* pB_ = const_cast<char*>(str_);
+		hxConsoleArg_<A1_> arg1_(str_, &pA_);
+		if (str_ < pA_) {
 			hxConsoleArg_<A2_> arg2_(pA_, &pB_);
 			if (pA_ < pB_) {
 				hxConsoleArg_<A3_> arg3_(pB_, &pA_);
@@ -293,29 +232,22 @@ struct hxConsoleCommand4_ : public hxConsoleCommand_ {
 template<typename T_>
 struct hxConsoleVariable_ : public hxConsoleCommand_ {
 	inline hxConsoleVariable_(volatile T_* var_) : m_var_(var_) { }
+
+	// Use executeNumber_ to avoid template bloat.
 	virtual bool execute_(const char* str_) HX_OVERRIDE {
-		if (hxConsoleIsEndOfline_(str_)) {
-			usage_("value_ is:"); // print type and value_.
-			return true;
+		double number_ = 0.0;
+		int code_ = executeNumber_(str_, &number_);
+		if(code_ == 1) {
+			// 1 indicates a value was read.
+			*m_var_ = (T_)number_;
 		}
-		char* ptr_ = const_cast<char*>(str_);
-		hxConsoleArg_<T_> x_(str_, &ptr_);
-		if (str_ < ptr_ && hxConsoleIsEndOfline_(ptr_)) {
-			*m_var_ = x_.value_;
-			return true;
-		}
-		usage_("usage:");
-		return false;
+		hxLogConsole("value: %.15g\n", (double)*m_var_);
+		return code_ != 2; // 2 is unexpected args.
 	}
+
 	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
 		(void)id_;
-		if (*m_var_ == (T_)(long long)*m_var_) {
-			// If the current value_ fits in a long long, use that.
-			hxLogConsole("%s %s(=%lld)\n", id_ ? id_ : "usage:", hxConsoleArg_<T_>::getLabel_(), (long long)*m_var_);
-		}
-		else {
-			hxLogConsole("%s %s(=%lf)\n", id_ ? id_ : "usage:", hxConsoleArg_<T_>::getLabel_(), (double)*m_var_);
-		}
+		hxLogConsole("%s <optional-value>\n", id_ ? id_ : "usage:");
 	}
 	volatile T_* m_var_;
 };

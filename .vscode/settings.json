@@ -1,5 +1,7 @@
 {
     "cSpell.words": [
+        "asan",
+        "checkhash",
         "cntvct",
         "demangle",
         "Demangled",
@@ -24,6 +26,7 @@
         "hxabs",
         "hxclamp",
         "hxconsolehex",
+        "hxconsolenumber",
         "hxcycles",
         "hxmax",
         "hxmin",
@@ -48,9 +51,12 @@
         "Reenqueuing",
         "reimplementation",
         "riscv",
+        "rodata",
         "rtti",
         "runtests",
         "stdint",
+        "tsan",
+        "ubsan",
         "unconstructed",
         "valgrind",
         "WASD",

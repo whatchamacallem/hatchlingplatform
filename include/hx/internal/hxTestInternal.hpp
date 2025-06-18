@@ -24,7 +24,7 @@ public:
 
 	enum {
 		TEST_MAX_FAIL_MESSAGES_ = 5,
-#if !defined(HX_TEST_MAX_CASES)
+#if !defined HX_TEST_MAX_CASES
 		HX_TEST_MAX_CASES = 1024
 #endif
 	};

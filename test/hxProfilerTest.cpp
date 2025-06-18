@@ -3,6 +3,7 @@
 #include <hx/hxProfiler.hpp>
 #include <hx/hxTaskQueue.hpp>
 #include <hx/hxConsole.hpp>
+#include <hx/hxRandom.hpp>
 
 #include <hx/hxTest.hpp>
 
@@ -56,7 +57,7 @@ public:
                 // Perform work that might not be optimized away by the compiler.
                 size_t ops = (m_accumulator_ & 0xf) + 1;
                 for (size_t i = 0; i < ops; ++i) {
-                    m_accumulator_ ^= m_testPrng_();
+                    m_accumulator_ ^= (size_t)m_testPrng_;
                 }
 
 				// Unsigned arithmetic handles clock wrapping correctly.
@@ -66,7 +67,7 @@ public:
 
         float m_targetMs_;
         size_t m_accumulator_;
-        hxTestRandom m_testPrng_;
+        hxRandom m_testPrng_;
     };
 };
 
