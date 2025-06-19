@@ -230,7 +230,6 @@ struct hxSettings {
 
 #if (HX_RELEASE) < 1
     int assertsToBeSkipped;        // Number of asserts to skip, useful for testing assert behavior.
-    float lightEmittingDiode;      // Placeholder for testing.
 #endif
 };
 

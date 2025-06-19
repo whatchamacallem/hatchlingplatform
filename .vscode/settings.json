@@ -1,6 +1,7 @@
 {
     "cSpell.words": [
         "asan",
+        "checkasserts",
         "checkhash",
         "cntvct",
         "debugbuild",
@@ -57,6 +58,7 @@
         "rodata",
         "rtti",
         "runtests",
+        "skipasserts",
         "stdint",
         "testall",
         "testcmake",

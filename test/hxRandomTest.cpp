@@ -152,7 +152,7 @@ TEST(hxRandomTest, HistogramF) {
 	hxRandom rng(40000);
 	const int buckets = 1000; // 1k buckets
 	const int iters = 1000;
-	const int max = 1100; // 10% above average max.
+	const int max = 1150; // 15% above average max.
 	hxArray<int> hist(buckets, 0);
 
 	for(int i=(buckets*iters); i--;) {

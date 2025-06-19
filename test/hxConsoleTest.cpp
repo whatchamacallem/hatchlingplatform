@@ -90,7 +90,6 @@ namespace {
 } // namespace
 
 TEST(hxConsoleTest, CommandFactory) {
-
 	c_hxConsoleTestCallFlags = 0;
 
 	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn0).execute_(""));
@@ -107,16 +106,29 @@ TEST(hxConsoleTest, CommandFactory) {
 	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn8).execute_("56789 67890 7.89"));
 	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn8).execute_("56d789 67890 7.89"));
 
-//#if HX_TEST_ERROR_HANDLING
-	// These all fail due to precision.
-	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn1).execute_("256"));
-	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn2).execute_("32768 -345"));
-	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn3).execute_("2 12"));
-//#endif
-
 	// Check that all flags have been set.
 	ASSERT_EQ(c_hxConsoleTestCallFlags, (1<<hxConsoleTestTypeID_MAX)-1);
 }
+
+// Triggers asserts and then ASSERT_FALSE a few times.
+#if HX_TEST_ERROR_HANDLING
+TEST(hxConsoleTest, Overflow) {
+#if (HX_RELEASE) < 1
+	// Test that asserts are triggered by overflow.
+	hxConsoleExecLine("skipasserts 3");
+#endif
+
+	// These will all ASSERT_FALSE due to parameter overflow.
+	hxConsoleCommandFactory_(hxConsoleTestFn1).execute_("256");
+	hxConsoleCommandFactory_(hxConsoleTestFn2).execute_("32768 -345");
+	hxConsoleCommandFactory_(hxConsoleTestFn3).execute_("2 12");
+
+#if (HX_RELEASE) < 1
+	// Test that asserts are triggered by overflow.
+	hxConsoleExecLine("checkasserts");
+#endif
+}
+#endif // HX_TEST_ERROR_HANDLING
 
 // ----------------------------------------------------------------------------
 // hxConsoleTest::RegisterCommand

@@ -8,12 +8,20 @@ HX_REGISTER_FILENAME_HASH
 // hxSettings - g_hxSettings is declared in hxCUtils.c for maximum portability.
 
 namespace {
-hxConsoleVariableNamed(g_hxSettings.logLevel, loglevel);
-
 #if (HX_RELEASE) < 1
-hxConsoleVariableNamed(g_hxSettings.assertsToBeSkipped, skipAsserts);
-hxConsoleVariableNamed(g_hxSettings.lightEmittingDiode, lightEmittingDiode);
+// Confirm the correct number of asserts were triggered.
+static bool checkasserts(void) {
+	int unusedAsserts = g_hxSettings.assertsToBeSkipped;
+	g_hxSettings.assertsToBeSkipped = 0;
+	hxAssertMsg(unusedAsserts == 0, "expected more asserts");
+	return unusedAsserts == 0;
+}
+
+hxConsoleCommand(checkasserts);
+hxConsoleVariableNamed(g_hxSettings.assertsToBeSkipped, skipasserts);
 #endif
+
+hxConsoleVariableNamed(g_hxSettings.logLevel, loglevel);
 } // namespace
 
 void hxSettingsConstruct() {
@@ -22,6 +30,5 @@ void hxSettingsConstruct() {
 
 #if (HX_RELEASE) < 1
 	g_hxSettings.assertsToBeSkipped = 0;
-	g_hxSettings.lightEmittingDiode = 0.7f;
 #endif
 }

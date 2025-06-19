@@ -21,10 +21,25 @@ public:
     hxconsolenumber_t(void) : m_x_(0.0) { }
     template<typename T_> hxconsolenumber_t(T_ x_) : m_x_((double)x_) { }
 	template<typename T_> operator T_() const {
-        T_ t = (T_)m_x_;
-        hxWarnMsg((double)t == m_x_, "precision error: %lf -> %lf", m_x_, (double)t);
+        // Reimplement std::numeric_limits for 2's compliment. The << operator
+        // promotes its operands to int and so that requires more casting.
+        // Manipulating the sign bit is not supported by the standard. Sorry.
+        constexpr bool isSigned_ = static_cast<T_>(-1) < T_(0u);
+        constexpr T_ minValue_ = isSigned_ ? T_(T_(1u) << (sizeof(T_) * 8 - 1)) : T_(0u);
+        constexpr T_ maxValue_ = ~minValue_;
+
+        double clamped_ = hxclamp(m_x_, (double)minValue_, (double)maxValue_);
+        hxAssertMsg(m_x_ == clamped_, "parameter overflow: %lf -> %lf", m_x_, clamped_);
+
+        // Asserts may be skipped. Avoid the undefined behavior sanitizer by
+        // clamping value.
+        T_ t = (T_)clamped_;
         return t;
     }
+
+	operator bool() const { return m_x_ != 0.0; }
+	operator float() const { return (float)m_x_; }
+	operator double() const { return m_x_; }
 
 private:
     // ERROR - Numbers are not pointers or references.

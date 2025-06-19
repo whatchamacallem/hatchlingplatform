@@ -146,7 +146,7 @@ struct hxConsoleCommand3_ : public hxConsoleCommand_ {
 			if (pA_ < pB_) {
 				hxConsoleArg_<A3_> arg3_(pB_, &pA_);
 				if (pB_ < pA_ && hxConsoleIsEndOfline_(pA_)) {
-					m_fn_(arg1_.value_, arg2_.value_, arg3_.value_);
+					return m_fn_(arg1_.value_, arg2_.value_, arg3_.value_);
 				}
 			}
 		}

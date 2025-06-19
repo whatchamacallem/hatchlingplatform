@@ -40,7 +40,7 @@ static bool hxRunAllTests(void) {
 	// RUN_ALL_TESTS is a Google Test symbol.
 	size_t testsFailing = (size_t)RUN_ALL_TESTS();
 
-#if (HX_TEST_ERROR_HANDLING)
+#if HX_TEST_ERROR_HANDLING
 	hxAssertRelease(testsFailing == 5, "expected 5 tests to fail");
 	// there are no asserts at level 3.
 	hxLogHandler(hxLogLevel_Warning, "expected 5 tests to fail");
