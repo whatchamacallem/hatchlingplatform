@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/dash
 # Copyright 2017-2025 Adrian Johnston
 #
 # Tests Hatchling Platform with gcc and clang in a variety of configurations.
@@ -9,8 +9,10 @@
 #   ./test.sh -DHX_TEST_ERROR_HANDLING=1
 #
 # will run the tests with HX_TEST_ERROR_HANDLING defined to be 1.
+
+export POSIXLY_CORRECT=1
+
 set -o errexit
-#set -x
 
 export GREP_COLORS='mt=0;32' # green
 
@@ -18,27 +20,32 @@ export GREP_COLORS='mt=0;32' # green
 WARNINGS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter"
 
+# Build artifacts are not retained.
+rm -rf ./bin
+mkdir ./bin
+cd ./bin
+
 # Test undefined behavior/address use with clang. Uses pch and allows exceptions
 # just to make sure there are none.
 clang --version | grep clang
 for I in 0 1 2 3; do
 echo clang UBSan -O$I "$@"...
 # compile C
-clang -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" \
+clang -I../include -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" \
 	-fsanitize=undefined,address -fsanitize-recover=undefined,address \
-	-std=c17 -c src/*.c test/*.c
+	-std=c17 -c ../src/*.c ../test/*.c
 # generate pch. clang does this automatically when a c++ header file is the target.
-clang++ -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
+clang++ -I../include -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
 	-DHX_USE_CPP_THREADS=$I "$@" -pthread -std=c++17 -fno-exceptions \
 	-fsanitize=undefined,address -fsanitize-recover=undefined,address \
-	include/hx/hatchlingPch.hpp -o hatchlingPch.hpp.pch
+	../include/hx/hatchlingPch.hpp -o hatchlingPch.hpp.pch
 # compile C++ and link
-clang++ -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
+clang++ -I../include -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
 	-DHX_USE_CPP_THREADS=$I "$@" -pthread -std=c++17 -fno-exceptions \
 	-fsanitize=undefined,address -fsanitize-recover=undefined,address -lubsan \
-	-include-pch hatchlingPch.hpp.pch */*.cpp *.o -lpthread -lstdc++ -o hxtest
-./hxtest runtests | grep '\[  PASSED  \]' --color || ./hxtest runtests
-rm hxtest *.o
+	-include-pch hatchlingPch.hpp.pch ../*/*.cpp *.o -lpthread -lstdc++ -o hxtest
+./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
+rm hxtest *.o *.txt *.bin
 done
 
 # The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:
@@ -52,19 +59,19 @@ gcc --version | grep gcc
 for I in 0 1 2 3; do
 echo gcc c++98 -O$I "$@"...
 # -std=c99
-gcc -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I -U_GNU_SOURCE "$@" \
-	-std=c99 -m32 -c src/*.c test/*.c
+gcc -I../include -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I -U_GNU_SOURCE "$@" \
+	-std=c99 -m32 -c ../src/*.c ../test/*.c
 # -std=c++98
-gcc -Iinclude -O$I -ffast-math -ggdb $WARNINGS -DHX_RELEASE=$I "$@" -std=c++98 -fno-exceptions -U_GNU_SOURCE \
-	-fno-rtti -Wno-unused-local-typedefs */*.cpp *.o -lstdc++ -m32 -o hxtest
-./hxtest runtests | grep '\[  PASSED  \]' --color || ./hxtest runtests
-rm hxtest
+gcc -I../include -O$I -ffast-math -ggdb $WARNINGS -DHX_RELEASE=$I "$@" -std=c++98 -fno-exceptions -U_GNU_SOURCE \
+	-fno-rtti -Wno-unused-local-typedefs ../*/*.cpp *.o -lstdc++ -m32 -o hxtest
+./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
+rm hxtest *.o *.txt *.bin
 echo gcc c++14 -O$I "$@"...
 # -std=c++14
-gcc -Iinclude -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" -pthread -U_GNU_SOURCE \
-	-std=c++14 -fno-exceptions -fno-rtti */*.cpp *.o -lpthread -lstdc++ -m32 -o hxtest
-./hxtest runtests | grep '\[  PASSED  \]' --color || ./hxtest runtests
-rm hxtest *.o
+gcc -I../include -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" -pthread -U_GNU_SOURCE \
+	-std=c++14 -fno-exceptions -fno-rtti ../*/*.cpp *.o -lpthread -lstdc++ -m32 -o hxtest
+./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
+rm hxtest *.o *.txt *.bin
 done
 
 # Remove output.

@@ -1,5 +1,8 @@
-#!/bin/sh
+#!/bin/dash
 # Copyright 2017-2025 Adrian Johnston
+
+export POSIXLY_CORRECT=1
+
 set -o errexit
 
 echo "

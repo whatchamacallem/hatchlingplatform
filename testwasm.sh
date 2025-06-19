@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/dash
 #
 # After building the emsdk these commands need to be run in the emsdk directory:
 #
@@ -6,11 +6,14 @@
 
 # Use the sort command to do a version aware comparison of two strings on two
 # different lines.
+
+export POSIXLY_CORRECT=1
+
 echo "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 4.0.0
 `emcc --version | grep emcc`" | sort -V -c 2>/dev/null
 
 # sort returns 1 if the emcc version is too small.
-if [ ${PIPESTATUS[1]} -eq 0 ]; then
+if [ $? -eq 0 ]; then
 	echo "emcc version is ok."
 else
 	echo "ERROR: emcc is missing or emcc version is too small."
@@ -21,12 +24,17 @@ fi
 set -o errexit
 set -m # job control
 
-emcc -Iinclude -O2 -fpic -c src/*.c test/*.c
+# Build artifacts are not retained.
+rm -rf ./bin
+mkdir ./bin
+cd ./bin
+
+emcc -I../include -O2 -fpic -c ../src/*.c ../test/*.c
 
 # -sMAIN_MODULE=2 dead-strips without leaving code for other modules.
 # Dump the memory manager because a web browser doesn't need that.
-emcc -Iinclude -O2 -fpic -sMAIN_MODULE=2 -fno-exceptions -fno-rtti \
-	-U_GNU_SOURCE -DHX_MEMORY_MANAGER_DISABLE=1 *.o */*.cpp -o index.html
+emcc -I../include -O2 -fpic -sMAIN_MODULE=2 -fno-exceptions -fno-rtti \
+	-U_GNU_SOURCE -DHX_MEMORY_MANAGER_DISABLE=1 *.o ../*/*.cpp -o index.html
 
 ls -l index.wasm
 

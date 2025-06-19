@@ -1,7 +1,9 @@
-#!/bin/sh
+#!/bin/dash
 # Copyright 2017-2025 Adrian Johnston
 #
 # sudo apt install musl musl-dev musl-tools
+
+export POSIXLY_CORRECT=1
 
 set -o errexit
 
@@ -19,15 +21,20 @@ HX_FLAGS="-DHX_USE_CPP_THREADS=0 -U_GNU_SOURCE -ffunction-sections -fdata-sectio
 # Allow demangled C++ names to pass through awk.
 HX_AWK_HACK='{print $3, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18 }'
 
+# Build artifacts are not retained.
+rm -rf ./bin
+mkdir ./bin
+cd ./bin
+
 set -x
 
-musl-gcc $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -Iinclude \
-	-std=c17 -c src/*.c test/*.c
+musl-gcc $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
+	-std=c17 -c ../src/*.c ../test/*.c
 
 # Includes lld specific instruction to dead-strip. musl is the only library.
-musl-gcc $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -Iinclude \
+musl-gcc $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
 	-std=c++17 -Wl,--gc-sections -fno-exceptions -fno-rtti \
-	*/*.cpp *.o -o hxtest
+	../*/*.cpp *.o -o hxtest
 
 # turn off tracing silently and make sure the command returns 0.
 { set +x; } 2> /dev/null

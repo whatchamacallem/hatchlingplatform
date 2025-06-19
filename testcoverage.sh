@@ -1,12 +1,21 @@
-#!/bin/sh
+#!/bin/dash
+
+export POSIXLY_CORRECT=1
+
 set -o errexit
+
+# Build artifacts are not retained.
+rm -rf ./bin
+mkdir ./bin
+cd ./bin
+
 set -o xtrace
 
-gcc -Iinclude --coverage -O0 -DHX_RELEASE=0 -std=c99 -c src/*.c test/*.c
+gcc -I../include --coverage -O0 -DHX_RELEASE=0 -std=c99 -c ../src/*.c ../test/*.c
 
-g++ -Iinclude --coverage -O0 -DHX_RELEASE=0 -DHX_TEST_ERROR_HANDLING=1 \
+g++ -I../include --coverage -O0 -DHX_RELEASE=0 -DHX_TEST_ERROR_HANDLING=1 \
 	-fno-exceptions -pthread -lpthread -std=c++17 -lstdc++ \
-	*/*.cpp *.o -o hxtest
+	../*/*.cpp *.o -o hxtest
 
 echo runtests | ./hxtest printhashes help "checkhash 0" execstdin
 
