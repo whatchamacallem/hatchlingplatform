@@ -57,6 +57,7 @@
         "rtti",
         "runtests",
         "stdint",
+        "testall",
         "testcmake",
         "testcoverage",
         "testerrorhandling",

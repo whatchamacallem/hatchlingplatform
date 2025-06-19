@@ -14,16 +14,21 @@ export POSIXLY_CORRECT=1
 
 set -o errexit
 
-export GREP_COLORS='mt=0;32' # green
+# Fatal warning flags. preceded by -pedantic-errors except with c++98.
+HX_ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
+	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
+	-Wfatal-errors"
 
-# c++ warning flags. preceded by -pedantic-errors except with c++98.
-WARNINGS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
-	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter"
+HX_FLAGS="-ffast-math -ggdb3"
+
+HX_SANITIZE="-fsanitize=undefined,address -fsanitize-recover=undefined,address"
 
 # Build artifacts are not retained.
 rm -rf ./bin
 mkdir ./bin
 cd ./bin
+
+set -x
 
 # Test undefined behavior/address use with clang. Uses pch and allows exceptions
 # just to make sure there are none.
@@ -31,19 +36,17 @@ clang --version | grep clang
 for I in 0 1 2 3; do
 echo clang UBSan -O$I "$@"...
 # compile C
-clang -I../include -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" \
-	-fsanitize=undefined,address -fsanitize-recover=undefined,address \
-	-std=c17 -c ../src/*.c ../test/*.c
+clang -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
+	-std=c17 $HX_SANITIZE "$@" -c ../src/*.c ../test/*.c
 # generate pch. clang does this automatically when a c++ header file is the target.
-clang++ -I../include -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
-	-DHX_USE_CPP_THREADS=$I "$@" -pthread -std=c++17 -fno-exceptions \
-	-fsanitize=undefined,address -fsanitize-recover=undefined,address \
-	../include/hx/hatchlingPch.hpp -o hatchlingPch.hpp.pch
+clang++ -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
+	-DHX_USE_CPP_THREADS=$I -pthread -std=c++17 -fno-exceptions \
+	$HX_SANITIZE "$@" ../include/hx/hatchlingPch.hpp -o hatchlingPch.hpp.pch
 # compile C++ and link
-clang++ -I../include -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I \
-	-DHX_USE_CPP_THREADS=$I "$@" -pthread -std=c++17 -fno-exceptions \
-	-fsanitize=undefined,address -fsanitize-recover=undefined,address -lubsan \
-	-include-pch hatchlingPch.hpp.pch ../*/*.cpp *.o -lpthread -lstdc++ -o hxtest
+clang++ -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
+	-DHX_USE_CPP_THREADS=$I -pthread -std=c++17 -fno-exceptions \
+	$HX_SANITIZE "$@" -include-pch hatchlingPch.hpp.pch ../*/*.cpp *.o \
+	-lpthread -lstdc++ -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
 rm hxtest *.o *.txt *.bin
 done
@@ -59,17 +62,19 @@ gcc --version | grep gcc
 for I in 0 1 2 3; do
 echo gcc c++98 -O$I "$@"...
 # -std=c99
-gcc -I../include -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I -U_GNU_SOURCE "$@" \
-	-std=c99 -m32 -c ../src/*.c ../test/*.c
+gcc -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
+	-U_GNU_SOURCE -std=c99 -m32 "$@" -c ../src/*.c ../test/*.c
 # -std=c++98
-gcc -I../include -O$I -ffast-math -ggdb $WARNINGS -DHX_RELEASE=$I "$@" -std=c++98 -fno-exceptions -U_GNU_SOURCE \
-	-fno-rtti -Wno-unused-local-typedefs ../*/*.cpp *.o -lstdc++ -m32 -o hxtest
+gcc -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -U_GNU_SOURCE -std=c++98 \
+	-fno-exceptions -fno-rtti -Wno-unused-local-typedefs "$@" ../*/*.cpp *.o \
+	-lstdc++ -m32 -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
 rm hxtest *.o *.txt *.bin
 echo gcc c++14 -O$I "$@"...
 # -std=c++14
-gcc -I../include -O$I -ffast-math -ggdb -pedantic-errors $WARNINGS -DHX_RELEASE=$I "$@" -pthread -U_GNU_SOURCE \
-	-std=c++14 -fno-exceptions -fno-rtti ../*/*.cpp *.o -lpthread -lstdc++ -m32 -o hxtest
+gcc -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
+	-pthread -U_GNU_SOURCE -std=c++14 -fno-exceptions -fno-rtti "$@" ../*/*.cpp *.o \
+	-lpthread -lstdc++ -m32 -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
 rm hxtest *.o *.txt *.bin
 done

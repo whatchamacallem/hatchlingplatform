@@ -7,11 +7,14 @@
 set -o errexit
 set -x
 
-./debugbuild.sh
-./teststrip.sh
-./test.sh
-./testerrorhandling.sh
-./testcmake.sh
-./testcoverage.sh
-./testwasm.sh
+time ./debugbuild.sh
+time ./teststrip.sh
+time ./test.sh
+time ./testerrorhandling.sh
+time ./testcmake.sh
+time ./testcoverage.sh
+time ./testwasm.sh
 ./clean.sh
+
+{ set +x; } 2> /dev/null
+echo testall.sh successful.
