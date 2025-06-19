@@ -30,8 +30,6 @@ rm -rf ./bin
 mkdir ./bin
 cd ./bin
 
-set -x
-
 # The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:
 #   sudo apt-get install gcc-multilib g++-multilib
 #

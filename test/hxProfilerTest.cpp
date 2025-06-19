@@ -55,9 +55,9 @@ public:
 
             while ((double)delta * c_hxMillisecondsPerCycle < targetMs) {
                 // Perform work that might not be optimized away by the compiler.
-                size_t ops = (m_accumulator_ & 0xf) + 1;
-                for (size_t i = 0; i < ops; ++i) {
-                    m_accumulator_ ^= (size_t)m_testPrng_;
+                uint32_t ops = (m_accumulator_ & 0xf) + 1;
+                for (uint32_t i = 0; i < ops; ++i) {
+                    m_accumulator_ ^= (uint32_t)m_testPrng_;
                 }
 
 				// Unsigned arithmetic handles clock wrapping correctly.
@@ -66,7 +66,7 @@ public:
 		}
 
         float m_targetMs_;
-        size_t m_accumulator_;
+        uint32_t m_accumulator_;
         hxRandom m_testPrng_;
     };
 };
