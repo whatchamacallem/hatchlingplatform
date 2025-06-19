@@ -1,4 +1,4 @@
-#!/bin/dash
+#!/bin/sh
 # Copyright 2017-2025 Adrian Johnston
 
 export POSIXLY_CORRECT=1

@@ -11,10 +11,6 @@ TEST(hxRandomTest, Generation) {
 	for(int s=100; s--;) {
 
 		// implicit casts and copy constructors
-		int8_t int8 = rng;
-		int16_t int16 = rng;
-		int32_t int32 = rng;
-		int64_t int64 = rng;
 		uint8_t uint8 = rng;
 		uint16_t uint16 = rng;
 		uint32_t uint32 = rng;
@@ -23,10 +19,6 @@ TEST(hxRandomTest, Generation) {
 		float d = rng;
 
 		// functor calls and assignment operators
-		int8 = rng();
-		int16 = rng();
-		int32 = rng();
-		int64 = rng();
 		uint8 = rng();
 		uint16 = rng();
 		uint32 = rng();
@@ -35,7 +27,6 @@ TEST(hxRandomTest, Generation) {
 		f = rng();
 		d = rng();
 
-		(void)int8; (void)int16; (void)int32; (void)int64;
 		(void)uint8; (void)uint16; (void)uint32; (void)uint64;
 
 		ASSERT_TRUE(f >= 0.0f && f < 1.0f);
@@ -141,14 +132,32 @@ TEST(hxRandomTest, Range) {
 
 TEST(hxRandomTest, Histogram) {
 	hxRandom rng(40000);
+	const int buckets = 1 << 10; // 1k buckets
+	const int iters = 1000;
+	const int max = 1100; // 10% above average max.
+	hxArray<int> hist(buckets, 0);
+
+	for(int i=(buckets*iters); i--;) {
+		// Doesn't require an unsigned type here. No floating point used.
+		++hist[rng() % (buckets - 1)];
+	}
+	int t=0;
+	for(int i=buckets; i--;) {
+		ASSERT_LE(hist[i], max);
+		t = hxmax(t, hist[i]);
+	}
+}
+
+TEST(hxRandomTest, HistogramF) {
+	hxRandom rng(40000);
 	const int buckets = 1000; // 1k buckets
 	const int iters = 1000;
 	const int max = 1100; // 10% above average max.
 	hxArray<int> hist(buckets, 0);
 
 	for(int i=(buckets*iters); i--;) {
-		// mix sign on purpose.
-		++hist[rng() % buckets];
+		// Run the full 64-bit bit double pipeline.
+		++hist[(int)(rng() % (double)buckets)];
 	}
 	int t=0;
 	for(int i=buckets; i--;) {

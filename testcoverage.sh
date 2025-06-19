@@ -1,4 +1,4 @@
-#!/bin/dash
+#!/bin/sh
 
 export POSIXLY_CORRECT=1
 
@@ -9,13 +9,14 @@ rm -rf ./bin
 mkdir ./bin
 cd ./bin
 
-set -o xtrace
+set -x
 
-gcc -I../include --coverage -O0 -DHX_RELEASE=0 -std=c99 -c ../src/*.c ../test/*.c
+gcc -I../include --coverage -O0 -DHX_RELEASE=0 -fdiagnostics-absolute-paths \
+	-std=c99 -c ../src/*.c ../test/*.c
 
 g++ -I../include --coverage -O0 -DHX_RELEASE=0 -DHX_TEST_ERROR_HANDLING=1 \
 	-fno-exceptions -pthread -lpthread -std=c++17 -lstdc++ \
-	../*/*.cpp *.o -o hxtest
+	-fdiagnostics-absolute-paths ../*/*.cpp *.o -o hxtest
 
 echo runtests | ./hxtest printhashes help "checkhash 0" execstdin
 
@@ -25,7 +26,8 @@ gcovr --html-details coverage.html
 { set +x; } &>/dev/null
 
 # Launch Chrome if it is installed.
-[ -x /usr/bin/google-chrome ] && /usr/bin/google-chrome coverage.html &>/dev/null
+[ "$1" != "--headless" ] && [ -x /usr/bin/google-chrome ] \
+	&& /usr/bin/google-chrome coverage.html &>/dev/null
 
 # Make sure the script returns 0.
 echo 🐉🐉🐉

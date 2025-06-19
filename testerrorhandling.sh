@@ -1,7 +1,5 @@
-#!/bin/dash
+#!/bin/sh
 # Copyright 2017-2025 Adrian Johnston
-
-export POSIXLY_CORRECT=1
 
 set -o errexit
 
@@ -27,7 +25,3 @@ $(tput bold)Hatchling Platform$(tput sgr 0)
 # during normal testing.
 echo "testing optional feature settings. these tests will spew errors and still return successfully."
 ./test.sh '-DHX_MEMORY_MANAGER_DISABLE=(HX_RELEASE==2)' -DHX_TEST_ERROR_HANDLING=1
-
-# normal testing.
-echo "now testing successful execution. no errors expected."
-./test.sh

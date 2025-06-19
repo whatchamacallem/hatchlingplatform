@@ -16,28 +16,31 @@ public:
 
     // Functor returns hxRandom& which converts itself to the type it is
     // assigned to. Enables traditional syntax.
-    // E.g. unsigned int i = m_prng(); // Returns type.
+    // E.g. uint32_t = m_prng(); // Returns [0..2^32).
     // E.g. double i = m_prng(); // Returns [0..1).
     HX_CONSTEXPR_FN hxRandom& operator()(void) { return *this; }
 
-    // Automatic cast to any integer or floating point value. Floating point
+    // Automatic cast to unsigned integer or floating point value. Floating point
     // results are between [0..1).  They can safely be used to generate array
     // indicies without overflowing.
-    // E.g. unsigned int = m_prng; // Deduces the required type.
-    template<typename T_> HX_CONSTEXPR_FN operator T_() {
-        return static_cast<T_>(this->advance32_());
-    }
+    // E.g. unsigned int = m_prng; // Returns [0..UINT_MAX].
     HX_CONSTEXPR_FN operator float() {
-        return (float)this->advance32_() * 0x1p-32f;
+        return (float)this->advance32() * 0x1p-32f;
     }
     HX_CONSTEXPR_FN operator double() {
-        return (double)this->advance64_() * 0x1p-64;
+        return (double)this->advance64() * 0x1p-64;
     }
-    HX_CONSTEXPR_FN operator int64_t() {
-        return (int64_t)this->advance64_();
+    HX_CONSTEXPR_FN operator uint8_t() {
+        return this->advance32();
+    }
+    HX_CONSTEXPR_FN operator uint16_t() {
+        return this->advance32();
+    }
+    HX_CONSTEXPR_FN operator uint32_t() {
+        return this->advance32();
     }
     HX_CONSTEXPR_FN operator uint64_t() {
-        return this->advance64_();
+        return this->advance64();
     }
 
     // Returns a random number in the range [base..base+range). range(0.0f,10.0f)
@@ -50,23 +53,23 @@ public:
         // Use double parameters if you need a bigger size. An emulated floating
         // point multiply is faster and more stable than integer modulo.
         hxAssertMsg((float)size_ < 0x1p24f, "insufficient precision");
-        return base_ + (T_)((float)size_ * 0x1p-32f * (float)this->advance32_());
+        return base_ + (T_)((float)size_ * 0x1p-32f * (float)this->advance32());
     }
     HX_CONSTEXPR_FN double range(double base_, double size_) {
         // Use uint64_t parameters if you need a bigger size. An emulated floating
         // point multiply is faster and more stable than integer modulo.
         hxAssertMsg(size_ < (double)0x1p54f, "insufficient precision");
-        return base_ + size_ * (double)0x1p-64f * (double)this->advance64_();
+        return base_ + size_ * (double)0x1p-64f * (double)this->advance64();
     }
     HX_CONSTEXPR_FN int64_t range(int64_t base_, int64_t size_) {
-        return base_ + (int64_t)(this->advance64_() % size_);
+        return base_ + (int64_t)(this->advance64() % size_);
     }
     HX_CONSTEXPR_FN uint64_t range(uint64_t base_, uint64_t size_) {
-        return base_ + this->advance64_() % size_;
+        return base_ + this->advance64() % size_;
     }
 
-private:
-    HX_CONSTEXPR_FN uint32_t advance32_(void) {
+    // Returns [0..2^32).
+    HX_CONSTEXPR_FN uint32_t advance32(void) {
         m_state_ = 0x5851f42d4c957f2dull * m_state_ + 0x14057b7ef767814full;
 
         // MODIFICATION: Use the 4 msb bits as a 0..15 bit variable shift control.
@@ -77,24 +80,48 @@ private:
         return result_;
     }
 
-    HX_CONSTEXPR_FN uint64_t advance64_(void) {
-        uint64_t result_ = (uint64_t)this->advance32_() | ((uint64_t)this->advance32_() << 32);
+    // Returns [0..2^64).
+    HX_CONSTEXPR_FN uint64_t advance64(void) {
+        uint64_t result_ = (uint64_t)this->advance32() | ((uint64_t)this->advance32() << 32);
         return result_;
     }
 
+private:
     uint64_t m_state_;
 };
 
 // operator&(hxRandom& a, T b) - Bitwise & with random T generated from a.
-template <typename T_> inline T_ operator&(hxRandom& a_, T_ b_) { return T_(a_) & b_; }
+// a - Bits to mask off. Undefined behavior when a negative integer.
+// b - A hxRandom.
+template <typename T_> inline T_ operator&(T_ a_, hxRandom& b_) {
+    return T_((uint32_t)a_ & b_.advance32());
+}
+// operator&(int64_t a_, hxRandom& b_) - Allow a signed 64-bit type here because
+// it can be generated without automatically hitting undefined behaviour.
+// a - Bits to mask off. Undefined behavior when negative.
+// b - A hxRandom.
+inline int64_t operator&(int64_t a_, hxRandom& b_) {
+   return (int64_t)((uint64_t)a_ & b_.advance64());
+}
+inline uint64_t operator&(uint64_t a_, hxRandom& b_) {
+    return a_ & b_.advance64();
+}
 
-// operator&(T a, hxRandom& b) - Bitwise & with random T generated from b.
-template <typename T_> inline T_ operator&(T_ a_, hxRandom& b_) { return a_ & T_(b_); }
+// operator&(T a, hxRandom& b) - Bitwise & with random T generated from a.
+// a - A hxRandom.
+// b - Bits to mask off. Must be a positive integer.
+template <typename T_> inline T_ operator&(hxRandom& a_, T_ b_) {
+    return b_ & a_;
+}
 
 // operator&=(T& a, hxRandom& b) - Bitwise &= with random T generated from b.
-template <typename T_> inline T_ operator&=(T_& a_, hxRandom& b_) { a_ &= T_(b_); return a_; }
+// a - Bits to mask off. Must be a positive integer.
+// b - A hxRandom.
+template <typename T_> inline T_ operator&=(T_& a_, hxRandom& b_) {
+    return (a_ = a_ & b_);
+}
 
-// operator%(hxRandom&, T_) - Generate an number of type T in the range 0..b.
+// operator%(hxRandom& a, T_ b) - Generate an number of type T in the range 0..b.
 // Works with floating point divisors and uses no actual modulo or division.
 template <typename T_> inline T_ operator%(hxRandom& dividend_, T_ divisor_) {
     return dividend_.range((T_)0, divisor_);

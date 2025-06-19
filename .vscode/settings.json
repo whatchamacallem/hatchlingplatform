@@ -13,6 +13,7 @@
         "execstdin",
         "failable",
         "fdata",
+        "fdiagnostics",
         "feenableexcept",
         "ffast",
         "ffunction",

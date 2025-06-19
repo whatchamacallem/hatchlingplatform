@@ -1,4 +1,4 @@
-#!/bin/dash
+#!/bin/sh
 # Copyright 2017-2025 Adrian Johnston
 #
 # The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:
@@ -17,7 +17,7 @@ HX_ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
 	-pedantic-errors -Wfatal-errors"
 
-HX_FLAGS="-m32 -ffast-math -ggdb3"
+HX_FLAGS="-m32 -ffast-math -ggdb3 -fdiagnostics-absolute-paths"
 
 # Build artifacts are not retained.
 rm -rf ./bin

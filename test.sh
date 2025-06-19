@@ -1,4 +1,4 @@
-#!/bin/dash
+#!/bin/sh
 # Copyright 2017-2025 Adrian Johnston
 #
 # Tests Hatchling Platform with gcc and clang in a variety of configurations.
@@ -19,7 +19,7 @@ HX_ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
 	-Wfatal-errors"
 
-HX_FLAGS="-ffast-math -ggdb3"
+HX_FLAGS="-ffast-math -ggdb3 -fdiagnostics-absolute-paths"
 
 HX_SANITIZE="-fsanitize=undefined,address -fsanitize-recover=undefined,address"
 
@@ -82,4 +82,5 @@ done
 # Remove output.
 ./clean.sh
 
-echo all tests passed.
+# Make sure the script returns 0.
+echo 🐉🐉🐉 all tests passed.
