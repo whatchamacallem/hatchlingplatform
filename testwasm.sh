@@ -36,18 +36,19 @@ emcc -I../include -O2 -fpic -sMAIN_MODULE=2 -fno-exceptions -fno-rtti \
 	-DHX_MEMORY_MANAGER_DISABLE=1 -fdiagnostics-absolute-paths \
 	*.o ../*/*.cpp -o index.html
 
-ls -l index.wasm
+if [ "$1" != "--headless" ]; then
 
-[ "$1" == "--headless" ] && exit 0
+	# Start a webserver in the background.
+	python3 -m http.server 9876 &
 
-# Start a webserver in the background.
-python3 -m http.server 9876 &
+	# Launch Chrome if it is installed.
+	if which google-chrome >/dev/null 2>&1 && [ "$1" != "--headless" ]; then
+		google-chrome http://0.0.0.0:9876/ >/dev/null 2>&1;
+	fi
 
-# Launch Chrome if it is installed.
-[ -x /usr/bin/google-chrome ] && /usr/bin/google-chrome http://0.0.0.0:9876/ &>/dev/null
-
-# Bring the webserver to the foreground so it can be killed.
-fg %$(jobs | grep 'python3' | sed -E 's/^\[([0-9]+)\].*/\1/')
+	# Bring the webserver to the foreground so it can be killed.
+	fg %$(jobs | grep 'python3' | sed -E 's/^\[([0-9]+)\].*/\1/')
+fi
 
 # Say goodbye. Make sure the script returns 0.
 echo 🐉🐉🐉

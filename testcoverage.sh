@@ -29,8 +29,9 @@ gcovr --html-details coverage.html --root .. .
 { set +x; } 2> /dev/null
 
 # Launch Chrome if it is installed.
-[ "$1" != "--headless" ] && [ -x /usr/bin/google-chrome ] \
-	&& /usr/bin/google-chrome coverage.html &>/dev/null
+if which google-chrome >/dev/null 2>&1 && [ "$1" != "--headless" ]; then
+	google-chrome coverage.html >/dev/null 2>&1;
+fi
 
 # Make sure the script returns 0.
 echo 🐉🐉🐉
