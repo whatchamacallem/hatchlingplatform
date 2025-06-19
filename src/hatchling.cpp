@@ -21,9 +21,8 @@ HX_REGISTER_FILENAME_HASH
 // is no C++ standard conforming way to disable floating point error checking.
 // It is a gcc/clang extension. -fno-math-errno -fno-trapping-math will work if
 // you require C++ conforming accuracy without the overhead of error checking.
-// You need the math library -lm. Causing.. or implicit checking for in a
-// release build.. or explicit checking for... floating point exceptions is not
-// recommended.
+// You need the math library -lm. Causing.. or explicit checking for... floating
+// point exceptions is not recommended.
 #if (HX_CPLUSPLUS >= 201103L) && defined __GLIBC__ && !defined __FAST_MATH__
 #include <fenv.h>
 #if !defined HX_FLOATING_POINT_TRAPS
@@ -46,26 +45,29 @@ HX_STATIC_ASSERT((HX_RELEASE) < 1 || !(HX_FLOATING_POINT_TRAPS),
 HX_STATIC_ASSERT(0, "exceptions should not be enabled");
 #endif
 
+// No reason for this to be visible.
+void hxSettingsConstruct();
+
 // ----------------------------------------------------------------------------
 // When not hosted, provide no locking around the initialization of function
 // scope static variables. The linker should optimize this away.
 #if !HX_HOSTED
 extern "C"
-void __cxa_guard_release(size_t *guard) {
-	// Flag constructor as done. Clear in progress flag.
-	*guard = 1u;
-}
-extern "C"
 int __cxa_guard_acquire(size_t *guard) {
 	// Return 0 if already constructed.
-	if(*guard & 1u) { return 0; }
+	if(*guard == 1u) { return 0; }
 
-	// Check if the constructor is in progress.
-	hxAssertRelease((*guard & 2u) == 0, "race constructing function scope static");
+	// Check if the constructor is already in progress.
+	hxAssertRelease(*guard != 2u, "race constructing function scope static");
 
 	// Run the constructor.
 	*guard = 2u;
 	return 1;
+}
+extern "C"
+void __cxa_guard_release(size_t *guard) {
+	// Flag constructor as done. Clear in progress flag.
+	*guard = 1u;
 }
 extern "C"
 void __cxa_guard_abort(uint64_t *guard) {
@@ -166,8 +168,6 @@ hxConsoleCommandNamed(hxCheckHash, checkhash);
 
 // ----------------------------------------------------------------------------
 // init, shutdown, exit, assert and logging.
-
-void hxSettingsConstruct();
 
 extern "C"
 void hxInitInternal(void) {

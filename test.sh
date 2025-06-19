@@ -30,27 +30,6 @@ cd ./bin
 
 set -x
 
-# Test undefined behavior/address use with clang. Uses pch and allows exceptions
-# just to make sure there are none.
-clang --version | grep clang
-for I in 0 1 2 3; do
-echo clang UBSan -O$I "$@"...
-# compile C
-clang -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
-	-fdiagnostics-absolute-paths -std=c17 $HX_SANITIZE "$@" -c ../src/*.c ../test/*.c
-# generate pch. clang does this automatically when a c++ header file is the target.
-clang++ -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
-	-DHX_USE_CPP_THREADS=$I -pthread -std=c++17 -fno-exceptions -fdiagnostics-absolute-paths \
-	$HX_SANITIZE "$@" ../include/hx/hatchlingPch.hpp -o hatchlingPch.hpp.pch
-# compile C++ and link
-clang++ -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
-	-DHX_USE_CPP_THREADS=$I -pthread -std=c++17 -fno-exceptions -fdiagnostics-absolute-paths \
-	$HX_SANITIZE "$@" -include-pch hatchlingPch.hpp.pch ../*/*.cpp *.o \
-	-lpthread -lstdc++ -o hxtest
-./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
-rm hxtest *.o *.txt *.bin profile.json
-done
-
 # The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:
 #   sudo apt-get install gcc-multilib g++-multilib
 #
@@ -72,18 +51,36 @@ gcc -I$HX_SRC/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -std=c++98 \
 	-fno-exceptions -fno-rtti -Wno-unused-local-typedefs "$@" $HX_SRC/*/*.cpp *.o \
 	-lstdc++ -m32 -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
-rm hxtest *.txt *.bin profile.json
+rm -f hxtest *.txt *.bin *.json
 echo gcc c++14 -O$I "$@"...
 # -std=c++14
 gcc -I$HX_SRC/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
 	-pthread -std=c++14 -fno-exceptions -fno-rtti "$@" $HX_SRC/*/*.cpp *.o \
 	-lpthread -lstdc++ -m32 -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
-rm hxtest *.o *.txt *.bin profile.json
+rm -f hxtest *.o *.txt *.bin *.json
 done
 
-# Remove output.
-./clean.sh
+# Test undefined behavior/address use with clang. Uses pch and allows exceptions
+# just to make sure there are none.
+clang --version | grep clang
+for I in 0 1 2 3; do
+echo clang UBSan -O$I "$@"...
+# compile C
+clang -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
+	-fdiagnostics-absolute-paths -std=c17 $HX_SANITIZE "$@" -c ../src/*.c ../test/*.c
+# generate pch. clang does this automatically when a c++ header file is the target.
+clang++ -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
+	-DHX_USE_CPP_THREADS=$I -pthread -std=c++17 -fno-exceptions -fdiagnostics-absolute-paths \
+	$HX_SANITIZE "$@" ../include/hx/hatchlingPch.hpp -o hatchlingPch.hpp.pch
+# compile C++ and link
+clang++ -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
+	-DHX_USE_CPP_THREADS=$I -pthread -std=c++17 -fno-exceptions -fdiagnostics-absolute-paths \
+	$HX_SANITIZE "$@" -include-pch hatchlingPch.hpp.pch ../*/*.cpp *.o \
+	-lpthread -lstdc++ -o hxtest
+./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
+rm -f hxtest *.o *.txt *.bin *.json
+done
 
 # Make sure the script returns 0.
 echo 🐉🐉🐉 all tests passed.

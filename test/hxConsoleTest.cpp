@@ -46,6 +46,10 @@ namespace {
 		c_hxConsoleTestCallFlags |= 1 << (int32_t)id;
 		ASSERT_EQ(t, expected);
 	}
+	void hxConsoleTestTypeCheckT(float t, hxConsoleTestTypeID id, float expected) {
+		c_hxConsoleTestCallFlags |= 1 << (int32_t)id;
+		ASSERT_NEAR(expected, t, 0.00001f); // This loses precision with -ffast-math.
+	}
 
 #define hxConsoleTestTypeCheck(T, t) hxConsoleTestTypeCheckT(t, HX_CONCATENATE(hxConsoleTestTypeID_, T), \
 	HX_CONCATENATE(c_hxConsoleTestExpected, T))
