@@ -24,9 +24,9 @@ public:
         // Reimplement std::numeric_limits for 2's compliment. The << operator
         // promotes its operands to int and so that requires more casting.
         // Manipulating the sign bit is not supported by the standard. Sorry.
-        constexpr bool isSigned_ = static_cast<T_>(-1) < T_(0u);
-        constexpr T_ minValue_ = isSigned_ ? T_(T_(1u) << (sizeof(T_) * 8 - 1)) : T_(0u);
-        constexpr T_ maxValue_ = ~minValue_;
+        const bool isSigned_ = static_cast<T_>(-1) < T_(0u);
+        const T_ minValue_ = isSigned_ ? T_(T_(1u) << (sizeof(T_) * 8 - 1)) : T_(0u);
+        const T_ maxValue_ = ~minValue_;
 
         double clamped_ = hxclamp(m_x_, (double)minValue_, (double)maxValue_);
         hxAssertMsg(m_x_ == clamped_, "parameter overflow: %lf -> %lf", m_x_, clamped_);

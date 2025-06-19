@@ -33,7 +33,7 @@ emcc -I../include -O2 -fpic -fdiagnostics-absolute-paths -c ../src/*.c ../test/*
 # -sMAIN_MODULE=2 dead-strips without leaving code for other modules.
 # Dump the memory manager because a web browser doesn't need that.
 emcc -I../include -O2 -fpic -sMAIN_MODULE=2 -fno-exceptions -fno-rtti \
-	-U_GNU_SOURCE -DHX_MEMORY_MANAGER_DISABLE=1 -fdiagnostics-absolute-paths \
+	-DHX_MEMORY_MANAGER_DISABLE=1 -fdiagnostics-absolute-paths \
 	*.o ../*/*.cpp -o index.html
 
 ls -l index.wasm

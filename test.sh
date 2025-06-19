@@ -19,7 +19,7 @@ HX_ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
 	-Wfatal-errors"
 
-HX_FLAGS="-ffast-math -ggdb3 -fdiagnostics-absolute-paths"
+HX_FLAGS="-ffast-math -ggdb3"
 
 HX_SANITIZE="-fsanitize=undefined,address -fsanitize-recover=undefined,address"
 
@@ -37,18 +37,18 @@ for I in 0 1 2 3; do
 echo clang UBSan -O$I "$@"...
 # compile C
 clang -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
-	-std=c17 $HX_SANITIZE "$@" -c ../src/*.c ../test/*.c
+	-fdiagnostics-absolute-paths -std=c17 $HX_SANITIZE "$@" -c ../src/*.c ../test/*.c
 # generate pch. clang does this automatically when a c++ header file is the target.
 clang++ -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
-	-DHX_USE_CPP_THREADS=$I -pthread -std=c++17 -fno-exceptions \
+	-DHX_USE_CPP_THREADS=$I -pthread -std=c++17 -fno-exceptions -fdiagnostics-absolute-paths \
 	$HX_SANITIZE "$@" ../include/hx/hatchlingPch.hpp -o hatchlingPch.hpp.pch
 # compile C++ and link
 clang++ -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
-	-DHX_USE_CPP_THREADS=$I -pthread -std=c++17 -fno-exceptions \
+	-DHX_USE_CPP_THREADS=$I -pthread -std=c++17 -fno-exceptions -fdiagnostics-absolute-paths \
 	$HX_SANITIZE "$@" -include-pch hatchlingPch.hpp.pch ../*/*.cpp *.o \
 	-lpthread -lstdc++ -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
-rm hxtest *.o *.txt *.bin
+rm hxtest *.o *.txt *.bin profile.json
 done
 
 # The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:
@@ -58,25 +58,28 @@ done
 # c++98 as "anonymous variadic macros were introduced in c++11."  (This code base
 # and gcc's defaults cheat slightly by pretending c99 was available in c++98.)
 # -Wno-unused-local-typedefs is only for the c++98 version of static_assert.
+
+HX_SRC="`pwd`/.."
+
 gcc --version | grep gcc
 for I in 0 1 2 3; do
 echo gcc c++98 -O$I "$@"...
 # -std=c99
-gcc -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
-	-U_GNU_SOURCE -std=c99 -m32 "$@" -c ../src/*.c ../test/*.c
+gcc -I$HX_SRC/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
+	-std=c99 -m32 "$@" -c $HX_SRC/src/*.c $HX_SRC/test/*.c
 # -std=c++98
-gcc -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -U_GNU_SOURCE -std=c++98 \
-	-fno-exceptions -fno-rtti -Wno-unused-local-typedefs "$@" ../*/*.cpp *.o \
+gcc -I$HX_SRC/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -std=c++98 \
+	-fno-exceptions -fno-rtti -Wno-unused-local-typedefs "$@" $HX_SRC/*/*.cpp *.o \
 	-lstdc++ -m32 -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
-rm hxtest *.o *.txt *.bin
+rm hxtest *.txt *.bin profile.json
 echo gcc c++14 -O$I "$@"...
 # -std=c++14
-gcc -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
-	-pthread -U_GNU_SOURCE -std=c++14 -fno-exceptions -fno-rtti "$@" ../*/*.cpp *.o \
+gcc -I$HX_SRC/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
+	-pthread -std=c++14 -fno-exceptions -fno-rtti "$@" $HX_SRC/*/*.cpp *.o \
 	-lpthread -lstdc++ -m32 -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
-rm hxtest *.o *.txt *.bin
+rm hxtest *.o *.txt *.bin profile.json
 done
 
 # Remove output.

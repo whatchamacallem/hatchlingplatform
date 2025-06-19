@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/bin/hxtest",
             "args": ["help", "printhashes", "runtests"],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/bin",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",

@@ -42,7 +42,7 @@ TEST(hxRandomTest, Ops) {
 	for(int s=100; s--;) {
 		// T &= rng
 		int i = 255; i &= rng;
-		ASSERT_TRUE(i >= 0 && i < 255);
+		ASSERT_TRUE(i >= 0 && i < 256);
 
 		unsigned int u = 255; u &= rng;
 		ASSERT_TRUE(u < 256);

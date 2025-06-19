@@ -25,10 +25,10 @@ public:
     // indicies without overflowing.
     // E.g. unsigned int = m_prng; // Returns [0..UINT_MAX].
     HX_CONSTEXPR_FN operator float() {
-        return (float)this->advance32() * 0x1p-32f;
+        return (float)this->advance32() * (1.0f / 4294967296.0f); // 0x1p-32f
     }
     HX_CONSTEXPR_FN operator double() {
-        return (double)this->advance64() * 0x1p-64;
+        return (double)this->advance64() * (1.0 / 18446744073709551616.0); // 0x1p-64;
     }
     HX_CONSTEXPR_FN operator uint8_t() {
         return this->advance32();
@@ -52,14 +52,14 @@ public:
     template<typename T_> HX_CONSTEXPR_FN T_ range(T_ base_, T_ size_) {
         // Use double parameters if you need a bigger size. An emulated floating
         // point multiply is faster and more stable than integer modulo.
-        hxAssertMsg((float)size_ < 0x1p24f, "insufficient precision");
-        return base_ + (T_)((float)size_ * 0x1p-32f * (float)this->advance32());
+        hxAssertMsg((float)size_ < (float)0x01000000, "insufficient precision"); // 0x1p24f
+        return base_ + (T_)((float)size_ * (float)*this);
     }
     HX_CONSTEXPR_FN double range(double base_, double size_) {
         // Use uint64_t parameters if you need a bigger size. An emulated floating
         // point multiply is faster and more stable than integer modulo.
-        hxAssertMsg(size_ < (double)0x1p54f, "insufficient precision");
-        return base_ + size_ * (double)0x1p-64f * (double)this->advance64();
+        hxAssertMsg(size_ < (double)0x40000000000000ll, "insufficient precision"); // 0x1p54f
+        return base_ + size_ * (double)*this;
     }
     HX_CONSTEXPR_FN int64_t range(int64_t base_, int64_t size_) {
         return base_ + (int64_t)(this->advance64() % size_);
