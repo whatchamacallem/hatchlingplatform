@@ -197,9 +197,11 @@ struct hxConsoleVariable_ : public hxConsoleCommand_ {
 	virtual bool execute_(const char* str_) HX_OVERRIDE {
 		double number_ = 0.0;
 		int code_ = executeNumber_(str_, &number_);
+		// 1 indicates a value was read.
 		if(code_ == 1) {
-			// 1 indicates a value was read.
-			*m_var_ = (T_)number_;
+			// Use hxconsolenumber_t to oversee casting to an arbitrary type.
+			hxconsolenumber_t wrapper_(number_);
+			*m_var_ = (T_)wrapper_;
 		}
 		hxLogConsole("value: %.15g\n", (double)*m_var_);
 		return code_ != 2; // 2 is unexpected args.

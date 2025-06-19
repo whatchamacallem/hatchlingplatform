@@ -104,6 +104,9 @@ TEST(hxConsoleTest, CommandFactory) {
 
 	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn3).execute_("1 12"));
 
+	// This will pass because 2 is a valid bool.
+	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn3).execute_("2 12"));
+
 	ASSERT_TRUE(hxConsoleCommandFactory_(hxConsoleTestFn4).execute_("2345 3456 3456 6.78"));
 	ASSERT_FALSE(hxConsoleCommandFactory_(hxConsoleTestFn4).execute_("$*"));
 
@@ -114,18 +117,19 @@ TEST(hxConsoleTest, CommandFactory) {
 	ASSERT_EQ(c_hxConsoleTestCallFlags, (1<<hxConsoleTestTypeID_MAX)-1);
 }
 
-// Triggers asserts and then ASSERT_FALSE a few times.
+// Trigger some asserts and then call ASSERT_FALSE a few times. Show that asserts
+// are hit and can be skipped. And then show that the above test would fail if
+// bad commands were submitted.
 #if HX_TEST_ERROR_HANDLING
 TEST(hxConsoleTest, Overflow) {
 #if (HX_RELEASE) < 1
 	// Test that asserts are triggered by overflow.
-	hxConsoleExecLine("skipasserts 3");
+	hxConsoleExecLine("skipasserts 2");
 #endif
 
-	// These will all ASSERT_FALSE due to parameter overflow.
+	// These will all ASSERT_FALSE due to parameter mismatch.
 	hxConsoleCommandFactory_(hxConsoleTestFn1).execute_("256");
 	hxConsoleCommandFactory_(hxConsoleTestFn2).execute_("32768 -345");
-	hxConsoleCommandFactory_(hxConsoleTestFn3).execute_("2 12");
 
 #if (HX_RELEASE) < 1
 	// Test that asserts are triggered by overflow.
@@ -264,12 +268,6 @@ TEST(hxConsoleTest, RegisterVariable) {
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestULongLong 5678"));
 	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestDouble 789.0"));
 
-#if HX_TEST_ERROR_HANDLING
-	hxLogConsole("TEST_EXPECTING_WARNINGS:\n");
-	ASSERT_FALSE(hxConsoleExecLine("s_hxConsoleTestInt 3.5"));
-	ASSERT_TRUE(hxConsoleExecLine("s_hxConsoleTestInt"));
-#endif
-
 	ASSERT_EQ(s_hxConsoleTestChar, 123);
 	ASSERT_EQ(s_hxConsoleTestShort, 234);
 	ASSERT_EQ(s_hxConsoleTestInt, 345);
@@ -285,6 +283,14 @@ TEST(hxConsoleTest, RegisterVariable) {
 	ASSERT_EQ(s_hxConsoleTestLongLong, 567ll);
 	ASSERT_EQ(s_hxConsoleTestULongLong, 5678ull);
 	ASSERT_EQ(s_hxConsoleTestDouble, 789.0);
+}
+
+// Show rounding errors while setting a variable are ignored. It isn't ideal
+// but code bloat is a consideration.
+TEST(hxConsoleTest, VariableErrors) {
+	s_hxConsoleTestInt = -1;
+	hxConsoleExecLine("s_hxConsoleTestInt 3.5");
+	ASSERT_EQ(s_hxConsoleTestInt, 3);
 }
 
 // ----------------------------------------------------------------------------

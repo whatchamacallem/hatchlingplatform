@@ -200,7 +200,8 @@
 #define HX_USE_GOOGLE_TEST 0
 #endif
 
-// HX_TEST_ERROR_HANDLING - Set to 0 if not defined. Set by coverage.sh
+// HX_TEST_ERROR_HANDLING - Tests that the failure of tests is handled correctly.
+// Set to 0 if not defined. Set by testerrorhandling.sh and coverage.sh
 #if !defined HX_TEST_ERROR_HANDLING
 #define HX_TEST_ERROR_HANDLING 0
 #endif

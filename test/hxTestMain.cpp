@@ -41,10 +41,14 @@ static bool hxRunAllTests(void) {
 	size_t testsFailing = (size_t)RUN_ALL_TESTS();
 
 #if HX_TEST_ERROR_HANDLING
-	hxAssertRelease(testsFailing == 5, "expected 5 tests to fail");
+	// The 2 above and one in the console tests.
+	const int s_hxExpectedFailures = 3;
+
+	hxAssertRelease(testsFailing == s_hxExpectedFailures,
+		"expected %d tests to fail", s_hxExpectedFailures);
 	// there are no asserts at level 3.
-	hxLogHandler(hxLogLevel_Warning, "expected 5 tests to fail");
-	return testsFailing == 5;
+	hxLogHandler(hxLogLevel_Warning, "expected %d tests to fail", s_hxExpectedFailures);
+	return testsFailing == s_hxExpectedFailures;
 #else
 	return testsFailing == 0;
 #endif

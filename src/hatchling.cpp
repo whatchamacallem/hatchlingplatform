@@ -141,7 +141,7 @@ bool hxPrintHashes(void) {
 	hxInsertionSort(filenames.begin(), filenames.end(), hxFilenameLess());
 
 	for (Filenames::iterator f = filenames.begin(); f != filenames.end(); ++f) {
-		hxLog("  %08x %s\n", hxStringLiteralHashDebug(*f), *f);
+		hxLog("  %08zx %s\n", (size_t)hxStringLiteralHashDebug(*f), *f);
 	}
 	return true;
 }
@@ -150,12 +150,12 @@ bool hxCheckHash(hxconsolehex_t hash_) {
 	hxRegisterStringLiteralHash* node = hxStringLiteralHashes_().find(hash_);
 	if(node) {
 		while(node) {
-			hxLogConsole("%08x: %s\n", (unsigned int)hash_, node->str());
+			hxLogConsole("%08zx: %s\n", (size_t)hash_, node->str());
 			node = hxStringLiteralHashes_().find(hash_, node);
 		}
 	}
 	else {
-		hxLogConsole("%08x: not found\n", (unsigned int)hash_);
+		hxLogConsole("%08zx: not found\n", (size_t)hash_);
 	}
 	return true;
 }

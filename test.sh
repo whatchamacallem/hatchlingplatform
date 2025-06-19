@@ -23,6 +23,8 @@ HX_FLAGS="-ffast-math -ggdb3"
 
 HX_SANITIZE="-fsanitize=undefined,address -fsanitize-recover=undefined,address"
 
+HX_DIR=`pwd`
+
 # Build artifacts are not retained.
 rm -rf ./bin
 mkdir ./bin
@@ -38,24 +40,22 @@ set -x
 # and gcc's defaults cheat slightly by pretending c99 was available in c++98.)
 # -Wno-unused-local-typedefs is only for the c++98 version of static_assert.
 
-HX_SRC="`pwd`/.."
-
 gcc --version | grep gcc
 for I in 0 1 2 3; do
 echo gcc c++98 -O$I "$@"...
 # -std=c99
-gcc -I$HX_SRC/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
-	-std=c99 -m32 "$@" -c $HX_SRC/src/*.c $HX_SRC/test/*.c
+gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
+	-std=c99 -m32 "$@" -c $HX_DIR/src/*.c $HX_DIR/test/*.c
 # -std=c++98
-gcc -I$HX_SRC/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -std=c++98 \
-	-fno-exceptions -fno-rtti -Wno-unused-local-typedefs "$@" $HX_SRC/*/*.cpp *.o \
+gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -std=c++98 \
+	-fno-exceptions -fno-rtti -Wno-unused-local-typedefs "$@" $HX_DIR/*/*.cpp *.o \
 	-lstdc++ -m32 -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
 rm -f hxtest *.txt *.bin *.json
 echo gcc c++14 -O$I "$@"...
 # -std=c++14
-gcc -I$HX_SRC/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
-	-pthread -std=c++14 -fno-exceptions -fno-rtti "$@" $HX_SRC/*/*.cpp *.o \
+gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
+	-pthread -std=c++14 -fno-exceptions -fno-rtti "$@" $HX_DIR/*/*.cpp *.o \
 	-lpthread -lstdc++ -m32 -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
 rm -f hxtest *.o *.txt *.bin *.json
