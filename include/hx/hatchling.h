@@ -17,9 +17,9 @@
 #include <signal.h>
 
 // HATCHLING_VER - Major, minor and patch versions.
-#define HATCHLING_VER 0x020120u
+#define HATCHLING_VER 0x020200u
 // HATCHLING_TAG - Major, minor and patch version tag.
-#define HATCHLING_TAG "v2.1.20"
+#define HATCHLING_TAG "v2.2.0"
 
 #include <hx/hxSettings.h>
 #include <hx/hxMemoryManager.h>
