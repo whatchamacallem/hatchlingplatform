@@ -1,14 +1,14 @@
 // Copyright 2017-2025 Adrian Johnston
 
 #include <hx/hatchling.h>
-#include <hx/hxArray.hpp>
-#include <hx/hxConsole.hpp>
-#include <hx/hxDma.hpp>
-#include <hx/hxFile.hpp>
-#include <hx/hxHashTableNodes.hpp>
-#include <hx/hxProfiler.hpp>
-#include <hx/hxSort.hpp>
-#include <hx/hxSort.hpp>
+#include <hx/hxarray.hpp>
+#include <hx/hxconsole.hpp>
+#include <hx/hxdma.hpp>
+#include <hx/hxfile.hpp>
+#include <hx/hxhash_table_nodes.hpp>
+#include <hx/hxprofiler.hpp>
+#include <hx/hxsort.hpp>
+#include <hx/hxsort.hpp>
 
 #include <stdio.h>
 #include <math.h>
@@ -46,7 +46,7 @@ HX_STATIC_ASSERT(0, "exceptions should not be enabled");
 #endif
 
 // No reason for this to be visible.
-void hxSettingsConstruct();
+void hxsettings_construct();
 
 // ----------------------------------------------------------------------------
 // When not hosted, provide no locking around the initialization of function
@@ -58,7 +58,7 @@ int __cxa_guard_acquire(size_t *guard) {
 	if(*guard == 1u) { return 0; }
 
 	// Check if the constructor is already in progress.
-	hxAssertRelease(*guard != 2u, "race constructing function scope static");
+	hxassert_release(*guard != 2u, "race constructing function scope static");
 
 	// Run the constructor.
 	*guard = 2u;
@@ -71,7 +71,7 @@ void __cxa_guard_release(size_t *guard) {
 }
 extern "C"
 void __cxa_guard_abort(uint64_t *guard) {
-	hxAssertRelease(0, "exception constructing function scope static");
+	hxassert_release(0, "exception constructing function scope static");
 	*guard = 0u;
 }
 #endif
@@ -89,78 +89,78 @@ void __sanitizer_report_error_summary(const char *error_summary) {
 
 // ----------------------------------------------------------------------------
 #if (HX_RELEASE) < 1
-// Implements HX_REGISTER_FILENAME_HASH in debug. See hxStringLiteralHash.h.
+// Implements HX_REGISTER_FILENAME_HASH in debug. See hxstring_literal_hash.h.
 namespace {
-struct hxHashStringLiteral_
-		: public hxHashTable<hxRegisterStringLiteralHash, 5, hxNullDeleter> { };
+struct hxhash_string_literal_
+		: public hxhash_table<hxregister_string_literal_hash, 5, hxnull_deleter> { };
 
-struct hxFilenameLess {
+struct hxfilename_less {
 	inline bool operator()(const char* lhs, const char* rhs) const {
-		return hxStringLiteralHashDebug(lhs) < hxStringLiteralHashDebug(rhs);
+		return hxstring_literal_hash_debug(lhs) < hxstring_literal_hash_debug(rhs);
 	}
 };
 
-hxHashStringLiteral_& hxStringLiteralHashes_() {
-	static hxHashStringLiteral_ s_hxStringLiteralHashes_;
-	return s_hxStringLiteralHashes_;
+hxhash_string_literal_& hxstring_literal_hashes_() {
+	static hxhash_string_literal_ s_hxstring_literal_hashes_;
+	return s_hxstring_literal_hashes_;
 }
 
 } // namespace {
 
 // The key for the table is a string hash.
-hxRegisterStringLiteralHash::hxRegisterStringLiteralHash(const char* str_)
-        : m_hashNext_(0), m_hash_(hxStringLiteralHashDebug(str_)), m_str_(str_) {
-    hxStringLiteralHashes_().insertNode(this);
+hxregister_string_literal_hash::hxregister_string_literal_hash(const char* str_)
+        : m_hash_next_(0), m_hash_(hxstring_literal_hash_debug(str_)), m_str_(str_) {
+    hxstring_literal_hashes_().insert_node(this);
 }
 
 // The hash table code expects to be able to hash a Key and compare it equal
 // to the Node::hash value. That results in double hashing here. It is just
 // another multiply.
-uint32_t hxRegisterStringLiteralHash::hash() const {
-	return hxKeyHash(m_hash_);
+uint32_t hxregister_string_literal_hash::hash() const {
+	return hxkey_hash(m_hash_);
 };
 
-bool hxPrintHashes(void) {
-	hxInit();
+bool hxprint_hashes(void) {
+	hxinit();
 
 	// sort by hash.
-	hxLogConsole("string literals in hash order:\n");
-	hxMemoryAllocatorScope temporaryStack(hxMemoryAllocator_TemporaryStack);
+	hxlog_console("string literals in hash order:\n");
+	hxmemory_allocator_scope temporary_stack(hxmemory_allocator_Temporary_stack);
 
-	typedef hxArray<const char*> Filenames;
-	Filenames filenames; filenames.reserve(hxStringLiteralHashes_().size());
+	typedef hxarray<const char*> Filenames;
+	Filenames filenames; filenames.reserve(hxstring_literal_hashes_().size());
 
-	hxHashStringLiteral_::constIterator it = hxStringLiteralHashes_().cBegin();
-	hxHashStringLiteral_::constIterator end = hxStringLiteralHashes_().cEnd();
+	hxhash_string_literal_::const_iterator it = hxstring_literal_hashes_().c_begin();
+	hxhash_string_literal_::const_iterator end = hxstring_literal_hashes_().c_end();
 	for (; it != end; ++it) {
-		filenames.pushBack(it->str());
+		filenames.push_back(it->str());
 	}
 
-	hxInsertionSort(filenames.begin(), filenames.end(), hxFilenameLess());
+	hxinsertion_sort(filenames.begin(), filenames.end(), hxfilename_less());
 
 	for (Filenames::iterator f = filenames.begin(); f != filenames.end(); ++f) {
-		hxLog("  %08zx %s\n", (size_t)hxStringLiteralHashDebug(*f), *f);
+		hxlog("  %08zx %s\n", (size_t)hxstring_literal_hash_debug(*f), *f);
 	}
 	return true;
 }
 
-bool hxCheckHash(hxconsolehex_t hash_) {
-	hxRegisterStringLiteralHash* node = hxStringLiteralHashes_().find(hash_);
+bool hxcheck_hash(hxconsolehex_t hash_) {
+	hxregister_string_literal_hash* node = hxstring_literal_hashes_().find(hash_);
 	if(node) {
 		while(node) {
-			hxLogConsole("%08zx: %s\n", (size_t)hash_, node->str());
-			node = hxStringLiteralHashes_().find(hash_, node);
+			hxlog_console("%08zx: %s\n", (size_t)hash_, node->str());
+			node = hxstring_literal_hashes_().find(hash_, node);
 		}
 	}
 	else {
-		hxLogConsole("%08zx: not found\n", (size_t)hash_);
+		hxlog_console("%08zx: not found\n", (size_t)hash_);
 	}
 	return true;
 }
 
 // use the debug console to emit and check file hashes.
-hxConsoleCommandNamed(hxPrintHashes, printhashes);
-hxConsoleCommandNamed(hxCheckHash, checkhash);
+hxconsole_command_named(hxprint_hashes, printhashes);
+hxconsole_command_named(hxcheck_hash, checkhash);
 
 #endif
 
@@ -168,51 +168,51 @@ hxConsoleCommandNamed(hxCheckHash, checkhash);
 // init, shutdown, exit, assert and logging.
 
 extern "C"
-void hxInitInternal(void) {
-	hxAssertRelease(!g_hxIsInit, "call hxInit() instead");
-	hxSettingsConstruct();
-	g_hxIsInit = 1;
+void hxinit_internal(void) {
+	hxassert_release(!g_hxis_init, "call hxinit() instead");
+	hxsettings_construct();
+	g_hxis_init = 1;
 
 #if HX_FLOATING_POINT_TRAPS
 	// You need the math library -lm. This is nonstandard glibc/_GNU_SOURCE.
     ::feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 #endif
 
-	hxMemoryManagerInit();
+	hxmemory_manager_init();
 
 	// No DMA in a web browser.  The DMA code is just scaffolding.
 #ifndef __EMSCRIPTEN__
-	hxDmaInit();
+	hxdma_init();
 #endif
 }
 
 extern "C"
-HX_NOEXCEPT_INTRINSIC void hxLogHandler(hxLogLevel level, const char* format, ...) {
+HX_NOEXCEPT_INTRINSIC void hxlog_handler(hxlog_level level, const char* format, ...) {
 	va_list args;
 	va_start(args, format);
-	hxLogHandlerV(level, format, args);
+	hxlog_handler_v(level, format, args);
 	va_end(args);
 }
 
 #define HX_STDOUT_STR_(x) ::fwrite(x, (sizeof x) - 1, 1, stdout)
 
 extern "C"
-HX_NOEXCEPT_INTRINSIC void hxLogHandlerV(hxLogLevel level, const char* format, va_list args) {
-	if(g_hxIsInit && g_hxSettings.logLevel > level) {
+HX_NOEXCEPT_INTRINSIC void hxlog_handler_v(hxlog_level level, const char* format, va_list args) {
+	if(g_hxis_init && g_hxsettings.log_level > level) {
 		return;
 	}
 
 	char buf[HX_MAX_LINE+1];
 	int sz = format ? vsnprintf(buf, HX_MAX_LINE, format, args) : -1;
-	hxAssertRelease(sz >= 0, "format error: %s", format ? format : "(null)");
+	hxassert_release(sz >= 0, "format error: %s", format ? format : "(null)");
 	if (sz <= 0) {
 		return;
 	}
-	if (level == hxLogLevel_Warning) {
+	if (level == hxlog_level_Warning) {
 		HX_STDOUT_STR_("WARNING ");
 		buf[sz++] = '\n';
 	}
-	else if (level == hxLogLevel_Assert) {
+	else if (level == hxlog_level_Assert) {
 		HX_STDOUT_STR_("ASSERT_FAIL ");
 		buf[sz++] = '\n';
 	}
@@ -221,35 +221,35 @@ HX_NOEXCEPT_INTRINSIC void hxLogHandlerV(hxLogLevel level, const char* format, v
 
 // HX_RELEASE < 3 facilities for testing tear down. Just call _Exit() otherwise.
 extern "C"
-void hxShutdown(void) {
-	if(g_hxIsInit) {
+void hxshutdown(void) {
+	if(g_hxis_init) {
 #if (HX_RELEASE) < 3
 		// Will trap further activity and leaks.
-		hxMemoryManagerShutDown();
+		hxmemory_manager_shut_down();
 #endif
 	}
 }
 
 #if (HX_RELEASE) == 0
 extern "C"
-HX_NOEXCEPT_INTRINSIC int hxAssertHandler(const char* file, size_t line) {
-	const char* f = hxBasename(file);
-	if (g_hxIsInit && g_hxSettings.assertsToBeSkipped > 0) {
-		--g_hxSettings.assertsToBeSkipped;
-		hxLogHandler(hxLogLevel_Assert, "(skipped) %s(%u) hash %08x", f, (unsigned int)line,
-			(unsigned int)hxStringLiteralHashDebug(file));
+HX_NOEXCEPT_INTRINSIC int hxassert_handler(const char* file, size_t line) {
+	const char* f = hxbasename(file);
+	if (g_hxis_init && g_hxsettings.asserts_to_be_skipped > 0) {
+		--g_hxsettings.asserts_to_be_skipped;
+		hxlog_handler(hxlog_level_Assert, "(skipped) %s(%u) hash %08x", f, (unsigned int)line,
+			(unsigned int)hxstring_literal_hash_debug(file));
 		return 1;
 	}
-	hxLogHandler(hxLogLevel_Assert, "%s(%u) hash %08x Triggering Breakpoint\n", f, (unsigned int)line,
-		(unsigned int)hxStringLiteralHashDebug(file));
+	hxlog_handler(hxlog_level_Assert, "%s(%u) hash %08x Triggering Breakpoint\n", f, (unsigned int)line,
+		(unsigned int)hxstring_literal_hash_debug(file));
 
 	// return to HX_BREAKPOINT at calling line.
 	return 0;
 }
 #else
 extern "C"
-HX_NOEXCEPT_INTRINSIC HX_NORETURN void hxAssertHandler(uint32_t file, size_t line) {
-	hxLogHandler(hxLogLevel_Assert, "file %08x line %u\n", (unsigned int)file, (unsigned int)line);
+HX_NOEXCEPT_INTRINSIC HX_NORETURN void hxassert_handler(uint32_t file, size_t line) {
+	hxlog_handler(hxlog_level_Assert, "file %08x line %u\n", (unsigned int)file, (unsigned int)line);
 	_Exit(EXIT_FAILURE);
 }
 #endif

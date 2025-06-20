@@ -1,171 +1,171 @@
 // Copyright 2017-2025 Adrian Johnston
 
 #include <hx/hatchling.h>
-#include <hx/hxTest.hpp>
+#include <hx/hxtest.hpp>
 
 HX_REGISTER_FILENAME_HASH
 
-TEST(hxMemoryManagerTestF, Bytes) {
+TEST(hxmemory_manager_test_f, Bytes) {
 	for(size_t i=0u; i<10u; ++i) {
-		void* p = hxMalloc(i);
+		void* p = hxmalloc(i);
 		ASSERT_TRUE(p != hxnull);
 		::memset(p, 0x66, i);
-		hxFree(p);
+		hxfree(p);
 	}
 }
 
-TEST(hxMemoryManagerTestF, StringDuplicateNull) {
+TEST(hxmemory_manager_test_f, String_duplicate_null) {
 	// duplicating a null string is null.
-	void* p = hxStringDuplicate(hxnull);
+	void* p = hxstring_duplicate(hxnull);
 	ASSERT_TRUE(p == hxnull);
-	hxFree(hxnull);
+	hxfree(hxnull);
 }
 
-TEST(hxMemoryManagerTestF, StringDuplicate) {
-	char* p = hxStringDuplicate("str");
+TEST(hxmemory_manager_test_f, String_duplicate) {
+	char* p = hxstring_duplicate("str");
 	ASSERT_TRUE(p != hxnull);
 	ASSERT_TRUE(::strcmp(p, "str") == 0);
-	hxFree(p);
+	hxfree(p);
 }
 
 #if !(HX_MEMORY_MANAGER_DISABLE)
 
-class hxMemoryManagerTest :
+class hxmemory_manager_test :
 	public testing::Test
 {
 public:
-	void TestMemoryAllocatorNormal(hxMemoryAllocator id) {
-		uintptr_t startCount;
-		uintptr_t startBytes;
+	void Test_memory_allocator_normal(hxmemory_allocator id) {
+		uintptr_t start_count;
+		uintptr_t start_bytes;
 
 		{
-			hxMemoryAllocatorScope allocatorScope(id);
+			hxmemory_allocator_scope allocator_scope(id);
 
-			startCount = allocatorScope.getTotalAllocationCount();
-			startBytes = allocatorScope.getTotalBytesAllocated();
+			start_count = allocator_scope.get_total_allocation_count();
+			start_bytes = allocator_scope.get_total_bytes_allocated();
 
-			void* ptr1 = hxMalloc(100);
-			void* ptr2 = hxMalloc(200);
+			void* ptr1 = hxmalloc(100);
+			void* ptr2 = hxmalloc(200);
 			::memset(ptr1, 0x33, 100);
 			::memset(ptr2, 0x33, 200);
 
 			{
 				// Google Test spams new/delete with std::string operations:
-				hxMemoryAllocatorScope spamGuard(hxMemoryAllocator_Heap);
-				ASSERT_EQ(allocatorScope.getScopeAllocationCount(), 2u);
-				ASSERT_EQ(allocatorScope.getPreviousAllocationCount(), startCount);
-				ASSERT_EQ(allocatorScope.getTotalAllocationCount(), 2u + startCount);
-				ASSERT_NEAR(allocatorScope.getScopeBytesAllocated(), 300u, 2u * HX_ALIGNMENT);
-				ASSERT_NEAR(allocatorScope.getTotalBytesAllocated(), startBytes + 300u, 2u * HX_ALIGNMENT);
-				ASSERT_EQ(allocatorScope.getPreviousBytesAllocated(), startBytes);
+				hxmemory_allocator_scope spam_guard(hxmemory_allocator_Heap);
+				ASSERT_EQ(allocator_scope.get_scope_allocation_count(), 2u);
+				ASSERT_EQ(allocator_scope.get_previous_allocation_count(), start_count);
+				ASSERT_EQ(allocator_scope.get_total_allocation_count(), 2u + start_count);
+				ASSERT_NEAR(allocator_scope.get_scope_bytes_allocated(), 300u, 2u * HX_ALIGNMENT);
+				ASSERT_NEAR(allocator_scope.get_total_bytes_allocated(), start_bytes + 300u, 2u * HX_ALIGNMENT);
+				ASSERT_EQ(allocator_scope.get_previous_bytes_allocated(), start_bytes);
 			}
 
 			// Allow quiet deletion of a resource.
-			g_hxSettings.deallocatePermanent = true;
-			hxFree(ptr1);
-			hxFree(ptr2);
-			g_hxSettings.deallocatePermanent = false;
+			g_hxsettings.deallocate_permanent = true;
+			hxfree(ptr1);
+			hxfree(ptr2);
+			g_hxsettings.deallocate_permanent = false;
 
 			// Special case for heaps that do not track free.
-			if (allocatorScope.getScopeBytesAllocated() != 0) {
+			if (allocator_scope.get_scope_bytes_allocated() != 0) {
 				// Google Test spams new/delete with std::string operations:
-				hxMemoryAllocatorScope spamGuard(hxMemoryAllocator_Heap);
+				hxmemory_allocator_scope spam_guard(hxmemory_allocator_Heap);
 
 				// The debug heap requires HX_ALLOCATIONS_LOG_LEVEL enabled to track bytes allocated.
-				ASSERT_NEAR(allocatorScope.getScopeBytesAllocated(), 300, 2 * HX_ALIGNMENT);
+				ASSERT_NEAR(allocator_scope.get_scope_bytes_allocated(), 300, 2 * HX_ALIGNMENT);
 			}
 			else {
-				hxMemoryAllocatorScope spamGuard(hxMemoryAllocator_Heap);
-				ASSERT_EQ(allocatorScope.getScopeBytesAllocated(), 0u);
-				ASSERT_EQ(allocatorScope.getTotalBytesAllocated(), startBytes);
+				hxmemory_allocator_scope spam_guard(hxmemory_allocator_Heap);
+				ASSERT_EQ(allocator_scope.get_scope_bytes_allocated(), 0u);
+				ASSERT_EQ(allocator_scope.get_total_bytes_allocated(), start_bytes);
 			}
 		}
 
-		// hxMemoryAllocator_Permanent does not free.
-		if (id != hxMemoryAllocator_Permanent) {
-			hxMemoryAllocatorScope allocatorScope(id);
+		// hxmemory_allocator_Permanent does not free.
+		if (id != hxmemory_allocator_Permanent) {
+			hxmemory_allocator_scope allocator_scope(id);
 
 			// Google Test spams new/delete with std::string operations:
-			hxMemoryAllocatorScope spamGuard(hxMemoryAllocator_Heap);
-			ASSERT_EQ(allocatorScope.getPreviousAllocationCount(), startCount);
-			ASSERT_EQ(allocatorScope.getPreviousBytesAllocated(), startBytes);
+			hxmemory_allocator_scope spam_guard(hxmemory_allocator_Heap);
+			ASSERT_EQ(allocator_scope.get_previous_allocation_count(), start_count);
+			ASSERT_EQ(allocator_scope.get_previous_bytes_allocated(), start_bytes);
 		}
 	}
 
-	void TestMemoryAllocatorLeak(hxMemoryAllocator id) {
+	void Test_memory_allocator_leak(hxmemory_allocator id) {
 		(void)id;
 #if (HX_RELEASE) < 1
-		uintptr_t startCount = 0;
-		uintptr_t startBytes = 0;
+		uintptr_t start_count = 0;
+		uintptr_t start_bytes = 0;
 		void* ptr2 = hxnull;
-		size_t assertsAllowed = g_hxSettings.assertsToBeSkipped;
+		size_t asserts_allowed = g_hxsettings.asserts_to_be_skipped;
 
 		{
-			hxMemoryAllocatorScope allocatorScope(id);
+			hxmemory_allocator_scope allocator_scope(id);
 
-			ASSERT_EQ(0u, allocatorScope.getScopeAllocationCount());
-			ASSERT_EQ(0u, allocatorScope.getScopeBytesAllocated());
+			ASSERT_EQ(0u, allocator_scope.get_scope_allocation_count());
+			ASSERT_EQ(0u, allocator_scope.get_scope_bytes_allocated());
 
 			// Track the starting state to see how it is affected by a leak.
-			startCount = allocatorScope.getPreviousAllocationCount();
-			startBytes = allocatorScope.getPreviousBytesAllocated();
+			start_count = allocator_scope.get_previous_allocation_count();
+			start_bytes = allocator_scope.get_previous_bytes_allocated();
 
-			void* ptr1 = hxMalloc(100);
-			ptr2 = hxMalloc(200);
+			void* ptr1 = hxmalloc(100);
+			ptr2 = hxmalloc(200);
 			::memset(ptr1, 0x33, 100);
 			::memset(ptr2, 0x33, 200);
 
-			hxFree(ptr1); // Only free the one.
+			hxfree(ptr1); // Only free the one.
 
-			g_hxSettings.assertsToBeSkipped = 1;
+			g_hxsettings.asserts_to_be_skipped = 1;
 		}
-		ASSERT_EQ(g_hxSettings.assertsToBeSkipped, 0); // hxAssert was hit, leak in scope
+		ASSERT_EQ(g_hxsettings.asserts_to_be_skipped, 0); // hxassert was hit, leak in scope
 
 		{
-			hxMemoryAllocatorScope allocatorScope(id);
+			hxmemory_allocator_scope allocator_scope(id);
 
 			// the allocator knows it has an outstanding allocation
-			ASSERT_EQ(allocatorScope.getPreviousAllocationCount(), startCount + 1);
+			ASSERT_EQ(allocator_scope.get_previous_allocation_count(), start_count + 1);
 
 			// however the allocated memory was reset.
-			ASSERT_EQ(allocatorScope.getPreviousBytesAllocated(), startBytes);
+			ASSERT_EQ(allocator_scope.get_previous_bytes_allocated(), start_bytes);
 
-			g_hxSettings.assertsToBeSkipped = 1;
-			hxFree(ptr2);
+			g_hxsettings.asserts_to_be_skipped = 1;
+			hxfree(ptr2);
 		}
 
-		// hxAssert was hit, free after scope closed
-		ASSERT_EQ(g_hxSettings.assertsToBeSkipped, 0);
+		// hxassert was hit, free after scope closed
+		ASSERT_EQ(g_hxsettings.asserts_to_be_skipped, 0);
 
-		g_hxSettings.assertsToBeSkipped = assertsAllowed;
+		g_hxsettings.asserts_to_be_skipped = asserts_allowed;
 #endif
 	}
 };
 
-TEST_F(hxMemoryManagerTest, Execute) {
+TEST_F(hxmemory_manager_test, Execute) {
 	// The API should still work while stubbed out.
-	for (size_t i = 0; i < hxMemoryAllocator_Current; ++i) {
-		TestMemoryAllocatorNormal((hxMemoryAllocator)i);
+	for (size_t i = 0; i < hxmemory_allocator_Current; ++i) {
+		Test_memory_allocator_normal((hxmemory_allocator)i);
 	}
 
 	// Leak checking requires the memory manager.
 #if !(HX_MEMORY_MANAGER_DISABLE)
-	hxLog("TEST_EXPECTING_ASSERTS:\n");
-	// Only the TemporaryStack expects all allocations to be free()'d.
-	TestMemoryAllocatorLeak(hxMemoryAllocator_TemporaryStack);
+	hxlog("TEST_EXPECTING_ASSERTS:\n");
+	// Only the Temporary_stack expects all allocations to be free()'d.
+	Test_memory_allocator_leak(hxmemory_allocator_Temporary_stack);
 #endif
 }
 
-TEST_F(hxMemoryManagerTest, TempOverflow) {
+TEST_F(hxmemory_manager_test, Temp_overflow) {
 	// there is no policy against using the debug heap in release
-	void* p = hxMallocExt(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1, hxMemoryAllocator_TemporaryStack, 0u);
+	void* p = hxmalloc_ext(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1, hxmemory_allocator_Temporary_stack, 0u);
 	ASSERT_TRUE(p != hxnull);
-	hxFree(p);
+	hxfree(p);
 
-	hxMemoryAllocatorScope temp(hxMemoryAllocator_TemporaryStack);
-	p = hxMalloc(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1);
+	hxmemory_allocator_scope temp(hxmemory_allocator_Temporary_stack);
+	p = hxmalloc(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1);
 	ASSERT_TRUE(p != hxnull);
-	hxFree(p);
+	hxfree(p);
 }
 
 #endif // !HX_MEMORY_MANAGER_DISABLE

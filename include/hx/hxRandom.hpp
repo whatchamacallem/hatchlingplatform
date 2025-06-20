@@ -3,22 +3,22 @@
 
 #include <hx/hatchling.h>
 
-// hxRandom - 64-bit MMIX LCG. Knuth, D. 2002 (Modified to perturb return.)
+// hxrandom - 64-bit MMIX LCG. Knuth, D. 2002 (Modified to perturb return.)
 // Performs an automatic cast to any integer or floating point value. Generates
 // a new value every time. Usable as a functor or by simply calling the
 // provided cast operator to your type. Has a period of 2^64 and passes routine
 // numerical tests with only 8 bytes of state and using simple arithmetic.
-struct hxRandom {
+struct hxrandom {
 public:
 	// Constructor to initialize the random number generator with a seed.
     // - seed: Initial seed value for the random number generator.
-    HX_CONSTEXPR_FN hxRandom(uint32_t seed_ = 1u) : m_state_(seed_) { }
+    HX_CONSTEXPR_FN hxrandom(uint32_t seed_ = 1u) : m_state_(seed_) { }
 
-    // Functor returns hxRandom& which converts itself to the type it is
+    // Functor returns hxrandom& which converts itself to the type it is
     // assigned to. Enables traditional syntax.
     // E.g. uint32_t = m_prng(); // Returns [0..2^32).
     // E.g. double i = m_prng(); // Returns [0..1).
-    HX_CONSTEXPR_FN hxRandom& operator()(void) { return *this; }
+    HX_CONSTEXPR_FN hxrandom& operator()(void) { return *this; }
 
     // Automatic cast to unsigned integer or floating point value. Floating point
     // results are between [0..1).  They can safely be used to generate array
@@ -52,13 +52,13 @@ public:
     template<typename T_> HX_CONSTEXPR_FN T_ range(T_ base_, T_ size_) {
         // Use double parameters if you need a bigger size. An emulated floating
         // point multiply is faster and more stable than integer modulo.
-        hxAssertMsg((float)size_ < (float)0x01000000, "insufficient precision"); // 0x1p24f
+        hxassert_msg((float)size_ < (float)0x01000000, "insufficient precision"); // 0x1p24f
         return base_ + (T_)((float)size_ * (float)*this);
     }
     HX_CONSTEXPR_FN double range(double base_, double size_) {
         // Use uint64_t parameters if you need a bigger size. An emulated floating
         // point multiply is faster and more stable than integer modulo.
-        hxAssertMsg(size_ < (double)0x40000000000000ll, "insufficient precision"); // 0x1p54f
+        hxassert_msg(size_ < (double)0x40000000000000ll, "insufficient precision"); // 0x1p54f
         return base_ + size_ * (double)*this;
     }
     HX_CONSTEXPR_FN int64_t range(int64_t base_, int64_t size_) {
@@ -90,39 +90,39 @@ private:
     uint64_t m_state_;
 };
 
-// operator&(hxRandom& a, T b) - Bitwise & with random T generated from a.
+// operator&(hxrandom& a, T b) - Bitwise & with random T generated from a.
 // a - Bits to mask off. Undefined behavior when a negative integer.
-// b - A hxRandom.
-template <typename T_> inline T_ operator&(T_ a_, hxRandom& b_) {
+// b - A hxrandom.
+template <typename T_> inline T_ operator&(T_ a_, hxrandom& b_) {
     return T_((uint32_t)a_ & b_.advance32());
 }
-// operator&(int64_t a_, hxRandom& b_) - Allow a signed 64-bit type here because
+// operator&(int64_t a_, hxrandom& b_) - Allow a signed 64-bit type here because
 // it can be generated without automatically hitting undefined behaviour.
 // a - Bits to mask off. Undefined behavior when negative.
-// b - A hxRandom.
-inline int64_t operator&(int64_t a_, hxRandom& b_) {
+// b - A hxrandom.
+inline int64_t operator&(int64_t a_, hxrandom& b_) {
    return (int64_t)((uint64_t)a_ & b_.advance64());
 }
-inline uint64_t operator&(uint64_t a_, hxRandom& b_) {
+inline uint64_t operator&(uint64_t a_, hxrandom& b_) {
     return a_ & b_.advance64();
 }
 
-// operator&(T a, hxRandom& b) - Bitwise & with random T generated from a.
-// a - A hxRandom.
+// operator&(T a, hxrandom& b) - Bitwise & with random T generated from a.
+// a - A hxrandom.
 // b - Bits to mask off. Must be a positive integer.
-template <typename T_> inline T_ operator&(hxRandom& a_, T_ b_) {
+template <typename T_> inline T_ operator&(hxrandom& a_, T_ b_) {
     return b_ & a_;
 }
 
-// operator&=(T& a, hxRandom& b) - Bitwise &= with random T generated from b.
+// operator&=(T& a, hxrandom& b) - Bitwise &= with random T generated from b.
 // a - Bits to mask off. Must be a positive integer.
-// b - A hxRandom.
-template <typename T_> inline T_ operator&=(T_& a_, hxRandom& b_) {
+// b - A hxrandom.
+template <typename T_> inline T_ operator&=(T_& a_, hxrandom& b_) {
     return (a_ = a_ & b_);
 }
 
-// operator%(hxRandom& a, T_ b) - Generate an number of type T in the range 0..b.
+// operator%(hxrandom& a, T_ b) - Generate an number of type T in the range 0..b.
 // Works with floating point divisors and uses no actual modulo or division.
-template <typename T_> inline T_ operator%(hxRandom& dividend_, T_ divisor_) {
+template <typename T_> inline T_ operator%(hxrandom& dividend_, T_ divisor_) {
     return dividend_.range((T_)0, divisor_);
 }

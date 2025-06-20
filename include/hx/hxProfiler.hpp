@@ -20,23 +20,23 @@ extern "C" double emscripten_get_now(void);
 typedef size_t hxcycles_t;
 
 #if HX_PROFILE
-#include <hx/internal/hxProfilerInternal.hpp>
+#include <hx/internal/hxprofiler_internal.hpp>
 #define HX_PROFILE_ONLY_(x_) x_
 #else
 #define HX_PROFILE_ONLY_(x_) ((void)0)
 #endif
 
-// c_hxCyclesPerSecond - TODO: customize for your processor speed. This assumes
+// c_hxcycles_per_second - TODO: customize for your processor speed. This assumes
 // 2ghz. These are really only used with printf which promotes everything to
 // double anyhow.
-static const double c_hxCyclesPerSecond = 2.0e+9;
-static const double c_hxMillisecondsPerCycle = 1.0e+3 / c_hxCyclesPerSecond;
-static const double c_hxMicrosecondsPerCycle = 1.0e+6 / c_hxCyclesPerSecond;
-static const hxcycles_t c_hxDefaultCyclesCutoff = 1000;
+static const double c_hxcycles_per_second = 2.0e+9;
+static const double c_hxmilliseconds_per_cycle = 1.0e+3 / c_hxcycles_per_second;
+static const double c_hxmicroseconds_per_cycle = 1.0e+6 / c_hxcycles_per_second;
+static const hxcycles_t c_hxdefault_cycles_cutoff = 1000;
 
-// hxTimeSampleCycles() - Set up the processor cycle counter for your
+// hxtime_sample_cycles() - Set up the processor cycle counter for your
 // architecture. This is callable without enabling HX_PROFILE.
-static inline hxcycles_t hxTimeSampleCycles(void) {
+static inline hxcycles_t hxtime_sample_cycles(void) {
     uint64_t cycles_ = 0; (void)cycles_;
 #if defined __EMSCRIPTEN__
     double t_ = emscripten_get_now() * 1.0e+6;
@@ -54,44 +54,44 @@ static inline hxcycles_t hxTimeSampleCycles(void) {
 #elif defined __powerpc__ || defined __ppc__
     __asm__ volatile("mftb %0" : "=r"(cycles_));
 #else
-HX_STATIC_ASSERT(0, "implement hxTimeSampleCycles");
+HX_STATIC_ASSERT(0, "implement hxtime_sample_cycles");
 #endif
     return (hxcycles_t)cycles_;
 }
 
-// hxProfileScope(const char* labelStringLiteral) - Declares an RAII-style
-// profiling sample. WARNING: A pointer to labelStringLiteral is kept.
-// c_hxProfilerDefaultSamplingCutoff is provided as a recommended MinCycles
+// hxprofile_scope(const char* label_string_literal) - Declares an RAII-style
+// profiling sample. WARNING: A pointer to label_string_literal is kept.
+// c_hxprofiler_default_sampling_cutoff is provided as a recommended Min_cycles
 // cutoff. Compiles to a NOP when not in use.
-// - labelStringLiteral: A string literal label for the sample.
-#define hxProfileScope(labelStringLiteral_) \
-    HX_PROFILE_ONLY_( hxProfilerScopeInternal_<> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral_) )
+// - label_string_literal: A string literal label for the sample.
+#define hxprofile_scope(label_string_literal_) \
+    HX_PROFILE_ONLY_( hxprofiler_scope_internal_<> HX_CONCATENATE(hxprofile_scope_,__LINE__)(label_string_literal_) )
 
-// hxProfileScopeMin(const char* labelStringLiteral, hxcycles_t minCycles) -
+// hxprofile_scope_min(const char* label_string_literal, hxcycles_t min_cycles) -
 // Declares an RAII-style profiling sample with a minimum cycle cutoff. Compiles
 // to a NOP when not in use.
-// - labelStringLiteral: A string literal label for the sample.
-// - minCycles_: A minimum number of cycles required for a sample to be recorded.
-#define hxProfileScopeMin(labelStringLiteral_, minCycles_) \
-    HX_PROFILE_ONLY_( hxProfilerScopeInternal_<minCycles_> HX_CONCATENATE(hxProfileScope_,__LINE__)(labelStringLiteral_) )
+// - label_string_literal: A string literal label for the sample.
+// - min_cycles_: A minimum number of cycles required for a sample to be recorded.
+#define hxprofile_scope_min(label_string_literal_, min_cycles_) \
+    HX_PROFILE_ONLY_( hxprofiler_scope_internal_<min_cycles_> HX_CONCATENATE(hxprofile_scope_,__LINE__)(label_string_literal_) )
 
-// hxProfilerBegin() - Clears samples and begins sampling. Compiles to a NOP when
+// hxprofiler_begin() - Clears samples and begins sampling. Compiles to a NOP when
 // not in use.
-#define hxProfilerBegin() HX_PROFILE_ONLY_( g_hxProfiler_.start_() )
+#define hxprofiler_begin() HX_PROFILE_ONLY_( g_hxprofiler_.start_() )
 
-// hxProfilerEnd() - Ends sampling. Does not clear samples. Compiles to a NOP
+// hxprofiler_end() - Ends sampling. Does not clear samples. Compiles to a NOP
 // when not in use.
-#define hxProfilerEnd() HX_PROFILE_ONLY_( g_hxProfiler_.stop_() )
+#define hxprofiler_end() HX_PROFILE_ONLY_( g_hxprofiler_.stop_() )
 
-// hxProfilerLog() - Stops sampling and writes samples to the system log.
+// hxprofiler_log() - Stops sampling and writes samples to the system log.
 // Compiles to a NOP when not in use.
-#define hxProfilerLog() HX_PROFILE_ONLY_( g_hxProfiler_.log_() )
+#define hxprofiler_log() HX_PROFILE_ONLY_( g_hxprofiler_.log_() )
 
-// hxProfilerWriteToChromeTracing(const char* filename) - Stops sampling and
+// hxprofiler_write_to_chrome_tracing(const char* filename) - Stops sampling and
 // writes samples to the provided file. Writes profiling data in a format usable
 // by Chrome's chrome://tracing view. Usage: In Chrome go to "chrome://tracing/".
 // Load the generated json file. Use the W/A/S/D keys. See
 // http://www.chromium.org/developers/how-tos/trace-event-profiling-tool
 // Compiles to a NOP when not in use.
-#define hxProfilerWriteToChromeTracing(filename_) \
-    HX_PROFILE_ONLY_( g_hxProfiler_.writeToChromeTracing_(filename_) )
+#define hxprofiler_write_to_chrome_tracing(filename_) \
+    HX_PROFILE_ONLY_( g_hxprofiler_.write_to_chrome_tracing_(filename_) )

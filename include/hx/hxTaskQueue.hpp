@@ -2,7 +2,7 @@
 // Copyright 2017-2025 Adrian Johnston
 
 #include <hx/hatchling.h>
-#include <hx/hxTask.hpp>
+#include <hx/hxtask.hpp>
 
 #if HX_USE_CPP_THREADS
 #include <mutex>
@@ -10,45 +10,45 @@
 #include <thread>
 #endif
 
-// hxTaskQueue - Execute supplied tasks in arbitrary order without cancellation
-// using an optional thread pool. See <hx/hxTask.hpp>.
-class hxTaskQueue {
+// hxtask_queue - Execute supplied tasks in arbitrary order without cancellation
+// using an optional thread pool. See <hx/hxtask.hpp>.
+class hxtask_queue {
 public:
-	// Create a new task queue. threadPoolSize determines the size of the worker
-	// pool. A threadPoolSize of -1 indicates using a hardware_concurrency()-1 size
-	// thread pool. A threadPoolSize of 0 does not use threading.
-    explicit hxTaskQueue(int32_t threadPoolSize_ = -1);
+	// Create a new task queue. thread_pool_size determines the size of the worker
+	// pool. A thread_pool_size of -1 indicates using a hardware_concurrency()-1 size
+	// thread pool. A thread_pool_size of 0 does not use threading.
+    explicit hxtask_queue(int32_t thread_pool_size_ = -1);
 
-	// Calls waitForAll before destructing.
-    ~hxTaskQueue();
+	// Calls wait_for_all before destructing.
+    ~hxtask_queue();
 
 	// Queue a task for later execution. Does not delete task after execution.
 	// Thread safe and callable from running tasks.
     // - task: A pointer to the task to be enqueued for execution.
-    void enqueue(hxTask* task_);
+    void enqueue(hxtask* task_);
 
-	// The thread calling waitForAll() will execute tasks as well. Do not call
-	// from hxTask::execute().
-    void waitForAll();
+	// The thread calling wait_for_all() will execute tasks as well. Do not call
+	// from hxtask::execute().
+    void wait_for_all();
 
 private:
-    hxTaskQueue(const hxTaskQueue&) HX_DELETE_FN;
-    void operator=(const hxTaskQueue&) HX_DELETE_FN;
+    hxtask_queue(const hxtask_queue&) HX_DELETE_FN;
+    void operator=(const hxtask_queue&) HX_DELETE_FN;
 
-    static const uint32_t RunningQueueCheck_ = 0xc710b034u;
+    static const uint32_t Running_queue_check_ = 0xc710b034u;
 
-    hxTask* m_nextTask_;
-    uint32_t m_runningQueueCheck_;
+    hxtask* m_next_task_;
+    uint32_t m_running_queue_check_;
 
 #if HX_USE_CPP_THREADS
-    enum class ExecutorMode_ { Pool_, Waiting_, Stopping_ };
-    static void executorThread_(hxTaskQueue* q_, ExecutorMode_ mode_);
+    enum class Executor_mode_ { Pool_, Waiting_, Stopping_ };
+    static void executor_thread_(hxtask_queue* q_, Executor_mode_ mode_);
 
-    int32_t m_threadPoolSize_ = 0;
+    int32_t m_thread_pool_size_ = 0;
     std::thread* m_threads_ = hxnull;
     std::mutex m_mutex_;
-    std::condition_variable m_condVarTasks_;
-    std::condition_variable m_condVarWaiting_;
-    int32_t m_executingCount_ = 0;
+    std::condition_variable m_cond_var_tasks_;
+    std::condition_variable m_cond_var_waiting_;
+    int32_t m_executing_count_ = 0;
 #endif
 };

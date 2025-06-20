@@ -1,13 +1,13 @@
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hxFile.hpp>
-#include <hx/hxTest.hpp>
+#include <hx/hxfile.hpp>
+#include <hx/hxtest.hpp>
 
 HX_REGISTER_FILENAME_HASH
 
-// ConsoleTest.cpp provides coverage for normal operation.
+// Console_test.cpp provides coverage for normal operation.
 
-class hxFileTest :
+class hxfile_test :
 	public testing::Test
 {
 public:
@@ -24,33 +24,33 @@ public:
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
 #endif
 
-TEST_F(hxFileTest, EmptyName) {
-	hxFile f(hxFile::in | hxFile::failable, "");
+TEST_F(hxfile_test, Empty_name) {
+	hxfile f(hxfile::in | hxfile::failable, "");
 	ASSERT_EQ(f.good(), false);
-	ASSERT_EQ(f.isOpen(), false);
+	ASSERT_EQ(f.is_open(), false);
 }
 
 #if defined __GNUC__
 #pragma GCC diagnostic pop
 #endif
 
-TEST_F(hxFileTest, ReadWrite) {
-	hxFile f(hxFile::in | hxFile::out | hxFile::failable, "hxFileTest_ReadWrite.txt");
-	f << "hxFileTest_ReadWrite.txt";
+TEST_F(hxfile_test, Read_write) {
+	hxfile f(hxfile::in | hxfile::out | hxfile::failable, "hxfile_test_Read_write.txt");
+	f << "hxfile_test_Read_write.txt";
 
 	ASSERT_EQ(f.good(), true);
-	ASSERT_EQ(f.isOpen(), true);
+	ASSERT_EQ(f.is_open(), true);
 }
 
-TEST_F(hxFileTest, NotExist) {
-	hxFile f(hxFile::in | hxFile::failable, "TEST_FILE_DOES_NOT_EXIST_%d", 123);
+TEST_F(hxfile_test, Not_exist) {
+	hxfile f(hxfile::in | hxfile::failable, "TEST_FILE_DOES_NOT_EXIST_%d", 123);
 	ASSERT_EQ(f.good(), false);
-	ASSERT_EQ(f.isOpen(), false);
-	ASSERT_EQ((bool)(f.mode() & hxFile::failable), true);
+	ASSERT_EQ(f.is_open(), false);
+	ASSERT_EQ((bool)(f.mode() & hxfile::failable), true);
 }
 
-TEST_F(hxFileTest, Operators) {
-	hxFile f(hxFile::out | hxFile::failable, "hxFileTest_Operators.bin");
+TEST_F(hxfile_test, Operators) {
+	hxfile f(hxfile::out | hxfile::failable, "hxfile_test_Operators.bin");
 	X x;
 	int a = -3;
 	x.a = 77777u;
@@ -62,7 +62,7 @@ TEST_F(hxFileTest, Operators) {
 	ASSERT_FALSE(f.eof());
 	f.close();
 
-	f.open(hxFile::in | hxFile::failable, "hxFileTest_Operators.bin");
+	f.open(hxfile::in | hxfile::failable, "hxfile_test_Operators.bin");
 	X y;
 	int b;
 	ASSERT_TRUE(f.good());
@@ -76,9 +76,9 @@ TEST_F(hxFileTest, Operators) {
 	ASSERT_TRUE(f.good());
 	ASSERT_FALSE(f.eof());
 	char t;
-	size_t extraByte = f.read(&t, 1); // fails!
+	size_t extra_byte = f.read(&t, 1); // fails!
 	ASSERT_TRUE(f.eof());
-	ASSERT_EQ(extraByte, 0u);
+	ASSERT_EQ(extra_byte, 0u);
 	ASSERT_FALSE(f.good());
 	f.clear();
 	ASSERT_TRUE(f.good()); // clear EOF event.

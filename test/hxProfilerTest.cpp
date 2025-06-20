@@ -1,17 +1,17 @@
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hxProfiler.hpp>
-#include <hx/hxTaskQueue.hpp>
-#include <hx/hxConsole.hpp>
-#include <hx/hxRandom.hpp>
+#include <hx/hxprofiler.hpp>
+#include <hx/hxtask_queue.hpp>
+#include <hx/hxconsole.hpp>
+#include <hx/hxrandom.hpp>
 
-#include <hx/hxTest.hpp>
+#include <hx/hxtest.hpp>
 
 HX_REGISTER_FILENAME_HASH
 
 #if HX_PROFILE
 
-static const char* s_hxTestLabels[] = {
+static const char* s_hxtest_labels[] = {
 	"Alpha",   "Beta",     "Gamma",
 	"Delta",   "Epsilon",  "Zeta",
 	"Eta",     "Theta",    "Iota",
@@ -21,91 +21,91 @@ static const char* s_hxTestLabels[] = {
 	"Tau",      "Upsilon", "Phi",
 	"Chi",      "Psi",     "Omega"
 };
-static const size_t s_hxTestNumLabels = sizeof s_hxTestLabels / sizeof *s_hxTestLabels;
+static const size_t s_hxtest_num_labels = sizeof s_hxtest_labels / sizeof *s_hxtest_labels;
 
-class hxProfilerTest :
+class hxprofiler_test :
 	public testing::Test
 {
 public:
-    struct hxProfilerTaskTest : public hxTask {
-        hxProfilerTaskTest() : m_targetMs_(0.0f), m_accumulator_(0) { }
+    struct hxprofiler_task_test : public hxtask {
+        hxprofiler_task_test() : m_target_ms_(0.0f), m_accumulator_(0) { }
 
-        void construct(const char* label, float targetMs) {
-            setLabel(label);
-            m_targetMs_ = targetMs;
+        void construct(const char* label, float target_ms) {
+            set_label(label);
+            m_target_ms_ = target_ms;
             m_accumulator_ = 0;
         }
 
-        virtual void execute(hxTaskQueue* q) HX_OVERRIDE {
+        virtual void execute(hxtask_queue* q) HX_OVERRIDE {
             (void)q;
-            generateScopes(m_targetMs_);
+            generate_scopes(m_target_ms_);
         }
 
-		virtual void generateScopes(float targetMs) {
-			hxcycles_t startCycles = hxTimeSampleCycles();
+		virtual void generate_scopes(float target_ms) {
+			hxcycles_t start_cycles = hxtime_sample_cycles();
 			hxcycles_t delta = 0u;
 
 			// Open up a sub-scope if time allows.
-			if (targetMs >= 2.0f) {
-				float subtarget = targetMs / 2.0f;
-				const char* subLabel = s_hxTestLabels[(size_t)subtarget];
-				hxProfileScope(subLabel);
-				generateScopes(subtarget);
+			if (target_ms >= 2.0f) {
+				float subtarget = target_ms / 2.0f;
+				const char* sub_label = s_hxtest_labels[(size_t)subtarget];
+				hxprofile_scope(sub_label);
+				generate_scopes(subtarget);
 			}
 
-            while ((double)delta * c_hxMillisecondsPerCycle < targetMs) {
+            while ((double)delta * c_hxmilliseconds_per_cycle < target_ms) {
                 // Perform work that might not be optimized away by the compiler.
                 uint32_t ops = (m_accumulator_ & 0xf) + 1;
                 for (uint32_t i = 0; i < ops; ++i) {
-                    m_accumulator_ ^= (uint32_t)m_testPrng_;
+                    m_accumulator_ ^= (uint32_t)m_test_prng_;
                 }
 
 				// Unsigned arithmetic handles clock wrapping correctly.
-				delta = hxTimeSampleCycles() - startCycles;
+				delta = hxtime_sample_cycles() - start_cycles;
 			}
 		}
 
-        float m_targetMs_;
+        float m_target_ms_;
         uint32_t m_accumulator_;
-        hxRandom m_testPrng_;
+        hxrandom m_test_prng_;
     };
 };
 
-TEST_F(hxProfilerTest, Single1ms) {
-	hxProfilerBegin();
+TEST_F(hxprofiler_test, Single1ms) {
+	hxprofiler_begin();
 
-	size_t startRecords = g_hxProfiler_.recordsSize_();
+	size_t start_records = g_hxprofiler_.records_size_();
 	{
-		hxProfileScope("1 ms");
-		hxProfilerTaskTest one;
+		hxprofile_scope("1 ms");
+		hxprofiler_task_test one;
 		one.construct("1 ms", 1.0f);
 		one.execute(hxnull);
 	}
 
-	ASSERT_TRUE(1u == (g_hxProfiler_.recordsSize_() - startRecords));
+	ASSERT_TRUE(1u == (g_hxprofiler_.records_size_() - start_records));
 
 	// stops the profiler and dumps sample to console:
-	bool isOk = hxConsoleExecLine("profilelog");
-	ASSERT_TRUE(isOk);
+	bool is_ok = hxconsole_exec_line("profilelog");
+	ASSERT_TRUE(is_ok);
 }
 
-TEST_F(hxProfilerTest, writeToChromeTracing) {
+TEST_F(hxprofiler_test, write_to_chrome_tracing) {
 	// Shut down profiling and use console commands for next capture.
-	hxProfilerEnd();
-	hxConsoleExecLine("profilebegin");
+	hxprofiler_end();
+	hxconsole_exec_line("profilebegin");
 
-	hxTaskQueue q;
-	hxProfilerTaskTest tasks[s_hxTestNumLabels];
-	for (size_t i = s_hxTestNumLabels; i--; ) {
-		tasks[i].construct(s_hxTestLabels[i], (float)i);
+	hxtask_queue q;
+	hxprofiler_task_test tasks[s_hxtest_num_labels];
+	for (size_t i = s_hxtest_num_labels; i--; ) {
+		tasks[i].construct(s_hxtest_labels[i], (float)i);
 		q.enqueue(tasks + i);
 	}
-	q.waitForAll();
+	q.wait_for_all();
 
-	ASSERT_TRUE(90u == g_hxProfiler_.recordsSize_());
+	ASSERT_TRUE(90u == g_hxprofiler_.records_size_());
 
-	hxConsoleExecLine("profilewrite profile.json");
-	hxProfilerLog();
+	hxconsole_exec_line("profilewrite profile.json");
+	hxprofiler_log();
 }
 
 #endif // HX_PROFILE

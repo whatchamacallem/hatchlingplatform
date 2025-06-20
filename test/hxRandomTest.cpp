@@ -1,13 +1,13 @@
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hxRandom.hpp>
-#include <hx/hxTest.hpp>
-#include <hx/hxArray.hpp>
+#include <hx/hxrandom.hpp>
+#include <hx/hxtest.hpp>
+#include <hx/hxarray.hpp>
 
 HX_REGISTER_FILENAME_HASH
 
-TEST(hxRandomTest, Generation) {
-	hxRandom rng;
+TEST(hxrandom_test, Generation) {
+	hxrandom rng;
 	for(int s=100; s--;) {
 
 		// implicit casts and copy constructors
@@ -37,8 +37,8 @@ TEST(hxRandomTest, Generation) {
 	}
 }
 
-TEST(hxRandomTest, Ops) {
-	hxRandom rng(20000);
+TEST(hxrandom_test, Ops) {
+	hxrandom rng(20000);
 	for(int s=100; s--;) {
 		// T &= rng
 		int i = 255; i &= rng;
@@ -112,8 +112,8 @@ TEST(hxRandomTest, Ops) {
 	}
 }
 
-TEST(hxRandomTest, Range) {
-	hxRandom rng(30000);
+TEST(hxrandom_test, Range) {
+	hxrandom rng(30000);
 	for(int s=100; s--;) {
 		ASSERT_TRUE(rng.range('a', (char)10) >= 'a' && rng.range('a', (char)10) < (char)('a' + 10));
 		ASSERT_TRUE(rng.range(1000,100) >= 1000 && rng.range(1000,100) < 1100);
@@ -130,12 +130,12 @@ TEST(hxRandomTest, Range) {
 	}
 }
 
-TEST(hxRandomTest, Histogram) {
-	hxRandom rng(40000);
+TEST(hxrandom_test, Histogram) {
+	hxrandom rng(40000);
 	const int buckets = 1 << 10; // 1k buckets
 	const int iters = 1000;
 	const int max = 1100; // 10% above average max.
-	hxArray<int> hist(buckets, 0);
+	hxarray<int> hist(buckets, 0);
 
 	for(int i=(buckets*iters); i--;) {
 		// Doesn't require an unsigned type here. No floating point used.
@@ -148,12 +148,12 @@ TEST(hxRandomTest, Histogram) {
 	}
 }
 
-TEST(hxRandomTest, HistogramF) {
-	hxRandom rng(40000);
+TEST(hxrandom_test, Histogram_f) {
+	hxrandom rng(40000);
 	const int buckets = 1000; // 1k buckets
 	const int iters = 1000;
 	const int max = 1150; // 15% above average max.
-	hxArray<int> hist(buckets, 0);
+	hxarray<int> hist(buckets, 0);
 
 	for(int i=(buckets*iters); i--;) {
 		// Run the full 64-bit bit double pipeline.

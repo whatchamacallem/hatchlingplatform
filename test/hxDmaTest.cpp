@@ -3,81 +3,81 @@
 // No DMA in a web browser.  The DMA code is just scaffolding.
 #ifndef __EMSCRIPTEN__
 
-#include <hx/hxDma.hpp>
-#include <hx/hxTest.hpp>
+#include <hx/hxdma.hpp>
+#include <hx/hxtest.hpp>
 
 HX_REGISTER_FILENAME_HASH
 
-class hxDmaTest :
+class hxdma_test :
 	public testing::Test
 {
 public:
-    hxDmaTest() {
+    hxdma_test() {
         ::memset(m_buf_ + 0, 0x00, sizeof m_buf_);
-        setBuf();
+        set_buf();
     }
 
-	~hxDmaTest() {
-		hxDmaAwaitAll("end test");
-		hxDmaEndFrame();
-		checkBuf(); // Don't trash test buffer
+	~hxdma_test() {
+		hxdma_await_all("end test");
+		hxdma_end_frame();
+		check_buf(); // Don't trash test buffer
 	}
 
-	void setBuf(uint8_t* buf=hxnull) {
+	void set_buf(uint8_t* buf=hxnull) {
 		buf = buf ? buf : m_buf_;
-		for (size_t i = BufSize; i--;) {
+		for (size_t i = Buf_size; i--;) {
 			buf[i] = (uint8_t)i;
 		}
 	}
 
-	void checkBuf(const uint8_t* buf = 0) const {
+	void check_buf(const uint8_t* buf = 0) const {
 		buf = buf ? buf : m_buf_;
-		for (size_t i = BufSize; i--;) {
+		for (size_t i = Buf_size; i--;) {
 			ASSERT_EQ(buf[i], (uint8_t)i);
 		}
 	}
 
-    static const size_t BufSize = 100;
-    uint8_t m_buf_[BufSize];
+    static const size_t Buf_size = 100;
+    uint8_t m_buf_[Buf_size];
 };
 
-TEST_F(hxDmaTest, Single) {
-	uint8_t dst[BufSize];
+TEST_F(hxdma_test, Single) {
+	uint8_t dst[Buf_size];
 	::memset(dst, 0x33, sizeof dst);
-	hxDmaStart(dst, m_buf_, BufSize, "start");
-	hxDmaAwaitAll("await");
-	checkBuf(dst);
+	hxdma_start(dst, m_buf_, Buf_size, "start");
+	hxdma_await_all("await");
+	check_buf(dst);
 }
 
-TEST_F(hxDmaTest, Multiple) {
+TEST_F(hxdma_test, Multiple) {
 	static const size_t OPS = 3u;
-	uint8_t dst[OPS][BufSize];
+	uint8_t dst[OPS][Buf_size];
 
 	::memset(dst, 0x33, sizeof dst);
 	for (size_t i = OPS; i--;) {
-		hxDmaStart(dst[i], m_buf_, BufSize, "start");
+		hxdma_start(dst[i], m_buf_, Buf_size, "start");
 	}
-	hxDmaAwaitAll("await");
+	hxdma_await_all("await");
 	for (size_t i = OPS; i--;) {
-		checkBuf(dst[i]);
+		check_buf(dst[i]);
 	}
 }
 
-TEST_F(hxDmaTest, Simultaneous) {
+TEST_F(hxdma_test, Simultaneous) {
 	static const size_t OPS = 3u;
 	static const size_t REPS = 4u;
-	uint8_t dst[OPS][BufSize];
-	hxDmaSyncPoint sp[OPS];
+	uint8_t dst[OPS][Buf_size];
+	hxdma_sync_point sp[OPS];
 
 	for (size_t j = REPS; j--;) {
 		::memset(dst, 0x33, sizeof dst);
 		for (size_t i = OPS; i--;) {
-			hxDmaStart(dst[i], m_buf_, BufSize, "start");
-			hxDmaAddSyncPoint(sp[i]);
+			hxdma_start(dst[i], m_buf_, Buf_size, "start");
+			hxdma_add_sync_point(sp[i]);
 		}
 		for (size_t i = OPS; i--;) {
-			hxDmaAwaitSyncPoint(sp[i], "sync point");
-			checkBuf(dst[i]);
+			hxdma_await_sync_point(sp[i], "sync point");
+			check_buf(dst[i]);
 		}
 	}
 }

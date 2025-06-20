@@ -3,11 +3,11 @@
 
 #include <hx/hatchling.h>
 
-class hxFile;
+class hxfile;
 
-// hxConsole API - Implements a simple console for remote use or to implement
+// hxconsole API - Implements a simple console for remote use or to implement
 // configuration files. Output is directed to the system log with
-// hxLogLevel_Console. A remote console will require forwarding commands to the
+// hxlog_level_Console. A remote console will require forwarding commands to the
 // target and reporting the system log back. Configuration files only require
 // file I/O. C-style calls returning bool with up to 4 args using "const char*",
 // hxconsolenumber_t or hxconsolehex_t as parameter types are required for the
@@ -15,7 +15,7 @@ class hxFile;
 
 // hxconsolenumber_t - A number. Uses double as an intermediate type. This
 // reduces template bloat by limiting parameter types. This is the same type of
-// generic number approach JavaScript uses. Always 64-bit.
+// generic number approach Java_script uses. Always 64-bit.
 class hxconsolenumber_t {
 public:
     hxconsolenumber_t(void) : m_x_(0.0) { }
@@ -24,12 +24,12 @@ public:
         // Reimplement std::numeric_limits for 2's compliment. The << operator
         // promotes its operands to int and so that requires more casting.
         // Manipulating the sign bit is not supported by the standard. Sorry.
-        const bool isSigned_ = static_cast<T_>(-1) < T_(0u);
-        const T_ minValue_ = isSigned_ ? T_(T_(1u) << (sizeof(T_) * 8 - 1)) : T_(0u);
-        const T_ maxValue_ = ~minValue_;
+        const bool is_signed_ = static_cast<T_>(-1) < T_(0u);
+        const T_ min_value_ = is_signed_ ? T_(T_(1u) << (sizeof(T_) * 8 - 1)) : T_(0u);
+        const T_ max_value_ = ~min_value_;
 
-        double clamped_ = hxclamp(m_x_, (double)minValue_, (double)maxValue_);
-        hxAssertMsg(m_x_ == clamped_, "parameter overflow: %lf -> %lf", m_x_, clamped_);
+        double clamped_ = hxclamp(m_x_, (double)min_value_, (double)max_value_);
+        hxassert_msg(m_x_ == clamped_, "parameter overflow: %lf -> %lf", m_x_, clamped_);
 
         // Asserts may be skipped. Avoid the undefined behavior sanitizer by
         // clamping value.
@@ -58,7 +58,7 @@ public:
     hxconsolehex_t(uint64_t x_) : m_x_(x_) { }
 	template<typename T_> operator T_() const {
         T_ t = (T_)m_x_;
-        hxWarnMsg((uint64_t)t == m_x_, "precision error: %llx -> %llx",
+        hxwarn_msg((uint64_t)t == m_x_, "precision error: %llx -> %llx",
             (unsigned long long)m_x_, (unsigned long long)t);
         return t;
     }
@@ -68,60 +68,60 @@ private:
 	uint64_t m_x_;
 };
 
-// hxConsoleCommand - Registers a function using a global constructor. Use in a
+// hxconsole_command - Registers a function using a global constructor. Use in a
 // global scope. Command will have the same name and args as the function.
 // - x: Valid C identifier that evaluates to a function pointer.
-//   E.g. hxConsoleCommand(srand);
-#define hxConsoleCommand(x_) static hxConsoleConstructor_ \
-    HX_CONCATENATE(g_hxConsoleSymbol_,x_)(hxConsoleCommandFactory_(&(x_)), HX_QUOTE(x_))
+//   E.g. hxconsole_command(srand);
+#define hxconsole_command(x_) static hxconsole_constructor_ \
+    HX_CONCATENATE(g_hxconsole_symbol_,x_)(hxconsole_command_factory_(&(x_)), HX_QUOTE(x_))
 
-// hxConsoleCommandNamed - Registers a named function using a global constructor.
+// hxconsole_command_named - Registers a named function using a global constructor.
 // Use in a global scope. Provided name_ must be a valid C identifier.
 // - x: Any expression that evaluates to a function pointer.
 // - name: Valid C identifier that identifies the command.
-//   E.g. hxConsoleCommandNamed(srand, seed_rand);
-#define hxConsoleCommandNamed(x_, name_) static hxConsoleConstructor_ \
-    HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxConsoleCommandFactory_(&(x_)), HX_QUOTE(name_))
+//   E.g. hxconsole_command_named(srand, seed_rand);
+#define hxconsole_command_named(x_, name_) static hxconsole_constructor_ \
+    HX_CONCATENATE(g_hxconsole_symbol_,name_)(hxconsole_command_factory_(&(x_)), HX_QUOTE(name_))
 
-// hxConsoleVariable - Registers a variable. Use in a global scope. Will have the
+// hxconsole_variable - Registers a variable. Use in a global scope. Will have the
 // same name as the variable.
 // - x: Valid C identifier that evaluates to a variable.
 //   E.g.
-//   static bool isMyHackEnabled=false;
-//   hxConsoleVariable(isMyHackEnabled);
-#define hxConsoleVariable(x_) static hxConsoleConstructor_ \
-    HX_CONCATENATE(g_hxConsoleSymbol_,x_)(hxConsoleVariableFactory_(&(x_)), HX_QUOTE(x_))
+//   static bool is_my_hack_enabled=false;
+//   hxconsole_variable(is_my_hack_enabled);
+#define hxconsole_variable(x_) static hxconsole_constructor_ \
+    HX_CONCATENATE(g_hxconsole_symbol_,x_)(hxconsole_variable_factory_(&(x_)), HX_QUOTE(x_))
 
-// hxConsoleVariableNamed - Registers a named variable. Use in a global scope.
+// hxconsole_variable_named - Registers a named variable. Use in a global scope.
 // Provided name must be a valid C identifier.
 // - x: Any expression that evaluates to a variable.
 // - name: Valid C identifier that identifies the variable.
 //   E.g.
-//   static bool isMyHackEnabled=false;
-//   hxConsoleVariableNamed(isMyHackEnabled, f_hack); // add "f_hack" to the console.
-#define hxConsoleVariableNamed(x_, name_) static hxConsoleConstructor_ \
-    HX_CONCATENATE(g_hxConsoleSymbol_,name_)(hxConsoleVariableFactory_(&(x_)), HX_QUOTE(name_))
+//   static bool is_my_hack_enabled=false;
+//   hxconsole_variable_named(is_my_hack_enabled, f_hack); // add "f_hack" to the console.
+#define hxconsole_variable_named(x_, name_) static hxconsole_constructor_ \
+    HX_CONCATENATE(g_hxconsole_symbol_,name_)(hxconsole_variable_factory_(&(x_)), HX_QUOTE(name_))
 
-// hxConsoleDeregister - Explicit de-registration of a console symbol.
+// hxconsole_deregister - Explicit de-registration of a console symbol.
 // - id: Valid C identifier that identifies the variable.
-void hxConsoleDeregister(const char* id_);
+void hxconsole_deregister(const char* id_);
 
-// hxConsoleExecLine - Evaluates a console command to either call a function or
-// set a variable. E.g.: "srand 77" or "aVariable 5"
+// hxconsole_exec_line - Evaluates a console command to either call a function or
+// set a variable. E.g.: "srand 77" or "a_variable 5"
 // - command: A string executed by the console.
-bool hxConsoleExecLine(const char* command_);
+bool hxconsole_exec_line(const char* command_);
 
-// hxConsoleExecFile - Executes a configuration file which is opened for reading.
+// hxconsole_exec_file - Executes a configuration file which is opened for reading.
 // Ignores blank lines and comments starting with #.
 // - file: A file containing commands.
-bool hxConsoleExecFile(hxFile& file_);
+bool hxconsole_exec_file(hxfile& file_);
 
-// hxConsoleExecFilename - Opens a configuration file by name and executes it.
+// hxconsole_exec_filename - Opens a configuration file by name and executes it.
 // - filename: A file containing commands.
-bool hxConsoleExecFilename(const char* filename_);
+bool hxconsole_exec_filename(const char* filename_);
 
-// hxConsoleHelp - Logs all console symbols to the console log.
-bool hxConsoleHelp();
+// hxconsole_help - Logs all console symbols to the console log.
+bool hxconsole_help();
 
 // Include internals after hxconsolehex_t
-#include <hx/internal/hxConsoleInternal.hpp>
+#include <hx/internal/hxconsole_internal.hpp>

@@ -1,30 +1,30 @@
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hxSort.hpp>
+#include <hx/hxsort.hpp>
 
 HX_REGISTER_FILENAME_HASH
 
-// hxRadixSortBase
+// hxradix_sort_base
 
 HX_STATIC_ASSERT(HX_RADIX_SORT_BITS == 8 || HX_RADIX_SORT_BITS == 11,
 	"Unsupported HX_RADIX_SORT_BITS");
 
-void hxRadixSortBase::sort(hxMemoryAllocator tempMemory) {
+void hxradix_sort_base::sort(hxmemory_allocator temp_memory) {
     if (m_array_.size() <= HX_RADIX_SORT_MIN_SIZE) {
-        hxInsertionSort(m_array_.begin(), m_array_.end());
+        hxinsertion_sort(m_array_.begin(), m_array_.end());
         return;
     }
 
-	hxMemoryAllocatorScope allocatorScope(tempMemory);
+	hxmemory_allocator_scope allocator_scope(temp_memory);
 
 	if (HX_RADIX_SORT_BITS == 8) {
 		// 2 Working buffers
-		KeyValuePair_* HX_RESTRICT buf0 = m_array_.data();
-		KeyValuePair_* buf0End = buf0 + m_array_.size();
-		KeyValuePair_* HX_RESTRICT buf1 = (KeyValuePair_*)hxMalloc(m_array_.size() * sizeof(KeyValuePair_));
-		KeyValuePair_* buf1End = buf1 + m_array_.size();
+		Key_value_pair_* HX_RESTRICT buf0 = m_array_.data();
+		Key_value_pair_* buf0End = buf0 + m_array_.size();
+		Key_value_pair_* HX_RESTRICT buf1 = (Key_value_pair_*)hxmalloc(m_array_.size() * sizeof(Key_value_pair_));
+		Key_value_pair_* buf1End = buf1 + m_array_.size();
 
-		uint32_t* histograms = (uint32_t*)hxMalloc(256u * 4u * sizeof(uint32_t));
+		uint32_t* histograms = (uint32_t*)hxmalloc(256u * 4u * sizeof(uint32_t));
 		::memset(histograms, 0x00, 256u * 4u * sizeof(uint32_t)); // 4k
 
 		// Build histograms
@@ -33,7 +33,7 @@ void hxRadixSortBase::sort(hxMemoryAllocator tempMemory) {
 		uint32_t* HX_RESTRICT hist2 = histograms + (256 * 2);
 		uint32_t* HX_RESTRICT hist3 = histograms + (256 * 3);
 
-		for (const KeyValuePair_* HX_RESTRICT it = buf0; it != buf0End; ++it) {
+		for (const Key_value_pair_* HX_RESTRICT it = buf0; it != buf0End; ++it) {
 			uint32_t x = it->m_key_;
 			++hist0[x & 0xffu];
 			++hist1[(x >> 8) & 0xffu];
@@ -51,41 +51,41 @@ void hxRadixSortBase::sort(hxMemoryAllocator tempMemory) {
 		}
 
 		// 2 or 4 pass radix sort
-		for (const KeyValuePair_* HX_RESTRICT it = buf0; it != buf0End; ++it) {
+		for (const Key_value_pair_* HX_RESTRICT it = buf0; it != buf0End; ++it) {
 			buf1[hist0[it->m_key_ & 0xffu]++] = *it;
 		}
-		for (const KeyValuePair_* HX_RESTRICT it = buf1; it != buf1End; ++it) {
+		for (const Key_value_pair_* HX_RESTRICT it = buf1; it != buf1End; ++it) {
 			buf0[hist1[(it->m_key_ >> 8) & 0xffu]++] = *it;
 		}
 		if (hist2[1] != m_array_.size() || hist3[1] != m_array_.size()) {
-			for (const KeyValuePair_* HX_RESTRICT it = buf0; it != buf0End; ++it) {
+			for (const Key_value_pair_* HX_RESTRICT it = buf0; it != buf0End; ++it) {
 				buf1[hist2[(it->m_key_ >> 16) & 0xffu]++] = *it;
 			}
-			for (const KeyValuePair_* HX_RESTRICT it = buf1; it != buf1End; ++it) {
+			for (const Key_value_pair_* HX_RESTRICT it = buf1; it != buf1End; ++it) {
 				buf0[hist3[it->m_key_ >> 24]++] = *it;
 			}
 		}
 
-		hxFree(histograms);
-		hxFree(buf1);
+		hxfree(histograms);
+		hxfree(buf1);
 	}
 	else if (HX_RADIX_SORT_BITS == 11) {
 		// 3 Working buffers. Fox extremely large data sets.
-		KeyValuePair_* HX_RESTRICT buf0 = m_array_.data();
-		KeyValuePair_* buf0End = buf0 + m_array_.size();
-		KeyValuePair_* HX_RESTRICT buf1 = (KeyValuePair_*)hxMalloc(m_array_.size() * sizeof(KeyValuePair_) * 2u);
-		KeyValuePair_* buf1End = buf1 + m_array_.size();
-		KeyValuePair_* buf2 = buf1End;
-		KeyValuePair_* buf2End = buf2 + m_array_.size();
+		Key_value_pair_* HX_RESTRICT buf0 = m_array_.data();
+		Key_value_pair_* buf0End = buf0 + m_array_.size();
+		Key_value_pair_* HX_RESTRICT buf1 = (Key_value_pair_*)hxmalloc(m_array_.size() * sizeof(Key_value_pair_) * 2u);
+		Key_value_pair_* buf1End = buf1 + m_array_.size();
+		Key_value_pair_* buf2 = buf1End;
+		Key_value_pair_* buf2End = buf2 + m_array_.size();
 
-		uint32_t* histograms = (uint32_t*)hxMalloc(5120u * sizeof(uint32_t)); // 5120: 2048*2.5
+		uint32_t* histograms = (uint32_t*)hxmalloc(5120u * sizeof(uint32_t)); // 5120: 2048*2.5
 		::memset(histograms, 0x00, 5120u * sizeof(uint32_t));
 
 		uint32_t* HX_RESTRICT hist0 = histograms +    0u; // 2048 values
 		uint32_t* HX_RESTRICT hist1 = histograms + 2048u; // 2048 values
 		uint32_t* HX_RESTRICT hist2 = histograms + 4096u; // 1024 values
 
-		for (const KeyValuePair_* HX_RESTRICT it = buf0; it != buf0End; ++it) {
+		for (const Key_value_pair_* HX_RESTRICT it = buf0; it != buf0End; ++it) {
 			uint32_t x = it->m_key_;
 			++hist0[x & 0x7ffu];
 			++hist1[(x >> 11) & 0x7ffu];
@@ -105,20 +105,20 @@ void hxRadixSortBase::sort(hxMemoryAllocator tempMemory) {
 		}
 
 		// 2 or 3 pass radix sort
-		for (const KeyValuePair_* HX_RESTRICT it = buf0; it != buf0End; ++it) {
+		for (const Key_value_pair_* HX_RESTRICT it = buf0; it != buf0End; ++it) {
 			buf1[hist0[it->m_key_ & 0x7ffu]++] = *it;
 		}
-		KeyValuePair_* HX_RESTRICT buf20 = (hist2[1] != m_array_.size()) ? buf2 : buf0;
-		for (const KeyValuePair_* HX_RESTRICT it = buf1; it != buf1End; ++it) {
+		Key_value_pair_* HX_RESTRICT buf20 = (hist2[1] != m_array_.size()) ? buf2 : buf0;
+		for (const Key_value_pair_* HX_RESTRICT it = buf1; it != buf1End; ++it) {
 			buf20[hist1[(it->m_key_ >> 11) & 0x7ffu]++] = *it;
 		}
 		if (hist2[1] != m_array_.size()) {
-			for (const KeyValuePair_* HX_RESTRICT it = buf2; it != buf2End; ++it) {
+			for (const Key_value_pair_* HX_RESTRICT it = buf2; it != buf2End; ++it) {
 				buf0[hist2[it->m_key_ >> 22]++] = *it;
 			}
 		}
 
-		hxFree(histograms);
-		hxFree(buf1);
+		hxfree(histograms);
+		hxfree(buf1);
 	}
 }

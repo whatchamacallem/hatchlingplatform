@@ -1,7 +1,7 @@
 #ifndef HX_HATCHLING_PCH_USED
 // Copyright 2017-2025 Adrian Johnston
 
-// hatchlingPch.hpp - Includes all the Hatchling headers for use building a C++
+// hatchling_pch.hpp - Includes all the Hatchling headers for use building a C++
 // precompiled header. Use hx/hatchling.h for building a C precompiled header.
 // See test.sh.
 
@@ -10,20 +10,20 @@
 #define HX_HATCHLING_PCH_USED 1
 
 #include <hx/hatchling.h>
-#include <hx/hxAllocator.hpp>
-#include <hx/hxArray.hpp>
-#include <hx/hxConsole.hpp>
-#include <hx/hxDma.hpp>
-#include <hx/hxFile.hpp>
-#include <hx/hxHashTable.hpp>
-#include <hx/hxHashTableNodes.hpp>
-#include <hx/hxKey.hpp>
-#include <hx/hxMemoryManager.h>
-#include <hx/hxProfiler.hpp>
-#include <hx/hxSort.hpp>
-#include <hx/hxStringLiteralHash.h>
-#include <hx/hxTask.hpp>
-#include <hx/hxTaskQueue.hpp>
-#include <hx/hxTest.hpp> // May include Google Test.
+#include <hx/hxallocator.hpp>
+#include <hx/hxarray.hpp>
+#include <hx/hxconsole.hpp>
+#include <hx/hxdma.hpp>
+#include <hx/hxfile.hpp>
+#include <hx/hxhash_table.hpp>
+#include <hx/hxhash_table_nodes.hpp>
+#include <hx/hxkey.hpp>
+#include <hx/hxmemory_manager.h>
+#include <hx/hxprofiler.hpp>
+#include <hx/hxsort.hpp>
+#include <hx/hxstring_literal_hash.h>
+#include <hx/hxtask.hpp>
+#include <hx/hxtask_queue.hpp>
+#include <hx/hxtest.hpp> // May include Google Test.
 
 #endif // HX_HATCHLING_PCH_USED

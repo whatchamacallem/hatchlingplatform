@@ -1,99 +1,99 @@
 #pragma once
 // Copyright 2017-2025 Adrian Johnston
 //
-// hxProfilerInternal_ internals. See hxProfiler.h instead
+// hxprofiler_internal_ internals. See hxprofiler.h instead
 
 #if !defined HX_PROFILE
-#error #include <hx/hxProfiler.h> instead
+#error #include <hx/hxprofiler.h> instead
 #endif
 
-#include <hx/hxArray.hpp>
+#include <hx/hxarray.hpp>
 
 #if HX_USE_CPP_THREADS
 #include <mutex>
 
-#define HX_PROFILER_LOCK_() std::unique_lock<std::mutex> hxProfilerMutexLock_(g_hxProfiler_.m_mutex_)
+#define HX_PROFILER_LOCK_() std::unique_lock<std::mutex> hxprofiler_mutex_lock_(g_hxprofiler_.m_mutex_)
 #else
 #define HX_PROFILER_LOCK_() (void)0
 #endif
 
-static inline hxcycles_t hxTimeSampleCycles(void);
+static inline hxcycles_t hxtime_sample_cycles(void);
 
 // Use direct access to an object with static linkage for speed.
-extern class hxProfilerInternal_ g_hxProfiler_;
+extern class hxprofiler_internal_ g_hxprofiler_;
 
-// Address of s_hxProfilerThreadIdAddress_ used to uniquely identify thread.
-extern HX_THREAD_LOCAL uint8_t s_hxProfilerThreadIdAddress_;
+// Address of s_hxprofiler_thread_id_address_ used to uniquely identify thread.
+extern HX_THREAD_LOCAL uint8_t s_hxprofiler_thread_id_address_;
 
-// hxProfilerInternal_ - Manager object for internal use.
-class hxProfilerInternal_ {
+// hxprofiler_internal_ - Manager object for internal use.
+class hxprofiler_internal_ {
 public:
-	hxProfilerInternal_() : m_isStarted_(false) { };
+	hxprofiler_internal_() : m_is_started_(false) { };
 
 	void start_();
 	void stop_();
 	void log_();
-	void writeToChromeTracing_(const char* filename);
+	void write_to_chrome_tracing_(const char* filename);
 
 	// For testing
-	inline size_t recordsSize_() { return m_records.size(); }
-	inline void recordsClear_() { m_records.clear(); }
+	inline size_t records_size_() { return m_records.size(); }
+	inline void records_clear_() { m_records.clear(); }
 
 private:
-	struct hxProfilerRecord_ {
-		inline hxProfilerRecord_(size_t begin_, size_t end_, const char* label_, uint32_t threadId_)
-			: m_label_(label_), m_begin_(begin_), m_end_(end_), m_threadId_(threadId_) {
+	struct hxprofiler_record_ {
+		inline hxprofiler_record_(size_t begin_, size_t end_, const char* label_, uint32_t thread_id_)
+			: m_label_(label_), m_begin_(begin_), m_end_(end_), m_thread_id_(thread_id_) {
 		}
 		const char* m_label_;
 		hxcycles_t m_begin_;
 		hxcycles_t m_end_;
-		uint32_t m_threadId_;
+		uint32_t m_thread_id_;
 	};
 
-	template<hxcycles_t MinCycles_> friend class hxProfilerScopeInternal_;
+	template<hxcycles_t Min_cycles_> friend class hxprofiler_scope_internal_;
 
-	bool m_isStarted_;
+	bool m_is_started_;
 #if HX_USE_CPP_THREADS
 	std::mutex m_mutex_;
 #endif
-	hxArray<hxProfilerRecord_, HX_PROFILER_MAX_RECORDS> m_records;
+	hxarray<hxprofiler_record_, HX_PROFILER_MAX_RECORDS> m_records;
 };
 
-// hxProfilerScopeInternal_ - RAII object for internal use.
-template<hxcycles_t MinCycles_=0u>
-class hxProfilerScopeInternal_ {
+// hxprofiler_scope_internal_ - RAII object for internal use.
+template<hxcycles_t Min_cycles_=0u>
+class hxprofiler_scope_internal_ {
 public:
-	// See hxProfileScope() below.
-	inline hxProfilerScopeInternal_(const char* labelStringLiteral_)
-		: m_label_(labelStringLiteral_)
+	// See hxprofile_scope() below.
+	inline hxprofiler_scope_internal_(const char* label_string_literal_)
+		: m_label_(label_string_literal_)
 	{
 		// fastest not to check if the profiler is running.
-		m_t0_ = hxTimeSampleCycles();
+		m_t0_ = hxtime_sample_cycles();
 	}
 
 #if HX_CPLUSPLUS >= 202002L
 	constexpr
 #endif
-	~hxProfilerScopeInternal_() {
-		hxcycles_t t1_ = hxTimeSampleCycles();
+	~hxprofiler_scope_internal_() {
+		hxcycles_t t1_ = hxtime_sample_cycles();
 
 		HX_PROFILER_LOCK_();
 
-		if (g_hxProfiler_.m_isStarted_) {
-			if ((t1_ - m_t0_) >= MinCycles_) {
-				void* rec_ = g_hxProfiler_.m_records.emplaceBackUnconstructed();
+		if (g_hxprofiler_.m_is_started_) {
+			if ((t1_ - m_t0_) >= Min_cycles_) {
+				void* rec_ = g_hxprofiler_.m_records.emplace_back_unconstructed();
 				if (rec_) {
-					::new (rec_) hxProfilerInternal_::hxProfilerRecord_(m_t0_, t1_, m_label_,
-						(uint32_t)(uintptr_t)&s_hxProfilerThreadIdAddress_);
+					::new (rec_) hxprofiler_internal_::hxprofiler_record_(m_t0_, t1_, m_label_,
+						(uint32_t)(uintptr_t)&s_hxprofiler_thread_id_address_);
 				}
 			}
 		}
 	}
 
 private:
-	hxProfilerScopeInternal_(void) HX_DELETE_FN;
-	hxProfilerScopeInternal_(const hxProfilerScopeInternal_&) HX_DELETE_FN;
-	void operator=(const hxProfilerScopeInternal_&) HX_DELETE_FN;
+	hxprofiler_scope_internal_(void) HX_DELETE_FN;
+	hxprofiler_scope_internal_(const hxprofiler_scope_internal_&) HX_DELETE_FN;
+	void operator=(const hxprofiler_scope_internal_&) HX_DELETE_FN;
 	const char* m_label_;
 	hxcycles_t m_t0_;
 };

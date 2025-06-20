@@ -1,7 +1,7 @@
 #pragma once
 // Copyright 2017-2025 Adrian Johnston
 
-// hxSettings.h - Compiler detection and target specific C++11/C++14 polyfill.
+// hxsettings.h - Compiler detection and target specific C++11/C++14 polyfill.
 // Use #if(HX_...) instead of #ifdef(HX_...) for all HX_* macros.
 
 #if !HATCHLING_VER
@@ -17,7 +17,7 @@
 #endif
 #endif
 
-// HX_HATCHLING_PCH_USED - Allows checking if hatchlingPch.h was used as expected.
+// HX_HATCHLING_PCH_USED - Allows checking if hatchling_pch.h was used as expected.
 #if !defined HX_HATCHLING_PCH_USED
 #define HX_HATCHLING_PCH_USED 0
 #endif
@@ -122,7 +122,7 @@
  // HX_DELETE_FN - Use delete when available.
 #define HX_DELETE_FN = delete
 #else // !HX_CPLUSPLUS
-#define HX_STATIC_ASSERT(x_,...) typedef int HX_CONCATENATE(hxStaticAssertFail_,__COUNTER__) [!!(x_) ? 1 : -1] // HX_STATIC_ASSERT - Fallback static assert for pre-C++11.
+#define HX_STATIC_ASSERT(x_,...) typedef int HX_CONCATENATE(hxstatic_assert_fail_,__COUNTER__) [!!(x_) ? 1 : -1] // HX_STATIC_ASSERT - Fallback static assert for pre-C++11.
 #define HX_OVERRIDE
 #define HX_DELETE_FN
 #endif
@@ -158,21 +158,21 @@
 #define HX_MEMORY_MANAGER_DISABLE 0
 #endif
 
-#define HX_KIB (1u << 10) // HX_KIB - A KiB is 1024 bytes.
-#define HX_MIB (1u << 20) // HX_MIB - A MiB is 1,048,576 bytes.
+#define HX_KIB (1u << 10) // HX_KIB - A Ki_b is 1024 bytes.
+#define HX_MIB (1u << 20) // HX_MIB - A Mi_b is 1,048,576 bytes.
 
-// HX_MEMORY_BUDGET_PERMANENT - Pool sizes. Set to 5 KiB if not defined.
+// HX_MEMORY_BUDGET_PERMANENT - Pool sizes. Set to 5 Ki_b if not defined.
 #if !defined HX_MEMORY_BUDGET_PERMANENT
 #define HX_MEMORY_BUDGET_PERMANENT        (5u * HX_KIB)
 #endif
 
-// HX_MEMORY_BUDGET_TEMPORARY_STACK - Set to 1 MiB if not defined.
+// HX_MEMORY_BUDGET_TEMPORARY_STACK - Set to 1 Mi_b if not defined.
 #if !defined HX_MEMORY_BUDGET_TEMPORARY_STACK
 #define HX_MEMORY_BUDGET_TEMPORARY_STACK  (1u * HX_MIB)
 #endif
 
 // HX_PROFILE - 0: disables code for capturing profiling data
-//              1: compiles in code. See hxProfileScope().
+//              1: compiles in code. See hxprofile_scope().
 #if !defined HX_PROFILE
 #define HX_PROFILE (HX_RELEASE) < 2
 #endif
@@ -213,7 +213,7 @@
 #define HX_RADIX_SORT_BITS 8 // either 8 or 11.
 #endif
 
-// HX_RADIX_SORT_MIN_SIZE - Radix sort uses hxInsertionSort() below this size.
+// HX_RADIX_SORT_MIN_SIZE - Radix sort uses hxinsertion_sort() below this size.
 // Set to 8 if not defined.
 #if !defined HX_RADIX_SORT_MIN_SIZE
 #define HX_RADIX_SORT_MIN_SIZE 8u
@@ -223,19 +223,19 @@
 extern "C" {
 #endif
 
-// hxSettings. Constructed by first call to hxInit() which happens when or
+// hxsettings. Constructed by first call to hxinit() which happens when or
 // before the memory allocator constructs.
-struct hxSettings {
-    uint8_t logLevel;              // Logging level for the application (e.g., verbosity of logs).
-    uint8_t deallocatePermanent;   // Allows deallocation of permanent resources at system shut down.
+struct hxsettings {
+    uint8_t log_level;              // Logging level for the application (e.g., verbosity of logs).
+    uint8_t deallocate_permanent;   // Allows deallocation of permanent resources at system shut down.
 
 #if (HX_RELEASE) < 1
-    int assertsToBeSkipped;        // Number of asserts to skip, useful for testing assert behavior.
+    int asserts_to_be_skipped;        // Number of asserts to skip, useful for testing assert behavior.
 #endif
 };
 
-// g_hxSettings. Global struct constructed by hxInit().
-extern struct hxSettings g_hxSettings;
+// g_hxsettings. Global struct constructed by hxinit().
+extern struct hxsettings g_hxsettings;
 
 #if HX_CPLUSPLUS
 } // extern "C"

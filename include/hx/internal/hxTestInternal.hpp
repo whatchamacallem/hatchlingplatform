@@ -2,11 +2,11 @@
 // Copyright 2017-2025 Adrian Johnston
 
 #include <hx/hatchling.h>
-#include <hx/hxFile.hpp>
+#include <hx/hxfile.hpp>
 
 HX_STATIC_ASSERT(!HX_USE_GOOGLE_TEST, "Do not include directly");
 
-struct hxTestCaseBase_ {
+struct hxtest_case_base_ {
 	virtual void run_() = 0;
 	virtual const char* suite_() = 0;
 	virtual const char* case_() = 0;
@@ -14,9 +14,9 @@ struct hxTestCaseBase_ {
 	virtual size_t line_() = 0;
 };
 
-struct hxTestSuiteExecutor_ {
+struct hxtest_suite_executor_ {
 public:
-	enum TestState_ {
+	enum Test_state_ {
 		TEST_STATE_NOTHING_ASSERTED_,
 		TEST_STATE_PASS_,
 		TEST_STATE_FAIL_
@@ -30,65 +30,65 @@ public:
 	};
 
 	// Ensures constructor runs before tests are registered by global constructors.
-	static hxTestSuiteExecutor_& singleton_() { static hxTestSuiteExecutor_ s_hxTestRunner; return s_hxTestRunner; }
+	static hxtest_suite_executor_& singleton_() { static hxtest_suite_executor_ s_hxtest_runner; return s_hxtest_runner; }
 
-	hxTestSuiteExecutor_() {
-		m_searchTermStringLiteral_ = hxnull;
-		m_numFactories_ = 0;
-		m_currentTest_ = hxnull;
+	hxtest_suite_executor_() {
+		m_search_term_string_literal_ = hxnull;
+		m_num_factories_ = 0;
+		m_current_test_ = hxnull;
 		::memset(m_factories_ + 0, 0x00, sizeof m_factories_);
 	}
 
-	void setSearchTerm_(const char* searchTermStringLiteral_) {
-		m_searchTermStringLiteral_ = searchTermStringLiteral_;
+	void set_search_term_(const char* search_term_string_literal_) {
+		m_search_term_string_literal_ = search_term_string_literal_;
 	}
 
-	void addTest_(hxTestCaseBase_* fn_) {
+	void add_test_(hxtest_case_base_* fn_) {
 		// Use -DHX_TEST_MAX_CASES to provide enough room for all tests.
-		hxAssertRelease(m_numFactories_ < HX_TEST_MAX_CASES, "HX_TEST_MAX_CASES overflow\n");
-		if(m_numFactories_ < HX_TEST_MAX_CASES) {
-			m_factories_[m_numFactories_++] = fn_;
+		hxassert_release(m_num_factories_ < HX_TEST_MAX_CASES, "HX_TEST_MAX_CASES overflow\n");
+		if(m_num_factories_ < HX_TEST_MAX_CASES) {
+			m_factories_[m_num_factories_++] = fn_;
 		}
 	}
 
 	// message is required to end with an \n. Returns equivalent of /dev/null on
 	// success and the system log otherwise.
-	hxFile& assertCheck_(const char* file_, size_t line_, bool condition_, const char* message_) {
-		hxAssertRelease(m_currentTest_, "not testing");
-		++m_assertCount_;
-		m_testState_ = (condition_ && m_testState_ != TEST_STATE_FAIL_) ? TEST_STATE_PASS_ : TEST_STATE_FAIL_;
+	hxfile& assert_check_(const char* file_, size_t line_, bool condition_, const char* message_) {
+		hxassert_release(m_current_test_, "not testing");
+		++m_assert_count_;
+		m_test_state_ = (condition_ && m_test_state_ != TEST_STATE_FAIL_) ? TEST_STATE_PASS_ : TEST_STATE_FAIL_;
 		if (!condition_) {
-			if(++m_assertFailCount_ >= TEST_MAX_FAIL_MESSAGES_) {
-				if (m_assertFailCount_ == TEST_MAX_FAIL_MESSAGES_) {
-					hxLogConsole("remaining asserts will fail silently...\n");
+			if(++m_assert_fail_count_ >= TEST_MAX_FAIL_MESSAGES_) {
+				if (m_assert_fail_count_ == TEST_MAX_FAIL_MESSAGES_) {
+					hxlog_console("remaining asserts will fail silently...\n");
 				}
-				return fileNull_();
+				return file_null_();
 			}
 
 			// prints full path error messages that can be clicked on in an ide.
-			hxLogHandler(hxLogLevel_Assert, "%s.%s", m_currentTest_->suite_(), m_currentTest_->case_());
-			hxLogHandler(hxLogLevel_Assert, "%s(%zu): %s", file_, line_, message_);
+			hxlog_handler(hxlog_level_Assert, "%s.%s", m_current_test_->suite_(), m_current_test_->case_());
+			hxlog_handler(hxlog_level_Assert, "%s(%zu): %s", file_, line_, message_);
 
 			// Implements GTEST_FLAG_SET(break_on_failure, true);
 #if (HX_TEST_ERROR_HANDLING) == 0 && (HX_RELEASE) == 0
 			HX_BREAKPOINT();
 #endif
-			return fileLog_();
+			return file_log_();
 		}
-		return fileNull_();
+		return file_null_();
 	}
 
-	size_t executeAllTests_() {
-		hxInit(); // RUN_ALL_TESTS could be called first.
-		m_passCount_ = m_failCount_ = m_assertCount_ = 0;
-		hxLogConsole("RUNNING_TESTS (%s)\n", (m_searchTermStringLiteral_ ? m_searchTermStringLiteral_ : "ALL"));
-		for (hxTestCaseBase_** it_ = m_factories_; it_ != (m_factories_ + m_numFactories_); ++it_) {
-			if (!m_searchTermStringLiteral_ || ::strstr(m_searchTermStringLiteral_, (*it_)->suite_()) != hxnull) {
-				hxLogConsole("%s.%s...\n", (*it_)->suite_(), (*it_)->case_());
+	size_t execute_all_tests_() {
+		hxinit(); // RUN_ALL_TESTS could be called first.
+		m_pass_count_ = m_fail_count_ = m_assert_count_ = 0;
+		hxlog_console("RUNNING_TESTS (%s)\n", (m_search_term_string_literal_ ? m_search_term_string_literal_ : "ALL"));
+		for (hxtest_case_base_** it_ = m_factories_; it_ != (m_factories_ + m_num_factories_); ++it_) {
+			if (!m_search_term_string_literal_ || ::strstr(m_search_term_string_literal_, (*it_)->suite_()) != hxnull) {
+				hxlog_console("%s.%s...\n", (*it_)->suite_(), (*it_)->case_());
 
-				m_currentTest_ = *it_;
-				m_testState_ = TEST_STATE_NOTHING_ASSERTED_;
-				m_assertFailCount_ = 0;
+				m_current_test_ = *it_;
+				m_test_state_ = TEST_STATE_NOTHING_ASSERTED_;
+				m_assert_fail_count_ = 0;
 
 #ifdef __cpp_exceptions
 				try
@@ -96,59 +96,59 @@ public:
 				{
 					// Tests should have no side effects. Therefore all allocations must be
 					// safe to reset.
-					hxMemoryAllocatorScope temporaryStack(hxMemoryAllocator_TemporaryStack);
+					hxmemory_allocator_scope temporary_stack(hxmemory_allocator_Temporary_stack);
 					(*it_)->run_();
 				}
 #ifdef __cpp_exceptions
 				catch (...) {
-					this->assertCheck_((*it_)->file_(), (*it_)->line_(), false, "unexpected exception");
+					this->assert_check_((*it_)->file_(), (*it_)->line_(), false, "unexpected exception");
 				}
 #endif
 
-				if (m_testState_ == TEST_STATE_NOTHING_ASSERTED_) {
-					this->assertCheck_((*it_)->file_(), (*it_)->line_(), false, "NOTHING_ASSERTED");
-					++m_failCount_;
+				if (m_test_state_ == TEST_STATE_NOTHING_ASSERTED_) {
+					this->assert_check_((*it_)->file_(), (*it_)->line_(), false, "NOTHING_ASSERTED");
+					++m_fail_count_;
 				}
-				else if (m_testState_ == TEST_STATE_PASS_) {
-					++m_passCount_;
+				else if (m_test_state_ == TEST_STATE_PASS_) {
+					++m_pass_count_;
 				}
 				else {
-					++m_failCount_;
+					++m_fail_count_;
 				}
 			}
 		}
 
-		hxLogConsole("skipped %zu tests. checked %zu assertions.\n",
-			m_numFactories_ - m_passCount_ - m_failCount_, m_assertCount_);
+		hxlog_console("skipped %zu tests. checked %zu assertions.\n",
+			m_num_factories_ - m_pass_count_ - m_fail_count_, m_assert_count_);
 
-		hxWarnMsg(m_passCount_ + m_failCount_, "NOTHING TESTED");
+		hxwarn_msg(m_pass_count_ + m_fail_count_, "NOTHING TESTED");
 
-		if (m_passCount_ != 0 && m_failCount_ == 0) {
-			hxLogHandler(hxLogLevel_Console, "[  PASSED  ] %zu test%s.\n", m_passCount_,
-				((m_passCount_ != 1) ? "s" : ""));
+		if (m_pass_count_ != 0 && m_fail_count_ == 0) {
+			hxlog_handler(hxlog_level_Console, "[  PASSED  ] %zu test%s.\n", m_pass_count_,
+				((m_pass_count_ != 1) ? "s" : ""));
 		}
 		else {
-			hxLogHandler(hxLogLevel_Console, " %zu FAILED TEST%s\n", m_failCount_,
-				((m_failCount_ != 1) ? "S" : ""));
-			m_failCount_ = hxmax(m_failCount_, (size_t)1u); // Nothing tested is failure.
+			hxlog_handler(hxlog_level_Console, " %zu FAILED TEST%s\n", m_fail_count_,
+				((m_fail_count_ != 1) ? "S" : ""));
+			m_fail_count_ = hxmax(m_fail_count_, (size_t)1u); // Nothing tested is failure.
 		}
-		return m_failCount_;
+		return m_fail_count_;
 	}
 
 private:
-	hxFile& fileNull_() { static hxFile f_(hxFile::out | hxFile::failable); return f_; }
-	hxFile& fileLog_()  { static hxFile f_(hxFile::out | hxFile::stdio); return f_; }
+	hxfile& file_null_() { static hxfile f_(hxfile::out | hxfile::failable); return f_; }
+	hxfile& file_log_()  { static hxfile f_(hxfile::out | hxfile::stdio); return f_; }
 
-	hxTestSuiteExecutor_(const hxTestSuiteExecutor_&) HX_DELETE_FN;
-	void operator=(const hxTestSuiteExecutor_&) HX_DELETE_FN;
+	hxtest_suite_executor_(const hxtest_suite_executor_&) HX_DELETE_FN;
+	void operator=(const hxtest_suite_executor_&) HX_DELETE_FN;
 
-	const char* m_searchTermStringLiteral_;
-	hxTestCaseBase_* m_factories_[HX_TEST_MAX_CASES];
-	size_t m_numFactories_;
-	hxTestCaseBase_* m_currentTest_;
-	TestState_ m_testState_;
-	size_t m_passCount_;
-	size_t m_failCount_;
-	size_t m_assertCount_;
-	size_t m_assertFailCount_;
+	const char* m_search_term_string_literal_;
+	hxtest_case_base_* m_factories_[HX_TEST_MAX_CASES];
+	size_t m_num_factories_;
+	hxtest_case_base_* m_current_test_;
+	Test_state_ m_test_state_;
+	size_t m_pass_count_;
+	size_t m_fail_count_;
+	size_t m_assert_count_;
+	size_t m_assert_fail_count_;
 };

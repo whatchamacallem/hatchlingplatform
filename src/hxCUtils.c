@@ -4,36 +4,36 @@
 
 // C utils
 
-// g_hxIsInit. Do not initialize to 0. MSVC actually handles that differently.
-int g_hxIsInit;
+// g_hxis_init. Do not initialize to 0. MSVC actually handles that differently.
+int g_hxis_init;
 
-// g_hxSettings. Declared here in plain C for maximum portability.
-struct hxSettings g_hxSettings;
+// g_hxsettings. Declared here in plain C for maximum portability.
+struct hxsettings g_hxsettings;
 
 #if defined __clang__
 __attribute__((no_sanitize("address")))
 #endif
-void hxHexDump(const void* address, size_t bytes, int pretty) {
+void hxhex_dump(const void* address, size_t bytes, int pretty) {
 	if ((HX_RELEASE) < 2 && address != hxnull) {
 		bytes = (bytes + 15u) & ~(size_t)15; // round up to 16 bytes.
 		const uint8_t* addr = (const uint8_t*)address;
 		for (size_t i = 0; i < bytes;) {
 			if (pretty) {
 				// Adjust the number of leading zeros for pointers to match uintptr_t.
-				hxLogConsole("%0*zx: ", (int)sizeof(uintptr_t), (size_t)addr);
+				hxlog_console("%0*zx: ", (int)sizeof(uintptr_t), (size_t)addr);
 			}
 			const uint8_t* str = addr;
 			for (size_t maximum = 4; i < bytes && maximum--; i += 4) {
-				hxLogConsole("%02x%02x%02x%02x ", addr[0], addr[1], addr[2], addr[3]);
+				hxlog_console("%02x%02x%02x%02x ", addr[0], addr[1], addr[2], addr[3]);
 				addr += 4;
 			}
 			if (pretty) {
 				while (str < addr) {
-					hxLogConsole("%c", (*str >= 0x20 && *str <= 0x7e) ? *str : '.');
+					hxlog_console("%c", (*str >= 0x20 && *str <= 0x7e) ? *str : '.');
 					++str;
 				}
 			}
-			hxLogConsole("\n");
+			hxlog_console("\n");
 		}
 	}
 }
@@ -41,19 +41,19 @@ void hxHexDump(const void* address, size_t bytes, int pretty) {
 #if defined __clang__
 __attribute__((no_sanitize("address")))
 #endif
-void hxFloatDump(const float* address, size_t count) {
+void hxfloat_dump(const float* address, size_t count) {
 	if ((HX_RELEASE) < 2 && address != hxnull) {
 		for (size_t i = 0; i < count;) {
-			hxLogConsole("%08x: ", (unsigned int)(uintptr_t)address);
+			hxlog_console("%08x: ", (unsigned int)(uintptr_t)address);
 			for (size_t maximum = 4; i < count && maximum--; i++) {
-				hxLogConsole("%8f ", *address++);
+				hxlog_console("%8f ", *address++);
 			}
-			hxLogConsole("\n");
+			hxlog_console("\n");
 		}
 	}
 }
 
-const char* hxBasename(const char* path) {
+const char* hxbasename(const char* path) {
 	const char* result = path ? path : "(null)";
 	for (const char* it = result; *it != '\0'; ++it) {
 		if (*it == '/' || *it == '\\') {
@@ -63,10 +63,10 @@ const char* hxBasename(const char* path) {
 	return result;
 }
 
-char* hxStringDuplicate(const char* string, enum hxMemoryAllocator id) {
+char* hxstring_duplicate(const char* string, enum hxmemory_allocator id) {
 	if (string) {
 		size_t len = strlen(string);
-		char* temp = (char*)hxMallocExt(len + 1, id, 0u);
+		char* temp = (char*)hxmalloc_ext(len + 1, id, 0u);
 		memcpy(temp, string, len + 1);
 		return temp;
 	}

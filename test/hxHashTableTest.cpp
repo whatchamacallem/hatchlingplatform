@@ -1,30 +1,30 @@
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hxHashTableNodes.hpp>
-#include <hx/hxHashTable.hpp>
-#include <hx/hxTest.hpp>
+#include <hx/hxhash_table_nodes.hpp>
+#include <hx/hxhash_table.hpp>
+#include <hx/hxtest.hpp>
 
 HX_REGISTER_FILENAME_HASH
 
-static class hxHashTableTest* s_hxTestCurrent = 0;
+static class hxhash_table_test* s_hxtest_current = 0;
 
-class hxHashTableTest :
+class hxhash_table_test :
 	public testing::Test
 {
 public:
-    struct TestObject {
-        TestObject() {
-            ++s_hxTestCurrent->m_constructed;
-            id = s_hxTestCurrent->m_nextId++;
+    struct Test_object {
+        Test_object() {
+            ++s_hxtest_current->m_constructed;
+            id = s_hxtest_current->m_next_id++;
         }
-        ~TestObject() {
-            ++s_hxTestCurrent->m_destructed;
+        ~Test_object() {
+            ++s_hxtest_current->m_destructed;
             id = ~0u;
         }
 
-		void operator=(const TestObject& rhs) { id = rhs.id; }
+		void operator=(const Test_object& rhs) { id = rhs.id; }
 		void operator=(int32_t x) { id = x; }
-		bool operator==(const TestObject& rhs) const { return id == rhs.id; }
+		bool operator==(const Test_object& rhs) const { return id == rhs.id; }
 		bool operator==(int32_t x) const { return id == x; }
 
 		operator float() const { return (float)id; }
@@ -32,77 +32,77 @@ public:
 		int32_t id;
 	};
 
-	class TestInteger : public hxHashTableNodeInteger<int32_t> {
+	class Test_integer : public hxhash_table_node_integer<int32_t> {
 	public:
-		TestInteger(int32_t k) : hxHashTableNodeInteger(k) { }
-		TestObject value;
+		Test_integer(int32_t k) : hxhash_table_node_integer(k) { }
+		Test_object value;
 	};
 
-	class TestString : public hxHashTableNodeString<hxMemoryAllocator_TemporaryStack> {
+	class Test_string : public hxhash_table_node_string<hxmemory_allocator_Temporary_stack> {
 	public:
-		TestString(const char* k) : hxHashTableNodeString(k) { }
-		TestObject value;
+		Test_string(const char* k) : hxhash_table_node_string(k) { }
+		Test_object value;
 	};
 
-    hxHashTableTest() {
-        hxAssert(s_hxTestCurrent == hxnull);
+    hxhash_table_test() {
+        hxassert(s_hxtest_current == hxnull);
         m_constructed = 0;
         m_destructed = 0;
-        m_nextId = 0;
-        s_hxTestCurrent = this;
+        m_next_id = 0;
+        s_hxtest_current = this;
     }
-    ~hxHashTableTest() {
-        s_hxTestCurrent = 0;
+    ~hxhash_table_test() {
+        s_hxtest_current = 0;
     }
 
-    bool CheckTotals(int32_t total) const {
+    bool Check_totals(int32_t total) const {
         return m_constructed == total && m_destructed == total;
     }
 
     int32_t m_constructed;
     int32_t m_destructed;
-    int32_t m_nextId;
+    int32_t m_next_id;
 };
 
-TEST_F(hxHashTableTest, Null) {
+TEST_F(hxhash_table_test, Null) {
 	{
-		typedef hxHashTable<TestInteger, 4> Table;
+		typedef hxhash_table<Test_integer, 4> Table;
 		Table table;
 		ASSERT_EQ(table.size(), 0u);
 
 		ASSERT_TRUE(table.begin() == table.end());
-		ASSERT_TRUE(table.cBegin() == table.cEnd());
-		ASSERT_TRUE(((const Table&)table).begin() == ((const Table&)table).cEnd());
+		ASSERT_TRUE(table.c_begin() == table.c_end());
+		ASSERT_TRUE(((const Table&)table).begin() == ((const Table&)table).c_end());
 		ASSERT_FALSE(table.begin() != table.end());
-		ASSERT_FALSE(table.cBegin() != table.cEnd());
-		ASSERT_FALSE(((const Table&)table).begin() != ((const Table&)table).cEnd());
+		ASSERT_FALSE(table.c_begin() != table.c_end());
+		ASSERT_FALSE(((const Table&)table).begin() != ((const Table&)table).c_end());
 
 		table.clear();
-		ASSERT_EQ(table.loadFactor(), 0.0f);
+		ASSERT_EQ(table.load_factor(), 0.0f);
 
 	}
 	ASSERT_EQ(m_constructed, 0);
 	ASSERT_EQ(m_destructed, 0);
 }
 
-TEST_F(hxHashTableTest, Single) {
+TEST_F(hxhash_table_test, Single) {
 	static const int k = 77;
 	{
-		typedef hxHashTable<TestInteger, 4> Table;
+		typedef hxhash_table<Test_integer, 4> Table;
 		Table table;
-		TestInteger* node = hxNew<TestInteger>(k);
-		table.insertNode(node);
+		Test_integer* node = hxnew<Test_integer>(k);
+		table.insert_node(node);
 
 		// Operations on a single node
 		ASSERT_TRUE(table.begin() != table.end());
-		ASSERT_TRUE(table.cBegin() != table.cEnd());
+		ASSERT_TRUE(table.c_begin() != table.c_end());
 		ASSERT_TRUE(++table.begin() == table.end());
-		ASSERT_TRUE(++table.cBegin() == table.cEnd());
+		ASSERT_TRUE(++table.c_begin() == table.c_end());
 		ASSERT_EQ(table.size(), 1u);
 		ASSERT_EQ(table.count(k), 1u);
 		ASSERT_TRUE(table[k].key() == k);
 		ASSERT_TRUE(table[k].value.id == node->value.id);
-		ASSERT_TRUE(table.insertUnique(k).value.id == node->value.id);
+		ASSERT_TRUE(table.insert_unique(k).value.id == node->value.id);
 		ASSERT_TRUE(table.find(k) == node);
 		ASSERT_TRUE(table.find(k, node) == hxnull);
 		ASSERT_TRUE(((const Table&)table).find(k) == node);
@@ -112,9 +112,9 @@ TEST_F(hxHashTableTest, Single) {
 		ASSERT_TRUE(table.extract(k) == node);
 		ASSERT_TRUE(table.extract(k) == hxnull);
 
-		table.insertNode(node);
+		table.insert_node(node);
 		ASSERT_TRUE(table.find(k) == node);
-		table.releaseAll();
+		table.release_all();
 		ASSERT_TRUE(table.find(k) == hxnull);
 		ASSERT_EQ(table.size(), 0u);
 
@@ -133,19 +133,19 @@ TEST_F(hxHashTableTest, Single) {
 		ASSERT_EQ(table.count(k), 1u);
 
 		// MODIFIES TABLE: destructor also frees allocated item.
-		hxDelete(node);
+		hxdelete(node);
 	}
 	ASSERT_EQ(m_constructed, 2);
 	ASSERT_EQ(m_destructed, 2);
 }
 
-TEST_F(hxHashTableTest, Multiple) {
+TEST_F(hxhash_table_test, Multiple) {
 	static const int N = 78;
 	{
 		// Table will be overloaded.
-		typedef hxHashTable<TestInteger> Table;
+		typedef hxhash_table<Test_integer> Table;
 		Table table;
-		table.setTableSizeBits(5);
+		table.set_table_size_bits(5);
 
 		// Insert N elements
 		for (int i = 0; i < N; ++i) {
@@ -154,92 +154,92 @@ TEST_F(hxHashTableTest, Multiple) {
 		}
 
 		// Check properties of N unique keys.
-		int idHistogram[N] = {};
+		int id_histogram[N] = {};
 		ASSERT_EQ(table.size(), N);
 		Table::iterator it = table.begin();
 		Table::iterator cit = table.begin();
 		for (int i = 0; i < N; ++i) {
-			TestInteger* ti = table.find(i);
+			Test_integer* ti = table.find(i);
 			ASSERT_EQ(ti->value, i);
 			ASSERT_TRUE(table.find(i, ti) == hxnull);
 
 			// Iteration over.
 			ASSERT_TRUE(it != table.end());
-			ASSERT_TRUE(cit != table.cEnd());
+			ASSERT_TRUE(cit != table.c_end());
 			ASSERT_TRUE(it == cit);
 			ASSERT_TRUE((unsigned int)it->value.id < (unsigned int)N);
-			idHistogram[it->value.id]++;
+			id_histogram[it->value.id]++;
 			ASSERT_TRUE((unsigned int)cit->value.id < (unsigned int)N);
-			idHistogram[cit->value.id]++;
+			id_histogram[cit->value.id]++;
 			++cit;
 			it++;
 		}
 		ASSERT_TRUE(table.end() == it);
-		ASSERT_TRUE(table.cEnd() == cit);
+		ASSERT_TRUE(table.c_end() == cit);
 		for (int i = 0; i < N; ++i) {
-			ASSERT_EQ(idHistogram[i], 2);
+			ASSERT_EQ(id_histogram[i], 2);
 		}
 
 		// insert second N elements
 		for (int i = 0; i < N; ++i) {
-			TestInteger* ti = hxNew<TestInteger>(i);
+			Test_integer* ti = hxnew<Test_integer>(i);
 			ASSERT_EQ(ti->value.id, i+N);
-			table.insertNode(ti);
+			table.insert_node(ti);
 		}
 
 		// Check properties of 2*N duplicate keys.
-		int keyHistogram[N] = {};
+		int key_histogram[N] = {};
 		ASSERT_EQ(table.size(), N * 2);
 		it = table.begin();
 		cit = table.begin();
 		for (int i = 0; i < N; ++i) {
-			TestInteger* ti = table.find(i);
+			Test_integer* ti = table.find(i);
 			ASSERT_EQ(ti->key(), i);
-			const TestInteger* ti2 = ((const hxHashTable<TestInteger>&)table).find(i, ti); // test const version
+			const Test_integer* ti2 = ((const hxhash_table<Test_integer>&)table).find(i, ti); // test const version
 			ASSERT_EQ(ti2->key(), i);
 			ASSERT_TRUE(table.find(i, ti2) == hxnull);
 
 			ASSERT_EQ(table.count(i), 2u);
 
 			ASSERT_TRUE((unsigned int)it->key() < (unsigned int)N);
-			keyHistogram[it->key()]++;
+			key_histogram[it->key()]++;
 			++it;
 			ASSERT_TRUE((unsigned int)it->key() < (unsigned int)N);
-			keyHistogram[it->key()]++;
+			key_histogram[it->key()]++;
 			it++;
 			ASSERT_TRUE((unsigned int)cit->key() < (unsigned int)N);
-			keyHistogram[cit->key()]++;
+			key_histogram[cit->key()]++;
 			++cit;
 			ASSERT_TRUE((unsigned int)cit->key() < (unsigned int)N);
-			keyHistogram[cit->key()]++;
+			key_histogram[cit->key()]++;
 			cit++;
 		}
 		ASSERT_TRUE(table.end() == it);
-		ASSERT_TRUE(table.cEnd() == cit);
+		ASSERT_TRUE(table.c_end() == cit);
 		for (int i = 0; i < N; ++i) {
-			ASSERT_EQ(keyHistogram[i], 4);
+			ASSERT_EQ(key_histogram[i], 4);
 		}
 
 		// Check that keys are distributed such that no bucket has more than 2x average.
-		ASSERT_TRUE((table.loadFactor() * 2.0f) > (float)table.loadMax());
+		ASSERT_TRUE((table.load_factor() * 2.0f) > (float)table.load_max());
 
 		// Erase keys [0..N/2), remove 1 of 2 of keys [N/2..N)
 		for (int i = 0; i < (N/2); ++i) {
 			ASSERT_EQ(table.erase(i), 2);
 		}
 		for (int i = (N/2); i < N; ++i) {
-			TestInteger* ti = table.extract(i);
+			Test_integer* ti = table.extract(i);
 			ASSERT_TRUE(ti->key() == i);
-			hxDelete(ti);
+			hxdelete(ti);
 		}
 
 		// Check properties of N/2 remaining keys.
 		for (int i = 0; i < (N/2); ++i) {
-			ASSERT_EQ(table.releaseKey(i), 0);
+			ASSERT_EQ(table.release_key(i), 0);
 			ASSERT_TRUE(table.find(i) == hxnull);
 		}
 		for (int i = (N/2); i < N; ++i) {
-			TestInteger* ti = table.find(i);
+			Test_integer* ti = table.find(i);
 			ASSERT_EQ(ti->key(), i);
 			ASSERT_TRUE(table.find(i, ti) == hxnull);
 			ASSERT_EQ(table.count(i), 1u);
@@ -252,13 +252,13 @@ TEST_F(hxHashTableTest, Multiple) {
 			cit++;
 		}
 		ASSERT_TRUE(table.end() == it);
-		ASSERT_TRUE(table.cEnd() == cit);
+		ASSERT_TRUE(table.c_end() == cit);
 	}
 	ASSERT_EQ(m_constructed, 2*N);
 	ASSERT_EQ(m_destructed, 2*N);
 }
 
-TEST_F(hxHashTableTest, Strings) {
+TEST_F(hxhash_table_test, Strings) {
 	static const char* colors[] = {
 		"Red","Orange","Yellow",
 		"Green","Cyan","Blue",
@@ -266,7 +266,7 @@ TEST_F(hxHashTableTest, Strings) {
 	const int sz = sizeof colors / sizeof *colors;
 
 	{
-		typedef hxHashTable<TestString, 4> Table;
+		typedef hxhash_table<Test_string, 4> Table;
 		Table table;
 
 		for (int i = sz; i--;) {

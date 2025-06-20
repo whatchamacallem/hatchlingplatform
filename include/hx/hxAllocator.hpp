@@ -3,16 +3,16 @@
 
 #include <hx/hatchling.h>
 
-// hxAllocator - Similar to std::allocator. Allows for static or dynamic
+// hxallocator - Similar to std::allocator. Allows for static or dynamic
 // allocation.
 
 // A capacity value that allows for dynamic allocation.
-#define hxAllocatorDynamicCapacity 0u
+#define hxallocator_dynamic_capacity 0u
 
-// hxAllocator<1+> - Provides static allocation when capacity is greater than
+// hxallocator<1+> - Provides static allocation when capacity is greater than
 // zero.
 template<typename T_, size_t Capacity_>
-class hxAllocator {
+class hxallocator {
 public:
     typedef T_ T;
 
@@ -21,11 +21,11 @@ public:
 
 	// Initializes memory to 0xcd when HX_RELEASE < 1.
 #if (HX_RELEASE) < 1
-    hxAllocator() : m_data_(data()) {
+    hxallocator() : m_data_(data()) {
         ::memset(m_allocator_, 0xcd, sizeof m_allocator_);
     }
 #else
-    HX_CONSTEXPR_FN hxAllocator() { }
+    HX_CONSTEXPR_FN hxallocator() { }
 #endif
 
 	// Returns the number of elements of T allocated.
@@ -38,17 +38,17 @@ public:
     T_ (&data())[Capacity_] { return *reinterpret_cast<T_(*)[Capacity_]>(m_allocator_ + 0); }
 
 protected:
-    // Used to ensure initial capacity as reserveStorage() will not reallocate.
+    // Used to ensure initial capacity as reserve_storage() will not reallocate.
     // size: The number of elements of type T to allocate.
 
-    HX_CONSTEXPR_FN void reserveStorage(size_t size_) {
-		hxAssertRelease(size_ <= Capacity_, "allocator overflowing fixed capacity."); (void)size_;
+    HX_CONSTEXPR_FN void reserve_storage(size_t size_) {
+		hxassert_release(size_ <= Capacity_, "allocator overflowing fixed capacity."); (void)size_;
 	}
 
 private:
 	// *** The static allocator does not support swapping allocations or
 	// assignments from temporaries. ***
-    void swap(hxAllocator& rhs) HX_DELETE_FN;
+    void swap(hxallocator& rhs) HX_DELETE_FN;
     static const size_t m_capacity_ = Capacity_;
 
     // Put x.m_data_ in your watch window for x or have your IDE do it for you.
@@ -66,27 +66,27 @@ private:
 #endif
 };
 
-// hxAllocator<0> - Capacity is set by first call to reserveStorage() and may
+// hxallocator<0> - Capacity is set by first call to reserve_storage() and may
 // not be extended.
 template<typename T_>
-class hxAllocator<T_, hxAllocatorDynamicCapacity> {
+class hxallocator<T_, hxallocator_dynamic_capacity> {
 public:
 	typedef T_ T;
 
-    // Does not allocate until reserveStorage() is called.
-    HX_CONSTEXPR_FN hxAllocator() {
+    // Does not allocate until reserve_storage() is called.
+    HX_CONSTEXPR_FN hxallocator() {
         m_data_ = hxnull;
         m_capacity_ = 0u;
     }
 
-    // Calls hxFree() with any allocated memory.
+    // Calls hxfree() with any allocated memory.
 #if HX_CPLUSPLUS >= 202002L
     constexpr
 #endif
-    ~hxAllocator() {
+    ~hxallocator() {
         if (m_data_) {
             m_capacity_ = 0u;
-            hxFree(m_data_);
+            hxfree(m_data_);
             m_data_ = hxnull;
         }
     }
@@ -100,29 +100,29 @@ public:
     // Returns an array of T.
     HX_CONSTEXPR_FN T_* data() { return m_data_; }
 
-    // Swap. Only works with Capacity_ == hxAllocatorDynamicCapacity
-    HX_CONSTEXPR_FN void swap(hxAllocator& rhs) {
+    // Swap. Only works with Capacity_ == hxallocator_dynamic_capacity
+    HX_CONSTEXPR_FN void swap(hxallocator& rhs) {
         hxswap(m_capacity_, rhs.m_capacity_);
         hxswap(m_data_, rhs.m_data_);
     }
 
 protected:
-    // Capacity is set by first call to reserveStorage and may not be extended.
+    // Capacity is set by first call to reserve_storage and may not be extended.
     // size: The number of elements of type T to allocate space for.
-    // allocator: The memory manager ID to use for allocation (default: hxMemoryAllocator_Current)
+    // allocator: The memory manager ID to use for allocation (default: hxmemory_allocator_Current)
     // alignment: The alignment to for the allocation. (default: HX_ALIGNMENT)
-    HX_CONSTEXPR_FN void reserveStorage(size_t size_,
-            hxMemoryAllocator allocator_=hxMemoryAllocator_Current,
+    HX_CONSTEXPR_FN void reserve_storage(size_t size_,
+            hxmemory_allocator allocator_=hxmemory_allocator_Current,
             uintptr_t alignment_=HX_ALIGNMENT) {
         if (size_ <= m_capacity_) { return; }
-        hxAssertRelease(m_capacity_ == 0, "allocator reallocation disallowed.");
-        m_data_ = (T_*)hxMallocExt(sizeof(T_) * size_, allocator_, alignment_);
+        hxassert_release(m_capacity_ == 0, "allocator reallocation disallowed.");
+        m_data_ = (T_*)hxmalloc_ext(sizeof(T_) * size_, allocator_, alignment_);
         m_capacity_ = size_;
     }
 
 private:
-    hxAllocator(const hxAllocator&) HX_DELETE_FN;
-    void operator=(const hxAllocator&) HX_DELETE_FN;
+    hxallocator(const hxallocator&) HX_DELETE_FN;
+    void operator=(const hxallocator&) HX_DELETE_FN;
 
     size_t m_capacity_;
     T_* m_data_;
