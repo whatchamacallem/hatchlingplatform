@@ -14,7 +14,7 @@
 
 namespace testing {
 
-// Test - Base class for tests required by TEST_F.
+// Test - Base class for tests required by Google Test's TEST_F.
 class Test {
 public:
     // User overrides for fixtures.
@@ -48,7 +48,8 @@ HX_CONSTEXPR_FN void InitGoogleTest() { }
 // - suite_name: A C valid identifier for the test suite.
 // - case_name: A C valid identifier for the test case.
 #define TEST(suite_name_, case_name_) \
-    struct HX_CONCATENATE_3(hxtest_, suite_name_, case_name_) : public hxtest_case_base_ { \
+    class HX_CONCATENATE_3(hxtest_, suite_name_, case_name_) : public hxtest_case_interface_ { \
+    public: \
         HX_CONCATENATE_3(hxtest_, suite_name_, case_name_)(void) { hxtest_suite_executor_::singleton_().add_test_(this); } \
         virtual void run_(void) HX_OVERRIDE; \
         virtual const char* suite_(void) HX_OVERRIDE { return #suite_name_; } \
@@ -63,8 +64,9 @@ HX_CONSTEXPR_FN void InitGoogleTest() { }
 // - suite_name: A C valid identifier for the test suite.
 // - case_name: A C valid identifier for the test case.
 #define TEST_F(suite_name_, case_name_) \
-    struct HX_CONCATENATE_3(hxtest_, suite_name_, case_name_) : public hxtest_case_base_ { \
-        struct hxtest_case_executor_ : public suite_name_ { virtual void run_code_(void) HX_OVERRIDE; }; \
+    class HX_CONCATENATE_3(hxtest_, suite_name_, case_name_) : public hxtest_case_interface_ { \
+    public: \
+        class hxtest_case_executor_ : public suite_name_ { virtual void run_code_(void) HX_OVERRIDE; }; \
         HX_CONCATENATE_3(hxtest_, suite_name_, case_name_)(void) { hxtest_suite_executor_::singleton_().add_test_(this); } \
         virtual void run_(void) HX_OVERRIDE { hxtest_case_executor_ executor_; executor_.run_(); } \
         virtual const char* suite_(void) HX_OVERRIDE { return #suite_name_; } \

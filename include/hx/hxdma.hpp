@@ -8,7 +8,8 @@
 // hxdma_await_sync_point() and hxdma_await_all() calls generate descriptive labels.
 
 // Used to marks a point in time so that preceding DMA operations can be waited for.
-struct hxdma_sync_point {
+class hxdma_sync_point {
+public:
 #if HX_DEBUG_DMA
 	// A synchronization point must be set with hxdma_add_sync_point() before use.
 	hxdma_sync_point() : debug_only(~(size_t)0u), p_impl(hxnull) { }

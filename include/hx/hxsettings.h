@@ -51,7 +51,7 @@
 
 #define HX_RESTRICT __restrict
 #define HX_ATTR_FORMAT(pos_, start_)
-#define HX_BREAKPOINT() (__debugbreak(),false)
+#define hxbreakpoint() (__debugbreak(),false)
 #define HX_NORETURN
 
 // Unlike noexcept this is undefined when violated.
@@ -91,12 +91,12 @@
 #define HX_ATTR_FORMAT(pos_, start_) __attribute__((format(printf, pos_, start_)))
 #define HX_NORETURN __attribute__((noreturn))
 
-// HX_BREAKPOINT - Can be conditionally evaluated with the && and || operators.
+// hxbreakpoint - Can be conditionally evaluated with the && and || operators.
 // Uses intrinsics when available. (E.g. Clang.)
 #if defined __has_builtin && __has_builtin(__builtin_debugtrap)
-#define HX_BREAKPOINT() (__builtin_debugtrap(),false)
+#define hxbreakpoint() (__builtin_debugtrap(),false)
 #else
-#define HX_BREAKPOINT() (raise(SIGTRAP),false) // HX_BREAKPOINT - Use SIGTRAP if debugtrap is not available.
+#define hxbreakpoint() (raise(SIGTRAP),false) // hxbreakpoint - Use SIGTRAP if debugtrap is not available.
 #endif
 
 // HX_NOEXCEPT_INTRINSIC - Use GCC/Clang nothrow attribute. Unlike noexcept this
@@ -234,7 +234,7 @@ struct hxsettings {
 #endif
 };
 
-// g_hxsettings. Global struct constructed by hxinit().
+// g_hxsettings. Global class constructed by hxinit().
 extern struct hxsettings g_hxsettings;
 
 #if HX_CPLUSPLUS

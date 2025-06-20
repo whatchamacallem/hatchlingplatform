@@ -10,44 +10,45 @@ class hxradix_sort_test :
 	public testing::Test
 {
 public:
-	template<typename Key>
-	struct test_object {
-		test_object(Key k) : id(k) { }
-		~test_object() { id = (Key)0; }
+	template<typename key_t>
+	class test_object {
+    public:
+		test_object(key_t k) : id(k) { }
+		~test_object() { id = (key_t)0; }
 		bool operator<(const test_object& rhs) const { return id < rhs.id; }
-		Key id;
+		key_t id;
 	};
 
-    template<typename Key>
-    void generate(hxarray<test_object<Key> >& a, uint32_t size, uint32_t mask, Key offset) {
+    template<typename key_t>
+    void generate(hxarray<test_object<key_t> >& a, uint32_t size, uint32_t mask, key_t offset) {
         a.reserve(size);
         for(uint32_t i= size;i--;) {
             uint32_t x = m_prng_() & mask;
-            a.push_back((Key)x - offset);
+            a.push_back((key_t)x - offset);
         }
     }
 
-	template<typename Key>
+	template<typename key_t>
 	static int q_sort_compare(const void* a, const void* b) {
-		if (*(const test_object<Key>*)a < *(const test_object<Key>*)b) { return -1; }
-		if (*(const test_object<Key>*)b < *(const test_object<Key>*)a) { return 1; }
+		if (*(const test_object<key_t>*)a < *(const test_object<key_t>*)b) { return -1; }
+		if (*(const test_object<key_t>*)b < *(const test_object<key_t>*)a) { return 1; }
 		return 0;
 	}
 
-	template<typename Key>
-	void test(uint32_t size, uint32_t mask, Key offset) {
+	template<typename key_t>
+	void test(uint32_t size, uint32_t mask, key_t offset) {
 		hxmemory_allocator_scope temporary_stack(hxmemory_allocator_temporary_stack);
 
 		// Generate test data
-		hxarray<test_object<Key> > a;
-		generate<Key>(a, size, mask, offset);
+		hxarray<test_object<key_t> > a;
+		generate<key_t>(a, size, mask, offset);
 
 		// Copy and sort test data
-		hxarray<test_object<Key> > b(a);
-		::qsort(b.data(), b.size(), sizeof(test_object<Key>), q_sort_compare<Key>);
+		hxarray<test_object<key_t> > b(a);
+		::qsort(b.data(), b.size(), sizeof(test_object<key_t>), q_sort_compare<key_t>);
 
 		// Radix sort
-		hxradix_sort<Key, test_object<Key> > rs; rs.reserve(size);
+		hxradix_sort<key_t, test_object<key_t> > rs; rs.reserve(size);
 		for (uint32_t i = size; i--;) {
 			rs.insert(a[i].id, &a[i]);
 		}
@@ -57,8 +58,8 @@ public:
 		ASSERT_EQ(b.size(), size);
 		ASSERT_EQ(rs.size(), size);
 
-		typename hxradix_sort<Key, test_object<Key> >::iterator it = rs.begin();
-		typename hxradix_sort<Key, test_object<Key> >::const_iterator cit = rs.c_begin();
+		typename hxradix_sort<key_t, test_object<key_t> >::iterator it = rs.begin();
+		typename hxradix_sort<key_t, test_object<key_t> >::const_iterator cit = rs.c_begin();
 
 		for (uint32_t i=0u; i < size; ++i) {
 			ASSERT_EQ(b[i].id, rs[i].id);

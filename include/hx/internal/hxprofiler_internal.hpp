@@ -40,8 +40,9 @@ public:
 	inline void records_clear_() { m_records.clear(); }
 
 private:
-	struct hxprofiler_record_ {
-		inline hxprofiler_record_(size_t begin_, size_t end_, const char* label_, uint32_t thread_id_)
+	class hxprofiler_record_ {
+	public:
+		inline explicit hxprofiler_record_(size_t begin_, size_t end_, const char* label_, uint32_t thread_id_)
 			: m_label_(label_), m_begin_(begin_), m_end_(end_), m_thread_id_(thread_id_) {
 		}
 		const char* m_label_;
@@ -50,7 +51,7 @@ private:
 		uint32_t m_thread_id_;
 	};
 
-	template<hxcycles_t Min_cycles_> friend class hxprofiler_scope_internal_;
+	template<hxcycles_t min_cycles_> friend class hxprofiler_scope_internal_;
 
 	bool m_is_started_;
 #if HX_USE_CPP_THREADS
@@ -60,7 +61,7 @@ private:
 };
 
 // hxprofiler_scope_internal_ - RAII object for internal use.
-template<hxcycles_t Min_cycles_=0u>
+template<hxcycles_t min_cycles_=0u>
 class hxprofiler_scope_internal_ {
 public:
 	// See hxprofile_scope() below.
@@ -80,7 +81,7 @@ public:
 		HX_PROFILER_LOCK_();
 
 		if (g_hxprofiler_.m_is_started_) {
-			if ((t1_ - m_t0_) >= Min_cycles_) {
+			if ((t1_ - m_t0_) >= min_cycles_) {
 				void* rec_ = g_hxprofiler_.m_records.emplace_back_unconstructed();
 				if (rec_) {
 					::new (rec_) hxprofiler_internal_::hxprofiler_record_(m_t0_, t1_, m_label_,

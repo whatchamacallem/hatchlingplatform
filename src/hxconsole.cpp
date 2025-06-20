@@ -15,15 +15,16 @@ HX_REGISTER_FILENAME_HASH
 
 namespace {
 
-struct hxconsole_less_ {
+class hxconsole_less_ {
+public:
 	inline bool operator()(const hxconsole_hash_table_node_* lhs,
 			const hxconsole_hash_table_node_* rhs) const {
 		return hxkey_less(lhs->key().str_, rhs->key().str_);
 	}
 };
 
-struct hxconsole_command_table_
-	: public hxhash_table<hxconsole_hash_table_node_, 2, hxnull_deleter> {
+class hxconsole_command_table_
+	: public hxhash_table<hxconsole_hash_table_node_, 2, hxdo_not_delete> {
 };
 
 // Wrapped to ensure correct construction order.
@@ -54,7 +55,7 @@ bool hxconsole_exec_line(const char* command) {
 	}
 
 	// Skip comments and blank lines
-	if (hxconsole_is_end_ofline_(pos)) {
+	if (hxconsole_is_end_of_line_(pos)) {
 		return true;
 	}
 

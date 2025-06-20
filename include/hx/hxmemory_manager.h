@@ -147,7 +147,8 @@ HX_CONSTEXPR_FN T_* hxnew(Args_&&... args_) noexcept {
 // hxnew - C++98 functor polyfill. All template args default except the first.
 // Passing more than one arg requires C++11.
 template <typename T_, hxmemory_allocator allocator_=hxmemory_allocator_current, uintptr_t align_=HX_ALIGNMENT>
-struct hxnew {
+class hxnew {
+public:
 	inline explicit hxnew(void ) {
 		m_tmp_ = ::new(hxmalloc(sizeof(T_)))T_();
 	}
@@ -157,6 +158,7 @@ struct hxnew {
 		m_tmp_ = ::new(hxmalloc(sizeof(T_)))T_(arg_);
 	}
 	operator T_*() { return m_tmp_; }
+private:
 	T_* m_tmp_;
 };
 #endif
@@ -178,7 +180,8 @@ HX_CONSTEXPR_FN void hxdelete(T_* t_) {
 
 // hxdeleter - A functor that deletes objects of type T using hxdelete.
 // Implements std::default_delete.
-struct hxdeleter {
+class hxdeleter {
+public:
 	// Deletes the object using hxdelete.
 	template <typename T_>
 	HX_CONSTEXPR_FN void operator()(T_* t_) const { hxdelete(t_); }
@@ -188,8 +191,10 @@ struct hxdeleter {
 };
 
 // Implement hxdeleter with NOPs. Allows the compiler to remove the destructors
-// from containers that handle static allocations or don't own their contents for some reason.
-struct hxnull_deleter {
+// from containers that handle static allocations or don't own their contents for
+// another reason.
+class hxdo_not_delete {
+public:
 	// Deletes the object using hxdelete.
 	template <typename T_>
 	HX_CONSTEXPR_FN void operator()(T_*) const { }

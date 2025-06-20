@@ -8,7 +8,7 @@
 // a new value every time. Usable as a functor or by simply calling the
 // provided cast operator to your type. Has a period of 2^64 and passes routine
 // numerical tests with only 8 bytes of state and using simple arithmetic.
-struct hxrandom {
+class hxrandom {
 public:
 	// Constructor to initialize the random number generator with a seed.
     // - seed: Initial seed value for the random number generator.

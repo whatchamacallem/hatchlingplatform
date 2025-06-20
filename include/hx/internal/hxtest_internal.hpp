@@ -6,7 +6,8 @@
 
 HX_STATIC_ASSERT(!HX_USE_GOOGLE_TEST, "Do not include directly");
 
-struct hxtest_case_base_ {
+class hxtest_case_interface_ {
+public:
 	virtual void run_() = 0;
 	virtual const char* suite_() = 0;
 	virtual const char* case_() = 0;
@@ -14,19 +15,20 @@ struct hxtest_case_base_ {
 	virtual size_t line_() = 0;
 };
 
-struct hxtest_suite_executor_ {
+class hxtest_suite_executor_ {
 public:
-	enum Test_state_ {
-		TEST_STATE_NOTHING_ASSERTED_,
-		TEST_STATE_PASS_,
-		TEST_STATE_FAIL_
+	enum test_state_t_ {
+		test_state_nothing_asserted_,
+		test_state_pass_,
+		test_state_fail_
 	};
 
 	enum {
-		TEST_MAX_FAIL_MESSAGES_ = 5,
-#if !defined HX_TEST_MAX_CASES
-		HX_TEST_MAX_CASES = 1024
+#if !defined hxtest_max_cases
+		// use -Dhxtest_max_cases=N to increase.
+		hxtest_max_cases = 1024,
 #endif
+		max_fail_messages_ = 5
 	};
 
 	// Ensures constructor runs before tests are registered by global constructors.
@@ -43,10 +45,10 @@ public:
 		m_search_term_string_literal_ = search_term_string_literal_;
 	}
 
-	void add_test_(hxtest_case_base_* fn_) {
+	void add_test_(hxtest_case_interface_* fn_) {
 		// Use -DHX_TEST_MAX_CASES to provide enough room for all tests.
-		hxassertrelease(m_num_factories_ < HX_TEST_MAX_CASES, "HX_TEST_MAX_CASES overflow\n");
-		if(m_num_factories_ < HX_TEST_MAX_CASES) {
+		hxassertrelease(m_num_factories_ < hxtest_max_cases, "hxtest_max_cases overflow\n");
+		if(m_num_factories_ < hxtest_max_cases) {
 			m_factories_[m_num_factories_++] = fn_;
 		}
 	}
@@ -56,10 +58,10 @@ public:
 	hxfile& assert_check_(const char* file_, size_t line_, bool condition_, const char* message_) {
 		hxassertrelease(m_current_test_, "not testing");
 		++m_assert_count_;
-		m_test_state_ = (condition_ && m_test_state_ != TEST_STATE_FAIL_) ? TEST_STATE_PASS_ : TEST_STATE_FAIL_;
+		m_test_state_ = (condition_ && m_test_state_ != test_state_fail_) ? test_state_pass_ : test_state_fail_;
 		if (!condition_) {
-			if(++m_assert_fail_count_ >= TEST_MAX_FAIL_MESSAGES_) {
-				if (m_assert_fail_count_ == TEST_MAX_FAIL_MESSAGES_) {
+			if(++m_assert_fail_count_ >= max_fail_messages_) {
+				if (m_assert_fail_count_ == max_fail_messages_) {
 					hxlogconsole("remaining asserts will fail silently...\n");
 				}
 				return file_null_();
@@ -71,7 +73,7 @@ public:
 
 			// Implements GTEST_FLAG_SET(break_on_failure, true);
 #if (HX_TEST_ERROR_HANDLING) == 0 && (HX_RELEASE) == 0
-			HX_BREAKPOINT();
+			hxbreakpoint();
 #endif
 			return file_log_();
 		}
@@ -82,12 +84,12 @@ public:
 		hxinit(); // RUN_ALL_TESTS could be called first.
 		m_pass_count_ = m_fail_count_ = m_assert_count_ = 0;
 		hxlogconsole("RUNNING_TESTS (%s)\n", (m_search_term_string_literal_ ? m_search_term_string_literal_ : "ALL"));
-		for (hxtest_case_base_** it_ = m_factories_; it_ != (m_factories_ + m_num_factories_); ++it_) {
+		for (hxtest_case_interface_** it_ = m_factories_; it_ != (m_factories_ + m_num_factories_); ++it_) {
 			if (!m_search_term_string_literal_ || ::strstr(m_search_term_string_literal_, (*it_)->suite_()) != hxnull) {
 				hxlogconsole("%s.%s...\n", (*it_)->suite_(), (*it_)->case_());
 
 				m_current_test_ = *it_;
-				m_test_state_ = TEST_STATE_NOTHING_ASSERTED_;
+				m_test_state_ = test_state_nothing_asserted_;
 				m_assert_fail_count_ = 0;
 
 #ifdef __cpp_exceptions
@@ -105,11 +107,11 @@ public:
 				}
 #endif
 
-				if (m_test_state_ == TEST_STATE_NOTHING_ASSERTED_) {
+				if (m_test_state_ == test_state_nothing_asserted_) {
 					this->assert_check_((*it_)->file_(), (*it_)->line_(), false, "NOTHING_ASSERTED");
 					++m_fail_count_;
 				}
-				else if (m_test_state_ == TEST_STATE_PASS_) {
+				else if (m_test_state_ == test_state_pass_) {
 					++m_pass_count_;
 				}
 				else {
@@ -143,10 +145,10 @@ private:
 	void operator=(const hxtest_suite_executor_&) HX_DELETE_FN;
 
 	const char* m_search_term_string_literal_;
-	hxtest_case_base_* m_factories_[HX_TEST_MAX_CASES];
+	hxtest_case_interface_* m_factories_[hxtest_max_cases];
 	size_t m_num_factories_;
-	hxtest_case_base_* m_current_test_;
-	Test_state_ m_test_state_;
+	hxtest_case_interface_* m_current_test_;
+	test_state_t_ m_test_state_;
 	size_t m_pass_count_;
 	size_t m_fail_count_;
 	size_t m_assert_count_;

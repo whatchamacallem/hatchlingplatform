@@ -15,7 +15,8 @@ HX_REGISTER_FILENAME_HASH
 namespace {
 
 #if HX_DEBUG_DMA
-struct hxdma_debug_record_ {
+class hxdma_debug_record_ {
+public:
 	hxdma_debug_record_(const void* d, const void* s, size_t b, size_t c, const char* l) :
 		dst(d), src(s), bytes(b), barrier_counter(c), label_string_literal(l) { }
 	const void* dst;
@@ -50,7 +51,7 @@ void hxdma_end_frame() {
 #endif
 }
 
-void hxdma_add_sync_point(struct hxdma_sync_point& sync_point) {
+void hxdma_add_sync_point(class hxdma_sync_point& sync_point) {
 	(void)sync_point;
 	// TODO: Configure for target.
 #if HX_DEBUG_DMA
@@ -78,7 +79,7 @@ void hxdma_start_labeled(void* dst, const void* src, size_t bytes, const char* l
 #endif
 }
 
-void hxdma_await_sync_point_labeled(struct hxdma_sync_point& sync_point, const char* label_string_literal) {
+void hxdma_await_sync_point_labeled(class hxdma_sync_point& sync_point, const char* label_string_literal) {
 	(void)sync_point;
 	hxprofile_scope_min((label_string_literal ? label_string_literal : "dma await"),
 		c_hxdefault_cycles_cutoff); (void)label_string_literal;

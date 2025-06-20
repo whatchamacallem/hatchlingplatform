@@ -23,7 +23,7 @@
 // and "checkhash".
 class hxregister_string_literal_hash {
 public:
-    typedef uint32_t Key;
+    typedef uint32_t key_t;
 
 	// permanently adds object to hxstring_literal_hashes_.
     hxregister_string_literal_hash(const char* str_);

@@ -9,8 +9,8 @@
 
 // hxarray - Implements some of std::vector. Requires T to have a default
 // constructor.
-template<typename T_, size_t Capacity_=hxallocator_dynamic_capacity>
-class hxarray : public hxallocator<T_, Capacity_> {
+template<typename T_, size_t capacity_=hxallocator_dynamic_capacity>
+class hxarray : public hxallocator<T_, capacity_> {
 public:
     typedef T_ T; // Contained type.
     typedef T_* iterator; // Random access iterator.
@@ -19,12 +19,12 @@ public:
     // Constructs an empty array with a capacity of Capacity. m_end_ will be 0
     // if Capacity is 0.
     HX_CONSTEXPR_FN explicit hxarray()
-        : hxallocator<T_, Capacity_>(), m_end_(this->data()) { }
+        : hxallocator<T_, capacity_>(), m_end_(this->data()) { }
 
     // Constructs an array of a given size using T_'s default constructor.
     // - size: Sets array size as if resize(size) were called.
     HX_CONSTEXPR_FN explicit hxarray(size_t size_)
-            : hxallocator<T_, Capacity_>(), m_end_(this->data()) {
+            : hxallocator<T_, capacity_>(), m_end_(this->data()) {
         this->resize(size_);
     }
 
@@ -32,19 +32,19 @@ public:
     // - size: Sets array size as if resize(size, t) were called.
     // - t: The const T& to be duplicated.
     HX_CONSTEXPR_FN explicit hxarray(size_t size_, const T_& t_)
-            : hxallocator<T_, Capacity_>(), m_end_(this->data()) {
+            : hxallocator<T_, capacity_>(), m_end_(this->data()) {
         this->resize(size_, t_);
     }
 
     // Copy constructs an array. Non-explicit to allow assignment constructor.
     // rhs - A non-temporary Array<T>.
-    HX_CONSTEXPR_FN hxarray(const hxarray& rhs_) : hxallocator<T_, Capacity_>() {
+    HX_CONSTEXPR_FN hxarray(const hxarray& rhs_) : hxallocator<T_, capacity_>() {
         m_end_ = this->data();
         this->assign(rhs_.c_begin(), rhs_.c_end());
     }
 
 #if HX_CPLUSPLUS >= 201103L
-    // Copy construct from temporary. Only works with Capacity_ == hxallocator_dynamic_capacity
+    // Copy construct from temporary. Only works with capacity_ == hxallocator_dynamic_capacity
     // rhs - A temporary Array<T>.
     HX_CONSTEXPR_FN hxarray(hxarray&& rhs_) : hxarray() {
         this->swap(rhs_);
@@ -53,17 +53,17 @@ public:
 
 #if HX_CPLUSPLUS >= 201103L && HX_HOSTED
     // Pass values of std::initializer_list as initializers to an array of T.
-    // rhs - A std::initializer_list<Rhs>.
-    template <typename Rhs_>
-    HX_CONSTEXPR_FN hxarray(std::initializer_list<Rhs_> list_) : hxarray() {
+    // rhs - A std::initializer_list<rhs_t>.
+    template <typename rhs_t_>
+    HX_CONSTEXPR_FN hxarray(std::initializer_list<rhs_t_> list_) : hxarray() {
         this->assign(list_.begin(), list_.end());
     }
 #endif
     // Copy constructs an array from the elements of a container with random
     // access iterators.
     // rhs - Any container implementing begin and end.
-    template <typename Rhs_>
-    HX_CONSTEXPR_FN hxarray(const Rhs_& rhs_) : hxallocator<T_, Capacity_>() {
+    template <typename rhs_t_>
+    HX_CONSTEXPR_FN hxarray(const rhs_t_& rhs_) : hxallocator<T_, capacity_>() {
         m_end_ = this->data();
         this->assign(rhs_.begin(), rhs_.end());
     }
@@ -84,7 +84,7 @@ public:
     }
 
 #if HX_CPLUSPLUS >= 201103L
-    // Swap contents with temporary. Only works with Capacity_ == hxallocator_dynamic_capacity
+    // Swap contents with temporary. Only works with capacity_ == hxallocator_dynamic_capacity
     // rhs - A temporary Array<T>.
     HX_CONSTEXPR_FN void operator=(hxarray&& rhs_) {
         this->swap(rhs_);
@@ -93,8 +93,8 @@ public:
 
     // Copies the elements of a container with random access iterators.
     // rhs - Any container implementing begin and end.
-    template <typename Rhs_>
-    HX_CONSTEXPR_FN void operator=(const Rhs_& rhs_) {
+    template <typename rhs_t_>
+    HX_CONSTEXPR_FN void operator=(const rhs_t_& rhs_) {
         this->assign(rhs_.begin(), rhs_.end());
     }
 
@@ -229,8 +229,8 @@ public:
     // Assigns elements from a range defined by iterators to the array.
     // - first: The beginning iterator.
     // - last: The end iterator.
-    template <typename Iter>
-    HX_CONSTEXPR_FN void assign(Iter first_, Iter last_) {
+    template <typename iter_t_>
+    HX_CONSTEXPR_FN void assign(iter_t_ first_, iter_t_ last_) {
         this->reserve((size_t)(last_ - first_));
         T_* it_ = this->data();
         this->destruct_(it_, m_end_);
@@ -238,21 +238,21 @@ public:
         m_end_ = it_;
     }
 
-    // Swap. Only works with Capacity_ == hxallocator_dynamic_capacity
+    // Swap. Only works with capacity_ == hxallocator_dynamic_capacity
     // - rhs: The array to swap with.
     HX_CONSTEXPR_FN void swap(hxarray& rhs) {
-        hxallocator<T_, Capacity_>::swap(rhs); // *** Only hxallocator_dynamic_capacity works here. ***
+        hxallocator<T_, capacity_>::swap(rhs); // *** Only hxallocator_dynamic_capacity works here. ***
         hxswap(rhs.m_end_, m_end_);
     }
 
     // --------------------------------------------------------------------------
     // Non-standard but useful
 
-    // Constructs an array of T from an array of T2.
+    // Constructs an array of T from an array of U.
     // - a: The array.
     // - Sz: Its size.
-    template<typename T2_, size_t Size_>
-    HX_CONSTEXPR_FN void assign(const T2_(&a_)[Size_]) { this->assign(a_ + 0, a_ + Size_); }
+    template<typename U_, size_t size_>
+    HX_CONSTEXPR_FN void assign(const U_(&a_)[size_]) { this->assign(a_ + 0, a_ + size_); }
 
     // Variant of emplace_back() that returns a pointer for use with placement new.
     HX_CONSTEXPR_FN void* emplace_back_unconstructed() {

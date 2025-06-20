@@ -84,17 +84,18 @@ void __cxa_guard_abort(uint64_t *guard) {
 extern "C"
 void __sanitizer_report_error_summary(const char *error_summary) {
 	// A clickable message has already been printed to standard out.
-	HX_BREAKPOINT(); (void)error_summary;
+	hxbreakpoint(); (void)error_summary;
 }
 
 // ----------------------------------------------------------------------------
 #if (HX_RELEASE) < 1
 // Implements HX_REGISTER_FILENAME_HASH in debug. See hxstring_literal_hash.h.
 namespace {
-struct hxhash_string_literal_
-		: public hxhash_table<hxregister_string_literal_hash, 5, hxnull_deleter> { };
+class hxhash_string_literal_
+		: public hxhash_table<hxregister_string_literal_hash, 5, hxdo_not_delete> { };
 
-struct hxfilename_less {
+class hxfilename_less {
+public:
 	inline bool operator()(const char* lhs, const char* rhs) const {
 		return hxstring_literal_hash_debug(lhs) < hxstring_literal_hash_debug(rhs);
 	}
@@ -113,7 +114,7 @@ hxregister_string_literal_hash::hxregister_string_literal_hash(const char* str_)
     hxstring_literal_hashes_().insert_node(this);
 }
 
-// The hash table code expects to be able to hash a Key and compare it equal
+// The hash table code expects to be able to hash a key_t and compare it equal
 // to the Node::hash value. That results in double hashing here. It is just
 // another multiply.
 uint32_t hxregister_string_literal_hash::hash() const {
@@ -169,9 +170,9 @@ hxconsole_command_named(hxcheck_hash, checkhash);
 
 extern "C"
 void hxinit_internal(void) {
-	hxassertrelease(!g_hxis_init, "call hxinit() instead");
+	hxassertrelease(!g_hxisinit_, "call hxinit() instead");
 	hxsettings_construct();
-	g_hxis_init = 1;
+	g_hxisinit_ = 1;
 
 #if HX_FLOATING_POINT_TRAPS
 	// You need the math library -lm. This is nonstandard glibc/_GNU_SOURCE.
@@ -198,7 +199,7 @@ HX_NOEXCEPT_INTRINSIC void hxloghandler(hxloglevel level, const char* format, ..
 
 extern "C"
 HX_NOEXCEPT_INTRINSIC void hxloghandler_v(hxloglevel level, const char* format, va_list args) {
-	if(g_hxis_init && g_hxsettings.log_level > level) {
+	if(g_hxisinit_ && g_hxsettings.log_level > level) {
 		return;
 	}
 
@@ -222,7 +223,7 @@ HX_NOEXCEPT_INTRINSIC void hxloghandler_v(hxloglevel level, const char* format, 
 // HX_RELEASE < 3 facilities for testing tear down. Just call _Exit() otherwise.
 extern "C"
 void hxshutdown(void) {
-	if(g_hxis_init) {
+	if(g_hxisinit_) {
 #if (HX_RELEASE) < 3
 		// Will trap further activity and leaks.
 		hxmemory_manager_shut_down();
@@ -234,7 +235,7 @@ void hxshutdown(void) {
 extern "C"
 HX_NOEXCEPT_INTRINSIC int hxasserthandler(const char* file, size_t line) {
 	const char* f = hxbasename(file);
-	if (g_hxis_init && g_hxsettings.asserts_to_be_skipped > 0) {
+	if (g_hxisinit_ && g_hxsettings.asserts_to_be_skipped > 0) {
 		--g_hxsettings.asserts_to_be_skipped;
 		hxloghandler(hxloglevel_assert, "(skipped) %s(%u) hash %08x", f, (unsigned int)line,
 			(unsigned int)hxstring_literal_hash_debug(file));
@@ -243,7 +244,7 @@ HX_NOEXCEPT_INTRINSIC int hxasserthandler(const char* file, size_t line) {
 	hxloghandler(hxloglevel_assert, "%s(%u) hash %08x Triggering Breakpoint\n", f, (unsigned int)line,
 		(unsigned int)hxstring_literal_hash_debug(file));
 
-	// return to HX_BREAKPOINT at calling line.
+	// return to hxbreakpoint at calling line.
 	return 0;
 }
 #else

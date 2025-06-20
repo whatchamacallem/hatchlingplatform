@@ -76,7 +76,8 @@ class hxmemory_manager* s_hxmemory_manager = hxnull;
 // ----------------------------------------------------------------------------
 // hxmemory_allocation_header
 
-struct hxmemory_allocation_header {
+class hxmemory_allocation_header {
+public:
 	uintptr_t size;
 	uintptr_t actual; // address actually returned by malloc.
 

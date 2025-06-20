@@ -10,12 +10,12 @@
 // hxhash_table_node_integer - Specialization of hxhash_table_node_base for integer
 // types. See documentation of hxhash_table for interface documentation.
 // This is a great example of a node that doesn't require a base class.
-template<typename Key_>
+template<typename key_t_>
 class hxhash_table_node_integer {
 public:
-	typedef Key_ Key;
+	typedef key_t_ key_t;
 
-	HX_CONSTEXPR_FN hxhash_table_node_integer(const Key_& key_) :
+	HX_CONSTEXPR_FN hxhash_table_node_integer(const key_t_& key_) :
 		m_hash_next_(hxnull), m_key_(key_) { }
 
 	// Boilerplate for hxhash_table.
@@ -23,7 +23,7 @@ public:
 	void*& hash_next(void) { return m_hash_next_; }
 
 	// The key and hash identify the Node and should not change once added.
-	HX_CONSTEXPR_FN const Key_& key() const { return m_key_; }
+	HX_CONSTEXPR_FN const key_t_& key() const { return m_key_; }
 	HX_CONSTEXPR_FN uint32_t hash() const { return hxkey_hash(m_key_); };
 
 private:
@@ -32,7 +32,7 @@ private:
 	void operator=(const hxhash_table_node_integer&) HX_DELETE_FN;
 
     void* m_hash_next_;
-    Key_ m_key_;
+    key_t_ m_key_;
 };
 
 // hxhash_table_node_string_literal - Specialization of hxhash_table_set_node for

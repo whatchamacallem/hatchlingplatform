@@ -7,11 +7,10 @@ HX_REGISTER_FILENAME_HASH
 
 // Console_test.cpp provides coverage for normal operation.
 
-class hxfile_test :
-	public testing::Test
+class hxfile_test : public testing::Test
 {
 public:
-	struct X {
+	struct test_t_ {
 		uint32_t a;
 		int16_t b;
 		uint8_t c;
@@ -51,7 +50,7 @@ TEST_F(hxfile_test, Not_exist) {
 
 TEST_F(hxfile_test, Operators) {
 	hxfile f(hxfile::out | hxfile::failable, "hxfile_test_operators.bin");
-	X x;
+	test_t_ x;
 	int a = -3;
 	x.a = 77777u;
 	x.b = -555;
@@ -63,7 +62,7 @@ TEST_F(hxfile_test, Operators) {
 	f.close();
 
 	f.open(hxfile::in | hxfile::failable, "hxfile_test_operators.bin");
-	X y;
+	test_t_ y;
 	int b;
 	ASSERT_TRUE(f.good());
 	f >= y >= b;

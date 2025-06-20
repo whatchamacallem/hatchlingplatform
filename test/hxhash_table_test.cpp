@@ -12,7 +12,8 @@ class hxhash_table_test :
 	public testing::Test
 {
 public:
-    struct test_object {
+    class test_object {
+    public:
         test_object() {
             ++s_hxtest_current->m_constructed;
             id = s_hxtest_current->m_next_id++;
@@ -32,15 +33,15 @@ public:
 		int32_t id;
 	};
 
-	class test_integer : public hxhash_table_node_integer<int32_t> {
+	class hxtest_integer : public hxhash_table_node_integer<int32_t> {
 	public:
-		test_integer(int32_t k) : hxhash_table_node_integer(k) { }
+		hxtest_integer(int32_t k) : hxhash_table_node_integer(k) { }
 		test_object value;
 	};
 
-	class test_string : public hxhash_table_node_string<hxmemory_allocator_temporary_stack> {
+	class hxtest_string : public hxhash_table_node_string<hxmemory_allocator_temporary_stack> {
 	public:
-		test_string(const char* k) : hxhash_table_node_string(k) { }
+		hxtest_string(const char* k) : hxhash_table_node_string(k) { }
 		test_object value;
 	};
 
@@ -66,7 +67,7 @@ public:
 
 TEST_F(hxhash_table_test, Null) {
 	{
-		typedef hxhash_table<test_integer, 4> Table;
+		typedef hxhash_table<hxtest_integer, 4> Table;
 		Table table;
 		ASSERT_EQ(table.size(), 0u);
 
@@ -88,9 +89,9 @@ TEST_F(hxhash_table_test, Null) {
 TEST_F(hxhash_table_test, Single) {
 	static const int k = 77;
 	{
-		typedef hxhash_table<test_integer, 4> Table;
+		typedef hxhash_table<hxtest_integer, 4> Table;
 		Table table;
-		test_integer* node = hxnew<test_integer>(k);
+		hxtest_integer* node = hxnew<hxtest_integer>(k);
 		table.insert_node(node);
 
 		// Operations on a single node
@@ -143,7 +144,7 @@ TEST_F(hxhash_table_test, Multiple) {
 	static const int N = 78;
 	{
 		// Table will be overloaded.
-		typedef hxhash_table<test_integer> Table;
+		typedef hxhash_table<hxtest_integer> Table;
 		Table table;
 		table.set_table_size_bits(5);
 
@@ -159,7 +160,7 @@ TEST_F(hxhash_table_test, Multiple) {
 		Table::iterator it = table.begin();
 		Table::iterator cit = table.begin();
 		for (int i = 0; i < N; ++i) {
-			test_integer* ti = table.find(i);
+			hxtest_integer* ti = table.find(i);
 			ASSERT_EQ(ti->value, i);
 			ASSERT_TRUE(table.find(i, ti) == hxnull);
 
@@ -182,7 +183,7 @@ TEST_F(hxhash_table_test, Multiple) {
 
 		// insert second N elements
 		for (int i = 0; i < N; ++i) {
-			test_integer* ti = hxnew<test_integer>(i);
+			hxtest_integer* ti = hxnew<hxtest_integer>(i);
 			ASSERT_EQ(ti->value.id, i+N);
 			table.insert_node(ti);
 		}
@@ -193,9 +194,9 @@ TEST_F(hxhash_table_test, Multiple) {
 		it = table.begin();
 		cit = table.begin();
 		for (int i = 0; i < N; ++i) {
-			test_integer* ti = table.find(i);
+			hxtest_integer* ti = table.find(i);
 			ASSERT_EQ(ti->key(), i);
-			const test_integer* ti2 = ((const hxhash_table<test_integer>&)table).find(i, ti); // test const version
+			const hxtest_integer* ti2 = ((const hxhash_table<hxtest_integer>&)table).find(i, ti); // test const version
 			ASSERT_EQ(ti2->key(), i);
 			ASSERT_TRUE(table.find(i, ti2) == hxnull);
 
@@ -228,7 +229,7 @@ TEST_F(hxhash_table_test, Multiple) {
 			ASSERT_EQ(table.erase(i), 2);
 		}
 		for (int i = (N/2); i < N; ++i) {
-			test_integer* ti = table.extract(i);
+			hxtest_integer* ti = table.extract(i);
 			ASSERT_TRUE(ti->key() == i);
 			hxdelete(ti);
 		}
@@ -239,7 +240,7 @@ TEST_F(hxhash_table_test, Multiple) {
 			ASSERT_TRUE(table.find(i) == hxnull);
 		}
 		for (int i = (N/2); i < N; ++i) {
-			test_integer* ti = table.find(i);
+			hxtest_integer* ti = table.find(i);
 			ASSERT_EQ(ti->key(), i);
 			ASSERT_TRUE(table.find(i, ti) == hxnull);
 			ASSERT_EQ(table.count(i), 1u);
@@ -266,7 +267,7 @@ TEST_F(hxhash_table_test, Strings) {
 	const int sz = sizeof colors / sizeof *colors;
 
 	{
-		typedef hxhash_table<test_string, 4> Table;
+		typedef hxhash_table<hxtest_string, 4> Table;
 		Table table;
 
 		for (int i = sz; i--;) {

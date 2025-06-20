@@ -17,30 +17,31 @@ class hxarray_test :
 	public testing::Test
 {
 public:
-	struct Test_object {
-		Test_object() {
+	class test_object {
+    public:
+		test_object() {
 			++s_hxtest_current->m_constructed;
 			id = (INT_MIN < s_hxtest_current->m_next_id) ? s_hxtest_current->m_next_id-- : 0;
 			constructor = 0;
 		}
 
-		Test_object(const Test_object& rhs) {
+		test_object(const test_object& rhs) {
 			++s_hxtest_current->m_constructed;
 			id = rhs.id;
 			constructor = rhs.constructor;
 		}
-		explicit Test_object(int32_t x) {
+		explicit test_object(int32_t x) {
 			hxassert(x >= 0); // User supplied IDs are positive
 			++s_hxtest_current->m_constructed;
 			id = x;
 			constructor = 0;
 		}
-		~Test_object() {
+		~test_object() {
 			++s_hxtest_current->m_destructed;
 			id = ~0u;
 		}
 
-		void operator=(const Test_object& rhs) { id = rhs.id; }
+		void operator=(const test_object& rhs) { id = rhs.id; }
 		bool operator==(int32_t x) const { return id == x; }
 
 		int32_t id;
@@ -69,8 +70,8 @@ public:
 
 TEST_F(hxarray_test, Null) {
 	{
-		Test_object to0;
-		Test_object to1;
+		test_object to0;
+		test_object to1;
 		ASSERT_EQ(to0.id, -1);
 		ASSERT_EQ(to1.id, -2);
 	}
@@ -78,13 +79,13 @@ TEST_F(hxarray_test, Null) {
 }
 
 TEST_F(hxarray_test, Empty_full) {
-	hxarray<Test_object, hxallocator_dynamic_capacity> a;
+	hxarray<test_object, hxallocator_dynamic_capacity> a;
 	ASSERT_TRUE(a.empty());
 	ASSERT_TRUE(a.full());
 	a.reserve(1);
 	ASSERT_TRUE(a.empty());
 	ASSERT_TRUE(!a.full());
-	a.push_back(Test_object());
+	a.push_back(test_object());
 	ASSERT_TRUE(!a.empty());
 	ASSERT_TRUE(a.full());
 	a.pop_back();
@@ -93,17 +94,17 @@ TEST_F(hxarray_test, Empty_full) {
 }
 
 TEST_F(hxarray_test, Allocators) {
-	hxarray<Test_object> objs_dynamic;
+	hxarray<test_object> objs_dynamic;
 	objs_dynamic.reserve(10u);
-	hxarray<Test_object, 10u> objs_static;
+	hxarray<test_object, 10u> objs_static;
 
 	ASSERT_EQ(objs_dynamic.size(), 0u);
 	ASSERT_EQ(objs_static.size(), 0u);
 
-	objs_dynamic.push_back(Test_object(20));
-	objs_dynamic.push_back(Test_object(21));
-	objs_static.push_back(Test_object(20));
-	objs_static.push_back(Test_object(21));
+	objs_dynamic.push_back(test_object(20));
+	objs_dynamic.push_back(test_object(21));
+	objs_static.push_back(test_object(20));
+	objs_static.push_back(test_object(21));
 
 	ASSERT_EQ(objs_dynamic.size(), 2u);
 	ASSERT_EQ(objs_dynamic[0], 20);
@@ -122,22 +123,22 @@ TEST_F(hxarray_test, Iteration) {
 	{
 		static const int32_t nums[3] = { 21, 22, 23 };
 
-		hxarray<Test_object, 10u> objs;
-		objs.push_back(Test_object(nums[0]));
-		objs.push_back(Test_object(nums[1]));
-		objs.push_back(Test_object(nums[2]));
+		hxarray<test_object, 10u> objs;
+		objs.push_back(test_object(nums[0]));
+		objs.push_back(test_object(nums[1]));
+		objs.push_back(test_object(nums[2]));
 
-		const hxarray<Test_object, 10u>& cobjs = objs;
+		const hxarray<test_object, 10u>& cobjs = objs;
 
 		int32_t counter = 0;
-		for (hxarray<Test_object, 10u>::iterator it = objs.begin(); it != objs.end(); ++it) {
+		for (hxarray<test_object, 10u>::iterator it = objs.begin(); it != objs.end(); ++it) {
 			ASSERT_EQ(it->id, objs[counter].id);
 			ASSERT_EQ(it->id, nums[counter]);
 			++counter;
 		}
 
 		counter = 0;
-		for (hxarray<Test_object, 10u>::const_iterator it = cobjs.begin();
+		for (hxarray<test_object, 10u>::const_iterator it = cobjs.begin();
 				it != cobjs.end(); ++it) {
 			ASSERT_EQ(it->id, objs[counter].id);
 			ASSERT_EQ(it->id, nums[counter]);
@@ -157,7 +158,7 @@ TEST_F(hxarray_test, Modification) {
 	{
 		static const int32_t nums[5] = { 91, 92, 93, 94, 95 };
 
-		hxarray<Test_object> objs;
+		hxarray<test_object> objs;
 		objs.assign(nums, nums + (sizeof nums / sizeof *nums));
 
 		ASSERT_EQ(objs.capacity(), 5u);
@@ -169,11 +170,11 @@ TEST_F(hxarray_test, Modification) {
 		objs.pop_back();
 		objs.pop_back();
 
-		Test_object to;
+		test_object to;
 		objs.push_back(to);
-		objs.push_back((const Test_object&)to);
+		objs.push_back((const test_object&)to);
 
-		::new (objs.emplace_back_unconstructed()) Test_object;
+		::new (objs.emplace_back_unconstructed()) test_object;
 
 		// 91, 92, -1, -2, -3
 
@@ -193,7 +194,7 @@ TEST_F(hxarray_test, Resizing) {
 	{
 		static const int32_t nums[5] = { 51, 52, 53, 54, 55 };
 
-		hxarray<Test_object> objs;
+		hxarray<test_object> objs;
 		objs.reserve(10);
 		objs.assign(nums);
 
@@ -228,22 +229,22 @@ TEST_F(hxarray_test, Resizing) {
 
 TEST_F(hxarray_test, Assignment) {
 	{
-		hxarray<Test_object> objs;
+		hxarray<test_object> objs;
 		objs.reserve(1);
 
-		Test_object to;
+		test_object to;
 		to.id = 67;
 		objs.push_back(to);
 
-		hxarray<Test_object> objs2;
+		hxarray<test_object> objs2;
 		objs2 = objs; // Assign to same type
 
-		hxarray<Test_object, 1> objs3;
+		hxarray<test_object, 1> objs3;
 		objs3 = objs; // Assign to different type
 
-		hxarray<Test_object> objs4(objs); // Construct from same type
+		hxarray<test_object> objs4(objs); // Construct from same type
 
-		hxarray<Test_object, 1> objs5(objs); // Construct from different type
+		hxarray<test_object, 1> objs5(objs); // Construct from different type
 
 		ASSERT_EQ(objs2.size(), 1u);
 		ASSERT_EQ(objs3.size(), 1u);

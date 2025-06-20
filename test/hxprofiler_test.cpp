@@ -27,7 +27,8 @@ class hxprofiler_test :
 	public testing::Test
 {
 public:
-    struct hxprofiler_task_test : public hxtask {
+    class hxprofiler_task_test : public hxtask {
+    public:
         hxprofiler_task_test() : m_target_ms_(0.0f), m_accumulator_(0) { }
 
         void construct(const char* label, float target_ms) {
@@ -65,6 +66,7 @@ public:
 			}
 		}
 
+	private:
         float m_target_ms_;
         uint32_t m_accumulator_;
         hxrandom m_test_prng_;

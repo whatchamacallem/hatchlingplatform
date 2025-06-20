@@ -64,7 +64,7 @@ enum hxloglevel {
 HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0..3]");
 
 // hxinit() - Initializes the platform.
-#define hxinit() (void)(g_hxis_init || (hxinit_internal(), 0))
+#define hxinit() (void)(g_hxisinit_ || (hxinit_internal(), 0))
 
 #if (HX_RELEASE) == 0 // debug facilities
 
@@ -78,20 +78,20 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 // - x: The condition to evaluate.
 // - ...: Variadic arguments for the formatted log message.
 #define hxassertmsg(x_, ...) (void)(!!(x_) || (hxloghandler(hxloglevel_assert, __VA_ARGS__), \
-	hxasserthandler(__FILE__, __LINE__)) || HX_BREAKPOINT())
+	hxasserthandler(__FILE__, __LINE__)) || hxbreakpoint())
 
 // hxassert(bool x) - Logs an error and terminates execution if x is false. This is only
 // evaluated when HX_RELEASE == 0.
 // - ...: The condition to evaluate.
 #define hxassert(...) (void)(!!(__VA_ARGS__) || (hxloghandler(hxloglevel_assert, HX_QUOTE(__VA_ARGS__)), \
-	hxasserthandler(__FILE__, __LINE__)) || HX_BREAKPOINT())
+	hxasserthandler(__FILE__, __LINE__)) || hxbreakpoint())
 
 // hxassertrelease(bool x, ...) - Logs an error and terminates execution if x is false up to
 // release level 2. This is only evaluated when HX_RELEASE < 3.
 // - x: The condition to evaluate.
 // - ...: Variadic arguments for the formatted log message.
 #define hxassertrelease(x_, ...) (void)(!!(x_) || ((hxloghandler(hxloglevel_assert, __VA_ARGS__), \
-	hxasserthandler(__FILE__, __LINE__)) || HX_BREAKPOINT()))
+	hxasserthandler(__FILE__, __LINE__)) || hxbreakpoint()))
 
 // Assert handler. Do not call directly, signature changes and then is removed.
 HX_NOEXCEPT_INTRINSIC int hxasserthandler(const char* file_, size_t line_);
@@ -142,15 +142,15 @@ HX_NOEXCEPT_INTRINSIC HX_NORETURN void hxasserthandler(uint32_t file_, size_t li
 #define hxassertrelease(x_, ...) ((void)0)
 #endif
 
-// hxinit_internal - Use hxinit instead. It checks g_hxis_init.
+// hxinit_internal - Use hxinit instead. It checks g_hxisinit_.
 void hxinit_internal(void);
 
-// int g_hxis_init - Set to true by hxinit_internal.
-extern int g_hxis_init;
+// int g_hxisinit_ - Set to true by hxinit_internal.
+extern int g_hxisinit_;
 
 // hxshutdown - Terminates service. Releases all resources acquired by the
 // platform and confirms all memory allocations have been released. HX_RELEASE < 3.
-// Does not clear g_hxis_init, shutdown is final. Logging and asserts are unaffected.
+// Does not clear g_hxisinit_, shutdown is final. Logging and asserts are unaffected.
 void hxshutdown(void);
 
 // hxloghandler - Enters formatted messages in the system log. This is the only
