@@ -3,7 +3,7 @@
 
 #include <hx/hatchling.h>
 
-// hxtest_suite_executor_ - Enable this to use Google Test instead of hxtest_suite_executor_.
+// HX_USE_GOOGLE_TEST - Enable this to use Google Test instead of hxtest_suite_executor_.
 #if HX_USE_GOOGLE_TEST
 #include <gtest/gtest.h>
 #else // !HX_USE_GOOGLE_TEST
@@ -33,13 +33,13 @@ public:
     virtual void run_code_() = 0;
 };
 
-// Init_google_test - Initializes Google Test with command-line arguments. No-op in
+// InitGoogleTest - Initializes Google Test with command-line arguments. No-op in
 // this implementation.
-HX_CONSTEXPR_FN void Init_google_test(int *argc_, char **argv_) { (void)argc_; (void)argv_; }
+HX_CONSTEXPR_FN void InitGoogleTest(int *argc_, char **argv_) { (void)argc_; (void)argv_; }
 
-// Init_google_test - Overloaded version of Init_google_test with no arguments. No-op
+// InitGoogleTest - Overloaded version of InitGoogleTest with no arguments. No-op
 // in this implementation.
-HX_CONSTEXPR_FN void Init_google_test() { }
+HX_CONSTEXPR_FN void InitGoogleTest() { }
 
 } // namespace testing
 
