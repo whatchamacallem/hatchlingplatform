@@ -4,7 +4,7 @@
 #include <hx/hatchling.h>
 #include <hx/hxfile.hpp>
 
-HX_STATIC_ASSERT(!HX_USE_GOOGLE_TEST, "Do not include directly");
+hxstatic_assert(!HX_USE_GOOGLE_TEST, "Do not include directly");
 
 class hxtest_case_interface_ {
 public:
@@ -141,8 +141,8 @@ private:
 	hxfile& file_null_() { static hxfile f_(hxfile::out | hxfile::failable); return f_; }
 	hxfile& file_log_()  { static hxfile f_(hxfile::out | hxfile::stdio); return f_; }
 
-	hxtest_suite_executor_(const hxtest_suite_executor_&) HX_DELETE_FN;
-	void operator=(const hxtest_suite_executor_&) HX_DELETE_FN;
+	hxtest_suite_executor_(const hxtest_suite_executor_&) hxdelete_fn;
+	void operator=(const hxtest_suite_executor_&) hxdelete_fn;
 
 	const char* m_search_term_string_literal_;
 	hxtest_case_interface_* m_factories_[hxtest_max_cases];

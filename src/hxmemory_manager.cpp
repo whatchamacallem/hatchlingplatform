@@ -27,16 +27,16 @@ void* operator new[](size_t size) {
 	hxassertrelease(ptr, "malloc fail: %u bytes\n", (unsigned int)size);
     return ptr;
 }
-void operator delete(void* ptr) HX_NOEXCEPT {
+void operator delete(void* ptr) hxnoexcept {
     ::free(ptr);
 }
-void operator delete(void* ptr, size_t) HX_NOEXCEPT {
+void operator delete(void* ptr, size_t) hxnoexcept {
     ::free(ptr);
 }
-void operator delete[](void* ptr) HX_NOEXCEPT {
+void operator delete[](void* ptr) hxnoexcept {
     ::free(ptr);
 }
-void operator delete[](void* ptr, size_t) HX_NOEXCEPT {
+void operator delete[](void* ptr, size_t) hxnoexcept {
     ::free(ptr);
 }
 #endif
@@ -44,7 +44,7 @@ void operator delete[](void* ptr, size_t) HX_NOEXCEPT {
 // hxmalloc_checked. Always check malloc and halt on failure. This is extremely
 // important with hardware where 0 is a valid address and can be written to with
 // disastrous results.
-static HX_CONSTEXPR_FN void* hxmalloc_checked(size_t size) {
+static hxconstexpr_fn void* hxmalloc_checked(size_t size) {
 	void* t = ::malloc(size);
 	hxassertrelease(t, "malloc fail: %zu bytes\n", size);
 #if (HX_RELEASE) >= 3
@@ -108,7 +108,7 @@ protected:
 	virtual void* on_alloc(size_t size, size_t alignment) = 0;
 	const char* m_label_;
 private:
-	void operator=(const hxmemory_allocator_base&) HX_DELETE_FN;
+	void operator=(const hxmemory_allocator_base&) hxdelete_fn;
 };
 
 // ----------------------------------------------------------------------------
@@ -128,13 +128,13 @@ public:
 		m_high_water = 0u;
 	}
 
-	virtual void begin_allocation_scope(hxmemory_allocator_scope* scope, hxmemory_allocator new_id) HX_OVERRIDE { (void)scope; (void)new_id; }
-	virtual void end_allocation_scope(hxmemory_allocator_scope* scope, hxmemory_allocator old_id) HX_OVERRIDE { (void)scope; (void)old_id; }
-	virtual size_t get_allocation_count(hxmemory_allocator id) const HX_OVERRIDE { (void)id; return m_allocation_count; }
-	virtual size_t get_bytes_allocated(hxmemory_allocator id) const HX_OVERRIDE { (void)id; return m_bytes_allocated; }
-	virtual size_t get_high_water(hxmemory_allocator id) HX_OVERRIDE { (void)id; return m_high_water; }
+	virtual void begin_allocation_scope(hxmemory_allocator_scope* scope, hxmemory_allocator new_id) hxoverride { (void)scope; (void)new_id; }
+	virtual void end_allocation_scope(hxmemory_allocator_scope* scope, hxmemory_allocator old_id) hxoverride { (void)scope; (void)old_id; }
+	virtual size_t get_allocation_count(hxmemory_allocator id) const hxoverride { (void)id; return m_allocation_count; }
+	virtual size_t get_bytes_allocated(hxmemory_allocator id) const hxoverride { (void)id; return m_bytes_allocated; }
+	virtual size_t get_high_water(hxmemory_allocator id) hxoverride { (void)id; return m_high_water; }
 
-	virtual void* on_alloc(size_t size, size_t alignment) HX_OVERRIDE {
+	virtual void* on_alloc(size_t size, size_t alignment) hxoverride {
 		hxassert(size != 0u); // hxmemory_allocator_base::allocate
 
 		// hxmemory_allocation_header has an HX_ALIGNMENT alignment requirement as well.
@@ -201,12 +201,12 @@ public:
 		}
 	}
 
-	virtual void begin_allocation_scope(hxmemory_allocator_scope* scope, hxmemory_allocator new_id) HX_OVERRIDE { (void)scope; (void)new_id; }
-	virtual void end_allocation_scope(hxmemory_allocator_scope* scope, hxmemory_allocator old_id) HX_OVERRIDE { (void)scope; (void)old_id; }
+	virtual void begin_allocation_scope(hxmemory_allocator_scope* scope, hxmemory_allocator new_id) hxoverride { (void)scope; (void)new_id; }
+	virtual void end_allocation_scope(hxmemory_allocator_scope* scope, hxmemory_allocator old_id) hxoverride { (void)scope; (void)old_id; }
 	bool contains(void* ptr) { return (uintptr_t)ptr >= m_begin_ && (uintptr_t)ptr < m_end_; }
-	virtual size_t get_allocation_count(hxmemory_allocator id) const HX_OVERRIDE { (void)id; return m_allocation_count; }
-	virtual size_t get_bytes_allocated(hxmemory_allocator id) const HX_OVERRIDE { (void)id; return m_current - m_begin_; }
-	virtual size_t get_high_water(hxmemory_allocator id) HX_OVERRIDE { (void)id; return m_current - m_begin_; }
+	virtual size_t get_allocation_count(hxmemory_allocator id) const hxoverride { (void)id; return m_allocation_count; }
+	virtual size_t get_bytes_allocated(hxmemory_allocator id) const hxoverride { (void)id; return m_current - m_begin_; }
+	virtual size_t get_high_water(hxmemory_allocator id) hxoverride { (void)id; return m_current - m_begin_; }
 
 	void* release() {
 		void* t = (void*)m_begin_;
@@ -234,7 +234,7 @@ public:
 	}
 
 protected:
-	virtual void* on_alloc(size_t size, size_t alignment) HX_OVERRIDE {
+	virtual void* on_alloc(size_t size, size_t alignment) hxoverride {
 		return allocate_non_virtual(size, alignment);
 	}
 
@@ -255,7 +255,7 @@ public:
 		m_high_water = 0u;
 	}
 
-	virtual void end_allocation_scope(hxmemory_allocator_scope* scope, hxmemory_allocator old_id) HX_OVERRIDE {
+	virtual void end_allocation_scope(hxmemory_allocator_scope* scope, hxmemory_allocator old_id) hxoverride {
 		(void)old_id;
 		hxassertmsg(m_allocation_count <= scope->get_previous_allocation_count(),
 			"%s leaked %zd allocations", m_label_, m_allocation_count - scope->get_previous_allocation_count());
@@ -272,7 +272,7 @@ public:
 		hxassertrelease(m_current <= m_end_, "error resetting temp stack");
 	}
 
-	virtual size_t get_high_water(hxmemory_allocator id) HX_OVERRIDE {
+	virtual size_t get_high_water(hxmemory_allocator id) hxoverride {
 		(void)id;
 		m_high_water = hxmax(m_high_water, m_current);
 		return m_high_water - m_begin_;
@@ -306,7 +306,7 @@ private:
 	friend class hxmemory_allocator_scope;
 
 	// Nota bene:  The current allocator is a thread local attribute.
-	static HX_THREAD_LOCAL hxmemory_allocator s_hxcurrent_memory_allocator;
+	static hxthread_local hxmemory_allocator s_hxcurrent_memory_allocator;
 
 	hxmemory_allocator_base* m_memory_allocators[hxmemory_allocator_current];
 
@@ -315,7 +315,7 @@ private:
 	hxmemory_allocator_temp_stack  m_memory_allocator_temporary_stack;
 };
 
-HX_THREAD_LOCAL hxmemory_allocator hxmemory_manager::s_hxcurrent_memory_allocator = hxmemory_allocator_heap;
+hxthread_local hxmemory_allocator hxmemory_manager::s_hxcurrent_memory_allocator = hxmemory_allocator_heap;
 
 void hxmemory_manager::construct() {
 	s_hxcurrent_memory_allocator = hxmemory_allocator_heap;

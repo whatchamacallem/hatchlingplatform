@@ -37,7 +37,7 @@ public:
             m_accumulator_ = 0;
         }
 
-        virtual void execute(hxtask_queue* q) HX_OVERRIDE {
+        virtual void execute(hxtask_queue* q) hxoverride {
             (void)q;
             generate_scopes(m_target_ms_);
         }

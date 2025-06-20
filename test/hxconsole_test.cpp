@@ -51,8 +51,8 @@ namespace {
 		ASSERT_NEAR(expected, t, 0.00001f); // This loses precision with -ffast-math.
 	}
 
-#define hxconsole_test_type_check(T, t) hxconsole_test_type_check_t(t, HX_CONCATENATE(hxconsole_test_type_id_, T), \
-	HX_CONCATENATE(c_hxconsole_test_expected, T))
+#define hxconsole_test_type_check(T, t) \
+	hxconsole_test_type_check_t(t, hxconsole_test_type_id_##T, c_hxconsole_test_expected##T)
 
 	bool hxconsole_test_fn0() {
 		c_hxconsole_test_call_flags |= 1 << (int32_t)hxconsole_test_type_id_Void;

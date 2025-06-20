@@ -49,18 +49,18 @@
 // A hosted environment has an OS and C++ standard library.
 #define HX_HOSTED 1 // HX_HOSTED - 1: _MSC_VER indicates a hosted environment.
 
-#define HX_RESTRICT __restrict
-#define HX_ATTR_FORMAT(pos_, start_)
+#define hxrestrict __restrict
+#define hxattr_format(pos_, start_)
 #define hxbreakpoint() (__debugbreak(),false)
-#define HX_NORETURN
+#define hxnoreturn
 
 // Unlike noexcept this is undefined when violated.
 #if HX_CPLUSPLUS >= 201103L
-#define HX_NOEXCEPT_INTRINSIC __declspec(nothrow) // HX_NOEXCEPT_INTRINSIC - _MSC_VER's nothrow attribute.
-#define HX_NOEXCEPT noexcept // HX_NOEXCEPT - Use noexcept for C++11+.
+#define hxnoexcept_intrinsic __declspec(nothrow) // hxnoexcept_intrinsic - _MSC_VER's nothrow attribute.
+#define hxnoexcept noexcept // hxnoexcept - Use noexcept for C++11+.
 #else
-#define HX_NOEXCEPT_INTRINSIC // HX_NOEXCEPT_INTRINSIC - No-op for pre-C++11.
-#define HX_NOEXCEPT // HX_NOEXCEPT - No-op for pre-C++11.
+#define hxnoexcept_intrinsic // hxnoexcept_intrinsic - No-op for pre-C++11.
+#define hxnoexcept // hxnoexcept - No-op for pre-C++11.
 #endif
 
 // ----------------------------------------------------------------------------
@@ -87,9 +87,9 @@
 #define HX_HOSTED 0
 #endif
 
-#define HX_RESTRICT __restrict
-#define HX_ATTR_FORMAT(pos_, start_) __attribute__((format(printf, pos_, start_)))
-#define HX_NORETURN __attribute__((noreturn))
+#define hxrestrict __restrict
+#define hxattr_format(pos_, start_) __attribute__((format(printf, pos_, start_)))
+#define hxnoreturn __attribute__((noreturn))
 
 // hxbreakpoint - Can be conditionally evaluated with the && and || operators.
 // Uses intrinsics when available. (E.g. Clang.)
@@ -99,14 +99,14 @@
 #define hxbreakpoint() (raise(SIGTRAP),false) // hxbreakpoint - Use SIGTRAP if debugtrap is not available.
 #endif
 
-// HX_NOEXCEPT_INTRINSIC - Use GCC/Clang nothrow attribute. Unlike noexcept this
-// is undefined when violated. HX_NOEXCEPT - Use noexcept when available.
+// hxnoexcept_intrinsic - Use GCC/Clang nothrow attribute. Unlike noexcept this
+// is undefined when violated. hxnoexcept - Use noexcept when available.
 #if HX_CPLUSPLUS >= 201103L
-#define HX_NOEXCEPT_INTRINSIC __attribute__((nothrow))
-#define HX_NOEXCEPT noexcept
+#define hxnoexcept_intrinsic __attribute__((nothrow))
+#define hxnoexcept noexcept
 #else
-#define HX_NOEXCEPT_INTRINSIC
-#define HX_NOEXCEPT
+#define hxnoexcept_intrinsic
+#define hxnoexcept
 #endif
 
 #endif // target settings
@@ -115,32 +115,33 @@
 // Target independent C++11/C++14 polyfill.
 
 #if HX_CPLUSPLUS >= 201103L
-// HX_STATIC_ASSERT - Use static_assert when available, polyfill otherwise.
-#define HX_STATIC_ASSERT(x_,...) static_assert((bool)(x_), __VA_ARGS__)
-// HX_OVERRIDE - Use override when available.
-#define HX_OVERRIDE override
- // HX_DELETE_FN - Use delete when available.
-#define HX_DELETE_FN = delete
+// hxstatic_assert - Use static_assert when available, polyfill otherwise.
+#define hxstatic_assert(x_,...) static_assert((bool)(x_), __VA_ARGS__)
+// hxoverride - Use override when available.
+#define hxoverride override
+ // hxdelete_fn - Use delete when available.
+#define hxdelete_fn = delete
 #else // !HX_CPLUSPLUS
-#define HX_STATIC_ASSERT(x_,...) typedef int HX_CONCATENATE(hxstatic_assert_fail_,__COUNTER__) [!!(x_) ? 1 : -1] // HX_STATIC_ASSERT - Fallback static assert for pre-C++11.
-#define HX_OVERRIDE
-#define HX_DELETE_FN
+// hxstatic_assert - Fallback static assert for pre-C++11.
+#define hxstatic_assert(x_,...) typedef int hxstatic_assert_fail_##__COUNTER__ [!!(x_) ? 1 : -1]
+#define hxoverride
+#define hxdelete_fn
 #endif
 
-// HX_CONSTEXPR_FN - When available, indicates that a function is intended to
+// hxconstexpr_fn - When available, indicates that a function is intended to
 // be a C++14 constexpr function. Falls back to inline otherwise.
 #if HX_CPLUSPLUS >= 201402L
-#define HX_CONSTEXPR_FN constexpr
+#define hxconstexpr_fn constexpr
 #else
-#define HX_CONSTEXPR_FN inline
+#define hxconstexpr_fn inline
 #endif
 
-// HX_THREAD_LOCAL - A version of thread_local that compiles to nothing when
+// hxthread_local - A version of thread_local that compiles to nothing when
 // there is no threading.
-#if HX_USE_CPP_THREADS && !defined HX_THREAD_LOCAL
-#define HX_THREAD_LOCAL thread_local
+#if HX_USE_CPP_THREADS && !defined hxthread_local
+#define hxthread_local thread_local
 #else
-#define HX_THREAD_LOCAL // single threaded operation can ignore thread_local
+#define hxthread_local // single threaded operation can ignore thread_local
 #endif
 
 // HX_MAX_LINE - Set to 500 if not defined. Maximum length for formatted messages
@@ -158,15 +159,15 @@
 #define HX_MEMORY_MANAGER_DISABLE 0
 #endif
 
-#define HX_KIB (1u << 10) // HX_KIB - A Ki_b is 1024 bytes.
-#define HX_MIB (1u << 20) // HX_MIB - A Mi_b is 1,048,576 bytes.
+#define HX_KIB (1u << 10) // HX_KIB - A KiB is 1024 bytes.
+#define HX_MIB (1u << 20) // HX_MIB - A MiB is 1,048,576 bytes.
 
-// HX_MEMORY_BUDGET_PERMANENT - Pool sizes. Set to 5 Ki_b if not defined.
+// HX_MEMORY_BUDGET_PERMANENT - Pool sizes. Set to 5 KiB if not defined.
 #if !defined HX_MEMORY_BUDGET_PERMANENT
 #define HX_MEMORY_BUDGET_PERMANENT        (5u * HX_KIB)
 #endif
 
-// HX_MEMORY_BUDGET_TEMPORARY_STACK - Set to 1 Mi_b if not defined.
+// HX_MEMORY_BUDGET_TEMPORARY_STACK - Set to 1 MiB if not defined.
 #if !defined HX_MEMORY_BUDGET_TEMPORARY_STACK
 #define HX_MEMORY_BUDGET_TEMPORARY_STACK  (1u * HX_MIB)
 #endif

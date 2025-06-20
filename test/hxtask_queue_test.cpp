@@ -20,7 +20,7 @@ public:
     public:
         task_test_t_() : m_exec_count_(0), m_reenqueue_count_(0) { }
 
-        virtual void execute(hxtask_queue* q) HX_OVERRIDE {
+        virtual void execute(hxtask_queue* q) hxoverride {
             ++m_exec_count_;
             if (m_reenqueue_count_ > 0) {
                 --m_reenqueue_count_;

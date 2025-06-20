@@ -17,7 +17,7 @@ public:
     typedef T_ T;
 
     // Template specialization below should have been selected.
-    HX_STATIC_ASSERT(Capacity_ > 0u, "Capacity_ > 0");
+    hxstatic_assert(Capacity_ > 0u, "Capacity_ > 0");
 
 	// Initializes memory to 0xcd when HX_RELEASE < 1.
 #if (HX_RELEASE) < 1
@@ -25,11 +25,11 @@ public:
         ::memset(m_allocator_, 0xcd, sizeof m_allocator_);
     }
 #else
-    HX_CONSTEXPR_FN hxallocator() { }
+    hxconstexpr_fn hxallocator() { }
 #endif
 
 	// Returns the number of elements of T allocated.
-    HX_CONSTEXPR_FN size_t capacity() const { return Capacity_; }
+    hxconstexpr_fn size_t capacity() const { return Capacity_; }
 
 	// Returns a reference to a const and potentially uninitialized array of T.
     const T_ (&data() const)[Capacity_] { return *reinterpret_cast<const T_(*)[Capacity_]>(m_allocator_ + 0); }
@@ -41,14 +41,14 @@ protected:
     // Used to ensure initial capacity as reserve_storage() will not reallocate.
     // size: The number of elements of type T to allocate.
 
-    HX_CONSTEXPR_FN void reserve_storage(size_t size_) {
+    hxconstexpr_fn void reserve_storage(size_t size_) {
 		hxassertrelease(size_ <= Capacity_, "allocator overflowing fixed capacity."); (void)size_;
 	}
 
 private:
 	// *** The static allocator does not support swapping allocations or
 	// assignments from temporaries. ***
-    void swap(hxallocator& rhs) HX_DELETE_FN;
+    void swap(hxallocator& rhs) hxdelete_fn;
     static const size_t m_capacity_ = Capacity_;
 
     // Put x.m_data_ in your watch window for x or have your IDE do it for you.
@@ -74,7 +74,7 @@ public:
 	typedef T_ T;
 
     // Does not allocate until reserve_storage() is called.
-    HX_CONSTEXPR_FN hxallocator() {
+    hxconstexpr_fn hxallocator() {
         m_data_ = hxnull;
         m_capacity_ = 0u;
     }
@@ -92,16 +92,16 @@ public:
     }
 
     // Returns the number of elements of T allocated.
-    HX_CONSTEXPR_FN size_t capacity() const { return m_capacity_; }
+    hxconstexpr_fn size_t capacity() const { return m_capacity_; }
 
     // Returns a const array of T.
-    HX_CONSTEXPR_FN const T_* data() const { return m_data_; }
+    hxconstexpr_fn const T_* data() const { return m_data_; }
 
     // Returns an array of T.
-    HX_CONSTEXPR_FN T_* data() { return m_data_; }
+    hxconstexpr_fn T_* data() { return m_data_; }
 
     // Swap. Only works with Capacity_ == hxallocator_dynamic_capacity
-    HX_CONSTEXPR_FN void swap(hxallocator& rhs) {
+    hxconstexpr_fn void swap(hxallocator& rhs) {
         hxswap(m_capacity_, rhs.m_capacity_);
         hxswap(m_data_, rhs.m_data_);
     }
@@ -111,7 +111,7 @@ protected:
     // size: The number of elements of type T to allocate space for.
     // allocator: The memory manager ID to use for allocation (default: hxmemory_allocator_current)
     // alignment: The alignment to for the allocation. (default: HX_ALIGNMENT)
-    HX_CONSTEXPR_FN void reserve_storage(size_t size_,
+    hxconstexpr_fn void reserve_storage(size_t size_,
             hxmemory_allocator allocator_=hxmemory_allocator_current,
             uintptr_t alignment_=HX_ALIGNMENT) {
         if (size_ <= m_capacity_) { return; }
@@ -121,8 +121,8 @@ protected:
     }
 
 private:
-    hxallocator(const hxallocator&) HX_DELETE_FN;
-    void operator=(const hxallocator&) HX_DELETE_FN;
+    hxallocator(const hxallocator&) hxdelete_fn;
+    void operator=(const hxallocator&) hxdelete_fn;
 
     size_t m_capacity_;
     T_* m_data_;

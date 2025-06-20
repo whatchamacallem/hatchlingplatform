@@ -44,21 +44,8 @@ enum hxloglevel {
 // numeric constant 0. This header is C. Use nullptr if you prefer it.
 #define hxnull 0
 
-// HX_QUOTE - Macro for adding quotation marks. Evaluates __LINE__ as a string
-// containing a number instead of as "__LINE__".
-// - x: The value to be quoted.
-#define HX_QUOTE(x_) HX_QUOTE_(x_)
-#define HX_QUOTE_(x_) #x_
-
-// HX_CONCATENATE - Macro for concatenating arguments. Evaluates macro parameters
-// before concatenating. E.g. Evaluates __LINE__ as a number instead of as "__LINE__".
-// - x: The first value to concatenate.
-// - y: The second value to concatenate.
-#define HX_CONCATENATE(x_, y_) HX_CONCATENATE_(x_, y_)
-#define HX_CONCATENATE_(x_, y_) x_ ## y_
-
-// HX_STATIC_ASSERT - Compile-time assertion for HX_RELEASE range.
-HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0..3]");
+// hxstatic_assert - Compile-time assertion for HX_RELEASE range.
+hxstatic_assert((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0..3]");
 
 // hxinit() - Initializes the platform.
 #define hxinit() (void)(g_hxisinit_ || (hxinit_internal(), 0))
@@ -80,7 +67,7 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 // hxassert(bool x) - Logs an error and terminates execution if x is false. This is only
 // evaluated when HX_RELEASE == 0.
 // - ...: The condition to evaluate.
-#define hxassert(...) (void)(!!(__VA_ARGS__) || (hxloghandler(hxloglevel_assert, HX_QUOTE(__VA_ARGS__)), \
+#define hxassert(...) (void)(!!(__VA_ARGS__) || (hxloghandler(hxloglevel_assert, #__VA_ARGS__), \
 	hxasserthandler(__FILE__, __LINE__)) || hxbreakpoint())
 
 // hxassertrelease(bool x, ...) - Logs an error and terminates execution if x is false up to
@@ -91,13 +78,13 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 	hxasserthandler(__FILE__, __LINE__)) || hxbreakpoint()))
 
 // Assert handler. Do not call directly, signature changes and then is removed.
-HX_NOEXCEPT_INTRINSIC int hxasserthandler(const char* file_, size_t line_);
+hxnoexcept_intrinsic int hxasserthandler(const char* file_, size_t line_);
 
 #else // HX_RELEASE >= 1
 #define hxlog(...) ((void)0)
 #define hxassertmsg(x_, ...) ((void)0)
 #define hxassert(x_) ((void)0)
-HX_NOEXCEPT_INTRINSIC HX_NORETURN void hxasserthandler(uint32_t file_, size_t line_);
+hxnoexcept_intrinsic hxnoreturn void hxasserthandler(uint32_t file_, size_t line_);
 #endif
 
 #if (HX_RELEASE) <= 1
@@ -155,14 +142,14 @@ void hxshutdown(void);
 // - level: The log level (e.g., hxloglevel_log, hxloglevel_warning).
 // - format: A printf-style format string.
 // - ...: Additional arguments for the format string.
-HX_NOEXCEPT_INTRINSIC void hxloghandler(enum hxloglevel level_, const char* format_, ...) HX_ATTR_FORMAT(2, 3);
+hxnoexcept_intrinsic void hxloghandler(enum hxloglevel level_, const char* format_, ...) hxattr_format(2, 3);
 
 // hxloghandler_v - A va_list version of hxloghandler. This is the only access to
 // logging when HX_RELEASE > 2.
 // - level: The log level (e.g., hxloglevel_log, hxloglevel_warning).
 // - format: A printf-style format string.
 // - args: A va_list containing the arguments for the format string.
-HX_NOEXCEPT_INTRINSIC void hxloghandler_v(enum hxloglevel level_, const char* format_, va_list args_);
+hxnoexcept_intrinsic void hxloghandler_v(enum hxloglevel level_, const char* format_, va_list args_);
 
 // hxhex_dump - Prints an array of bytes formatted in hexadecimal. Additional
 // information provided when pretty is non-zero.
@@ -191,18 +178,18 @@ const char* hxbasename(const char* path_);
 // - x: The first value.
 // - y: The second value.
 template<typename T_>
-HX_CONSTEXPR_FN const T_& hxmin(const T_& x_, const T_& y_) { return ((x_) < (y_)) ? (x_) : (y_); }
+hxconstexpr_fn const T_& hxmin(const T_& x_, const T_& y_) { return ((x_) < (y_)) ? (x_) : (y_); }
 
 // hxmax - Returns the maximum value of x and y using a < comparison.
 // - x: The first value.
 // - y: The second value.
 template<typename T_>
-HX_CONSTEXPR_FN const T_& hxmax(const T_& x_, const T_& y_) { return ((y_) < (x_)) ? (x_) : (y_); }
+hxconstexpr_fn const T_& hxmax(const T_& x_, const T_& y_) { return ((y_) < (x_)) ? (x_) : (y_); }
 
 // hxabs - Returns the absolute value of x using a < comparison.
 // - x: The value to compute the absolute value for.
 template<typename T_>
-HX_CONSTEXPR_FN const T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - (x_)) : (x_); }
+hxconstexpr_fn const T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - (x_)) : (x_); }
 
 // hxclamp - Returns x clamped between the minimum and maximum using <
 // comparisons.
@@ -210,14 +197,14 @@ HX_CONSTEXPR_FN const T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - 
 // - minimum: The minimum allowable value.
 // - maximum: The maximum allowable value.
 template<typename T_>
-HX_CONSTEXPR_FN const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& maximum_) {
+hxconstexpr_fn const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& maximum_) {
 	hxassert(!((maximum_) < (minimum_)));
 	return ((x_) < (minimum_)) ? (minimum_) : (((maximum_) < (x_)) ? (maximum_) : (x_));
 }
 
 // hxswap - Exchanges the contents of x and y using a temporary.
 template<typename T_>
-HX_CONSTEXPR_FN void hxswap(T_& x_, T_& y_) {
+hxconstexpr_fn void hxswap(T_& x_, T_& y_) {
 	T_ t_(x_);
 	x_ = y_;
 	y_ = t_;

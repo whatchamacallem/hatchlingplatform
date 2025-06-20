@@ -71,10 +71,10 @@ char* hxstring_duplicate(const char* string_, enum hxmemory_allocator allocator_
 
 #if !HX_HOSTED
 // Declare placement new.
-inline void* operator new(size_t, void* ptr_) HX_NOEXCEPT { return ptr_; }
-inline void* operator new[](size_t, void* ptr_) HX_NOEXCEPT { return ptr_; }
-inline void operator delete(void*, void*) HX_NOEXCEPT { }
-inline void operator delete[](void*, void*) HX_NOEXCEPT { }
+inline void* operator new(size_t, void* ptr_) hxnoexcept { return ptr_; }
+inline void* operator new[](size_t, void* ptr_) hxnoexcept { return ptr_; }
+inline void operator delete(void*, void*) hxnoexcept { }
+inline void operator delete[](void*, void*) hxnoexcept { }
 #endif
 
 // hxmemory_allocator_scope - RAII class to set the current memory manager allocator
@@ -110,10 +110,10 @@ public:
 
 private:
 	// Deleted copy constructor to prevent copying.
-	hxmemory_allocator_scope(const hxmemory_allocator_scope&) HX_DELETE_FN;
+	hxmemory_allocator_scope(const hxmemory_allocator_scope&) hxdelete_fn;
 
 	// Deleted assignment operator to prevent copying.
-	void operator=(const hxmemory_allocator_scope&) HX_DELETE_FN;
+	void operator=(const hxmemory_allocator_scope&) hxdelete_fn;
 
     hxmemory_allocator m_this_allocator_; // The memory manager ID for this scope.
     hxmemory_allocator m_previous_allocator_; // The previous memory manager ID.
@@ -140,7 +140,7 @@ size_t hxmemory_manager_leak_count();
 // - align: A mask of low bits to be zero'd out when allocating new pointers. Defaults to HX_ALIGNMENT.
 #if HX_CPLUSPLUS >= 201103L // Argument forwarding requires c++11.
 template <typename T_, hxmemory_allocator allocator_=hxmemory_allocator_current, uintptr_t align_=HX_ALIGNMENT, typename... Args_>
-HX_CONSTEXPR_FN T_* hxnew(Args_&&... args_) noexcept {
+hxconstexpr_fn T_* hxnew(Args_&&... args_) noexcept {
 	return ::new(hxmalloc_ext(sizeof(T_), allocator_, align_)) T_(args_...);
 }
 #else
@@ -167,7 +167,7 @@ private:
 // manager.
 // - t: Pointer to the object to delete.
 template <typename T_>
-HX_CONSTEXPR_FN void hxdelete(T_* t_) {
+hxconstexpr_fn void hxdelete(T_* t_) {
 	if (t_) {
 		t_->~T_();
 		if ((HX_RELEASE) < 1) {
@@ -184,10 +184,10 @@ class hxdeleter {
 public:
 	// Deletes the object using hxdelete.
 	template <typename T_>
-	HX_CONSTEXPR_FN void operator()(T_* t_) const { hxdelete(t_); }
+	hxconstexpr_fn void operator()(T_* t_) const { hxdelete(t_); }
 
 	// Always returns true, indicating the deleter is valid.
-	HX_CONSTEXPR_FN operator bool() const { return true; }
+	hxconstexpr_fn operator bool() const { return true; }
 };
 
 // Implement hxdeleter with NOPs. Allows the compiler to remove the destructors
@@ -197,10 +197,10 @@ class hxdo_not_delete {
 public:
 	// Deletes the object using hxdelete.
 	template <typename T_>
-	HX_CONSTEXPR_FN void operator()(T_*) const { }
+	hxconstexpr_fn void operator()(T_*) const { }
 
 	// Always returns false, indicating the deleter should not be called.
-	HX_CONSTEXPR_FN operator bool() const { return false; }
+	hxconstexpr_fn operator bool() const { return false; }
 };
 
 // hxmalloc - Add hxmalloc_ext args to hxmalloc C interface. Allocates memory with a

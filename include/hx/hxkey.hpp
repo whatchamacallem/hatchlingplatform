@@ -10,10 +10,10 @@
 // hxkey_less - User overloadable function for performing comparisons. Invokes
 // operator <.
 template<typename T_>
-HX_CONSTEXPR_FN bool hxkey_less(const T_& lhs_, const T_& rhs_) { return lhs_ < rhs_; }
+hxconstexpr_fn bool hxkey_less(const T_& lhs_, const T_& rhs_) { return lhs_ < rhs_; }
 
 // hxkey_hash (const char*) - Uses a constexpr "strcmp(a, b) < 0".
-HX_CONSTEXPR_FN bool hxkey_less(const char* a_, const char* b_) {
+hxconstexpr_fn bool hxkey_less(const char* a_, const char* b_) {
     while(*a_ != '\0' && *a_ == *b_) { ++a_; ++b_; }
     return *a_ < *b_;
 }
@@ -22,12 +22,12 @@ HX_CONSTEXPR_FN bool hxkey_less(const char* a_, const char* b_) {
 // for your key type. Overrides are evaluated when and where the hash table is
 // instantiated. Uses the well studied hash multiplier taken from Linux's hash.h
 template<typename T_>
-HX_CONSTEXPR_FN uint32_t hxkey_hash(const T_& x_ ) {
+hxconstexpr_fn uint32_t hxkey_hash(const T_& x_ ) {
 	return (uint32_t)x_ * (uint32_t)0x61C88647u;
 };
 
 // hxkey_hash(const char*) - Uses FNV-1a string hashing.
-HX_CONSTEXPR_FN uint32_t hxkey_hash(const char* k_) {
+hxconstexpr_fn uint32_t hxkey_hash(const char* k_) {
     uint32_t x_ = (uint32_t)0x811c9dc5;
     while (*k_ != '\0') {
 		x_ ^= (uint32_t)*k_++;
@@ -40,12 +40,12 @@ HX_CONSTEXPR_FN uint32_t hxkey_hash(const char* k_) {
 // operator== then this function needs to be overridden for your key type.
 // Overrides are evaluated when and where the hash table is instantiated.
 template<typename T>
-HX_CONSTEXPR_FN bool hxkey_equal(const T& a_, const T& b_) {
+hxconstexpr_fn bool hxkey_equal(const T& a_, const T& b_) {
 	return a_ == b_;
 }
 
 // hxkey_hash(const char*) - Uses a constexpr strcmp.
-HX_CONSTEXPR_FN bool hxkey_equal(const char* a_, const char* b_) {
+hxconstexpr_fn bool hxkey_equal(const char* a_, const char* b_) {
 	while(*a_ != '\0' && *a_ == *b_) { ++a_; ++b_; }
 	return *a_ == '\0' && *b_ == '\0';
 }

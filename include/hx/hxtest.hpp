@@ -35,11 +35,11 @@ public:
 
 // InitGoogleTest - Initializes Google Test with command-line arguments. No-op in
 // this implementation.
-HX_CONSTEXPR_FN void InitGoogleTest(int *argc_, char **argv_) { (void)argc_; (void)argv_; }
+hxconstexpr_fn void InitGoogleTest(int *argc_, char **argv_) { (void)argc_; (void)argv_; }
 
 // InitGoogleTest - Overloaded version of InitGoogleTest with no arguments. No-op
 // in this implementation.
-HX_CONSTEXPR_FN void InitGoogleTest() { }
+hxconstexpr_fn void InitGoogleTest() { }
 
 } // namespace testing
 
@@ -55,11 +55,11 @@ HX_CONSTEXPR_FN void InitGoogleTest() { }
     class HX_TEST_NAME_(hxtest_, suite_name_, case_name_) : public hxtest_case_interface_ { \
     public: \
         HX_TEST_NAME_(hxtest_, suite_name_, case_name_)(void) { hxtest_suite_executor_::singleton_().add_test_(this); } \
-        virtual void run_(void) HX_OVERRIDE; \
-        virtual const char* suite_(void) HX_OVERRIDE { return #suite_name_; } \
-        virtual const char* case_(void) HX_OVERRIDE { return #case_name_; } \
-        virtual const char* file_(void) HX_OVERRIDE { return __FILE__; } \
-        virtual size_t line_(void) HX_OVERRIDE { return __LINE__; } \
+        virtual void run_(void) hxoverride; \
+        virtual const char* suite_(void) hxoverride { return #suite_name_; } \
+        virtual const char* case_(void) hxoverride { return #case_name_; } \
+        virtual const char* file_(void) hxoverride { return __FILE__; } \
+        virtual size_t line_(void) hxoverride { return __LINE__; } \
     } static HX_TEST_NAME_(s_hxtest_, suite_name_, case_name_); \
     void HX_TEST_NAME_(hxtest_, suite_name_, case_name_)::run_(void)
 
@@ -70,13 +70,13 @@ HX_CONSTEXPR_FN void InitGoogleTest() { }
 #define TEST_F(suite_name_, case_name_) \
     class HX_TEST_NAME_(hxtest_, suite_name_, case_name_) : public hxtest_case_interface_ { \
     public: \
-        class hxtest_case_executor_ : public suite_name_ { virtual void run_code_(void) HX_OVERRIDE; }; \
+        class hxtest_case_executor_ : public suite_name_ { virtual void run_code_(void) hxoverride; }; \
         HX_TEST_NAME_(hxtest_, suite_name_, case_name_)(void) { hxtest_suite_executor_::singleton_().add_test_(this); } \
-        virtual void run_(void) HX_OVERRIDE { hxtest_case_executor_ executor_; executor_.run_(); } \
-        virtual const char* suite_(void) HX_OVERRIDE { return #suite_name_; } \
-        virtual const char* case_(void) HX_OVERRIDE { return #case_name_; } \
-        virtual const char* file_(void) HX_OVERRIDE { return __FILE__; } \
-        virtual size_t line_(void) HX_OVERRIDE { return __LINE__; } \
+        virtual void run_(void) hxoverride { hxtest_case_executor_ executor_; executor_.run_(); } \
+        virtual const char* suite_(void) hxoverride { return #suite_name_; } \
+        virtual const char* case_(void) hxoverride { return #case_name_; } \
+        virtual const char* file_(void) hxoverride { return __FILE__; } \
+        virtual size_t line_(void) hxoverride { return __LINE__; } \
     } static HX_TEST_NAME_(s_hxtest, suite_name_, case_name_); \
     void HX_TEST_NAME_(hxtest_, suite_name_, case_name_)::hxtest_case_executor_::run_code_(void)
 

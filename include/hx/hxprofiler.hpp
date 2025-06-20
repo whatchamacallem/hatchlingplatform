@@ -54,7 +54,7 @@ static inline hxcycles_t hxtime_sample_cycles(void) {
 #elif defined __powerpc__ || defined __ppc__
     __asm__ volatile("mftb %0" : "=r"(cycles_));
 #else
-HX_STATIC_ASSERT(0, "implement hxtime_sample_cycles");
+hxstatic_assert(0, "implement hxtime_sample_cycles");
 #endif
     return (hxcycles_t)cycles_;
 }
@@ -66,7 +66,7 @@ HX_STATIC_ASSERT(0, "implement hxtime_sample_cycles");
 // - label_string_literal: A string literal label for the sample.
 #define hxprofile_scope(label_string_literal_) \
     HX_PROFILE_ONLY_(hxprofiler_scope_internal_<> \
-        HX_CONCATENATE(hxprofile_scope_,__COUNTER__)(label_string_literal_))
+        hxprofile_scope_##__COUNTER__(label_string_literal_))
 
 // hxprofile_scope_min(const char* label_string_literal, hxcycles_t min_cycles) -
 // Declares an RAII-style profiling sample with a minimum cycle cutoff. Compiles
@@ -75,7 +75,7 @@ HX_STATIC_ASSERT(0, "implement hxtime_sample_cycles");
 // - min_cycles_: A minimum number of cycles required for a sample to be recorded.
 #define hxprofile_scope_min(label_string_literal_, min_cycles_) \
     HX_PROFILE_ONLY_(hxprofiler_scope_internal_<min_cycles_> \
-        HX_CONCATENATE(hxprofile_scope_,__COUNTER__)(label_string_literal_))
+        hxprofile_scope_##__COUNTER__(label_string_literal_))
 
 // hxprofiler_start() - Clears samples and begins sampling. Compiles to a NOP when
 // not in use.

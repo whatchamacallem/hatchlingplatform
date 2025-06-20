@@ -12,34 +12,34 @@ class hxrandom {
 public:
 	// Constructor to initialize the random number generator with a seed.
     // - seed: Initial seed value for the random number generator.
-    HX_CONSTEXPR_FN hxrandom(uint32_t seed_ = 1u) : m_state_(seed_) { }
+    hxconstexpr_fn hxrandom(uint32_t seed_ = 1u) : m_state_(seed_) { }
 
     // Functor returns hxrandom& which converts itself to the type it is
     // assigned to. Enables traditional syntax.
     // E.g. uint32_t = m_prng(); // Returns [0..2^32).
     // E.g. double i = m_prng(); // Returns [0..1).
-    HX_CONSTEXPR_FN hxrandom& operator()(void) { return *this; }
+    hxconstexpr_fn hxrandom& operator()(void) { return *this; }
 
     // Automatic cast to unsigned integer or floating point value. Floating point
     // results are between [0..1).  They can safely be used to generate array
     // indicies without overflowing.
     // E.g. unsigned int = m_prng; // Returns [0..UINT_MAX].
-    HX_CONSTEXPR_FN operator float() {
+    hxconstexpr_fn operator float() {
         return (float)this->advance32() * (1.0f / 4294967296.0f); // 0x1p-32f
     }
-    HX_CONSTEXPR_FN operator double() {
+    hxconstexpr_fn operator double() {
         return (double)this->advance64() * (1.0 / 18446744073709551616.0); // 0x1p-64;
     }
-    HX_CONSTEXPR_FN operator uint8_t() {
+    hxconstexpr_fn operator uint8_t() {
         return this->advance32();
     }
-    HX_CONSTEXPR_FN operator uint16_t() {
+    hxconstexpr_fn operator uint16_t() {
         return this->advance32();
     }
-    HX_CONSTEXPR_FN operator uint32_t() {
+    hxconstexpr_fn operator uint32_t() {
         return this->advance32();
     }
-    HX_CONSTEXPR_FN operator uint64_t() {
+    hxconstexpr_fn operator uint64_t() {
         return this->advance64();
     }
 
@@ -49,27 +49,27 @@ public:
     // positive.
     // - base: The beginning of the range. E.g. 0.
     // - size: Positive size of the range. E.g. 10 elements.
-    template<typename T_> HX_CONSTEXPR_FN T_ range(T_ base_, T_ size_) {
+    template<typename T_> hxconstexpr_fn T_ range(T_ base_, T_ size_) {
         // Use double parameters if you need a bigger size. An emulated floating
         // point multiply is faster and more stable than integer modulo.
         hxassertmsg((float)size_ < (float)0x01000000, "insufficient precision"); // 0x1p24f
         return base_ + (T_)((float)size_ * (float)*this);
     }
-    HX_CONSTEXPR_FN double range(double base_, double size_) {
+    hxconstexpr_fn double range(double base_, double size_) {
         // Use uint64_t parameters if you need a bigger size. An emulated floating
         // point multiply is faster and more stable than integer modulo.
         hxassertmsg(size_ < (double)0x40000000000000ll, "insufficient precision"); // 0x1p54f
         return base_ + size_ * (double)*this;
     }
-    HX_CONSTEXPR_FN int64_t range(int64_t base_, int64_t size_) {
+    hxconstexpr_fn int64_t range(int64_t base_, int64_t size_) {
         return base_ + (int64_t)(this->advance64() % size_);
     }
-    HX_CONSTEXPR_FN uint64_t range(uint64_t base_, uint64_t size_) {
+    hxconstexpr_fn uint64_t range(uint64_t base_, uint64_t size_) {
         return base_ + this->advance64() % size_;
     }
 
     // Returns [0..2^32).
-    HX_CONSTEXPR_FN uint32_t advance32(void) {
+    hxconstexpr_fn uint32_t advance32(void) {
         m_state_ = 0x5851f42d4c957f2dull * m_state_ + 0x14057b7ef767814full;
 
         // MODIFICATION: Use the 4 msb bits as a 0..15 bit variable shift control.
@@ -81,7 +81,7 @@ public:
     }
 
     // Returns [0..2^64).
-    HX_CONSTEXPR_FN uint64_t advance64(void) {
+    hxconstexpr_fn uint64_t advance64(void) {
         uint64_t result_ = (uint64_t)this->advance32() | ((uint64_t)this->advance32() << 32);
         return result_;
     }

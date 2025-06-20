@@ -34,7 +34,7 @@ HX_REGISTER_FILENAME_HASH
 #endif
 
 // New rule. Use -ffast-math in release. Or set -DHX_FLOATING_POINT_TRAPS=0.
-HX_STATIC_ASSERT((HX_RELEASE) < 1 || !(HX_FLOATING_POINT_TRAPS),
+hxstatic_assert((HX_RELEASE) < 1 || !(HX_FLOATING_POINT_TRAPS),
 	"floating point exceptions enabled in release. use -ffast-math.");
 
 // Use -fno-exceptions. Exceptions add overhead to c++ and add untested pathways.
@@ -42,7 +42,7 @@ HX_STATIC_ASSERT((HX_RELEASE) < 1 || !(HX_FLOATING_POINT_TRAPS),
 // to allocate enough memory for everything in advance. There are no exceptions
 // to handle. There are exception handling intrinsics in use in case they are on.
 #if defined __cpp_exceptions && !defined __INTELLISENSE__
-HX_STATIC_ASSERT(0, "exceptions should not be enabled");
+hxstatic_assert(0, "exceptions should not be enabled");
 #endif
 
 // No reason for this to be visible.
@@ -188,7 +188,7 @@ void hxinit_internal(void) {
 }
 
 extern "C"
-HX_NOEXCEPT_INTRINSIC void hxloghandler(hxloglevel level, const char* format, ...) {
+hxnoexcept_intrinsic void hxloghandler(hxloglevel level, const char* format, ...) {
 	va_list args;
 	va_start(args, format);
 	hxloghandler_v(level, format, args);
@@ -198,7 +198,7 @@ HX_NOEXCEPT_INTRINSIC void hxloghandler(hxloglevel level, const char* format, ..
 #define HX_STDOUT_STR_(x) ::fwrite(x, (sizeof x) - 1, 1, stdout)
 
 extern "C"
-HX_NOEXCEPT_INTRINSIC void hxloghandler_v(hxloglevel level, const char* format, va_list args) {
+hxnoexcept_intrinsic void hxloghandler_v(hxloglevel level, const char* format, va_list args) {
 	if(g_hxisinit_ && g_hxsettings.log_level > level) {
 		return;
 	}
@@ -233,7 +233,7 @@ void hxshutdown(void) {
 
 #if (HX_RELEASE) == 0
 extern "C"
-HX_NOEXCEPT_INTRINSIC int hxasserthandler(const char* file, size_t line) {
+hxnoexcept_intrinsic int hxasserthandler(const char* file, size_t line) {
 	const char* f = hxbasename(file);
 	if (g_hxisinit_ && g_hxsettings.asserts_to_be_skipped > 0) {
 		--g_hxsettings.asserts_to_be_skipped;
@@ -249,7 +249,7 @@ HX_NOEXCEPT_INTRINSIC int hxasserthandler(const char* file, size_t line) {
 }
 #else
 extern "C"
-HX_NOEXCEPT_INTRINSIC HX_NORETURN void hxasserthandler(uint32_t file, size_t line) {
+hxnoexcept_intrinsic hxnoreturn void hxasserthandler(uint32_t file, size_t line) {
 	hxloghandler(hxloglevel_assert, "file %08x line %u\n", (unsigned int)file, (unsigned int)line);
 	_Exit(EXIT_FAILURE);
 }

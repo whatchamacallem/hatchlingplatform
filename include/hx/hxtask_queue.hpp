@@ -32,8 +32,8 @@ public:
     void wait_for_all();
 
 private:
-    hxtask_queue(const hxtask_queue&) HX_DELETE_FN;
-    void operator=(const hxtask_queue&) HX_DELETE_FN;
+    hxtask_queue(const hxtask_queue&) hxdelete_fn;
+    void operator=(const hxtask_queue&) hxdelete_fn;
 
     enum { running_queue_guard_value_ = 0xc710b034u };
 

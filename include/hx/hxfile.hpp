@@ -24,34 +24,34 @@ public:
 
 	// Constructor to initialize and open a file with a formatted filename.
 	// Opens a stream using a formatted filename. Non-standard arg order.
-	hxfile(uint16_t mode_, const char* filename_, ...) HX_ATTR_FORMAT(3, 4);
+	hxfile(uint16_t mode_, const char* filename_, ...) hxattr_format(3, 4);
 
 	// Destructor to ensure the file is closed when the object goes out of scope.
 	~hxfile();
 
 	// Opens a file with the specified mode and formatted filename.
-	bool open(uint16_t mode_, const char* filename_, ...) HX_ATTR_FORMAT(3, 4);
+	bool open(uint16_t mode_, const char* filename_, ...) hxattr_format(3, 4);
 
 	// Closes the currently open file.
 	void close();
 
 	// Checks if the file is open.
-	HX_CONSTEXPR_FN bool is_open() const { return m_file_pImpl_ != hxnull; }
+	hxconstexpr_fn bool is_open() const { return m_file_pImpl_ != hxnull; }
 
 	// Checks if the file stream is in a good state.
-	HX_CONSTEXPR_FN bool good() const { return m_good_; }
+	hxconstexpr_fn bool good() const { return m_good_; }
 
 	// Checks if the end of the file has been reached.
-	HX_CONSTEXPR_FN bool eof() const { return m_eof_; }
+	hxconstexpr_fn bool eof() const { return m_eof_; }
 
 	// Clears the state of the file stream.
-	HX_CONSTEXPR_FN void clear() {
+	hxconstexpr_fn void clear() {
 		m_good_ = m_file_pImpl_ != hxnull;
 		m_eof_ = false;
 	}
 
 	// Returns the current open mode of the file.
-	HX_CONSTEXPR_FN uint16_t mode() const { return m_open_mode_; }
+	hxconstexpr_fn uint16_t mode() const { return m_open_mode_; }
 
 	// Reads a specified number of bytes from the file into the provided buffer.
 	// - bytes: Pointer to the buffer where the read bytes will be stored.
@@ -68,7 +68,7 @@ public:
 	// the size of the provided char array.
 	// - buffer: Reference to a char array where the line will be stored.
 	template<size_t Buffer_size_>
-	HX_CONSTEXPR_FN bool get_line(char(&buffer_)[Buffer_size_]) { return get_line(buffer_, Buffer_size_); }
+	hxconstexpr_fn bool get_line(char(&buffer_)[Buffer_size_]) { return get_line(buffer_, Buffer_size_); }
 
 	// Reads an \n or EOF terminated character sequence. Allowed to fail on EOF
 	// without needing to be hxfile::failable.
@@ -79,23 +79,23 @@ public:
 	// Writes a formatted string to the file. Must be less than HX_MAX_LINE characters.
 	// - format: Format string, similar to printf.
 	// - ...: Additional arguments for the format string.
-	bool print(const char* format_, ...) HX_ATTR_FORMAT(2, 3);
+	bool print(const char* format_, ...) hxattr_format(2, 3);
 
 	// Reads a single unformatted native endian object from the file.
 	// - t: Reference to the object where the data will be stored.
 	template<typename T_>
-	HX_CONSTEXPR_FN bool read1(T_& t_) { return read(&t_, sizeof t_) == sizeof t_; }
+	hxconstexpr_fn bool read1(T_& t_) { return read(&t_, sizeof t_) == sizeof t_; }
 
 	// Writes a single unformatted native endian object to the file.
 	// - t: Reference to the object containing the data to write.
 	template<typename T_>
-	HX_CONSTEXPR_FN bool write1(const T_& t_) { return write(&t_, sizeof t_) == sizeof t_; }
+	hxconstexpr_fn bool write1(const T_& t_) { return write(&t_, sizeof t_) == sizeof t_; }
 
 	// Read a single unformatted native endian object from a stream. The operator
 	// >= is being used instead of >> to indicate there is no formatting.
 	// - t: Reference to the object where the data will be stored.
 	template<typename T_>
-	HX_CONSTEXPR_FN hxfile& operator>=(T_& t_) {
+	hxconstexpr_fn hxfile& operator>=(T_& t_) {
 		read(&t_, sizeof t_);
 		return *this;
 	}
@@ -104,7 +104,7 @@ public:
 	// <= is being used instead of << to indicate there is no formatting.
 	// - t: Reference to the object containing the data to write.
 	template<typename T_>
-	HX_CONSTEXPR_FN hxfile& operator<=(const T_& t_) {
+	hxconstexpr_fn hxfile& operator<=(const T_& t_) {
 		write(&t_, sizeof t_);
 		return *this;
 	}
@@ -112,16 +112,16 @@ public:
 	// Writes a string literal to the file. Supports Google Test style diagnostic messages.
 	// - str: Reference to a string literal to write to the file.
 	template<size_t String_length_>
-	HX_CONSTEXPR_FN hxfile& operator<<(const char(&str_)[String_length_]) {
+	hxconstexpr_fn hxfile& operator<<(const char(&str_)[String_length_]) {
 		hxassert(::strlen(str_) == (String_length_-1));
 		write(str_, String_length_-1);
 		return *this;
 	}
 
 private:
-	hxfile(const hxfile&) HX_DELETE_FN;
-	void operator=(const hxfile&) HX_DELETE_FN;
-	template<typename T_> HX_CONSTEXPR_FN hxfile& operator>>(const T_* t_) HX_DELETE_FN;
+	hxfile(const hxfile&) hxdelete_fn;
+	void operator=(const hxfile&) hxdelete_fn;
+	template<typename T_> hxconstexpr_fn hxfile& operator>>(const T_* t_) hxdelete_fn;
 
 	// Internal function to open a file with a formatted filename and variable arguments.
 	bool openv_(uint16_t mode_, const char* format_, va_list args_);

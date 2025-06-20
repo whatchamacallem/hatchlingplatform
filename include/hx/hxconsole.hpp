@@ -43,7 +43,7 @@ public:
 
 private:
     // ERROR - Numbers are not pointers or references.
-    template<typename T_> operator T_*() const HX_DELETE_FN;
+    template<typename T_> operator T_*() const hxdelete_fn;
 
     double m_x_;
 };
@@ -64,7 +64,7 @@ public:
     }
 
 private:
-    HX_STATIC_ASSERT(sizeof(uint64_t) >= sizeof(uintptr_t), "128-bit pointers?");
+    hxstatic_assert(sizeof(uint64_t) >= sizeof(uintptr_t), "128-bit pointers?");
 	uint64_t m_x_;
 };
 
@@ -73,7 +73,7 @@ private:
 // - x: Valid C identifier that evaluates to a function pointer.
 //   E.g. hxconsole_command(srand);
 #define hxconsole_command(x_) static hxconsole_constructor_ \
-    HX_CONCATENATE(g_hxconsole_symbol_,x_)(hxconsole_command_factory_(&(x_)), HX_QUOTE(x_))
+    g_hxconsole_symbol_##x_(hxconsole_command_factory_(&(x_)), #x_)
 
 // hxconsole_command_named - Registers a named function using a global constructor.
 // Use in a global scope. Provided name_ must be a valid C identifier.
@@ -81,7 +81,7 @@ private:
 // - name: Valid C identifier that identifies the command.
 //   E.g. hxconsole_command_named(srand, seed_rand);
 #define hxconsole_command_named(x_, name_) static hxconsole_constructor_ \
-    HX_CONCATENATE(g_hxconsole_symbol_,name_)(hxconsole_command_factory_(&(x_)), HX_QUOTE(name_))
+    g_hxconsole_symbol_##name_(hxconsole_command_factory_(&(x_)), #name_)
 
 // hxconsole_variable - Registers a variable. Use in a global scope. Will have the
 // same name as the variable.
@@ -90,7 +90,7 @@ private:
 //   static bool is_my_hack_enabled=false;
 //   hxconsole_variable(is_my_hack_enabled);
 #define hxconsole_variable(x_) static hxconsole_constructor_ \
-    HX_CONCATENATE(g_hxconsole_symbol_,x_)(hxconsole_variable_factory_(&(x_)), HX_QUOTE(x_))
+    g_hxconsole_symbol_##x_(hxconsole_variable_factory_(&(x_)), #x_)
 
 // hxconsole_variable_named - Registers a named variable. Use in a global scope.
 // Provided name must be a valid C identifier.
@@ -100,7 +100,7 @@ private:
 //   static bool is_my_hack_enabled=false;
 //   hxconsole_variable_named(is_my_hack_enabled, f_hack); // add "f_hack" to the console.
 #define hxconsole_variable_named(x_, name_) static hxconsole_constructor_ \
-    HX_CONCATENATE(g_hxconsole_symbol_,name_)(hxconsole_variable_factory_(&(x_)), HX_QUOTE(name_))
+    g_hxconsole_symbol_##name_(hxconsole_variable_factory_(&(x_)), #name_)
 
 // hxconsole_deregister - Explicit de-registration of a console symbol.
 // - id: Valid C identifier that identifies the variable.

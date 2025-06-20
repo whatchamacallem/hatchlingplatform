@@ -23,7 +23,7 @@ static inline hxcycles_t hxtime_sample_cycles(void);
 extern class hxprofiler_internal_ g_hxprofiler_;
 
 // Address of s_hxprofiler_thread_id_address_ used to uniquely identify thread.
-extern HX_THREAD_LOCAL char s_hxprofiler_thread_id_address_;
+extern hxthread_local char s_hxprofiler_thread_id_address_;
 
 // hxprofiler_internal_ - Manager object for internal use.
 class hxprofiler_internal_ {
@@ -92,9 +92,9 @@ public:
 	}
 
 private:
-	hxprofiler_scope_internal_(void) HX_DELETE_FN;
-	hxprofiler_scope_internal_(const hxprofiler_scope_internal_&) HX_DELETE_FN;
-	void operator=(const hxprofiler_scope_internal_&) HX_DELETE_FN;
+	hxprofiler_scope_internal_(void) hxdelete_fn;
+	hxprofiler_scope_internal_(const hxprofiler_scope_internal_&) hxdelete_fn;
+	void operator=(const hxprofiler_scope_internal_&) hxdelete_fn;
 	const char* m_label_;
 	hxcycles_t m_t0_;
 };
