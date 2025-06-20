@@ -7,12 +7,14 @@
 #include <initializer_list>
 #endif
 
-// hxarray - Implements some of std::vector. Requires T to have a default
-// constructor.
+// hxarray - Another vector class. Uses raw pointers as an iterator type so
+// that you get compile errors and a debug experience that is in plain C++
+// instead of the std. There are asserts. Please run a memory sanitizer and
+// an undefined behavior sanitizer too.
 template<typename T_, size_t capacity_=hxallocator_dynamic_capacity>
 class hxarray : public hxallocator<T_, capacity_> {
 public:
-    typedef T_ T; // Contained type.
+    typedef T_ value_t;
     typedef T_* iterator; // Random access iterator.
     typedef const T_* const_iterator; // Const random access iterator.
 
@@ -123,34 +125,45 @@ public:
     hxconstexpr_fn const T_* cend() { return m_end_; }
 
     // Returns a const reference to the first element in the array.
-    hxconstexpr_fn const T_& front() const { hxassert(size()); return *this->data(); }
+    hxconstexpr_fn const T_& front() const {
+        hxassertmsg(!this->empty(), "invalid reference");
+        return *this->data();
+    }
 
     // Returns a reference to the first element in the array.
-    hxconstexpr_fn T_& front() { hxassert(size()); return *this->data(); }
+    hxconstexpr_fn T_& front() {
+        hxassertmsg(!this->empty(), "invalid reference");
+        return *this->data();
+    }
 
     // Returns a const reference to the last element in the array.
-    hxconstexpr_fn const T_& back() const { hxassert(size()); return *(m_end_ - 1); }
+    hxconstexpr_fn const T_& back() const {
+        hxassertmsg(!this->empty(), "invalid reference");
+        return *(m_end_ - 1);
+    }
 
     // Returns a reference to the last element in the array.
-    hxconstexpr_fn T_& back() { hxassert(size()); return *(m_end_ - 1); }
+    hxconstexpr_fn T_& back() {
+        hxassertmsg(!this->empty(), "invalid reference");
+        return *(m_end_ - 1);
+    }
 
     // Returns a const reference to the element at the specified index.
     // - index: The index of the element.
     hxconstexpr_fn const T_& operator[](size_t index_) const {
-        hxassert(index_ < this->size());
+        hxassertmsg(index_ < this->size(), "invalid index");
         return this->data()[index_];
     }
 
     // Returns a reference to the element at the specified index.
     // - index: The index of the element.
     hxconstexpr_fn T_& operator[](size_t index_) {
-        hxassert(index_ < this->size());
+        hxassertmsg(index_ < this->size(), "invalid index");
         return this->data()[index_];
     }
 
     // Returns the number of elements in the array.
     hxconstexpr_fn size_t size() const {
-        hxassert(!m_end_ == !this->data());
         return (size_t)(m_end_ - this->data());
     }
 
@@ -216,13 +229,13 @@ public:
     // Adds a copy of the specified element to the end of the array.
     // - t: The element to add.
     hxconstexpr_fn void push_back(const T_& t_) {
-        hxassert(this->size() < this->capacity());
+        hxassertmsg(!this->full(), "stack overflow");
         ::new (m_end_++) T_(t_);
     }
 
     // Removes the last element from the array.
     hxconstexpr_fn void pop_back() {
-        hxassert(this->size());
+        hxassertmsg(!this->empty(), "stack underflow");
         (--m_end_)->~T_();
     }
 
@@ -256,14 +269,14 @@ public:
 
     // Variant of emplace_back() that returns a pointer for use with placement new.
     hxconstexpr_fn void* emplace_back_unconstructed() {
-        hxassert(this->size() < this->capacity());
+        hxassertmsg(!this->full(), "stack overflow");
         return (void*)m_end_++;
     }
 
     // Variant of erase() that moves the end element down to replace erased element.
     // - index: The index of the element to erase.
     hxconstexpr_fn void erase_unordered(size_t index_) {
-        hxassert(index_ < this->size());
+        hxassertmsg(index_ < this->size(), "invalid index");
         T_* it_ = this->data() + index_;
         if (it_ != --m_end_) {
             *it_ = *m_end_;
@@ -274,7 +287,7 @@ public:
     // Variant of erase() that moves the end element down to replace the erased element.
     // - it: Pointer to the element to erase.
     hxconstexpr_fn void erase_unordered(T_* it_) {
-        hxassert((size_t)(it_ - this->data()) < size());
+        hxassertmsg(it_ >= this->data() && it_ < m_end_, "invalid iterator");
         if (it_ != --m_end_) {
             *it_ = *m_end_;
         }

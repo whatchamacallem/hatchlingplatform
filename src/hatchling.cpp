@@ -3,7 +3,6 @@
 #include <hx/hatchling.h>
 #include <hx/hxarray.hpp>
 #include <hx/hxconsole.hpp>
-#include <hx/hxdma.hpp>
 #include <hx/hxfile.hpp>
 #include <hx/hxhash_table_nodes.hpp>
 #include <hx/hxprofiler.hpp>
@@ -180,11 +179,6 @@ void hxinit_internal(void) {
 #endif
 
 	hxmemory_manager_init();
-
-	// No DMA in a web browser.  The DMA code is just scaffolding.
-#ifndef __EMSCRIPTEN__
-	hxdma_init();
-#endif
 }
 
 extern "C"

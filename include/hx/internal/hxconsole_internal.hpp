@@ -1,7 +1,35 @@
 #pragma once
 // Copyright 2017-2025 Adrian Johnston
 
-// hxconsole internals. See hxconsole.h instead.
+// hxconsole inline header and a lot of internals. See hxconsole.h.
+
+// Automatic cast from double with clamping.
+template<typename T_>
+hxconsolenumber_t::operator T_() const {
+	// Reimplement std::numeric_limits for 2's compliment. The << operator
+	// promotes its operands to int and so that requires more casting.
+	// Manipulating the sign bit is not supported by the standard. Sorry.
+	const bool is_signed_ = static_cast<T_>(-1) < T_(0u);
+	const T_ min_value_ = is_signed_ ? T_(T_(1u) << (sizeof(T_) * 8 - 1)) : T_(0u);
+	const T_ max_value_ = ~min_value_;
+
+	double clamped_ = hxclamp(m_x_, (double)min_value_, (double)max_value_);
+	hxassertmsg(m_x_ == clamped_, "parameter overflow: %lf -> %lf", m_x_, clamped_);
+
+	// Asserts may be skipped. Avoid the undefined behavior sanitizer by
+	// clamping value.
+	T_ t = (T_)clamped_;
+	return t;
+}
+
+// Automatic cast from uint without clamping. The sanitizer doesn't complain.
+template<typename T_>
+hxconsolehex_t::operator T_() const {
+	T_ t = (T_)m_x_;
+	hxwarnmsg((uint64_t)t == m_x_, "precision error: %llx -> %llx",
+		(unsigned long long)m_x_, (unsigned long long)t);
+	return t;
+}
 
 // Console tokens are delimited by any whitespace and non-printing low-ASCII
 // characters. NUL is considered a delimiter and must be checked for separately.

@@ -11,32 +11,21 @@ class hxfile;
 // target and reporting the system log back. Configuration files only require
 // file I/O. C-style calls returning bool with up to 4 args using "const char*",
 // hxconsolenumber_t or hxconsolehex_t as parameter types are required for the
-// bindings to work.
+// bindings to work. See the following commands for examples.
 
 // hxconsolenumber_t - A number. Uses double as an intermediate type. This
 // reduces template bloat by limiting parameter types. This is the same type of
 // generic number approach Java_script uses. Always 64-bit.
 class hxconsolenumber_t {
 public:
+    // Zero
     hxconsolenumber_t(void) : m_x_(0.0) { }
+
+    // Construct from any number
     template<typename T_> hxconsolenumber_t(T_ x_) : m_x_((double)x_) { }
-	template<typename T_> operator T_() const {
-        // Reimplement std::numeric_limits for 2's compliment. The << operator
-        // promotes its operands to int and so that requires more casting.
-        // Manipulating the sign bit is not supported by the standard. Sorry.
-        const bool is_signed_ = static_cast<T_>(-1) < T_(0u);
-        const T_ min_value_ = is_signed_ ? T_(T_(1u) << (sizeof(T_) * 8 - 1)) : T_(0u);
-        const T_ max_value_ = ~min_value_;
 
-        double clamped_ = hxclamp(m_x_, (double)min_value_, (double)max_value_);
-        hxassertmsg(m_x_ == clamped_, "parameter overflow: %lf -> %lf", m_x_, clamped_);
-
-        // Asserts may be skipped. Avoid the undefined behavior sanitizer by
-        // clamping value.
-        T_ t = (T_)clamped_;
-        return t;
-    }
-
+    // Automatic casts to all number types.
+    template<typename T_> operator T_() const;
 	operator bool() const { return m_x_ != 0.0; }
 	operator float() const { return (float)m_x_; }
 	operator double() const { return m_x_; }
@@ -54,14 +43,14 @@ private:
 // console. Always 64-bit.
 class hxconsolehex_t {
 public:
+    // Zero
     hxconsolehex_t(void) : m_x_(0u) { }
+
+    // Construct from any integer.
     hxconsolehex_t(uint64_t x_) : m_x_(x_) { }
-	template<typename T_> operator T_() const {
-        T_ t = (T_)m_x_;
-        hxwarnmsg((uint64_t)t == m_x_, "precision error: %llx -> %llx",
-            (unsigned long long)m_x_, (unsigned long long)t);
-        return t;
-    }
+
+    // Automatic cast to all integer types.
+    template<typename T_> operator T_() const;
 
 private:
     hxstatic_assert(sizeof(uint64_t) >= sizeof(uintptr_t), "128-bit pointers?");

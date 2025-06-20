@@ -184,18 +184,6 @@
 #define HX_PROFILER_MAX_RECORDS 4096
 #endif
 
-// HX_DEBUG_DMA - Enable DMA debug if not defined and not a release build. Set
-// to 1 or 0 as needed.
-#if !defined HX_DEBUG_DMA
-#define HX_DEBUG_DMA (HX_RELEASE) < 1
-#endif
-
-// HX_DEBUG_DMA_RECORDS - Number of debug DMA operations tracked. Set to 16 if
-// not defined.
-#if !defined HX_DEBUG_DMA_RECORDS
-#define HX_DEBUG_DMA_RECORDS 16
-#endif
-
 // HX_USE_GOOGLE_TEST: In case you need to use Google Test. Defaults to 0.
 #if !defined HX_USE_GOOGLE_TEST
 #define HX_USE_GOOGLE_TEST 0

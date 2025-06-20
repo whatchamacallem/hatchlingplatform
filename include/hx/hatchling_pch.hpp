@@ -13,7 +13,6 @@
 #include <hx/hxallocator.hpp>
 #include <hx/hxarray.hpp>
 #include <hx/hxconsole.hpp>
-#include <hx/hxdma.hpp>
 #include <hx/hxfile.hpp>
 #include <hx/hxhash_table.hpp>
 #include <hx/hxhash_table_nodes.hpp>

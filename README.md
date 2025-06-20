@@ -6,7 +6,7 @@
 This is a small C++ run-time intended to be developed against on the desktop
 before cross compiling to an embedded target with limited RAM. Does not make
 dynamic allocations except when allocating system allocators. Requires C99
-libraries, a C++98 compiler and may require customization for profiling and DMA.
+libraries, a C++98 compiler and may require customization to run freestanding.
 
 Lately I am using this to learn about C++ library design in the context of core
 C++ runtime features. These are things I might suggest to the realtime working
@@ -57,9 +57,6 @@ is only for releasing to customers after testing with the above.
  * Memory Management. Abstracts a range of allocation strategies behind an RAII
    interface. This is intended for targets where memory fragmentation is not
    allowed. This may save up to 30% of memory and 30% execution time.
-
- * DMA. Cross platform DMA wrapper which allows validation on the host before
-   deploying to a target. Provides profiling information.
 
  * Containers and algorithms. Provides a small non-reallocating subset of
    `std::vector`, `std::allocator` and `std::unordered_{ map, set, multimap,
