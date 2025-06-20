@@ -8,15 +8,13 @@ export POSIXLY_CORRECT=1
 set -o errexit
 
 if [ ! -f "bin/Makefile" ]; then
-rm -rf ./bin; mkdir ./bin && cd ./bin
-cmake ..
+	rm -rf ./bin; mkdir ./bin && cd ./bin
+	cmake ..
 else
-cd ./bin
+	cd ./bin
 fi
 
 make
 ./hxtest
 
-# turn off tracing silently and make sure the command returns 0.
-{ set +x; } 2> /dev/null
 echo 🐉🐉🐉
