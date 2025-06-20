@@ -20,9 +20,7 @@ HX_ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 HX_FLAGS="-m32 -ffast-math -ggdb3 -fdiagnostics-absolute-paths"
 
 # Build artifacts are not retained.
-rm -rf ./bin
-mkdir ./bin
-cd ./bin
+rm -rf ./bin; mkdir ./bin && cd ./bin
 
 set -x
 

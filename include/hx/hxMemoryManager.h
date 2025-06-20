@@ -187,6 +187,17 @@ struct hxDeleter {
 	HX_CONSTEXPR_FN operator bool() const { return true; }
 };
 
+// Implement hxDeleter with NOPs. Allows the compiler to remove the destructors
+// from containers that handle static allocations or don't own their contents for some reason.
+struct hxNullDeleter {
+	// Deletes the object using hxDelete.
+	template <typename T_>
+	HX_CONSTEXPR_FN void operator()(T_*) const { }
+
+	// Always returns false, indicating the deleter should not be called.
+	HX_CONSTEXPR_FN operator bool() const { return false; }
+};
+
 // hxMalloc - Add hxMallocExt args to hxMalloc C interface. Allocates memory with a
 // specific memory manager and alignment.
 inline void* hxMalloc( size_t size_, enum hxMemoryAllocator allocator_, uintptr_t alignment_=HX_ALIGNMENT) {

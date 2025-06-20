@@ -6,9 +6,7 @@ export POSIXLY_CORRECT=1
 set -o errexit
 
 # Build artifacts are not retained.
-rm -rf ./bin
-mkdir ./bin
-cd ./bin
+rm -rf ./bin; mkdir ./bin && cd ./bin
 
 set -x
 

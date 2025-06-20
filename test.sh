@@ -4,6 +4,9 @@
 # Tests Hatchling Platform with gcc and clang in a variety of configurations.
 # Tests C99, C17, C++98, C++11 and C++17.
 #
+# The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:
+#   sudo apt-get install gcc-multilib g++-multilib
+#
 # Adds script args to compiler command line using "$@" so for example calling
 #
 #   ./test.sh -DHX_TEST_ERROR_HANDLING=1
@@ -26,13 +29,8 @@ HX_SANITIZE="-fsanitize=undefined,address -fsanitize-recover=undefined,address"
 HX_DIR=`pwd`
 
 # Build artifacts are not retained.
-rm -rf ./bin
-mkdir ./bin
-cd ./bin
+rm -rf ./bin; mkdir ./bin && cd ./bin
 
-# The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:
-#   sudo apt-get install gcc-multilib g++-multilib
-#
 # Test gcc with both -std=c++98 and -std=c++14. Not using -pedantic-errors with
 # c++98 as "anonymous variadic macros were introduced in c++11."  (This code base
 # and gcc's defaults cheat slightly by pretending c99 was available in c++98.)

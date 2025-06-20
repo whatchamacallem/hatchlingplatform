@@ -23,9 +23,7 @@ HX_AWK_HACK='{print $3, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18 }'
 HX_DIR=`pwd`
 
 # Build artifacts are not retained.
-rm -rf ./bin
-mkdir ./bin
-cd ./bin
+rm -rf ./bin; mkdir ./bin && cd ./bin
 
 set -x
 
@@ -43,7 +41,8 @@ musl-gcc $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I$HX_DIR/include \
 echo ==========================================================================
 echo = Largest elf symbols...
 echo ==========================================================================
-readelf --wide --symbols --demangle hxtest | awk "$HX_AWK_HACK" | sort -nr | grep -v Test | head -n 128
+readelf --wide --symbols --demangle hxtest | awk "$HX_AWK_HACK" | sort -nr \
+	| grep -v Test | head -n 128
 
 echo ==========================================================================
 # prints summary stats for the necessary components of the executable.

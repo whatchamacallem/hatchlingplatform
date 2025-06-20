@@ -91,10 +91,8 @@ void __sanitizer_report_error_summary(const char *error_summary) {
 #if (HX_RELEASE) < 1
 // Implements HX_REGISTER_FILENAME_HASH in debug. See hxStringLiteralHash.h.
 namespace {
-struct hxHashStringLiteral_ : public hxHashTable<hxRegisterStringLiteralHash, 5> {
-	// the nodes are static global. do not free.
-	~hxHashStringLiteral_(void) { releaseAll(); }
-};
+struct hxHashStringLiteral_
+		: public hxHashTable<hxRegisterStringLiteralHash, 5, hxNullDeleter> { };
 
 struct hxFilenameLess {
 	inline bool operator()(const char* lhs, const char* rhs) const {

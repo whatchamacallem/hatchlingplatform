@@ -22,11 +22,8 @@ struct hxConsoleLess_ {
 	}
 };
 
-struct hxConsoleCommandTable_ : public hxHashTable<hxConsoleHashTableNode_, 2> {
-	// do not delete the nodes. they are statically allocated.
-	~hxConsoleCommandTable_(void) {
-		this->releaseAll();
-	}
+struct hxConsoleCommandTable_
+	: public hxHashTable<hxConsoleHashTableNode_, 2, hxNullDeleter> {
 };
 
 // Wrapped to ensure correct construction order.

@@ -24,9 +24,7 @@ set -o errexit
 set -m # job control
 
 # Build artifacts are not retained.
-rm -rf ./bin
-mkdir ./bin
-cd ./bin
+rm -rf ./bin; mkdir ./bin && cd ./bin
 
 emcc -I../include -O2 -fpic -fdiagnostics-absolute-paths -c ../src/*.c ../test/*.c
 
@@ -42,7 +40,7 @@ if [ "$1" != "--headless" ]; then
 	python3 -m http.server 9876 &
 
 	# Launch Chrome if it is installed.
-	if which google-chrome >/dev/null 2>&1 && [ "$1" != "--headless" ]; then
+	if which google-chrome; then
 		google-chrome http://0.0.0.0:9876/ >/dev/null 2>&1;
 	fi
 

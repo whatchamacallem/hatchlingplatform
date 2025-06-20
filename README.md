@@ -87,7 +87,6 @@ is only for releasing to customers after testing with the above.
  * See `LICENSE.txt` for license terms.
 
 Tested using:
- * Microsoft Visual Studio Community 2022
  * gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
  * Ubuntu clang version 18.1.3 (1ubuntu1) x86_64-pc-linux-gnu
  * emcc (Emscripten 4.0.5)
