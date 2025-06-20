@@ -49,7 +49,7 @@ static HX_CONSTEXPR_FN void* hxmalloc_checked(size_t size) {
 	hxassertrelease(t, "malloc fail: %zu bytes\n", size);
 #if (HX_RELEASE) >= 3
 	if (!t) {
-		hxloghandler(hxloglevel_Assert, "malloc fail");
+		hxloghandler(hxloglevel_assert, "malloc fail");
 		::_Exit(EXIT_FAILURE);
 	}
 #endif
@@ -294,7 +294,7 @@ public:
 	void end_allocation_scope(hxmemory_allocator_scope* scope, hxmemory_allocator previous_id);
 
 	hxmemory_allocator_base& get_allocator(hxmemory_allocator id) {
-		hxassert(id >= 0 && id < hxmemory_allocator_Current);
+		hxassert(id >= 0 && id < hxmemory_allocator_current);
 		return *m_memory_allocators[id];
 	}
 
@@ -307,21 +307,21 @@ private:
 	// Nota bene:  The current allocator is a thread local attribute.
 	static HX_THREAD_LOCAL hxmemory_allocator s_hxcurrent_memory_allocator;
 
-	hxmemory_allocator_base* m_memory_allocators[hxmemory_allocator_Current];
+	hxmemory_allocator_base* m_memory_allocators[hxmemory_allocator_current];
 
 	hxmemory_allocator_os_heap     m_memory_allocator_heap;
 	hxmemory_allocator_stack      m_memory_allocator_permanent;
 	hxmemory_allocator_temp_stack  m_memory_allocator_temporary_stack;
 };
 
-HX_THREAD_LOCAL hxmemory_allocator hxmemory_manager::s_hxcurrent_memory_allocator = hxmemory_allocator_Heap;
+HX_THREAD_LOCAL hxmemory_allocator hxmemory_manager::s_hxcurrent_memory_allocator = hxmemory_allocator_heap;
 
 void hxmemory_manager::construct() {
-	s_hxcurrent_memory_allocator = hxmemory_allocator_Heap;
+	s_hxcurrent_memory_allocator = hxmemory_allocator_heap;
 
-	m_memory_allocators[hxmemory_allocator_Heap] = &m_memory_allocator_heap;
-	m_memory_allocators[hxmemory_allocator_Permanent] = &m_memory_allocator_permanent;
-	m_memory_allocators[hxmemory_allocator_Temporary_stack] = &m_memory_allocator_temporary_stack;
+	m_memory_allocators[hxmemory_allocator_heap] = &m_memory_allocator_heap;
+	m_memory_allocators[hxmemory_allocator_permanent] = &m_memory_allocator_permanent;
+	m_memory_allocators[hxmemory_allocator_temporary_stack] = &m_memory_allocator_temporary_stack;
 
 	::new (&m_memory_allocator_heap) hxmemory_allocator_os_heap(); // set vtable ptr.
 	::new (&m_memory_allocator_permanent) hxmemory_allocator_stack();
@@ -335,9 +335,9 @@ void hxmemory_manager::construct() {
 }
 
 void hxmemory_manager::destruct() {
-	hxassertmsg(m_memory_allocator_permanent.get_allocation_count(hxmemory_allocator_Permanent) == 0,
+	hxassertmsg(m_memory_allocator_permanent.get_allocation_count(hxmemory_allocator_permanent) == 0,
 		"leaked permanent allocation");
-	hxassertmsg(m_memory_allocator_temporary_stack.get_allocation_count(hxmemory_allocator_Temporary_stack) == 0,
+	hxassertmsg(m_memory_allocator_temporary_stack.get_allocation_count(hxmemory_allocator_temporary_stack) == 0,
 		"leaked temporary allocation");
 
 	::free(m_memory_allocator_permanent.release());
@@ -347,7 +347,7 @@ void hxmemory_manager::destruct() {
 size_t hxmemory_manager::leak_count() {
 	size_t leak_count = 0;
 	HX_MEMORY_MANAGER_LOCK_();
-	for (int32_t i = 0; i != hxmemory_allocator_Current; ++i) {
+	for (int32_t i = 0; i != hxmemory_allocator_current; ++i) {
 		hxmemory_allocator_base& al = *m_memory_allocators[i];
 		if(al.get_allocation_count((hxmemory_allocator)i)) {
 			hxlogwarning("LEAK IN ALLOCATOR %s count %zu size %zu high_water %zu", al.label(),
@@ -361,7 +361,7 @@ size_t hxmemory_manager::leak_count() {
 }
 
 hxmemory_allocator hxmemory_manager::begin_allocation_scope(hxmemory_allocator_scope* scope, hxmemory_allocator new_id) {
-	hxassert((unsigned int)new_id < (unsigned int)hxmemory_allocator_Current);
+	hxassert((unsigned int)new_id < (unsigned int)hxmemory_allocator_current);
 
 	HX_MEMORY_MANAGER_LOCK_();
 	hxmemory_allocator previous_id = s_hxcurrent_memory_allocator;
@@ -371,7 +371,7 @@ hxmemory_allocator hxmemory_manager::begin_allocation_scope(hxmemory_allocator_s
 }
 
 void hxmemory_manager::end_allocation_scope(hxmemory_allocator_scope* scope, hxmemory_allocator previous_id) {
-	hxassert((unsigned int)previous_id < (unsigned int)hxmemory_allocator_Current);
+	hxassert((unsigned int)previous_id < (unsigned int)hxmemory_allocator_current);
 
 	HX_MEMORY_MANAGER_LOCK_();
 	m_memory_allocators[s_hxcurrent_memory_allocator]->end_allocation_scope(scope, s_hxcurrent_memory_allocator);
@@ -379,7 +379,7 @@ void hxmemory_manager::end_allocation_scope(hxmemory_allocator_scope* scope, hxm
 }
 
 void* hxmemory_manager::allocate(size_t size, hxmemory_allocator id, size_t alignment) {
-	if (id == hxmemory_allocator_Current) {
+	if (id == hxmemory_allocator_current) {
 		id = s_hxcurrent_memory_allocator;
 	}
 
@@ -393,7 +393,7 @@ void* hxmemory_manager::allocate(size_t size, hxmemory_allocator id, size_t alig
 	}
 
 	hxassertmsg(((alignment - 1) & (alignment)) == 0u, "alignment %zd is not power of 2", alignment);
-	hxassertmsg((unsigned int)id < (unsigned int)hxmemory_allocator_Current, "bad allocator: %ud", id);
+	hxassertmsg((unsigned int)id < (unsigned int)hxmemory_allocator_current, "bad allocator: %ud", id);
 
 	HX_MEMORY_MANAGER_LOCK_();
 	void* ptr = m_memory_allocators[id]->allocate(size, alignment);
@@ -471,7 +471,7 @@ extern "C"
 void* hxmalloc(size_t size) {
 	hxinit();
 	hxassertrelease(s_hxmemory_manager, "no memory manager");
-	void* ptr = s_hxmemory_manager->allocate(size, hxmemory_allocator_Current, HX_ALIGNMENT);
+	void* ptr = s_hxmemory_manager->allocate(size, hxmemory_allocator_current, HX_ALIGNMENT);
 	if ((HX_RELEASE) < 1) {
 		::memset(ptr, 0xab, size);
 	}

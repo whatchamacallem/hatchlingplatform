@@ -125,7 +125,7 @@ bool hxprint_hashes(void) {
 
 	// sort by hash.
 	hxlogconsole("string literals in hash order:\n");
-	hxmemory_allocator_scope temporary_stack(hxmemory_allocator_Temporary_stack);
+	hxmemory_allocator_scope temporary_stack(hxmemory_allocator_temporary_stack);
 
 	typedef hxarray<const char*> Filenames;
 	Filenames filenames; filenames.reserve(hxstring_literal_hashes_().size());
@@ -208,11 +208,11 @@ HX_NOEXCEPT_INTRINSIC void hxloghandler_v(hxloglevel level, const char* format, 
 	if (sz <= 0) {
 		return;
 	}
-	if (level == hxloglevel_Warning) {
+	if (level == hxloglevel_warning) {
 		HX_STDOUT_STR_("WARNING ");
 		buf[sz++] = '\n';
 	}
-	else if (level == hxloglevel_Assert) {
+	else if (level == hxloglevel_assert) {
 		HX_STDOUT_STR_("ASSERT_FAIL ");
 		buf[sz++] = '\n';
 	}
@@ -236,11 +236,11 @@ HX_NOEXCEPT_INTRINSIC int hxasserthandler(const char* file, size_t line) {
 	const char* f = hxbasename(file);
 	if (g_hxis_init && g_hxsettings.asserts_to_be_skipped > 0) {
 		--g_hxsettings.asserts_to_be_skipped;
-		hxloghandler(hxloglevel_Assert, "(skipped) %s(%u) hash %08x", f, (unsigned int)line,
+		hxloghandler(hxloglevel_assert, "(skipped) %s(%u) hash %08x", f, (unsigned int)line,
 			(unsigned int)hxstring_literal_hash_debug(file));
 		return 1;
 	}
-	hxloghandler(hxloglevel_Assert, "%s(%u) hash %08x Triggering Breakpoint\n", f, (unsigned int)line,
+	hxloghandler(hxloglevel_assert, "%s(%u) hash %08x Triggering Breakpoint\n", f, (unsigned int)line,
 		(unsigned int)hxstring_literal_hash_debug(file));
 
 	// return to HX_BREAKPOINT at calling line.
@@ -249,7 +249,7 @@ HX_NOEXCEPT_INTRINSIC int hxasserthandler(const char* file, size_t line) {
 #else
 extern "C"
 HX_NOEXCEPT_INTRINSIC HX_NORETURN void hxasserthandler(uint32_t file, size_t line) {
-	hxloghandler(hxloglevel_Assert, "file %08x line %u\n", (unsigned int)file, (unsigned int)line);
+	hxloghandler(hxloglevel_assert, "file %08x line %u\n", (unsigned int)file, (unsigned int)line);
 	_Exit(EXIT_FAILURE);
 }
 #endif

@@ -171,7 +171,7 @@ hxconsole_command(hxconsole_test_register2);
 hxconsole_command(hxconsole_test_register3);
 
 TEST(hxconsole_test, Register_command) {
-	hxlogconsole("TEST_EXPECTING_WARNINGS:\n");
+	hxlogconsole("test_expecting_warnings:\n");
 
 	s_hxconsole_test_result_hook = 0.0f;
 	bool b0 = hxconsole_exec_line("hxconsole_test_register0 77 ..."); // 77 + 3 int8_t string
@@ -316,8 +316,8 @@ hxconsole_command_named(hxconsole_test_file_fn, hxconsole_test_file_fn_name);
 
 TEST(hxconsole_test, Null_test) {
 	uint8_t prev = g_hxsettings.log_level;
-	g_hxsettings.log_level = hxloglevel_Warning;
-	hxloghandler(hxloglevel_Console, "hidden\n");
+	g_hxsettings.log_level = hxloglevel_warning;
+	hxloghandler(hxloglevel_console, "hidden\n");
 	g_hxsettings.log_level = prev;
 
 	hxlog("");
@@ -330,7 +330,7 @@ TEST(hxconsole_test, Null_test) {
 
 TEST(hxconsole_test, File_test) {
 	{
-		hxfile f(hxfile::out, "hxconsole_test_File_test.txt");
+		hxfile f(hxfile::out, "hxconsole_test_file_test.txt");
 		f << "hxconsole_test_file_var 3\n"
 			"  # comment!\n"
 			"\n"
@@ -338,7 +338,7 @@ TEST(hxconsole_test, File_test) {
 			"hxconsole_test_file_fn_name 89\n"
 			"\n";
 	}
-	bool is_ok = hxconsole_exec_line("exec hxconsole_test_File_test.txt");
+	bool is_ok = hxconsole_exec_line("exec hxconsole_test_file_test.txt");
 	ASSERT_TRUE(is_ok);
 
 	ASSERT_EQ(s_hxconsole_test_file_var1, 78.0f);
@@ -352,37 +352,37 @@ bool hxconsole_test_failing_command(void) {
 hxconsole_command_named(hxconsole_test_failing_command, hxconsole_test_failing_command);
 
 TEST(hxconsole_test, File_fail) {
-	hxlogconsole("TEST_EXPECTING_WARNINGS:\n");
+	hxlogconsole("test_expecting_warnings:\n");
 
 	// test garbage in a script
 	{
-		hxfile(hxfile::out, "hxconsole_test_File_test.txt") << "<unknown symbols>\n";
+		hxfile(hxfile::out, "hxconsole_test_file_test.txt") << "<unknown symbols>\n";
 	}
-	ASSERT_FALSE(hxconsole_exec_filename("hxconsole_test_File_test.txt"));
+	ASSERT_FALSE(hxconsole_exec_filename("hxconsole_test_file_test.txt"));
 
 	// test a bad function call
 	{
-		hxfile(hxfile::out, "hxconsole_test_File_test.txt") << "exec\n";
+		hxfile(hxfile::out, "hxconsole_test_file_test.txt") << "exec\n";
 	}
-	ASSERT_FALSE(hxconsole_exec_filename("hxconsole_test_File_test.txt"));
+	ASSERT_FALSE(hxconsole_exec_filename("hxconsole_test_file_test.txt"));
 
 	// test a failing command
 	{
-		hxfile(hxfile::out, "hxconsole_test_File_test.txt") << "hxconsole_test_failing_command\n";
+		hxfile(hxfile::out, "hxconsole_test_file_test.txt") << "hxconsole_test_failing_command\n";
 	}
-	ASSERT_FALSE(hxconsole_exec_filename("hxconsole_test_File_test.txt"));
+	ASSERT_FALSE(hxconsole_exec_filename("hxconsole_test_file_test.txt"));
 }
 
 #if (HX_RELEASE) < 2 && !defined __EMSCRIPTEN__
 TEST(hxconsole_test, File_peek_poke) {
 	uint32_t target[] = { 111, 777, 333 };
 	{
-		hxfile f(hxfile::out, "hxconsole_test_File_test.txt");
+		hxfile f(hxfile::out, "hxconsole_test_file_test.txt");
 		f.print("peek %zx 4\n", (size_t)target);
 		f.print("poke %zx 4 de\n", (size_t)(target + 1));
 		f.print("hexdump %zx 12\n", (size_t)target);
 	}
-	bool is_ok = hxconsole_exec_line("exec hxconsole_test_File_test.txt");
+	bool is_ok = hxconsole_exec_line("exec hxconsole_test_file_test.txt");
 	ASSERT_TRUE(is_ok);
 
 	ASSERT_EQ(target[0], 111);
@@ -392,11 +392,11 @@ TEST(hxconsole_test, File_peek_poke) {
 TEST(hxconsole_test, File_peek_poke_floats) {
 	float target[] = { 111.0f, 777.0f, 333.0f };
 	{
-		hxfile f(hxfile::out, "hxconsole_test_File_test.txt");
+		hxfile f(hxfile::out, "hxconsole_test_file_test.txt");
 		f.print("poke %zx 4 435E0000\n", (size_t)(target + 1));
 		f.print("floatdump %zx 3\n", (size_t)target);
 	}
-	bool is_ok = hxconsole_exec_line("exec hxconsole_test_File_test.txt");
+	bool is_ok = hxconsole_exec_line("exec hxconsole_test_file_test.txt");
 	ASSERT_TRUE(is_ok);
 
 	ASSERT_EQ(target[0], 111.0f);

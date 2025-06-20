@@ -11,15 +11,15 @@ class hxradix_sort_test :
 {
 public:
 	template<typename Key>
-	struct Test_object {
-		Test_object(Key k) : id(k) { }
-		~Test_object() { id = (Key)0; }
-		bool operator<(const Test_object& rhs) const { return id < rhs.id; }
+	struct test_object {
+		test_object(Key k) : id(k) { }
+		~test_object() { id = (Key)0; }
+		bool operator<(const test_object& rhs) const { return id < rhs.id; }
 		Key id;
 	};
 
     template<typename Key>
-    void generate(hxarray<Test_object<Key> >& a, uint32_t size, uint32_t mask, Key offset) {
+    void generate(hxarray<test_object<Key> >& a, uint32_t size, uint32_t mask, Key offset) {
         a.reserve(size);
         for(uint32_t i= size;i--;) {
             uint32_t x = m_prng_() & mask;
@@ -29,36 +29,36 @@ public:
 
 	template<typename Key>
 	static int q_sort_compare(const void* a, const void* b) {
-		if (*(const Test_object<Key>*)a < *(const Test_object<Key>*)b) { return -1; }
-		if (*(const Test_object<Key>*)b < *(const Test_object<Key>*)a) { return 1; }
+		if (*(const test_object<Key>*)a < *(const test_object<Key>*)b) { return -1; }
+		if (*(const test_object<Key>*)b < *(const test_object<Key>*)a) { return 1; }
 		return 0;
 	}
 
 	template<typename Key>
 	void test(uint32_t size, uint32_t mask, Key offset) {
-		hxmemory_allocator_scope temporary_stack(hxmemory_allocator_Temporary_stack);
+		hxmemory_allocator_scope temporary_stack(hxmemory_allocator_temporary_stack);
 
 		// Generate test data
-		hxarray<Test_object<Key> > a;
+		hxarray<test_object<Key> > a;
 		generate<Key>(a, size, mask, offset);
 
 		// Copy and sort test data
-		hxarray<Test_object<Key> > b(a);
-		::qsort(b.data(), b.size(), sizeof(Test_object<Key>), q_sort_compare<Key>);
+		hxarray<test_object<Key> > b(a);
+		::qsort(b.data(), b.size(), sizeof(test_object<Key>), q_sort_compare<Key>);
 
 		// Radix sort
-		hxradix_sort<Key, Test_object<Key> > rs; rs.reserve(size);
+		hxradix_sort<Key, test_object<Key> > rs; rs.reserve(size);
 		for (uint32_t i = size; i--;) {
 			rs.insert(a[i].id, &a[i]);
 		}
 
-		rs.sort(hxmemory_allocator_Temporary_stack);
+		rs.sort(hxmemory_allocator_temporary_stack);
 
 		ASSERT_EQ(b.size(), size);
 		ASSERT_EQ(rs.size(), size);
 
-		typename hxradix_sort<Key, Test_object<Key> >::iterator it = rs.begin();
-		typename hxradix_sort<Key, Test_object<Key> >::const_iterator cit = rs.c_begin();
+		typename hxradix_sort<Key, test_object<Key> >::iterator it = rs.begin();
+		typename hxradix_sort<Key, test_object<Key> >::const_iterator cit = rs.c_begin();
 
 		for (uint32_t i=0u; i < size; ++i) {
 			ASSERT_EQ(b[i].id, rs[i].id);
@@ -76,14 +76,14 @@ public:
 TEST_F(hxradix_sort_test, Null) {
 	hxradix_sort<uint32_t, const char> rs;
 
-	rs.sort(hxmemory_allocator_Temporary_stack);
+	rs.sort(hxmemory_allocator_temporary_stack);
 	ASSERT_EQ(rs.size(), 0u);
 	ASSERT_TRUE(rs.empty());
 
 	rs.reserve(1u);
 	rs.insert(123u, "s");
 
-	rs.sort(hxmemory_allocator_Temporary_stack);
+	rs.sort(hxmemory_allocator_temporary_stack);
 	ASSERT_EQ(rs.size(), 1u);
 	ASSERT_EQ(rs[0], 's');
 	ASSERT_EQ(*rs.get(0), 's');

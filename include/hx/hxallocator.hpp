@@ -109,10 +109,10 @@ public:
 protected:
     // Capacity is set by first call to reserve_storage and may not be extended.
     // size: The number of elements of type T to allocate space for.
-    // allocator: The memory manager ID to use for allocation (default: hxmemory_allocator_Current)
+    // allocator: The memory manager ID to use for allocation (default: hxmemory_allocator_current)
     // alignment: The alignment to for the allocation. (default: HX_ALIGNMENT)
     HX_CONSTEXPR_FN void reserve_storage(size_t size_,
-            hxmemory_allocator allocator_=hxmemory_allocator_Current,
+            hxmemory_allocator allocator_=hxmemory_allocator_current,
             uintptr_t alignment_=HX_ALIGNMENT) {
         if (size_ <= m_capacity_) { return; }
         hxassertrelease(m_capacity_ == 0, "allocator reallocation disallowed.");

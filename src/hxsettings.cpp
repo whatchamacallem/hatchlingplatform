@@ -5,7 +5,7 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// hxsettings - g_hxsettings is declared in hxcUtils.c for maximum portability.
+// hxsettings - g_hxsettings is declared in hxc_utils.c for maximum portability.
 
 namespace {
 #if (HX_RELEASE) < 1
@@ -25,7 +25,7 @@ hxconsole_variable_named(g_hxsettings.log_level, loglevel);
 } // namespace
 
 void hxsettings_construct() {
-	g_hxsettings.log_level = hxloglevel_Log;
+	g_hxsettings.log_level = hxloglevel_log;
 	g_hxsettings.deallocate_permanent = false;
 
 #if (HX_RELEASE) < 1

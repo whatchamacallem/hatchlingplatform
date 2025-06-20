@@ -7,7 +7,7 @@ class hxfile;
 
 // hxconsole API - Implements a simple console for remote use or to implement
 // configuration files. Output is directed to the system log with
-// hxloglevel_Console. A remote console will require forwarding commands to the
+// hxloglevel_console. A remote console will require forwarding commands to the
 // target and reporting the system log back. Configuration files only require
 // file I/O. C-style calls returning bool with up to 4 args using "const char*",
 // hxconsolenumber_t or hxconsolehex_t as parameter types are required for the

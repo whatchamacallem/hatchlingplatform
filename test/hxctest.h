@@ -8,7 +8,7 @@ extern "C" {
 #include <stdbool.h>
 #endif
 
-bool hxcTest_all(void);
+bool hxctest_all(void);
 
 #ifdef __cplusplus
 } // extern "C"

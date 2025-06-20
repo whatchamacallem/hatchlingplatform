@@ -66,8 +66,8 @@ public:
 			}
 
 			// prints full path error messages that can be clicked on in an ide.
-			hxloghandler(hxloglevel_Assert, "%s.%s", m_current_test_->suite_(), m_current_test_->case_());
-			hxloghandler(hxloglevel_Assert, "%s(%zu): %s", file_, line_, message_);
+			hxloghandler(hxloglevel_assert, "%s.%s", m_current_test_->suite_(), m_current_test_->case_());
+			hxloghandler(hxloglevel_assert, "%s(%zu): %s", file_, line_, message_);
 
 			// Implements GTEST_FLAG_SET(break_on_failure, true);
 #if (HX_TEST_ERROR_HANDLING) == 0 && (HX_RELEASE) == 0
@@ -96,7 +96,7 @@ public:
 				{
 					// Tests should have no side effects. Therefore all allocations must be
 					// safe to reset.
-					hxmemory_allocator_scope temporary_stack(hxmemory_allocator_Temporary_stack);
+					hxmemory_allocator_scope temporary_stack(hxmemory_allocator_temporary_stack);
 					(*it_)->run_();
 				}
 #ifdef __cpp_exceptions
@@ -124,11 +124,11 @@ public:
 		hxwarnmsg(m_pass_count_ + m_fail_count_, "NOTHING TESTED");
 
 		if (m_pass_count_ != 0 && m_fail_count_ == 0) {
-			hxloghandler(hxloglevel_Console, "[  PASSED  ] %zu test%s.\n", m_pass_count_,
+			hxloghandler(hxloglevel_console, "[  PASSED  ] %zu test%s.\n", m_pass_count_,
 				((m_pass_count_ != 1) ? "s" : ""));
 		}
 		else {
-			hxloghandler(hxloglevel_Console, " %zu FAILED TEST%s\n", m_fail_count_,
+			hxloghandler(hxloglevel_console, " %zu FAILED TEST%s\n", m_fail_count_,
 				((m_fail_count_ != 1) ? "S" : ""));
 			m_fail_count_ = hxmax(m_fail_count_, (size_t)1u); // Nothing tested is failure.
 		}

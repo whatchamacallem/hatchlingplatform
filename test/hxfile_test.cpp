@@ -35,22 +35,22 @@ TEST_F(hxfile_test, Empty_name) {
 #endif
 
 TEST_F(hxfile_test, Read_write) {
-	hxfile f(hxfile::in | hxfile::out | hxfile::failable, "hxfile_test_Read_write.txt");
-	f << "hxfile_test_Read_write.txt";
+	hxfile f(hxfile::in | hxfile::out | hxfile::failable, "hxfile_test_read_write.txt");
+	f << "hxfile_test_read_write.txt";
 
 	ASSERT_EQ(f.good(), true);
 	ASSERT_EQ(f.is_open(), true);
 }
 
 TEST_F(hxfile_test, Not_exist) {
-	hxfile f(hxfile::in | hxfile::failable, "TEST_FILE_DOES_NOT_EXIST_%d", 123);
+	hxfile f(hxfile::in | hxfile::failable, "test_file_does_not_exist_%d", 123);
 	ASSERT_EQ(f.good(), false);
 	ASSERT_EQ(f.is_open(), false);
 	ASSERT_EQ((bool)(f.mode() & hxfile::failable), true);
 }
 
 TEST_F(hxfile_test, Operators) {
-	hxfile f(hxfile::out | hxfile::failable, "hxfile_test_Operators.bin");
+	hxfile f(hxfile::out | hxfile::failable, "hxfile_test_operators.bin");
 	X x;
 	int a = -3;
 	x.a = 77777u;
@@ -62,7 +62,7 @@ TEST_F(hxfile_test, Operators) {
 	ASSERT_FALSE(f.eof());
 	f.close();
 
-	f.open(hxfile::in | hxfile::failable, "hxfile_test_Operators.bin");
+	f.open(hxfile::in | hxfile::failable, "hxfile_test_operators.bin");
 	X y;
 	int b;
 	ASSERT_TRUE(f.good());

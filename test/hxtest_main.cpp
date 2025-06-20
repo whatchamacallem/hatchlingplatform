@@ -8,26 +8,26 @@
 
 #include <stdio.h>
 
-#include "hxcTest.h"
+#include "hxctest.h"
 
 HX_REGISTER_FILENAME_HASH
 
 // Run all the C tests.
-TEST(hxcTest, All_tests) {
-	ASSERT_TRUE(hxcTest_all());
+TEST(hxctest, All_tests) {
+	ASSERT_TRUE(hxctest_all());
 }
 
 // These two tests test the test framework by failing.
 #if HX_TEST_ERROR_HANDLING
 TEST(hxdeath_test, Fail) {
-	hxlog("TEST_EXPECTING_ASSERTS:\n");
+	hxlog("test_expecting_asserts:\n");
 	SUCCEED();
 	for (int i = 10; i--;) {
 		FAIL() << "this message is intentionally blank.\n";
 	}
 }
 TEST(hxdeath_test, Nothing_asserted) {
-	hxlog("TEST_EXPECTING_ASSERT:\n");
+	hxlog("test_expecting_assert:\n");
 }
 #endif
 
@@ -47,7 +47,7 @@ static bool hxrun_all_tests(void) {
 	hxassertrelease(tests_failing == s_hxexpected_failures,
 		"expected %d tests to fail", s_hxexpected_failures);
 	// there are no asserts at level 3.
-	hxloghandler(hxloglevel_Warning, "expected %d tests to fail", s_hxexpected_failures);
+	hxloghandler(hxloglevel_warning, "expected %d tests to fail", s_hxexpected_failures);
 	return tests_failing == s_hxexpected_failures;
 #else
 	return tests_failing == 0;
@@ -92,7 +92,7 @@ int main(int argc, char**argv) {
 	testing::InitGoogleTest(&argc, argv);
 
 #if (HX_USE_GOOGLE_TEST) && (HX_RELEASE) == 0
-    GTEST_FLAG_SET(break_on_failure, true);
+    Gtest_flag_set(break_on_failure, true);
 #endif
 
 	return hxtest_main(argc, argv);
