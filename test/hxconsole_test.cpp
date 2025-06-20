@@ -10,52 +10,52 @@ HX_REGISTER_FILENAME_HASH
 // hxconsole_test::Command_factory
 
 namespace {
-	enum hxconsole_test_type_iD {
-		hxconsole_test_type_iD_Void,
-		hxconsole_test_type_iD_Char,
-		hxconsole_test_type_iD_Short,
-		hxconsole_test_type_iD_Int,
-		hxconsole_test_type_iD_Bool,
-		hxconsole_test_type_iD_UChar,
-		hxconsole_test_type_iD_UShort,
-		hxconsole_test_type_iD_UInt,
-		hxconsole_test_type_iD_Float,
-		hxconsole_test_type_iD_Long_long,
-		hxconsole_test_type_iD_ULong_long,
-		hxconsole_test_type_iD_Double,
-		hxconsole_test_type_iD_MAX
+	enum hxconsole_test_type_id {
+		hxconsole_test_type_id_Void,
+		hxconsole_test_type_id_Char,
+		hxconsole_test_type_id_Short,
+		hxconsole_test_type_id_Int,
+		hxconsole_test_type_id_Bool,
+		hxconsole_test_type_id_UChar,
+		hxconsole_test_type_id_UShort,
+		hxconsole_test_type_id_UInt,
+		hxconsole_test_type_id_Float,
+		hxconsole_test_type_id_LongLong,
+		hxconsole_test_type_id_ULongLong,
+		hxconsole_test_type_id_Double,
+		hxconsole_test_type_id_MAX
 	};
 
 	int32_t c_hxconsole_test_call_flags = 0;
 
-	const int8_t c_hxconsole_test_expected_char = 123;
-	const int16_t c_hxconsole_test_expected_short = -234;
-	const int32_t c_hxconsole_test_expected_int = -345;
-	const bool c_hxconsole_test_expected_bool = true;
-	const uint8_t c_hxconsole_test_expected_uChar = 12;
-	const uint16_t c_hxconsole_test_expected_uShort = 2345;
-	const uint32_t c_hxconsole_test_expected_uInt = 3456;
-	const float c_hxconsole_test_expected_float = 6.78f;
+	const int8_t c_hxconsole_test_expectedChar = 123;
+	const int16_t c_hxconsole_test_expectedShort = -234;
+	const int32_t c_hxconsole_test_expectedInt = -345;
+	const bool c_hxconsole_test_expectedBool = true;
+	const uint8_t c_hxconsole_test_expectedUChar = 12;
+	const uint16_t c_hxconsole_test_expectedUShort = 2345;
+	const uint32_t c_hxconsole_test_expectedUInt = 3456;
+	const float c_hxconsole_test_expectedFloat = 6.78f;
 
-	const int64_t c_hxconsole_test_expected_long_long = 56789ll;
-	const uint64_t c_hxconsole_test_expected_uLong_long = 67890ull;
-	const double c_hxconsole_test_expected_double = 7.89;
+	const int64_t c_hxconsole_test_expectedLongLong = 56789ll;
+	const uint64_t c_hxconsole_test_expectedULongLong = 67890ull;
+	const double c_hxconsole_test_expectedDouble = 7.89;
 
 	template<typename T>
-	void hxconsole_test_type_check_t(T t, hxconsole_test_type_iD id, T expected) {
+	void hxconsole_test_type_check_t(T t, hxconsole_test_type_id id, T expected) {
 		c_hxconsole_test_call_flags |= 1 << (int32_t)id;
 		ASSERT_EQ(t, expected);
 	}
-	void hxconsole_test_type_check_t(float t, hxconsole_test_type_iD id, float expected) {
+	void hxconsole_test_type_check_t(float t, hxconsole_test_type_id id, float expected) {
 		c_hxconsole_test_call_flags |= 1 << (int32_t)id;
 		ASSERT_NEAR(expected, t, 0.00001f); // This loses precision with -ffast-math.
 	}
 
-#define hxconsole_test_type_check(T, t) hxconsole_test_type_check_t(t, HX_CONCATENATE(hxconsole_test_type_iD_, T), \
+#define hxconsole_test_type_check(T, t) hxconsole_test_type_check_t(t, HX_CONCATENATE(hxconsole_test_type_id_, T), \
 	HX_CONCATENATE(c_hxconsole_test_expected, T))
 
 	bool hxconsole_test_fn0() {
-		c_hxconsole_test_call_flags |= 1 << (int32_t)hxconsole_test_type_iD_Void;
+		c_hxconsole_test_call_flags |= 1 << (int32_t)hxconsole_test_type_id_Void;
 		return true;
 	}
 
@@ -84,8 +84,8 @@ namespace {
 		return 4;
 	}
 	bool hxconsole_test_fn8(hxconsolenumber_t a0, hxconsolenumber_t a1, hxconsolenumber_t a2) {
-		hxconsole_test_type_check(Long_long, (int64_t)a0);
-		hxconsole_test_type_check(ULong_long, (uint64_t)a1);
+		hxconsole_test_type_check(LongLong, (int64_t)a0);
+		hxconsole_test_type_check(ULongLong, (uint64_t)a1);
 		hxconsole_test_type_check(Double, (double)a2);
 		return true;
 	}
@@ -114,7 +114,7 @@ TEST(hxconsole_test, Command_factory) {
 	ASSERT_FALSE(hxconsole_command_factory_(hxconsole_test_fn8).execute_("56d789 67890 7.89"));
 
 	// Check that all flags have been set.
-	ASSERT_EQ(c_hxconsole_test_call_flags, (1<<hxconsole_test_type_iD_MAX)-1);
+	ASSERT_EQ(c_hxconsole_test_call_flags, (1<<hxconsole_test_type_id_MAX)-1);
 }
 
 // Trigger some asserts and then call ASSERT_FALSE a few times. Show that asserts

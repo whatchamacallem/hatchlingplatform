@@ -68,11 +68,11 @@ clang -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
 # generate pch. clang does this automatically when a c++ header file is the target.
 clang++ -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
 	-DHX_USE_CPP_THREADS=$I -pthread -std=c++17 -fno-exceptions -fdiagnostics-absolute-paths \
-	$HX_SANITIZE "$@" ../include/hx/hatchlingPch.hpp -o hatchlingPch.hpp.pch
+	$HX_SANITIZE "$@" ../include/hx/hatchling_pch.hpp -o hatchling_pch.hpp.pch
 # compile C++ and link
 clang++ -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
 	-DHX_USE_CPP_THREADS=$I -pthread -std=c++17 -fno-exceptions -fdiagnostics-absolute-paths \
-	$HX_SANITIZE "$@" -include-pch hatchlingPch.hpp.pch ../*/*.cpp *.o \
+	$HX_SANITIZE "$@" -include-pch hatchling_pch.hpp.pch ../*/*.cpp *.o \
 	-lpthread -lstdc++ -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
 rm -f hxtest *.o *.txt *.bin *.json

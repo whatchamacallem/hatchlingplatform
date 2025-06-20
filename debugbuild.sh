@@ -29,11 +29,11 @@ clang $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
 
 # Make a pch just in case it helps.
 clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
-	-std=c++17 -pthread -fno-exceptions -fno-rtti ../include/hx/hatchlingPch.hpp \
-	-o hatchlingPch.hpp.pch
+	-std=c++17 -pthread -fno-exceptions -fno-rtti ../include/hx/hatchling_pch.hpp \
+	-o hatchling_pch.hpp.pch
 
 clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
-	-std=c++17 -pthread -fno-exceptions -fno-rtti -include-pch hatchlingPch.hpp.pch \
+	-std=c++17 -pthread -fno-exceptions -fno-rtti -include-pch hatchling_pch.hpp.pch \
 	../*/*.cpp *.o -lpthread -lstdc++ -lm -o hxtest
 
 # turn off tracing silently and make sure the command returns 0.
