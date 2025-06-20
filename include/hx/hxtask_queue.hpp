@@ -4,7 +4,7 @@
 #include <hx/hatchling.h>
 #include <hx/hxtask.hpp>
 
-#if HX_USE_CPP_THREADS
+#if HX_USE_THREADS
 #include <mutex>
 #include <condition_variable>
 #include <thread>
@@ -40,7 +40,7 @@ private:
     hxtask* m_next_task_;
     uint32_t m_running_queue_guard_;
 
-#if HX_USE_CPP_THREADS
+#if HX_USE_THREADS
     enum executor_mode_t_ {
         executor_mode_pool_,
         executor_mode_waiting_,

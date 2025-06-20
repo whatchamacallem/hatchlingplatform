@@ -15,7 +15,7 @@ HX_ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
 	-pedantic-errors -Wfatal-errors"
 
-HX_FLAGS="-DHX_USE_CPP_THREADS=0 -g -ffunction-sections -fdata-sections -ffast-math"
+HX_FLAGS="-DHX_USE_THREADS=0 -g -ffunction-sections -fdata-sections -ffast-math"
 
 # Allow demangled C++ names to pass through awk.
 HX_AWK_HACK='{print $3, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18 }'

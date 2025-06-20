@@ -13,7 +13,7 @@ hxtask_queue::hxtask_queue(int32_t thread_pool_size_)
 
 {
     (void)thread_pool_size_;
-#if HX_USE_CPP_THREADS
+#if HX_USE_THREADS
     m_thread_pool_size_ = (thread_pool_size_ >= 0) ? thread_pool_size_
         : ((int32_t)std::thread::hardware_concurrency() - 1);
     if (m_thread_pool_size_ > 0) {
@@ -26,7 +26,7 @@ hxtask_queue::hxtask_queue(int32_t thread_pool_size_)
 }
 
 hxtask_queue::~hxtask_queue() {
-#if HX_USE_CPP_THREADS
+#if HX_USE_THREADS
     if (m_thread_pool_size_ > 0) {
         // Contribute current thread, request waiting until completion and signal stopping.
         executor_thread_(this, executor_mode_stopping_);
@@ -50,7 +50,7 @@ hxtask_queue::~hxtask_queue() {
 void hxtask_queue::enqueue(hxtask* task_) {
     task_->set_task_queue(this);
 
-#if HX_USE_CPP_THREADS
+#if HX_USE_THREADS
     if (m_thread_pool_size_ > 0) {
         std::unique_lock<std::mutex> lock_(m_mutex_);
         hxassertrelease(m_running_queue_guard_ == running_queue_guard_value_, "enqueue to stopped queue");
@@ -67,7 +67,7 @@ void hxtask_queue::enqueue(hxtask* task_) {
 }
 
 void hxtask_queue::wait_for_all() {
-#if HX_USE_CPP_THREADS
+#if HX_USE_THREADS
     if (m_thread_pool_size_ > 0) {
         // Contribute current thread and request waiting until completion.
         executor_thread_(this, executor_mode_waiting_);
@@ -89,7 +89,7 @@ void hxtask_queue::wait_for_all() {
     }
 }
 
-#if HX_USE_CPP_THREADS
+#if HX_USE_THREADS
 void hxtask_queue::executor_thread_(hxtask_queue* q_, executor_mode_t_ mode_) {
     hxtask* task_ = hxnull;
     for (;;) {

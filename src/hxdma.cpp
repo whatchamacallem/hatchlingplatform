@@ -6,7 +6,7 @@
 #include <hx/hxdma.hpp>
 #include <hx/hxarray.hpp>
 #include <hx/hxprofiler.hpp>
-#if HX_USE_CPP_THREADS
+#if HX_USE_THREADS
 #include <mutex>
 #endif
 
@@ -28,7 +28,7 @@ public:
 hxarray<hxdma_debug_record_, HX_DEBUG_DMA_RECORDS> s_hxdma_debug_records;
 size_t s_hxdma_barrier_counter = 0u;
 
-#if HX_USE_CPP_THREADS
+#if HX_USE_THREADS
 std::mutex s_hxdma_debug_mutex;
 #define HX_DMA_DEBUG_MUTEX_LOCK std::lock_guard<std::mutex> debug_guard_(s_hxdma_debug_mutex)
 #else

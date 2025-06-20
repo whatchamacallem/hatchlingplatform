@@ -9,7 +9,7 @@
 
 #include <hx/hxarray.hpp>
 
-#if HX_USE_CPP_THREADS
+#if HX_USE_THREADS
 #include <mutex>
 
 #define HX_PROFILER_LOCK_() std::unique_lock<std::mutex> hxprofiler_mutex_lock_(g_hxprofiler_.m_mutex_)
@@ -54,7 +54,7 @@ private:
 	template<hxcycles_t min_cycles_> friend class hxprofiler_scope_internal_;
 
 	bool m_is_started_;
-#if HX_USE_CPP_THREADS
+#if HX_USE_THREADS
 	std::mutex m_mutex_;
 #endif
 	hxarray<hxprofiler_record_, HX_PROFILER_MAX_RECORDS> m_records;

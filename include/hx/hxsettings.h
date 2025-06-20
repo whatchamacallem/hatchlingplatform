@@ -41,9 +41,9 @@
 #define _HAS_EXCEPTIONS 0
 #endif
 
-#if !defined HX_USE_CPP_THREADS
-// HX_USE_CPP_THREADS - _MSC_VER specific thread support macro.
-#define HX_USE_CPP_THREADS __STDCPP_THREADS__
+#if !defined HX_USE_THREADS
+// HX_USE_THREADS - _MSC_VER specific thread support macro.
+#define HX_USE_THREADS __STDCPP_THREADS__
 #endif
 
 // A hosted environment has an OS and C++ standard library.
@@ -68,13 +68,13 @@
 // Other compilers will require customization.
 
 // C++11 threads in WASM needs more glue.
-#if !defined HX_USE_CPP_THREADS
+#if !defined HX_USE_THREADS
 #ifdef __EMSCRIPTEN__
-// HX_USE_CPP_THREADS - Set to 0 for Emscripten.
-#define HX_USE_CPP_THREADS 0
+// HX_USE_THREADS - Set to 0 for Emscripten.
+#define HX_USE_THREADS 0
 #else
-// HX_USE_CPP_THREADS - Enable threads if C++11 or newer.
-#define HX_USE_CPP_THREADS (HX_CPLUSPLUS >= 201103L)
+// HX_USE_THREADS - Enable threads if C++11 or newer.
+#define HX_USE_THREADS (HX_CPLUSPLUS >= 201103L)
 #endif
 #endif
 
@@ -138,10 +138,10 @@
 
 // hxthread_local - A version of thread_local that compiles to nothing when
 // there is no threading.
-#if HX_USE_CPP_THREADS && !defined hxthread_local
+#if HX_USE_THREADS
 #define hxthread_local thread_local
 #else
-#define hxthread_local // single threaded operation can ignore thread_local
+#define hxthread_local
 #endif
 
 // HX_MAX_LINE - Set to 500 if not defined. Maximum length for formatted messages
