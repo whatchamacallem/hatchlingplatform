@@ -236,28 +236,28 @@ public:
     value_t_* get(uint32_t index_) { return (value_t_*)m_array_[index_].m_val_; }
 
     // Returns a const_iterator to the beginning of the array.
-    const_iterator begin() const { return const_iterator(m_array_.c_begin()); }
+    const_iterator begin() const { return const_iterator(m_array_.cbegin()); }
 
     // Returns an iterator to the beginning of the array.
     iterator begin() { return iterator(m_array_.begin()); }
 
     // Returns a const_iterator to the beginning of the array (const version).
-    const_iterator c_begin() const { return const_iterator(m_array_.c_begin()); }
+    const_iterator cbegin() const { return const_iterator(m_array_.cbegin()); }
 
     // Returns a const_iterator to the beginning of the array (non-const version).
-    const_iterator c_begin() { return const_iterator(m_array_.c_begin()); }
+    const_iterator cbegin() { return const_iterator(m_array_.cbegin()); }
 
     // Returns a const_iterator to the end of the array.
-    const_iterator end() const { return const_iterator(m_array_.c_end()); }
+    const_iterator end() const { return const_iterator(m_array_.cend()); }
 
     // Returns an iterator to the end of the array.
     iterator end() { return iterator(m_array_.end()); }
 
     // Returns a const_iterator to the end of the array (const version).
-    const_iterator c_end() const { return const_iterator(m_array_.c_end()); }
+    const_iterator cend() const { return const_iterator(m_array_.cend()); }
 
     // Returns a const_iterator to the end of the array (non-const version).
-    const_iterator c_end() { return const_iterator(m_array_.c_end()); }
+    const_iterator cend() { return const_iterator(m_array_.cend()); }
 
     // Returns the number of elements in the array.
     uint32_t size() const { return m_array_.size(); }

@@ -42,7 +42,7 @@ echo ==========================================================================
 echo = Largest elf symbols...
 echo ==========================================================================
 readelf --wide --symbols --demangle hxtest | awk "$HX_AWK_HACK" | sort -nr \
-	| grep -v Test | head -n 128
+	| grep -v test | head -n 128
 
 echo ==========================================================================
 # prints summary stats for the necessary components of the executable.

@@ -201,10 +201,10 @@ public:
 	HX_CONSTEXPR_FN iterator begin() { return iterator(this); }
 
 	// Returns a const iterator pointing to the beginning of the hash table.
-	HX_CONSTEXPR_FN const_iterator c_begin() const { return const_iterator(this); }
+	HX_CONSTEXPR_FN const_iterator cbegin() const { return const_iterator(this); }
 
 	// Returns a const iterator pointing to the beginning of the hash table.
-	HX_CONSTEXPR_FN const_iterator c_begin() { return const_iterator(this); }
+	HX_CONSTEXPR_FN const_iterator cbegin() { return const_iterator(this); }
 
 	// Returns a const iterator pointing to the end of the hash table.
 	HX_CONSTEXPR_FN const_iterator end() const { return const_iterator(); }
@@ -213,10 +213,10 @@ public:
 	HX_CONSTEXPR_FN iterator end() { return iterator(); }
 
 	// Returns a const iterator pointing to the end of the hash table.
-	HX_CONSTEXPR_FN const_iterator c_end() const { return const_iterator(); }
+	HX_CONSTEXPR_FN const_iterator cend() const { return const_iterator(); }
 
 	// Returns a const iterator pointing to the end of the hash table.
-	HX_CONSTEXPR_FN const_iterator c_end() { return const_iterator(); }
+	HX_CONSTEXPR_FN const_iterator cend() { return const_iterator(); }
 
 	// Returns the number of elements in the hash table.
 	HX_CONSTEXPR_FN uint32_t size() const { return m_size_; }

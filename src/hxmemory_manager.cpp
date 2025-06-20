@@ -82,7 +82,7 @@ public:
 	uintptr_t actual; // address actually returned by malloc.
 
 #if (HX_RELEASE) < 2
-	static const uint32_t c_guard = 0xc811b135u;
+	static const uint32_t guard_value_ = 0xc811b135u;
 	uint32_t guard;
 #endif
 };
@@ -148,7 +148,7 @@ public:
 		hdr.size = size;
 		hdr.actual = actual;
 #if (HX_RELEASE) < 2
-		hdr.guard = hxmemory_allocation_header::c_guard;
+		hdr.guard = hxmemory_allocation_header::guard_value_;
 #endif
 		++m_allocation_count;
 		m_bytes_allocated += size; // ignore overhead
@@ -164,7 +164,7 @@ public:
 
 		hxmemory_allocation_header& hdr = ((hxmemory_allocation_header*)p)[-1];
 #if (HX_RELEASE) < 2
-		hxassertrelease(hdr.guard == hxmemory_allocation_header::c_guard, "heap free corrupt");
+		hxassertrelease(hdr.guard == hxmemory_allocation_header::guard_value_, "heap free corrupt");
 #endif
 		hxassert(hdr.size > 0u && m_allocation_count > 0u && m_bytes_allocated > 0u);
 		--m_allocation_count;

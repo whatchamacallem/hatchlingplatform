@@ -59,7 +59,7 @@ public:
 		ASSERT_EQ(rs.size(), size);
 
 		typename hxradix_sort<key_t, test_object<key_t> >::iterator it = rs.begin();
-		typename hxradix_sort<key_t, test_object<key_t> >::const_iterator cit = rs.c_begin();
+		typename hxradix_sort<key_t, test_object<key_t> >::const_iterator cit = rs.cbegin();
 
 		for (uint32_t i=0u; i < size; ++i) {
 			ASSERT_EQ(b[i].id, rs[i].id);
@@ -68,7 +68,7 @@ public:
 		}
 
 		ASSERT_EQ(it, rs.end());
-		ASSERT_EQ(cit, rs.c_end());
+		ASSERT_EQ(cit, rs.cend());
 	}
 
     hxrandom m_prng_;

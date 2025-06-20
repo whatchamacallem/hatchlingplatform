@@ -131,8 +131,8 @@ bool hxprint_hashes(void) {
 	typedef hxarray<const char*> Filenames;
 	Filenames filenames; filenames.reserve(hxstring_literal_hashes_().size());
 
-	hxhash_string_literal_::const_iterator it = hxstring_literal_hashes_().c_begin();
-	hxhash_string_literal_::const_iterator end = hxstring_literal_hashes_().c_end();
+	hxhash_string_literal_::const_iterator it = hxstring_literal_hashes_().cbegin();
+	hxhash_string_literal_::const_iterator end = hxstring_literal_hashes_().cend();
 	for (; it != end; ++it) {
 		filenames.push_back(it->str());
 	}

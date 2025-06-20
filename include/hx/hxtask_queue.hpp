@@ -35,10 +35,10 @@ private:
     hxtask_queue(const hxtask_queue&) HX_DELETE_FN;
     void operator=(const hxtask_queue&) HX_DELETE_FN;
 
-    static const uint32_t c_running_queue_check_ = 0xc710b034u;
+    enum { running_queue_guard_value_ = 0xc710b034u };
 
     hxtask* m_next_task_;
-    uint32_t m_running_queue_check_;
+    uint32_t m_running_queue_guard_;
 
 #if HX_USE_CPP_THREADS
     enum executor_mode_t_ {

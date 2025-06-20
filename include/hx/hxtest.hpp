@@ -43,38 +43,42 @@ HX_CONSTEXPR_FN void InitGoogleTest() { }
 
 } // namespace testing
 
+// HX_TEST_NAME_ - Macro for concatenating 3 arguments into one name.
+// Macro parameters will be evaluated before concatenating.
+#define HX_TEST_NAME_(x_, y_, z_) x_ ## y_ ## z_
+
 // TEST(suite_name, case_name) - Google Test reimplementation. Defines a test
 // case with a suite name and case name.
 // - suite_name: A C valid identifier for the test suite.
 // - case_name: A C valid identifier for the test case.
 #define TEST(suite_name_, case_name_) \
-    class HX_CONCATENATE_3(hxtest_, suite_name_, case_name_) : public hxtest_case_interface_ { \
+    class HX_TEST_NAME_(hxtest_, suite_name_, case_name_) : public hxtest_case_interface_ { \
     public: \
-        HX_CONCATENATE_3(hxtest_, suite_name_, case_name_)(void) { hxtest_suite_executor_::singleton_().add_test_(this); } \
+        HX_TEST_NAME_(hxtest_, suite_name_, case_name_)(void) { hxtest_suite_executor_::singleton_().add_test_(this); } \
         virtual void run_(void) HX_OVERRIDE; \
         virtual const char* suite_(void) HX_OVERRIDE { return #suite_name_; } \
         virtual const char* case_(void) HX_OVERRIDE { return #case_name_; } \
         virtual const char* file_(void) HX_OVERRIDE { return __FILE__; } \
         virtual size_t line_(void) HX_OVERRIDE { return __LINE__; } \
-    } static HX_CONCATENATE_3(s_hxtest_, suite_name_, case_name_); \
-    void HX_CONCATENATE_3(hxtest_, suite_name_, case_name_)::run_(void)
+    } static HX_TEST_NAME_(s_hxtest_, suite_name_, case_name_); \
+    void HX_TEST_NAME_(hxtest_, suite_name_, case_name_)::run_(void)
 
 // TEST_F(suite_name, case_name) - Google Test reimplementation for fixture-based tests.
 // Defines a test case where the suite_name is a subclass of testing::Test.
 // - suite_name: A C valid identifier for the test suite.
 // - case_name: A C valid identifier for the test case.
 #define TEST_F(suite_name_, case_name_) \
-    class HX_CONCATENATE_3(hxtest_, suite_name_, case_name_) : public hxtest_case_interface_ { \
+    class HX_TEST_NAME_(hxtest_, suite_name_, case_name_) : public hxtest_case_interface_ { \
     public: \
         class hxtest_case_executor_ : public suite_name_ { virtual void run_code_(void) HX_OVERRIDE; }; \
-        HX_CONCATENATE_3(hxtest_, suite_name_, case_name_)(void) { hxtest_suite_executor_::singleton_().add_test_(this); } \
+        HX_TEST_NAME_(hxtest_, suite_name_, case_name_)(void) { hxtest_suite_executor_::singleton_().add_test_(this); } \
         virtual void run_(void) HX_OVERRIDE { hxtest_case_executor_ executor_; executor_.run_(); } \
         virtual const char* suite_(void) HX_OVERRIDE { return #suite_name_; } \
         virtual const char* case_(void) HX_OVERRIDE { return #case_name_; } \
         virtual const char* file_(void) HX_OVERRIDE { return __FILE__; } \
         virtual size_t line_(void) HX_OVERRIDE { return __LINE__; } \
-    } static HX_CONCATENATE_3(s_hxtest, suite_name_, case_name_); \
-    void HX_CONCATENATE_3(hxtest_, suite_name_, case_name_)::hxtest_case_executor_::run_code_(void)
+    } static HX_TEST_NAME_(s_hxtest, suite_name_, case_name_); \
+    void HX_TEST_NAME_(hxtest_, suite_name_, case_name_)::hxtest_case_executor_::run_code_(void)
 
 // int RUN_ALL_TESTS() - Executes all registered test cases.
 #define RUN_ALL_TESTS() hxtest_suite_executor_::singleton_().execute_all_tests_()

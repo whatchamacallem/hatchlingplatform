@@ -82,7 +82,7 @@ void hxdma_start_labeled(void* dst, const void* src, size_t bytes, const char* l
 void hxdma_await_sync_point_labeled(class hxdma_sync_point& sync_point, const char* label_string_literal) {
 	(void)sync_point;
 	hxprofile_scope_min((label_string_literal ? label_string_literal : "dma await"),
-		c_hxdefault_cycles_cutoff); (void)label_string_literal;
+		hxdefault_cycles_cutoff); (void)label_string_literal;
 	// TODO: Configure for target.
 
 #if HX_DEBUG_DMA

@@ -40,7 +40,7 @@ public:
     // rhs - A non-temporary Array<T>.
     HX_CONSTEXPR_FN hxarray(const hxarray& rhs_) : hxallocator<T_, capacity_>() {
         m_end_ = this->data();
-        this->assign(rhs_.c_begin(), rhs_.c_end());
+        this->assign(rhs_.cbegin(), rhs_.cend());
     }
 
 #if HX_CPLUSPLUS >= 201103L
@@ -105,10 +105,10 @@ public:
     HX_CONSTEXPR_FN T_* begin() { return this->data(); }
 
     // Returns a const_iterator to the beginning of the array (alias for begin()).
-    HX_CONSTEXPR_FN const T_* c_begin() const { return this->data(); }
+    HX_CONSTEXPR_FN const T_* cbegin() const { return this->data(); }
 
     // Returns a const_iterator to the beginning of the array (alias for begin()).
-    HX_CONSTEXPR_FN const T_* c_begin() { return this->data(); }
+    HX_CONSTEXPR_FN const T_* cbegin() { return this->data(); }
 
     // Returns a const_iterator to the end of the array.
     HX_CONSTEXPR_FN const T_* end() const { return m_end_; }
@@ -117,10 +117,10 @@ public:
     HX_CONSTEXPR_FN T_* end() { return m_end_; }
 
     // Returns a const_iterator to the end of the array (alias for end()).
-    HX_CONSTEXPR_FN const T_* c_end() const { return m_end_; }
+    HX_CONSTEXPR_FN const T_* cend() const { return m_end_; }
 
     // Returns a const_iterator to the end of the array (alias for end()).
-    HX_CONSTEXPR_FN const T_* c_end() { return m_end_; }
+    HX_CONSTEXPR_FN const T_* cend() { return m_end_; }
 
     // Returns a const reference to the first element in the array.
     HX_CONSTEXPR_FN const T_& front() const { hxassert(size()); return *this->data(); }

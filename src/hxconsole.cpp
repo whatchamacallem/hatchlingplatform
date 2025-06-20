@@ -116,8 +116,8 @@ bool hxconsole_help() {
 		hxmemory_allocator_scope temporary_stack(hxmemory_allocator_temporary_stack);
 		hxarray<const hxconsole_hash_table_node_*> cmds;
 		cmds.reserve(hxconsole_commands_().size());
-		for (hxconsole_command_table_::const_iterator it = hxconsole_commands_().c_begin();
-				it != hxconsole_commands_().c_end(); ++it) {
+		for (hxconsole_command_table_::const_iterator it = hxconsole_commands_().cbegin();
+				it != hxconsole_commands_().cend(); ++it) {
 			if (::strncmp(it->key().str_, "hxconsole_test", 13) == 0 ||
 					::strncmp(it->key().str_, "s_hxconsole_test", 15) == 0) {
 				continue;

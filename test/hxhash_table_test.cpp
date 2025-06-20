@@ -72,11 +72,11 @@ TEST_F(hxhash_table_test, Null) {
 		ASSERT_EQ(table.size(), 0u);
 
 		ASSERT_TRUE(table.begin() == table.end());
-		ASSERT_TRUE(table.c_begin() == table.c_end());
-		ASSERT_TRUE(((const Table&)table).begin() == ((const Table&)table).c_end());
+		ASSERT_TRUE(table.cbegin() == table.cend());
+		ASSERT_TRUE(((const Table&)table).begin() == ((const Table&)table).cend());
 		ASSERT_FALSE(table.begin() != table.end());
-		ASSERT_FALSE(table.c_begin() != table.c_end());
-		ASSERT_FALSE(((const Table&)table).begin() != ((const Table&)table).c_end());
+		ASSERT_FALSE(table.cbegin() != table.cend());
+		ASSERT_FALSE(((const Table&)table).begin() != ((const Table&)table).cend());
 
 		table.clear();
 		ASSERT_EQ(table.load_factor(), 0.0f);
@@ -96,9 +96,9 @@ TEST_F(hxhash_table_test, Single) {
 
 		// Operations on a single node
 		ASSERT_TRUE(table.begin() != table.end());
-		ASSERT_TRUE(table.c_begin() != table.c_end());
+		ASSERT_TRUE(table.cbegin() != table.cend());
 		ASSERT_TRUE(++table.begin() == table.end());
-		ASSERT_TRUE(++table.c_begin() == table.c_end());
+		ASSERT_TRUE(++table.cbegin() == table.cend());
 		ASSERT_EQ(table.size(), 1u);
 		ASSERT_EQ(table.count(k), 1u);
 		ASSERT_TRUE(table[k].key() == k);
@@ -166,7 +166,7 @@ TEST_F(hxhash_table_test, Multiple) {
 
 			// Iteration over.
 			ASSERT_TRUE(it != table.end());
-			ASSERT_TRUE(cit != table.c_end());
+			ASSERT_TRUE(cit != table.cend());
 			ASSERT_TRUE(it == cit);
 			ASSERT_TRUE((unsigned int)it->value.id < (unsigned int)N);
 			id_histogram[it->value.id]++;
@@ -176,7 +176,7 @@ TEST_F(hxhash_table_test, Multiple) {
 			it++;
 		}
 		ASSERT_TRUE(table.end() == it);
-		ASSERT_TRUE(table.c_end() == cit);
+		ASSERT_TRUE(table.cend() == cit);
 		for (int i = 0; i < N; ++i) {
 			ASSERT_EQ(id_histogram[i], 2);
 		}
@@ -216,7 +216,7 @@ TEST_F(hxhash_table_test, Multiple) {
 			cit++;
 		}
 		ASSERT_TRUE(table.end() == it);
-		ASSERT_TRUE(table.c_end() == cit);
+		ASSERT_TRUE(table.cend() == cit);
 		for (int i = 0; i < N; ++i) {
 			ASSERT_EQ(key_histogram[i], 4);
 		}
@@ -253,7 +253,7 @@ TEST_F(hxhash_table_test, Multiple) {
 			cit++;
 		}
 		ASSERT_TRUE(table.end() == it);
-		ASSERT_TRUE(table.c_end() == cit);
+		ASSERT_TRUE(table.cend() == cit);
 	}
 	ASSERT_EQ(m_constructed, 2*N);
 	ASSERT_EQ(m_destructed, 2*N);

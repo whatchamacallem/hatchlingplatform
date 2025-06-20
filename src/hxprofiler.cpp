@@ -13,9 +13,9 @@ HX_REGISTER_FILENAME_HASH
 
 namespace {
 
-bool hxprofile_begin_command_() { hxprofiler_begin(); return true; }
+bool hxprofile_start_command_() { hxprofiler_start(); return true; }
 
-bool hxprofile_end_command_() { hxprofiler_end(); return true; }
+bool hxprofile_stop_command_() { hxprofiler_stop(); return true; }
 
 bool hxprofiler_log_command_() { hxprofiler_log(); return true; }
 
@@ -24,8 +24,8 @@ bool hxprofiler_write_to_chrome_tracing_command_(const char* filename) {
 	return true;
 }
 
-hxconsole_command_named(hxprofile_begin_command_, profilebegin);
-hxconsole_command_named(hxprofile_end_command_, profileend);
+hxconsole_command_named(hxprofile_start_command_, profilestart);
+hxconsole_command_named(hxprofile_stop_command_, profilestop);
 hxconsole_command_named(hxprofiler_log_command_, profilelog);
 hxconsole_command_named(hxprofiler_write_to_chrome_tracing_command_, profilewrite);
 
@@ -62,7 +62,7 @@ void hxprofiler_internal_::log_() {
 
 		hxcycles_t delta = rec.m_end_ - rec.m_begin_;
 		hxlogrelease("profile %s: %.15gms cycles %.15g thread %x\n", hxbasename(rec.m_label_),
-			(double)delta * c_hxmilliseconds_per_cycle, (double)delta,
+			(double)delta * hxmilliseconds_per_cycle, (double)delta,
 			(unsigned int)rec.m_thread_id_);
 	}
 }
@@ -82,9 +82,9 @@ void hxprofiler_internal_::write_to_chrome_tracing_(const char* filename) {
 			if (i != 0) { f.print(",\n"); }
 			const char* bn = hxbasename(rec.m_label_);
 			f.print("{\"name\":\"%s\",\"cat\":\"PERF\",\"ph\":\"B\",\"pid\":0,\"tid\":%u,\"ts\":%.15g},\n",
-				bn, (unsigned int)rec.m_thread_id_, (double)(rec.m_begin_ - epoch) * c_hxmicroseconds_per_cycle);
+				bn, (unsigned int)rec.m_thread_id_, (double)(rec.m_begin_ - epoch) * hxmicroseconds_per_cycle);
 			f.print("{\"name\":\"%s\",\"cat\":\"PERF\",\"ph\":\"E\",\"pid\":0,\"tid\":%u,\"ts\":%.15g}",
-				bn, (unsigned int)rec.m_thread_id_, (double)(rec.m_end_ - epoch) * c_hxmicroseconds_per_cycle);
+				bn, (unsigned int)rec.m_thread_id_, (double)(rec.m_end_ - epoch) * hxmicroseconds_per_cycle);
 		}
 	}
 	f.print("\n]\n");

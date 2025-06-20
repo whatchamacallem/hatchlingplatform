@@ -17,9 +17,9 @@
 #include <signal.h>
 
 // HATCHLING_VER - Major, minor and patch versions.
-#define HATCHLING_VER 0x020200u
+#define HATCHLING_VER 0x030000u
 // HATCHLING_TAG - Major, minor and patch version tag.
-#define HATCHLING_TAG "v2.2.0"
+#define HATCHLING_TAG "v3.0.0"
 
 #include <hx/hxsettings.h>
 #include <hx/hxmemory_manager.h>
@@ -50,15 +50,12 @@ enum hxloglevel {
 #define HX_QUOTE(x_) HX_QUOTE_(x_)
 #define HX_QUOTE_(x_) #x_
 
-// HX_CONCATENATE - Macro for concatenating arguments. Evaluates __LINE__ as a
-// number instead of as __LINE__.
+// HX_CONCATENATE - Macro for concatenating arguments. Evaluates macro parameters
+// before concatenating. E.g. Evaluates __LINE__ as a number instead of as "__LINE__".
 // - x: The first value to concatenate.
 // - y: The second value to concatenate.
 #define HX_CONCATENATE(x_, y_) HX_CONCATENATE_(x_, y_)
 #define HX_CONCATENATE_(x_, y_) x_ ## y_
-
-// HX_CONCATENATE_3 - Macro for concatenating 3 arguments.
-#define HX_CONCATENATE_3(x_, y_, z_) x_ ## y_ ## z_
 
 // HX_STATIC_ASSERT - Compile-time assertion for HX_RELEASE range.
 HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0..3]");

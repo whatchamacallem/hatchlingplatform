@@ -54,7 +54,7 @@ public:
 				generate_scopes(subtarget);
 			}
 
-            while ((double)delta * c_hxmilliseconds_per_cycle < target_ms) {
+            while ((double)delta * hxmilliseconds_per_cycle < target_ms) {
                 // Perform work that might not be optimized away by the compiler.
                 uint32_t ops = (m_accumulator_ & 0xf) + 1;
                 for (uint32_t i = 0; i < ops; ++i) {
@@ -74,7 +74,7 @@ public:
 };
 
 TEST_F(hxprofiler_test, Single1ms) {
-	hxprofiler_begin();
+	hxprofiler_start();
 
 	size_t start_records = g_hxprofiler_.records_size_();
 	{
@@ -93,8 +93,8 @@ TEST_F(hxprofiler_test, Single1ms) {
 
 TEST_F(hxprofiler_test, write_to_chrome_tracing) {
 	// Shut down profiling and use console commands for next capture.
-	hxprofiler_end();
-	hxconsole_exec_line("profilebegin");
+	hxprofiler_stop();
+	hxconsole_exec_line("profilestart");
 
 	hxtask_queue q;
 	hxprofiler_task_test tasks[s_hxtest_num_labels];
