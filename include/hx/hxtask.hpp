@@ -22,7 +22,7 @@ public:
     // Destructor for the task. Ensures that the task is not owned by
     // any exclusive owner when deleted.
     virtual ~hxtask() {
-        hxassert_release(!m_task_queue_, "deleting queued task: %s", get_label());
+        hxassertrelease(!m_task_queue_, "deleting queued task: %s", get_label());
     }
 
     // Executes the task. This is the main function to be implemented by
@@ -56,7 +56,7 @@ public:
     // - Ensures that the task is not re-enqueued while already owned.
     // - The task must not be part of a linked list when setting ownership.
     inline void set_task_queue(hxtask_queue* x_) {
-        hxassert_release((!m_task_queue_ || !x_) && !m_next_task_, "re-enqueuing task: %s", get_label());
+        hxassertrelease((!m_task_queue_ || !x_) && !m_next_task_, "re-enqueuing task: %s", get_label());
         m_task_queue_ = x_;
     }
 

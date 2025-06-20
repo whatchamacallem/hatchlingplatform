@@ -42,7 +42,7 @@ protected:
     // size: The number of elements of type T to allocate.
 
     HX_CONSTEXPR_FN void reserve_storage(size_t size_) {
-		hxassert_release(size_ <= Capacity_, "allocator overflowing fixed capacity."); (void)size_;
+		hxassertrelease(size_ <= Capacity_, "allocator overflowing fixed capacity."); (void)size_;
 	}
 
 private:
@@ -115,7 +115,7 @@ protected:
             hxmemory_allocator allocator_=hxmemory_allocator_Current,
             uintptr_t alignment_=HX_ALIGNMENT) {
         if (size_ <= m_capacity_) { return; }
-        hxassert_release(m_capacity_ == 0, "allocator reallocation disallowed.");
+        hxassertrelease(m_capacity_ == 0, "allocator reallocation disallowed.");
         m_data_ = (T_*)hxmalloc_ext(sizeof(T_) * size_, allocator_, alignment_);
         m_capacity_ = size_;
     }

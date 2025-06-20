@@ -72,7 +72,7 @@ struct hxconsole_command_ {
 			return 1; // success, do modify
 		}
 
-		hxlog_console("parse error: %s", str_);
+		hxlogconsole("parse error: %s", str_);
 		return 2; // failure, do not modify
 	}
 };
@@ -89,7 +89,7 @@ struct hxconsole_command0_ : public hxconsole_command_ {
 		return false;
 	}
 	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
-		hxlog_console("%s\n", id_ ? id_ : "usage: no args"); (void)id_;
+		hxlogconsole("%s\n", id_ ? id_ : "usage: no args"); (void)id_;
 	}
 	bool(*m_fn_)();
 };
@@ -107,7 +107,7 @@ struct hxconsole_command1_ : public hxconsole_command_ {
 		return false;
 	}
 	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
-		hxlog_console("%s %s\n", id_ ? id_ : "usage:", hxconsole_arg_<A_>::get_label_()); (void)id_;
+		hxlogconsole("%s %s\n", id_ ? id_ : "usage:", hxconsole_arg_<A_>::get_label_()); (void)id_;
 	}
 	bool(*m_fn_)(A_);
 };
@@ -129,7 +129,7 @@ struct hxconsole_command2_ : public hxconsole_command_ {
 		return false;
 	}
 	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
-		hxlog_console("%s %s %s\n", id_ ? id_ : "usage:", hxconsole_arg_<A1_>::get_label_(), hxconsole_arg_<A2_>::get_label_()); (void)id_;
+		hxlogconsole("%s %s %s\n", id_ ? id_ : "usage:", hxconsole_arg_<A1_>::get_label_(), hxconsole_arg_<A2_>::get_label_()); (void)id_;
 	}
 	bool(*m_fn_)(A1_, A2_);
 };
@@ -155,7 +155,7 @@ struct hxconsole_command3_ : public hxconsole_command_ {
 		return false;
 	}
 	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
-		hxlog_console("%s %s %s %s\n", id_ ? id_ : "usage:", hxconsole_arg_<A1_>::get_label_(), hxconsole_arg_<A2_>::get_label_(), hxconsole_arg_<A3_>::get_label_()); (void)id_;
+		hxlogconsole("%s %s %s %s\n", id_ ? id_ : "usage:", hxconsole_arg_<A1_>::get_label_(), hxconsole_arg_<A2_>::get_label_(), hxconsole_arg_<A3_>::get_label_()); (void)id_;
 	}
 	bool(*m_fn_)(A1_, A2_, A3_);
 };
@@ -183,7 +183,7 @@ struct hxconsole_command4_ : public hxconsole_command_ {
 		return false;
 	}
 	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
-		hxlog_console("%s %s %s %s %s\n", id_ ? id_ : "usage:", hxconsole_arg_<A1_>::get_label_(), hxconsole_arg_<A2_>::get_label_(), hxconsole_arg_<A3_>::get_label_(),
+		hxlogconsole("%s %s %s %s %s\n", id_ ? id_ : "usage:", hxconsole_arg_<A1_>::get_label_(), hxconsole_arg_<A2_>::get_label_(), hxconsole_arg_<A3_>::get_label_(),
 			hxconsole_arg_<A4_>::get_label_()); (void)id_;
 	}
 	bool(*m_fn_)(A1_, A2_, A3_, A4_);
@@ -203,13 +203,13 @@ struct hxconsole_variable_ : public hxconsole_command_ {
 			hxconsolenumber_t wrapper_(number_);
 			*m_var_ = (T_)wrapper_;
 		}
-		hxlog_console("value: %.15g\n", (double)*m_var_);
+		hxlogconsole("value: %.15g\n", (double)*m_var_);
 		return code_ != 2; // 2 is unexpected args.
 	}
 
 	virtual void usage_(const char* id_=hxnull) HX_OVERRIDE {
 		(void)id_;
-		hxlog_console("%s <optional-value>\n", id_ ? id_ : "usage:");
+		hxlogconsole("%s <optional-value>\n", id_ ? id_ : "usage:");
 	}
 	volatile T_* m_var_;
 };
@@ -283,7 +283,7 @@ public:
 			while (!hxconsole_is_delimiter_(*k_)) {
 				++k_;
 			}
-			hxassert_msg(*k_ == '\0', "console symbol contains delimiter: \"%s\"", key_.str_);
+			hxassertmsg(*k_ == '\0', "console symbol contains delimiter: \"%s\"", key_.str_);
 		}
 	}
 

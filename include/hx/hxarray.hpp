@@ -159,7 +159,7 @@ public:
     HX_CONSTEXPR_FN void reserve(size_t size_) {
         T_* prev = this->data();
         this->reserve_storage(size_);
-        hxassert_msg(!prev || prev == this->data(), "no reallocation"); (void)prev;
+        hxassertmsg(!prev || prev == this->data(), "no reallocation"); (void)prev;
         if (m_end_ == hxnull) {
             m_end_ = this->data();
         }

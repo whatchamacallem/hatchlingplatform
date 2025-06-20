@@ -271,7 +271,7 @@ public:
     // - key: The key used for sorting.
     // - val: Pointer to the value associated with the key.
     void insert(Key_ key_, Value_* val_) {
-        hxassert_release(!this->full(), "cannot reallocate");
+        hxassertrelease(!this->full(), "cannot reallocate");
 
         // This radix sort uses void* to avoid template bloat. The casts are not
         // required by the standard, but fix -Wcast-qual for a const Value_.

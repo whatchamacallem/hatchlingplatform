@@ -123,7 +123,7 @@ public:
 
 		// Advances the iterator to the next element.
 		HX_CONSTEXPR_FN const_iterator& operator++() {
-			hxassert_msg(m_current_node_, "iterator invalid"); // !end
+			hxassertmsg(m_current_node_, "iterator invalid"); // !end
 			if (!(m_current_node_ = (Node_*)m_current_node_->hash_next())) {
 				next_bucket();
 			}

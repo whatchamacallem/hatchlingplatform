@@ -56,12 +56,12 @@ void hxdma_add_sync_point(struct hxdma_sync_point& sync_point) {
 #if HX_DEBUG_DMA
 	HX_DMA_DEBUG_MUTEX_LOCK;
 	sync_point.debug_only = s_hxdma_barrier_counter++;
-	hxassert_msg(sync_point.debug_only < (1u << 10), "calls to hxdma_end_frame() required");
+	hxassertmsg(sync_point.debug_only < (1u << 10), "calls to hxdma_end_frame() required");
 #endif
 }
 
 void hxdma_start_labeled(void* dst, const void* src, size_t bytes, const char* label_string_literal) {
-	hxassert_msg(src != hxnull && dst != hxnull && bytes != 0, "dma illegal args: %s 0x%x, 0x%x, 0x%x",
+	hxassertmsg(src != hxnull && dst != hxnull && bytes != 0, "dma illegal args: %s 0x%x, 0x%x, 0x%x",
 		(label_string_literal ? label_string_literal : "dma start"), (unsigned int)(uintptr_t)dst,
 		(unsigned int)(uintptr_t)src, (unsigned int)(uintptr_t)bytes); (void)label_string_literal;
 
@@ -86,13 +86,13 @@ void hxdma_await_sync_point_labeled(struct hxdma_sync_point& sync_point, const c
 
 #if HX_DEBUG_DMA
 	HX_DMA_DEBUG_MUTEX_LOCK;
-	hxassert_release(sync_point.debug_only < s_hxdma_barrier_counter, "dma sync point unexpected: %s",
+	hxassertrelease(sync_point.debug_only < s_hxdma_barrier_counter, "dma sync point unexpected: %s",
 		(label_string_literal ? label_string_literal : "dma await"));
 	for (hxdma_debug_record_* it = (s_hxdma_debug_records.end() - 1); it >= s_hxdma_debug_records.begin(); --it) {
 		// sync_point.debug_only is the value of s_hxdma_barrier_counter for proceeding dma.
 		if (it->barrier_counter <= sync_point.debug_only) {
 			bool is_ok = ::memcmp(it->dst, it->src, it->bytes) == 0;
-			hxassert_release(is_ok, "dma corrupt %s, %s", it->label_string_literal, (label_string_literal ? label_string_literal : "dma await"));
+			hxassertrelease(is_ok, "dma corrupt %s, %s", it->label_string_literal, (label_string_literal ? label_string_literal : "dma await"));
 			s_hxdma_debug_records.erase_unordered(it);
 		}
 	}
@@ -105,7 +105,7 @@ void hxdma_await_all_labeled(const char* label_string_literal) {
 	hxdma_await_sync_point_labeled(b, label_string_literal);
 #if HX_DEBUG_DMA
 	HX_DMA_DEBUG_MUTEX_LOCK;
-	hxassert_release(s_hxdma_debug_records.empty(), "dma await failed %s",
+	hxassertrelease(s_hxdma_debug_records.empty(), "dma await failed %s",
 		(label_string_literal ? label_string_literal : ""));
 #endif
 }

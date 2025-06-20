@@ -32,10 +32,10 @@ TEST(hxdeath_test, Nothing_asserted) {
 #endif
 
 static bool hxrun_all_tests(void) {
-	hxlog_console("hatchling platform 🐉🐉🐉 " HATCHLING_TAG "\n");
-	hxlog_console("release: %d profile: %d " __DATE__ " " __TIME__ "\n",
+	hxlogconsole("hatchling platform 🐉🐉🐉 " HATCHLING_TAG "\n");
+	hxlogconsole("release: %d profile: %d " __DATE__ " " __TIME__ "\n",
 		(int)(HX_RELEASE), (int)(HX_PROFILE));
-	hxwarn_msg(HX_HATCHLING_PCH_USED, "note pch not used");
+	hxwarnmsg(HX_HATCHLING_PCH_USED, "note pch not used");
 
 	// RUN_ALL_TESTS is a Google Test symbol.
 	size_t tests_failing = (size_t)RUN_ALL_TESTS();
@@ -44,10 +44,10 @@ static bool hxrun_all_tests(void) {
 	// The 2 above and one in the console tests.
 	const int s_hxexpected_failures = 3;
 
-	hxassert_release(tests_failing == s_hxexpected_failures,
+	hxassertrelease(tests_failing == s_hxexpected_failures,
 		"expected %d tests to fail", s_hxexpected_failures);
 	// there are no asserts at level 3.
-	hxlog_handler(hxlog_level_Warning, "expected %d tests to fail", s_hxexpected_failures);
+	hxloghandler(hxloglevel_Warning, "expected %d tests to fail", s_hxexpected_failures);
 	return tests_failing == s_hxexpected_failures;
 #else
 	return tests_failing == 0;

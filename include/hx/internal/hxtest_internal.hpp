@@ -45,7 +45,7 @@ public:
 
 	void add_test_(hxtest_case_base_* fn_) {
 		// Use -DHX_TEST_MAX_CASES to provide enough room for all tests.
-		hxassert_release(m_num_factories_ < HX_TEST_MAX_CASES, "HX_TEST_MAX_CASES overflow\n");
+		hxassertrelease(m_num_factories_ < HX_TEST_MAX_CASES, "HX_TEST_MAX_CASES overflow\n");
 		if(m_num_factories_ < HX_TEST_MAX_CASES) {
 			m_factories_[m_num_factories_++] = fn_;
 		}
@@ -54,20 +54,20 @@ public:
 	// message is required to end with an \n. Returns equivalent of /dev/null on
 	// success and the system log otherwise.
 	hxfile& assert_check_(const char* file_, size_t line_, bool condition_, const char* message_) {
-		hxassert_release(m_current_test_, "not testing");
+		hxassertrelease(m_current_test_, "not testing");
 		++m_assert_count_;
 		m_test_state_ = (condition_ && m_test_state_ != TEST_STATE_FAIL_) ? TEST_STATE_PASS_ : TEST_STATE_FAIL_;
 		if (!condition_) {
 			if(++m_assert_fail_count_ >= TEST_MAX_FAIL_MESSAGES_) {
 				if (m_assert_fail_count_ == TEST_MAX_FAIL_MESSAGES_) {
-					hxlog_console("remaining asserts will fail silently...\n");
+					hxlogconsole("remaining asserts will fail silently...\n");
 				}
 				return file_null_();
 			}
 
 			// prints full path error messages that can be clicked on in an ide.
-			hxlog_handler(hxlog_level_Assert, "%s.%s", m_current_test_->suite_(), m_current_test_->case_());
-			hxlog_handler(hxlog_level_Assert, "%s(%zu): %s", file_, line_, message_);
+			hxloghandler(hxloglevel_Assert, "%s.%s", m_current_test_->suite_(), m_current_test_->case_());
+			hxloghandler(hxloglevel_Assert, "%s(%zu): %s", file_, line_, message_);
 
 			// Implements GTEST_FLAG_SET(break_on_failure, true);
 #if (HX_TEST_ERROR_HANDLING) == 0 && (HX_RELEASE) == 0
@@ -81,10 +81,10 @@ public:
 	size_t execute_all_tests_() {
 		hxinit(); // RUN_ALL_TESTS could be called first.
 		m_pass_count_ = m_fail_count_ = m_assert_count_ = 0;
-		hxlog_console("RUNNING_TESTS (%s)\n", (m_search_term_string_literal_ ? m_search_term_string_literal_ : "ALL"));
+		hxlogconsole("RUNNING_TESTS (%s)\n", (m_search_term_string_literal_ ? m_search_term_string_literal_ : "ALL"));
 		for (hxtest_case_base_** it_ = m_factories_; it_ != (m_factories_ + m_num_factories_); ++it_) {
 			if (!m_search_term_string_literal_ || ::strstr(m_search_term_string_literal_, (*it_)->suite_()) != hxnull) {
-				hxlog_console("%s.%s...\n", (*it_)->suite_(), (*it_)->case_());
+				hxlogconsole("%s.%s...\n", (*it_)->suite_(), (*it_)->case_());
 
 				m_current_test_ = *it_;
 				m_test_state_ = TEST_STATE_NOTHING_ASSERTED_;
@@ -118,17 +118,17 @@ public:
 			}
 		}
 
-		hxlog_console("skipped %zu tests. checked %zu assertions.\n",
+		hxlogconsole("skipped %zu tests. checked %zu assertions.\n",
 			m_num_factories_ - m_pass_count_ - m_fail_count_, m_assert_count_);
 
-		hxwarn_msg(m_pass_count_ + m_fail_count_, "NOTHING TESTED");
+		hxwarnmsg(m_pass_count_ + m_fail_count_, "NOTHING TESTED");
 
 		if (m_pass_count_ != 0 && m_fail_count_ == 0) {
-			hxlog_handler(hxlog_level_Console, "[  PASSED  ] %zu test%s.\n", m_pass_count_,
+			hxloghandler(hxloglevel_Console, "[  PASSED  ] %zu test%s.\n", m_pass_count_,
 				((m_pass_count_ != 1) ? "s" : ""));
 		}
 		else {
-			hxlog_handler(hxlog_level_Console, " %zu FAILED TEST%s\n", m_fail_count_,
+			hxloghandler(hxloglevel_Console, " %zu FAILED TEST%s\n", m_fail_count_,
 				((m_fail_count_ != 1) ? "S" : ""));
 			m_fail_count_ = hxmax(m_fail_count_, (size_t)1u); // Nothing tested is failure.
 		}

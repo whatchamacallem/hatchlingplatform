@@ -30,7 +30,7 @@ hxtask_queue::~hxtask_queue() {
     if (m_thread_pool_size_ > 0) {
         // Contribute current thread, request waiting until completion and signal stopping.
         executor_thread_(this, Executor_mode_::Stopping_);
-        hxassert_release(m_running_queue_check_ == 0u, "Q");
+        hxassertrelease(m_running_queue_check_ == 0u, "Q");
 
         for (int32_t i_ = m_thread_pool_size_; i_--;) {
             m_threads_[i_].join();
@@ -53,7 +53,7 @@ void hxtask_queue::enqueue(hxtask* task_) {
 #if HX_USE_CPP_THREADS
     if (m_thread_pool_size_ > 0) {
         std::unique_lock<std::mutex> lock_(m_mutex_);
-        hxassert_release(m_running_queue_check_ == Running_queue_check_, "enqueue to stopped queue");
+        hxassertrelease(m_running_queue_check_ == Running_queue_check_, "enqueue to stopped queue");
         task_->set_next_task(m_next_task_);
         m_next_task_ = task_;
         m_cond_var_tasks_.notify_one();
@@ -113,7 +113,7 @@ void hxtask_queue::executor_thread_(hxtask_queue* q_, Executor_mode_ mode_) {
             }
 
             if (q_->m_next_task_) {
-                hxassert_release(q_->m_running_queue_check_ == Running_queue_check_, "Q");
+                hxassertrelease(q_->m_running_queue_check_ == Running_queue_check_, "Q");
                 task_ = q_->m_next_task_;
                 q_->m_next_task_ = task_->get_next_task();
                 ++q_->m_executing_count_;
@@ -125,7 +125,7 @@ void hxtask_queue::executor_thread_(hxtask_queue* q_, Executor_mode_ mode_) {
                     });
 
                     if (mode_ == Executor_mode_::Stopping_) {
-                        hxassert_release(q_->m_running_queue_check_ == Running_queue_check_, "Q");
+                        hxassertrelease(q_->m_running_queue_check_ == Running_queue_check_, "Q");
                         q_->m_running_queue_check_ = 0u;
                         q_->m_cond_var_tasks_.notify_all();
                     }

@@ -26,7 +26,7 @@ hxfile::hxfile(uint16_t mode) {
 		m_file_pImpl_ = (char*)stdout;
 	}
 	else {
-		hxassert_msg((mode & hxfile::stdio) == 0, "stdio requires exactly one of in or out.");
+		hxassertmsg((mode & hxfile::stdio) == 0, "stdio requires exactly one of in or out.");
 
 		// failable I/O on a closed file will be ignored.
 		m_file_pImpl_ = hxnull;
@@ -59,12 +59,12 @@ bool hxfile::openv_(uint16_t mode, const char* filename, va_list args) {
 	hxinit(); // Needed to write out asserts before main().
 	close(); // clears all state
 
-	hxassert_msg((mode & stdio) == 0, "both stdio and filename requested");
+	hxassertmsg((mode & stdio) == 0, "both stdio and filename requested");
 	mode &= ~(uint16_t)hxfile::stdio; // never free stdio.
 	m_open_mode_ = mode;
 
-	hxassert_msg((mode & ~(uint16_t)((1u << 5) - 1u)) == 0, "reserved file mode bits");
-	hxassert_release((mode & (hxfile::in | hxfile::out)) && filename, "missing file args");
+	hxassertmsg((mode & ~(uint16_t)((1u << 5) - 1u)) == 0, "reserved file mode bits");
+	hxassertrelease((mode & (hxfile::in | hxfile::out)) && filename, "missing file args");
 
 	char buf[HX_MAX_LINE] = "";
 	vsnprintf(buf, HX_MAX_LINE, filename, args);
@@ -86,7 +86,7 @@ bool hxfile::openv_(uint16_t mode, const char* filename, va_list args) {
 	}
 
 	m_file_pImpl_ = (char*)::fopen(buf, m);
-	hxassert_release(m_file_pImpl_ || (mode & hxfile::failable), "failed to open file: %s", buf);
+	hxassertrelease(m_file_pImpl_ || (mode & hxfile::failable), "failed to open file: %s", buf);
 	m_good_ = m_file_pImpl_ != hxnull;
 	return m_good_;
 }
@@ -102,11 +102,11 @@ void hxfile::close() {
 }
 
 size_t hxfile::read(void* bytes, size_t byte_count) {
-	hxassert_msg(bytes, "null i/o buffer");
-	hxassert_msg((m_open_mode_ & hxfile::in) && (m_file_pImpl_ || (m_open_mode_ & hxfile::failable)),
+	hxassertmsg(bytes, "null i/o buffer");
+	hxassertmsg((m_open_mode_ & hxfile::in) && (m_file_pImpl_ || (m_open_mode_ & hxfile::failable)),
 		"file not readable");
 	size_t bytes_read = (bytes && m_file_pImpl_) ? ::fread(bytes, 1, byte_count, (FILE*)m_file_pImpl_) : 0u;
-	hxassert_release((byte_count == bytes_read) || (m_open_mode_ & hxfile::failable),
+	hxassertrelease((byte_count == bytes_read) || (m_open_mode_ & hxfile::failable),
 		"read bytes %zu != actual %zu", byte_count, bytes_read);
 	if (byte_count != bytes_read) {
 		m_good_ = false;
@@ -116,19 +116,19 @@ size_t hxfile::read(void* bytes, size_t byte_count) {
 }
 
 size_t hxfile::write(const void* bytes, size_t byte_count) {
-	hxassert_msg(bytes, "null i/o buffer");
-	hxassert_msg((m_open_mode_ & hxfile::out) && (m_file_pImpl_ || (m_open_mode_ & hxfile::failable)),
+	hxassertmsg(bytes, "null i/o buffer");
+	hxassertmsg((m_open_mode_ & hxfile::out) && (m_file_pImpl_ || (m_open_mode_ & hxfile::failable)),
 		"file not writable");
 	size_t bytes_written = (bytes && m_file_pImpl_) ? ::fwrite(bytes, 1, byte_count, (FILE*)m_file_pImpl_) : 0u;
-	hxassert_release((byte_count == bytes_written) || (m_open_mode_ & hxfile::failable),
+	hxassertrelease((byte_count == bytes_written) || (m_open_mode_ & hxfile::failable),
 		"write bytes %zu != actual %zu", byte_count, bytes_written);
 	m_good_ = byte_count == bytes_written; // Can restore goodness.
 	return bytes_written;
 }
 
 bool hxfile::get_line(char* buffer, size_t buffer_size) {
-	hxassert_msg(buffer, "null i/o buffer");
-	hxassert_msg((m_open_mode_ & hxfile::in) && (m_file_pImpl_ || (m_open_mode_ & hxfile::failable)), "file not readable");
+	hxassertmsg(buffer, "null i/o buffer");
+	hxassertmsg((m_open_mode_ & hxfile::in) && (m_file_pImpl_ || (m_open_mode_ & hxfile::failable)), "file not readable");
 	char* result = (buffer && buffer_size && m_file_pImpl_) ? ::fgets(buffer, (int)buffer_size, (FILE*)m_file_pImpl_) : hxnull;
 	if (!result) {
 		if (buffer && buffer_size) {
@@ -136,7 +136,7 @@ bool hxfile::get_line(char* buffer, size_t buffer_size) {
 		}
 		m_good_ = false;
 		m_eof_ = m_file_pImpl_ ? ::feof((FILE*)m_file_pImpl_) : false;
-		hxassert_release(m_eof_ || (m_open_mode_ & hxfile::failable), "get_line error");
+		hxassertrelease(m_eof_ || (m_open_mode_ & hxfile::failable), "get_line error");
 		return false; // EOF or error
 	}
 	return true;
@@ -152,6 +152,6 @@ bool hxfile::print(const char* format, ...) {
 	va_end(args);
 
 	// These are potential data corruption issues, not failable I/O.
-	hxassert_release(len >= 0 && len < (int)HX_MAX_LINE, "file print error: %s", format);
+	hxassertrelease(len >= 0 && len < (int)HX_MAX_LINE, "file print error: %s", format);
 	return write(str, len);
 }

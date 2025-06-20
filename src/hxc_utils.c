@@ -20,20 +20,20 @@ void hxhex_dump(const void* address, size_t bytes, int pretty) {
 		for (size_t i = 0; i < bytes;) {
 			if (pretty) {
 				// Adjust the number of leading zeros for pointers to match uintptr_t.
-				hxlog_console("%0*zx: ", (int)sizeof(uintptr_t), (size_t)addr);
+				hxlogconsole("%0*zx: ", (int)sizeof(uintptr_t), (size_t)addr);
 			}
 			const uint8_t* str = addr;
 			for (size_t maximum = 4; i < bytes && maximum--; i += 4) {
-				hxlog_console("%02x%02x%02x%02x ", addr[0], addr[1], addr[2], addr[3]);
+				hxlogconsole("%02x%02x%02x%02x ", addr[0], addr[1], addr[2], addr[3]);
 				addr += 4;
 			}
 			if (pretty) {
 				while (str < addr) {
-					hxlog_console("%c", (*str >= 0x20 && *str <= 0x7e) ? *str : '.');
+					hxlogconsole("%c", (*str >= 0x20 && *str <= 0x7e) ? *str : '.');
 					++str;
 				}
 			}
-			hxlog_console("\n");
+			hxlogconsole("\n");
 		}
 	}
 }
@@ -44,11 +44,11 @@ __attribute__((no_sanitize("address")))
 void hxfloat_dump(const float* address, size_t count) {
 	if ((HX_RELEASE) < 2 && address != hxnull) {
 		for (size_t i = 0; i < count;) {
-			hxlog_console("%08x: ", (unsigned int)(uintptr_t)address);
+			hxlogconsole("%08x: ", (unsigned int)(uintptr_t)address);
 			for (size_t maximum = 4; i < count && maximum--; i++) {
-				hxlog_console("%8f ", *address++);
+				hxlogconsole("%8f ", *address++);
 			}
-			hxlog_console("\n");
+			hxlogconsole("\n");
 		}
 	}
 }

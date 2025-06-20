@@ -58,7 +58,7 @@ int __cxa_guard_acquire(size_t *guard) {
 	if(*guard == 1u) { return 0; }
 
 	// Check if the constructor is already in progress.
-	hxassert_release(*guard != 2u, "race constructing function scope static");
+	hxassertrelease(*guard != 2u, "race constructing function scope static");
 
 	// Run the constructor.
 	*guard = 2u;
@@ -71,7 +71,7 @@ void __cxa_guard_release(size_t *guard) {
 }
 extern "C"
 void __cxa_guard_abort(uint64_t *guard) {
-	hxassert_release(0, "exception constructing function scope static");
+	hxassertrelease(0, "exception constructing function scope static");
 	*guard = 0u;
 }
 #endif
@@ -124,7 +124,7 @@ bool hxprint_hashes(void) {
 	hxinit();
 
 	// sort by hash.
-	hxlog_console("string literals in hash order:\n");
+	hxlogconsole("string literals in hash order:\n");
 	hxmemory_allocator_scope temporary_stack(hxmemory_allocator_Temporary_stack);
 
 	typedef hxarray<const char*> Filenames;
@@ -148,12 +148,12 @@ bool hxcheck_hash(hxconsolehex_t hash_) {
 	hxregister_string_literal_hash* node = hxstring_literal_hashes_().find(hash_);
 	if(node) {
 		while(node) {
-			hxlog_console("%08zx: %s\n", (size_t)hash_, node->str());
+			hxlogconsole("%08zx: %s\n", (size_t)hash_, node->str());
 			node = hxstring_literal_hashes_().find(hash_, node);
 		}
 	}
 	else {
-		hxlog_console("%08zx: not found\n", (size_t)hash_);
+		hxlogconsole("%08zx: not found\n", (size_t)hash_);
 	}
 	return true;
 }
@@ -169,7 +169,7 @@ hxconsole_command_named(hxcheck_hash, checkhash);
 
 extern "C"
 void hxinit_internal(void) {
-	hxassert_release(!g_hxis_init, "call hxinit() instead");
+	hxassertrelease(!g_hxis_init, "call hxinit() instead");
 	hxsettings_construct();
 	g_hxis_init = 1;
 
@@ -187,32 +187,32 @@ void hxinit_internal(void) {
 }
 
 extern "C"
-HX_NOEXCEPT_INTRINSIC void hxlog_handler(hxlog_level level, const char* format, ...) {
+HX_NOEXCEPT_INTRINSIC void hxloghandler(hxloglevel level, const char* format, ...) {
 	va_list args;
 	va_start(args, format);
-	hxlog_handler_v(level, format, args);
+	hxloghandler_v(level, format, args);
 	va_end(args);
 }
 
 #define HX_STDOUT_STR_(x) ::fwrite(x, (sizeof x) - 1, 1, stdout)
 
 extern "C"
-HX_NOEXCEPT_INTRINSIC void hxlog_handler_v(hxlog_level level, const char* format, va_list args) {
+HX_NOEXCEPT_INTRINSIC void hxloghandler_v(hxloglevel level, const char* format, va_list args) {
 	if(g_hxis_init && g_hxsettings.log_level > level) {
 		return;
 	}
 
 	char buf[HX_MAX_LINE+1];
 	int sz = format ? vsnprintf(buf, HX_MAX_LINE, format, args) : -1;
-	hxassert_release(sz >= 0, "format error: %s", format ? format : "(null)");
+	hxassertrelease(sz >= 0, "format error: %s", format ? format : "(null)");
 	if (sz <= 0) {
 		return;
 	}
-	if (level == hxlog_level_Warning) {
+	if (level == hxloglevel_Warning) {
 		HX_STDOUT_STR_("WARNING ");
 		buf[sz++] = '\n';
 	}
-	else if (level == hxlog_level_Assert) {
+	else if (level == hxloglevel_Assert) {
 		HX_STDOUT_STR_("ASSERT_FAIL ");
 		buf[sz++] = '\n';
 	}
@@ -232,15 +232,15 @@ void hxshutdown(void) {
 
 #if (HX_RELEASE) == 0
 extern "C"
-HX_NOEXCEPT_INTRINSIC int hxassert_handler(const char* file, size_t line) {
+HX_NOEXCEPT_INTRINSIC int hxasserthandler(const char* file, size_t line) {
 	const char* f = hxbasename(file);
 	if (g_hxis_init && g_hxsettings.asserts_to_be_skipped > 0) {
 		--g_hxsettings.asserts_to_be_skipped;
-		hxlog_handler(hxlog_level_Assert, "(skipped) %s(%u) hash %08x", f, (unsigned int)line,
+		hxloghandler(hxloglevel_Assert, "(skipped) %s(%u) hash %08x", f, (unsigned int)line,
 			(unsigned int)hxstring_literal_hash_debug(file));
 		return 1;
 	}
-	hxlog_handler(hxlog_level_Assert, "%s(%u) hash %08x Triggering Breakpoint\n", f, (unsigned int)line,
+	hxloghandler(hxloglevel_Assert, "%s(%u) hash %08x Triggering Breakpoint\n", f, (unsigned int)line,
 		(unsigned int)hxstring_literal_hash_debug(file));
 
 	// return to HX_BREAKPOINT at calling line.
@@ -248,8 +248,8 @@ HX_NOEXCEPT_INTRINSIC int hxassert_handler(const char* file, size_t line) {
 }
 #else
 extern "C"
-HX_NOEXCEPT_INTRINSIC HX_NORETURN void hxassert_handler(uint32_t file, size_t line) {
-	hxlog_handler(hxlog_level_Assert, "file %08x line %u\n", (unsigned int)file, (unsigned int)line);
+HX_NOEXCEPT_INTRINSIC HX_NORETURN void hxasserthandler(uint32_t file, size_t line) {
+	hxloghandler(hxloglevel_Assert, "file %08x line %u\n", (unsigned int)file, (unsigned int)line);
 	_Exit(EXIT_FAILURE);
 }
 #endif

@@ -7,7 +7,7 @@ class hxfile;
 
 // hxconsole API - Implements a simple console for remote use or to implement
 // configuration files. Output is directed to the system log with
-// hxlog_level_Console. A remote console will require forwarding commands to the
+// hxloglevel_Console. A remote console will require forwarding commands to the
 // target and reporting the system log back. Configuration files only require
 // file I/O. C-style calls returning bool with up to 4 args using "const char*",
 // hxconsolenumber_t or hxconsolehex_t as parameter types are required for the
@@ -29,7 +29,7 @@ public:
         const T_ max_value_ = ~min_value_;
 
         double clamped_ = hxclamp(m_x_, (double)min_value_, (double)max_value_);
-        hxassert_msg(m_x_ == clamped_, "parameter overflow: %lf -> %lf", m_x_, clamped_);
+        hxassertmsg(m_x_ == clamped_, "parameter overflow: %lf -> %lf", m_x_, clamped_);
 
         // Asserts may be skipped. Avoid the undefined behavior sanitizer by
         // clamping value.
@@ -58,7 +58,7 @@ public:
     hxconsolehex_t(uint64_t x_) : m_x_(x_) { }
 	template<typename T_> operator T_() const {
         T_ t = (T_)m_x_;
-        hxwarn_msg((uint64_t)t == m_x_, "precision error: %llx -> %llx",
+        hxwarnmsg((uint64_t)t == m_x_, "precision error: %llx -> %llx",
             (unsigned long long)m_x_, (unsigned long long)t);
         return t;
     }

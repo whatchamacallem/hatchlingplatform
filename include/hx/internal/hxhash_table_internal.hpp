@@ -16,7 +16,7 @@ public:
 	}
 	HX_CONSTEXPR_FN uint32_t get_table_size_bits() const { return Table_size_bits_; }
 	HX_CONSTEXPR_FN void set_table_size_bits(uint32_t bits) {
-		hxassert_msg(bits == Table_size_bits_, "resizing static hash table"); (void)bits;
+		hxassertmsg(bits == Table_size_bits_, "resizing static hash table"); (void)bits;
 	}
 };
 
@@ -27,14 +27,14 @@ public:
 	HX_CONSTEXPR_FN hxhash_table_internal_allocator_() : m_table_size_bits_(0u) { }
 
 	HX_CONSTEXPR_FN uint32_t get_table_size_bits() const {
-		hxassert_msg(m_table_size_bits_ != 0u, "hash table unallocated");
+		hxassertmsg(m_table_size_bits_ != 0u, "hash table unallocated");
 		return m_table_size_bits_;
 	}
 
 	HX_CONSTEXPR_FN void set_table_size_bits(uint32_t bits_) {
-		hxassert_msg(m_table_size_bits_ == 0u || bits_ == m_table_size_bits_, "resizing dynamic hash table");
+		hxassertmsg(m_table_size_bits_ == 0u || bits_ == m_table_size_bits_, "resizing dynamic hash table");
 		if (m_table_size_bits_ == 0u) {
-			hxassert_msg(bits_ > 0u && bits_ <= 31u, "hash bits must be [1..31]");
+			hxassertmsg(bits_ > 0u && bits_ <= 31u, "hash bits must be [1..31]");
 			m_table_size_bits_ = bits_;
 			this->reserve_storage(1u << bits_);
 			::memset(this->data(), 0x00, sizeof(Node_*) * this->capacity());

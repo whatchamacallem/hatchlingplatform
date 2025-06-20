@@ -35,8 +35,8 @@ hxconsole_command_table_& hxconsole_commands_() { static hxconsole_command_table
 // Console API
 
 void hxconsole_register_(hxconsole_hash_table_node_* node) {
-	hxassert_msg(node->key().str_ && node->command_(), "hxconsole_register_ args");
-	hxassert_msg(!hxconsole_commands_().find(node->key()), "command already registered: %s", node->key().str_);
+	hxassertmsg(node->key().str_ && node->command_(), "hxconsole_register_ args");
+	hxassertmsg(!hxconsole_commands_().find(node->key()), "command already registered: %s", node->key().str_);
 
 	hxconsole_commands_().insert_node(node);
 }
@@ -60,7 +60,7 @@ bool hxconsole_exec_line(const char* command) {
 
 	const hxconsole_hash_table_node_* node = hxconsole_commands_().find(hxconsole_hash_table_key_(pos));
 	if (!node) {
-		hxlog_warning("unknown command: %s", command);
+		hxlogwarning("unknown command: %s", command);
 		return false;
 	}
 
@@ -74,12 +74,12 @@ bool hxconsole_exec_line(const char* command) {
 #endif
 	{
 		bool result = node->command_()->execute_(pos);
-		hxwarn_msg(result, "command failed: %s", command);
+		hxwarnmsg(result, "command failed: %s", command);
 		return result;
 	}
 #ifdef __cpp_exceptions
 	catch (...) {
-		hxlog_warning("unexpected exception: %s", command);
+		hxlogwarning("unexpected exception: %s", command);
 		return false;
 	}
 #endif
@@ -96,10 +96,10 @@ bool hxconsole_exec_file(hxfile& file) {
 
 bool hxconsole_exec_filename(const char* filename) {
 	hxfile file(hxfile::in, "%s", filename);
-	hxwarn_msg(file.is_open(), "cannot open: %s", filename);
+	hxwarnmsg(file.is_open(), "cannot open: %s", filename);
 	if (file.is_open()) {
 		bool is_ok = hxconsole_exec_file(file);
-		hxwarn_msg(is_ok, "encountering errors: %s", filename);
+		hxwarnmsg(is_ok, "encountering errors: %s", filename);
 		return is_ok;
 	}
 	return false;

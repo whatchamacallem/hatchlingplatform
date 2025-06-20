@@ -61,7 +61,7 @@ void hxprofiler_internal_::log_() {
 		const hxprofiler_record_& rec = m_records[i];
 
 		hxcycles_t delta = rec.m_end_ - rec.m_begin_;
-		hxlog_release("profile %s: %.15gms cycles %.15g thread %x\n", hxbasename(rec.m_label_),
+		hxlogrelease("profile %s: %.15gms cycles %.15g thread %x\n", hxbasename(rec.m_label_),
 			(double)delta * c_hxmilliseconds_per_cycle, (double)delta,
 			(unsigned int)rec.m_thread_id_);
 	}
@@ -89,7 +89,7 @@ void hxprofiler_internal_::write_to_chrome_tracing_(const char* filename) {
 	}
 	f.print("\n]\n");
 
-	hxlog_console("wrote %s.\n", filename);
+	hxlogconsole("wrote %s.\n", filename);
 }
 
 #endif // HX_PROFILE

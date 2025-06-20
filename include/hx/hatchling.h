@@ -31,13 +31,13 @@ extern "C" {
 
 // Hatchling Platform C and C++ API. Above headers are C and C++ too.
 
-// hxlog_level - Runtime setting for verbosity of log messages. Independently
+// hxloglevel - Runtime setting for verbosity of log messages. Independently
 // controls what messages are compiled in. See g_hxsettings.log_level.
-enum hxlog_level {
-	hxlog_level_Log,     // Verbose informative messages. No automatic newline.
-	hxlog_level_Console, // Responses to console commands. No automatic newline.
-	hxlog_level_Warning, // Warnings about serious problems.
-	hxlog_level_Assert   // Reason for abnormal termination or test failure.
+enum hxloglevel {
+	hxloglevel_Log,     // Verbose informative messages. No automatic newline.
+	hxloglevel_Console, // Responses to console commands. No automatic newline.
+	hxloglevel_Warning, // Warnings about serious problems.
+	hxloglevel_Assert   // Reason for abnormal termination or test failure.
 };
 
 // hxnull - The null pointer value for a given pointer type represented by the
@@ -71,75 +71,75 @@ HX_STATIC_ASSERT((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0
 // hxlog(...) - Enters formatted messages in the system log. Does not add a newline.
 // This is only evaluated when HX_RELEASE == 0.
 // - ...: Variadic arguments for the formatted log message.
-#define hxlog(...) hxlog_handler(hxlog_level_Log, __VA_ARGS__)
+#define hxlog(...) hxloghandler(hxloglevel_Log, __VA_ARGS__)
 
-// hxassert_msg(bool x, ...) - Does not evaluate message args unless condition fails. This is
+// hxassertmsg(bool x, ...) - Does not evaluate message args unless condition fails. This is
 // only evaluated when HX_RELEASE == 0.
 // - x: The condition to evaluate.
 // - ...: Variadic arguments for the formatted log message.
-#define hxassert_msg(x_, ...) (void)(!!(x_) || (hxlog_handler(hxlog_level_Assert, __VA_ARGS__), \
-	hxassert_handler(__FILE__, __LINE__)) || HX_BREAKPOINT())
+#define hxassertmsg(x_, ...) (void)(!!(x_) || (hxloghandler(hxloglevel_Assert, __VA_ARGS__), \
+	hxasserthandler(__FILE__, __LINE__)) || HX_BREAKPOINT())
 
 // hxassert(bool x) - Logs an error and terminates execution if x is false. This is only
 // evaluated when HX_RELEASE == 0.
 // - ...: The condition to evaluate.
-#define hxassert(...) (void)(!!(__VA_ARGS__) || (hxlog_handler(hxlog_level_Assert, HX_QUOTE(__VA_ARGS__)), \
-	hxassert_handler(__FILE__, __LINE__)) || HX_BREAKPOINT())
+#define hxassert(...) (void)(!!(__VA_ARGS__) || (hxloghandler(hxloglevel_Assert, HX_QUOTE(__VA_ARGS__)), \
+	hxasserthandler(__FILE__, __LINE__)) || HX_BREAKPOINT())
 
-// hxassert_release(bool x, ...) - Logs an error and terminates execution if x is false up to
+// hxassertrelease(bool x, ...) - Logs an error and terminates execution if x is false up to
 // release level 2. This is only evaluated when HX_RELEASE < 3.
 // - x: The condition to evaluate.
 // - ...: Variadic arguments for the formatted log message.
-#define hxassert_release(x_, ...) (void)(!!(x_) || ((hxlog_handler(hxlog_level_Assert, __VA_ARGS__), \
-	hxassert_handler(__FILE__, __LINE__)) || HX_BREAKPOINT()))
+#define hxassertrelease(x_, ...) (void)(!!(x_) || ((hxloghandler(hxloglevel_Assert, __VA_ARGS__), \
+	hxasserthandler(__FILE__, __LINE__)) || HX_BREAKPOINT()))
 
 // Assert handler. Do not call directly, signature changes and then is removed.
-HX_NOEXCEPT_INTRINSIC int hxassert_handler(const char* file_, size_t line_);
+HX_NOEXCEPT_INTRINSIC int hxasserthandler(const char* file_, size_t line_);
 
 #else // HX_RELEASE >= 1
 #define hxlog(...) ((void)0)
-#define hxassert_msg(x_, ...) ((void)0)
+#define hxassertmsg(x_, ...) ((void)0)
 #define hxassert(x_) ((void)0)
-HX_NOEXCEPT_INTRINSIC HX_NORETURN void hxassert_handler(uint32_t file_, size_t line_);
+HX_NOEXCEPT_INTRINSIC HX_NORETURN void hxasserthandler(uint32_t file_, size_t line_);
 #endif
 
 #if (HX_RELEASE) <= 1
-// hxlog_release(...) - Enters formatted messages in the system log up to release
+// hxlogrelease(...) - Enters formatted messages in the system log up to release
 // level 1. No automatic newline. This is only evaluated when HX_RELEASE <= 1.
 // - ...: Variadic arguments for the formatted log message.
-#define hxlog_release(...) hxlog_handler(hxlog_level_Log, __VA_ARGS__)
+#define hxlogrelease(...) hxloghandler(hxloglevel_Log, __VA_ARGS__)
 
-// hxlog_console(...) - Enters formatted messages in the console system log. This is
+// hxlogconsole(...) - Enters formatted messages in the console system log. This is
 // only evaluated when HX_RELEASE <= 1.
 // - ...: Variadic arguments for the formatted console log message.
-#define hxlog_console(...) hxlog_handler(hxlog_level_Console, __VA_ARGS__)
+#define hxlogconsole(...) hxloghandler(hxloglevel_Console, __VA_ARGS__)
 
-// hxlog_warning(...) - Enters formatted warnings in the system log. This is only
+// hxlogwarning(...) - Enters formatted warnings in the system log. This is only
 // evaluated when HX_RELEASE <= 1.
 // - ...: Variadic arguments for the formatted warning message.
-#define hxlog_warning(...) hxlog_handler(hxlog_level_Warning, __VA_ARGS__)
+#define hxlogwarning(...) hxloghandler(hxloglevel_Warning, __VA_ARGS__)
 
-// hxwarn_msg(bool x, ...) - Enters formatted warnings in the system log when
+// hxwarnmsg(bool x, ...) - Enters formatted warnings in the system log when
 // x is false. This is only evaluated when HX_RELEASE <= 1.
 // - x: The condition to evaluate.
 // - ...: Variadic arguments for the formatted warning message.
-#define hxwarn_msg(x_, ...) (void)(!!(x_) || (hxlog_handler(hxlog_level_Warning, __VA_ARGS__), 0))
+#define hxwarnmsg(x_, ...) (void)(!!(x_) || (hxloghandler(hxloglevel_Warning, __VA_ARGS__), 0))
 
 #else // HX_RELEASE >= 2
-#define hxlog_release(...) ((void)0)
-#define hxlog_console(...) ((void)0)
-#define hxlog_warning(...) ((void)0)
-#define hxwarn_msg(x_, ...) ((void)0)
+#define hxlogrelease(...) ((void)0)
+#define hxlogconsole(...) ((void)0)
+#define hxlogwarning(...) ((void)0)
+#define hxwarnmsg(x_, ...) ((void)0)
 #endif
 
-// hxassert_release has 4 variations. See above. It is only evaluated when HX_RELEASE < 3.
+// hxassertrelease has 4 variations. See above. It is only evaluated when HX_RELEASE < 3.
 #if (HX_RELEASE) == 1
-#define hxassert_release(x_, ...) (void)(!!(x_) || (hxlog_handler(hxlog_level_Assert, __VA_ARGS__), \
-	hxassert_handler(hxstring_literal_hash(__FILE__), __LINE__), 0))
+#define hxassertrelease(x_, ...) (void)(!!(x_) || (hxloghandler(hxloglevel_Assert, __VA_ARGS__), \
+	hxasserthandler(hxstring_literal_hash(__FILE__), __LINE__), 0))
 #elif (HX_RELEASE) == 2
-#define hxassert_release(x_, ...) (void)(!!(x_) || (hxassert_handler(hxstring_literal_hash(__FILE__), __LINE__), 0))
+#define hxassertrelease(x_, ...) (void)(!!(x_) || (hxasserthandler(hxstring_literal_hash(__FILE__), __LINE__), 0))
 #elif (HX_RELEASE) == 3
-#define hxassert_release(x_, ...) ((void)0)
+#define hxassertrelease(x_, ...) ((void)0)
 #endif
 
 // hxinit_internal - Use hxinit instead. It checks g_hxis_init.
@@ -153,19 +153,19 @@ extern int g_hxis_init;
 // Does not clear g_hxis_init, shutdown is final. Logging and asserts are unaffected.
 void hxshutdown(void);
 
-// hxlog_handler - Enters formatted messages in the system log. This is the only
+// hxloghandler - Enters formatted messages in the system log. This is the only
 // access to logging when HX_RELEASE > 2.
-// - level: The log level (e.g., hxlog_level_Log, hxlog_level_Warning).
+// - level: The log level (e.g., hxloglevel_Log, hxloglevel_Warning).
 // - format: A printf-style format string.
 // - ...: Additional arguments for the format string.
-HX_NOEXCEPT_INTRINSIC void hxlog_handler(enum hxlog_level level_, const char* format_, ...) HX_ATTR_FORMAT(2, 3);
+HX_NOEXCEPT_INTRINSIC void hxloghandler(enum hxloglevel level_, const char* format_, ...) HX_ATTR_FORMAT(2, 3);
 
-// hxlog_handler_v - A va_list version of hxlog_handler. This is the only access to
+// hxloghandler_v - A va_list version of hxloghandler. This is the only access to
 // logging when HX_RELEASE > 2.
-// - level: The log level (e.g., hxlog_level_Log, hxlog_level_Warning).
+// - level: The log level (e.g., hxloglevel_Log, hxloglevel_Warning).
 // - format: A printf-style format string.
 // - args: A va_list containing the arguments for the format string.
-HX_NOEXCEPT_INTRINSIC void hxlog_handler_v(enum hxlog_level level_, const char* format_, va_list args_);
+HX_NOEXCEPT_INTRINSIC void hxloghandler_v(enum hxloglevel level_, const char* format_, va_list args_);
 
 // hxhex_dump - Prints an array of bytes formatted in hexadecimal. Additional
 // information provided when pretty is non-zero.

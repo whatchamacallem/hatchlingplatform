@@ -1,4 +1,8 @@
 {
+    "cSpell.ignoreRegExpList": [
+        "hx[a-zA-Z0-9_]*"
+    ],
+
     "cSpell.words": [
         "asan",
         "checkasserts",
@@ -26,17 +30,6 @@
         "ggdb",
         "googletest",
         "gtest",
-        "hxabs",
-        "hxclamp",
-        "hxconsolehex",
-        "hxconsolenumber",
-        "hxcycles",
-        "hxinit",
-        "hxmax",
-        "hxmin",
-        "hxnull",
-        "hxswap",
-        "hxtest",
         "I../include",
         "lpthread",
         "lstdc",

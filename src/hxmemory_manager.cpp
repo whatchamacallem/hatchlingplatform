@@ -19,12 +19,12 @@ HX_REGISTER_FILENAME_HASH
 #if !HX_HOSTED
 void* operator new(size_t size) {
     void* ptr = ::malloc(size);
-	hxassert_release(ptr, "malloc fail: %u bytes\n", (unsigned int)size);
+	hxassertrelease(ptr, "malloc fail: %u bytes\n", (unsigned int)size);
     return ptr;
 }
 void* operator new[](size_t size) {
     void* ptr = ::malloc(size);
-	hxassert_release(ptr, "malloc fail: %u bytes\n", (unsigned int)size);
+	hxassertrelease(ptr, "malloc fail: %u bytes\n", (unsigned int)size);
     return ptr;
 }
 void operator delete(void* ptr) HX_NOEXCEPT {
@@ -46,10 +46,10 @@ void operator delete[](void* ptr, size_t) HX_NOEXCEPT {
 // disastrous results.
 static HX_CONSTEXPR_FN void* hxmalloc_checked(size_t size) {
 	void* t = ::malloc(size);
-	hxassert_release(t, "malloc fail: %zu bytes\n", size);
+	hxassertrelease(t, "malloc fail: %zu bytes\n", size);
 #if (HX_RELEASE) >= 3
 	if (!t) {
-		hxlog_handler(hxlog_level_Assert, "malloc fail");
+		hxloghandler(hxloglevel_Assert, "malloc fail");
 		::_Exit(EXIT_FAILURE);
 	}
 #endif
@@ -163,7 +163,7 @@ public:
 
 		hxmemory_allocation_header& hdr = ((hxmemory_allocation_header*)p)[-1];
 #if (HX_RELEASE) < 2
-		hxassert_release(hdr.guard == hxmemory_allocation_header::c_guard, "heap free corrupt");
+		hxassertrelease(hdr.guard == hxmemory_allocation_header::c_guard, "heap free corrupt");
 #endif
 		hxassert(hdr.size > 0u && m_allocation_count > 0u && m_bytes_allocated > 0u);
 		--m_allocation_count;
@@ -226,7 +226,7 @@ public:
 	}
 
 	void on_free_non_virtual(void* ptr) {
-		hxassert_msg(m_allocation_count > 0 && (uintptr_t)ptr >= m_begin_
+		hxassertmsg(m_allocation_count > 0 && (uintptr_t)ptr >= m_begin_
 			&& (uintptr_t)ptr < m_current, "unexpected free: %s", m_label_);
 		--m_allocation_count; (void)ptr;
 		return;
@@ -256,7 +256,7 @@ public:
 
 	virtual void end_allocation_scope(hxmemory_allocator_scope* scope, hxmemory_allocator old_id) HX_OVERRIDE {
 		(void)old_id;
-		hxassert_msg(m_allocation_count <= scope->get_previous_allocation_count(),
+		hxassertmsg(m_allocation_count <= scope->get_previous_allocation_count(),
 			"%s leaked %zd allocations", m_label_, m_allocation_count - scope->get_previous_allocation_count());
 
 		m_high_water = hxmax(m_high_water, m_current);
@@ -268,7 +268,7 @@ public:
 		m_current = previous_current;
 
 		// This assert indicates overwriting the stack trashing *scope.
-		hxassert_release(m_current <= m_end_, "error resetting temp stack");
+		hxassertrelease(m_current <= m_end_, "error resetting temp stack");
 	}
 
 	virtual size_t get_high_water(hxmemory_allocator id) HX_OVERRIDE {
@@ -335,9 +335,9 @@ void hxmemory_manager::construct() {
 }
 
 void hxmemory_manager::destruct() {
-	hxassert_msg(m_memory_allocator_permanent.get_allocation_count(hxmemory_allocator_Permanent) == 0,
+	hxassertmsg(m_memory_allocator_permanent.get_allocation_count(hxmemory_allocator_Permanent) == 0,
 		"leaked permanent allocation");
-	hxassert_msg(m_memory_allocator_temporary_stack.get_allocation_count(hxmemory_allocator_Temporary_stack) == 0,
+	hxassertmsg(m_memory_allocator_temporary_stack.get_allocation_count(hxmemory_allocator_Temporary_stack) == 0,
 		"leaked temporary allocation");
 
 	::free(m_memory_allocator_permanent.release());
@@ -350,7 +350,7 @@ size_t hxmemory_manager::leak_count() {
 	for (int32_t i = 0; i != hxmemory_allocator_Current; ++i) {
 		hxmemory_allocator_base& al = *m_memory_allocators[i];
 		if(al.get_allocation_count((hxmemory_allocator)i)) {
-			hxlog_warning("LEAK IN ALLOCATOR %s count %zu size %zu high_water %zu", al.label(),
+			hxlogwarning("LEAK IN ALLOCATOR %s count %zu size %zu high_water %zu", al.label(),
 				al.get_allocation_count((hxmemory_allocator)i),
 				al.get_bytes_allocated((hxmemory_allocator)i),
 				al.get_high_water((hxmemory_allocator)i));
@@ -392,15 +392,15 @@ void* hxmemory_manager::allocate(size_t size, hxmemory_allocator id, size_t alig
 		alignment = 1u;
 	}
 
-	hxassert_msg(((alignment - 1) & (alignment)) == 0u, "alignment %zd is not power of 2", alignment);
-	hxassert_msg((unsigned int)id < (unsigned int)hxmemory_allocator_Current, "bad allocator: %ud", id);
+	hxassertmsg(((alignment - 1) & (alignment)) == 0u, "alignment %zd is not power of 2", alignment);
+	hxassertmsg((unsigned int)id < (unsigned int)hxmemory_allocator_Current, "bad allocator: %ud", id);
 
 	HX_MEMORY_MANAGER_LOCK_();
 	void* ptr = m_memory_allocators[id]->allocate(size, alignment);
-	hxassert_msg(((uintptr_t)ptr & (alignment - (uintptr_t)1)) == 0, "alignment wrong %zx from %d",
+	hxassertmsg(((uintptr_t)ptr & (alignment - (uintptr_t)1)) == 0, "alignment wrong %zx from %d",
 		(size_t)(uintptr_t)ptr, id);
 	if (ptr) { return ptr; }
-	hxlog_warning("%s is overflowing to heap, size %zd", m_memory_allocators[id]->label(), size);
+	hxlogwarning("%s is overflowing to heap, size %zd", m_memory_allocators[id]->label(), size);
 	return m_memory_allocator_heap.allocate(size, alignment);
 }
 
@@ -414,7 +414,7 @@ void hxmemory_manager::free(void* ptr) {
 	}
 
 	if (m_memory_allocator_permanent.contains(ptr)) {
-		hxwarn_msg(g_hxsettings.deallocate_permanent, "ERROR: free from permanent");
+		hxwarnmsg(g_hxsettings.deallocate_permanent, "ERROR: free from permanent");
 		m_memory_allocator_permanent.on_free_non_virtual(ptr);
 		return;
 	}
@@ -429,7 +429,7 @@ void hxmemory_manager::free(void* ptr) {
 
 hxmemory_allocator_scope::hxmemory_allocator_scope(hxmemory_allocator id)
 {
-	hxassert_release(s_hxmemory_manager, "no memory manager");
+	hxassertrelease(s_hxmemory_manager, "no memory manager");
 
 	// sets Current_allocator():
 	m_this_allocator_ = id;
@@ -440,27 +440,27 @@ hxmemory_allocator_scope::hxmemory_allocator_scope(hxmemory_allocator id)
 }
 
 hxmemory_allocator_scope::~hxmemory_allocator_scope() {
-	hxassert_release(s_hxmemory_manager, "no memory manager");
+	hxassertrelease(s_hxmemory_manager, "no memory manager");
 	s_hxmemory_manager->end_allocation_scope(this, m_previous_allocator_);
 }
 
 size_t hxmemory_allocator_scope::get_total_allocation_count() const {
-	hxassert_release(s_hxmemory_manager, "no memory manager");
+	hxassertrelease(s_hxmemory_manager, "no memory manager");
 	return s_hxmemory_manager->get_allocator(m_this_allocator_).get_allocation_count(m_this_allocator_);
 }
 
 size_t hxmemory_allocator_scope::get_total_bytes_allocated() const {
-	hxassert_release(s_hxmemory_manager, "no memory manager");
+	hxassertrelease(s_hxmemory_manager, "no memory manager");
 	return s_hxmemory_manager->get_allocator(m_this_allocator_).get_bytes_allocated(m_this_allocator_);
 }
 
 size_t hxmemory_allocator_scope::get_scope_allocation_count() const {
-	hxassert_release(s_hxmemory_manager, "no memory manager");
+	hxassertrelease(s_hxmemory_manager, "no memory manager");
 	return s_hxmemory_manager->get_allocator(m_this_allocator_).get_allocation_count(m_this_allocator_) - m_previous_allocation_count_;
 }
 
 size_t hxmemory_allocator_scope::get_scope_bytes_allocated() const {
-	hxassert_release(s_hxmemory_manager, "no memory manager");
+	hxassertrelease(s_hxmemory_manager, "no memory manager");
 	return s_hxmemory_manager->get_allocator(m_this_allocator_).get_bytes_allocated(m_this_allocator_) - m_previous_bytes_allocated_;
 }
 
@@ -470,7 +470,7 @@ size_t hxmemory_allocator_scope::get_scope_bytes_allocated() const {
 extern "C"
 void* hxmalloc(size_t size) {
 	hxinit();
-	hxassert_release(s_hxmemory_manager, "no memory manager");
+	hxassertrelease(s_hxmemory_manager, "no memory manager");
 	void* ptr = s_hxmemory_manager->allocate(size, hxmemory_allocator_Current, HX_ALIGNMENT);
 	if ((HX_RELEASE) < 1) {
 		::memset(ptr, 0xab, size);
@@ -483,7 +483,7 @@ void* hxmalloc(size_t size) {
 extern "C"
 void* hxmalloc_ext(size_t size, hxmemory_allocator id, size_t alignment) {
 	hxinit();
-	hxassert_release(s_hxmemory_manager, "no memory manager");
+	hxassertrelease(s_hxmemory_manager, "no memory manager");
 	void* ptr = s_hxmemory_manager->allocate(size, (hxmemory_allocator)id, alignment);
 	if ((HX_RELEASE) < 1) {
 		::memset(ptr, 0xab, size);
@@ -493,7 +493,7 @@ void* hxmalloc_ext(size_t size, hxmemory_allocator id, size_t alignment) {
 
 extern "C"
 void hxfree(void *ptr) {
-	hxassert_release(s_hxmemory_manager, "no memory manager");
+	hxassertrelease(s_hxmemory_manager, "no memory manager");
 
 	// Nothing allocated from the OS memory manager can be freed here.  Not unless
 	// it is wrapped with hxmemory_allocator_os_heap.
@@ -501,7 +501,7 @@ void hxfree(void *ptr) {
 }
 
 void hxmemory_manager_init() {
-	hxassert_release(!s_hxmemory_manager, "re-init memory manager");
+	hxassertrelease(!s_hxmemory_manager, "re-init memory manager");
 
 	s_hxmemory_manager = (hxmemory_manager*)hxmalloc_checked(sizeof(hxmemory_manager));
 	::memset((void*)s_hxmemory_manager, 0x00, sizeof(hxmemory_manager));
@@ -510,11 +510,11 @@ void hxmemory_manager_init() {
 }
 
 void hxmemory_manager_shut_down() {
-	hxassert_release(s_hxmemory_manager, "no memory manager");
+	hxassertrelease(s_hxmemory_manager, "no memory manager");
 
 	// Any allocations made while active will crash when free'd.
 	size_t leak_count = hxmemory_manager_leak_count();
-	hxassert_release(leak_count == 0, "memory leaks: %zd", leak_count); (void)leak_count;
+	hxassertrelease(leak_count == 0, "memory leaks: %zd", leak_count); (void)leak_count;
 
 	// Return everything to the system allocator.
 	s_hxmemory_manager->destruct();
@@ -523,7 +523,7 @@ void hxmemory_manager_shut_down() {
 }
 
 size_t hxmemory_manager_leak_count() {
-	hxassert_release(s_hxmemory_manager, "no memory manager");
+	hxassertrelease(s_hxmemory_manager, "no memory manager");
 	return s_hxmemory_manager->leak_count();
 }
 

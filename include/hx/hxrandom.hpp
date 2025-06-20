@@ -52,13 +52,13 @@ public:
     template<typename T_> HX_CONSTEXPR_FN T_ range(T_ base_, T_ size_) {
         // Use double parameters if you need a bigger size. An emulated floating
         // point multiply is faster and more stable than integer modulo.
-        hxassert_msg((float)size_ < (float)0x01000000, "insufficient precision"); // 0x1p24f
+        hxassertmsg((float)size_ < (float)0x01000000, "insufficient precision"); // 0x1p24f
         return base_ + (T_)((float)size_ * (float)*this);
     }
     HX_CONSTEXPR_FN double range(double base_, double size_) {
         // Use uint64_t parameters if you need a bigger size. An emulated floating
         // point multiply is faster and more stable than integer modulo.
-        hxassert_msg(size_ < (double)0x40000000000000ll, "insufficient precision"); // 0x1p54f
+        hxassertmsg(size_ < (double)0x40000000000000ll, "insufficient precision"); // 0x1p54f
         return base_ + size_ * (double)*this;
     }
     HX_CONSTEXPR_FN int64_t range(int64_t base_, int64_t size_) {
