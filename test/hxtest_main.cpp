@@ -92,7 +92,7 @@ int main(int argc, char**argv) {
 	testing::InitGoogleTest(&argc, argv);
 
 #if (HX_USE_GOOGLE_TEST) && (HX_RELEASE) == 0
-    Gtest_flag_set(break_on_failure, true);
+    GTEST_FLAG_SET(break_on_failure, true);
 #endif
 
 	return hxtest_main(argc, argv);
