@@ -4,9 +4,9 @@
 #include <hx/hxconsole.hpp>
 #include <hx/hxfile.hpp>
 
-#if HX_PROFILE
-
 HX_REGISTER_FILENAME_HASH
+
+#if HX_PROFILE
 
 // ----------------------------------------------------------------------------
 // Console commands
@@ -35,7 +35,7 @@ hxconsole_command_named(hxprofiler_write_to_chrome_tracing_command_, profilewrit
 // variables
 
 // Use the address of a thread local variable as a unique thread id.
-HX_THREAD_LOCAL uint8_t s_hxprofiler_thread_id_address_ = 0;
+HX_THREAD_LOCAL char s_hxprofiler_thread_id_address_ = 0;
 
 hxprofiler_internal_ g_hxprofiler_;
 

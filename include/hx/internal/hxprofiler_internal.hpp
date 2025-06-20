@@ -23,7 +23,7 @@ static inline hxcycles_t hxtime_sample_cycles(void);
 extern class hxprofiler_internal_ g_hxprofiler_;
 
 // Address of s_hxprofiler_thread_id_address_ used to uniquely identify thread.
-extern HX_THREAD_LOCAL uint8_t s_hxprofiler_thread_id_address_;
+extern HX_THREAD_LOCAL char s_hxprofiler_thread_id_address_;
 
 // hxprofiler_internal_ - Manager object for internal use.
 class hxprofiler_internal_ {
