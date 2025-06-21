@@ -36,10 +36,7 @@ private:
     friend class hxtask_wait_for_tasks_;
     friend class hxtask_wait_for_completion_;
 
-    enum { running_queue_guard_value_ = 0xc710b034u };
-
     hxtask* m_next_task_;
-    uint32_t m_running_queue_guard_;
 
 #if HX_USE_THREADS
     enum executor_mode_t_ {
@@ -47,20 +44,20 @@ private:
         executor_mode_waiting_,
         executor_mode_stopping_
     };
-    struct executor_arg_t_ {
-        hxtask_queue* queue_;
-        executor_mode_t_ mode_;
-        executor_arg_t_(hxtask_queue* q, executor_mode_t_ m) : queue_(q), mode_(m) {}
+    enum run_level_t_ {
+        run_level_running_ = (uint32_t)0x00c0ffee,
+        run_level_stopped_ = (uint32_t)0xdeadbeef
     };
 
     static void* executor_thread_entry_(void* arg_);
     static void executor_thread_(hxtask_queue* q_, executor_mode_t_ mode_);
 
+    run_level_t_ m_queue_run_level_;
     int32_t m_thread_pool_size_;
     hxthread* m_threads_;
     hxmutex m_mutex_;
-    hxcondition_variable m_cond_var_tasks_;
-    hxcondition_variable m_cond_var_waiting_;
+    hxcondition_variable m_cond_var_new_tasks_;
+    hxcondition_variable m_cond_var_completion_;
     int32_t m_executing_count_;
 #endif
 };

@@ -7,24 +7,27 @@ HX_REGISTER_FILENAME_HASH
 
 #if HX_USE_THREADS
 
+// hxtask_wait_for_tasks_ - This is a worker task waiting for tasks or shutdown.
 class hxtask_wait_for_tasks_ {
 public:
     hxtask_wait_for_tasks_(hxtask_queue* q) : q_(q) {}
     bool operator()() const {
-        hxassertmsg(q_->m_running_queue_guard_ != hxtask_queue::running_queue_guard_value_,
-            "threading error");
-        return q_->m_next_task_;
+        return q_->m_next_task_
+            && q_->m_queue_run_level_ == hxtask_queue::run_level_running_;
     }
     hxtask_queue* q_;
 };
 
+// hxtask_wait_for_completion_ - This is a task waiting on all task completion
+// and possibly waiting to shutdown the queue as well. Neither wait states should
+// occur when the queue has already started shutting down.
 class hxtask_wait_for_completion_ {
 public:
     hxtask_wait_for_completion_(hxtask_queue* q) : q_(q) {}
     bool operator()() const {
-        hxassertmsg(q_->m_running_queue_guard_ != hxtask_queue::running_queue_guard_value_,
+        hxassertmsg(q_->m_queue_run_level_ == hxtask_queue::run_level_running_,
             "threading error");
-        return q_->m_executing_count_ == 0 && !q_->m_next_task_;
+        return q_->m_executing_count_ == 0 && q_->m_next_task_ == hxnull;
     }
     hxtask_queue* q_;
 };
@@ -35,7 +38,7 @@ public:
 hxtask_queue::hxtask_queue(int32_t thread_pool_size_)
     : m_next_task_(hxnull)
 #if HX_USE_THREADS
-    , m_running_queue_guard_(running_queue_guard_value_)
+    , m_queue_run_level_(run_level_running_)
     , m_thread_pool_size_(0)
     , m_threads_(hxnull)
     , m_executing_count_(0)
@@ -47,8 +50,7 @@ hxtask_queue::hxtask_queue(int32_t thread_pool_size_)
     if (m_thread_pool_size_ > 0) {
         m_threads_ = (hxthread*)hxmalloc(m_thread_pool_size_ * sizeof(hxthread));
         for (int32_t i_ = m_thread_pool_size_; i_--;) {
-            executor_arg_t_* arg = new executor_arg_t_(this, executor_mode_pool_);
-            ::new (m_threads_ + i_) hxthread(&executor_thread_entry_, arg);
+            ::new (m_threads_ + i_) hxthread(executor_thread_entry_, this);
         }
     }
 #endif
@@ -58,7 +60,7 @@ hxtask_queue::~hxtask_queue() {
 #if HX_USE_THREADS
     if (m_thread_pool_size_ > 0) {
         executor_thread_(this, executor_mode_stopping_);
-        hxassertrelease(m_running_queue_guard_ == 0u, "threading error");
+        hxassertmsg(m_queue_run_level_ == run_level_stopped_, "threading error");
 
         for (int32_t i_ = m_thread_pool_size_; i_--;) {
             m_threads_[i_].join();
@@ -81,10 +83,10 @@ void hxtask_queue::enqueue(hxtask* task_) {
 #if HX_USE_THREADS
     if (m_thread_pool_size_ > 0) {
         hxunique_lock lock_(m_mutex_);
-        hxassertrelease(m_running_queue_guard_ == running_queue_guard_value_, "enqueue to stopped queue");
+        hxassertrelease(m_queue_run_level_ == run_level_running_, "enqueue to stopped queue");
         task_->set_next_task(m_next_task_);
         m_next_task_ = task_;
-        m_cond_var_tasks_.notify_one();
+        m_cond_var_new_tasks_.notify_one();
     }
     else
 #endif
@@ -109,8 +111,8 @@ void hxtask_queue::wait_for_all() {
             task_->set_next_task(hxnull);
             task_->set_task_queue(hxnull);
 
-            // Last time this object is touched. It may delete or re-enqueue itself, we
-            // don't care.
+            // Last time this object is touched. It may delete or re-enqueue
+            // itself, we don't care.
             hxprofile_scope(task_->get_label());
             task_->execute(this);
         }
@@ -119,11 +121,8 @@ void hxtask_queue::wait_for_all() {
 
 #if HX_USE_THREADS
 void* hxtask_queue::executor_thread_entry_(void* arg_) {
-    executor_arg_t_* p = static_cast<executor_arg_t_*>(arg_);
-    hxtask_queue* q_ = p->queue_;
-    executor_mode_t_ mode_ = p->mode_;
-    delete p;
-    executor_thread_(q_, mode_);
+    hxtask_queue* q_ = static_cast<hxtask_queue*>(arg_);
+    executor_thread_(q_, executor_mode_pool_);
     return hxnull;
 }
 
@@ -131,40 +130,44 @@ void hxtask_queue::executor_thread_(hxtask_queue* q_, executor_mode_t_ mode_) {
     hxtask* task_ = hxnull;
     for (;;) {
         {
+            // task is executed outside of this RAII lock.
             hxunique_lock lk_(q_->m_mutex_);
 
-            // task is executed outside of the above RAII lock.
             if (task_) {
-                // Waited to reacquire critical section to decrement counter for previous task.
+                // Waited to reacquire critical after previous task.
                 task_ = hxnull;
                 hxassert(q_->m_executing_count_ > 0);
                 if (--q_->m_executing_count_ == 0 && !q_->m_next_task_) {
-                    q_->m_cond_var_waiting_.notify_all();
+                    q_->m_cond_var_completion_.notify_all();
                 }
             }
 
-            // Either acquire a next task or meet stopping criteria.
+            // Workers wait for a next task or run_level_stopped_.
             if (mode_ == executor_mode_pool_) {
                 // Use predicate for spurious wakeups
-                q_->m_cond_var_tasks_.wait(lk_, hxtask_wait_for_tasks_(q_));
+                q_->m_cond_var_new_tasks_.wait(lk_, hxtask_wait_for_tasks_(q_));
             }
 
+            // Waiting threads contribute to the work.
             if (q_->m_next_task_) {
-                hxassertmsg(q_->m_running_queue_guard_ == running_queue_guard_value_, "threading error");
                 task_ = q_->m_next_task_;
                 q_->m_next_task_ = task_->get_next_task();
                 ++q_->m_executing_count_;
             }
-            else {
-                if (mode_ != executor_mode_pool_) {
-                    q_->m_cond_var_waiting_.wait(lk_, hxtask_wait_for_completion_(q_));
+            else if (mode_ != executor_mode_pool_) {
+                // All tasks are dispatched. Now wait for m_executing_count_ to hit 0.
+                // Tasks may enqueue subtasks before processing is considered done.
+                // This asserts the queue is still running.
+                q_->m_cond_var_completion_.wait(lk_, hxtask_wait_for_completion_(q_));
 
-                    if (mode_ == executor_mode_stopping_) {
-                        hxassertmsg(q_->m_running_queue_guard_ == running_queue_guard_value_, "threading error");
-                        q_->m_running_queue_guard_ = 0u;
-                        q_->m_cond_var_waiting_.notify_all();
-                        q_->m_cond_var_tasks_.notify_all();
-                    }
+                // All tasks are now considered complete. The workers can be
+                // released if the queue is shutting down.
+                if (mode_ == executor_mode_stopping_) {
+                    q_->m_queue_run_level_ = run_level_stopped_;
+                    q_->m_cond_var_new_tasks_.notify_all();
+
+                    // This should trigger a release assert in unexpected waiting threads.
+                    q_->m_cond_var_completion_.notify_all();
                 }
 
 				return;
@@ -174,7 +177,10 @@ void hxtask_queue::executor_thread_(hxtask_queue* q_, executor_mode_t_ mode_) {
         task_->set_next_task(hxnull);
         task_->set_task_queue(hxnull);
         hxprofile_scope(task_->get_label());
-        // Last time this object is touched. It may delete or re-enqueue itself.
+
+        // This actually the last time this object is touched. It may delete or
+        // re-enqueue itself. The queue is not locked and completion will not
+        // be reported until after the task is done.
         task_->execute(q_);
     }
 }
