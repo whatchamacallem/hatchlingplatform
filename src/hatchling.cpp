@@ -10,7 +10,6 @@
 #include <hx/hxsort.hpp>
 
 #include <stdio.h>
-#include <math.h>
 
 HX_REGISTER_FILENAME_HASH
 

@@ -11,7 +11,7 @@
 #include <hx/hxmemory_manager.h>
 
 #if HX_USE_THREADS
-#include <mutex>
+#include <hx/hxthread.hpp>
 #endif
 
 HX_REGISTER_FILENAME_HASH
@@ -62,8 +62,8 @@ static hxconstexpr_fn void* hxmalloc_checked(size_t size) {
 // All pathways are threadsafe by default. In theory locking could be removed
 // if threads avoided sharing allocators. But I don't want to scare anyone.
 #if HX_USE_THREADS
-static std::mutex s_hxmemory_manager_mutex;
-#define HX_MEMORY_MANAGER_LOCK_() std::unique_lock<std::mutex> hxmutex_lock_(s_hxmemory_manager_mutex)
+static hxmutex s_hxmemory_manager_mutex;
+#define HX_MEMORY_MANAGER_LOCK_() hxunique_lock memory_manager_lock_(s_hxmemory_manager_mutex)
 #else
 #define HX_MEMORY_MANAGER_LOCK_() (void)0
 #endif
@@ -478,8 +478,6 @@ void* hxmalloc(size_t size) {
 	}
 	return ptr;
 }
-
-#include <stdio.h>
 
 extern "C"
 void* hxmalloc_ext(size_t size, hxmemory_allocator id, size_t alignment) {

@@ -16,7 +16,7 @@ extern "C" double emscripten_get_now(void);
 
 // hxcycles_t - Stores approx. 3 seconds to 300 years worth of processor cycles
 // starting from an unspecified origin and wrapping using unsigned rules. This is
-// intended for profiling, not calendaring.
+// intended for profiling, not calendaring. Used by the following include.
 typedef size_t hxcycles_t;
 
 #if HX_PROFILE
@@ -36,28 +36,7 @@ static const hxcycles_t hxdefault_cycles_cutoff = 1000;
 
 // hxtime_sample_cycles() - Set up the processor cycle counter for your
 // architecture. This is callable without enabling HX_PROFILE.
-static inline hxcycles_t hxtime_sample_cycles(void) {
-    uint64_t cycles_ = 0; (void)cycles_;
-#if defined __EMSCRIPTEN__
-    double t_ = emscripten_get_now() * 1.0e+6;
-    cycles_ = (uint64_t)t_;
-#elif defined __x86_64__ || defined __i386__
-    cycles_ = __rdtsc();
-#elif defined __aarch64__  // ARMv8-A 64-bit.
-    __asm__ volatile("mrs %0, cntvct_el0" : "=r"(cycles_));
-#elif defined __arm__  // ARMv7-A 32-bit.
-    uint32_t t_;
-    __asm__ volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(t_));
-    cycles_ = (uint64_t)t_;
-#elif defined __riscv && (__riscv_xlen == 64)
-    __asm__ volatile("rdcycle %0" : "=r"(cycles_));
-#elif defined __powerpc__ || defined __ppc__
-    __asm__ volatile("mftb %0" : "=r"(cycles_));
-#else
-hxstatic_assert(0, "implement hxtime_sample_cycles");
-#endif
-    return (hxcycles_t)cycles_;
-}
+static inline hxcycles_t hxtime_sample_cycles(void);
 
 // hxprofile_scope(const char* label_string_literal) - Declares an RAII-style
 // profiling sample. WARNING: A pointer to label_string_literal is kept.

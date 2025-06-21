@@ -6,8 +6,6 @@
 #include <hx/hxfile.hpp>
 #include <hx/hxtest.hpp> // May include Google Test.
 
-#include <stdio.h>
-
 #include "hxctest.h"
 
 HX_REGISTER_FILENAME_HASH

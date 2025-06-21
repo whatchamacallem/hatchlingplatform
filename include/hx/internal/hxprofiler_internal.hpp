@@ -10,14 +10,35 @@
 #include <hx/hxarray.hpp>
 
 #if HX_USE_THREADS
-#include <mutex>
+#include <hx/hxthread.hpp>
 
-#define HX_PROFILER_LOCK_() std::unique_lock<std::mutex> hxprofiler_mutex_lock_(g_hxprofiler_.m_mutex_)
+#define HX_PROFILER_LOCK_() hxunique_lock hxprofiler_mutex_lock_(g_hxprofiler_.m_mutex_)
 #else
 #define HX_PROFILER_LOCK_() (void)0
 #endif
 
-static inline hxcycles_t hxtime_sample_cycles(void);
+static inline hxcycles_t hxtime_sample_cycles(void) {
+    uint64_t cycles_ = 0; (void)cycles_;
+#if defined __EMSCRIPTEN__
+    double t_ = emscripten_get_now() * 1.0e+6;
+    cycles_ = (uint64_t)t_;
+#elif defined __x86_64__ || defined __i386__
+    cycles_ = __rdtsc();
+#elif defined __aarch64__  // ARMv8-A 64-bit.
+    __asm__ volatile("mrs %0, cntvct_el0" : "=r"(cycles_));
+#elif defined __arm__  // ARMv7-A 32-bit.
+    uint32_t t_;
+    __asm__ volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(t_));
+    cycles_ = (uint64_t)t_;
+#elif defined __riscv && (__riscv_xlen == 64)
+    __asm__ volatile("rdcycle %0" : "=r"(cycles_));
+#elif defined __powerpc__ || defined __ppc__
+    __asm__ volatile("mftb %0" : "=r"(cycles_));
+#else
+hxstatic_assert(0, "implement hxtime_sample_cycles");
+#endif
+    return (hxcycles_t)cycles_;
+}
 
 // Use direct access to an object with static linkage for speed.
 extern class hxprofiler_internal_ g_hxprofiler_;
@@ -55,7 +76,7 @@ private:
 
 	bool m_is_started_;
 #if HX_USE_THREADS
-	std::mutex m_mutex_;
+    hxmutex m_mutex_;
 #endif
 	hxarray<hxprofiler_record_, HX_PROFILER_MAX_RECORDS> m_records;
 };

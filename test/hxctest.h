@@ -4,8 +4,6 @@
 
 #ifdef __cplusplus
 extern "C" {
-#elif __STDC_VERSION__ < 202311l
-#include <stdbool.h>
 #endif
 
 bool hxctest_all(void);

@@ -1,9 +1,7 @@
 // Copyright 2017-2025 Adrian Johnston
 
-
-#include <stdio.h>
-
 #include <hx/hatchling.h>
+#include <stdio.h>
 
 #include "hxctest.h"
 

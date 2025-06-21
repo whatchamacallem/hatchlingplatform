@@ -9,12 +9,17 @@
 // Copyright 2017-2025 Adrian Johnston
 // https://github.com/whatchamacallem/HatchlingPlatform
 
+// This is also C99, not just C++98.
 #include <stdarg.h>
 #include <stddef.h>
-#include <stdint.h> // Requires C99, not just C++98.
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+
+#if defined __STDC_VERSION__ && __STDC_VERSION__ < 202311l
+#include <stdbool.h>
+#endif
 
 // HATCHLING_VER - Major, minor and patch versions.
 #define HATCHLING_VER 0x030001u
