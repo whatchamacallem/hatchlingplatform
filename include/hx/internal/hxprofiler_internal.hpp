@@ -8,10 +8,9 @@
 #endif
 
 #include <hx/hxarray.hpp>
-
-#if HX_USE_THREADS
 #include <hx/hxthread.hpp>
 
+#if HX_USE_THREADS
 #define HX_PROFILER_LOCK_() hxunique_lock hxprofiler_mutex_lock_(g_hxprofiler_.m_mutex_)
 #else
 #define HX_PROFILER_LOCK_() (void)0
@@ -39,6 +38,8 @@ hxstatic_assert(0, "implement hxtime_sample_cycles");
 #endif
     return (hxcycles_t)cycles_;
 }
+
+namespace hx_ {
 
 // Use direct access to an object with static linkage for speed.
 extern class hxprofiler_internal_ g_hxprofiler_;
@@ -119,3 +120,6 @@ private:
 	const char* m_label_;
 	hxcycles_t m_t0_;
 };
+
+} // namespace hx_
+using namespace hx_;

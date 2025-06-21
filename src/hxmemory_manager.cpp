@@ -9,10 +9,7 @@
 
 #include <hx/hatchling.h>
 #include <hx/hxmemory_manager.h>
-
-#if HX_USE_THREADS
 #include <hx/hxthread.hpp>
-#endif
 
 HX_REGISTER_FILENAME_HASH
 

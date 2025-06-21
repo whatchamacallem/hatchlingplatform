@@ -3,10 +3,7 @@
 
 #include <hx/hatchling.h>
 #include <hx/hxtask.hpp>
-
-#if HX_USE_THREADS
 #include <hx/hxthread.hpp>
-#endif
 
 // hxtask_queue - Execute supplied tasks in arbitrary order without cancellation
 // using an optional thread pool. See <hx/hxtask.hpp>.
@@ -49,7 +46,7 @@ private:
         run_level_stopped_ = (uint32_t)0xdeadbeef
     };
 
-    static void* executor_thread_entry_(void* arg_);
+    static void* executor_thread_entry_(hxtask_queue* q_);
     static void executor_thread_(hxtask_queue* q_, executor_mode_t_ mode_);
 
     run_level_t_ m_queue_run_level_;

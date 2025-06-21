@@ -8,6 +8,8 @@
 // This is a hxhash_table specific subclass of hxallocator. C++98 requires this to be
 // declared outside hxhash_table. The table has a size of 2^table_size_bits_.
 
+namespace hx_ {
+
 template<typename node_t_, uint32_t table_size_bits_>
 class hxhash_table_internal_allocator_ : public hxallocator<node_t_*, 1u << table_size_bits_> {
 public:
@@ -44,3 +46,6 @@ public:
 private:
 	uint32_t m_table_size_bits_;
 };
+
+} // namespace hx_
+using namespace hx_;

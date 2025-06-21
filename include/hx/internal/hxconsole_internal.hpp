@@ -31,6 +31,8 @@ hxconsolehex_t::operator T_() const {
 	return t;
 }
 
+namespace hx_ {
+
 // Console tokens are delimited by any whitespace and non-printing low-ASCII
 // characters. NUL is considered a delimiter and must be checked for separately.
 // This happens to be UTF-8 compatable because it ignores characters >= U+0100.
@@ -367,3 +369,6 @@ private:
 	hxconsole_hash_table_node_ m_node_;
 	char m_storage_[sizeof(hxconsole_command0_)]; // .vtable and user function pointer
 };
+
+} // namespace hx_
+using namespace hx_;

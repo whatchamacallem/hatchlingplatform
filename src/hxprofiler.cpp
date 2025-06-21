@@ -8,10 +8,10 @@ HX_REGISTER_FILENAME_HASH
 
 #if HX_PROFILE
 
+namespace hx_ {
+
 // ----------------------------------------------------------------------------
 // Console commands
-
-namespace {
 
 bool hxprofile_start_command_() { hxprofiler_start(); return true; }
 
@@ -28,8 +28,6 @@ hxconsole_command_named(hxprofile_start_command_, profilestart);
 hxconsole_command_named(hxprofile_stop_command_, profilestop);
 hxconsole_command_named(hxprofiler_log_command_, profilelog);
 hxconsole_command_named(hxprofiler_write_to_chrome_tracing_command_, profilewrite);
-
-} // namespace
 
 // ----------------------------------------------------------------------------
 // variables
@@ -91,5 +89,7 @@ void hxprofiler_internal_::write_to_chrome_tracing_(const char* filename) {
 
 	hxlogconsole("wrote %s.\n", filename);
 }
+
+} // namespace hx_
 
 #endif // HX_PROFILE

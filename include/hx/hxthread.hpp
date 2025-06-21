@@ -2,6 +2,8 @@
 // Copyright 2017-2025 Adrian Johnston
 
 #include <hx/hatchling.h>
+
+#if HX_USE_THREADS
 #include <pthread.h>
 
 // hxthread.hpp - Threading primitives that mostly adhere to the C++ standard.
@@ -221,8 +223,7 @@ private:
 // creation, joining, and detaching.
 class hxthread {
 public:
-    typedef void* (*thread_func_t)(void*);
-    typedef pthread_t native_handle_type;
+    typedef pthread_t native_handle_t;
 
     // Default constructor. Thread is not started.
     inline hxthread() : m_started_(false), m_joined_(false)
@@ -232,16 +233,19 @@ public:
     {}
 
     // Constructs and starts a thread with the given function and argument.
-    // Does not free arg.
-    // - f: Thread function.
-    // - arg: Argument to pass to the thread function.
-    inline explicit hxthread(thread_func_t f_, void* arg_)
+    // Does not free arg. Any function that takes a single pointer and returns
+    // a void pointer should work. The return value is ignored but may be unsafe
+    // to cast away.
+    // - fn: Function pointer of type: void* fn(T*).
+    // - arg: T* to pass to the function.
+    template<typename parameter_t_>
+    inline explicit hxthread(void* (*fn_)(parameter_t_*), parameter_t_* arg_)
             : m_started_(false), m_joined_(false)
 #if (HX_RELEASE) == 0
                 , m_fn_(hxnull), m_arg_(hxnull)
 #endif
     {
-        start(f_, arg_);
+        start(fn_, arg_);
     }
 
     // Destructor. Asserts that the thread was stopped correctly.
@@ -249,16 +253,19 @@ public:
 		hxassertmsg(!joinable(), "threading error");
     }
 
-    // Starts the thread with the given function and argument.
-    // - f: Thread function.
-    // - arg: Argument to pass to the thread function.
-    inline void start(thread_func_t fn_, void* arg_) {
+    // Starts a thread with the given function and argument. Does not free arg.
+    // Any function that takes a single pointer and returns a void pointer should
+    // work. The return value is ignored but may be unsafe to cast away.
+    // - fn: Function pointer of type: void* fn(T*).
+    // - arg: T* to pass to the function.
+    template<typename parameter_t_>
+    inline void start(void* (*fn_)(parameter_t_*), parameter_t_* arg_) {
         hxassertmsg(!joinable(), "threading error");
 #if (HX_RELEASE) == 0
-        m_fn_ = fn_;
-        m_arg_ = arg_;
+        m_fn_ = (thread_func_t)fn_;
+        m_arg_ = (void*)arg_;
 #endif
-        int res_ = pthread_create(&m_thread_, 0, fn_, arg_);
+        int res_ = pthread_create(&m_thread_, 0, (thread_func_t)fn_, (void*)arg_);
         hxassertrelease(res_ == 0, "threading error"); (void)res_;
         m_started_ = true;
         m_joined_ = false;
@@ -282,9 +289,12 @@ public:
     }
 
     // Returns the native pthread thread handle.
-    inline native_handle_type native_handle() { return m_thread_; }
+    inline native_handle_t native_handle() { return m_thread_; }
 
 private:
+    // Type expected by pthread.
+    typedef void* (*thread_func_t)(void*);
+
     // Deleted copy constructor.
     hxthread(const hxthread&) hxdelete_fn;
     // Deleted copy assignment operator.
@@ -301,3 +311,5 @@ private:
     void* m_arg_;
 #endif
 };
+
+#endif //HX_USE_THREADS

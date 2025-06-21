@@ -6,7 +6,6 @@
 HX_REGISTER_FILENAME_HASH
 
 #if HX_USE_THREADS
-
 // hxtask_wait_for_tasks_ - This is a worker task waiting for tasks or shutdown.
 class hxtask_wait_for_tasks_ {
 public:
@@ -31,7 +30,6 @@ public:
     }
     hxtask_queue* q_;
 };
-
 #endif
 
 // Should abort if exceptions are enabled and
@@ -120,8 +118,7 @@ void hxtask_queue::wait_for_all() {
 }
 
 #if HX_USE_THREADS
-void* hxtask_queue::executor_thread_entry_(void* arg_) {
-    hxtask_queue* q_ = static_cast<hxtask_queue*>(arg_);
+void* hxtask_queue::executor_thread_entry_(hxtask_queue* q_) {
     executor_thread_(q_, executor_mode_pool_);
     return hxnull;
 }

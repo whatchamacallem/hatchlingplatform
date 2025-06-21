@@ -22,9 +22,9 @@
 #endif
 
 // HATCHLING_VER - Major, minor and patch versions.
-#define HATCHLING_VER 0x030001u
+#define HATCHLING_VER 0x030100u
 // HATCHLING_TAG - Major, minor and patch version tag.
-#define HATCHLING_TAG "v3.0.1"
+#define HATCHLING_TAG "v3.1.0"
 
 #include <hx/hxsettings.h>
 #include <hx/hxmemory_manager.h>

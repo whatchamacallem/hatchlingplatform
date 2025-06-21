@@ -67,15 +67,10 @@
 #else // target settings (clang and gcc.)
 // Other compilers will require customization.
 
-// C++11 threads in WASM needs more glue.
+// hxthreads.hpp should work in C++11 now. But WASM still needs to be hooked up.
+// thread_local is missing for C++98.
 #if !defined HX_USE_THREADS
-#ifdef __EMSCRIPTEN__
-// HX_USE_THREADS - Set to 0 for Emscripten.
-#define HX_USE_THREADS 0
-#else
-// HX_USE_THREADS - Enable threads if C++11 or newer.
 #define HX_USE_THREADS (HX_CPLUSPLUS >= 201103L)
-#endif
 #endif
 
 #ifdef __GLIBC__
