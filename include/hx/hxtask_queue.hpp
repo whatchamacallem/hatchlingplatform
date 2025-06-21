@@ -5,9 +5,7 @@
 #include <hx/hxtask.hpp>
 
 #if HX_USE_THREADS
-#include <mutex>
-#include <condition_variable>
-#include <thread>
+#include <hx/hxthread.hpp>
 #endif
 
 // hxtask_queue - Execute supplied tasks in arbitrary order without cancellation
@@ -15,8 +13,8 @@
 class hxtask_queue {
 public:
 	// Create a new task queue. thread_pool_size determines the size of the worker
-	// pool. A thread_pool_size of -1 indicates using a hardware_concurrency()-1 size
-	// thread pool. A thread_pool_size of 0 does not use threading.
+	// pool. A thread_pool_size of -1 indicates using a default value, currently 2.
+    // A thread_pool_size of 0 does not use threading.
     explicit hxtask_queue(int32_t thread_pool_size_ = -1);
 
 	// Calls wait_for_all before destructing.
@@ -35,6 +33,9 @@ private:
     hxtask_queue(const hxtask_queue&) hxdelete_fn;
     void operator=(const hxtask_queue&) hxdelete_fn;
 
+    friend struct hxwait_pred_tasks_;
+    friend struct hxwait_pred_waiting_;
+
     enum { running_queue_guard_value_ = 0xc710b034u };
 
     hxtask* m_next_task_;
@@ -46,13 +47,20 @@ private:
         executor_mode_waiting_,
         executor_mode_stopping_
     };
+    struct executor_arg_t_ {
+        hxtask_queue* queue_;
+        executor_mode_t_ mode_;
+        executor_arg_t_(hxtask_queue* q, executor_mode_t_ m) : queue_(q), mode_(m) {}
+    };
+
+    static void* executor_thread_entry_(void* arg_);
     static void executor_thread_(hxtask_queue* q_, executor_mode_t_ mode_);
 
-    int32_t m_thread_pool_size_ = 0;
-    std::thread* m_threads_ = hxnull;
-    std::mutex m_mutex_;
-    std::condition_variable m_cond_var_tasks_;
-    std::condition_variable m_cond_var_waiting_;
-    int32_t m_executing_count_ = 0;
+    int32_t m_thread_pool_size_;
+    hxthread* m_threads_;
+    hxmutex m_mutex_;
+    hxcondition_variable m_cond_var_tasks_;
+    hxcondition_variable m_cond_var_waiting_;
+    int32_t m_executing_count_;
 #endif
 };

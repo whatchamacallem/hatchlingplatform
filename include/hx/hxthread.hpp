@@ -3,7 +3,6 @@
 
 #include <hx/hatchling.h>
 #include <pthread.h>
-#include <cerrno>
 
 class hxmutex {
 public:
@@ -47,12 +46,12 @@ private:
 // RAII-style unique lock for hxmutex
 class hxunique_lock {
 public:
-    explicit hxunique_lock(hxmutex& m) : m_mutex_(m), m_owns_(false) {
+    explicit hxunique_lock(hxmutex& m_) : m_mutex_(m_), m_owns_(false) {
         lock();
     }
     // Deferred lock
-    hxunique_lock(hxmutex& m, bool defer_lock) : m_mutex_(m), m_owns_(false) {
-        if (!defer_lock) lock();
+    hxunique_lock(hxmutex& m_, bool defer_lock_) : m_mutex_(m_), m_owns_(false) {
+        if (!defer_lock_) lock();
     }
     ~hxunique_lock() {
         if (m_owns_) unlock();
@@ -89,22 +88,22 @@ public:
         }
     }
 
-    bool wait(hxmutex& mutex) {
-        if (!m_valid_ || !mutex.valid()) return false;
-        m_last_error_ = pthread_cond_wait(&m_cond_, mutex.native_handle());
+    bool wait(hxmutex& mutex_) {
+        if (!m_valid_ || !mutex_.valid()) return false;
+        m_last_error_ = pthread_cond_wait(&m_cond_, mutex_.native_handle());
         return m_last_error_ == 0;
     }
 
     // Overload: wait with hxunique_lock (like std::condition_variable)
-    bool wait(hxunique_lock& lock) {
-        return wait(lock.mutex());
+    bool wait(hxunique_lock& lock_) {
+        return wait(lock_.mutex());
     }
 
     // Wait with predicate (like std::condition_variable)
-    template<typename Predicate>
-    void wait(hxunique_lock& lock, Predicate pred) {
-        while (!pred()) {
-            wait(lock);
+    template<typename predicate_t_>
+    void wait(hxunique_lock& lock_, predicate_t_ pred_) {
+        while (!pred_()) {
+            wait(lock_);
         }
     }
 
@@ -135,25 +134,27 @@ private:
 
 class hxthread {
 public:
+    typedef void* (*thread_func_t)(void*);
     typedef pthread_t native_handle_type;
 
     hxthread() : m_started_(false), m_joined_(false), m_func_(0), m_arg_(0) {}
 
-    typedef void* (*thread_func_t)(void*);
-    explicit hxthread(thread_func_t f, void* arg) : m_started_(false), m_joined_(false), m_func_(0), m_arg_(0) {
-        start(f, arg);
+    // Uses pthread style interface. Does not free arg.
+    explicit hxthread(thread_func_t f_, void* arg_)
+            : m_started_(false), m_joined_(false), m_func_(0), m_arg_(0) {
+        start(f_, arg_);
     }
 
     ~hxthread() {
 		hxassertrelease(!joinable(), "threading error");
     }
 
-    void start(thread_func_t f, void* arg) {
-		hxassertrelease(!joinable(), "threading error");
-        m_func_ = f;
-        m_arg_ = arg;
-        int res = pthread_create(&m_thread_, 0, m_func_, m_arg_);
-        hxassertrelease(res == 0, "threading error"); (void)res;
+    void start(thread_func_t f_, void* arg_) {
+        hxassertrelease(!joinable(), "threading error");
+        m_func_ = f_;
+        m_arg_ = arg_;
+        int res_ = pthread_create(&m_thread_, 0, m_func_, m_arg_);
+        hxassertrelease(res_ == 0, "threading error"); (void)res_;
         m_started_ = true;
         m_joined_ = false;
     }
