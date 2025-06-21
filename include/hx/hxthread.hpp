@@ -88,7 +88,7 @@ private:
     hxmutex& operator=(const hxmutex&) hxdelete_fn;
 
 	pthread_mutex_t m_mutex_;
-    // 2 bytes overhead for debugging.
+    // 2 bytes overhead for debugging in release.
     unsigned char m_last_error_  ;
     bool m_valid_;
 };
@@ -235,30 +235,40 @@ public:
     typedef pthread_t native_handle_type;
 
     // Default constructor. Thread is not started.
-    inline hxthread() : m_started_(false), m_joined_(false), m_func_(0), m_arg_(0) {}
+    inline hxthread() : m_started_(false), m_joined_(false)
+#if (HX_RELEASE) == 0
+            , m_fn_(hxnull), m_arg_(hxnull)
+#endif
+    {}
 
     // Constructs and starts a thread with the given function and argument.
     // - f: Thread function.
     // - arg: Argument to pass to the thread function.
     // Does not free arg.
     inline explicit hxthread(thread_func_t f_, void* arg_)
-            : m_started_(false), m_joined_(false), m_func_(0), m_arg_(0) {
+            : m_started_(false), m_joined_(false)
+#if (HX_RELEASE) == 0
+                , m_fn_(hxnull), m_arg_(hxnull)
+#endif
+    {
         start(f_, arg_);
     }
 
-    // Destructor. Asserts that the thread is not joinable.
+    // Destructor. Asserts that the thread was stopped correctly.
     inline ~hxthread() {
-		hxassertrelease(!joinable(), "threading error");
+		hxassertmsg(!joinable(), "threading error");
     }
 
     // Starts the thread with the given function and argument.
     // - f: Thread function.
     // - arg: Argument to pass to the thread function.
-    inline void start(thread_func_t f_, void* arg_) {
-        hxassertrelease(!joinable(), "threading error");
-        m_func_ = f_;
+    inline void start(thread_func_t fn_, void* arg_) {
+        hxassertmsg(!joinable(), "threading error");
+#if (HX_RELEASE) == 0
+        m_fn_ = fn_;
         m_arg_ = arg_;
-        int res_ = pthread_create(&m_thread_, 0, m_func_, m_arg_);
+#endif
+        int res_ = pthread_create(&m_thread_, 0, fn_, arg_);
         hxassertrelease(res_ == 0, "threading error"); (void)res_;
         m_started_ = true;
         m_joined_ = false;
@@ -291,8 +301,13 @@ private:
     hxthread& operator=(const hxthread&) hxdelete_fn;
 
     pthread_t m_thread_;
+    // 2 bytes overhead for debugging in release.
     bool m_started_;
     bool m_joined_;
-    void* (*m_func_)(void*);
+
+    // Identify the thread by the construction parameters.
+#if (HX_RELEASE) == 0
+    void* (*m_fn_)(void*);
     void* m_arg_;
+#endif
 };
