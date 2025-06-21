@@ -8,6 +8,7 @@
 // a new value every time. Usable as a functor or by simply calling the
 // provided cast operator to your type. Has a period of 2^64 and passes routine
 // numerical tests with only 8 bytes of state and using simple arithmetic.
+// Entirely constexpr if you need test data for template parameters.
 class hxrandom {
 public:
 	// Constructor to initialize the random number generator with a seed.
@@ -93,36 +94,36 @@ private:
 // operator&(hxrandom& a, T b) - Bitwise & with random T generated from a.
 // a - Bits to mask off. Undefined behavior when a negative integer.
 // b - A hxrandom.
-template <typename T_> inline T_ operator&(T_ a_, hxrandom& b_) {
+template <typename T_> hxconstexpr_fn  T_ operator&(T_ a_, hxrandom& b_) {
     return T_((uint32_t)a_ & b_.advance32());
 }
 // operator&(int64_t a_, hxrandom& b_) - Allow a signed 64-bit type here because
 // it can be generated without automatically hitting undefined behaviour.
 // a - Bits to mask off. Undefined behavior when negative.
 // b - A hxrandom.
-inline int64_t operator&(int64_t a_, hxrandom& b_) {
+hxconstexpr_fn  int64_t operator&(int64_t a_, hxrandom& b_) {
    return (int64_t)((uint64_t)a_ & b_.advance64());
 }
-inline uint64_t operator&(uint64_t a_, hxrandom& b_) {
+hxconstexpr_fn  uint64_t operator&(uint64_t a_, hxrandom& b_) {
     return a_ & b_.advance64();
 }
 
 // operator&(T a, hxrandom& b) - Bitwise & with random T generated from a.
 // a - A hxrandom.
 // b - Bits to mask off. Must be a positive integer.
-template <typename T_> inline T_ operator&(hxrandom& a_, T_ b_) {
+template <typename T_> hxconstexpr_fn  T_ operator&(hxrandom& a_, T_ b_) {
     return b_ & a_;
 }
 
 // operator&=(T& a, hxrandom& b) - Bitwise &= with random T generated from b.
 // a - Bits to mask off. Must be a positive integer.
 // b - A hxrandom.
-template <typename T_> inline T_ operator&=(T_& a_, hxrandom& b_) {
+template <typename T_> hxconstexpr_fn  T_ operator&=(T_& a_, hxrandom& b_) {
     return (a_ = a_ & b_);
 }
 
 // operator%(hxrandom& a, T_ b) - Generate an number of type T in the range 0..b.
 // Works with floating point divisors and uses no actual modulo or division.
-template <typename T_> inline T_ operator%(hxrandom& dividend_, T_ divisor_) {
+template <typename T_> hxconstexpr_fn  T_ operator%(hxrandom& dividend_, T_ divisor_) {
     return dividend_.range((T_)0, divisor_);
 }

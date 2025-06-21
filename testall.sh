@@ -19,4 +19,5 @@ time ./testcoverage.sh --headless
 time ./testwasm.sh --headless
 ./clean.sh
 
+{ set +x; } 2> /dev/null
 echo All test scripts done.

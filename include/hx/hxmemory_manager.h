@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-// hxmemory_allocator - Memory Manager C API. Memory allocators are selected using
+// hxmemory_allocator.h - Memory Manager C API. Memory allocators are selected using
 // an id. These are the large system-wide allocators, not the per-object
 // hxallocator which allocates from here.
 //
@@ -27,7 +27,6 @@ extern "C" {
 #define HX_ALIGNMENT sizeof(char*)
 
 // hxmemory_allocator. (See hxmemory_manager.cpp)
-
 enum hxmemory_allocator {
 	hxmemory_allocator_heap,           // OS heap with alignment and stats.
 	hxmemory_allocator_permanent,      // Contigious allocations that must not be freed.
