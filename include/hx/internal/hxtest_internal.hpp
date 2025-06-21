@@ -55,7 +55,7 @@ public:
 
 	// message is required to end with an \n. Returns equivalent of /dev/null on
 	// success and the system log otherwise.
-	hxfile& assert_check_(const char* file_, size_t line_, bool condition_, const char* message_) {
+	hxfile& condition_check_(bool condition_, const char* file_, size_t line_, const char* message_, bool critical_) {
 		hxassertrelease(m_current_test_, "not testing");
 		++m_assert_count_;
 		m_test_state_ = (condition_ && m_test_state_ != test_state_fail_) ? test_state_pass_ : test_state_fail_;
@@ -71,10 +71,19 @@ public:
 			hxloghandler(hxloglevel_assert, "%s.%s", m_current_test_->suite_(), m_current_test_->case_());
 			hxloghandler(hxloglevel_assert, "%s(%zu): %s", file_, line_, message_);
 
-			// Implements GTEST_FLAG_SET(break_on_failure, true);
+			if(critical_) {
+				// ASSERT_* macros halt the test suite on failure.
+				hxloghandler(hxloglevel_assert, "stopping due to assert.");
+				hxbreakpoint();
+				::_Exit(EXIT_FAILURE);
+			}
+			else {
+				// Debug builds always set breakpoints on unexpected failures.
+				// Implements GTEST_FLAG_SET(break_on_failure, true);
 #if (HX_TEST_ERROR_HANDLING) == 0 && (HX_RELEASE) == 0
-			hxbreakpoint();
+				hxbreakpoint();
 #endif
+			}
 			return file_log_();
 		}
 		return file_null_();
@@ -103,12 +112,12 @@ public:
 				}
 #ifdef __cpp_exceptions
 				catch (...) {
-					this->assert_check_((*it_)->file_(), (*it_)->line_(), false, "unexpected exception");
+					this->condition_check_(false, (*it_)->file_(), (*it_)->line_(), "unexpected exception", true);
 				}
 #endif
 
 				if (m_test_state_ == test_state_nothing_asserted_) {
-					this->assert_check_((*it_)->file_(), (*it_)->line_(), false, "NOTHING_ASSERTED");
+					this->condition_check_(false, (*it_)->file_(), (*it_)->line_(), "NOTHING_ASSERTED", false);
 					++m_fail_count_;
 				}
 				else if (m_test_state_ == test_state_pass_) {

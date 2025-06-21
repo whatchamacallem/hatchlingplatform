@@ -1,5 +1,13 @@
 #pragma once
 // Copyright 2017-2025 Adrian Johnston
+//
+// hxsort.hpp - Sorting and searching utilities for hatchling platform.
+// Provides insertion sort, binary search, and radix sort implementations
+// for arrays and key-value pairs. Includes generic and specialized
+// templates for sorting with custom comparators, as well as a radix sort
+// class for efficient sorting of pointer arrays by 32-bit keys. Designed
+// for use with hxarray and hatchling memory management. No exception
+// safety is guaranteed; use noexcept types or disable exceptions.
 
 #include <hx/hatchling.h>
 #include <hx/hxkey.hpp>

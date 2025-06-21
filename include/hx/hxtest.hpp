@@ -1,6 +1,59 @@
 #pragma once
 // Copyright 2017-2025 Adrian Johnston
 
+// This framework provides a Google Test-compatable interface for writing unit
+// tests. Use TEST and TEST_F macros to define test cases, assertions for
+// validation, and RUN_ALL_TESTS() to execute all tests. Both simple and
+// fixture-based tests are supported.
+//
+// - TEST(suite, name) - Defines a test case without a fixture.
+// - TEST_F(fixture, name) - Defines a test case using a fixture class.
+// - Use ASSERT_* for fatal assertions, EXPECT_* for non-fatal.
+// - All macros accept any C++ expression as arguments.
+// - See test/*.cpp for more examples.
+//
+// - Simple Test Case (no fixture)
+//
+//   TEST(Math, Addition) {
+//       int a = 2, b = 3;
+//       EXPECT_EQ(a + b, 5);
+//       EXPECT_TRUE(a < b + 2);
+//       EXPECT_NEAR(3.14, 3.141, 0.01);
+//       SUCCEED();
+//   }
+//
+// - Fixture-Based Test Case (using TEST_F)
+//
+//   class MyFixture : public testing::Test {
+//   public:
+//       void SetUp() override { value = 42; }
+//       void TearDown() override { /* cleanup */ }
+//       void set_value(int x) { value = x; }
+//       int value;
+//   };
+//
+//   TEST_F(MyFixture, ValueIsSet) {
+//       EXPECT_EQ(value, 42);
+//       set_value(100);
+//       EXPECT_NE(value, 42);
+//   }
+//
+// - Condition Check Macros
+//
+//   EXPECT_TRUE(expr);      // Checks expr is true
+//   EXPECT_FALSE(expr);     // Checks expr is false
+//   EXPECT_EQ(a, b);        // Checks a == b
+//   EXPECT_NE(a, b);        // Checks a != b
+//   EXPECT_LT(a, b);        // Checks a < b
+//   EXPECT_GT(a, b);        // Checks a > b
+//   EXPECT_LE(a, b);        // Checks a <= b
+//   EXPECT_GE(a, b);        // Checks a >= b
+//   EXPECT_NEAR(a, b, tol); // Checks |a-b| <= tol
+//   SUCCEED();              // Marks test as successful
+//   FAIL();                 // Marks test as failed
+//
+// - ASSERT_* macros are equivalent to EXPECT_*
+
 #include <hx/hatchling.h>
 
 // HX_USE_GOOGLE_TEST - Enable this to use Google Test instead of hxtest_suite_executor_.
@@ -19,14 +72,14 @@ class Test {
 public:
     // User overrides for fixtures.
     virtual ~Test() { };
-    virtual void Set_up() { }
-    virtual void Tear_down() { };
+    virtual void SetUp() { }
+    virtual void TearDown() { }
 
     // Standard invocation protocol.
     void run_() {
-        Set_up();
+        SetUp();
         run_code_();
-        Tear_down();
+        TearDown();
     }
 
     // Provided and used by the TEST_F macro.
@@ -83,51 +136,54 @@ hxconstexpr_fn void InitGoogleTest() { }
 // int RUN_ALL_TESTS() - Executes all registered test cases.
 #define RUN_ALL_TESTS() hxtest_suite_executor_::singleton_().execute_all_tests_()
 
-// void SUCCEED() - Marks the current test as successful without any assertions.
-#define SUCCEED() hxtest_suite_executor_::singleton_().assert_check_(hxnull, 0, true, hxnull)
+// void SUCCEED() - Marks the current test as successful without any checks.
+#define SUCCEED() hxtest_suite_executor_::singleton_().condition_check_(true, __FILE__, __LINE__, hxnull, false)
 
 // void FAIL() - Marks the current test as failed.
-#define FAIL() hxtest_suite_executor_::singleton_().assert_check_(__FILE__, __LINE__, false, "failed here")
+#define FAIL() hxtest_suite_executor_::singleton_().condition_check_(false, __FILE__, __LINE__, "FAIL()", false)
 
-// void EXPECT_TRUE(bool) - Asserts that the condition is true.
-#define EXPECT_TRUE(x_) hxtest_suite_executor_::singleton_().assert_check_(__FILE__, __LINE__, (x_), #x_)
-// void EXPECT_FALSE(bool) - Asserts that the condition is false.
-#define EXPECT_FALSE(x_) hxtest_suite_executor_::singleton_().assert_check_(__FILE__, __LINE__, !(x_), "!" #x_)
+// void EXPECT_TRUE(bool) - Checks that the condition is true.
+#define EXPECT_TRUE(x_) hxtest_suite_executor_::singleton_().condition_check_((x_), __FILE__, __LINE__, #x_, false)
+// void EXPECT_FALSE(bool) - Checks that the condition is false.
+#define EXPECT_FALSE(x_) hxtest_suite_executor_::singleton_().condition_check_(!(x_), __FILE__, __LINE__, "!" #x_, false)
 
-// void EXPECT_NEAR(T expected, T actual, T absolute_range) - Asserts that two values are within a given range.
-#define EXPECT_NEAR(expected_, actual_, absolute_range_) hxtest_suite_executor_::singleton_().assert_check_( \
-    __FILE__, __LINE__,(((expected_) < (actual_)) ? ((actual_)-(expected_)) : ((expected_)-(actual_))) <= (absolute_range_), \
-    "abs(" #expected_ "-" #actual_ ")<=" #absolute_range_)
-// void EXPECT_LT(T lhs, T rhs) - Asserts lhs < rhs.
-#define EXPECT_LT(lhs_, rhs_) hxtest_suite_executor_::singleton_().assert_check_(__FILE__, __LINE__, (lhs_) < (rhs_), #lhs_ "<" #rhs_)
-// void EXPECT_GT(T lhs, T rhs) - Asserts lhs > rhs.
-#define EXPECT_GT(lhs_, rhs_) hxtest_suite_executor_::singleton_().assert_check_(__FILE__, __LINE__, (rhs_) < (lhs_), #lhs_ ">" #rhs_)
-// void EXPECT_LE(T lhs, T rhs) - Asserts lhs <= rhs.
-#define EXPECT_LE(lhs_, rhs_) hxtest_suite_executor_::singleton_().assert_check_(__FILE__, __LINE__, !((rhs_) < (lhs_)), #lhs_ "<=" #rhs_)
-// void EXPECT_GE(T lhs, T rhs) - Asserts lhs >= rhs.
-#define EXPECT_GE(lhs_, rhs_) hxtest_suite_executor_::singleton_().assert_check_(__FILE__, __LINE__, !((lhs_) < (rhs_)), #lhs_ ">=" #rhs_)
-// void EXPECT_EQ(T lhs, T rhs) - Asserts lhs == rhs.
-#define EXPECT_EQ(lhs_, rhs_) hxtest_suite_executor_::singleton_().assert_check_(__FILE__, __LINE__, (lhs_) == (rhs_), #lhs_ "==" #rhs_)
-// void EXPECT_NE(T lhs, T rhs) - Asserts lhs != rhs.
-#define EXPECT_NE(lhs_, rhs_) hxtest_suite_executor_::singleton_().assert_check_(__FILE__, __LINE__, !((lhs_) == (rhs_)), #lhs_ "!=" #rhs_)
+// void EXPECT_NEAR(T expected, T actual, T absolute_range) - Checks that two values are within a given range.
+#define EXPECT_NEAR(expected_, actual_, absolute_range_) hxtest_suite_executor_::singleton_().condition_check_( \
+    (((expected_) < (actual_)) ? ((actual_)-(expected_)) : ((expected_)-(actual_))) <= (absolute_range_), \
+    __FILE__, __LINE__, "abs(" #expected_ "-" #actual_ ") <= " #absolute_range_, false)
+// void EXPECT_LT(T lhs, T rhs) - Checks lhs < rhs.
+#define EXPECT_LT(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_((lhs_) < (rhs_), __FILE__, __LINE__, #lhs_ " < " #rhs_, false)
+// void EXPECT_GT(T lhs, T rhs) - Checks lhs > rhs.
+#define EXPECT_GT(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_((rhs_) < (lhs_), __FILE__, __LINE__, #lhs_ " > " #rhs_, false)
+// void EXPECT_LE(T lhs, T rhs) - Checks lhs <= rhs.
+#define EXPECT_LE(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_(!((rhs_) < (lhs_)), __FILE__, __LINE__, #lhs_ " <= " #rhs_, false)
+// void EXPECT_GE(T lhs, T rhs) - Checks lhs >= rhs.
+#define EXPECT_GE(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_(!((lhs_) < (rhs_)), __FILE__, __LINE__, #lhs_ " >= " #rhs_, false)
+// void EXPECT_EQ(T lhs, T rhs) - Checks lhs == rhs.
+#define EXPECT_EQ(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_((lhs_) == (rhs_), __FILE__, __LINE__, #lhs_ " == " #rhs_, false)
+// void EXPECT_NE(T lhs, T rhs) - Checks lhs != rhs.
+#define EXPECT_NE(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_(!((lhs_) == (rhs_)), __FILE__, __LINE__, #lhs_ " != " #rhs_, false)
 
-// void ASSERT_TRUE(bool) - Asserts that the condition is true (equivalent to EXPECT_TRUE).
-#define ASSERT_TRUE EXPECT_TRUE
-// void ASSERT_FALSE(bool) - Asserts that the condition is false (equivalent to EXPECT_FALSE).
-#define ASSERT_FALSE EXPECT_FALSE
-// void ASSERT_NEAR(T expected, T actual, T absolute_range) - Asserts that two values are within a given range (equivalent to EXPECT_NEAR).
-#define ASSERT_NEAR EXPECT_NEAR
-// void ASSERT_LT(T lhs, T rhs) - Asserts lhs < rhs (equivalent to EXPECT_LT).
-#define ASSERT_LT EXPECT_LT
-// void ASSERT_GT(T lhs, T rhs) - Asserts lhs > rhs (equivalent to EXPECT_GT).
-#define ASSERT_GT EXPECT_GT
-// void ASSERT_LE(T lhs, T rhs) - Asserts lhs <= rhs (equivalent to EXPECT_LE).
-#define ASSERT_LE EXPECT_LE
-// void ASSERT_GE(T lhs, T rhs) - Asserts lhs >= rhs (equivalent to EXPECT_GE).
-#define ASSERT_GE EXPECT_GE
-// void ASSERT_EQ(T lhs, T rhs) - Asserts lhs == rhs (equivalent to EXPECT_EQ).
-#define ASSERT_EQ EXPECT_EQ
-// void ASSERT_NE(T lhs, T rhs) - Asserts lhs != rhs (equivalent to EXPECT_NE).
-#define ASSERT_NE EXPECT_NE
+// void ASSERT_TRUE(bool) - Asserts that the condition is true.
+#define ASSERT_TRUE(x_) hxtest_suite_executor_::singleton_().condition_check_((x_), __FILE__, __LINE__, #x_, true)
+// void ASSERT_FALSE(bool) - Asserts that the condition is false.
+#define ASSERT_FALSE(x_) hxtest_suite_executor_::singleton_().condition_check_(!(x_), __FILE__, __LINE__, "!" #x_, true)
+
+// void ASSERT_NEAR(T expected, T actual, T absolute_range) - Asserts that two values are within a given range.
+#define ASSERT_NEAR(expected_, actual_, absolute_range_) hxtest_suite_executor_::singleton_().condition_check_( \
+    (((expected_) < (actual_)) ? ((actual_)-(expected_)) : ((expected_)-(actual_))) <= (absolute_range_), \
+    __FILE__, __LINE__, "abs(" #expected_ "-" #actual_ ") <= " #absolute_range_, true)
+// void ASSERT_LT(T lhs, T rhs) - Asserts lhs < rhs.
+#define ASSERT_LT(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_((lhs_) < (rhs_), __FILE__, __LINE__, #lhs_ " < " #rhs_, true)
+// void ASSERT_GT(T lhs, T rhs) - Asserts lhs > rhs.
+#define ASSERT_GT(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_((rhs_) < (lhs_), __FILE__, __LINE__, #lhs_ " > " #rhs_, true)
+// void ASSERT_LE(T lhs, T rhs) - Asserts lhs <= rhs.
+#define ASSERT_LE(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_(!((rhs_) < (lhs_)), __FILE__, __LINE__, #lhs_ " <= " #rhs_, true)
+// void ASSERT_GE(T lhs, T rhs) - Asserts lhs >= rhs.
+#define ASSERT_GE(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_(!((lhs_) < (rhs_)), __FILE__, __LINE__, #lhs_ " >= " #rhs_, true)
+// void ASSERT_EQ(T lhs, T rhs) - Asserts lhs == rhs.
+#define ASSERT_EQ(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_((lhs_) == (rhs_), __FILE__, __LINE__, #lhs_ " == " #rhs_, true)
+// void ASSERT_NE(T lhs, T rhs) - Asserts lhs != rhs.
+#define ASSERT_NE(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_(!((lhs_) == (rhs_)), __FILE__, __LINE__, #lhs_ " != " #rhs_, true)
 
 #endif // !HX_USE_GOOGLE_TEST

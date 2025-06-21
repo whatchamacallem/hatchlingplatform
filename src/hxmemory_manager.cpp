@@ -46,10 +46,10 @@ void operator delete[](void* ptr, size_t) hxnoexcept {
 // disastrous results.
 static hxconstexpr_fn void* hxmalloc_checked(size_t size) {
 	void* t = ::malloc(size);
-	hxassertrelease(t, "malloc fail: %zu bytes\n", size);
+	hxassertrelease(t, "malloc(%zu)", size);
 #if (HX_RELEASE) >= 3
 	if (!t) {
-		hxloghandler(hxloglevel_assert, "malloc fail");
+		hxloghandler(hxloglevel_assert, "malloc(%zu)", size);
 		::_Exit(EXIT_FAILURE);
 	}
 #endif

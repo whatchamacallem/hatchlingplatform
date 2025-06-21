@@ -47,7 +47,7 @@ TEST_F(hxtask_queue_test, Nop) {
 			q.wait_for_all();
 		}
 	}
-	ASSERT_TRUE(true);
+	EXPECT_TRUE(true);
 }
 
 TEST_F(hxtask_queue_test, Single) {
@@ -59,17 +59,17 @@ TEST_F(hxtask_queue_test, Single) {
 			q.enqueue(&task0);
 			q.wait_for_all();
 			q.enqueue(&task1);
-			ASSERT_TRUE(task0.get_exec_count_() == 1);
+			EXPECT_TRUE(task0.get_exec_count_() == 1);
 		}
-		ASSERT_TRUE(task0.get_exec_count_() == 1);
-		ASSERT_TRUE(task1.get_exec_count_() == 1);
+		EXPECT_TRUE(task0.get_exec_count_() == 1);
+		EXPECT_TRUE(task1.get_exec_count_() == 1);
 
 		task_test_t_ task2;
 		{
 			hxtask_queue q(i);
 			q.enqueue(&task2);
 		}
-		ASSERT_TRUE(task2.get_exec_count_() == 1);
+		EXPECT_TRUE(task2.get_exec_count_() == 1);
 	}
 }
 
@@ -83,9 +83,9 @@ TEST_F(hxtask_queue_test, Single_stepping) {
 					q.enqueue(&task0);
 					q.wait_for_all();
 				}
-				ASSERT_TRUE(task0.get_exec_count_() == j);
+				EXPECT_TRUE(task0.get_exec_count_() == j);
 			}
-			ASSERT_TRUE(task0.get_exec_count_() == j);
+			EXPECT_TRUE(task0.get_exec_count_() == j);
 		}
 	}
 }
@@ -104,12 +104,12 @@ TEST_F(hxtask_queue_test, Multiple) {
 				q.wait_for_all();
 				for (size_t k = 0; k <= j; ++k) {
 					q.enqueue(&tasks1[k]);
-					ASSERT_TRUE(tasks0[k].get_exec_count_() == 1);
+					EXPECT_TRUE(tasks0[k].get_exec_count_() == 1);
 				}
 			}
 			for (size_t k = 0; k <= j; ++k) {
-				ASSERT_TRUE(tasks0[k].get_exec_count_() == 1);
-				ASSERT_TRUE(tasks1[k].get_exec_count_() == 1);
+				EXPECT_TRUE(tasks0[k].get_exec_count_() == 1);
+				EXPECT_TRUE(tasks1[k].get_exec_count_() == 1);
 			}
 
 			task_test_t_ tasks2[max_tasks_];
@@ -120,7 +120,7 @@ TEST_F(hxtask_queue_test, Multiple) {
 				}
 			}
 			for (size_t k = 0; k <= j; ++k) {
-				ASSERT_TRUE(tasks2[k].get_exec_count_() == 1);
+				EXPECT_TRUE(tasks2[k].get_exec_count_() == 1);
 			}
 		}
 	}
@@ -141,7 +141,7 @@ TEST_F(hxtask_queue_test, Multiple_stepping) {
 				}
 			}
 			for (size_t l = 0; l <= j; ++l) {
-				ASSERT_TRUE(tasks0[l].get_exec_count_() == j);
+				EXPECT_TRUE(tasks0[l].get_exec_count_() == j);
 			}
 		}
 	}
@@ -166,8 +166,8 @@ TEST_F(hxtask_queue_test, Multiple_reenqueuing) {
 				}
 			}
 			for (size_t k = 0; k <= j; ++k) {
-				ASSERT_TRUE(tasks0[k].get_exec_count_() == (k + 1));
-				ASSERT_TRUE(tasks1[k].get_exec_count_() == (k + 1));
+				EXPECT_TRUE(tasks0[k].get_exec_count_() == (k + 1));
+				EXPECT_TRUE(tasks1[k].get_exec_count_() == (k + 1));
 			}
 
 			// Tests reenqueuing in destructor
@@ -180,7 +180,7 @@ TEST_F(hxtask_queue_test, Multiple_reenqueuing) {
 				}
 			}
 			for (size_t k = 0; k <= j; ++k) {
-				ASSERT_TRUE(tasks2[k].get_exec_count_() == (k + 1));
+				EXPECT_TRUE(tasks2[k].get_exec_count_() == (k + 1));
 			}
 		}
 	}

@@ -72,25 +72,25 @@ TEST_F(hxarray_test, Null) {
 	{
 		test_object to0;
 		test_object to1;
-		ASSERT_EQ(to0.id, -1);
-		ASSERT_EQ(to1.id, -2);
+		EXPECT_EQ(to0.id, -1);
+		EXPECT_EQ(to1.id, -2);
 	}
-	ASSERT_TRUE(Check_totals(2));
+	EXPECT_TRUE(Check_totals(2));
 }
 
 TEST_F(hxarray_test, Empty_full) {
 	hxarray<test_object, hxallocator_dynamic_capacity> a;
-	ASSERT_TRUE(a.empty());
-	ASSERT_TRUE(a.full());
+	EXPECT_TRUE(a.empty());
+	EXPECT_TRUE(a.full());
 	a.reserve(1);
-	ASSERT_TRUE(a.empty());
-	ASSERT_TRUE(!a.full());
+	EXPECT_TRUE(a.empty());
+	EXPECT_TRUE(!a.full());
 	a.push_back(test_object());
-	ASSERT_TRUE(!a.empty());
-	ASSERT_TRUE(a.full());
+	EXPECT_TRUE(!a.empty());
+	EXPECT_TRUE(a.full());
 	a.pop_back();
-	ASSERT_TRUE(a.empty());
-	ASSERT_TRUE(!a.full());
+	EXPECT_TRUE(a.empty());
+	EXPECT_TRUE(!a.full());
 }
 
 TEST_F(hxarray_test, Allocators) {
@@ -98,25 +98,25 @@ TEST_F(hxarray_test, Allocators) {
 	objs_dynamic.reserve(10u);
 	hxarray<test_object, 10u> objs_static;
 
-	ASSERT_EQ(objs_dynamic.size(), 0u);
-	ASSERT_EQ(objs_static.size(), 0u);
+	EXPECT_EQ(objs_dynamic.size(), 0u);
+	EXPECT_EQ(objs_static.size(), 0u);
 
 	objs_dynamic.push_back(test_object(20));
 	objs_dynamic.push_back(test_object(21));
 	objs_static.push_back(test_object(20));
 	objs_static.push_back(test_object(21));
 
-	ASSERT_EQ(objs_dynamic.size(), 2u);
-	ASSERT_EQ(objs_dynamic[0], 20);
-	ASSERT_EQ(objs_dynamic[1], 21);
-	ASSERT_EQ(objs_static.size(), 2u);
-	ASSERT_EQ(objs_static[0], 20);
-	ASSERT_EQ(objs_static[1], 21);
+	EXPECT_EQ(objs_dynamic.size(), 2u);
+	EXPECT_EQ(objs_dynamic[0], 20);
+	EXPECT_EQ(objs_dynamic[1], 21);
+	EXPECT_EQ(objs_static.size(), 2u);
+	EXPECT_EQ(objs_static[0], 20);
+	EXPECT_EQ(objs_static[1], 21);
 
 	objs_dynamic.clear();
 	objs_static.clear();
 
-	ASSERT_TRUE(Check_totals(8));
+	EXPECT_TRUE(Check_totals(8));
 }
 
 TEST_F(hxarray_test, Iteration) {
@@ -132,26 +132,26 @@ TEST_F(hxarray_test, Iteration) {
 
 		int32_t counter = 0;
 		for (hxarray<test_object, 10u>::iterator it = objs.begin(); it != objs.end(); ++it) {
-			ASSERT_EQ(it->id, objs[counter].id);
-			ASSERT_EQ(it->id, nums[counter]);
+			EXPECT_EQ(it->id, objs[counter].id);
+			EXPECT_EQ(it->id, nums[counter]);
 			++counter;
 		}
 
 		counter = 0;
 		for (hxarray<test_object, 10u>::const_iterator it = cobjs.begin();
 				it != cobjs.end(); ++it) {
-			ASSERT_EQ(it->id, objs[counter].id);
-			ASSERT_EQ(it->id, nums[counter]);
+			EXPECT_EQ(it->id, objs[counter].id);
+			EXPECT_EQ(it->id, nums[counter]);
 			++counter;
 		}
 
-		ASSERT_EQ(objs.front(), nums[0]);
-		ASSERT_EQ(objs.back(), nums[2]);
-		ASSERT_EQ(cobjs.front(), nums[0]);
-		ASSERT_EQ(cobjs.back(), nums[2]);
+		EXPECT_EQ(objs.front(), nums[0]);
+		EXPECT_EQ(objs.back(), nums[2]);
+		EXPECT_EQ(cobjs.front(), nums[0]);
+		EXPECT_EQ(cobjs.back(), nums[2]);
 	}
 
-	ASSERT_TRUE(Check_totals(6));
+	EXPECT_TRUE(Check_totals(6));
 }
 
 TEST_F(hxarray_test, Modification) {
@@ -161,8 +161,8 @@ TEST_F(hxarray_test, Modification) {
 		hxarray<test_object> objs;
 		objs.assign(nums, nums + (sizeof nums / sizeof *nums));
 
-		ASSERT_EQ(objs.capacity(), 5u);
-		ASSERT_EQ(objs.size(), 5u);
+		EXPECT_EQ(objs.capacity(), 5u);
+		EXPECT_EQ(objs.size(), 5u);
 
 		// 91, 92, 93, 94
 
@@ -182,12 +182,12 @@ TEST_F(hxarray_test, Modification) {
 
 		// 91, -2, -1
 
-		ASSERT_EQ(objs[0].id, 91);
-		ASSERT_EQ(objs[1].id, -2);
-		ASSERT_EQ(objs[2].id, -1);
+		EXPECT_EQ(objs[0].id, 91);
+		EXPECT_EQ(objs[1].id, -2);
+		EXPECT_EQ(objs[2].id, -1);
 	}
 
-	ASSERT_TRUE(Check_totals(9));
+	EXPECT_TRUE(Check_totals(9));
 }
 
 TEST_F(hxarray_test, Resizing) {
@@ -200,31 +200,31 @@ TEST_F(hxarray_test, Resizing) {
 
 		objs.resize(3);
 
-		ASSERT_EQ(objs.size(), 3u);
-		ASSERT_EQ(objs[0].id, 51);
-		ASSERT_EQ(objs[2].id, 53);
+		EXPECT_EQ(objs.size(), 3u);
+		EXPECT_EQ(objs[0].id, 51);
+		EXPECT_EQ(objs[2].id, 53);
 
 		objs.resize(4u);
 
-		ASSERT_EQ(objs.size(), 4u);
-		ASSERT_EQ(objs[0].id, 51);
-		ASSERT_EQ(objs[2].id, 53);
-		ASSERT_EQ(objs[3].id, -1);
-		ASSERT_EQ(objs.capacity(), 10u);
+		EXPECT_EQ(objs.size(), 4u);
+		EXPECT_EQ(objs[0].id, 51);
+		EXPECT_EQ(objs[2].id, 53);
+		EXPECT_EQ(objs[3].id, -1);
+		EXPECT_EQ(objs.capacity(), 10u);
 
 		objs.resize(10u);
-		ASSERT_EQ(objs.size(), 10u);
-		ASSERT_EQ(objs[9].id, -7);
+		EXPECT_EQ(objs.size(), 10u);
+		EXPECT_EQ(objs[9].id, -7);
 
-		ASSERT_FALSE(objs.empty());
+		EXPECT_FALSE(objs.empty());
 		objs.clear();
-		ASSERT_EQ(objs.size(), 0u);
-		ASSERT_TRUE(objs.empty());
+		EXPECT_EQ(objs.size(), 0u);
+		EXPECT_TRUE(objs.empty());
 
-		ASSERT_EQ(objs.capacity(), 10u);
+		EXPECT_EQ(objs.capacity(), 10u);
 	}
 
-	ASSERT_TRUE(Check_totals(12));
+	EXPECT_TRUE(Check_totals(12));
 }
 
 TEST_F(hxarray_test, Assignment) {
@@ -246,27 +246,27 @@ TEST_F(hxarray_test, Assignment) {
 
 		hxarray<test_object, 1> objs5(objs); // Construct from different type
 
-		ASSERT_EQ(objs2.size(), 1u);
-		ASSERT_EQ(objs3.size(), 1u);
-		ASSERT_EQ(objs4.size(), 1u);
-		ASSERT_EQ(objs5.size(), 1u);
+		EXPECT_EQ(objs2.size(), 1u);
+		EXPECT_EQ(objs3.size(), 1u);
+		EXPECT_EQ(objs4.size(), 1u);
+		EXPECT_EQ(objs5.size(), 1u);
 
-		ASSERT_EQ(objs2[0].id, 67);
-		ASSERT_EQ(objs3[0].id, 67);
-		ASSERT_EQ(objs4[0].id, 67);
-		ASSERT_EQ(objs5[0].id, 67);
+		EXPECT_EQ(objs2[0].id, 67);
+		EXPECT_EQ(objs3[0].id, 67);
+		EXPECT_EQ(objs4[0].id, 67);
+		EXPECT_EQ(objs5[0].id, 67);
 	}
 
-	ASSERT_TRUE(Check_totals(6));
+	EXPECT_TRUE(Check_totals(6));
 }
 
 #if HX_CPLUSPLUS >= 201103L && HX_HOSTED
 TEST_F(hxarray_test, Initializer_list) {
 	hxarray<int, 2> x = { 2, 7 };
-	ASSERT_EQ(x[1], 7);
+	EXPECT_EQ(x[1], 7);
 
 	hxarray<int> y { 12, 17 };
-	ASSERT_EQ(y[1], 17);
+	EXPECT_EQ(y[1], 17);
 }
 
 TEST_F(hxarray_test, Temporaries) {
@@ -278,10 +278,10 @@ TEST_F(hxarray_test, Temporaries) {
 		hxarray<int> y = std::move(x); // should swap
 		hxarray<int> z;
 		hxswap(y, z);
-		ASSERT_TRUE(x.empty());
-		ASSERT_TRUE(y.empty());
-		ASSERT_EQ(z[0], 2);
-		ASSERT_EQ(z[1], 7);
+		EXPECT_TRUE(x.empty());
+		EXPECT_TRUE(y.empty());
+		EXPECT_EQ(z[0], 2);
+		EXPECT_EQ(z[1], 7);
 	}
 }
 #endif

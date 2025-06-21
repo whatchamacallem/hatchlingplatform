@@ -55,20 +55,20 @@ public:
 
 		rs.sort(hxmemory_allocator_temporary_stack);
 
-		ASSERT_EQ(b.size(), size);
-		ASSERT_EQ(rs.size(), size);
+		EXPECT_EQ(b.size(), size);
+		EXPECT_EQ(rs.size(), size);
 
 		typename hxradix_sort<key_t, test_object<key_t> >::iterator it = rs.begin();
 		typename hxradix_sort<key_t, test_object<key_t> >::const_iterator cit = rs.cbegin();
 
 		for (uint32_t i=0u; i < size; ++i) {
-			ASSERT_EQ(b[i].id, rs[i].id);
-			ASSERT_EQ(b[i].id, (*it++).id);
-			ASSERT_EQ(b[i].id, (cit++)->id);
+			EXPECT_EQ(b[i].id, rs[i].id);
+			EXPECT_EQ(b[i].id, (*it++).id);
+			EXPECT_EQ(b[i].id, (cit++)->id);
 		}
 
-		ASSERT_EQ(it, rs.end());
-		ASSERT_EQ(cit, rs.cend());
+		EXPECT_EQ(it, rs.end());
+		EXPECT_EQ(cit, rs.cend());
 	}
 
     hxrandom m_prng_;
@@ -78,17 +78,17 @@ TEST_F(hxradix_sort_test, Null) {
 	hxradix_sort<uint32_t, const char> rs;
 
 	rs.sort(hxmemory_allocator_temporary_stack);
-	ASSERT_EQ(rs.size(), 0u);
-	ASSERT_TRUE(rs.empty());
+	EXPECT_EQ(rs.size(), 0u);
+	EXPECT_TRUE(rs.empty());
 
 	rs.reserve(1u);
 	rs.insert(123u, "s");
 
 	rs.sort(hxmemory_allocator_temporary_stack);
-	ASSERT_EQ(rs.size(), 1u);
-	ASSERT_EQ(rs[0], 's');
-	ASSERT_EQ(*rs.get(0), 's');
-	ASSERT_TRUE(!rs.empty());
+	EXPECT_EQ(rs.size(), 1u);
+	EXPECT_EQ(rs[0], 's');
+	EXPECT_EQ(*rs.get(0), 's');
+	EXPECT_TRUE(!rs.empty());
 }
 
 TEST_F(hxradix_sort_test, Uint32) {
@@ -133,49 +133,49 @@ TEST(hxinsertion_sort_test, Sort_compare_cCase) {
 	// sort 0 elements
 	hxinsertion_sort<int, int(*)(int a, int b)>(ints, ints, hxsort_compare_test);
 	const int ints1[5] = { 2, 1, 0, 4, -5 };
-	ASSERT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // nothing changed
+	EXPECT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // nothing changed
 
 	// sort 1 element
 	hxinsertion_sort<int>(ints, ints + 1, hxsort_compare_test);
-	ASSERT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // still nothing changed
+	EXPECT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // still nothing changed
 
 	// sort 2 elements
 	hxinsertion_sort(ints, ints + 2);
 	const int ints2[5] = { 1, 2, 0, 4, -5 };
-	ASSERT_TRUE(::memcmp(ints, ints2, sizeof ints) == 0);
+	EXPECT_TRUE(::memcmp(ints, ints2, sizeof ints) == 0);
 
 	// sort all
 	hxinsertion_sort(ints, ints + 5, hxsort_compare_test);
 	const int ints3[5] = { -5, 0, 1, 2, 4 };
-	ASSERT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0);
+	EXPECT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0);
 
 	// sort already sorted
 	hxinsertion_sort(ints, ints + 5, hxsort_compare_test);
-	ASSERT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0);
+	EXPECT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0);
 
 	// sort reversed
 	hxinsertion_sort(ints, ints + 5, hxsort_compare_reverse_test);
 	const int ints4[5] = { 4, 2, 1, 0, -5 };
-	ASSERT_TRUE(::memcmp(ints, ints4, sizeof ints) == 0);
+	EXPECT_TRUE(::memcmp(ints, ints4, sizeof ints) == 0);
 }
 
 TEST(hxbinary_search_test, Simple_case) {
 	int ints[5] = { 2, 5, 6, 88, 99 };
 	int* result = hxbinary_search(ints+0, ints+5, 88, hxsort_compare_test);
-	ASSERT_TRUE(result != hxnull && *result == 88);
+	EXPECT_TRUE(result != hxnull && *result == 88);
 
 	const int* cresult = hxbinary_search((const int*)ints+0, (const int*)ints+5, 2, hxsort_compare_test);
-	ASSERT_TRUE(cresult != hxnull && *cresult == 2);
+	EXPECT_TRUE(cresult != hxnull && *cresult == 2);
 
 	cresult = hxbinary_search((const int*)ints+0, (const int*)ints+5, 99);
-	ASSERT_TRUE(cresult != hxnull && *cresult == 99);
+	EXPECT_TRUE(cresult != hxnull && *cresult == 99);
 
 	result = hxbinary_search(ints+0, ints+5, 0);
-	ASSERT_TRUE(result == hxnull);
+	EXPECT_TRUE(result == hxnull);
 
 	result = hxbinary_search(ints+0, ints+5, 100);
-	ASSERT_TRUE(result == hxnull);
+	EXPECT_TRUE(result == hxnull);
 
 	result = hxbinary_search(ints+0, ints+5, 7);
-	ASSERT_TRUE(result == hxnull);
+	EXPECT_TRUE(result == hxnull);
 }

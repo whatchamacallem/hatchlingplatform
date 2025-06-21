@@ -5,6 +5,10 @@
 
 HX_REGISTER_FILENAME_HASH
 
+// Using ASSERT_* instead of EXPECT_* in this file to add coverage for those
+// macros. Memory corruption sounds fatal so sure why not. Some of these tests
+// are designed to fail and use EXPECT_ for those specific tests.
+
 TEST(hxmemory_manager_test_f, Bytes) {
 	for(size_t i=0u; i<10u; ++i) {
 		void* p = hxmalloc(i);

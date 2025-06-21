@@ -14,7 +14,7 @@ HX_REGISTER_FILENAME_HASH
 
 // Run all the C tests.
 TEST(hxctest, All_tests) {
-	ASSERT_TRUE(hxctest_all());
+	EXPECT_TRUE(hxctest_all());
 }
 
 // These two tests test the test framework by failing.

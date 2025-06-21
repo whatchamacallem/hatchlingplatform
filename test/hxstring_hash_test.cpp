@@ -16,9 +16,9 @@ TEST(hxstring_hash_test, Equality) {
 		"1234567890qwertyuiopasdfghjklzxcvbnm"
 		"123456");
 
-	ASSERT_EQ(hash1, hxstring_literal_hash_debug(""));
-	ASSERT_EQ(hash2, hxstring_literal_hash_debug("abc"));
-	ASSERT_EQ(hash3, hxstring_literal_hash_debug(
+	EXPECT_EQ(hash1, hxstring_literal_hash_debug(""));
+	EXPECT_EQ(hash2, hxstring_literal_hash_debug("abc"));
+	EXPECT_EQ(hash3, hxstring_literal_hash_debug(
 		"The quick brown fox jumps over the lazy dog. "
 		"1234567890qwertyuiopasdfghjklzxcvbnm"
 		"1234567890qwertyuiopasdfghjklzxcvbnm"

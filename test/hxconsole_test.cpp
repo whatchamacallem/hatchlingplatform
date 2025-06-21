@@ -44,11 +44,11 @@ namespace {
 	template<typename T>
 	void hxconsole_test_type_check_t(T t, hxconsole_test_type_id id, T expected) {
 		c_hxconsole_test_call_flags |= 1 << (int32_t)id;
-		ASSERT_EQ(t, expected);
+		EXPECT_EQ(t, expected);
 	}
 	void hxconsole_test_type_check_t(float t, hxconsole_test_type_id id, float expected) {
 		c_hxconsole_test_call_flags |= 1 << (int32_t)id;
-		ASSERT_NEAR(expected, t, 0.00001f); // This loses precision with -ffast-math.
+		EXPECT_NEAR(expected, t, 0.00001f); // This loses precision with -ffast-math.
 	}
 
 #define hxconsole_test_type_check(T, t) \
@@ -96,28 +96,28 @@ namespace {
 TEST(hxconsole_test, Command_factory) {
 	c_hxconsole_test_call_flags = 0;
 
-	ASSERT_TRUE(hxconsole_command_factory_(hxconsole_test_fn0).execute_(""));
-	ASSERT_FALSE(hxconsole_command_factory_(hxconsole_test_fn0).execute_("unexpected text"));
+	EXPECT_TRUE(hxconsole_command_factory_(hxconsole_test_fn0).execute_(""));
+	EXPECT_FALSE(hxconsole_command_factory_(hxconsole_test_fn0).execute_("unexpected text"));
 
-	ASSERT_TRUE(hxconsole_command_factory_(hxconsole_test_fn1).execute_("123"));
-	ASSERT_TRUE(hxconsole_command_factory_(hxconsole_test_fn2).execute_("-234 -345"));
+	EXPECT_TRUE(hxconsole_command_factory_(hxconsole_test_fn1).execute_("123"));
+	EXPECT_TRUE(hxconsole_command_factory_(hxconsole_test_fn2).execute_("-234 -345"));
 
-	ASSERT_TRUE(hxconsole_command_factory_(hxconsole_test_fn3).execute_("1 12"));
+	EXPECT_TRUE(hxconsole_command_factory_(hxconsole_test_fn3).execute_("1 12"));
 
 	// This will pass because 2 is a valid bool.
-	ASSERT_TRUE(hxconsole_command_factory_(hxconsole_test_fn3).execute_("2 12"));
+	EXPECT_TRUE(hxconsole_command_factory_(hxconsole_test_fn3).execute_("2 12"));
 
-	ASSERT_TRUE(hxconsole_command_factory_(hxconsole_test_fn4).execute_("2345 3456 3456 6.78"));
-	ASSERT_FALSE(hxconsole_command_factory_(hxconsole_test_fn4).execute_("$*"));
+	EXPECT_TRUE(hxconsole_command_factory_(hxconsole_test_fn4).execute_("2345 3456 3456 6.78"));
+	EXPECT_FALSE(hxconsole_command_factory_(hxconsole_test_fn4).execute_("$*"));
 
-	ASSERT_TRUE(hxconsole_command_factory_(hxconsole_test_fn8).execute_("56789 67890 7.89"));
-	ASSERT_FALSE(hxconsole_command_factory_(hxconsole_test_fn8).execute_("56d789 67890 7.89"));
+	EXPECT_TRUE(hxconsole_command_factory_(hxconsole_test_fn8).execute_("56789 67890 7.89"));
+	EXPECT_FALSE(hxconsole_command_factory_(hxconsole_test_fn8).execute_("56d789 67890 7.89"));
 
 	// Check that all flags have been set.
-	ASSERT_EQ(c_hxconsole_test_call_flags, (1<<hxconsole_test_type_id_MAX)-1);
+	EXPECT_EQ(c_hxconsole_test_call_flags, (1<<hxconsole_test_type_id_MAX)-1);
 }
 
-// Trigger some asserts and then call ASSERT_FALSE a few times. Show that asserts
+// Trigger some asserts and then call EXPECT_FALSE a few times. Show that asserts
 // are hit and can be skipped. And then show that the above test would fail if
 // bad commands were submitted.
 #if HX_TEST_ERROR_HANDLING
@@ -127,7 +127,7 @@ TEST(hxconsole_test, Overflow) {
 	hxconsole_exec_line("skipasserts 2");
 #endif
 
-	// These will all ASSERT_FALSE due to parameter mismatch.
+	// These will all EXPECT_FALSE due to parameter mismatch.
 	hxconsole_command_factory_(hxconsole_test_fn1).execute_("256");
 	hxconsole_command_factory_(hxconsole_test_fn2).execute_("32768 -345");
 
@@ -175,35 +175,35 @@ TEST(hxconsole_test, Register_command) {
 
 	s_hxconsole_test_result_hook = 0.0f;
 	bool b0 = hxconsole_exec_line("hxconsole_test_register0 77 ..."); // 77 + 3 int8_t string
-	ASSERT_TRUE(b0);
-	ASSERT_EQ(80.0f, s_hxconsole_test_result_hook);
+	EXPECT_TRUE(b0);
+	EXPECT_EQ(80.0f, s_hxconsole_test_result_hook);
 
 	s_hxconsole_test_result_hook = 0.0f;
 	bool b1 = hxconsole_exec_line("hxconsole_test_register1 12.5");
-	ASSERT_TRUE(b1);
-	ASSERT_EQ(12.5f, s_hxconsole_test_result_hook);
+	EXPECT_TRUE(b1);
+	EXPECT_EQ(12.5f, s_hxconsole_test_result_hook);
 
 	// *Missing arg*
 	s_hxconsole_test_result_hook = -1.0f;
 	bool b2 = hxconsole_exec_line("hxconsole_test_register2 ");
-	ASSERT_FALSE(b2);
-	ASSERT_EQ(-1.0f, s_hxconsole_test_result_hook);
+	EXPECT_FALSE(b2);
+	EXPECT_EQ(-1.0f, s_hxconsole_test_result_hook);
 
 	// *Missing second arg*
 	s_hxconsole_test_result_hook = -2.0f;
 	bool b3 = hxconsole_exec_line("hxconsole_test_register3 7 ");
-	ASSERT_FALSE(b3);
-	ASSERT_EQ(-2.0f, s_hxconsole_test_result_hook);
+	EXPECT_FALSE(b3);
+	EXPECT_EQ(-2.0f, s_hxconsole_test_result_hook);
 
 	// *Extra third arg*
 	s_hxconsole_test_result_hook = -2.0f;
 	bool b4 = hxconsole_exec_line("hxconsole_test_register3 7 8 9 ");
-	ASSERT_FALSE(b4);
-	ASSERT_EQ(-2.0f, s_hxconsole_test_result_hook);
+	EXPECT_FALSE(b4);
+	EXPECT_EQ(-2.0f, s_hxconsole_test_result_hook);
 
 	// Missing function
 	bool b5 = hxconsole_exec_line("Not_exist");
-	ASSERT_FALSE(b5);
+	EXPECT_FALSE(b5);
 
 	// add code coverage for unmade calls.
 	hxconsole_test_register2(1.0f);
@@ -211,7 +211,7 @@ TEST(hxconsole_test, Register_command) {
 
 	hxconsole_deregister("hxconsole_test_register0");
 	bool b6 = hxconsole_exec_line("hxconsole_test_register0 77 ..."); // same as before
-	ASSERT_FALSE(b6);
+	EXPECT_FALSE(b6);
 }
 
 // ----------------------------------------------------------------------------
@@ -252,37 +252,37 @@ hxconsole_variable(s_hxconsole_test_uLong_long);
 hxconsole_variable(s_hxconsole_test_double);
 
 TEST(hxconsole_test, Register_variable) {
-	ASSERT_TRUE(hxconsole_exec_line("s_hxconsole_test_char 123"));
-	ASSERT_TRUE(hxconsole_exec_line("s_hxconsole_test_short 234"));
-	ASSERT_TRUE(hxconsole_exec_line("s_hxconsole_test_int 345"));
-	ASSERT_TRUE(hxconsole_exec_line("s_hxconsole_test_long 456"));
-	ASSERT_TRUE(hxconsole_exec_line("s_hxconsole_test_uChar 12"));
-	ASSERT_TRUE(hxconsole_exec_line("s_hxconsole_test_uShort 2345"));
-	ASSERT_TRUE(hxconsole_exec_line("s_hxconsole_test_uInt 3456"));
-	ASSERT_TRUE(hxconsole_exec_line("s_hxconsole_test_uLong 4567"));
-	ASSERT_TRUE(hxconsole_exec_line("s_hxconsole_test_float 678.0"));
-	ASSERT_TRUE(hxconsole_exec_line("s_hxconsole_test_bool0 0"));
-	ASSERT_TRUE(hxconsole_exec_line("s_hxconsole_test_bool1 1"));
-	ASSERT_TRUE(hxconsole_exec_line("s_hxconsole_test_long_long 567"));
-	ASSERT_TRUE(hxconsole_exec_line("s_hxconsole_test_size 1000"));
-	ASSERT_TRUE(hxconsole_exec_line("s_hxconsole_test_uLong_long 5678"));
-	ASSERT_TRUE(hxconsole_exec_line("s_hxconsole_test_double 789.0"));
+	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_char 123"));
+	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_short 234"));
+	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_int 345"));
+	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_long 456"));
+	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_uChar 12"));
+	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_uShort 2345"));
+	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_uInt 3456"));
+	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_uLong 4567"));
+	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_float 678.0"));
+	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_bool0 0"));
+	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_bool1 1"));
+	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_long_long 567"));
+	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_size 1000"));
+	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_uLong_long 5678"));
+	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_double 789.0"));
 
-	ASSERT_EQ(s_hxconsole_test_char, 123);
-	ASSERT_EQ(s_hxconsole_test_short, 234);
-	ASSERT_EQ(s_hxconsole_test_int, 345);
-	ASSERT_EQ(s_hxconsole_test_long, 456l);
-	ASSERT_EQ(s_hxconsole_test_uChar, 12);
-	ASSERT_EQ(s_hxconsole_test_uShort, 2345);
-	ASSERT_EQ(s_hxconsole_test_uInt, 3456);
-	ASSERT_EQ(s_hxconsole_test_uLong, 4567ul);
-	ASSERT_EQ(s_hxconsole_test_float, 678.0f);
-	ASSERT_EQ(s_hxconsole_test_bool0, false);
-	ASSERT_EQ(s_hxconsole_test_bool1, true);
-	ASSERT_EQ(s_hxconsole_test_size, 1000l);
-	ASSERT_EQ(s_hxconsole_test_long_long, 567ll);
-	ASSERT_EQ(s_hxconsole_test_uLong_long, 5678ull);
-	ASSERT_EQ(s_hxconsole_test_double, 789.0);
+	EXPECT_EQ(s_hxconsole_test_char, 123);
+	EXPECT_EQ(s_hxconsole_test_short, 234);
+	EXPECT_EQ(s_hxconsole_test_int, 345);
+	EXPECT_EQ(s_hxconsole_test_long, 456l);
+	EXPECT_EQ(s_hxconsole_test_uChar, 12);
+	EXPECT_EQ(s_hxconsole_test_uShort, 2345);
+	EXPECT_EQ(s_hxconsole_test_uInt, 3456);
+	EXPECT_EQ(s_hxconsole_test_uLong, 4567ul);
+	EXPECT_EQ(s_hxconsole_test_float, 678.0f);
+	EXPECT_EQ(s_hxconsole_test_bool0, false);
+	EXPECT_EQ(s_hxconsole_test_bool1, true);
+	EXPECT_EQ(s_hxconsole_test_size, 1000l);
+	EXPECT_EQ(s_hxconsole_test_long_long, 567ll);
+	EXPECT_EQ(s_hxconsole_test_uLong_long, 5678ull);
+	EXPECT_EQ(s_hxconsole_test_double, 789.0);
 }
 
 // Show rounding errors while setting a variable are ignored. It isn't ideal
@@ -290,7 +290,7 @@ TEST(hxconsole_test, Register_variable) {
 TEST(hxconsole_test, Variable_errors) {
 	s_hxconsole_test_int = -1;
 	hxconsole_exec_line("s_hxconsole_test_int 3.5");
-	ASSERT_EQ(s_hxconsole_test_int, 3);
+	EXPECT_EQ(s_hxconsole_test_int, 3);
 }
 
 // ----------------------------------------------------------------------------
@@ -339,10 +339,10 @@ TEST(hxconsole_test, File_test) {
 			"\n";
 	}
 	bool is_ok = hxconsole_exec_line("exec hxconsole_test_file_test.txt");
-	ASSERT_TRUE(is_ok);
+	EXPECT_TRUE(is_ok);
 
-	ASSERT_EQ(s_hxconsole_test_file_var1, 78.0f);
-	ASSERT_EQ(s_hxconsole_test_file_var2, 89.0f);
+	EXPECT_EQ(s_hxconsole_test_file_var1, 78.0f);
+	EXPECT_EQ(s_hxconsole_test_file_var2, 89.0f);
 }
 
 bool hxconsole_test_failing_command(void) {
@@ -358,19 +358,19 @@ TEST(hxconsole_test, File_fail) {
 	{
 		hxfile(hxfile::out, "hxconsole_test_file_test.txt") << "<unknown symbols>\n";
 	}
-	ASSERT_FALSE(hxconsole_exec_filename("hxconsole_test_file_test.txt"));
+	EXPECT_FALSE(hxconsole_exec_filename("hxconsole_test_file_test.txt"));
 
 	// test a bad function call
 	{
 		hxfile(hxfile::out, "hxconsole_test_file_test.txt") << "exec\n";
 	}
-	ASSERT_FALSE(hxconsole_exec_filename("hxconsole_test_file_test.txt"));
+	EXPECT_FALSE(hxconsole_exec_filename("hxconsole_test_file_test.txt"));
 
 	// test a failing command
 	{
 		hxfile(hxfile::out, "hxconsole_test_file_test.txt") << "hxconsole_test_failing_command\n";
 	}
-	ASSERT_FALSE(hxconsole_exec_filename("hxconsole_test_file_test.txt"));
+	EXPECT_FALSE(hxconsole_exec_filename("hxconsole_test_file_test.txt"));
 }
 
 #if (HX_RELEASE) < 2 && !defined __EMSCRIPTEN__
@@ -383,11 +383,11 @@ TEST(hxconsole_test, File_peek_poke) {
 		f.print("hexdump %zx 12\n", (size_t)target);
 	}
 	bool is_ok = hxconsole_exec_line("exec hxconsole_test_file_test.txt");
-	ASSERT_TRUE(is_ok);
+	EXPECT_TRUE(is_ok);
 
-	ASSERT_EQ(target[0], 111);
-	ASSERT_EQ(target[1], 222);
-	ASSERT_EQ(target[2], 333);
+	EXPECT_EQ(target[0], 111);
+	EXPECT_EQ(target[1], 222);
+	EXPECT_EQ(target[2], 333);
 }
 TEST(hxconsole_test, File_peek_poke_floats) {
 	float target[] = { 111.0f, 777.0f, 333.0f };
@@ -397,10 +397,10 @@ TEST(hxconsole_test, File_peek_poke_floats) {
 		f.print("floatdump %zx 3\n", (size_t)target);
 	}
 	bool is_ok = hxconsole_exec_line("exec hxconsole_test_file_test.txt");
-	ASSERT_TRUE(is_ok);
+	EXPECT_TRUE(is_ok);
 
-	ASSERT_EQ(target[0], 111.0f);
-	ASSERT_EQ(target[1], 222.0f);
-	ASSERT_EQ(target[2], 333.0f);
+	EXPECT_EQ(target[0], 111.0f);
+	EXPECT_EQ(target[1], 222.0f);
+	EXPECT_EQ(target[2], 333.0f);
 }
 #endif

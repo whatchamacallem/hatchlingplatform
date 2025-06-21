@@ -25,8 +25,8 @@ public:
 
 TEST_F(hxfile_test, Empty_name) {
 	hxfile f(hxfile::in | hxfile::failable, "");
-	ASSERT_EQ(f.good(), false);
-	ASSERT_EQ(f.is_open(), false);
+	EXPECT_EQ(f.good(), false);
+	EXPECT_EQ(f.is_open(), false);
 }
 
 #if defined __GNUC__
@@ -37,15 +37,15 @@ TEST_F(hxfile_test, Read_write) {
 	hxfile f(hxfile::in | hxfile::out | hxfile::failable, "hxfile_test_read_write.txt");
 	f << "hxfile_test_read_write.txt";
 
-	ASSERT_EQ(f.good(), true);
-	ASSERT_EQ(f.is_open(), true);
+	EXPECT_EQ(f.good(), true);
+	EXPECT_EQ(f.is_open(), true);
 }
 
 TEST_F(hxfile_test, Not_exist) {
 	hxfile f(hxfile::in | hxfile::failable, "test_file_does_not_exist_%d", 123);
-	ASSERT_EQ(f.good(), false);
-	ASSERT_EQ(f.is_open(), false);
-	ASSERT_EQ((bool)(f.mode() & hxfile::failable), true);
+	EXPECT_EQ(f.good(), false);
+	EXPECT_EQ(f.is_open(), false);
+	EXPECT_EQ((bool)(f.mode() & hxfile::failable), true);
 }
 
 TEST_F(hxfile_test, Operators) {
@@ -57,30 +57,30 @@ TEST_F(hxfile_test, Operators) {
 	x.c = 77u;
 	x.d = -55;
 	f <= x <= a;
-	ASSERT_TRUE(f.good());
-	ASSERT_FALSE(f.eof());
+	EXPECT_TRUE(f.good());
+	EXPECT_FALSE(f.eof());
 	f.close();
 
 	f.open(hxfile::in | hxfile::failable, "hxfile_test_operators.bin");
 	test_t_ y;
 	int b;
-	ASSERT_TRUE(f.good());
+	EXPECT_TRUE(f.good());
 	f >= y >= b;
-	ASSERT_EQ(y.a, 77777u);
-	ASSERT_EQ(y.b, -555);
-	ASSERT_EQ(y.c, 77u);
-	ASSERT_EQ(y.d, -55);
-	ASSERT_EQ(b, -3);
+	EXPECT_EQ(y.a, 77777u);
+	EXPECT_EQ(y.b, -555);
+	EXPECT_EQ(y.c, 77u);
+	EXPECT_EQ(y.d, -55);
+	EXPECT_EQ(b, -3);
 
-	ASSERT_TRUE(f.good());
-	ASSERT_FALSE(f.eof());
+	EXPECT_TRUE(f.good());
+	EXPECT_FALSE(f.eof());
 	char t;
 	size_t extra_byte = f.read(&t, 1); // fails!
-	ASSERT_TRUE(f.eof());
-	ASSERT_EQ(extra_byte, 0u);
-	ASSERT_FALSE(f.good());
+	EXPECT_TRUE(f.eof());
+	EXPECT_EQ(extra_byte, 0u);
+	EXPECT_FALSE(f.good());
 	f.clear();
-	ASSERT_TRUE(f.good()); // clear EOF event.
+	EXPECT_TRUE(f.good()); // clear EOF event.
 	f.close();
-	ASSERT_FALSE(f.good());
+	EXPECT_FALSE(f.good());
 }

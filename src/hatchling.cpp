@@ -231,12 +231,12 @@ hxnoexcept_intrinsic int hxasserthandler(const char* file, size_t line) {
 	const char* f = hxbasename(file);
 	if (g_hxisinit_ && g_hxsettings.asserts_to_be_skipped > 0) {
 		--g_hxsettings.asserts_to_be_skipped;
-		hxloghandler(hxloglevel_assert, "(skipped) %s(%u) hash %08x", f, (unsigned int)line,
-			(unsigned int)hxstring_literal_hash_debug(file));
+		hxloghandler(hxloglevel_assert, "(skipped) %s(%zu) hash %08zx",
+			f, line, (size_t)hxstring_literal_hash_debug(file));
 		return 1;
 	}
-	hxloghandler(hxloglevel_assert, "%s(%u) hash %08x Triggering Breakpoint\n", f, (unsigned int)line,
-		(unsigned int)hxstring_literal_hash_debug(file));
+	hxloghandler(hxloglevel_assert, "%s(%zu) hash %08zx Triggering Breakpoint\n",
+		f, line, (size_t)hxstring_literal_hash_debug(file));
 
 	// return to hxbreakpoint at calling line.
 	return 0;
@@ -244,7 +244,7 @@ hxnoexcept_intrinsic int hxasserthandler(const char* file, size_t line) {
 #else
 extern "C"
 hxnoexcept_intrinsic hxnoreturn void hxasserthandler(uint32_t file, size_t line) {
-	hxloghandler(hxloglevel_assert, "file %08x line %u\n", (unsigned int)file, (unsigned int)line);
+	hxloghandler(hxloglevel_assert, "file %08zx line %zu\n", (size_t)file, line);
 	_Exit(EXIT_FAILURE);
 }
 #endif

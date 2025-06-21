@@ -84,11 +84,11 @@ TEST_F(hxprofiler_test, Single1ms) {
 		one.execute(hxnull);
 	}
 
-	ASSERT_TRUE(1u == (g_hxprofiler_.records_size_() - start_records));
+	EXPECT_TRUE(1u == (g_hxprofiler_.records_size_() - start_records));
 
 	// stops the profiler and dumps sample to console:
 	bool is_ok = hxconsole_exec_line("profilelog");
-	ASSERT_TRUE(is_ok);
+	EXPECT_TRUE(is_ok);
 }
 
 TEST_F(hxprofiler_test, write_to_chrome_tracing) {
@@ -104,7 +104,7 @@ TEST_F(hxprofiler_test, write_to_chrome_tracing) {
 	}
 	q.wait_for_all();
 
-	ASSERT_TRUE(90u == g_hxprofiler_.records_size_());
+	EXPECT_TRUE(90u == g_hxprofiler_.records_size_());
 
 	hxconsole_exec_line("profilewrite profile.json");
 	hxprofiler_log();
