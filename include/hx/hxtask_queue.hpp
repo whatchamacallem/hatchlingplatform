@@ -33,8 +33,8 @@ private:
     hxtask_queue(const hxtask_queue&) hxdelete_fn;
     void operator=(const hxtask_queue&) hxdelete_fn;
 
-    friend struct hxwait_pred_tasks_;
-    friend struct hxwait_pred_waiting_;
+    friend class hxtask_wait_for_tasks_;
+    friend class hxtask_wait_for_completion_;
 
     enum { running_queue_guard_value_ = 0xc710b034u };
 

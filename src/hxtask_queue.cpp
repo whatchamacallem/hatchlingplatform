@@ -5,27 +5,37 @@
 
 HX_REGISTER_FILENAME_HASH
 
-struct hxwait_pred_tasks_ {
-    hxtask_queue* q_;
-    hxwait_pred_tasks_(hxtask_queue* q) : q_(q) {}
+#if HX_USE_THREADS
+
+class hxtask_wait_for_tasks_ {
+public:
+    hxtask_wait_for_tasks_(hxtask_queue* q) : q_(q) {}
     bool operator()() const {
-        return q_->m_next_task_ || q_->m_running_queue_guard_ != hxtask_queue::running_queue_guard_value_;
+        hxassertmsg(q_->m_running_queue_guard_ != hxtask_queue::running_queue_guard_value_,
+            "threading error");
+        return q_->m_next_task_;
     }
+    hxtask_queue* q_;
 };
 
-struct hxwait_pred_waiting_ {
-    hxtask_queue* q_;
-    hxwait_pred_waiting_(hxtask_queue* q) : q_(q) {}
+class hxtask_wait_for_completion_ {
+public:
+    hxtask_wait_for_completion_(hxtask_queue* q) : q_(q) {}
     bool operator()() const {
+        hxassertmsg(q_->m_running_queue_guard_ != hxtask_queue::running_queue_guard_value_,
+            "threading error");
         return q_->m_executing_count_ == 0 && !q_->m_next_task_;
     }
+    hxtask_queue* q_;
 };
+
+#endif
 
 // Should abort if exceptions are enabled and
 hxtask_queue::hxtask_queue(int32_t thread_pool_size_)
     : m_next_task_(hxnull)
-    , m_running_queue_guard_(running_queue_guard_value_)
 #if HX_USE_THREADS
+    , m_running_queue_guard_(running_queue_guard_value_)
     , m_thread_pool_size_(0)
     , m_threads_(hxnull)
     , m_executing_count_(0)
@@ -48,10 +58,9 @@ hxtask_queue::~hxtask_queue() {
 #if HX_USE_THREADS
     if (m_thread_pool_size_ > 0) {
         executor_thread_(this, executor_mode_stopping_);
-        hxassertrelease(m_running_queue_guard_ == 0u, "Q");
+        hxassertrelease(m_running_queue_guard_ == 0u, "threading error");
 
         for (int32_t i_ = m_thread_pool_size_; i_--;) {
-            hxassertrelease(m_threads_[i_].joinable(), "threading error");
             m_threads_[i_].join();
             m_threads_[i_].~hxthread();
         }
@@ -62,12 +71,11 @@ hxtask_queue::~hxtask_queue() {
 #endif
     {
         wait_for_all();
-        m_running_queue_guard_ = 0u;
     }
 }
 
 void hxtask_queue::enqueue(hxtask* task_) {
-    hxassertrelease(task_, "null task");
+    hxassertmsg(task_, "null task");
     task_->set_task_queue(this);
 
 #if HX_USE_THREADS
@@ -138,21 +146,21 @@ void hxtask_queue::executor_thread_(hxtask_queue* q_, executor_mode_t_ mode_) {
             // Either acquire a next task or meet stopping criteria.
             if (mode_ == executor_mode_pool_) {
                 // Use predicate for spurious wakeups
-                q_->m_cond_var_tasks_.wait(lk_, hxwait_pred_tasks_(q_));
+                q_->m_cond_var_tasks_.wait(lk_, hxtask_wait_for_tasks_(q_));
             }
 
             if (q_->m_next_task_) {
-                hxassertrelease(q_->m_running_queue_guard_ == running_queue_guard_value_, "Q");
+                hxassertmsg(q_->m_running_queue_guard_ == running_queue_guard_value_, "threading error");
                 task_ = q_->m_next_task_;
                 q_->m_next_task_ = task_->get_next_task();
                 ++q_->m_executing_count_;
             }
             else {
                 if (mode_ != executor_mode_pool_) {
-                    q_->m_cond_var_waiting_.wait(lk_, hxwait_pred_waiting_(q_));
+                    q_->m_cond_var_waiting_.wait(lk_, hxtask_wait_for_completion_(q_));
 
                     if (mode_ == executor_mode_stopping_) {
-                        hxassertrelease(q_->m_running_queue_guard_ == running_queue_guard_value_, "Q");
+                        hxassertmsg(q_->m_running_queue_guard_ == running_queue_guard_value_, "threading error");
                         q_->m_running_queue_guard_ = 0u;
                         q_->m_cond_var_waiting_.notify_all();
                         q_->m_cond_var_tasks_.notify_all();
