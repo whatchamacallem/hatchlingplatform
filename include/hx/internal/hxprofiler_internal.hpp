@@ -17,7 +17,7 @@
 #define HX_PROFILER_LOCK_() (void)0
 #endif
 
-static inline hxcycles_t hxtime_sample_cycles(void) {
+inline hxcycles_t hxtime_sample_cycles(void) {
     uint64_t cycles_ = 0; (void)cycles_;
 #if defined __EMSCRIPTEN__
     double t_ = emscripten_get_now() * 1.0e+6;

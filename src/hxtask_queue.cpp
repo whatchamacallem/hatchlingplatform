@@ -13,7 +13,7 @@ public:
     hxtask_wait_for_tasks_(hxtask_queue* q) : q_(q) {}
     bool operator()() const {
         return q_->m_next_task_
-            && q_->m_queue_run_level_ == hxtask_queue::run_level_running_;
+            || q_->m_queue_run_level_ == hxtask_queue::run_level_stopped_;
     }
     hxtask_queue* q_;
 };
@@ -27,7 +27,7 @@ public:
     bool operator()() const {
         hxassertmsg(q_->m_queue_run_level_ == hxtask_queue::run_level_running_,
             "threading error");
-        return q_->m_executing_count_ == 0 && q_->m_next_task_ == hxnull;
+        return q_->m_next_task_ == hxnull && q_->m_executing_count_ == 0;
     }
     hxtask_queue* q_;
 };
@@ -154,22 +154,26 @@ void hxtask_queue::executor_thread_(hxtask_queue* q_, executor_mode_t_ mode_) {
                 q_->m_next_task_ = task_->get_next_task();
                 ++q_->m_executing_count_;
             }
-            else if (mode_ != executor_mode_pool_) {
-                // All tasks are dispatched. Now wait for m_executing_count_ to hit 0.
-                // Tasks may enqueue subtasks before processing is considered done.
-                // This asserts the queue is still running.
-                q_->m_cond_var_completion_.wait(lk_, hxtask_wait_for_completion_(q_));
+            else {
+                // Nothing left for worker threads to do. The waiting threads still
+                // have work to do before they leave the main task loop.
 
-                // All tasks are now considered complete. The workers can be
-                // released if the queue is shutting down.
-                if (mode_ == executor_mode_stopping_) {
-                    q_->m_queue_run_level_ = run_level_stopped_;
-                    q_->m_cond_var_new_tasks_.notify_all();
+                if (mode_ != executor_mode_pool_) {
+                    // All tasks are dispatched. Now wait for m_executing_count_ to hit 0.
+                    // Tasks may enqueue subtasks before processing is considered done.
+                    // This asserts the queue is still running.
+                    q_->m_cond_var_completion_.wait(lk_, hxtask_wait_for_completion_(q_));
 
-                    // This should trigger a release assert in unexpected waiting threads.
-                    q_->m_cond_var_completion_.notify_all();
+                    // All tasks are now considered complete. The workers can be
+                    // released if the queue is shutting down.
+                    if (mode_ == executor_mode_stopping_) {
+                        q_->m_queue_run_level_ = run_level_stopped_;
+                        q_->m_cond_var_new_tasks_.notify_all();
+
+                        // This should trigger a release assert in unexpected waiting threads.
+                        q_->m_cond_var_completion_.notify_all();
+                    }
                 }
-
 				return;
 			}
 		}

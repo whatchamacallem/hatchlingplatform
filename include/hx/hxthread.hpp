@@ -23,13 +23,12 @@
 //     Condition variable wrapper for pthreads. Allows threads to wait for
 //     notifications, supports predicate-based waiting, and provides notify_one
 //     and notify_all methods. Not copyable. Asserts in debug and uses 2 bytes
-//     to track validity and last pthread error code.
+//     to track validity and last pthread error code otherwise.
 //
 // - hxthread
 //     Thread wrapper for pthreads. Provides thread creation, joining, and
 //     detaching. Ensures threads are not left joinable on destruction. Not copyable.
 //     Errors are threated as release mode asserts instead of being tracked.
-
 
 // hxmutex - std::mutex style wrapper for pthreads. Asserts on unexpected failure
 // by the posix api.
@@ -51,8 +50,7 @@ public:
         }
     }
 
-    // Locks the mutex.
-    // Returns true on success, false otherwise.
+    // Locks the mutex. Returns true on success, false otherwise.
     inline bool lock() {
         if (!m_valid_) return false;
         int last_error_ = pthread_mutex_lock(&m_mutex_);
@@ -61,8 +59,7 @@ public:
         return last_error_ == 0;
     }
 
-    // Unlocks the mutex.
-    // Returns true on success, false otherwise.
+    // Unlocks the mutex. Returns true on success, false otherwise.
     inline bool unlock() {
         if (!m_valid_) return false;
         int last_error_ = pthread_mutex_unlock(&m_mutex_);
@@ -97,14 +94,9 @@ private:
 // Locks the mutex on construction and unlocks on destruction.
 class hxunique_lock {
 public:
-    // Constructs and locks the given mutex.
-    inline explicit hxunique_lock(hxmutex& m_)
-            : m_mutex_(m_), m_owns_(false) {
-        lock();
-    }
     // Constructs with option to defer locking.
     // - defer_lock: If true, does not lock the mutex immediately.
-    inline hxunique_lock(hxmutex& m_, bool defer_lock_)
+    inline hxunique_lock(hxmutex& m_, bool defer_lock_=false)
             : m_mutex_(m_), m_owns_(false) {
         if (!defer_lock_) lock();
     }
@@ -157,9 +149,9 @@ public:
         }
     }
 
-    // Waits for the condition variable to be notified.
+    // Waits for the condition variable to be notified. Returns true on success,
+    // false otherwise.
     // - mutex: The mutex to use for waiting.
-    // Returns true on success, false otherwise.
     inline bool wait(hxmutex& mutex_) {
         if (!m_valid_ || !mutex_.valid()) { return false; };
 
@@ -169,9 +161,9 @@ public:
         return last_error_ == 0;
     }
 
-    // Overload: Waits using a hxunique_lock.
+    // Overload: Waits using a hxunique_lock. Returns true on success, false
+    // otherwise.
     // - lock: The unique lock to use for waiting.
-    // Returns true on success, false otherwise.
     inline bool wait(hxunique_lock& lock_) {
         return wait(lock_.mutex());
     }
@@ -186,8 +178,7 @@ public:
         }
     }
 
-    // Notifies one waiting thread.
-    // Returns true on success, false otherwise.
+    // Notifies one waiting thread. Returns true on success, false otherwise.
     inline bool notify_one() {
         if (!m_valid_) { return false; }
         int last_error_ = pthread_cond_signal(&m_cond_);
@@ -196,8 +187,7 @@ public:
         return last_error_ == 0;
     }
 
-    // Notifies all waiting threads.
-    // Returns true on success, false otherwise.
+    // Notifies all waiting threads. Returns true on success, false otherwise.
     inline bool notify_all() {
         if (!m_valid_) { return false; }
         int last_error_ = pthread_cond_broadcast(&m_cond_);
@@ -242,9 +232,9 @@ public:
     {}
 
     // Constructs and starts a thread with the given function and argument.
+    // Does not free arg.
     // - f: Thread function.
     // - arg: Argument to pass to the thread function.
-    // Does not free arg.
     inline explicit hxthread(thread_func_t f_, void* arg_)
             : m_started_(false), m_joined_(false)
 #if (HX_RELEASE) == 0
