@@ -36,14 +36,14 @@ public:
 	}
 
 	template<typename key_t>
-	void test(uint32_t size, uint32_t mask, key_t offset) {
+	void test_range_and_type(uint32_t size, uint32_t mask, key_t offset) {
 		hxmemory_allocator_scope temporary_stack(hxmemory_allocator_temporary_stack);
 
-		// Generate test data
+		// Generate test_range_and_type data
 		hxarray<test_object<key_t> > a;
 		generate<key_t>(a, size, mask, offset);
 
-		// Copy and sort test data
+		// Copy and sort test_range_and_type data
 		hxarray<test_object<key_t> > b(a);
 		::qsort(b.data(), b.size(), sizeof(test_object<key_t>), q_sort_compare<key_t>);
 
@@ -92,31 +92,31 @@ TEST_F(hxradix_sort_test, Null) {
 }
 
 TEST_F(hxradix_sort_test, Uint32) {
-	test<uint32_t>(20u, 0x7fu, 0u); // check insertion sort
-	test<uint32_t>(100u, 0x7fu, 0u);
-	test<uint32_t>(1000u, 0x7fffu, 0u);
-	test<uint32_t>(10000u, ~(uint32_t)0, 0u);
+	test_range_and_type<uint32_t>(20u, 0x7fu, 0u); // check insertion sort
+	test_range_and_type<uint32_t>(100u, 0x7fu, 0u);
+	test_range_and_type<uint32_t>(1000u, 0x7fffu, 0u);
+	test_range_and_type<uint32_t>(10000u, ~(uint32_t)0, 0u);
 }
 
 TEST_F(hxradix_sort_test, Int32) {
-	test<int32_t>(20u, 0x7fu, 0x3f); // check insertion sort
-	test<int32_t>(100u, 0x7fu, 0x3f);
-	test<int32_t>(1000u, 0x7fffu, 0x3fff);
-	test<int32_t>(10000u, ~(uint32_t)0, 0);
+	test_range_and_type<int32_t>(20u, 0x7fu, 0x3f); // check insertion sort
+	test_range_and_type<int32_t>(100u, 0x7fu, 0x3f);
+	test_range_and_type<int32_t>(1000u, 0x7fffu, 0x3fff);
+	test_range_and_type<int32_t>(10000u, ~(uint32_t)0, 0);
 }
 
 TEST_F(hxradix_sort_test, Float) {
-	test<float>(200u, 0x7fu, (float)0x3f); // check insertion sort
-	test<float>(100u, 0x7fu, (float)0x3f);
-	test<float>(1000u, 0x7fffu, (float)0x3fff);
-	test<float>(10000u, ~(uint32_t)0, 0.0f);
+	test_range_and_type<float>(200u, 0x7fu, (float)0x3f); // check insertion sort
+	test_range_and_type<float>(100u, 0x7fu, (float)0x3f);
+	test_range_and_type<float>(1000u, 0x7fffu, (float)0x3fff);
+	test_range_and_type<float>(10000u, ~(uint32_t)0, 0.0f);
 }
 
 TEST_F(hxradix_sort_test, Types) {
-	test<uint8_t>(100u, 0x7fu, 0x3fu);
-	test<int8_t>(100u, 0x7fu, 0x3f);
-	test<uint16_t>(100u, 0x7fu, 0x3fu);
-	test<int16_t>(100u, 0x7fu, 0x3f);
+	test_range_and_type<uint8_t>(100u, 0x7fu, 0x3fu);
+	test_range_and_type<int8_t>(100u, 0x7fu, 0x3f);
+	test_range_and_type<uint16_t>(100u, 0x7fu, 0x3fu);
+	test_range_and_type<int16_t>(100u, 0x7fu, 0x3f);
 }
 
 static int hxsort_compare_test(const int a, const int b) {

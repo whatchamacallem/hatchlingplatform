@@ -183,7 +183,6 @@ TEST(hxthread, StartAndJoin) {
     hxthread_test_simple_parameters_t_ argument_ = {&mutex_, &shared_};
     hxthread thread_(&hxthread_test_func_increment_, &argument_);
     EXPECT_TRUE(thread_.joinable());
-    EXPECT_TRUE(thread_.native_handle());
     thread_.join();
     EXPECT_FALSE(thread_.joinable());
     EXPECT_EQ(shared_, 1);
