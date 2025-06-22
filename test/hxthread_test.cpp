@@ -82,19 +82,9 @@ TEST(hxmutex, DoubleLockUnlock) {
     EXPECT_TRUE(mutex_.valid());
 }
 
-TEST(hxmutex, LastErrorInitiallyZero) {
-    hxmutex mutex_;
-    EXPECT_EQ(mutex_.last_error(), 0);
-}
-
 TEST(hxmutex, NativeHandleNotNull) {
     hxmutex mutex_;
     EXPECT_TRUE(mutex_.native_handle() != hxnull);
-}
-
-TEST(hxmutex, UnlockWithoutLock) {
-    hxmutex mutex_;
-    EXPECT_TRUE(mutex_.unlock() == false);
 }
 
 TEST(hxunique_lock, BasicLockUnlock) {
@@ -140,11 +130,6 @@ TEST(hxcondition_variable, NotifyNoWaiters) {
     EXPECT_TRUE(condition_variable_.valid());
     EXPECT_TRUE(condition_variable_.notify_one());
     EXPECT_TRUE(condition_variable_.notify_all());
-}
-
-TEST(hxcondition_variable, LastErrorInitiallyZero) {
-    hxcondition_variable condition_variable_;
-    EXPECT_EQ(condition_variable_.last_error(), 0);
 }
 
 TEST(hxcondition_variable, NativeHandleNotNull) {

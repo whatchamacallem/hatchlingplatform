@@ -33,13 +33,13 @@
 //     Errors are threated as release mode asserts instead of being tracked.
 
 // hxmutex - std::mutex style wrapper for pthreads. Asserts on unexpected failure
-// by the posix api.
+// by the posix api. Currently default pthread behavior. That means non-recursive,
+// no error-checking and no translation layer.
 class hxmutex {
 public:
     // Constructs a mutex and initializes it.
-    inline hxmutex() : m_last_error_(0), m_valid_(false) {
+    inline hxmutex() : m_valid_(false) {
         int last_error_ = pthread_mutex_init(&m_mutex_, 0);
-        m_last_error_ = (unsigned char)last_error_;
         m_valid_ = last_error_ == 0;
         hxassertmsg(last_error_ == 0, "pthread_mutex_init %d", last_error_);
     }
@@ -48,34 +48,31 @@ public:
     inline ~hxmutex() {
         if (m_valid_) {
             int last_error_ = pthread_mutex_destroy(&m_mutex_);
-            hxassertmsg(last_error_ == 0, "pthread_mutex_destroy %d",last_error_ ); (void)last_error_;
+            hxassertmsg(last_error_ == 0, "pthread_mutex_destroy %d",last_error_ );
+            (void)last_error_;
         }
     }
 
     // Locks the mutex. Returns true on success, false otherwise.
     inline bool lock() {
-        if (!m_valid_) return false;
+        hxassertmsg(m_valid_, "threading error");
         int last_error_ = pthread_mutex_lock(&m_mutex_);
-        m_last_error_ = (unsigned char)last_error_;
         hxassertmsg(last_error_ == 0, "pthread_mutex_lock %d", last_error_);
         return last_error_ == 0;
     }
 
-    // Unlocks the mutex. Returns true on success, false otherwise.
+    // Unlocks the mutex. Returns true on success, false otherwise. It is
+    // undefined if you unlock a mutex that you have not locked and such
+    // an operation may succeed.
     inline bool unlock() {
-        if (!m_valid_) return false;
+        hxassertmsg(m_valid_, "threading error");
         int last_error_ = pthread_mutex_unlock(&m_mutex_);
-        m_last_error_ = (unsigned char)last_error_;
         hxassertmsg(last_error_ == 0, "pthread_mutex_unlock %d", last_error_);
         return last_error_ == 0;
     }
 
     // Returns a pointer to the native pthread mutex handle.
     inline pthread_mutex_t* native_handle() { return &m_mutex_; }
-
-    // Returns the last error code from a mutex operation. Assumes the code
-    // was less than 255.
-    inline int last_error() const { return (int)m_last_error_; }
 
     // Returns true if the mutex was successfully initialized.
     inline bool valid() const { return m_valid_; }
@@ -87,8 +84,6 @@ private:
     hxmutex& operator=(const hxmutex&) hxdelete_fn;
 
 	pthread_mutex_t m_mutex_;
-    // 2 bytes overhead for debugging in release.
-    unsigned char m_last_error_  ;
     bool m_valid_;
 };
 
@@ -100,15 +95,21 @@ public:
     // - defer_lock: If true, does not lock the mutex immediately.
     inline hxunique_lock(hxmutex& m_, bool defer_lock_=false)
             : m_mutex_(m_), m_owns_(false) {
-        if (!defer_lock_) lock();
+        if (!defer_lock_) {
+            lock();
+        }
     }
     // Unlocks the mutex if owned.
     inline ~hxunique_lock() {
-        if (m_owns_) unlock();
+        if (m_owns_) {
+            unlock();
+        }
     }
     // Locks the mutex if not already locked.
     inline void lock() {
-        if (!m_owns_) m_owns_ = m_mutex_.lock();
+        if (!m_owns_) {
+            m_owns_ = m_mutex_.lock();
+        }
     }
     // Unlocks the mutex if owned.
     inline void unlock() {
@@ -117,8 +118,10 @@ public:
             m_owns_ = false;
         }
     }
+
     // Returns true if the lock owns the mutex.
     inline bool owns_lock() const { return m_owns_; }
+
     // Returns a reference to the associated mutex.
     inline hxmutex& mutex() { return m_mutex_; }
 
@@ -136,18 +139,18 @@ private:
 class hxcondition_variable {
 public:
     // Constructs and initializes the condition variable.
-    inline hxcondition_variable() : m_last_error_(0), m_valid_(false) {
+    inline hxcondition_variable() : m_valid_(false) {
         int last_error_ = pthread_cond_init(&m_cond_, 0);
-        m_last_error_ = (unsigned char)last_error_;
         m_valid_ = last_error_ == 0;
-        hxassertmsg(last_error_ == 0, "pthread_cond_init %d", last_error_);
+        hxassertmsg(m_valid_, "pthread_cond_init %d", last_error_);
     }
 
     // Destroys the condition variable if valid.
     inline ~hxcondition_variable() {
         if (m_valid_) {
             int last_error_ = pthread_cond_destroy(&m_cond_);
-            hxassertmsg(last_error_ == 0, "pthread_cond_destroy %d", last_error_); (void)last_error_;
+            hxassertmsg(last_error_ == 0, "pthread_cond_destroy %d", last_error_);
+            (void)last_error_;
         }
     }
 
@@ -155,10 +158,8 @@ public:
     // false otherwise.
     // - mutex: The mutex to use for waiting.
     inline bool wait(hxmutex& mutex_) {
-        if (!m_valid_ || !mutex_.valid()) { return false; };
-
+        hxassertmsg(m_valid_ && mutex_.valid(), "threading error");
         int last_error_ = pthread_cond_wait(&m_cond_, mutex_.native_handle());
-        m_last_error_ = (unsigned char)last_error_;
         hxassertmsg(last_error_ == 0, "pthread_cond_init %d", last_error_);
         return last_error_ == 0;
     }
@@ -182,28 +183,22 @@ public:
 
     // Notifies one waiting thread. Returns true on success, false otherwise.
     inline bool notify_one() {
-        if (!m_valid_) { return false; }
+        hxassertmsg(m_valid_, "threading error");
         int last_error_ = pthread_cond_signal(&m_cond_);
-        m_last_error_ = (unsigned char)last_error_;
         hxassertmsg(last_error_ == 0, "pthread_cond_init %d", last_error_);
         return last_error_ == 0;
     }
 
     // Notifies all waiting threads. Returns true on success, false otherwise.
     inline bool notify_all() {
-        if (!m_valid_) { return false; }
+        hxassertmsg(m_valid_, "threading error");
         int last_error_ = pthread_cond_broadcast(&m_cond_);
-        m_last_error_ = (unsigned char)last_error_;
         hxassertmsg(last_error_ == 0, "pthread_cond_init %d", last_error_);
         return last_error_ == 0;
     }
 
     // Returns a pointer to the native pthread condition variable handle.
     inline pthread_cond_t* native_handle() { return &m_cond_; }
-
-    // Returns the last error code from a condition variable operation.
-    // Assumes the code was less than 255.
-    inline int last_error() const { return m_last_error_; }
 
     // Returns true if the condition variable was successfully initialized.
     inline bool valid() const { return m_valid_; }
@@ -215,7 +210,6 @@ private:
     hxcondition_variable& operator=(const hxcondition_variable&) hxdelete_fn;
 
 	pthread_cond_t m_cond_;
-    unsigned char m_last_error_  ;
     bool m_valid_;
 };
 
