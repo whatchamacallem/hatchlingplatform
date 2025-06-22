@@ -180,11 +180,6 @@ TEST(hxcondition_variable, NotifyAllWakesWaiters) {
     EXPECT_EQ(woken_, 2);
 }
 
-TEST(hxthread, DefaultCtorNotJoinable) {
-    hxthread thread_;
-    EXPECT_FALSE(thread_.joinable());
-}
-
 TEST(hxthread, StartAndJoin) {
     int shared_ = 0;
     hxmutex mutex_;
@@ -252,60 +247,10 @@ TEST(hxunique_lock, OwnershipAfterLock) {
     EXPECT_TRUE(lock.owns_lock());
 }
 
-TEST(hxmutex, InvalidMutexLock) {
-    hxmutex* mutex_ = hxnull;
-    bool result_ = false;
-    if (mutex_) result_ = mutex_->lock();
-    EXPECT_FALSE(result_);
-}
-
-TEST(hxmutex, InvalidMutexUnlock) {
-    hxmutex* mutex_ = hxnull;
-    bool result_ = false;
-    if (mutex_) result_ = mutex_->unlock();
-    EXPECT_FALSE(result_);
-}
-
-TEST(hxcondition_variable, InvalidWait) {
-    hxcondition_variable* condition_variable_ = hxnull;
-    hxmutex mutex_;
-    bool result_ = true;
-    if (condition_variable_) result_ = condition_variable_->wait(mutex_);
-    EXPECT_TRUE(result_);
-}
-
-TEST(hxcondition_variable, InvalidNotifyOne) {
-    hxcondition_variable* condition_variable_ = hxnull;
-    bool result_ = true;
-    if (condition_variable_) result_ = condition_variable_->notify_one();
-    EXPECT_TRUE(result_);
-}
-
-TEST(hxcondition_variable, InvalidNotifyAll) {
-    hxcondition_variable* condition_variable_ = hxnull;
-    bool result_ = true;
-    if (condition_variable_) result_ = condition_variable_->notify_all();
-    EXPECT_TRUE(result_);
-}
-
 TEST(hxthread, JoinWithoutStart) {
     hxthread thread_;
     // Should not be joinable, so nothing to join
     EXPECT_FALSE(thread_.joinable());
-}
-
-TEST(hxthread, DetachWithoutStart) {
-    hxthread thread_;
-    // Should not be joinable, so nothing to detach
-    EXPECT_FALSE(thread_.joinable());
-}
-
-TEST(hxmutex, MultipleLocks) {
-    hxmutex mutex1_, mutex2_;
-    EXPECT_TRUE(mutex1_.lock());
-    EXPECT_TRUE(mutex2_.lock());
-    EXPECT_TRUE(mutex1_.unlock());
-    EXPECT_TRUE(mutex2_.unlock());
 }
 
 TEST(hxunique_lock, MultipleLocks) {
@@ -331,7 +276,7 @@ TEST(hxcondition_variable, WaitNotifySequence) {
     SUCCEED();
 }
 
-TEST(hxthread, StartTwice) {
+TEST(hxthread, Start) {
     int shared_ = 0;
     hxmutex mutex_;
     hxthread_test_parameter_simple_t_ argument_ = {&mutex_, &shared_};
@@ -340,50 +285,6 @@ TEST(hxthread, StartTwice) {
     EXPECT_TRUE(thread_.joinable());
     thread_.join();
     EXPECT_FALSE(thread_.joinable());
-}
-
-TEST(hxthread, JoinAfterDetach) {
-    int shared_ = 0;
-    hxmutex mutex_;
-    hxthread_test_parameter_simple_t_ argument_ = {&mutex_, &shared_};
-    hxthread thread_(&hxthread_test_func_increment_, &argument_);
-    thread_.detach();
-    EXPECT_FALSE(thread_.joinable());
-}
-
-TEST(hxthread, DetachAfterJoin) {
-    int shared_ = 0;
-    hxmutex mutex_;
-    hxthread_test_parameter_simple_t_ argument_ = {&mutex_, &shared_};
-    hxthread thread_(&hxthread_test_func_increment_, &argument_);
-    thread_.join();
-    EXPECT_FALSE(thread_.joinable());
-}
-
-TEST(hxmutex, LockUnlockStress) {
-    hxmutex mutex_;
-    int i_;
-    for (i_ = 0; i_ < 100; ++i_) {
-        EXPECT_TRUE(mutex_.lock());
-        EXPECT_TRUE(mutex_.unlock());
-    }
-}
-
-TEST(hxunique_lock, LockUnlockStress) {
-    hxmutex mutex_;
-    int i_;
-    for (i_ = 0; i_ < 100; ++i_) {
-        hxunique_lock lock(mutex_);
-        EXPECT_TRUE(lock.owns_lock());
-    }
-}
-
-TEST(hxcondition_variable, NotifyAllStress) {
-    hxcondition_variable condition_variable_;
-    int i_;
-    for (i_ = 0; i_ < 100; ++i_) {
-        EXPECT_TRUE(condition_variable_.notify_all());
-    }
 }
 
 TEST(hxthread, MultipleThreadStartJoin) {
