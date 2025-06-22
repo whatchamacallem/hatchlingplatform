@@ -41,6 +41,7 @@
         "multiset",
         "printhashes",
         "pthread",
+        "qwertyuiopasdfghjklzxcvbnm",
         "RAII",
         "rdcycle",
         "rdtsc",

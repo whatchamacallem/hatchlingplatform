@@ -56,7 +56,7 @@
 
 #include <hx/hatchling.h>
 
-// HX_USE_GOOGLE_TEST - Enable this to use Google Test instead of hxtest_suite_executor_.
+// HX_USE_GOOGLE_TEST - Enable this to use Google Test instead of hxtest_suite_dispatcher_.
 #if HX_USE_GOOGLE_TEST
 #include <gtest/gtest.h>
 #else // !HX_USE_GOOGLE_TEST
@@ -107,7 +107,7 @@ hxconstexpr_fn void InitGoogleTest() { }
 #define TEST(suite_name_, case_name_) \
     class HX_TEST_NAME_(hxtest_, suite_name_, case_name_) : public hxtest_case_interface_ { \
     public: \
-        HX_TEST_NAME_(hxtest_, suite_name_, case_name_)(void) { hxtest_suite_executor_::singleton_().add_test_(this); } \
+        HX_TEST_NAME_(hxtest_, suite_name_, case_name_)(void) { hxtest_suite_dispatcher_::singleton_().add_test_(this); } \
         virtual void run_(void) hxoverride; \
         virtual const char* suite_(void) hxoverride { return #suite_name_; } \
         virtual const char* case_(void) hxoverride { return #case_name_; } \
@@ -123,67 +123,67 @@ hxconstexpr_fn void InitGoogleTest() { }
 #define TEST_F(suite_name_, case_name_) \
     class HX_TEST_NAME_(hxtest_, suite_name_, case_name_) : public hxtest_case_interface_ { \
     public: \
-        class hxtest_case_executor_ : public suite_name_ { virtual void run_code_(void) hxoverride; }; \
-        HX_TEST_NAME_(hxtest_, suite_name_, case_name_)(void) { hxtest_suite_executor_::singleton_().add_test_(this); } \
-        virtual void run_(void) hxoverride { hxtest_case_executor_ executor_; executor_.run_(); } \
+        class hxtest_case_dispatcher_ : public suite_name_ { virtual void run_code_(void) hxoverride; }; \
+        HX_TEST_NAME_(hxtest_, suite_name_, case_name_)(void) { hxtest_suite_dispatcher_::singleton_().add_test_(this); } \
+        virtual void run_(void) hxoverride { hxtest_case_dispatcher_ dispatcher_; dispatcher_.run_(); } \
         virtual const char* suite_(void) hxoverride { return #suite_name_; } \
         virtual const char* case_(void) hxoverride { return #case_name_; } \
         virtual const char* file_(void) hxoverride { return __FILE__; } \
         virtual size_t line_(void) hxoverride { return __LINE__; } \
     } static HX_TEST_NAME_(s_hxtest, suite_name_, case_name_); \
-    void HX_TEST_NAME_(hxtest_, suite_name_, case_name_)::hxtest_case_executor_::run_code_(void)
+    void HX_TEST_NAME_(hxtest_, suite_name_, case_name_)::hxtest_case_dispatcher_::run_code_(void)
 
 // int RUN_ALL_TESTS() - Executes all registered test cases.
-#define RUN_ALL_TESTS() hxtest_suite_executor_::singleton_().execute_all_tests_()
+#define RUN_ALL_TESTS() hxtest_suite_dispatcher_::singleton_().execute_all_tests_()
 
 // void SUCCEED() - Marks the current test as successful without any checks.
-#define SUCCEED() hxtest_suite_executor_::singleton_().condition_check_(true, __FILE__, __LINE__, hxnull, false)
+#define SUCCEED() hxtest_suite_dispatcher_::singleton_().condition_check_(true, __FILE__, __LINE__, hxnull, false)
 
 // void FAIL() - Marks the current test as failed.
-#define FAIL() hxtest_suite_executor_::singleton_().condition_check_(false, __FILE__, __LINE__, "FAIL()", false)
+#define FAIL() hxtest_suite_dispatcher_::singleton_().condition_check_(false, __FILE__, __LINE__, "FAIL()", false)
 
 // void EXPECT_TRUE(bool) - Checks that the condition is true.
-#define EXPECT_TRUE(x_) hxtest_suite_executor_::singleton_().condition_check_((x_), __FILE__, __LINE__, #x_, false)
+#define EXPECT_TRUE(x_) hxtest_suite_dispatcher_::singleton_().condition_check_((x_), __FILE__, __LINE__, #x_, false)
 // void EXPECT_FALSE(bool) - Checks that the condition is false.
-#define EXPECT_FALSE(x_) hxtest_suite_executor_::singleton_().condition_check_(!(x_), __FILE__, __LINE__, "!" #x_, false)
+#define EXPECT_FALSE(x_) hxtest_suite_dispatcher_::singleton_().condition_check_(!(x_), __FILE__, __LINE__, "!" #x_, false)
 
 // void EXPECT_NEAR(T expected, T actual, T absolute_range) - Checks that two values are within a given range.
-#define EXPECT_NEAR(expected_, actual_, absolute_range_) hxtest_suite_executor_::singleton_().condition_check_( \
+#define EXPECT_NEAR(expected_, actual_, absolute_range_) hxtest_suite_dispatcher_::singleton_().condition_check_( \
     (((expected_) < (actual_)) ? ((actual_)-(expected_)) : ((expected_)-(actual_))) <= (absolute_range_), \
     __FILE__, __LINE__, "abs(" #expected_ "-" #actual_ ") <= " #absolute_range_, false)
 // void EXPECT_LT(T lhs, T rhs) - Checks lhs < rhs.
-#define EXPECT_LT(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_((lhs_) < (rhs_), __FILE__, __LINE__, #lhs_ " < " #rhs_, false)
+#define EXPECT_LT(lhs_, rhs_) hxtest_suite_dispatcher_::singleton_().condition_check_((lhs_) < (rhs_), __FILE__, __LINE__, #lhs_ " < " #rhs_, false)
 // void EXPECT_GT(T lhs, T rhs) - Checks lhs > rhs.
-#define EXPECT_GT(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_((rhs_) < (lhs_), __FILE__, __LINE__, #lhs_ " > " #rhs_, false)
+#define EXPECT_GT(lhs_, rhs_) hxtest_suite_dispatcher_::singleton_().condition_check_((rhs_) < (lhs_), __FILE__, __LINE__, #lhs_ " > " #rhs_, false)
 // void EXPECT_LE(T lhs, T rhs) - Checks lhs <= rhs.
-#define EXPECT_LE(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_(!((rhs_) < (lhs_)), __FILE__, __LINE__, #lhs_ " <= " #rhs_, false)
+#define EXPECT_LE(lhs_, rhs_) hxtest_suite_dispatcher_::singleton_().condition_check_(!((rhs_) < (lhs_)), __FILE__, __LINE__, #lhs_ " <= " #rhs_, false)
 // void EXPECT_GE(T lhs, T rhs) - Checks lhs >= rhs.
-#define EXPECT_GE(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_(!((lhs_) < (rhs_)), __FILE__, __LINE__, #lhs_ " >= " #rhs_, false)
+#define EXPECT_GE(lhs_, rhs_) hxtest_suite_dispatcher_::singleton_().condition_check_(!((lhs_) < (rhs_)), __FILE__, __LINE__, #lhs_ " >= " #rhs_, false)
 // void EXPECT_EQ(T lhs, T rhs) - Checks lhs == rhs.
-#define EXPECT_EQ(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_((lhs_) == (rhs_), __FILE__, __LINE__, #lhs_ " == " #rhs_, false)
+#define EXPECT_EQ(lhs_, rhs_) hxtest_suite_dispatcher_::singleton_().condition_check_((lhs_) == (rhs_), __FILE__, __LINE__, #lhs_ " == " #rhs_, false)
 // void EXPECT_NE(T lhs, T rhs) - Checks lhs != rhs.
-#define EXPECT_NE(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_(!((lhs_) == (rhs_)), __FILE__, __LINE__, #lhs_ " != " #rhs_, false)
+#define EXPECT_NE(lhs_, rhs_) hxtest_suite_dispatcher_::singleton_().condition_check_(!((lhs_) == (rhs_)), __FILE__, __LINE__, #lhs_ " != " #rhs_, false)
 
 // void ASSERT_TRUE(bool) - Asserts that the condition is true.
-#define ASSERT_TRUE(x_) hxtest_suite_executor_::singleton_().condition_check_((x_), __FILE__, __LINE__, #x_, true)
+#define ASSERT_TRUE(x_) hxtest_suite_dispatcher_::singleton_().condition_check_((x_), __FILE__, __LINE__, #x_, true)
 // void ASSERT_FALSE(bool) - Asserts that the condition is false.
-#define ASSERT_FALSE(x_) hxtest_suite_executor_::singleton_().condition_check_(!(x_), __FILE__, __LINE__, "!" #x_, true)
+#define ASSERT_FALSE(x_) hxtest_suite_dispatcher_::singleton_().condition_check_(!(x_), __FILE__, __LINE__, "!" #x_, true)
 
 // void ASSERT_NEAR(T expected, T actual, T absolute_range) - Asserts that two values are within a given range.
-#define ASSERT_NEAR(expected_, actual_, absolute_range_) hxtest_suite_executor_::singleton_().condition_check_( \
+#define ASSERT_NEAR(expected_, actual_, absolute_range_) hxtest_suite_dispatcher_::singleton_().condition_check_( \
     (((expected_) < (actual_)) ? ((actual_)-(expected_)) : ((expected_)-(actual_))) <= (absolute_range_), \
     __FILE__, __LINE__, "abs(" #expected_ "-" #actual_ ") <= " #absolute_range_, true)
 // void ASSERT_LT(T lhs, T rhs) - Asserts lhs < rhs.
-#define ASSERT_LT(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_((lhs_) < (rhs_), __FILE__, __LINE__, #lhs_ " < " #rhs_, true)
+#define ASSERT_LT(lhs_, rhs_) hxtest_suite_dispatcher_::singleton_().condition_check_((lhs_) < (rhs_), __FILE__, __LINE__, #lhs_ " < " #rhs_, true)
 // void ASSERT_GT(T lhs, T rhs) - Asserts lhs > rhs.
-#define ASSERT_GT(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_((rhs_) < (lhs_), __FILE__, __LINE__, #lhs_ " > " #rhs_, true)
+#define ASSERT_GT(lhs_, rhs_) hxtest_suite_dispatcher_::singleton_().condition_check_((rhs_) < (lhs_), __FILE__, __LINE__, #lhs_ " > " #rhs_, true)
 // void ASSERT_LE(T lhs, T rhs) - Asserts lhs <= rhs.
-#define ASSERT_LE(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_(!((rhs_) < (lhs_)), __FILE__, __LINE__, #lhs_ " <= " #rhs_, true)
+#define ASSERT_LE(lhs_, rhs_) hxtest_suite_dispatcher_::singleton_().condition_check_(!((rhs_) < (lhs_)), __FILE__, __LINE__, #lhs_ " <= " #rhs_, true)
 // void ASSERT_GE(T lhs, T rhs) - Asserts lhs >= rhs.
-#define ASSERT_GE(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_(!((lhs_) < (rhs_)), __FILE__, __LINE__, #lhs_ " >= " #rhs_, true)
+#define ASSERT_GE(lhs_, rhs_) hxtest_suite_dispatcher_::singleton_().condition_check_(!((lhs_) < (rhs_)), __FILE__, __LINE__, #lhs_ " >= " #rhs_, true)
 // void ASSERT_EQ(T lhs, T rhs) - Asserts lhs == rhs.
-#define ASSERT_EQ(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_((lhs_) == (rhs_), __FILE__, __LINE__, #lhs_ " == " #rhs_, true)
+#define ASSERT_EQ(lhs_, rhs_) hxtest_suite_dispatcher_::singleton_().condition_check_((lhs_) == (rhs_), __FILE__, __LINE__, #lhs_ " == " #rhs_, true)
 // void ASSERT_NE(T lhs, T rhs) - Asserts lhs != rhs.
-#define ASSERT_NE(lhs_, rhs_) hxtest_suite_executor_::singleton_().condition_check_(!((lhs_) == (rhs_)), __FILE__, __LINE__, #lhs_ " != " #rhs_, true)
+#define ASSERT_NE(lhs_, rhs_) hxtest_suite_dispatcher_::singleton_().condition_check_(!((lhs_) == (rhs_)), __FILE__, __LINE__, #lhs_ " != " #rhs_, true)
 
 #endif // !HX_USE_GOOGLE_TEST

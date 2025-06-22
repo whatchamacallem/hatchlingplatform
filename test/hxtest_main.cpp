@@ -11,20 +11,20 @@
 HX_REGISTER_FILENAME_HASH
 
 // Run all the C tests.
-TEST(hxctest, All_tests) {
+TEST(hxctest, all_tests) {
 	EXPECT_TRUE(hxctest_all());
 }
 
 // These two tests test the test framework by failing.
 #if HX_TEST_ERROR_HANDLING
-TEST(hxdeath_test, Fail) {
+TEST(hxdeath_test, fail) {
 	hxlog("test_expecting_asserts:\n");
 	SUCCEED();
 	for (int i = 10; i--;) {
 		FAIL() << "this message is intentionally blank.\n";
 	}
 }
-TEST(hxdeath_test, Nothing_asserted) {
+TEST(hxdeath_test, nothing_asserted) {
 	hxlog("test_expecting_assert:\n");
 }
 #endif

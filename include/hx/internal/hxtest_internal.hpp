@@ -17,7 +17,7 @@ public:
 	virtual size_t line_() = 0;
 };
 
-class hxtest_suite_executor_ {
+class hxtest_suite_dispatcher_ {
 public:
 	enum test_state_t_ {
 		test_state_nothing_asserted_,
@@ -34,9 +34,9 @@ public:
 	};
 
 	// Ensures constructor runs before tests are registered by global constructors.
-	static hxtest_suite_executor_& singleton_() { static hxtest_suite_executor_ s_hxtest_runner; return s_hxtest_runner; }
+	static hxtest_suite_dispatcher_& singleton_() { static hxtest_suite_dispatcher_ s_hxtest_runner; return s_hxtest_runner; }
 
-	hxtest_suite_executor_() {
+	hxtest_suite_dispatcher_() {
 		m_search_term_string_literal_ = hxnull;
 		m_num_factories_ = 0;
 		m_current_test_ = hxnull;
@@ -152,8 +152,8 @@ private:
 	hxfile& file_null_() { static hxfile f_(hxfile::out | hxfile::failable); return f_; }
 	hxfile& file_log_()  { static hxfile f_(hxfile::out | hxfile::stdio); return f_; }
 
-	hxtest_suite_executor_(const hxtest_suite_executor_&) hxdelete_fn;
-	void operator=(const hxtest_suite_executor_&) hxdelete_fn;
+	hxtest_suite_dispatcher_(const hxtest_suite_dispatcher_&) hxdelete_fn;
+	void operator=(const hxtest_suite_dispatcher_&) hxdelete_fn;
 
 	const char* m_search_term_string_literal_;
 	hxtest_case_interface_* m_factories_[hxtest_max_cases];

@@ -9,7 +9,7 @@ HX_REGISTER_FILENAME_HASH
 // macros. Memory corruption sounds fatal so sure why not. Some of these tests
 // are designed to fail and use EXPECT_ for those specific tests.
 
-TEST(hxmemory_manager_test_f, Bytes) {
+TEST(hxmemory_manager_test_f, bytes) {
 	for(size_t i=0u; i<10u; ++i) {
 		void* p = hxmalloc(i);
 		ASSERT_TRUE(p != hxnull);
@@ -18,14 +18,14 @@ TEST(hxmemory_manager_test_f, Bytes) {
 	}
 }
 
-TEST(hxmemory_manager_test_f, String_duplicate_null) {
+TEST(hxmemory_manager_test_f, string_duplicate_null) {
 	// duplicating a null string is null.
 	void* p = hxstring_duplicate(hxnull);
 	ASSERT_TRUE(p == hxnull);
 	hxfree(hxnull);
 }
 
-TEST(hxmemory_manager_test_f, String_duplicate) {
+TEST(hxmemory_manager_test_f, string_duplicate) {
 	char* p = hxstring_duplicate("str");
 	ASSERT_TRUE(p != hxnull);
 	ASSERT_TRUE(::strcmp(p, "str") == 0);
@@ -146,7 +146,7 @@ public:
 	}
 };
 
-TEST_F(hxmemory_manager_test, Execute) {
+TEST_F(hxmemory_manager_test, execute) {
 	// The API should still work while stubbed out.
 	for (size_t i = 0; i < hxmemory_allocator_current; ++i) {
 		test_memory_allocator_normal((hxmemory_allocator)i);
@@ -160,7 +160,7 @@ TEST_F(hxmemory_manager_test, Execute) {
 #endif
 }
 
-TEST_F(hxmemory_manager_test, Temp_overflow) {
+TEST_F(hxmemory_manager_test, temp_overflow) {
 	// there is no policy against using the debug heap in release
 	void* p = hxmalloc_ext(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1, hxmemory_allocator_temporary_stack, 0u);
 	ASSERT_TRUE(p != hxnull);

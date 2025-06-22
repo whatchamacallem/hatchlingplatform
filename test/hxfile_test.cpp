@@ -24,7 +24,7 @@ public:
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
 #endif
 
-TEST_F(hxfile_test, Empty_name) {
+TEST_F(hxfile_test, empty_name) {
 	hxfile f(hxfile::in | hxfile::failable, "");
 	EXPECT_EQ(f.good(), false);
 	EXPECT_EQ(f.is_open(), false);
@@ -34,7 +34,7 @@ TEST_F(hxfile_test, Empty_name) {
 #pragma GCC diagnostic pop
 #endif
 
-TEST_F(hxfile_test, Read_write) {
+TEST_F(hxfile_test, read_write) {
 	hxfile f(hxfile::in | hxfile::out | hxfile::failable, "hxfile_test_read_write.txt");
 	f << "hxfile_test_read_write.txt";
 
@@ -42,14 +42,14 @@ TEST_F(hxfile_test, Read_write) {
 	EXPECT_EQ(f.is_open(), true);
 }
 
-TEST_F(hxfile_test, Not_exist) {
+TEST_F(hxfile_test, not_exist) {
 	hxfile f(hxfile::in | hxfile::failable, "test_file_does_not_exist_%d", 123);
 	EXPECT_EQ(f.good(), false);
 	EXPECT_EQ(f.is_open(), false);
 	EXPECT_EQ((bool)(f.mode() & hxfile::failable), true);
 }
 
-TEST_F(hxfile_test, Operators) {
+TEST_F(hxfile_test, operators) {
 	hxfile f(hxfile::out | hxfile::failable, "hxfile_test_operators.bin");
 	test_t_ x;
 	int a = -3;

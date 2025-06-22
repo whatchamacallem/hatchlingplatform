@@ -36,18 +36,18 @@ private:
     hxtask* m_next_task_;
 
 #if HX_USE_THREADS
-    enum executor_mode_t_ {
-        executor_mode_pool_,
-        executor_mode_waiting_,
-        executor_mode_stopping_
+    enum thread_mode_t_ {
+        thread_mode_pool_,
+        thread_mode_waiting_,
+        thread_mode_stopping_
     };
     enum run_level_t_ {
         run_level_running_ = (uint32_t)0x00c0ffee,
         run_level_stopped_ = (uint32_t)0xdeadbeef
     };
 
-    static void* executor_thread_entry_(hxtask_queue* q_);
-    static void executor_thread_(hxtask_queue* q_, executor_mode_t_ mode_);
+    static void* thread_task_loop_entry_(hxtask_queue* q_);
+    static void thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_);
 
     run_level_t_ m_queue_run_level_;
     int32_t m_thread_pool_size_;

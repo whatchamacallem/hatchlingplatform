@@ -5,7 +5,7 @@
 
 HX_REGISTER_FILENAME_HASH
 
-TEST(hxstring_hash_test, Equality) {
+TEST(hxstring_hash_test, equality) {
 	uint32_t hash1 = hxstring_literal_hash("");
 	uint32_t hash2 = hxstring_literal_hash("abc");
 	uint32_t hash3 = hxstring_literal_hash(

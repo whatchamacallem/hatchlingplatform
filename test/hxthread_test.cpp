@@ -72,7 +72,7 @@ void* hxthread_test_func_wait_notify_sequence(hxthread_test_parameters_t_* param
 
 } // using hxx_
 
-TEST(hxunique_lock, BasicLockUnlock) {
+TEST(hxunique_lock, basic_lock_unlock) {
     hxmutex mutex_;
     hxunique_lock lock(mutex_);
     EXPECT_TRUE(lock.owns_lock());
@@ -80,7 +80,7 @@ TEST(hxunique_lock, BasicLockUnlock) {
     EXPECT_FALSE(lock.owns_lock());
 }
 
-TEST(hxmutex, DoubleLockUnlock) {
+TEST(hxmutex, double_lock_unlock) {
     hxmutex mutex_;
     EXPECT_TRUE(mutex_.lock());
     EXPECT_TRUE(mutex_.unlock());
@@ -88,12 +88,12 @@ TEST(hxmutex, DoubleLockUnlock) {
     EXPECT_TRUE(mutex_.unlock());
 }
 
-TEST(hxmutex, NativeHandleNotNull) {
+TEST(hxmutex, native_handle_notnull) {
     hxmutex mutex_;
     EXPECT_TRUE(mutex_.native_handle() != hxnull);
 }
 
-TEST(hxunique_lock, DeferLock) {
+TEST(hxunique_lock, defer_lock) {
     hxmutex mutex_;
     hxunique_lock lock(mutex_, true);
     EXPECT_FALSE(lock.owns_lock());
@@ -101,14 +101,14 @@ TEST(hxunique_lock, DeferLock) {
     EXPECT_TRUE(lock.owns_lock());
 }
 
-TEST(hxunique_lock, UnlockWithoutLock) {
+TEST(hxunique_lock, unlock_without_lock) {
     hxmutex mutex_;
     hxunique_lock lock(mutex_, true);
     lock.unlock();
     EXPECT_FALSE(lock.owns_lock());
 }
 
-TEST(hxunique_lock, LockTwice) {
+TEST(hxunique_lock, lock_twice) {
     hxmutex mutex_;
     hxunique_lock lock(mutex_, true);
     lock.lock();
@@ -116,25 +116,25 @@ TEST(hxunique_lock, LockTwice) {
     EXPECT_TRUE(lock.owns_lock());
 }
 
-TEST(hxunique_lock, MutexReference) {
+TEST(hxunique_lock, mutexreference) {
     hxmutex mutex_;
     hxunique_lock lock(mutex_);
     hxmutex& reference_ = lock.mutex();
     EXPECT_TRUE(&reference_ == &mutex_);
 }
 
-TEST(hxcondition_variable, NotifyNoWaiters) {
+TEST(hxcondition_variable, notify_no_waiters) {
     hxcondition_variable condition_variable_;
     EXPECT_TRUE(condition_variable_.notify_one());
     EXPECT_TRUE(condition_variable_.notify_all());
 }
 
-TEST(hxcondition_variable, NativeHandleNotNull) {
+TEST(hxcondition_variable, native_handle_not_null) {
     hxcondition_variable condition_variable_;
     EXPECT_TRUE(condition_variable_.native_handle() != hxnull);
 }
 
-TEST(hxcondition_variable, WaitPredicate) {
+TEST(hxcondition_variable, wait_predicate) {
     hxmutex mutex_;
     hxcondition_variable condition_variable_;
     hxunique_lock lock(mutex_);
@@ -143,7 +143,7 @@ TEST(hxcondition_variable, WaitPredicate) {
     SUCCEED();
 }
 
-TEST(hxcondition_variable, NotifyOneWakesWaiter) {
+TEST(hxcondition_variable, notify_one_wakes_waiter) {
     hxmutex mutex_;
     hxcondition_variable condition_variable_;
     bool ready_ = false;
@@ -158,7 +158,7 @@ TEST(hxcondition_variable, NotifyOneWakesWaiter) {
     SUCCEED();
 }
 
-TEST(hxcondition_variable, NotifyAllWakesWaiters) {
+TEST(hxcondition_variable, notify_all_wakes_waiters) {
     hxmutex mutex_;
     hxcondition_variable condition_variable_;
     bool ready_ = false;
@@ -177,7 +177,7 @@ TEST(hxcondition_variable, NotifyAllWakesWaiters) {
     EXPECT_EQ(woken_, 2);
 }
 
-TEST(hxthread, StartAndJoin) {
+TEST(hxthread, start_and_join) {
     int shared_ = 0;
     hxmutex mutex_;
     hxthread_test_simple_parameters_t_ argument_ = {&mutex_, &shared_};
@@ -188,7 +188,7 @@ TEST(hxthread, StartAndJoin) {
     EXPECT_EQ(shared_, 1);
 }
 
-TEST(hxthread, MultipleThreadsIncrement) {
+TEST(hxthread, multiple_threads_increment) {
     int shared_ = 0;
     hxmutex mutex_;
     hxthread_test_simple_parameters_t_ argument1_ = {&mutex_, &shared_};
@@ -200,7 +200,7 @@ TEST(hxthread, MultipleThreadsIncrement) {
     EXPECT_EQ(shared_, 2);
 }
 
-TEST(hxmutex, LockUnlockMultipleThreads) {
+TEST(hxmutex, lock_unlock_multiple_threads) {
     hxmutex mutex_;
     int shared_ = 0;
     hxthread_test_parameters_t_ parameters_(&mutex_, hxnull, hxnull, &shared_);
@@ -211,27 +211,27 @@ TEST(hxmutex, LockUnlockMultipleThreads) {
     EXPECT_EQ(shared_, 2);
 }
 
-TEST(hxunique_lock, OwnershipAfterUnlock) {
+TEST(hxunique_lock, ownership_after_unlock) {
     hxmutex mutex_;
     hxunique_lock lock(mutex_);
     lock.unlock();
     EXPECT_FALSE(lock.owns_lock());
 }
 
-TEST(hxunique_lock, OwnershipAfterLock) {
+TEST(hxunique_lock, ownership_after_lock) {
     hxmutex mutex_;
     hxunique_lock lock(mutex_, true);
     lock.lock();
     EXPECT_TRUE(lock.owns_lock());
 }
 
-TEST(hxthread, JoinWithoutStart) {
+TEST(hxthread, join_without_start) {
     hxthread thread_;
     // Should not be joinable, so nothing to join
     EXPECT_FALSE(thread_.joinable());
 }
 
-TEST(hxunique_lock, MultipleLocks) {
+TEST(hxunique_lock, multiple_locks) {
     hxmutex mutex1_, mutex2_;
     hxunique_lock lock1(mutex1_);
     hxunique_lock lock2(mutex2_);
@@ -239,7 +239,7 @@ TEST(hxunique_lock, MultipleLocks) {
     EXPECT_TRUE(lock2.owns_lock());
 }
 
-TEST(hxcondition_variable, WaitNotifySequence) {
+TEST(hxcondition_variable, wait_notify_sequence) {
     hxmutex mutex_;
     hxcondition_variable condition_variable_;
     bool ready_ = false;
@@ -254,7 +254,7 @@ TEST(hxcondition_variable, WaitNotifySequence) {
     SUCCEED();
 }
 
-TEST(hxthread, MultipleThreadStartJoin) {
+TEST(hxthread, multiple_thread_start_join) {
     const int reps_ = 10;
     int shared_ = 0;
     hxmutex mutex_;

@@ -68,7 +68,7 @@ public:
 	int32_t m_next_id;
 };
 
-TEST_F(hxarray_test, Null) {
+TEST_F(hxarray_test, null) {
 	{
 		test_object to0;
 		test_object to1;
@@ -78,7 +78,7 @@ TEST_F(hxarray_test, Null) {
 	EXPECT_TRUE(Check_totals(2));
 }
 
-TEST_F(hxarray_test, Empty_full) {
+TEST_F(hxarray_test, empty_full) {
 	hxarray<test_object, hxallocator_dynamic_capacity> a;
 	EXPECT_TRUE(a.empty());
 	EXPECT_TRUE(a.full());
@@ -93,7 +93,7 @@ TEST_F(hxarray_test, Empty_full) {
 	EXPECT_TRUE(!a.full());
 }
 
-TEST_F(hxarray_test, Allocators) {
+TEST_F(hxarray_test, allocators) {
 	hxarray<test_object> objs_dynamic;
 	objs_dynamic.reserve(10u);
 	hxarray<test_object, 10u> objs_static;
@@ -119,7 +119,7 @@ TEST_F(hxarray_test, Allocators) {
 	EXPECT_TRUE(Check_totals(8));
 }
 
-TEST_F(hxarray_test, Iteration) {
+TEST_F(hxarray_test, iteration) {
 	{
 		static const int32_t nums[3] = { 21, 22, 23 };
 
@@ -154,7 +154,7 @@ TEST_F(hxarray_test, Iteration) {
 	EXPECT_TRUE(Check_totals(6));
 }
 
-TEST_F(hxarray_test, Modification) {
+TEST_F(hxarray_test, modification) {
 	{
 		static const int32_t nums[5] = { 91, 92, 93, 94, 95 };
 
@@ -190,7 +190,7 @@ TEST_F(hxarray_test, Modification) {
 	EXPECT_TRUE(Check_totals(9));
 }
 
-TEST_F(hxarray_test, Resizing) {
+TEST_F(hxarray_test, resizing) {
 	{
 		static const int32_t nums[5] = { 51, 52, 53, 54, 55 };
 
@@ -227,7 +227,7 @@ TEST_F(hxarray_test, Resizing) {
 	EXPECT_TRUE(Check_totals(12));
 }
 
-TEST_F(hxarray_test, Assignment) {
+TEST_F(hxarray_test, assignment) {
 	{
 		hxarray<test_object> objs;
 		objs.reserve(1);
@@ -261,7 +261,7 @@ TEST_F(hxarray_test, Assignment) {
 }
 
 #if HX_CPLUSPLUS >= 201103L && HX_HOSTED
-TEST_F(hxarray_test, Initializer_list) {
+TEST_F(hxarray_test, initializer_list) {
 	hxarray<int, 2> x = { 2, 7 };
 	EXPECT_EQ(x[1], 7);
 
@@ -269,7 +269,7 @@ TEST_F(hxarray_test, Initializer_list) {
 	EXPECT_EQ(y[1], 17);
 }
 
-TEST_F(hxarray_test, Temporaries) {
+TEST_F(hxarray_test, temporaries) {
 	// test r-value dynamically allocated temporaries
 	{
 		hxmemory_allocator_scope allocator_scope(hxmemory_allocator_temporary_stack);

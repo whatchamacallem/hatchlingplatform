@@ -37,7 +37,7 @@ public:
     };
 };
 
-TEST_F(hxtask_queue_test, Nop) {
+TEST_F(hxtask_queue_test, nop) {
 	for (size_t i = 0; i <= max_pool_; ++i) {
 		{
 			hxtask_queue q(i);
@@ -50,7 +50,7 @@ TEST_F(hxtask_queue_test, Nop) {
 	EXPECT_TRUE(true);
 }
 
-TEST_F(hxtask_queue_test, Single) {
+TEST_F(hxtask_queue_test, single) {
 	for (size_t i = 0; i <= max_pool_; ++i) {
 		task_test_t_ task0;
 		task_test_t_ task1;
@@ -73,7 +73,7 @@ TEST_F(hxtask_queue_test, Single) {
 	}
 }
 
-TEST_F(hxtask_queue_test, Single_stepping) {
+TEST_F(hxtask_queue_test, single_stepping) {
 	for (size_t i = 0; i <= max_pool_; ++i) {
 		for (size_t j = 1; j < max_tasks_; ++j) {
 			task_test_t_ task0;
@@ -90,7 +90,7 @@ TEST_F(hxtask_queue_test, Single_stepping) {
 	}
 }
 
-TEST_F(hxtask_queue_test, Multiple) {
+TEST_F(hxtask_queue_test, multiple) {
 	for (size_t i = 0; i <= max_pool_; ++i) {
 		for (size_t j = 1; j < max_tasks_; ++j) {
 
@@ -126,7 +126,7 @@ TEST_F(hxtask_queue_test, Multiple) {
 	}
 }
 
-TEST_F(hxtask_queue_test, Multiple_stepping) {
+TEST_F(hxtask_queue_test, multiple_stepping) {
 	for (size_t i = 0; i <= max_pool_; ++i) {
 		for (size_t j = 1; j < max_tasks_; ++j) {
 
@@ -147,7 +147,7 @@ TEST_F(hxtask_queue_test, Multiple_stepping) {
 	}
 }
 
-TEST_F(hxtask_queue_test, Multiple_reenqueuing) {
+TEST_F(hxtask_queue_test, multiple_reenqueuing) {
 	for (size_t i = 0; i <= max_pool_; ++i) {
 		for (size_t j = 1; j < max_tasks_; ++j) {
 

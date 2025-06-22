@@ -65,7 +65,7 @@ public:
     int32_t m_next_id;
 };
 
-TEST_F(hxhash_table_test, Null) {
+TEST_F(hxhash_table_test, null) {
 	{
 		typedef hxhash_table<hxtest_integer, 4> Table;
 		Table table;
@@ -86,7 +86,7 @@ TEST_F(hxhash_table_test, Null) {
 	EXPECT_EQ(m_destructed, 0);
 }
 
-TEST_F(hxhash_table_test, Single) {
+TEST_F(hxhash_table_test, single) {
 	static const int k = 77;
 	{
 		typedef hxhash_table<hxtest_integer, 4> Table;
@@ -140,7 +140,7 @@ TEST_F(hxhash_table_test, Single) {
 	EXPECT_EQ(m_destructed, 2);
 }
 
-TEST_F(hxhash_table_test, Multiple) {
+TEST_F(hxhash_table_test, multiple) {
 	static const int N = 78;
 	{
 		// Table will be overloaded.
@@ -259,7 +259,7 @@ TEST_F(hxhash_table_test, Multiple) {
 	EXPECT_EQ(m_destructed, 2*N);
 }
 
-TEST_F(hxhash_table_test, Strings) {
+TEST_F(hxhash_table_test, strings) {
 	static const char* colors[] = {
 		"Red","Orange","Yellow",
 		"Green","Cyan","Blue",

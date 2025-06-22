@@ -93,7 +93,7 @@ namespace {
 #undef hxconsole_test_type_check
 } // namespace
 
-TEST(hxconsole_test, Command_factory) {
+TEST(hxconsole_test, command_factory) {
 	c_hxconsole_test_call_flags = 0;
 
 	EXPECT_TRUE(hxconsole_command_factory_(hxconsole_test_fn0).execute_(""));
@@ -121,7 +121,7 @@ TEST(hxconsole_test, Command_factory) {
 // are hit and can be skipped. And then show that the above test would fail if
 // bad commands were submitted.
 #if HX_TEST_ERROR_HANDLING
-TEST(hxconsole_test, Overflow) {
+TEST(hxconsole_test, overflow) {
 #if (HX_RELEASE) < 1
 	// Test that asserts are triggered by overflow.
 	hxconsole_exec_line("skipasserts 2");
@@ -170,7 +170,7 @@ hxconsole_command(hxconsole_test_register1);
 hxconsole_command(hxconsole_test_register2);
 hxconsole_command(hxconsole_test_register3);
 
-TEST(hxconsole_test, Register_command) {
+TEST(hxconsole_test, register_command) {
 	hxlogconsole("test_expecting_warnings:\n");
 
 	s_hxconsole_test_result_hook = 0.0f;
@@ -251,7 +251,7 @@ hxconsole_variable(s_hxconsole_test_long_long);
 hxconsole_variable(s_hxconsole_test_uLong_long);
 hxconsole_variable(s_hxconsole_test_double);
 
-TEST(hxconsole_test, Register_variable) {
+TEST(hxconsole_test, register_variable) {
 	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_char 123"));
 	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_short 234"));
 	EXPECT_TRUE(hxconsole_exec_line("s_hxconsole_test_int 345"));
@@ -287,7 +287,7 @@ TEST(hxconsole_test, Register_variable) {
 
 // Show rounding errors while setting a variable are ignored. It isn't ideal
 // but code bloat is a consideration.
-TEST(hxconsole_test, Variable_errors) {
+TEST(hxconsole_test, variable_errors) {
 	s_hxconsole_test_int = -1;
 	hxconsole_exec_line("s_hxconsole_test_int 3.5");
 	EXPECT_EQ(s_hxconsole_test_int, 3);
@@ -314,7 +314,7 @@ hxconsole_command_named(hxconsole_test_file_fn, hxconsole_test_file_fn_name);
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
 #endif
 
-TEST(hxconsole_test, Null_test) {
+TEST(hxconsole_test, null_test) {
 	uint8_t prev = g_hxsettings.log_level;
 	g_hxsettings.log_level = hxloglevel_warning;
 	hxloghandler(hxloglevel_console, "hidden\n");
@@ -328,7 +328,7 @@ TEST(hxconsole_test, Null_test) {
 #pragma GCC diagnostic pop
 #endif
 
-TEST(hxconsole_test, File_test) {
+TEST(hxconsole_test, file_test) {
 	{
 		hxfile f(hxfile::out, "hxconsole_test_file_test.txt");
 		f << "hxconsole_test_file_var 3\n"
@@ -351,7 +351,7 @@ bool hxconsole_test_failing_command(void) {
 
 hxconsole_command_named(hxconsole_test_failing_command, hxconsole_test_failing_command);
 
-TEST(hxconsole_test, File_fail) {
+TEST(hxconsole_test, file_fail) {
 	hxlogconsole("test_expecting_warnings:\n");
 
 	// test garbage in a script
@@ -374,7 +374,7 @@ TEST(hxconsole_test, File_fail) {
 }
 
 #if (HX_RELEASE) < 2 && !defined __EMSCRIPTEN__
-TEST(hxconsole_test, File_peek_poke) {
+TEST(hxconsole_test, file_peek_poke) {
 	uint32_t target[] = { 111, 777, 333 };
 	{
 		hxfile f(hxfile::out, "hxconsole_test_file_test.txt");
@@ -389,7 +389,7 @@ TEST(hxconsole_test, File_peek_poke) {
 	EXPECT_EQ(target[1], 222);
 	EXPECT_EQ(target[2], 333);
 }
-TEST(hxconsole_test, File_peek_poke_floats) {
+TEST(hxconsole_test, file_peek_poke_floats) {
 	float target[] = { 111.0f, 777.0f, 333.0f };
 	{
 		hxfile f(hxfile::out, "hxconsole_test_file_test.txt");

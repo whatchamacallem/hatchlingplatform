@@ -209,28 +209,41 @@ public:
     // Does not free arg. Any function that takes a single pointer and returns
     // a void pointer should work. The return value is ignored but may be unsafe
     // to cast to a function with a different return type.
-    // - fn: Function pointer of type: void* fn(T*).
-    // - arg: T* to pass to the function.
+    // - entry_point: Function pointer of type: void* fn(T*).
+    // - parameter: T* to pass to the function.
     template<typename parameter_t_>
-    inline explicit hxthread(void* (*fn_)(parameter_t_*), parameter_t_* arg_)
+    inline explicit hxthread(void* (*entry_point_)(parameter_t_*), parameter_t_* parameter_)
             : m_started_(false), m_joined_(false) {
-        this->start(fn_, arg_);
+        this->start(entry_point_, parameter_);
     }
 
     // Destructor. Asserts that the thread was stopped correctly.
     inline ~hxthread() {
-		hxassertmsg(!this->joinable(), "thread not joined");
+		hxassertmsg(!this->joinable(), "thread still running");
     }
 
     // Starts a thread with the given function and argument. Does not free arg.
-    // Any function that takes a single pointer and returns a void pointer should
-    // work. The return value is ignored but may be unsafe to change in a cast.
-    // - fn: Function pointer of type: void* fn(T*).
-    // - arg: T* to pass to the function.
+    // Any function that takes a single T pointer and returns a void pointer
+    // should work. The return value is ignored but is required by pthreads
+    // calling convention.
+    // - entry_point: Function pointer of type: void* entry_point(T*).
+    // - parameter: T* to pass to the function.
     template<typename parameter_t_>
-    inline void start(void* (*fn_)(parameter_t_*), parameter_t_* arg_) {
-        hxassertmsg(!this->joinable(), "thread not joined");
-        int code_ = ::pthread_create(&m_thread_, 0, (thread_func_t_)fn_, (void*)arg_);
+    inline void start(void* (*entry_point_)(parameter_t_*), parameter_t_* parameter_) {
+        hxassertmsg(!this->joinable(), "thread already running");
+
+        // Stay on the right side of the C++ standard by avoiding assumptions
+        // about pointer representations. The parameter_ pointer is never cast
+        // between types. Instead the bit pattern of the pointer is preserved
+        // while it is passed through the pthread api. This requires the pointers
+        // to use the same number of bytes.
+        hxstatic_assert(sizeof(void*) == sizeof(parameter_t_*), "incompatible pointer types");
+
+        void* reinterpreted_parameter_=hxnull;
+        ::memcpy(&reinterpreted_parameter_, &parameter_, sizeof(void*));
+        int code_ = ::pthread_create(&m_thread_, 0, (entry_point_function_t_)entry_point_,
+            reinterpreted_parameter_);
+
         hxassertrelease(code_ == 0, "pthread_create %d", code_); (void)code_;
         m_started_ = true;
         m_joined_ = false;
@@ -241,15 +254,15 @@ public:
 
     // Joins the thread. Blocks until the thread finishes.
     inline void join() {
-        hxassertmsg(this->joinable(), "thread not joinable");
+        hxassertmsg(this->joinable(), "thread not runnning");
         int code_ = ::pthread_join(m_thread_, 0);
-        hxassertmsg(code_ == 0, "pthread_join %s", ::strerror(code_));
+        hxassertrelease(code_ == 0, "pthread_join %s", ::strerror(code_));
         m_joined_ = true;
     }
 
 private:
     // Type expected by pthread.
-    typedef void* (*thread_func_t_)(void*);
+    typedef void* (*entry_point_function_t_)(void*);
 
     // Deleted copy constructor.
     hxthread(const hxthread&) hxdelete_fn;

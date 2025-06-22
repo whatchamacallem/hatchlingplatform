@@ -6,7 +6,7 @@
 
 HX_REGISTER_FILENAME_HASH
 
-TEST(hxrandom_test, Generation) {
+TEST(hxrandom_test, generation) {
 	hxrandom rng;
 	for(int s=100; s--;) {
 
@@ -37,7 +37,7 @@ TEST(hxrandom_test, Generation) {
 	}
 }
 
-TEST(hxrandom_test, Ops) {
+TEST(hxrandom_test, ops) {
 	hxrandom rng(20000);
 	for(int s=100; s--;) {
 		// T &= rng
@@ -112,7 +112,7 @@ TEST(hxrandom_test, Ops) {
 	}
 }
 
-TEST(hxrandom_test, Range) {
+TEST(hxrandom_test, range) {
 	hxrandom rng(30000);
 	for(int s=100; s--;) {
 		EXPECT_TRUE(rng.range('a', (char)10) >= 'a' && rng.range('a', (char)10) < (char)('a' + 10));
@@ -130,7 +130,7 @@ TEST(hxrandom_test, Range) {
 	}
 }
 
-TEST(hxrandom_test, Histogram) {
+TEST(hxrandom_test, histogram) {
 	hxrandom rng(40000);
 	const int buckets = 1 << 10; // 1k buckets
 	const int iters = 1000;
@@ -148,7 +148,7 @@ TEST(hxrandom_test, Histogram) {
 	}
 }
 
-TEST(hxrandom_test, Histogram_f) {
+TEST(hxrandom_test, histogram_f) {
 	hxrandom rng(40000);
 	const int buckets = 1000; // 1k buckets
 	const int iters = 1000;

@@ -73,7 +73,7 @@ public:
     };
 };
 
-TEST_F(hxprofiler_test, Single1ms) {
+TEST_F(hxprofiler_test, single1ms) {
 	hxprofiler_start();
 
 	size_t start_records = g_hxprofiler_.records_size_();

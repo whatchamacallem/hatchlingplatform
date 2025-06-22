@@ -74,7 +74,7 @@ public:
     hxrandom m_prng_;
 };
 
-TEST_F(hxradix_sort_test, Null) {
+TEST_F(hxradix_sort_test, null) {
 	hxradix_sort<uint32_t, const char> rs;
 
 	rs.sort(hxmemory_allocator_temporary_stack);
@@ -91,28 +91,28 @@ TEST_F(hxradix_sort_test, Null) {
 	EXPECT_TRUE(!rs.empty());
 }
 
-TEST_F(hxradix_sort_test, Uint32) {
+TEST_F(hxradix_sort_test, uint32) {
 	test_range_and_type<uint32_t>(20u, 0x7fu, 0u); // check insertion sort
 	test_range_and_type<uint32_t>(100u, 0x7fu, 0u);
 	test_range_and_type<uint32_t>(1000u, 0x7fffu, 0u);
 	test_range_and_type<uint32_t>(10000u, ~(uint32_t)0, 0u);
 }
 
-TEST_F(hxradix_sort_test, Int32) {
+TEST_F(hxradix_sort_test, int32) {
 	test_range_and_type<int32_t>(20u, 0x7fu, 0x3f); // check insertion sort
 	test_range_and_type<int32_t>(100u, 0x7fu, 0x3f);
 	test_range_and_type<int32_t>(1000u, 0x7fffu, 0x3fff);
 	test_range_and_type<int32_t>(10000u, ~(uint32_t)0, 0);
 }
 
-TEST_F(hxradix_sort_test, Float) {
+TEST_F(hxradix_sort_test, float) {
 	test_range_and_type<float>(200u, 0x7fu, (float)0x3f); // check insertion sort
 	test_range_and_type<float>(100u, 0x7fu, (float)0x3f);
 	test_range_and_type<float>(1000u, 0x7fffu, (float)0x3fff);
 	test_range_and_type<float>(10000u, ~(uint32_t)0, 0.0f);
 }
 
-TEST_F(hxradix_sort_test, Types) {
+TEST_F(hxradix_sort_test, types) {
 	test_range_and_type<uint8_t>(100u, 0x7fu, 0x3fu);
 	test_range_and_type<int8_t>(100u, 0x7fu, 0x3f);
 	test_range_and_type<uint16_t>(100u, 0x7fu, 0x3fu);
@@ -127,7 +127,7 @@ static int hxsort_compare_reverse_test(const int a, const int b) {
 	return a > b;
 }
 
-TEST(hxinsertion_sort_test, Sort_compare_cCase) {
+TEST(hxinsertion_sort_test, sort_compare_case) {
 	int ints[5] = { 2, 1, 0, 4, -5 };
 
 	// sort 0 elements
@@ -159,7 +159,7 @@ TEST(hxinsertion_sort_test, Sort_compare_cCase) {
 	EXPECT_TRUE(::memcmp(ints, ints4, sizeof ints) == 0);
 }
 
-TEST(hxbinary_search_test, Simple_case) {
+TEST(hxbinary_search_test, simple_case) {
 	int ints[5] = { 2, 5, 6, 88, 99 };
 	int* result = hxbinary_search(ints+0, ints+5, 88, hxsort_compare_test);
 	EXPECT_TRUE(result != hxnull && *result == 88);
