@@ -98,7 +98,7 @@ hxconstexpr_fn void InitGoogleTest() { }
 
 // HX_TEST_NAME_ - Macro for concatenating 3 arguments into one name.
 // Macro parameters will be evaluated before concatenating.
-#define HX_TEST_NAME_(x_, y_, z_) x_ ## y_ ## z_
+#define HX_TEST_NAME_(x_, y_, z_) x_ ## y_ ## _ ## z_ ## _
 
 // TEST(suite_name, case_name) - Google Test reimplementation. Defines a test
 // case with a suite name and case name.

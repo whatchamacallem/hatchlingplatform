@@ -230,7 +230,7 @@ public:
     // - parameter: T* to pass to the function.
     template<typename parameter_t_>
     inline void start(void* (*entry_point_)(parameter_t_*), parameter_t_* parameter_) {
-        hxassertmsg(!this->joinable(), "thread already running");
+		hxassertmsg(!this->joinable(), "thread still running");
 
         // Stay on the right side of the C++ standard by avoiding assumptions
         // about pointer representations. The parameter_ pointer is never cast
