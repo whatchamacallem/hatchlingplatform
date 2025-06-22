@@ -7,7 +7,7 @@ HX_REGISTER_FILENAME_HASH
 
 // hxsettings - g_hxsettings is declared in hxc_utils.c for maximum portability.
 
-namespace {
+namespace hxx_ {
 #if (HX_RELEASE) < 1
 // Confirm the correct number of asserts were triggered.
 static bool checkasserts(void) {
@@ -22,7 +22,7 @@ hxconsole_variable_named(g_hxsettings.asserts_to_be_skipped, skipasserts);
 #endif
 
 hxconsole_variable_named(g_hxsettings.log_level, loglevel);
-} // namespace
+} // hxx_
 
 void hxsettings_construct() {
 	g_hxsettings.log_level = hxloglevel_log;

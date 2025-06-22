@@ -10,7 +10,8 @@ HX_REGISTER_FILENAME_HASH
 class hxfile_test : public testing::Test
 {
 public:
-	struct test_t_ {
+	class test_t_ {
+	public:
 		uint32_t a;
 		int16_t b;
 		uint8_t c;

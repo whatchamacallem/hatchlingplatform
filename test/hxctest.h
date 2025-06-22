@@ -2,12 +2,12 @@
 
 #include <hx/hatchling.h>
 
-#ifdef __cplusplus
+#if HX_CPLUSPLUS
 extern "C" {
 #endif
 
 bool hxctest_all(void);
 
-#ifdef __cplusplus
+#if HX_CPLUSPLUS
 } // extern "C"
 #endif

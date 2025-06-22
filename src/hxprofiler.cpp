@@ -8,7 +8,7 @@ HX_REGISTER_FILENAME_HASH
 
 #if HX_PROFILE
 
-namespace hx_ {
+namespace hxx_ {
 
 // ----------------------------------------------------------------------------
 // Console commands
@@ -90,6 +90,6 @@ void hxprofiler_internal_::write_to_chrome_tracing_(const char* filename) {
 	hxlogconsole("wrote %s.\n", filename);
 }
 
-} // namespace hx_
+} // namespace hxx_
 
 #endif // HX_PROFILE

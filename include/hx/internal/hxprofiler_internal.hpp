@@ -39,7 +39,7 @@ hxstatic_assert(0, "implement hxtime_sample_cycles");
     return (hxcycles_t)cycles_;
 }
 
-namespace hx_ {
+namespace hxx_ {
 
 // Use direct access to an object with static linkage for speed.
 extern class hxprofiler_internal_ g_hxprofiler_;
@@ -121,5 +121,5 @@ private:
 	hxcycles_t m_t0_;
 };
 
-} // namespace hx_
-using namespace hx_;
+} // namespace hxx_
+using namespace hxx_;

@@ -6,7 +6,7 @@
 
 hxstatic_assert(!HX_USE_GOOGLE_TEST, "Do not include directly");
 
-namespace hx_ {
+namespace hxx_ {
 
 class hxtest_case_interface_ {
 public:
@@ -166,5 +166,5 @@ private:
 	size_t m_assert_fail_count_;
 };
 
-} // namespace hx_
-using namespace hx_;
+} // namespace hxx_
+using namespace hxx_;

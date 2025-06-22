@@ -24,5 +24,6 @@
 #include <hx/hxtask.hpp>
 #include <hx/hxtask_queue.hpp>
 #include <hx/hxtest.hpp> // May include Google Test.
+#include <hx/hxthread.hpp>
 
 #endif // HX_HATCHLING_PCH_USED
