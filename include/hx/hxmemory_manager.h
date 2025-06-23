@@ -87,25 +87,25 @@ public:
     hxmemory_allocator_scope(hxmemory_allocator allocator_);
 
 	// Destructor restores the previous memory manager allocator ID.
-	~hxmemory_allocator_scope();
+	~hxmemory_allocator_scope(void);
 
 	// Gets the total number of allocations made by the memory allocator.
-	size_t get_total_allocation_count() const;
+	size_t get_total_allocation_count(void) const;
 
 	// Gets the total number of bytes allocated by the memory allocator.
-	size_t get_total_bytes_allocated() const;
+	size_t get_total_bytes_allocated(void) const;
 
 	// Gets the number of allocations made within this scope.
-	size_t get_scope_allocation_count() const;
+	size_t get_scope_allocation_count(void) const;
 
 	// Gets the number of bytes allocated within this scope.
-	size_t get_scope_bytes_allocated() const;
+	size_t get_scope_bytes_allocated(void) const;
 
 	// Gets the number of allocations made before this scope was entered.
-	size_t get_previous_allocation_count() const { return m_previous_allocation_count_; }
+	size_t get_previous_allocation_count(void) const { return m_previous_allocation_count_; }
 
 	// Gets the number of bytes allocated before this scope was entered.
-	size_t get_previous_bytes_allocated() const { return m_previous_bytes_allocated_; }
+	size_t get_previous_bytes_allocated(void) const { return m_previous_bytes_allocated_; }
 
 private:
 	// Deleted copy constructor to prevent copying.
@@ -122,15 +122,15 @@ private:
 
 // hxmemory_manager_init - Initializes the memory manager. Must be called before
 // using any memory manager functions.
-void hxmemory_manager_init();
+void hxmemory_manager_init(void);
 
 // hxmemory_manager_shut_down - Shuts down the memory manager. Frees any remaining
 // resources.
-void hxmemory_manager_shut_down();
+void hxmemory_manager_shut_down(void);
 
 // hxmemory_manager_leak_count - Returns the total number of allocations outstanding
 // made by the memory manager.
-size_t hxmemory_manager_leak_count();
+size_t hxmemory_manager_leak_count(void);
 
 // hxnew<T, allocator, align>(...) - Allocates and constructs an object of type
 // T using an optional memory allocator and alignment. Returns a pointer to the
@@ -156,7 +156,7 @@ public:
 	inline explicit hxnew(const Arg_& arg_) {
 		m_tmp_ = ::new(hxmalloc(sizeof(T_)))T_(arg_);
 	}
-	operator T_*() { return m_tmp_; }
+	operator T_*(void) { return m_tmp_; }
 private:
 	T_* m_tmp_;
 };
@@ -186,7 +186,7 @@ public:
 	hxconstexpr_fn void operator()(T_* t_) const { hxdelete(t_); }
 
 	// Always returns true, indicating the deleter is valid.
-	hxconstexpr_fn operator bool() const { return true; }
+	hxconstexpr_fn operator bool(void) const { return true; }
 };
 
 // Implement hxdeleter with NOPs. Allows the compiler to remove the destructors
@@ -199,7 +199,7 @@ public:
 	hxconstexpr_fn void operator()(T_*) const { }
 
 	// Always returns false, indicating the deleter should not be called.
-	hxconstexpr_fn operator bool() const { return false; }
+	hxconstexpr_fn operator bool(void) const { return false; }
 };
 
 // hxmalloc - Add hxmalloc_ext args to hxmalloc C interface. Allocates memory with a

@@ -18,14 +18,14 @@ TEST(hxctest, all_tests) {
 // These two tests test the test framework by failing.
 #if HX_TEST_ERROR_HANDLING
 TEST(hxdeath_test, fail) {
-	hxlog("test_expecting_asserts:\n");
+	hxlog("EXPECTING_TEST_FAILURE\n");
 	SUCCEED();
 	for (int i = 10; i--;) {
 		FAIL() << "this message is intentionally blank.\n";
 	}
 }
 TEST(hxdeath_test, nothing_asserted) {
-	hxlog("test_expecting_assert:\n");
+	hxlog("EXPECTING_TEST_FAILURE\n");
 }
 #endif
 
@@ -33,7 +33,7 @@ static bool hxrun_all_tests(void) {
 	hxlogconsole("hatchling platform 🐉🐉🐉 " HATCHLING_TAG "\n");
 	hxlogconsole("release: %d profile: %d " __DATE__ " " __TIME__ "\n",
 		(int)(HX_RELEASE), (int)(HX_PROFILE));
-	hxwarnmsg(HX_HATCHLING_PCH_USED, "note pch not used");
+	hxwarnmsg(HX_HATCHLING_PCH_USED, "pch not used");
 
 	// RUN_ALL_TESTS is a Google Test symbol.
 	size_t tests_failing = (size_t)RUN_ALL_TESTS();
@@ -43,9 +43,12 @@ static bool hxrun_all_tests(void) {
 	const int s_hxexpected_failures = 3;
 
 	hxassertrelease(tests_failing == s_hxexpected_failures,
-		"expected %d tests to fail", s_hxexpected_failures);
+		"unexpected_failures expected %d tests to fail", s_hxexpected_failures);
 	// there are no asserts at level 3.
-	hxloghandler(hxloglevel_warning, "expected %d tests to fail", s_hxexpected_failures);
+	if(tests_failing == s_hxexpected_failures) {
+		hxloghandler(hxloglevel_warning,
+			"expected_failures expected exactly %d tests to fail", s_hxexpected_failures);
+	}
 	return tests_failing == s_hxexpected_failures;
 #else
 	return tests_failing == 0;

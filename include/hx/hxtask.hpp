@@ -21,8 +21,8 @@ public:
 
     // Destructor for the task. Ensures that the task is not owned by
     // any exclusive owner when deleted.
-    virtual ~hxtask() {
-        hxassertrelease(!m_task_queue_, "deleting queued task: %s", get_label());
+    virtual ~hxtask(void) {
+        hxassertrelease(!m_task_queue_, "deleting_queued_task %s", get_label());
     }
 
     // Executes the task. This is the main function to be implemented by
@@ -36,7 +36,7 @@ public:
 
 	// Gets the next task in the linked list.
     // Returns pointer to the next task, or null if there is no next task.
-    inline hxtask* get_next_task() const { return m_next_task_; }
+    inline hxtask* get_next_task(void) const { return m_next_task_; }
 
 	// Sets the next task in the linked list.
     // - x: Pointer to the task to set as the next task.
@@ -44,7 +44,7 @@ public:
 
 	// Gets the label of the task.
     // Returns the label of the task, or "task" if no label is set.
-    inline const char* get_label() const { return m_label_ ? m_label_ : "task"; }
+    inline const char* get_label(void) const { return m_label_ ? m_label_ : "task"; }
 
 	// Sets the label of the task.
     // - x: A constant string literal or null to set as the task label.
@@ -56,7 +56,7 @@ public:
     // - Ensures that the task is not re-enqueued while already owned.
     // - The task must not be part of a linked list when setting ownership.
     inline void set_task_queue(hxtask_queue* x_) {
-        hxassertrelease((!m_task_queue_ || !x_) && !m_next_task_, "re-enqueuing task: %s", get_label());
+        hxassertrelease((!m_task_queue_ || !x_) && !m_next_task_, "reenqueuing_task %s", get_label());
         m_task_queue_ = x_;
     }
 

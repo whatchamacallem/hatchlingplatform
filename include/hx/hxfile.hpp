@@ -27,31 +27,31 @@ public:
 	hxfile(uint16_t mode_, const char* filename_, ...) hxattr_format(3, 4);
 
 	// Destructor to ensure the file is closed when the object goes out of scope.
-	~hxfile();
+	~hxfile(void);
 
 	// Opens a file with the specified mode and formatted filename.
 	bool open(uint16_t mode_, const char* filename_, ...) hxattr_format(3, 4);
 
 	// Closes the currently open file.
-	void close();
+	void close(void);
 
 	// Checks if the file is open.
-	hxconstexpr_fn bool is_open() const { return m_file_pImpl_ != hxnull; }
+	hxconstexpr_fn bool is_open(void) const { return m_file_pimpl_ != hxnull; }
 
 	// Checks if the file stream is in a good state.
-	hxconstexpr_fn bool good() const { return m_good_; }
+	hxconstexpr_fn bool good(void) const { return m_good_; }
 
 	// Checks if the end of the file has been reached.
-	hxconstexpr_fn bool eof() const { return m_eof_; }
+	hxconstexpr_fn bool eof(void) const { return m_eof_; }
 
 	// Clears the state of the file stream.
-	hxconstexpr_fn void clear() {
-		m_good_ = m_file_pImpl_ != hxnull;
+	hxconstexpr_fn void clear(void) {
+		m_good_ = m_file_pimpl_ != hxnull;
 		m_eof_ = false;
 	}
 
 	// Returns the current open mode of the file.
-	hxconstexpr_fn uint16_t mode() const { return m_open_mode_; }
+	hxconstexpr_fn uint16_t mode(void) const { return m_open_mode_; }
 
 	// Reads a specified number of bytes from the file into the provided buffer.
 	// - bytes: Pointer to the buffer where the read bytes will be stored.
@@ -111,10 +111,10 @@ public:
 
 	// Writes a string literal to the file. Supports Google Test style diagnostic messages.
 	// - str: Reference to a string literal to write to the file.
-	template<size_t String_length_>
-	hxconstexpr_fn hxfile& operator<<(const char(&str_)[String_length_]) {
-		hxassert(::strlen(str_) == (String_length_-1));
-		write(str_, String_length_-1);
+	template<size_t string_length_>
+	hxconstexpr_fn hxfile& operator<<(const char(&str_)[string_length_]) {
+		hxassertmsg(::strlen(str_) == (string_length_-1), "bad_string");
+		write(str_, string_length_-1);
 		return *this;
 	}
 
@@ -126,7 +126,7 @@ private:
 	// Internal function to open a file with a formatted filename and variable arguments.
 	bool openv_(uint16_t mode_, const char* format_, va_list args_);
 
-    char* m_file_pImpl_;   // Pointer to the file implementation.
+    char* m_file_pimpl_;   // Pointer to the file implementation.
     uint16_t m_open_mode_; // Current open mode of the file.
     bool m_good_; 		 // Indicates if the file stream is in a good state.
     bool m_eof_;  		 // Indicates if the end of the file has been reached.

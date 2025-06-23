@@ -59,9 +59,13 @@ public:
 				ASSERT_EQ(allocator_scope.get_scope_allocation_count(), 2u);
 				ASSERT_EQ(allocator_scope.get_previous_allocation_count(), start_count);
 				ASSERT_EQ(allocator_scope.get_total_allocation_count(), 2u + start_count);
-				ASSERT_NEAR(allocator_scope.get_scope_bytes_allocated(), 300u, 2u * HX_ALIGNMENT);
-				ASSERT_NEAR(allocator_scope.get_total_bytes_allocated(), start_bytes + 300u, 2u * HX_ALIGNMENT);
-				ASSERT_EQ(allocator_scope.get_previous_bytes_allocated(), start_bytes);
+				if(allocator_scope.get_scope_bytes_allocated() != 0) {
+					// Allocators are not required to track byes outstanding.
+					// But they have to get it right when they do.
+					ASSERT_NEAR(allocator_scope.get_scope_bytes_allocated(), 300u, 2u * HX_ALIGNMENT);
+					ASSERT_NEAR(allocator_scope.get_total_bytes_allocated(), start_bytes + 300u, 2u * HX_ALIGNMENT);
+					ASSERT_EQ(allocator_scope.get_previous_bytes_allocated(), start_bytes);
+				}
 			}
 
 			// Allow quiet deletion of a resource.
@@ -76,12 +80,11 @@ public:
 				hxmemory_allocator_scope spam_guard(hxmemory_allocator_heap);
 
 				// The debug heap requires HX_ALLOCATIONS_LOG_LEVEL enabled to track bytes allocated.
-				ASSERT_NEAR(allocator_scope.get_scope_bytes_allocated(), 300, 2 * HX_ALIGNMENT);
+				ASSERT_NEAR(allocator_scope.get_scope_bytes_allocated(), 300, 2u * HX_ALIGNMENT);
 			}
 			else {
-				hxmemory_allocator_scope spam_guard(hxmemory_allocator_heap);
-				ASSERT_EQ(allocator_scope.get_scope_bytes_allocated(), 0u);
-				ASSERT_EQ(allocator_scope.get_total_bytes_allocated(), start_bytes);
+				// This allocator is not reporting bytes outstanding.S
+				ASSERT_EQ(allocator_scope.get_total_bytes_allocated(), 0u);
 			}
 		}
 
@@ -154,7 +157,7 @@ TEST_F(hxmemory_manager_test, execute) {
 
 	// Leak checking requires the memory manager.
 #if !(HX_MEMORY_MANAGER_DISABLE)
-	hxlog("test_expecting_asserts:\n");
+	hxlog("EXPECTING_TEST_FAILURE\n");
 	// Only the Temporary_stack expects all allocations to be free()'d.
 	test_memory_allocator_leak(hxmemory_allocator_temporary_stack);
 #endif

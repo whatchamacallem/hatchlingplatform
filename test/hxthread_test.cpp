@@ -27,7 +27,7 @@ public:
 class hxthread_test_predicate_wait_for_zero {
 public:
     explicit hxthread_test_predicate_wait_for_zero(int* v) : value_(v) {}
-    bool operator()() const { return *value_ == 0; }
+    bool operator()(void) const { return *value_ == 0; }
     int* value_;
 };
 

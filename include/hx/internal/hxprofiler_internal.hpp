@@ -34,7 +34,7 @@ inline hxcycles_t hxtime_sample_cycles(void) {
 #elif defined __powerpc__ || defined __ppc__
     __asm__ volatile("mftb %0" : "=r"(cycles_));
 #else
-hxstatic_assert(0, "implement hxtime_sample_cycles");
+hxstatic_assert(0, "Implement hxtime_sample_cycles");
 #endif
     return (hxcycles_t)cycles_;
 }
@@ -58,8 +58,8 @@ public:
 	void write_to_chrome_tracing_(const char* filename);
 
 	// For testing
-	inline size_t records_size_() { return m_records.size(); }
-	inline void records_clear_() { m_records.clear(); }
+	inline size_t records_size_(void) { return m_records.size(); }
+	inline void records_clear_(void) { m_records.clear(); }
 
 private:
 	class hxprofiler_record_ {
@@ -94,10 +94,8 @@ public:
 		m_t0_ = hxtime_sample_cycles();
 	}
 
-#if HX_CPLUSPLUS >= 202002L
-	constexpr
-#endif
-	~hxprofiler_scope_internal_() {
+	~hxprofiler_scope_internal_(void) {
+		// Avoid overhead in leaf samples.
 		hxcycles_t t1_ = hxtime_sample_cycles();
 
 		HX_PROFILER_LOCK_();

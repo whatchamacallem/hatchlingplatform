@@ -23,8 +23,8 @@ public:
 	void*& hash_next(void) { return m_hash_next_; }
 
 	// The key and hash identify the Node and should not change once added.
-	hxconstexpr_fn const key_t_& key() const { return m_key_; }
-	hxconstexpr_fn uint32_t hash() const { return hxkey_hash(m_key_); };
+	hxconstexpr_fn const key_t_& key(void) const { return m_key_; }
+	hxconstexpr_fn uint32_t hash(void) const { return hxkey_hash(m_key_); };
 
 private:
 	hxhash_table_node_integer(void) hxdelete_fn;
@@ -62,5 +62,5 @@ public:
 #if HX_CPLUSPLUS >= 202002L
 	constexpr
 #endif
-	~hxhash_table_node_string() { hxfree(const_cast<char *>(this->key())); }
+	~hxhash_table_node_string(void) { hxfree(const_cast<char *>(this->key())); }
 };

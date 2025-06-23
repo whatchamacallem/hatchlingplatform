@@ -10,7 +10,7 @@ HX_REGISTER_FILENAME_HASH
 class hxtask_wait_for_tasks_ {
 public:
     hxtask_wait_for_tasks_(hxtask_queue* q) : q_(q) {}
-    bool operator()() const {
+    bool operator()(void) const {
         return q_->m_next_task_
             || q_->m_queue_run_level_ == hxtask_queue::run_level_stopped_;
     }
@@ -23,9 +23,9 @@ public:
 class hxtask_wait_for_completion_ {
 public:
     hxtask_wait_for_completion_(hxtask_queue* q) : q_(q) {}
-    bool operator()() const {
+    bool operator()(void) const {
         hxassertmsg(q_->m_queue_run_level_ == hxtask_queue::run_level_running_,
-            "threading error");
+            "threading_error");
         return q_->m_next_task_ == hxnull && q_->m_executing_count_ == 0;
     }
     hxtask_queue* q_;
@@ -54,11 +54,11 @@ hxtask_queue::hxtask_queue(int32_t thread_pool_size_)
 #endif
 }
 
-hxtask_queue::~hxtask_queue() {
+hxtask_queue::~hxtask_queue(void) {
 #if HX_USE_THREADS
     if (m_thread_pool_size_ > 0) {
         thread_task_loop_(this, thread_mode_stopping_);
-        hxassertmsg(m_queue_run_level_ == run_level_stopped_, "threading error");
+        hxassertmsg(m_queue_run_level_ == run_level_stopped_, "threading_error");
 
         for (int32_t i_ = m_thread_pool_size_; i_--;) {
             m_threads_[i_].join();
@@ -75,13 +75,13 @@ hxtask_queue::~hxtask_queue() {
 }
 
 void hxtask_queue::enqueue(hxtask* task_) {
-    hxassertmsg(task_, "null task");
+    hxassertmsg(task_, "invalid_parameter null");
     task_->set_task_queue(this);
 
 #if HX_USE_THREADS
     if (m_thread_pool_size_ > 0) {
         hxunique_lock lock_(m_mutex_);
-        hxassertrelease(m_queue_run_level_ == run_level_running_, "enqueue to stopped queue");
+        hxassertrelease(m_queue_run_level_ == run_level_running_, "stopped_queue");
         task_->set_next_task(m_next_task_);
         m_next_task_ = task_;
         m_cond_var_new_tasks_.notify_one();
@@ -94,7 +94,7 @@ void hxtask_queue::enqueue(hxtask* task_) {
     }
 }
 
-void hxtask_queue::wait_for_all() {
+void hxtask_queue::wait_for_all(void) {
 #if HX_USE_THREADS
     if (m_thread_pool_size_ > 0) {
         // Contribute current thread and request waiting until completion.
@@ -133,7 +133,7 @@ void hxtask_queue::thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_) {
             if (task_) {
                 // Waited to reacquire critical after previous task.
                 task_ = hxnull;
-                hxassert(q_->m_executing_count_ > 0);
+                hxassertmsg(q_->m_executing_count_ > 0, "internal_error");
                 if (--q_->m_executing_count_ == 0 && !q_->m_next_task_) {
                     q_->m_cond_var_completion_.notify_all();
                 }

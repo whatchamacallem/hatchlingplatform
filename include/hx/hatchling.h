@@ -50,7 +50,7 @@ enum hxloglevel {
 #define hxnull 0
 
 // hxstatic_assert - Compile-time assertion for HX_RELEASE range.
-hxstatic_assert((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE: Must be [0..3]");
+hxstatic_assert((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE must be [0..3]");
 
 // hxinit() - Initializes the platform.
 #define hxinit() (void)(g_hxisinit_ || (hxinit_internal(), 0))

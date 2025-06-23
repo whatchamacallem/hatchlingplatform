@@ -15,7 +15,7 @@ public:
     explicit hxtask_queue(int32_t thread_pool_size_ = -1);
 
 	// Calls wait_for_all before destructing.
-    ~hxtask_queue();
+    ~hxtask_queue(void);
 
 	// Queue a task for later execution. Does not delete task after execution.
 	// Thread safe and callable from running tasks.
@@ -24,7 +24,7 @@ public:
 
 	// The thread calling wait_for_all() will execute tasks as well. Do not call
 	// from hxtask::execute().
-    void wait_for_all();
+    void wait_for_all(void);
 
 private:
     hxtask_queue(const hxtask_queue&) hxdelete_fn;

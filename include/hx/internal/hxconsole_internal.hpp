@@ -1,11 +1,15 @@
 #pragma once
 // Copyright 2017-2025 Adrian Johnston
-
 // hxconsole inline header and a lot of internals. See hxconsole.h.
+
+// This is a little old fashioned but a simple rewrite wouldn't make the
+// template bloat any better. Although this code is very efficient. In
+// theory a byte code interpreter that understood the target calling
+// convention could shave off 10k from a system with 100s of commands.
 
 // Automatic cast from double with clamping.
 template<typename T_>
-hxconsolenumber_t::operator T_() const {
+hxconsolenumber_t::operator T_(void) const {
 	// Reimplement std::numeric_limits for 2's compliment. The << operator
 	// promotes its operands to int and so that requires more casting.
 	// Manipulating the sign bit is not supported by the standard. Sorry.
@@ -14,7 +18,7 @@ hxconsolenumber_t::operator T_() const {
 	const T_ max_value_ = ~min_value_;
 
 	double clamped_ = hxclamp(m_x_, (double)min_value_, (double)max_value_);
-	hxassertmsg(m_x_ == clamped_, "parameter overflow: %lf -> %lf", m_x_, clamped_);
+	hxassertmsg(m_x_ == clamped_, "parameter_overflow %lf -> %lf", m_x_, clamped_);
 
 	// Asserts may be skipped. Avoid the undefined behavior sanitizer by
 	// clamping value.
@@ -24,7 +28,7 @@ hxconsolenumber_t::operator T_() const {
 
 // Automatic cast from uint without clamping. The sanitizer doesn't complain.
 template<typename T_>
-hxconsolehex_t::operator T_() const {
+hxconsolehex_t::operator T_(void) const {
 	T_ t = (T_)m_x_;
 	hxwarnmsg((uint64_t)t == m_x_, "precision error: %llx -> %llx",
 		(unsigned long long)m_x_, (unsigned long long)t);
@@ -58,13 +62,13 @@ private:
 template<> class hxconsole_arg_<hxconsolenumber_t> {
 public:
 	inline hxconsole_arg_(const char* str_, char** next_) : value_(::strtod(str_, next_)) { }
-	hxconstexpr_fn static const char* get_label_() { return "f64"; }
+	hxconstexpr_fn static const char* get_label_(void) { return "f64"; }
 	hxconsolenumber_t value_;
 };
 template<> class hxconsole_arg_<hxconsolehex_t> {
 public:
 	inline hxconsole_arg_(const char* str_, char** next_) : value_(::strtoull(str_, next_, 16)) { }
-	hxconstexpr_fn static const char* get_label_() { return "hex"; }
+	hxconstexpr_fn static const char* get_label_(void) { return "hex"; }
 	hxconsolehex_t value_;
 };
 // const char* args capture remainder of line including comments starting with #'s.
@@ -81,7 +85,7 @@ public:
 		while(*str_ != '\0') { ++str_; }
 		*next_ = const_cast<char*>(str_);
 	}
-	hxconstexpr_fn static const char* get_label_() { return "char*"; }
+	hxconstexpr_fn static const char* get_label_(void) { return "char*"; }
 	const char* value_;
 };
 
@@ -242,14 +246,19 @@ public:
 	virtual bool execute_(const char* str_) hxoverride {
 		double number_ = 0.0;
 		int code_ = execute_number_(str_, &number_);
-		// 1 indicates a value was read.
+		if(code_ == 0) {
+			// 0 parameters is a query
+			hxloghandler(hxloglevel_console, "%.15g\n", (double)*m_var_);
+		}
 		if(code_ == 1) {
+			// 1 parameter is assignment
 			// Use hxconsolenumber_t to oversee casting to an arbitrary type.
 			hxconsolenumber_t wrapper_(number_);
 			*m_var_ = (T_)wrapper_;
+		} else {
+			return false; // 2 is unexpected args.
 		}
-		hxlogconsole("value: %.15g\n", (double)*m_var_);
-		return code_ != 2; // 2 is unexpected args.
+		return true;
 	}
 
 	virtual void usage_(const char* id_=hxnull) hxoverride {
@@ -330,7 +339,7 @@ public:
 			while (!hxconsole_is_delimiter_(*k_)) {
 				++k_;
 			}
-			hxassertmsg(*k_ == '\0', "console symbol contains delimiter: \"%s\"", key_.str_);
+			hxassertmsg(*k_ == '\0', "bad_console_symbol \"%s\"", key_.str_);
 		}
 	}
 

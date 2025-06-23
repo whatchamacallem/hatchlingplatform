@@ -29,9 +29,9 @@ public:
     hxregister_string_literal_hash(const char* str_);
     void* hash_next(void) const { return m_hash_next_; }
     void*& hash_next(void) { return m_hash_next_; }
-    uint32_t key() const { return m_hash_; };
+    uint32_t key(void) const { return m_hash_; };
     uint32_t hash() const; // this is rehashed.
-    const char* str() const { return m_str_; }
+    const char* str(void) const { return m_str_; }
 
 private:
     void* m_hash_next_;

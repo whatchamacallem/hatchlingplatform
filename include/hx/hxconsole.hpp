@@ -26,9 +26,9 @@ public:
 
     // Automatic casts to all number types.
     template<typename T_> operator T_() const;
-	operator bool() const { return m_x_ != 0.0; }
-	operator float() const { return (float)m_x_; }
-	operator double() const { return m_x_; }
+	operator bool(void) const { return m_x_ != 0.0; }
+	operator float(void) const { return (float)m_x_; }
+	operator double(void) const { return m_x_; }
 
 private:
     // ERROR - Numbers are not pointers or references.
@@ -110,7 +110,7 @@ bool hxconsole_exec_file(hxfile& file_);
 bool hxconsole_exec_filename(const char* filename_);
 
 // hxconsole_help - Logs all console symbols to the console log.
-bool hxconsole_help();
+bool hxconsole_help(void);
 
 // Include internals after hxconsolehex_t
 #include <hx/internal/hxconsole_internal.hpp>

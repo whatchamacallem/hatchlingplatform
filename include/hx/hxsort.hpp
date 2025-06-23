@@ -107,7 +107,9 @@ const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_) {
 
 class hxradix_sort_base {
 public:
-    hxstatic_assert((int32_t)0x80000000u >> 31 == ~(int32_t)0, "arithmetic left shift expected");
+    // See hxkey_value_pair(float key, void* val).
+    hxstatic_assert((int32_t)0x80000000u >> 31 == ~(int32_t)0,
+        "2's compliment arithmetic right shift expected");
 
     explicit hxradix_sort_base(uint32_t size_=0u) : m_array_() { m_array_.reserve(size_); }
 
@@ -116,7 +118,7 @@ public:
     void reserve(uint32_t size_) { m_array_.reserve(size_); }
 
     // Clears the internal array, removing all elements.
-    void clear() { m_array_.clear(); }
+    void clear(void) { m_array_.clear(); }
 
     // Sorts the internal array using the provided temporary memory allocator to
     // store histograms.
@@ -186,7 +188,7 @@ public:
         const_iterator() : m_ptr_(hxnull) { }
 
         // Pre-increment operator. Moves the iterator to the next element.
-        const_iterator& operator++() { ++m_ptr_; return *this; }
+        const_iterator& operator++(void) { ++m_ptr_; return *this; }
 
         // Post-increment operator. Moves the iterator to the next element and returns the previous state.
         const_iterator operator++(int) { const_iterator t_(*this); operator++(); return t_; }
@@ -198,10 +200,10 @@ public:
         bool operator!=(const const_iterator& rhs_) const { return m_ptr_ != rhs_.m_ptr_; }
 
         // Dereference operator. Returns a reference to the value pointed to by the iterator.
-        const value_t_& operator*() const { return *(const value_t_*)m_ptr_->m_val_; }
+        const value_t_& operator*(void) const { return *(const value_t_*)m_ptr_->m_val_; }
 
         // Arrow operator. Returns a pointer to the value pointed to by the iterator.
-        const value_t_* operator->() const { return (const value_t_*)m_ptr_->m_val_; }
+        const value_t_* operator->(void) const { return (const value_t_*)m_ptr_->m_val_; }
 
     protected:
         hxarray<hxkey_value_pair>::const_iterator m_ptr_; // Internal pointer to the current element.
@@ -214,19 +216,19 @@ public:
         iterator(hxarray<hxkey_value_pair>::iterator it_) : const_iterator(it_) { }
 
         // Constructs an invalid iterator.
-        iterator() { }
+        iterator(void) { }
 
         // Pre-increment operator. Moves the iterator to the next element.
-        iterator& operator++() { const_iterator::operator++(); return *this; }
+        iterator& operator++(void) { const_iterator::operator++(); return *this; }
 
         // Post-increment operator. Moves the iterator to the next element and returns the previous state.
         iterator operator++(int) { iterator t_(*this); const_iterator::operator++(); return t_; }
 
         // Dereference operator. Returns a reference to the value pointed to by the iterator.
-        value_t_& operator*() const { return *(value_t_*)this->m_ptr_->m_val_; }
+        value_t_& operator*(void) const { return *(value_t_*)this->m_ptr_->m_val_; }
 
         // Arrow operator. Returns a pointer to the value pointed to by the iterator.
-        value_t_* operator->() const { return (value_t_*)this->m_ptr_->m_val_; }
+        value_t_* operator->(void) const { return (value_t_*)this->m_ptr_->m_val_; }
     };
 
     explicit hxradix_sort(uint32_t size_=0u) : hxradix_sort_base(size_) { }
@@ -244,43 +246,43 @@ public:
     value_t_* get(uint32_t index_) { return (value_t_*)m_array_[index_].m_val_; }
 
     // Returns a const_iterator to the beginning of the array.
-    const_iterator begin() const { return const_iterator(m_array_.cbegin()); }
+    const_iterator begin(void) const { return const_iterator(m_array_.cbegin()); }
 
     // Returns an iterator to the beginning of the array.
-    iterator begin() { return iterator(m_array_.begin()); }
+    iterator begin(void) { return iterator(m_array_.begin()); }
 
     // Returns a const_iterator to the beginning of the array (const version).
-    const_iterator cbegin() const { return const_iterator(m_array_.cbegin()); }
+    const_iterator cbegin(void) const { return const_iterator(m_array_.cbegin()); }
 
     // Returns a const_iterator to the beginning of the array (non-const version).
-    const_iterator cbegin() { return const_iterator(m_array_.cbegin()); }
+    const_iterator cbegin(void) { return const_iterator(m_array_.cbegin()); }
 
     // Returns a const_iterator to the end of the array.
-    const_iterator end() const { return const_iterator(m_array_.cend()); }
+    const_iterator end(void) const { return const_iterator(m_array_.cend()); }
 
     // Returns an iterator to the end of the array.
-    iterator end() { return iterator(m_array_.end()); }
+    iterator end(void) { return iterator(m_array_.end()); }
 
     // Returns a const_iterator to the end of the array (const version).
-    const_iterator cend() const { return const_iterator(m_array_.cend()); }
+    const_iterator cend(void) const { return const_iterator(m_array_.cend()); }
 
     // Returns a const_iterator to the end of the array (non-const version).
-    const_iterator cend() { return const_iterator(m_array_.cend()); }
+    const_iterator cend(void) { return const_iterator(m_array_.cend()); }
 
     // Returns the number of elements in the array.
-    uint32_t size() const { return m_array_.size(); }
+    uint32_t size(void) const { return m_array_.size(); }
 
     // Returns true if the array is empty, false otherwise.
-    bool empty() const { return m_array_.empty(); }
+    bool empty(void) const { return m_array_.empty(); }
 
     // Returns true if the array is full, false otherwise.
-    bool full() const { return m_array_.full(); }
+    bool full(void) const { return m_array_.full(); }
 
     // Adds a key and value pointer to the array. Ownership is not taken.
     // - key: The key used for sorting.
     // - val: Pointer to the value associated with the key.
     void insert(key_t_ key_, value_t_* val_) {
-        hxassertrelease(!this->full(), "cannot reallocate");
+        hxassertrelease(!this->full(), "reallocation_disallowed");
 
         // This radix sort uses void* to avoid template bloat. The casts are not
         // required by the standard, but fix -Wcast-qual for a const value_t_.

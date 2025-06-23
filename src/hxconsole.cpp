@@ -28,14 +28,14 @@ class hxconsole_command_table_
 };
 
 // Wrapped to ensure correct construction order.
-hxconsole_command_table_& hxconsole_commands_() { static hxconsole_command_table_ tbl; return tbl; }
+hxconsole_command_table_& hxconsole_commands_(void) { static hxconsole_command_table_ tbl; return tbl; }
 
 // ----------------------------------------------------------------------------
 // Console API
 
 void hxconsole_register_(hxconsole_hash_table_node_* node) {
-	hxassertmsg(node->key().str_ && node->command_(), "hxconsole_register_ args");
-	hxassertmsg(!hxconsole_commands_().find(node->key()), "command already registered: %s", node->key().str_);
+	hxassertmsg(node->key().str_ && node->command_(), "invalid_parameter");
+	hxassertmsg(!hxconsole_commands_().find(node->key()), "command_reregistered %s", node->key().str_);
 
 	hxconsole_commands_().insert_node(node);
 }
@@ -61,7 +61,7 @@ bool hxconsole_exec_line(const char* command) {
 
 	const hxconsole_hash_table_node_* node = hxconsole_commands_().find(hxconsole_hash_table_key_(pos));
 	if (!node) {
-		hxlogwarning("unknown command: %s", command);
+		hxlogwarning("unknown_command %s", command);
 		return false;
 	}
 
@@ -75,12 +75,12 @@ bool hxconsole_exec_line(const char* command) {
 #endif
 	{
 		bool result = node->command_()->execute_(pos);
-		hxwarnmsg(result, "command failed: %s", command);
+		hxwarnmsg(result, "command_failed %s", command);
 		return result;
 	}
 #ifdef __cpp_exceptions
 	catch (...) {
-		hxlogwarning("unexpected exception: %s", command);
+		hxlogwarning("unexpected_exception %s", command);
 		return false;
 	}
 #endif
@@ -96,7 +96,8 @@ bool hxconsole_exec_file(hxfile& file) {
 }
 
 bool hxconsole_exec_filename(const char* filename) {
-	hxfile file(hxfile::in, "%s", filename);
+	// Please don't assert.
+	hxfile file(hxfile::in|hxfile::failable, "%s", filename);
 	hxwarnmsg(file.is_open(), "cannot open: %s", filename);
 	if (file.is_open()) {
 		bool is_ok = hxconsole_exec_file(file);
@@ -110,7 +111,7 @@ bool hxconsole_exec_filename(const char* filename) {
 // Built-in console commands
 
 // Lists variables and commands in order.
-bool hxconsole_help() {
+bool hxconsole_help(void) {
 	if ((HX_RELEASE) < 2) {
 		hxinit();
 		hxmemory_allocator_scope temporary_stack(hxmemory_allocator_temporary_stack);

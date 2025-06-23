@@ -33,14 +33,16 @@ HX_REGISTER_FILENAME_HASH
 
 // New rule. Use -ffast-math in release. Or set -DHX_FLOATING_POINT_TRAPS=0.
 hxstatic_assert((HX_RELEASE) < 1 || !(HX_FLOATING_POINT_TRAPS),
-	"floating point exceptions enabled in release. use -ffast-math.");
+	"Floating point exceptions enabled in release. use -ffast-math.");
 
-// Use -fno-exceptions. Exceptions add overhead to c++ and add untested pathways.
-// In this codebase memory allocation cannot fail. It is designed to force you
-// to allocate enough memory for everything in advance. There are no exceptions
-// to handle. There are exception handling intrinsics in use in case they are on.
+// There are exception handling intrinsics in use in case they are on. However
+// you are advised to use -fno-exceptions. Exceptions add overhead to c++ and
+// add untested pathways. In this codebase memory allocation cannot fail. It
+// is designed to force you to allocate enough memory for everything in advance.
+// The creation of hxthread.h classes cannot fail. By design there are no
+// exceptions to handle.
 #if defined __cpp_exceptions && !defined __INTELLISENSE__
-hxstatic_assert(0, "exceptions should not be enabled");
+hxstatic_assert(0, "C++ exceptions should not be enabled");
 #endif
 
 // No reason for this to be visible.
@@ -56,7 +58,7 @@ int __cxa_guard_acquire(size_t *guard) {
 	if(*guard == 1u) { return 0; }
 
 	// Check if the constructor is already in progress.
-	hxassertrelease(*guard != 2u, "race constructing function scope static");
+	hxassertrelease(*guard != 2u, "function_scope_static race");
 
 	// Run the constructor.
 	*guard = 2u;
@@ -69,7 +71,7 @@ void __cxa_guard_release(size_t *guard) {
 }
 extern "C"
 void __cxa_guard_abort(uint64_t *guard) {
-	hxassertrelease(0, "exception constructing function scope static");
+	hxassertrelease(0, "function_scope_static exception constructing");
 	*guard = 0u;
 }
 #endif
@@ -99,7 +101,7 @@ public:
 	}
 };
 
-hxhash_string_literal_& hxstring_literal_hashes_() {
+hxhash_string_literal_& hxstring_literal_hashes_(void) {
 	static hxhash_string_literal_ s_hxstring_literal_hashes_;
 	return s_hxstring_literal_hashes_;
 }
@@ -115,7 +117,7 @@ hxregister_string_literal_hash::hxregister_string_literal_hash(const char* str_)
 // The hash table code expects to be able to hash a key_t and compare it equal
 // to the Node::hash value. That results in double hashing here. It is just
 // another multiply.
-uint32_t hxregister_string_literal_hash::hash() const {
+uint32_t hxregister_string_literal_hash::hash(void) const {
 	return hxkey_hash(m_hash_);
 };
 
@@ -168,7 +170,7 @@ hxconsole_command_named(hxcheck_hash, checkhash);
 
 extern "C"
 void hxinit_internal(void) {
-	hxassertrelease(!g_hxisinit_, "call hxinit() instead");
+	hxassertrelease(!g_hxisinit_, "not_init");
 	hxsettings_construct();
 	g_hxisinit_ = 1;
 
@@ -198,7 +200,7 @@ hxnoexcept_intrinsic void hxloghandler_v(hxloglevel level, const char* format, v
 
 	char buf[HX_MAX_LINE+1];
 	int sz = format ? vsnprintf(buf, HX_MAX_LINE, format, args) : -1;
-	hxassertrelease(sz >= 0, "format error: %s", format ? format : "(null)");
+	hxassertrelease(sz >= 0, "format_error %s", format ? format : "(null)");
 	if (sz <= 0) {
 		return;
 	}
@@ -230,11 +232,11 @@ hxnoexcept_intrinsic int hxasserthandler(const char* file, size_t line) {
 	const char* f = hxbasename(file);
 	if (g_hxisinit_ && g_hxsettings.asserts_to_be_skipped > 0) {
 		--g_hxsettings.asserts_to_be_skipped;
-		hxloghandler(hxloglevel_assert, "(skipped) %s(%zu) hash %08zx",
+		hxloghandler(hxloglevel_assert, "skipped %s(%zu) hash %08zx",
 			f, line, (size_t)hxstring_literal_hash_debug(file));
 		return 1;
 	}
-	hxloghandler(hxloglevel_assert, "%s(%zu) hash %08zx Triggering Breakpoint\n",
+	hxloghandler(hxloglevel_assert, "breakpoint %s(%zu) hash %08zx\n",
 		f, line, (size_t)hxstring_literal_hash_debug(file));
 
 	// return to hxbreakpoint at calling line.
@@ -243,7 +245,7 @@ hxnoexcept_intrinsic int hxasserthandler(const char* file, size_t line) {
 #else
 extern "C"
 hxnoexcept_intrinsic hxnoreturn void hxasserthandler(uint32_t file, size_t line) {
-	hxloghandler(hxloglevel_assert, "file %08zx line %zu\n", (size_t)file, line);
+	hxloghandler(hxloglevel_assert, "exit file %08zx line %zu\n", (size_t)file, line);
 	_Exit(EXIT_FAILURE);
 }
 #endif

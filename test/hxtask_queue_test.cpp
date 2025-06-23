@@ -14,7 +14,7 @@ public:
 		max_tasks_ = 20
 	};
 
-    ~hxtask_queue_test() {
+    ~hxtask_queue_test(void) {
     }
     class task_test_t_ : public hxtask {
     public:

@@ -20,7 +20,7 @@ public:
 
     // Constructs an empty array with a capacity of Capacity. m_end_ will be 0
     // if Capacity is 0.
-    hxconstexpr_fn explicit hxarray()
+    hxconstexpr_fn explicit hxarray(void)
         : hxallocator<T_, capacity_>(), m_end_(this->data()) { }
 
     // Constructs an array of a given size using T_'s default constructor.
@@ -74,7 +74,7 @@ public:
 #if HX_CPLUSPLUS >= 202002L
     constexpr
 #endif
-    ~hxarray() {
+    ~hxarray(void) {
         this->destruct_(this->data(), m_end_);
     }
 
@@ -101,69 +101,69 @@ public:
     }
 
     // Returns a const_iterator to the beginning of the array.
-    hxconstexpr_fn const T_* begin() const { return this->data(); }
+    hxconstexpr_fn const T_* begin(void) const { return this->data(); }
 
     // Returns an iterator to the beginning of the array.
-    hxconstexpr_fn T_* begin() { return this->data(); }
+    hxconstexpr_fn T_* begin(void) { return this->data(); }
 
     // Returns a const_iterator to the beginning of the array (alias for begin()).
-    hxconstexpr_fn const T_* cbegin() const { return this->data(); }
+    hxconstexpr_fn const T_* cbegin(void) const { return this->data(); }
 
     // Returns a const_iterator to the beginning of the array (alias for begin()).
-    hxconstexpr_fn const T_* cbegin() { return this->data(); }
+    hxconstexpr_fn const T_* cbegin(void) { return this->data(); }
 
     // Returns a const_iterator to the end of the array.
-    hxconstexpr_fn const T_* end() const { return m_end_; }
+    hxconstexpr_fn const T_* end(void) const { return m_end_; }
 
     // Returns an iterator to the end of the array.
-    hxconstexpr_fn T_* end() { return m_end_; }
+    hxconstexpr_fn T_* end(void) { return m_end_; }
 
     // Returns a const_iterator to the end of the array (alias for end()).
-    hxconstexpr_fn const T_* cend() const { return m_end_; }
+    hxconstexpr_fn const T_* cend(void) const { return m_end_; }
 
     // Returns a const_iterator to the end of the array (alias for end()).
-    hxconstexpr_fn const T_* cend() { return m_end_; }
+    hxconstexpr_fn const T_* cend(void) { return m_end_; }
 
     // Returns a const reference to the first element in the array.
-    hxconstexpr_fn const T_& front() const {
-        hxassertmsg(!this->empty(), "invalid reference");
+    hxconstexpr_fn const T_& front(void) const {
+        hxassertmsg(!this->empty(), "invalid_reference");
         return *this->data();
     }
 
     // Returns a reference to the first element in the array.
-    hxconstexpr_fn T_& front() {
-        hxassertmsg(!this->empty(), "invalid reference");
+    hxconstexpr_fn T_& front(void) {
+        hxassertmsg(!this->empty(), "invalid_reference");
         return *this->data();
     }
 
     // Returns a const reference to the last element in the array.
-    hxconstexpr_fn const T_& back() const {
-        hxassertmsg(!this->empty(), "invalid reference");
+    hxconstexpr_fn const T_& back(void) const {
+        hxassertmsg(!this->empty(), "invalid_reference");
         return *(m_end_ - 1);
     }
 
     // Returns a reference to the last element in the array.
-    hxconstexpr_fn T_& back() {
-        hxassertmsg(!this->empty(), "invalid reference");
+    hxconstexpr_fn T_& back(void) {
+        hxassertmsg(!this->empty(), "invalid_reference");
         return *(m_end_ - 1);
     }
 
     // Returns a const reference to the element at the specified index.
     // - index: The index of the element.
     hxconstexpr_fn const T_& operator[](size_t index_) const {
-        hxassertmsg(index_ < this->size(), "invalid index");
+        hxassertmsg(index_ < this->size(), "invalid_index");
         return this->data()[index_];
     }
 
     // Returns a reference to the element at the specified index.
     // - index: The index of the element.
     hxconstexpr_fn T_& operator[](size_t index_) {
-        hxassertmsg(index_ < this->size(), "invalid index");
+        hxassertmsg(index_ < this->size(), "invalid_index");
         return this->data()[index_];
     }
 
     // Returns the number of elements in the array.
-    hxconstexpr_fn size_t size() const {
+    hxconstexpr_fn size_t size(void) const {
         return (size_t)(m_end_ - this->data());
     }
 
@@ -172,23 +172,23 @@ public:
     hxconstexpr_fn void reserve(size_t size_) {
         T_* prev = this->data();
         this->reserve_storage(size_);
-        hxassertmsg(!prev || prev == this->data(), "no reallocation"); (void)prev;
+        hxassertmsg(!prev || prev == this->data(), "reallocation_disallowed"); (void)prev;
         if (m_end_ == hxnull) {
             m_end_ = this->data();
         }
     }
 
     // Clears the array, destroying all elements.
-    hxconstexpr_fn void clear() {
+    hxconstexpr_fn void clear(void) {
         destruct_(this->data(), m_end_);
         m_end_ = this->data();
     }
 
     // Returns true if the array is empty.
-    hxconstexpr_fn bool empty() const { return m_end_ == this->data(); }
+    hxconstexpr_fn bool empty(void) const { return m_end_ == this->data(); }
 
     // Returns true if the array is full.
-    hxconstexpr_fn bool full() const { return m_end_ == this->data() + this->capacity(); }
+    hxconstexpr_fn bool full(void) const { return m_end_ == this->data() + this->capacity(); }
 
     // Resizes the array to the specified size, constructing or destroying
     // elements as needed. Requires a default constructor. Integers and floats
@@ -229,13 +229,13 @@ public:
     // Adds a copy of the specified element to the end of the array.
     // - t: The element to add.
     hxconstexpr_fn void push_back(const T_& t_) {
-        hxassertmsg(!this->full(), "stack overflow");
+        hxassertmsg(!this->full(), "stack_overflow");
         ::new (m_end_++) T_(t_);
     }
 
     // Removes the last element from the array.
-    hxconstexpr_fn void pop_back() {
-        hxassertmsg(!this->empty(), "stack underflow");
+    hxconstexpr_fn void pop_back(void) {
+        hxassertmsg(!this->empty(), "stack_underflow");
         (--m_end_)->~T_();
     }
 
@@ -268,15 +268,15 @@ public:
     hxconstexpr_fn void assign(const U_(&a_)[size_]) { this->assign(a_ + 0, a_ + size_); }
 
     // Variant of emplace_back() that returns a pointer for use with placement new.
-    hxconstexpr_fn void* emplace_back_unconstructed() {
-        hxassertmsg(!this->full(), "stack overflow");
+    hxconstexpr_fn void* emplace_back_unconstructed(void) {
+        hxassertmsg(!this->full(), "stack_overflow");
         return (void*)m_end_++;
     }
 
     // Variant of erase() that moves the end element down to replace erased element.
     // - index: The index of the element to erase.
     hxconstexpr_fn void erase_unordered(size_t index_) {
-        hxassertmsg(index_ < this->size(), "invalid index");
+        hxassertmsg(index_ < this->size(), "invalid_index");
         T_* it_ = this->data() + index_;
         if (it_ != --m_end_) {
             *it_ = *m_end_;
@@ -287,7 +287,7 @@ public:
     // Variant of erase() that moves the end element down to replace the erased element.
     // - it: Pointer to the element to erase.
     hxconstexpr_fn void erase_unordered(T_* it_) {
-        hxassertmsg(it_ >= this->data() && it_ < m_end_, "invalid iterator");
+        hxassertmsg(it_ >= this->data() && it_ < m_end_, "invalid_iterator");
         if (it_ != --m_end_) {
             *it_ = *m_end_;
         }
@@ -295,7 +295,7 @@ public:
     }
 
     // Returns true when the array is full (size equals capacity).
-    hxconstexpr_fn bool full() {
+    hxconstexpr_fn bool full(void) {
         return this->size() == this->capacity();
     }
 

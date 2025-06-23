@@ -14,7 +14,7 @@ public:
 	class test_object {
     public:
 		test_object(key_t k) : id(k) { }
-		~test_object() { id = (key_t)0; }
+		~test_object(void) { id = (key_t)0; }
 		bool operator<(const test_object& rhs) const { return id < rhs.id; }
 		key_t id;
 	};

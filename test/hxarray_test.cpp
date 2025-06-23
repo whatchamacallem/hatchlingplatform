@@ -19,7 +19,7 @@ class hxarray_test :
 public:
 	class test_object {
     public:
-		test_object() {
+		test_object(void) {
 			++s_hxtest_current->m_constructed;
 			id = (INT_MIN < s_hxtest_current->m_next_id) ? s_hxtest_current->m_next_id-- : 0;
 			constructor = 0;
@@ -36,7 +36,7 @@ public:
 			id = x;
 			constructor = 0;
 		}
-		~test_object() {
+		~test_object(void) {
 			++s_hxtest_current->m_destructed;
 			id = ~0u;
 		}
@@ -48,14 +48,14 @@ public:
 		int32_t constructor;
 	};
 
-	hxarray_test() {
+	hxarray_test(void) {
 		hxassert(s_hxtest_current == hxnull);
 		m_constructed = 0;
 		m_destructed = 0;
 		m_next_id = -1;
 		s_hxtest_current = this;
 	}
-	~hxarray_test() {
+	~hxarray_test(void) {
 		s_hxtest_current = 0;
 	}
 

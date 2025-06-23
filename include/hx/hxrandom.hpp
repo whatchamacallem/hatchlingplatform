@@ -25,22 +25,22 @@ public:
     // results are between [0..1).  They can safely be used to generate array
     // indicies without overflowing.
     // E.g. unsigned int = m_prng; // Returns [0..UINT_MAX].
-    hxconstexpr_fn operator float() {
+    hxconstexpr_fn operator float(void) {
         return (float)this->advance32() * (1.0f / 4294967296.0f); // 0x1p-32f
     }
-    hxconstexpr_fn operator double() {
+    hxconstexpr_fn operator double(void) {
         return (double)this->advance64() * (1.0 / 18446744073709551616.0); // 0x1p-64;
     }
-    hxconstexpr_fn operator uint8_t() {
+    hxconstexpr_fn operator uint8_t(void) {
         return this->advance32();
     }
-    hxconstexpr_fn operator uint16_t() {
+    hxconstexpr_fn operator uint16_t(void) {
         return this->advance32();
     }
-    hxconstexpr_fn operator uint32_t() {
+    hxconstexpr_fn operator uint32_t(void) {
         return this->advance32();
     }
-    hxconstexpr_fn operator uint64_t() {
+    hxconstexpr_fn operator uint64_t(void) {
         return this->advance64();
     }
 
@@ -53,13 +53,13 @@ public:
     template<typename T_> hxconstexpr_fn T_ range(T_ base_, T_ size_) {
         // Use double parameters if you need a bigger size. An emulated floating
         // point multiply is faster and more stable than integer modulo.
-        hxassertmsg((float)size_ < (float)0x01000000, "insufficient precision"); // 0x1p24f
+        hxassertmsg((float)size_ < (float)0x01000000, "insufficient_precision %f", (float)size_); // 0x1p24f
         return base_ + (T_)((float)size_ * (float)*this);
     }
     hxconstexpr_fn double range(double base_, double size_) {
         // Use uint64_t parameters if you need a bigger size. An emulated floating
         // point multiply is faster and more stable than integer modulo.
-        hxassertmsg(size_ < (double)0x40000000000000ll, "insufficient precision"); // 0x1p54f
+        hxassertmsg(size_ < (double)0x40000000000000ll, "insufficient_precision %f", (double)size_); // 0x1p54f
         return base_ + size_ * (double)*this;
     }
     hxconstexpr_fn int64_t range(int64_t base_, int64_t size_) {

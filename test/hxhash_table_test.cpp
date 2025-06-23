@@ -14,11 +14,11 @@ class hxhash_table_test :
 public:
     class test_object {
     public:
-        test_object() {
+        test_object(void) {
             ++s_hxtest_current->m_constructed;
             id = s_hxtest_current->m_next_id++;
         }
-        ~test_object() {
+        ~test_object(void) {
             ++s_hxtest_current->m_destructed;
             id = ~0u;
         }
@@ -28,7 +28,7 @@ public:
 		bool operator==(const test_object& rhs) const { return id == rhs.id; }
 		bool operator==(int32_t x) const { return id == x; }
 
-		operator float() const { return (float)id; }
+		operator float(void) const { return (float)id; }
 
 		int32_t id;
 	};
@@ -45,14 +45,14 @@ public:
 		test_object value;
 	};
 
-    hxhash_table_test() {
+    hxhash_table_test(void) {
         hxassert(s_hxtest_current == hxnull);
         m_constructed = 0;
         m_destructed = 0;
         m_next_id = 0;
         s_hxtest_current = this;
     }
-    ~hxhash_table_test() {
+    ~hxhash_table_test(void) {
         s_hxtest_current = 0;
     }
 

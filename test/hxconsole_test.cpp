@@ -54,7 +54,7 @@ namespace {
 #define hxconsole_test_type_check(T, t) \
 	hxconsole_test_type_check_t(t, hxconsole_test_type_id_##T, c_hxconsole_test_expected##T)
 
-	bool hxconsole_test_fn0() {
+	bool hxconsole_test_fn0(void) {
 		c_hxconsole_test_call_flags |= 1 << (int32_t)hxconsole_test_type_id_Void;
 		return true;
 	}
@@ -133,7 +133,7 @@ TEST(hxconsole_test, overflow) {
 
 #if (HX_RELEASE) < 1
 	// Test that asserts are triggered by overflow.
-	hxconsole_exec_line("checkasserts");
+	hxassertmsg(hxconsole_exec_line("checkasserts"), "expected more asserts");
 #endif
 }
 #endif // HX_TEST_ERROR_HANDLING
@@ -171,7 +171,7 @@ hxconsole_command(hxconsole_test_register2);
 hxconsole_command(hxconsole_test_register3);
 
 TEST(hxconsole_test, register_command) {
-	hxlogconsole("test_expecting_warnings:\n");
+	hxlogconsole("test_expecting_warnings\n");
 
 	s_hxconsole_test_result_hook = 0.0f;
 	bool b0 = hxconsole_exec_line("hxconsole_test_register0 77 ..."); // 77 + 3 int8_t string
@@ -317,7 +317,7 @@ hxconsole_command_named(hxconsole_test_file_fn, hxconsole_test_file_fn_name);
 TEST(hxconsole_test, null_test) {
 	uint8_t prev = g_hxsettings.log_level;
 	g_hxsettings.log_level = hxloglevel_warning;
-	hxloghandler(hxloglevel_console, "hidden\n");
+	hxloghandler(hxloglevel_console, "test_hidden\n");
 	g_hxsettings.log_level = prev;
 
 	hxlog("");
@@ -352,7 +352,7 @@ bool hxconsole_test_failing_command(void) {
 hxconsole_command_named(hxconsole_test_failing_command, hxconsole_test_failing_command);
 
 TEST(hxconsole_test, file_fail) {
-	hxlogconsole("test_expecting_warnings:\n");
+	hxlogconsole("test_expecting_warnings\n");
 
 	// test garbage in a script
 	{
