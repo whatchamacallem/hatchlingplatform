@@ -71,17 +71,18 @@ namespace testing {
 class Test {
 public:
     // User overrides for fixtures.
-    virtual ~Test(void) { };
     virtual void SetUp(void) { }
     virtual void TearDown(void) { }
+    virtual ~Test(void) { };
 
-    // Standard invocation protocol.
+    // Google Test standard invocation protocol.
     void run_(void) {
         SetUp();
         run_code_();
         TearDown();
     }
 
+private:
     // Provided and used by the TEST_F macro.
     virtual void run_code_() = 0;
 };

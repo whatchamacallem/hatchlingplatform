@@ -171,7 +171,7 @@ hxconsole_command(hxconsole_test_register2);
 hxconsole_command(hxconsole_test_register3);
 
 TEST(hxconsole_test, register_command) {
-	hxlogconsole("test_expecting_warnings\n");
+	hxlogconsole("EXPECTING_TEST_WARNINGS\n");
 
 	s_hxconsole_test_result_hook = 0.0f;
 	bool b0 = hxconsole_exec_line("hxconsole_test_register0 77 ..."); // 77 + 3 int8_t string
@@ -352,7 +352,7 @@ bool hxconsole_test_failing_command(void) {
 hxconsole_command_named(hxconsole_test_failing_command, hxconsole_test_failing_command);
 
 TEST(hxconsole_test, file_fail) {
-	hxlogconsole("test_expecting_warnings\n");
+	hxlogconsole("EXPECTING_TEST_WARNINGS\n");
 
 	// test garbage in a script
 	{

@@ -164,6 +164,8 @@ TEST_F(hxmemory_manager_test, execute) {
 }
 
 TEST_F(hxmemory_manager_test, temp_overflow) {
+	hxlogconsole("EXPECTING_TEST_WARNINGS\n");
+
 	// there is no policy against using the debug heap in release
 	void* p = hxmalloc_ext(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1, hxmemory_allocator_temporary_stack, 0u);
 	ASSERT_TRUE(p != hxnull);

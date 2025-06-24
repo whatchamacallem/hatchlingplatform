@@ -13,7 +13,7 @@
 
 HX_REGISTER_FILENAME_HASH
 
-#define HX_USE_ALIGNED_ALLOC 1//(HX_CPLUSPLUS >= 201703L && (HX_RELEASE) >= 1)
+#define HX_USE_STD_ALIGNED_ALLOC (HX_CPLUSPLUS >= 201703L && (HX_RELEASE) >= 1)
 
 #if !HX_HOSTED
 void* operator new(size_t size) {
@@ -74,7 +74,7 @@ class hxmemory_manager* s_hxmemory_manager = hxnull;
 
 // ----------------------------------------------------------------------------
 // hxmemory_allocation_header - Used until C++17.
-#if HX_USE_ALIGNED_ALLOC
+#if !HX_USE_STD_ALIGNED_ALLOC
 class hxmemory_allocation_header {
 public:
 	size_t size;
@@ -144,7 +144,7 @@ public:
 	}
 
 	virtual void* on_alloc(size_t size, size_t alignment) hxoverride {
-#if HX_USE_ALIGNED_ALLOC
+#if HX_USE_STD_ALIGNED_ALLOC
 		++m_allocation_count;
 
 		// Round up the size to be a multiple of the alignment so aligned_alloc
@@ -179,13 +179,13 @@ public:
 	}
 
 	void on_free_non_virtual(void* ptr) {
-#if HX_USE_ALIGNED_ALLOC
-		--m_allocation_count;
-		return ::free(ptr);
-#else
 		if (ptr == hxnull) {
 			return;
 		}
+#if HX_USE_STD_ALIGNED_ALLOC
+		--m_allocation_count;
+		return ::free(ptr);
+#else
 
 		hxmemory_allocation_header& hdr = ((hxmemory_allocation_header*)ptr)[-1];
 #if (HX_RELEASE) < 2
@@ -386,7 +386,9 @@ size_t hxmemory_manager::leak_count(void) {
 	for (int32_t i = 0; i != hxmemory_allocator_current; ++i) {
 		hxmemory_allocator_base& al = *m_memory_allocators[i];
 		if(al.get_allocation_count((hxmemory_allocator)i)) {
-			hxloghandler(hxloglevel_warning, "memory_leak %s count %zu size %zu high_water %zu", al.label(),
+			hxloghandler(hxloglevel_warning,
+				"memory_leak %s count %zu size %zu high_water %zu",
+				al.label(),
 				al.get_allocation_count((hxmemory_allocator)i),
 				al.get_bytes_allocated((hxmemory_allocator)i),
 				al.get_high_water((hxmemory_allocator)i));
