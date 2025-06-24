@@ -20,6 +20,7 @@ hxfile::hxfile(uint16_t mode) {
 
 hxfile::hxfile(uint16_t mode, const char* filename, ...) {
 	m_file_pimpl_ = hxnull;
+	close(); // openv_ assumes initialized and closed
 
 	va_list args;
 	va_start(args, filename);
@@ -32,7 +33,7 @@ hxfile::~hxfile(void) {
 }
 
 bool hxfile::open(uint16_t mode, const char* filename, ...) {
-	close();
+	close(); // openv_ assumes closed
 
 	va_list args;
 	va_start(args, filename);
@@ -51,14 +52,19 @@ bool hxfile::openv_(uint16_t mode, const char* filename, va_list args) {
 	if(stdio_mode == (hxfile::stdio|hxfile::in)) {
 		hxassertmsg(!filename, "invalid_parameter stdio+filename");
 		m_file_pimpl_ = (char*)stdin;
+		m_open_mode_ = mode;
+		m_good_ = true;
 		return true;
 	}
 	else if(stdio_mode == (hxfile::stdio|hxfile::out)) {
 		hxassertmsg(!filename, "invalid_parameter stdio+filename");
 		m_file_pimpl_ = (char*)stdout;
+		m_open_mode_ = mode;
+		m_good_ = true;
 		return true;
 	}
 	else if(filename == hxnull) {
+		m_open_mode_ = mode; // Record failable mode.
 		return false;
 	}
 

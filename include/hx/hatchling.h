@@ -22,9 +22,9 @@
 #endif
 
 // HATCHLING_VER - Major, minor and patch versions.
-#define HATCHLING_VER 0x030102u
+#define HATCHLING_VER 0x030103u
 // HATCHLING_TAG - Major, minor and patch version tag.
-#define HATCHLING_TAG "v3.1.2"
+#define HATCHLING_TAG "v3.1.3"
 
 #include <hx/hxsettings.h>
 #include <hx/hxmemory_manager.h>
@@ -36,9 +36,9 @@ extern "C" {
 
 // Hatchling Platform C and C++ API. Above headers are C and C++ too.
 
-// hxloglevel - Runtime setting for verbosity of log messages. Independently
+// hxloglevel_t - Runtime setting for verbosity of log messages. Independently
 // controls what messages are compiled in. See g_hxsettings.log_level.
-enum hxloglevel {
+enum hxloglevel_t {
 	hxloglevel_log,     // Verbose informative messages. No automatic newline.
 	hxloglevel_console, // Responses to console commands. No automatic newline.
 	hxloglevel_warning, // Warnings about serious problems.
@@ -147,14 +147,14 @@ void hxshutdown(void);
 // - level: The log level (e.g., hxloglevel_log, hxloglevel_warning).
 // - format: A printf-style format string.
 // - ...: Additional arguments for the format string.
-hxnoexcept_intrinsic void hxloghandler(enum hxloglevel level_, const char* format_, ...) hxattr_format(2, 3);
+hxnoexcept_intrinsic void hxloghandler(enum hxloglevel_t level_, const char* format_, ...) hxattr_format(2, 3);
 
 // hxloghandler_v - A va_list version of hxloghandler. This is the only access to
 // logging when HX_RELEASE > 2.
 // - level: The log level (e.g., hxloglevel_log, hxloglevel_warning).
 // - format: A printf-style format string.
 // - args: A va_list containing the arguments for the format string.
-hxnoexcept_intrinsic void hxloghandler_v(enum hxloglevel level_, const char* format_, va_list args_);
+hxnoexcept_intrinsic void hxloghandler_v(enum hxloglevel_t level_, const char* format_, va_list args_);
 
 // hxhex_dump - Prints an array of bytes formatted in hexadecimal. Additional
 // information provided when pretty is non-zero.

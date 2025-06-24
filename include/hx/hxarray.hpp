@@ -46,7 +46,8 @@ public:
     }
 
 #if HX_CPLUSPLUS >= 201103L
-    // Copy construct from temporary. Only works with capacity_ == hxallocator_dynamic_capacity
+    // Copy construct from temporary. Only works with capacity_ ==
+    // hxallocator_dynamic_capacity
     // rhs - A temporary Array<T>.
     hxconstexpr_fn hxarray(hxarray&& rhs_) : hxarray() {
         this->swap(rhs_);
@@ -169,9 +170,13 @@ public:
 
     // Reserves storage for at least the specified number of elements.
     // - size: The number of elements to reserve storage for.
-    hxconstexpr_fn void reserve(size_t size_) {
+    // - allocator: The memory manager ID to use for allocation (default: hxsystem_allocator_current)
+    // - alignment: The alignment to for the allocation. (default: HX_ALIGNMENT)
+    hxconstexpr_fn void reserve(size_t size_,
+            hxsystem_allocator_t allocator_=hxsystem_allocator_current,
+            uintptr_t alignment_=HX_ALIGNMENT) {
         T_* prev = this->data();
-        this->reserve_storage(size_);
+        this->reserve_storage(size_, allocator_, alignment_);
         hxassertmsg(!prev || prev == this->data(), "reallocation_disallowed"); (void)prev;
         if (m_end_ == hxnull) {
             m_end_ = this->data();
@@ -254,7 +259,8 @@ public:
     // Swap. Only works with capacity_ == hxallocator_dynamic_capacity
     // - rhs: The array to swap with.
     hxconstexpr_fn void swap(hxarray& rhs) {
-        hxallocator<T_, capacity_>::swap(rhs); // *** Only hxallocator_dynamic_capacity works here. ***
+        // *** Only hxallocator_dynamic_capacity works here. ***
+        hxallocator<T_, capacity_>::swap(rhs);
         hxswap(rhs.m_end_, m_end_);
     }
 

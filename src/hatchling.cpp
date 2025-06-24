@@ -126,7 +126,7 @@ bool hxprint_hashes(void) {
 
 	// sort by hash.
 	hxlogconsole("string literals in hash order:\n");
-	hxmemory_allocator_scope temporary_stack(hxmemory_allocator_temporary_stack);
+	hxsystem_allocator_scope temporary_stack(hxsystem_allocator_temporary_stack);
 
 	typedef hxarray<const char*> Filenames;
 	Filenames filenames; filenames.reserve(hxstring_literal_hashes_().size());
@@ -183,7 +183,7 @@ void hxinit_internal(void) {
 }
 
 extern "C"
-hxnoexcept_intrinsic void hxloghandler(hxloglevel level, const char* format, ...) {
+hxnoexcept_intrinsic void hxloghandler(hxloglevel_t level, const char* format, ...) {
 	va_list args;
 	va_start(args, format);
 	hxloghandler_v(level, format, args);
@@ -193,7 +193,7 @@ hxnoexcept_intrinsic void hxloghandler(hxloglevel level, const char* format, ...
 #define HX_STDOUT_STR_(x) ::fwrite(x, (sizeof x) - 1, 1, stdout)
 
 extern "C"
-hxnoexcept_intrinsic void hxloghandler_v(hxloglevel level, const char* format, va_list args) {
+hxnoexcept_intrinsic void hxloghandler_v(hxloglevel_t level, const char* format, va_list args) {
 	if(g_hxisinit_ && g_hxsettings.log_level > level) {
 		return;
 	}

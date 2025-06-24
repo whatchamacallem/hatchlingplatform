@@ -225,17 +225,17 @@ public:
 	hxconstexpr_fn bool empty(void) const { return m_size_ == 0u; }
 
 	// Returns a node containing key if any or allocates and returns a new one.
-	// Any allocation required uses hxmemory_allocator_current and HX_ALIGNMENT.
+	// Any allocation required uses hxsystem_allocator_current and HX_ALIGNMENT.
 	// - key: The key to search for or insert.
 	hxconstexpr_fn node_t_& operator[](const typename node_t_::key_t& key_) { return this->insert_unique(key_); }
 
 	// Returns a node containing key if any or allocates and returns a new one.
 	// Unfortunately this code may calculate the hash twice.
 	// - key: The key to search for or insert.
-	// - allocator: The memory manager ID to use for allocation. Defaults to hxmemory_allocator_current.
+	// - allocator: The memory manager ID to use for allocation. Defaults to hxsystem_allocator_current.
 	// - alignment: The alignment for allocation. Defaults to HX_ALIGNMENT.
 	hxconstexpr_fn node_t_& insert_unique(const typename node_t_::key_t& key_,
-										hxmemory_allocator allocator_=hxmemory_allocator_current,
+										hxsystem_allocator_t allocator_=hxsystem_allocator_current,
 										uintptr_t alignment_=HX_ALIGNMENT) {
 		node_t_** pos_ = this->get_bucket_head_(hxkey_hash(key_));
 		for (node_t_* n_ = *pos_; n_; n_ = (node_t_*)n_->hash_next()) {

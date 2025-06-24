@@ -47,5 +47,5 @@ private:
 	uint32_t m_table_size_bits_;
 };
 
-} // namespace hxx_
+} // hxx_
 using namespace hxx_;

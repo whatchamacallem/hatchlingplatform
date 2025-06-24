@@ -272,7 +272,7 @@ TEST_F(hxarray_test, initializer_list) {
 TEST_F(hxarray_test, temporaries) {
 	// test r-value dynamically allocated temporaries
 	{
-		hxmemory_allocator_scope allocator_scope(hxmemory_allocator_temporary_stack);
+		hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
 
 		hxarray<int> x(hxarray<int>({ 2, 7 }));
 		hxarray<int> y = std::move(x); // should swap

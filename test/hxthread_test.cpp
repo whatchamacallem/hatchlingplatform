@@ -70,7 +70,8 @@ void* hxthread_test_func_wait_notify_sequence(hxthread_test_parameters_t_* param
     return hxnull;
 }
 
-} // using hxx_
+} // hxx_
+using namespace hxx_;
 
 TEST(hxunique_lock, basic_lock_unlock) {
     hxmutex mutex_;

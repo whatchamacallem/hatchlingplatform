@@ -30,8 +30,7 @@ hxconsolenumber_t::operator T_(void) const {
 template<typename T_>
 hxconsolehex_t::operator T_(void) const {
 	T_ t = (T_)m_x_;
-	hxwarnmsg((uint64_t)t == m_x_, "precision error: %llx -> %llx",
-		(unsigned long long)m_x_, (unsigned long long)t);
+	hxwarnmsg((uint64_t)t == m_x_, "parameter_overflow %llx", (unsigned long long)m_x_);
 	return t;
 }
 
@@ -249,16 +248,17 @@ public:
 		if(code_ == 0) {
 			// 0 parameters is a query
 			hxloghandler(hxloglevel_console, "%.15g\n", (double)*m_var_);
+			return true;
 		}
-		if(code_ == 1) {
+		else if(code_ == 1) {
 			// 1 parameter is assignment
 			// Use hxconsolenumber_t to oversee casting to an arbitrary type.
 			hxconsolenumber_t wrapper_(number_);
 			*m_var_ = (T_)wrapper_;
-		} else {
-			return false; // 2 is unexpected args.
+			return true;
 		}
-		return true;
+		return false; // 2 is unexpected args.
+
 	}
 
 	virtual void usage_(const char* id_=hxnull) hxoverride {
@@ -379,5 +379,5 @@ private:
 	char m_storage_[sizeof(hxconsole_command0_)]; // .vtable and user function pointer
 };
 
-} // namespace hxx_
+} // hxx_
 using namespace hxx_;

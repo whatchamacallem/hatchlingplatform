@@ -27,8 +27,12 @@ class hxconsole_command_table_
 	: public hxhash_table<hxconsole_hash_table_node_, 2, hxdo_not_delete> {
 };
 
-// Wrapped to ensure correct construction order.
-hxconsole_command_table_& hxconsole_commands_(void) { static hxconsole_command_table_ tbl; return tbl; }
+// Wrapped to enforce a construction order dependency. Modification of the table
+// is not thread safe and it is normally constructed before main.
+hxconsole_command_table_& hxconsole_commands_(void) {
+	static hxconsole_command_table_ table_;
+	return table_;
+}
 
 // ----------------------------------------------------------------------------
 // Console API
@@ -40,7 +44,8 @@ void hxconsole_register_(hxconsole_hash_table_node_* node) {
 	hxconsole_commands_().insert_node(node);
 }
 
-} // namespace hxx_
+} // hxx_
+using namespace hxx_;
 
 // Nodes are statically allocated. Do not delete.
 void hxconsole_deregister(const char* id) {
@@ -61,7 +66,7 @@ bool hxconsole_exec_line(const char* command) {
 
 	const hxconsole_hash_table_node_* node = hxconsole_commands_().find(hxconsole_hash_table_key_(pos));
 	if (!node) {
-		hxlogwarning("unknown_command %s", command);
+		hxwarnmsg(0, "unknown_command %s", command);
 		return false;
 	}
 
@@ -80,7 +85,7 @@ bool hxconsole_exec_line(const char* command) {
 	}
 #ifdef __cpp_exceptions
 	catch (...) {
-		hxlogwarning("unexpected_exception %s", command);
+		hxwarnmsg(0, "unexpected_exception %s", command);
 		return false;
 	}
 #endif
@@ -114,7 +119,7 @@ bool hxconsole_exec_filename(const char* filename) {
 bool hxconsole_help(void) {
 	if ((HX_RELEASE) < 2) {
 		hxinit();
-		hxmemory_allocator_scope temporary_stack(hxmemory_allocator_temporary_stack);
+		hxsystem_allocator_scope temporary_stack(hxsystem_allocator_temporary_stack);
 		hxarray<const hxconsole_hash_table_node_*> cmds;
 		cmds.reserve(hxconsole_commands_().size());
 		for (hxconsole_command_table_::const_iterator it = hxconsole_commands_().cbegin();

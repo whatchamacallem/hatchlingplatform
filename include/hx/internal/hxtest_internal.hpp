@@ -19,17 +19,16 @@ public:
 	virtual size_t line_() const = 0;
 };
 
-} // namespace hxx_
-
-// Overload the global symbol instead of shadowing it.
-inline bool hxkey_less(hxx_::hxtest_case_interface_* a_, hxx_::hxtest_case_interface_* b_) {
-	int compare_ = ::strcmp(a_->suite_(), b_->suite_());
-	if(compare_ < 0) { return true; }
-	if(compare_ == 0) { return ::strcmp(a_->case_(), b_->case_()) < 0; }
-	return true;
-}
-
-namespace hxx_ {
+// hxtest_case_sort_ - Run tests in well defined alphanumeric order.
+class hxtest_case_sort_ {
+public:
+	bool operator()(const hxtest_case_interface_* a_, const hxtest_case_interface_* b_) const {
+		int compare_ = ::strcmp(a_->suite_(), b_->suite_());
+		if(compare_ < 0) { return true; }
+		if(compare_ == 0) { return ::strcmp(a_->case_(), b_->case_()) < 0; }
+		return false;
+	}
+};
 
 // hxtest_ - Internal. The test tracking and dispatching singleton.
 class hxtest_ {
@@ -109,7 +108,7 @@ public:
 	size_t run_all_tests_(void) {
 		hxinit(); // RUN_ALL_TESTS could be called first.
 
-		hxinsertion_sort(m_test_cases_, m_test_cases_ + m_num_test_cases_);
+		hxinsertion_sort(m_test_cases_, m_test_cases_ + m_num_test_cases_, hxtest_case_sort_());
 
 		m_pass_count_ = m_fail_count_ = m_assert_count_ = 0;
 		hxlogconsole("[==========] Running tests %s\n", (m_search_term_string_literal_ ? m_search_term_string_literal_ : "all"));
@@ -127,7 +126,7 @@ public:
 				{
 					// Tests should have no side effects. Therefore all allocations must be
 					// safe to reset.
-					hxmemory_allocator_scope temporary_stack(hxmemory_allocator_temporary_stack);
+					hxsystem_allocator_scope temporary_stack(hxsystem_allocator_temporary_stack);
 					(*it_)->run_();
 				}
 #ifdef __cpp_exceptions
@@ -170,8 +169,12 @@ public:
 	}
 
 private:
-	hxfile& file_null_(void) { static hxfile f_(hxfile::out | hxfile::failable); return f_; }
-	hxfile& file_log_()  { static hxfile f_(hxfile::out | hxfile::stdio); return f_; }
+	hxfile& file_null_(void) {
+		static hxfile f_(hxfile::out | hxfile::failable); return f_;
+	}
+	hxfile& file_log_(void) {
+		static hxfile f_(hxfile::out | hxfile::stdio); return f_;
+	}
 
 	hxtest_(const hxtest_&) hxdelete_fn;
 	void operator=(const hxtest_&) hxdelete_fn;
@@ -187,5 +190,5 @@ private:
 	size_t m_assert_fail_count_;
 };
 
-} // namespace hxx_
+} // hxx_
 using namespace hxx_;

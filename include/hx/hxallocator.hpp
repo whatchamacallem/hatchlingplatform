@@ -17,7 +17,7 @@ public:
     typedef T_ value_t;
 
     // Template specialization below should have been selected.
-    hxstatic_assert(fixed_capacity_ > 0u, "fixed_capacity must be > 0");
+    hxstatic_assert(fixed_capacity_ > 0u, "Fixed capacity must be > 0");
 
 	// Initializes memory to 0xcd when HX_RELEASE < 1.
 #if (HX_RELEASE) < 1
@@ -43,11 +43,17 @@ public:
 
 protected:
     // Used to ensure initial capacity as reserve_storage() will not reallocate.
-    // size: The number of elements of type T to allocate.
-
-    hxconstexpr_fn void reserve_storage(size_t size_) {
-		hxassertrelease(size_ <= fixed_capacity_,
-            "overflowing_fixed_capacity"); (void)size_;
+    // Provided for interface compatibility with the dynamic allocator.
+    // - size: The number of elements of type T to ensure are available.
+    // - allocator: Ignored.
+    // - alignment: The alignment of the allocator is checked against this.
+    hxconstexpr_fn void reserve_storage(size_t size_,
+            hxsystem_allocator_t allocator_=hxsystem_allocator_current,
+            uintptr_t alignment_=HX_ALIGNMENT) {
+                (void)size_; (void)allocator_; (void)alignment_;
+                hxassertmsg(size_ <= fixed_capacity_, "overflowing_fixed_capacity");
+                hxassertmsg(((alignment_ - 1u) & (uintptr_t)this) == 0u,
+                    "alignment_error static allocation");
 	}
 
 private:
@@ -113,11 +119,11 @@ public:
 
 protected:
     // Capacity is set by first call to reserve_storage and may not be extended.
-    // size: The number of elements of type T to allocate space for.
-    // allocator: The memory manager ID to use for allocation (default: hxmemory_allocator_current)
-    // alignment: The alignment to for the allocation. (default: HX_ALIGNMENT)
+    // - size: The number of elements of type T to allocate space for.
+    // - allocator: The memory manager ID to use for allocation (default: hxsystem_allocator_current)
+    // - alignment: The alignment to for the allocation. (default: HX_ALIGNMENT)
     hxconstexpr_fn void reserve_storage(size_t size_,
-            hxmemory_allocator allocator_=hxmemory_allocator_current,
+            hxsystem_allocator_t allocator_=hxsystem_allocator_current,
             uintptr_t alignment_=HX_ALIGNMENT) {
         if (size_ <= m_capacity_) { return; }
         hxassertrelease(m_capacity_ == 0, "reallocation_disallowed");

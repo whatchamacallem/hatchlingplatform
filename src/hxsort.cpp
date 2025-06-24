@@ -9,13 +9,13 @@ HX_REGISTER_FILENAME_HASH
 hxstatic_assert(HX_RADIX_SORT_BITS == 8 || HX_RADIX_SORT_BITS == 11,
 	"Unsupported HX_RADIX_SORT_BITS");
 
-void hxradix_sort_base::sort(hxmemory_allocator temp_memory) {
+void hxradix_sort_base::sort(hxsystem_allocator_t temp_memory) {
     if (m_array_.size() <= HX_RADIX_SORT_MIN_SIZE) {
         hxinsertion_sort(m_array_.begin(), m_array_.end());
         return;
     }
 
-	hxmemory_allocator_scope allocator_scope(temp_memory);
+	hxsystem_allocator_scope allocator_scope(temp_memory);
 
 	if (HX_RADIX_SORT_BITS == 8) {
 		// 2 Working buffers

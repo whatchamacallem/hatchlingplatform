@@ -122,8 +122,8 @@ public:
 
     // Sorts the internal array using the provided temporary memory allocator to
     // store histograms.
-    // - temp_memory: A hxmemory_allocator id.
-    void sort(hxmemory_allocator temp_memory);
+    // - temp_memory: A hxsystem_allocator_t id.
+    void sort(hxsystem_allocator_t temp_memory);
 
 protected:
     // Represents a key-value pair used in radix sorting.

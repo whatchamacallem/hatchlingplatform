@@ -94,6 +94,6 @@ void hxprofiler_internal_::write_to_chrome_tracing_(const char* filename) {
 	hxlogconsole("wrote %s.\n", filename);
 }
 
-} // namespace hxx_
+} // hxx_
 
 #endif // HX_PROFILE

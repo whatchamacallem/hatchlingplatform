@@ -89,38 +89,38 @@ public:
 };
 #endif
 // ----------------------------------------------------------------------------
-// hxmemory_allocator_base
+// hxsystem_allocator_base
 
-class hxmemory_allocator_base {
+class hxsystem_allocator_base {
 public:
-	hxmemory_allocator_base() : m_label_(hxnull) { }
+	hxsystem_allocator_base() : m_label_(hxnull) { }
 	void* allocate(size_t size, size_t alignment) {
 		return on_alloc(size, alignment);
 	}
 
-	virtual void begin_allocation_scope(hxmemory_allocator_scope* scope,
-		hxmemory_allocator new_id) = 0;
-	virtual void end_allocation_scope(hxmemory_allocator_scope* scope,
-		hxmemory_allocator old_id) = 0;
-	virtual size_t get_allocation_count(hxmemory_allocator id) const = 0;
-	virtual size_t get_bytes_allocated(hxmemory_allocator id) const = 0;
-	virtual size_t get_high_water(hxmemory_allocator id) = 0;
+	virtual void begin_allocation_scope(hxsystem_allocator_scope* scope,
+		hxsystem_allocator_t new_id) = 0;
+	virtual void end_allocation_scope(hxsystem_allocator_scope* scope,
+		hxsystem_allocator_t old_id) = 0;
+	virtual size_t get_allocation_count(hxsystem_allocator_t id) const = 0;
+	virtual size_t get_bytes_allocated(hxsystem_allocator_t id) const = 0;
+	virtual size_t get_high_water(hxsystem_allocator_t id) = 0;
 	const char* label(void) const { return m_label_; }
 
 protected:
 	virtual void* on_alloc(size_t size, size_t alignment) = 0;
 	const char* m_label_;
 private:
-	void operator=(const hxmemory_allocator_base&) hxdelete_fn;
+	void operator=(const hxsystem_allocator_base&) hxdelete_fn;
 };
 
 // ----------------------------------------------------------------------------
-// hxmemory_allocator_os_heap
+// hxsystem_allocator_os_heap
 //
 // This just calls aligned_alloc when HX_RELEASE > 0. In debug and in C++98
 // mode this code wraps heap allocations with a header and adds padding to
 // obtain required alignment. This allows tracking bytes allocated in debug.
-class hxmemory_allocator_os_heap : public hxmemory_allocator_base {
+class hxsystem_allocator_os_heap : public hxsystem_allocator_base {
 public:
 	void construct(const char* label) {
 		m_label_ = label;
@@ -129,17 +129,17 @@ public:
 		m_high_water = 0u;
 	}
 
-	virtual void begin_allocation_scope(hxmemory_allocator_scope* scope,
-		hxmemory_allocator new_id) hxoverride { (void)scope; (void)new_id; }
-	virtual void end_allocation_scope(hxmemory_allocator_scope* scope,
-		hxmemory_allocator old_id) hxoverride { (void)scope; (void)old_id; }
-	virtual size_t get_allocation_count(hxmemory_allocator id) const hxoverride {
+	virtual void begin_allocation_scope(hxsystem_allocator_scope* scope,
+		hxsystem_allocator_t new_id) hxoverride { (void)scope; (void)new_id; }
+	virtual void end_allocation_scope(hxsystem_allocator_scope* scope,
+		hxsystem_allocator_t old_id) hxoverride { (void)scope; (void)old_id; }
+	virtual size_t get_allocation_count(hxsystem_allocator_t id) const hxoverride {
 		(void)id; return m_allocation_count;
 	}
-	virtual size_t get_bytes_allocated(hxmemory_allocator id) const hxoverride {
+	virtual size_t get_bytes_allocated(hxsystem_allocator_t id) const hxoverride {
 		(void)id; return m_bytes_allocated;
 	}
-	virtual size_t get_high_water(hxmemory_allocator id) hxoverride {
+	virtual size_t get_high_water(hxsystem_allocator_t id) hxoverride {
 		(void)id; return m_high_water;
 	}
 
@@ -209,9 +209,9 @@ private:
 };
 
 // ----------------------------------------------------------------------------
-// hxmemory_allocator_stack: Nothing can be freed.
+// hxsystem_allocator_stack: Nothing can be freed.
 
-class hxmemory_allocator_stack : public hxmemory_allocator_base {
+class hxsystem_allocator_stack : public hxsystem_allocator_base {
 public:
 	void construct(void* ptr, size_t size, const char* label) {
 		m_label_ = label;
@@ -226,20 +226,20 @@ public:
 		}
 	}
 
-	virtual void begin_allocation_scope(hxmemory_allocator_scope* scope,
-		hxmemory_allocator new_id) hxoverride { (void)scope; (void)new_id; }
-	virtual void end_allocation_scope(hxmemory_allocator_scope* scope,
-		hxmemory_allocator old_id) hxoverride { (void)scope; (void)old_id; }
+	virtual void begin_allocation_scope(hxsystem_allocator_scope* scope,
+		hxsystem_allocator_t new_id) hxoverride { (void)scope; (void)new_id; }
+	virtual void end_allocation_scope(hxsystem_allocator_scope* scope,
+		hxsystem_allocator_t old_id) hxoverride { (void)scope; (void)old_id; }
 	bool contains(void* ptr) {
 		return (uintptr_t)ptr >= m_begin_ && (uintptr_t)ptr < m_end_;
 	}
-	virtual size_t get_allocation_count(hxmemory_allocator id) const hxoverride {
+	virtual size_t get_allocation_count(hxsystem_allocator_t id) const hxoverride {
 		(void)id; return m_allocation_count;
 	}
-	virtual size_t get_bytes_allocated(hxmemory_allocator id) const hxoverride {
+	virtual size_t get_bytes_allocated(hxsystem_allocator_t id) const hxoverride {
 		(void)id; return m_current - m_begin_;
 	}
-	virtual size_t get_high_water(hxmemory_allocator id) hxoverride {
+	virtual size_t get_high_water(hxsystem_allocator_t id) hxoverride {
 		(void)id; return m_current - m_begin_;
 	}
 
@@ -281,17 +281,17 @@ protected:
 };
 
 // ----------------------------------------------------------------------------
-// hxmemory_allocator_temp_stack: Resets after a scope closes.
+// hxsystem_allocator_temp_stack: Resets after a scope closes.
 
-class hxmemory_allocator_temp_stack : public hxmemory_allocator_stack {
+class hxsystem_allocator_temp_stack : public hxsystem_allocator_stack {
 public:
 	void construct(void* ptr, size_t size, const char* label) {
-		hxmemory_allocator_stack::construct(ptr, size, label);
+		hxsystem_allocator_stack::construct(ptr, size, label);
 		m_high_water = 0u;
 	}
 
-	virtual void end_allocation_scope(hxmemory_allocator_scope* scope,
-			hxmemory_allocator old_id) hxoverride {
+	virtual void end_allocation_scope(hxsystem_allocator_scope* scope,
+			hxsystem_allocator_t old_id) hxoverride {
 		(void)old_id;
 		hxassertmsg(m_allocation_count <= scope->get_previous_allocation_count(),
 			"memory_leak scope %s allocations %zu", m_label_,
@@ -306,7 +306,7 @@ public:
 		m_current = previous_current;
 	}
 
-	virtual size_t get_high_water(hxmemory_allocator id) hxoverride {
+	virtual size_t get_high_water(hxsystem_allocator_t id) hxoverride {
 		(void)id;
 		m_high_water = hxmax(m_high_water, m_current);
 		return m_high_water - m_begin_;
@@ -325,45 +325,45 @@ public:
 	void destruct();
 	size_t leak_count();
 
-	hxmemory_allocator begin_allocation_scope(hxmemory_allocator_scope* scope,
-		hxmemory_allocator new_id);
-	void end_allocation_scope(hxmemory_allocator_scope* scope,
-		hxmemory_allocator previous_id);
+	hxsystem_allocator_t begin_allocation_scope(hxsystem_allocator_scope* scope,
+		hxsystem_allocator_t new_id);
+	void end_allocation_scope(hxsystem_allocator_scope* scope,
+		hxsystem_allocator_t previous_id);
 
-	hxmemory_allocator_base& get_allocator(hxmemory_allocator id) {
-		hxassertmsg(id >= 0 && id < hxmemory_allocator_current, "invalid_parameter %d", (int)id);
+	hxsystem_allocator_base& get_allocator(hxsystem_allocator_t id) {
+		hxassertmsg(id >= 0 && id < hxsystem_allocator_current, "invalid_parameter %d", (int)id);
 		return *m_memory_allocators[id];
 	}
 
-	void* allocate(size_t size, hxmemory_allocator id, size_t alignment);
+	void* allocate(size_t size, hxsystem_allocator_t id, size_t alignment);
 	void free(void* ptr);
 
 private:
-	friend class hxmemory_allocator_scope;
+	friend class hxsystem_allocator_scope;
 
 	// Nota bene:  The current allocator is a thread local attribute.
-	static hxthread_local hxmemory_allocator s_hxcurrent_memory_allocator;
+	static hxthread_local hxsystem_allocator_t s_hxcurrent_memory_allocator;
 
-	hxmemory_allocator_base* m_memory_allocators[hxmemory_allocator_current];
+	hxsystem_allocator_base* m_memory_allocators[hxsystem_allocator_current];
 
-	hxmemory_allocator_os_heap     m_memory_allocator_heap;
-	hxmemory_allocator_stack      m_memory_allocator_permanent;
-	hxmemory_allocator_temp_stack  m_memory_allocator_temporary_stack;
+	hxsystem_allocator_os_heap     m_memory_allocator_heap;
+	hxsystem_allocator_stack      m_memory_allocator_permanent;
+	hxsystem_allocator_temp_stack  m_memory_allocator_temporary_stack;
 };
 
-hxthread_local hxmemory_allocator
-hxmemory_manager::s_hxcurrent_memory_allocator = hxmemory_allocator_heap;
+hxthread_local hxsystem_allocator_t
+hxmemory_manager::s_hxcurrent_memory_allocator = hxsystem_allocator_heap;
 
 void hxmemory_manager::construct(void) {
-	s_hxcurrent_memory_allocator = hxmemory_allocator_heap;
+	s_hxcurrent_memory_allocator = hxsystem_allocator_heap;
 
-	m_memory_allocators[hxmemory_allocator_heap] = &m_memory_allocator_heap;
-	m_memory_allocators[hxmemory_allocator_permanent] = &m_memory_allocator_permanent;
-	m_memory_allocators[hxmemory_allocator_temporary_stack] = &m_memory_allocator_temporary_stack;
+	m_memory_allocators[hxsystem_allocator_heap] = &m_memory_allocator_heap;
+	m_memory_allocators[hxsystem_allocator_permanent] = &m_memory_allocator_permanent;
+	m_memory_allocators[hxsystem_allocator_temporary_stack] = &m_memory_allocator_temporary_stack;
 
-	::new (&m_memory_allocator_heap) hxmemory_allocator_os_heap(); // set vtable ptr.
-	::new (&m_memory_allocator_permanent) hxmemory_allocator_stack();
-	::new (&m_memory_allocator_temporary_stack) hxmemory_allocator_temp_stack();
+	::new (&m_memory_allocator_heap) hxsystem_allocator_os_heap(); // set vtable ptr.
+	::new (&m_memory_allocator_permanent) hxsystem_allocator_stack();
+	::new (&m_memory_allocator_temporary_stack) hxsystem_allocator_temp_stack();
 
 	m_memory_allocator_heap.construct("heap");
 	m_memory_allocator_permanent.construct(hxmalloc_checked(HX_MEMORY_BUDGET_PERMANENT),
@@ -380,26 +380,26 @@ void hxmemory_manager::destruct(void) {
 size_t hxmemory_manager::leak_count(void) {
 	size_t leak_count = 0;
 	HX_MEMORY_MANAGER_LOCK_();
-	for (int32_t i = 0; i != hxmemory_allocator_current; ++i) {
-		hxmemory_allocator_base& al = *m_memory_allocators[i];
-		if(al.get_allocation_count((hxmemory_allocator)i)) {
+	for (int32_t i = 0; i != hxsystem_allocator_current; ++i) {
+		hxsystem_allocator_base& al = *m_memory_allocators[i];
+		if(al.get_allocation_count((hxsystem_allocator_t)i)) {
 			hxloghandler(hxloglevel_warning,
 				"memory_leak %s count %zu size %zu high_water %zu",
 				al.label(),
-				al.get_allocation_count((hxmemory_allocator)i),
-				al.get_bytes_allocated((hxmemory_allocator)i),
-				al.get_high_water((hxmemory_allocator)i));
+				al.get_allocation_count((hxsystem_allocator_t)i),
+				al.get_bytes_allocated((hxsystem_allocator_t)i),
+				al.get_high_water((hxsystem_allocator_t)i));
 		}
-		leak_count += (size_t)al.get_allocation_count((hxmemory_allocator)i);
+		leak_count += (size_t)al.get_allocation_count((hxsystem_allocator_t)i);
 	}
 	return leak_count;
 }
 
-hxmemory_allocator hxmemory_manager::begin_allocation_scope(
-		hxmemory_allocator_scope* scope, hxmemory_allocator new_id) {
+hxsystem_allocator_t hxmemory_manager::begin_allocation_scope(
+		hxsystem_allocator_scope* scope, hxsystem_allocator_t new_id) {
 
 	HX_MEMORY_MANAGER_LOCK_();
-	hxmemory_allocator previous_id = s_hxcurrent_memory_allocator;
+	hxsystem_allocator_t previous_id = s_hxcurrent_memory_allocator;
 	s_hxcurrent_memory_allocator = new_id;
 	get_allocator(s_hxcurrent_memory_allocator).begin_allocation_scope(
 		scope, s_hxcurrent_memory_allocator);
@@ -407,15 +407,15 @@ hxmemory_allocator hxmemory_manager::begin_allocation_scope(
 }
 
 void hxmemory_manager::end_allocation_scope(
-		hxmemory_allocator_scope* scope, hxmemory_allocator previous_id) {
+		hxsystem_allocator_scope* scope, hxsystem_allocator_t previous_id) {
 	HX_MEMORY_MANAGER_LOCK_();
 	get_allocator(s_hxcurrent_memory_allocator).end_allocation_scope(
 		scope, s_hxcurrent_memory_allocator);
 	s_hxcurrent_memory_allocator = previous_id;
 }
 
-void* hxmemory_manager::allocate(size_t size, hxmemory_allocator id, size_t alignment) {
-	if (id == hxmemory_allocator_current) {
+void* hxmemory_manager::allocate(size_t size, hxsystem_allocator_t id, size_t alignment) {
+	if (id == hxsystem_allocator_current) {
 		id = s_hxcurrent_memory_allocator;
 	}
 
@@ -466,42 +466,42 @@ void hxmemory_manager::free(void* ptr) {
 using namespace hxx_;
 
 // ----------------------------------------------------------------------------
-// hxmemory_allocator_scope
+// hxsystem_allocator_scope
 
-hxmemory_allocator_scope::hxmemory_allocator_scope(hxmemory_allocator id)
+hxsystem_allocator_scope::hxsystem_allocator_scope(hxsystem_allocator_t id)
 {
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 
 	// sets Current_allocator():
 	m_this_allocator_ = id;
 	m_previous_allocator_ = s_hxmemory_manager->begin_allocation_scope(this, id);
-	hxmemory_allocator_base& al = s_hxmemory_manager->get_allocator(id);
+	hxsystem_allocator_base& al = s_hxmemory_manager->get_allocator(id);
 	m_previous_allocation_count_ = al.get_allocation_count(id);
 	m_previous_bytes_allocated_ = al.get_bytes_allocated(id);
 }
 
-hxmemory_allocator_scope::~hxmemory_allocator_scope(void) {
+hxsystem_allocator_scope::~hxsystem_allocator_scope(void) {
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 	s_hxmemory_manager->end_allocation_scope(this, m_previous_allocator_);
 }
 
-size_t hxmemory_allocator_scope::get_total_allocation_count(void) const {
+size_t hxsystem_allocator_scope::get_total_allocation_count(void) const {
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 	return s_hxmemory_manager->get_allocator(m_this_allocator_).get_allocation_count(m_this_allocator_);
 }
 
-size_t hxmemory_allocator_scope::get_total_bytes_allocated(void) const {
+size_t hxsystem_allocator_scope::get_total_bytes_allocated(void) const {
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 	return s_hxmemory_manager->get_allocator(m_this_allocator_).get_bytes_allocated(m_this_allocator_);
 }
 
-size_t hxmemory_allocator_scope::get_scope_allocation_count(void) const {
+size_t hxsystem_allocator_scope::get_scope_allocation_count(void) const {
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 	return s_hxmemory_manager->get_allocator(m_this_allocator_).get_allocation_count(m_this_allocator_)
 		- m_previous_allocation_count_;
 }
 
-size_t hxmemory_allocator_scope::get_scope_bytes_allocated(void) const {
+size_t hxsystem_allocator_scope::get_scope_bytes_allocated(void) const {
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 	return s_hxmemory_manager->get_allocator(m_this_allocator_).get_bytes_allocated(m_this_allocator_)
 		- m_previous_bytes_allocated_;
@@ -514,7 +514,7 @@ extern "C"
 void* hxmalloc(size_t size) {
 	hxinit();
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
-	void* ptr = s_hxmemory_manager->allocate(size, hxmemory_allocator_current, HX_ALIGNMENT);
+	void* ptr = s_hxmemory_manager->allocate(size, hxsystem_allocator_current, HX_ALIGNMENT);
 	if ((HX_RELEASE) < 1) {
 		::memset(ptr, 0xab, size);
 	}
@@ -522,10 +522,10 @@ void* hxmalloc(size_t size) {
 }
 
 extern "C"
-void* hxmalloc_ext(size_t size, hxmemory_allocator id, size_t alignment) {
+void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, size_t alignment) {
 	hxinit();
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
-	void* ptr = s_hxmemory_manager->allocate(size, (hxmemory_allocator)id, alignment);
+	void* ptr = s_hxmemory_manager->allocate(size, (hxsystem_allocator_t)id, alignment);
 	if ((HX_RELEASE) < 1) {
 		::memset(ptr, 0xab, size);
 	}
@@ -537,7 +537,7 @@ void hxfree(void *ptr) {
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 
 	// Nothing allocated from the OS memory manager can be freed here.  Not unless
-	// it is wrapped with hxmemory_allocator_os_heap.
+	// it is wrapped with hxsystem_allocator_os_heap.
 	s_hxmemory_manager->free(ptr);
 }
 
@@ -579,7 +579,7 @@ void* hxmalloc(size_t size) {
 
 // No support for alignment when disabled. This makes sense for WASM.
 extern "C"
-void* hxmalloc_ext(size_t size, hxmemory_allocator id, size_t alignment) {
+void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, size_t alignment) {
 	(void)id; (void)alignment;
 	return hxmalloc_checked(size);
 }
@@ -595,21 +595,21 @@ void hxmemory_manager_shut_down(void) { }
 
 size_t hxmemory_manager_leak_count(void) { return 0; }
 
-hxmemory_allocator_scope::hxmemory_allocator_scope(hxmemory_allocator id)
+hxsystem_allocator_scope::hxsystem_allocator_scope(hxsystem_allocator_t id)
 {
 	(void)id;
 	m_previous_allocation_count_ = 0;
 	m_previous_bytes_allocated_ = 0;
 }
 
-hxmemory_allocator_scope::~hxmemory_allocator_scope(void) { }
+hxsystem_allocator_scope::~hxsystem_allocator_scope(void) { }
 
-size_t hxmemory_allocator_scope::get_total_allocation_count(void) const { return 0; }
+size_t hxsystem_allocator_scope::get_total_allocation_count(void) const { return 0; }
 
-size_t hxmemory_allocator_scope::get_total_bytes_allocated(void) const { return 0; }
+size_t hxsystem_allocator_scope::get_total_bytes_allocated(void) const { return 0; }
 
-size_t hxmemory_allocator_scope::get_scope_allocation_count(void) const { return 0; }
+size_t hxsystem_allocator_scope::get_scope_allocation_count(void) const { return 0; }
 
-size_t hxmemory_allocator_scope::get_scope_bytes_allocated(void) const { return 0; }
+size_t hxsystem_allocator_scope::get_scope_bytes_allocated(void) const { return 0; }
 
 #endif // HX_MEMORY_MANAGER_DISABLE

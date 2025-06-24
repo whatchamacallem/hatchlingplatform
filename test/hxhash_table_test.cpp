@@ -39,7 +39,7 @@ public:
 		test_object value;
 	};
 
-	class hxtest_string : public hxhash_table_node_string<hxmemory_allocator_temporary_stack> {
+	class hxtest_string : public hxhash_table_node_string<hxsystem_allocator_temporary_stack> {
 	public:
 		hxtest_string(const char* k) : hxhash_table_node_string(k) { }
 		test_object value;

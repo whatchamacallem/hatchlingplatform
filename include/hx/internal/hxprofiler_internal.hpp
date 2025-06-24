@@ -119,5 +119,5 @@ private:
 	hxcycles_t m_t0_;
 };
 
-} // namespace hxx_
+} // hxx_
 using namespace hxx_;

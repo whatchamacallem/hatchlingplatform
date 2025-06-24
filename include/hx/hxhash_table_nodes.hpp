@@ -49,7 +49,7 @@ public:
 // hxhash_table_node_string - Specialization of hxhash_table_set_node for C strings.
 // Allocates a copy, resulting in a string pool per-hash table. The key is
 // stored as a pointer to const to keep the hash table code const correct.
-template <hxmemory_allocator allocator_=hxmemory_allocator_heap>
+template <hxsystem_allocator_t allocator_=hxsystem_allocator_heap>
 class hxhash_table_node_string : public hxhash_table_set_node<const char*> {
 public:
 	// Constructor allocates and duplicates the string key, then initializes the

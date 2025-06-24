@@ -37,7 +37,7 @@ public:
 
 	template<typename key_t>
 	void test_range_and_type(uint32_t size, uint32_t mask, key_t offset) {
-		hxmemory_allocator_scope temporary_stack(hxmemory_allocator_temporary_stack);
+		hxsystem_allocator_scope temporary_stack(hxsystem_allocator_temporary_stack);
 
 		// Generate test_range_and_type data
 		hxarray<test_object<key_t> > a;
@@ -53,7 +53,7 @@ public:
 			rs.insert(a[i].id, &a[i]);
 		}
 
-		rs.sort(hxmemory_allocator_temporary_stack);
+		rs.sort(hxsystem_allocator_temporary_stack);
 
 		EXPECT_EQ(b.size(), size);
 		EXPECT_EQ(rs.size(), size);
@@ -77,14 +77,14 @@ public:
 TEST_F(hxradix_sort_test, null) {
 	hxradix_sort<uint32_t, const char> rs;
 
-	rs.sort(hxmemory_allocator_temporary_stack);
+	rs.sort(hxsystem_allocator_temporary_stack);
 	EXPECT_EQ(rs.size(), 0u);
 	EXPECT_TRUE(rs.empty());
 
 	rs.reserve(1u);
 	rs.insert(123u, "s");
 
-	rs.sort(hxmemory_allocator_temporary_stack);
+	rs.sort(hxsystem_allocator_temporary_stack);
 	EXPECT_EQ(rs.size(), 1u);
 	EXPECT_EQ(rs[0], 's');
 	EXPECT_EQ(*rs.get(0), 's');
