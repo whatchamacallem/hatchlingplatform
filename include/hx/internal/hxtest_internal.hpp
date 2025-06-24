@@ -106,7 +106,7 @@ public:
 		return this->file_null_();
 	}
 
-	size_t execute_tests_(void) {
+	size_t run_all_tests_(void) {
 		hxinit(); // RUN_ALL_TESTS could be called first.
 
 		hxinsertion_sort(m_test_cases_, m_test_cases_ + m_num_test_cases_);

@@ -179,12 +179,9 @@ public:
 	}
 
 	void on_free_non_virtual(void* ptr) {
-		if (ptr == hxnull) {
-			return;
-		}
 #if HX_USE_STD_ALIGNED_ALLOC
 		--m_allocation_count;
-		return ::free(ptr);
+		::free(ptr);
 #else
 
 		hxmemory_allocation_header& hdr = ((hxmemory_allocation_header*)ptr)[-1];
@@ -444,6 +441,10 @@ void* hxmemory_manager::allocate(size_t size, hxmemory_allocator id, size_t alig
 }
 
 void hxmemory_manager::free(void* ptr) {
+	if (ptr == hxnull) {
+		return;
+	}
+
 	// this path is hard-coded for efficiency.
 	HX_MEMORY_MANAGER_LOCK_();
 

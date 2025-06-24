@@ -135,7 +135,7 @@ hxconstexpr_fn void InitGoogleTest(void) { }
     void HX_TEST_NAME_(hxtest_, suite_name_, case_name_)::hxtest_case_dispatcher_::run_code_(void)
 
 // int RUN_ALL_TESTS() - Executes all registered test cases.
-#define RUN_ALL_TESTS() hxtest_::dispatcher_().execute_tests_()
+#define RUN_ALL_TESTS() hxtest_::dispatcher_().run_all_tests_()
 
 // void SUCCEED() - Marks the current test as successful without any checks.
 #define SUCCEED() hxtest_::dispatcher_().condition_check_(true, __FILE__, __LINE__, hxnull, false)
