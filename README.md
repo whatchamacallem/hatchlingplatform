@@ -88,4 +88,4 @@ Tested using:
  * Ubuntu clang version 18.1.3 (1ubuntu1) x86_64-pc-linux-gnu
  * emcc (Emscripten 4.0.5)
  * valgrind-3.22.0 (tested in 64-bit mode.)
- * See `test.sh`
+ * See `testmatrix.sh`

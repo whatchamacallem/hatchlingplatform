@@ -13,7 +13,7 @@ set -x
 
 time ./debugbuild.sh
 time ./teststrip.sh
-time ./test.sh
+time ./testmatrix.sh
 time ./testerrorhandling.sh
 time ./testcmake.sh
 time ./testcoverage.sh --headless

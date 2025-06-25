@@ -3,7 +3,7 @@
 
 // hatchling_pch.hpp - Includes all the Hatchling headers for use building a C++
 // precompiled header. Use hx/hatchling.h for building a C precompiled header.
-// See test.sh.
+// See testmatrix.sh.
 
 // HX_HATCHLING_PCH_USED - Non-zero if this header is correctly included before
 // the other hx headers.

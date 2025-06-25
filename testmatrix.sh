@@ -9,7 +9,7 @@
 #
 # Adds script args to compiler command line using "$@" so for example calling
 #
-#   ./test.sh -DHX_TEST_ERROR_HANDLING=1
+#   ./testmatrix.sh -DHX_TEST_ERROR_HANDLING=1
 #
 # will run the tests with HX_TEST_ERROR_HANDLING defined to be 1.
 

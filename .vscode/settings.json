@@ -42,6 +42,7 @@
         "multiset",
         "printhashes",
         "pthread",
+        "PYTHONPATH",
         "qwertyuiopasdfghjklzxcvbnm",
         "RAII",
         "rdcycle",
@@ -59,6 +60,7 @@
         "testcmake",
         "testcoverage",
         "testerrorhandling",
+        "testmatrix",
         "teststrip",
         "testwasm",
         "tsan",
@@ -79,5 +81,11 @@
         "Wwrite",
         "Xclang"
     ],
-    "editor.cursorBlinking": "solid"
+    "editor.cursorBlinking": "solid",
+    "python.analysis.typeCheckingMode": "standard",
+    "python.analysis.diagnosticSeverityOverrides": {
+    },
+    "python.analysis.extraPaths": [
+        "./cache/py"
+    ]
  }
