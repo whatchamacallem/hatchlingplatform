@@ -1,49 +1,63 @@
-import sys, os
-
 import clang.cindex
 
 clang.cindex.Config.set_library_file("/usr/lib/llvm-18/lib/libclang.so.1")
-
 index = clang.cindex.Index.create()
-
-translation_unit = index.parse("include/hx/hatchling_pch.hpp", args=["-std=c++17",
-	"-DHX_RELEASE=0", "-fdiagnostics-absolute-paths", "-Iinclude"])
+tu = index.parse(
+    "include/hx/hatchling_pch.hpp",
+    args=["-std=c++17", "-DHX_RELEASE=0", "-fdiagnostics-absolute-paths", "-Iinclude"]
+)
 
 def is_public_function(cursor):
-    try:
-        return (
-            cursor.kind == clang.cindex.CursorKind.FUNCTION_DECL
-            and cursor.linkage == clang.cindex.LinkageKind.EXTERNAL
-            and not cursor.spelling.startswith("hxx_")  # skip internal
+    return (
+        cursor.kind == clang.cindex.CursorKind.FUNCTION_DECL
+        and cursor.linkage == clang.cindex.LinkageKind.EXTERNAL
+        and not cursor.spelling.startswith("hxx_")
+    )
+
+def is_public_class(cursor):
+    return (
+        cursor.kind == clang.cindex.CursorKind.CLASS_DECL
+        and cursor.is_definition()
+        and cursor.access_specifier in (
+            clang.cindex.AccessSpecifier.PUBLIC,
+            clang.cindex.AccessSpecifier.INVALID  # Top-level classes
         )
-    except Exception:
-        # Skip cursors with unknown kind
-        return False
+        and not cursor.spelling.startswith("hxx_")
+    )
+
+def is_public_method(cursor):
+    return (
+        cursor.kind == clang.cindex.CursorKind.CXX_METHOD
+        and cursor.access_specifier == clang.cindex.AccessSpecifier.PUBLIC
+        and not cursor.spelling.startswith("hxx_")
+    )
 
 def get_function_decl(cursor):
-    result_type = cursor.result_type.spelling
-    name = cursor.spelling
-    params = []
-    for arg in cursor.get_arguments():
-        params.append(f"{arg.type.spelling} {arg.spelling}")
-    param_str = ", ".join(params)
-    return f"{result_type} {name}({param_str});"
+    params = [f"{a.type.spelling} {a.spelling}" for a in cursor.get_arguments()]
+    return f"{cursor.result_type.spelling} {cursor.spelling}({', '.join(params)});"
 
+def get_method_decl(cursor):
+    params = [f"{a.type.spelling} {a.spelling}" for a in cursor.get_arguments()]
+    const = " const" if cursor.is_const_method() else ""
+    return f"  {cursor.result_type.spelling} {cursor.spelling}({', '.join(params)}){const};"
 
-def visit(cursor):
-    for child in cursor.get_children():
-        if is_public_function(child):
-            print(get_function_decl(child))
-        visit(child)
+def get_class_decl(cursor, parent=None):
+    name = f"{parent}::{cursor.spelling}" if parent else cursor.spelling
+    decl = [f"class {name} {{"]
+    for m in cursor.get_children():
+        if is_public_method(m):
+            decl.append(get_method_decl(m))
+        elif is_public_class(m):
+            decl.append(get_class_decl(m, name))
+    decl.append("};")
+    return "\n".join(decl)
 
+def visit(cursor, parent=None):
+    for c in cursor.get_children():
+        if is_public_function(c):
+            print(get_function_decl(c))
+        elif is_public_class(c):
+            print(get_class_decl(c, parent))
 
-def print_all_visible(cursor, depth=0):
-    indent = "  " * depth
-    print(f"{indent}{cursor.kind} {cursor.spelling} ({cursor.displayname})")
-    for child in cursor.get_children():
-        print_all_visible(child, depth + 1)
-
-
-visit(translation_unit.cursor)
-
+visit(tu.cursor)
 print("🐉🐉🐉")
