@@ -55,53 +55,60 @@ def is_template(cursor):
         )
     )
 
-def get_function_decl(cursor):
-    params = [f"{a.type.spelling} {a.spelling}" for a in cursor.get_arguments()]
-    return f"{cursor.result_type.spelling} {cursor.spelling}({', '.join(params)});"
+def get_pybind_function(cursor):
+    return f'    m.def("{cursor.spelling}", &{cursor.spelling});'
 
-def get_method_decl(cursor):
-    params = [f"{a.type.spelling} {a.spelling}" for a in cursor.get_arguments()]
-    const = " const" if cursor.is_const_method() else ""
-    return f"  {cursor.result_type.spelling} {cursor.spelling}({', '.join(params)}){const};"
+def get_pybind_method(cursor, class_name):
+    return f'        .def("{cursor.spelling}", &{class_name}::{cursor.spelling})'
 
-def get_constructor_decl(cursor):
-    params = [f"{a.type.spelling} {a.spelling}" for a in cursor.get_arguments()]
-    return f"  {cursor.spelling}({', '.join(params)});"
+def get_pybind_constructor(cursor, class_name):
+    # Only supports default constructor for simplicity
+    params = list(cursor.get_arguments())
+    if not params:
+        return f'        .def(py::init<>())'
+    else:
+        # For non-default constructors, you may need to generate py::init<Args...>()
+        args = ", ".join([a.type.spelling for a in params])
+        return f'        .def(py::init<{args}>())'
 
-def get_destructor_decl(cursor):
-    return f"  ~{cursor.semantic_parent.spelling}();"
-
-def get_class_decl(cursor, parent=None):
-    if is_template(cursor):
-        return ""  # Skip template classes
-    name = f"{parent}::{cursor.spelling}" if parent else cursor.spelling
-    decl = [f"class {name} {{"]
+def get_pybind_class(cursor):
+    class_name = cursor.spelling
+    lines = [f'    py::class_<{class_name}>(m, "{class_name}")']
+    has_ctor = False
     for m in cursor.get_children():
         if is_template(m):
-            continue  # Skip template methods/constructors/destructors/classes
+            continue
         if is_public_constructor(m):
-            decl.append(get_constructor_decl(m))
-        elif is_public_destructor(m):
-            decl.append(get_destructor_decl(m))
+            lines.append(get_pybind_constructor(m, class_name))
+            has_ctor = True
         elif is_public_method(m):
-            decl.append(get_method_decl(m))
-        elif is_public_class(m):
-            inner = get_class_decl(m, name)
-            if inner:
-                decl.append(inner)
-    decl.append("};")
-    return "\n".join(decl)
+            lines.append(get_pybind_method(m, class_name))
+    if not has_ctor:
+        lines.append('        // No public constructor')
+    lines[-1] += ';'  # End the chain
+    return "\n".join(lines)
 
-def visit(cursor, parent=None):
+def visit(cursor):
+    functions = []
+    classes = []
     for c in cursor.get_children():
         if is_template(c):
-            continue  # Skip template functions/classes
+            continue
         if is_public_function(c):
-            print(get_function_decl(c))
+            functions.append(get_pybind_function(c))
         elif is_public_class(c):
-            decl = get_class_decl(c, parent)
-            if decl:
-                print(decl)
+            classes.append(get_pybind_class(c))
+    return functions, classes
 
-visit(tu.cursor)
-print("🐉🐉🐉")
+def main():
+    print('#include <pybind11/pybind11.h>')
+    print('namespace py = pybind11;')
+    print('\nPYBIND11_MODULE(hatchling, m) {')
+    functions, classes = visit(tu.cursor)
+    for f in functions:
+        print(f)
+    for c in classes:
+        print(c)
+    print('}')
+
+main()
