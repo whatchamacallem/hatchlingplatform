@@ -32,6 +32,7 @@
         "googletest",
         "gtest",
         "I../include",
+        "Iinclude",
         "lpthread",
         "lstdc",
         "lubsan",
