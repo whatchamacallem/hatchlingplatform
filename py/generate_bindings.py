@@ -1,11 +1,20 @@
+import sys
 import clang.cindex
 
 clang.cindex.Config.set_library_file("/usr/lib/llvm-18/lib/libclang.so.1")
 index = clang.cindex.Index.create()
 tu = index.parse(
-    "include/hx/hatchling_pch.hpp",
-    args=["-std=c++17", "-DHX_RELEASE=0", "-fdiagnostics-absolute-paths", "-Iinclude"]
+    "../include/hx/hatchling_pch.hpp",
+    args=["-std=c++17", "-DHX_RELEASE=0", "-fdiagnostics-absolute-paths", "-I../include"]
 )
+
+# Print all compiler (Clang) diagnostics
+for diag in tu.diagnostics:
+    print(diag)
+
+# Return failure if parsing failed
+if not tu or len(tu.diagnostics) > 0 and any(d.severity >= clang.cindex.Diagnostic.Error for d in tu.diagnostics):
+    sys.exit(1)
 
 def is_project_header(cursor):
     # Only include headers from your project (adjust as needed)
@@ -102,24 +111,33 @@ def get_cursor_doc(cursor):
     return ""
 
 def get_pybind_function(cursor):
-    params = [a.type.spelling for a in cursor.get_arguments()]
     doc = get_cursor_doc(cursor)
     doc_str = f', R"doc({doc})doc"' if doc else ""
+    params = [a.type.spelling for a in cursor.get_arguments()]
+    ret_type = cursor.result_type.spelling
     if params:
         args = ", ".join(params)
-        return f'    m.def("{cursor.spelling}", py::overload_cast<{args}>(&{cursor.spelling}){doc_str});'
+        return f'    m.def("{cursor.spelling}", static_cast<{ret_type}(*)( {args} )>(&{cursor.spelling}){doc_str});'
     else:
-        return f'    m.def("{cursor.spelling}", py::overload_cast<>(&{cursor.spelling}){doc_str});'
+        return f'    m.def("{cursor.spelling}", static_cast<{ret_type}(*)()>( &{cursor.spelling} ){doc_str});'
 
 def get_pybind_method(cursor, class_name):
-    params = [a.type.spelling for a in cursor.get_arguments()]
     doc = get_cursor_doc(cursor)
     doc_str = f', R"doc({doc})doc"' if doc else ""
+    params = [a.type.spelling for a in cursor.get_arguments()]
+    ret_type = cursor.result_type.spelling
+    const = " const" if cursor.is_const_method() else ""
     if params:
         args = ", ".join(params)
-        return f'        .def("{cursor.spelling}", py::overload_cast<{args}>(&{class_name}::{cursor.spelling}){doc_str})'
+        return (
+            f'        .def("{cursor.spelling}", '
+            f'static_cast<{ret_type} ({class_name}::*)({args}){const}>(&{class_name}::{cursor.spelling}){doc_str})'
+        )
     else:
-        return f'        .def("{cursor.spelling}", py::overload_cast<>(&{class_name}::{cursor.spelling}){doc_str})'
+        return (
+            f'        .def("{cursor.spelling}", '
+            f'static_cast<{ret_type} ({class_name}::*)(){const}>(&{class_name}::{cursor.spelling}){doc_str})'
+        )
 
 def get_pybind_constructor(cursor, class_name):
     # Support any kind of constructor, select by parameter count
@@ -151,6 +169,7 @@ def get_pybind_class(cursor):
     methods = []
     enums = []
     seen_methods = set()
+    has_public_destructor = False
     for m in cursor.get_children():
         if is_template(m):
             continue
@@ -159,18 +178,23 @@ def get_pybind_class(cursor):
             if sig not in seen_methods:
                 ctors.append(get_pybind_constructor(m, class_name))
                 seen_methods.add(sig)
+        elif m.kind == clang.cindex.CursorKind.DESTRUCTOR:  # type: ignore
+            if is_public_destructor(m):
+                has_public_destructor = True
         elif is_public_method(m):
             sig = get_method_signature(m)
             if sig not in seen_methods:
                 methods.append(get_pybind_method(m, class_name))
                 seen_methods.add(sig)
         elif is_public_enum(m):
-            enums.append(get_pybind_enum(m, class_name))  # Pass class_name for nested enums
-    if not ctors:
-        return None  # Skip emitting this class
+            enums.append(get_pybind_enum(m, class_name))
+
+    if not ctors or not has_public_destructor:
+        return None  # Skip emitting this class if no ctor or no public dtor
     lines.extend(ctors)
     lines.extend(methods)
     lines.extend(enums)
+    lines.append('        .def("__del__", [](py::object self) { self.release(); })')
     lines[-1] += ';'  # End the chain
     return "\n".join(lines)
 
@@ -216,7 +240,7 @@ def visit(cursor, seen_functions=None):
                 class_code = get_pybind_class(c)
                 if class_code is not None:
                     classes.append(class_code)
-            elif is_public_enum(c) and c.semantic_parent.kind != clang.cindex.CursorKind.CLASS_DECL:
+            elif is_public_enum(c) and c.semantic_parent.kind != clang.cindex.CursorKind.CLASS_DECL: # type: ignore
                 enums.append(get_pybind_enum(c))
             # Recurse into all children to find nested enums/classes/functions
             child_functions, child_classes, child_enums = visit(c, seen_functions)
