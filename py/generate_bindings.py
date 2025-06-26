@@ -147,7 +147,6 @@ def get_cursor_doc(cursor):
     """
     comment = cursor.raw_comment
     if comment:
-        # Remove leading comment markers and whitespace
         lines = comment.splitlines()
         cleaned = []
         for line in lines:
@@ -175,9 +174,9 @@ def get_pybind_function(cursor):
     ret_type = cursor.result_type.spelling
     if params:
         args = ", ".join(params)
-        return f'    m.def("{cursor.spelling}", static_cast<{ret_type}(*)( {args} )>(&{cursor.spelling}){doc_str});'
+        return f'    m.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{cursor.spelling}){doc_str});'
     else:
-        return f'    m.def("{cursor.spelling}", static_cast<{ret_type}(*)()>( &{cursor.spelling} ){doc_str});'
+        return f'    m.def("{cursor.spelling}", static_cast<{ret_type}(*)()>(&{cursor.spelling}){doc_str});'
 
 def get_pybind_method(cursor, class_name):
     """
@@ -235,6 +234,7 @@ def get_pybind_class(cursor):
     """
     Generates pybind11 binding code for a class, including its constructors and methods.
     Nested enums are included within the class scope.
+    Assumes a public destructor unless a protected or private one is found.
     """
     class_name = cursor.spelling
     doc = get_cursor_doc(cursor)
@@ -244,7 +244,7 @@ def get_pybind_class(cursor):
     methods = []
     enums = []
     seen_methods = set()
-    has_public_destructor = False
+    has_public_destructor = True  # Assume public destructor by default
     for m in cursor.get_children():
         if is_template(m):
             continue
@@ -254,8 +254,8 @@ def get_pybind_class(cursor):
                 ctors.append(get_pybind_constructor(m, class_name))
                 seen_methods.add(sig)
         elif m.kind == clang.cindex.CursorKind.DESTRUCTOR:  # type: ignore
-            if is_public_destructor(m):
-                has_public_destructor = True
+            if not is_public_destructor(m):
+                has_public_destructor = False
         elif is_public_method(m):
             sig = get_method_signature(m)
             if sig not in seen_methods:
@@ -266,9 +266,10 @@ def get_pybind_class(cursor):
     if not ctors or not has_public_destructor:
         return None
     lines.extend(ctors)
-    lines.extend(enums)  # Add enums within class scope
+    lines.extend(enums)
     lines.extend(methods)
-    lines.append('        .def("__del__", [](py::object self) { self.release(); })')
+    if has_public_destructor:
+        lines.append('        .def("__del__", [](py::object self) { self.release(); })')
     lines[-1] += ';'  # End the chain
     return "\n".join(lines)
 
@@ -287,7 +288,7 @@ def get_pybind_enum(cursor, parent_class=None):
                 value_doc = get_cursor_doc(c)
                 value_doc_str = f', R"doc({value_doc})doc"' if value_doc else ""
                 lines.append(f'            .value("{c.spelling}", {parent_class}::{enum_name}::{c.spelling}{value_doc_str})')
-        lines[-1] += '.export_values());'
+        lines[-1] += '.export_values();'
         return "\n".join(lines)
     else:
         lines = [f'    py::enum_<{enum_name}>(m, "{enum_name}"{doc_str})']
@@ -371,12 +372,10 @@ def main():
         args=CLANG_ARGS
     )
 
-    # Print all compiler (Clang) diagnostics
     status("Processing diagnostics...")
     for diag in tu.diagnostics:
         print(diag)
 
-    # Return failure if parsing failed
     if not tu or (len(tu.diagnostics) > 0 and any(d.severity >= clang.cindex.Diagnostic.Error for d in tu.diagnostics)):
         status("Parsing failed due to errors.")
         sys.exit(1)
