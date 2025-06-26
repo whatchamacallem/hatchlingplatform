@@ -103,35 +103,64 @@ def get_pybind_constructor(cursor, class_name):
         # The lambda is only needed if you want to disambiguate, but py::init<...>() is enough for pybind11
         return f'        .def(py::init<{args}>())  // {param_count} params'
 
+def get_function_signature(cursor):
+    params = tuple(a.type.spelling for a in cursor.get_arguments())
+    return (cursor.spelling, params)
+
+def get_method_signature(cursor):
+    params = tuple(a.type.spelling for a in cursor.get_arguments())
+    return (cursor.spelling, params)
+
 def get_pybind_class(cursor):
     class_name = cursor.spelling
     lines = [f'    py::class_<{class_name}>(m, "{class_name}")']
     ctors = []
     methods = []
+    enums = []
+    seen_methods = set()
     for m in cursor.get_children():
         if is_template(m):
             continue
         if is_public_constructor(m):
-            ctors.append(get_pybind_constructor(m, class_name))
+            sig = get_method_signature(m)
+            if sig not in seen_methods:
+                ctors.append(get_pybind_constructor(m, class_name))
+                seen_methods.add(sig)
         elif is_public_method(m):
-            methods.append(get_pybind_method(m, class_name))
+            sig = get_method_signature(m)
+            if sig not in seen_methods:
+                methods.append(get_pybind_method(m, class_name))
+                seen_methods.add(sig)
+        elif is_public_enum(m):
+            enums.append(get_pybind_enum(m, class_name))  # Pass class_name for nested enums
     if not ctors:
         return None  # Skip emitting this class
     lines.extend(ctors)
     lines.extend(methods)
+    lines.extend(enums)
     lines[-1] += ';'  # End the chain
     return "\n".join(lines)
 
-def get_pybind_enum(cursor):
+def get_pybind_enum(cursor, parent_class=None):
     enum_name = cursor.spelling
-    lines = [f'    py::enum_<{enum_name}>(m, "{enum_name}")']
-    for c in cursor.get_children():
-        if c.kind == clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
-            lines.append(f'        .value("{c.spelling}", {enum_name}::{c.spelling})')
-    lines[-1] += ';'
-    return "\n".join(lines)
+    if parent_class:
+        lines = [f'        .def(py::enum_<{parent_class}::{enum_name}>(m, "{enum_name}")']
+        for c in cursor.get_children():
+            if c.kind == clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
+                lines.append(f'            .value("{c.spelling}", {parent_class}::{enum_name}::{c.spelling})')
+        lines[-1] += '.export_values())'
+        return "\n".join(lines)
+    else:
+        lines = [f'    py::enum_<{enum_name}>(m, "{enum_name}")']
+        for c in cursor.get_children():
+            if c.kind == clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
+                lines.append(f'        .value("{c.spelling}", {enum_name}::{c.spelling})')
+        lines[-1] += '.export_values();'
+        return "\n".join(lines)
 
-def visit(cursor):
+def visit(cursor, seen_functions=None):
+    if seen_functions is None:
+        seen_functions = set()
     functions = []
     classes = []
     enums = []
@@ -140,20 +169,22 @@ def visit(cursor):
             if is_template(c):
                 continue
             if is_public_function(c):
-                functions.append(get_pybind_function(c))
+                sig = get_function_signature(c)
+                if sig not in seen_functions:
+                    functions.append(get_pybind_function(c))
+                    seen_functions.add(sig)
             elif is_public_class(c):
                 class_code = get_pybind_class(c)
                 if class_code is not None:
                     classes.append(class_code)
-            elif is_public_enum(c):
+            elif is_public_enum(c) and c.semantic_parent.kind != clang.cindex.CursorKind.CLASS_DECL:
                 enums.append(get_pybind_enum(c))
             # Recurse into all children to find nested enums/classes/functions
-            child_functions, child_classes, child_enums = visit(c)
+            child_functions, child_classes, child_enums = visit(c, seen_functions)
             functions.extend(child_functions)
             classes.extend(child_classes)
             enums.extend(child_enums)
         except Exception as e:
-            # The python bindings don't wrap everything and so sometimes they throw.
             continue
     return functions, classes, enums
 
