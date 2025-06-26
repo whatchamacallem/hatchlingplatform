@@ -11,10 +11,14 @@ public:
 	/// open_mode::stdio provides access to stdio. open_mode::failable skips asserts
 	/// and is similar to setting std::basic_ios::exceptions(0).
 	enum open_mode {
-		in = 1u,         /// Open for binary reading.
-		out = 2u,        /// Open for binary writing.
-		stdio = 4u,      /// Access stdio as in or out but not both.
-		failable = 8u    /// Skip asserts.
+		/// Open for binary reading.
+		in = 1u,
+		/// Open for binary writing.
+		out = 2u,
+		/// Access stdio as in or out but not both.
+		stdio = 4u,
+		/// Skip asserts.
+		failable = 8u
 	};
 
 	/// Constructor to initialize the file object with a specific mode.

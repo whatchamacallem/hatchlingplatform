@@ -28,11 +28,15 @@ extern "C" {
 
 /// hxsystem_allocator_t. (See hxmemory_manager.cpp)
 enum hxsystem_allocator_t {
-	hxsystem_allocator_heap,            /// OS heap with alignment and stats.
-	hxsystem_allocator_permanent,       /// Contigious allocations that must not be freed.
-	hxsystem_allocator_temporary_stack, /// Resets to previous depth at scope closure
+	/// OS heap with alignment and stats.
+	hxsystem_allocator_heap,
+	/// Contigious allocations that must not be freed.
+	hxsystem_allocator_permanent,
+	/// Resets to previous depth at scope closure
+	hxsystem_allocator_temporary_stack,
 	// ** hxsystem_allocator_current must be last in enum. **
-	hxsystem_allocator_current          /// Use current allocation scope.
+	/// Use current allocation scope.
+	hxsystem_allocator_current
 };
 
 /// hxmalloc - Allocates memory of the specified size using the default memory

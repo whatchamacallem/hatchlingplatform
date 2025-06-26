@@ -39,10 +39,14 @@ extern "C" {
 /// hxloglevel_t - Runtime setting for verbosity of log messages. Independently
 /// controls what messages are compiled in. See g_hxsettings.log_level.
 enum hxloglevel_t {
-	hxloglevel_log,     /// Verbose informative messages. No automatic newline.
-	hxloglevel_console, /// Responses to console commands. No automatic newline.
-	hxloglevel_warning, /// Warnings about serious problems.
-	hxloglevel_assert   /// Reason for abnormal termination or test failure.
+	/// Verbose informative messages. No automatic newline.
+	hxloglevel_log,
+	/// Responses to console commands. No automatic newline.
+	hxloglevel_console,
+	/// Warnings about serious problems.
+	hxloglevel_warning,
+	/// Reason for abnormal termination or test failure.
+	hxloglevel_assert
 };
 
 /// hxnull - The null pointer value for a given pointer type represented by the

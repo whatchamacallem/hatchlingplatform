@@ -149,10 +149,10 @@ protected:
             ::memcpy(&t_, &key_, sizeof t_);
             m_key_ = t_ ^ (uint32_t)(((int32_t)t_ >> 31) | 0x80000000);
         }
-        /// Comparison operator for sorting hxkey_value_pair objects by key.
 
-    private:
+        /// Comparison operator for sorting hxkey_value_pair objects by key.
         bool operator<(const hxkey_value_pair& rhs_) const { return m_key_ < rhs_.m_key_; }
+
         uint32_t m_key_; // The key used for sorting.
         void* m_val_;	 // The associated value.
     };
