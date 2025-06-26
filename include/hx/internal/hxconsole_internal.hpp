@@ -7,7 +7,7 @@
 // theory a byte code interpreter that understood the target calling
 // convention could shave off 10k from a system with 100s of commands.
 
-// Automatic cast from double with clamping.
+/// Automatic cast from double with clamping.
 template<typename T_>
 hxconsolenumber_t::operator T_(void) const {
 	// Reimplement std::numeric_limits for 2's compliment. The << operator
@@ -26,7 +26,7 @@ hxconsolenumber_t::operator T_(void) const {
 	return t;
 }
 
-// Automatic cast from uint without clamping. The sanitizer doesn't complain.
+/// Automatic cast from uint without clamping. The sanitizer doesn't complain.
 template<typename T_>
 hxconsolehex_t::operator T_(void) const {
 	T_ t = (T_)m_x_;
@@ -36,12 +36,12 @@ hxconsolehex_t::operator T_(void) const {
 
 namespace hxx_ {
 
-// Console tokens are delimited by any whitespace and non-printing low-ASCII
-// characters. NUL is considered a delimiter and must be checked for separately.
-// This happens to be UTF-8 compatable because it ignores characters >= U+0100.
+/// Console tokens are delimited by any whitespace and non-printing low-ASCII
+/// characters. NUL is considered a delimiter and must be checked for separately.
+/// This happens to be UTF-8 compatable because it ignores characters >= U+0100.
 hxconstexpr_fn static bool hxconsole_is_delimiter_(char ch_) { return ch_ <= 32; }
 
-// Checks for printing characters.
+/// Checks for printing characters.
 hxconstexpr_fn static bool hxconsole_is_end_of_line_(const char* str_) {
 	while (*str_ != '\0' && hxconsole_is_delimiter_(*str_)) {
 		++str_;
@@ -49,9 +49,9 @@ hxconstexpr_fn static bool hxconsole_is_end_of_line_(const char* str_) {
 	return *str_ == '\0' || *str_ == '#'; // Skip comments
 }
 
-// hxconsole_arg_<T_>. Binds string parsing operations to function args. Invalid
-// arguments are set to 0, arguments out of range result in the maximum
-// representable values.
+/// hxconsole_arg_<T_>. Binds string parsing operations to function args. Invalid
+/// arguments are set to 0, arguments out of range result in the maximum
+/// representable values.
 template<typename T_> class hxconsole_arg_ {
 private:
 	// Unsupported parameter type. No class, class or reference args allowed.
@@ -70,8 +70,8 @@ public:
 	hxconstexpr_fn static const char* get_label_(void) { return "hex"; }
 	hxconsolehex_t value_;
 };
-// const char* args capture remainder of line including comments starting with #'s.
-// Leading whitespace is discarded and string may be empty.
+/// const char* args capture remainder of line including comments starting with #'s.
+/// Leading whitespace is discarded and string may be empty.
 template<> class hxconsole_arg_<const char*> {
 public:
 	inline hxconsole_arg_(const char* str_, char** next_) {
@@ -90,8 +90,8 @@ public:
 
 class hxconsole_command_ {
 public:
-	virtual bool execute_(const char* str_) = 0; // Return false for parse errors.
-	virtual void usage_(const char* id_=hxnull) = 0; // Expects command name.
+	virtual bool execute_(const char* str_) = 0; /// Return false for parse errors.
+	virtual void usage_(const char* id_=hxnull) = 0; /// Expects command name.
 
 	// Returns 0 if no parameter. Returns 1 if a single number was found. Returns
 	// 2 to indicate a parse error. This avoids template bloat by being in a
@@ -298,20 +298,20 @@ inline hxconsole_variable_<T_> hxconsole_variable_factory_(volatile T_* var_) {
 	return hxconsole_variable_<T_>(var_);
 }
 
-// ERROR: Pointers cannot be console variables.
+/// ERROR: Pointers cannot be console variables.
 template<typename T_>
 inline void hxconsole_variable_factory_(volatile T_** var_) hxdelete_fn;
 template<typename T_>
 inline void hxconsole_variable_factory_(const volatile T_** var_) hxdelete_fn;
 
-// Wrap the string literal type because it is not used normally.
+/// Wrap the string literal type because it is not used normally.
 class hxconsole_hash_table_key_ {
 public:
 	explicit hxconsole_hash_table_key_(const char* s_) : str_(s_) { }
 	const char* str_;
 };
 
-// Uses FNV-1a string hashing. Stops at whitespace.
+/// Uses FNV-1a string hashing. Stops at whitespace.
 inline uint32_t hxkey_hash(hxconsole_hash_table_key_ k_) {
 	uint32_t x_ = (uint32_t)0x811c9dc5;
 	while (!hxconsole_is_delimiter_(*k_.str_)) {
@@ -321,13 +321,13 @@ inline uint32_t hxkey_hash(hxconsole_hash_table_key_ k_) {
 	return x_;
 }
 
-// A version of ::strcmp that stops at whitespace or NUL.
+/// A version of ::strcmp that stops at whitespace or NUL.
 inline uint32_t hxkey_equal(hxconsole_hash_table_key_ a_, hxconsole_hash_table_key_ b_) {
 	while(!hxconsole_is_delimiter_(*a_.str_) && *a_.str_ == *b_.str_) { ++a_.str_; ++b_.str_; }
 	return hxconsole_is_delimiter_(*a_.str_) && hxconsole_is_delimiter_(*b_.str_);
 };
 
-// this is how to write a hash node without including hash table code.
+/// this is how to write a hash node without including hash table code.
 class hxconsole_hash_table_node_ {
 public:
 	typedef hxconsole_hash_table_key_ key_t;
@@ -361,8 +361,8 @@ private:
 
 void hxconsole_register_(hxconsole_hash_table_node_* node);
 
-// registers a console command using a global variable without memory allocations.
-// There is no reason to deregister or destruct anything.
+/// registers a console command using a global variable without memory allocations.
+/// There is no reason to deregister or destruct anything.
 class hxconsole_constructor_ {
 public:
 	template<typename Command_>

@@ -13,18 +13,18 @@ class hxfile;
 // hxconsolenumber_t or hxconsolehex_t as parameter types are required for the
 // bindings to work. See the following commands for examples.
 
-// hxconsolenumber_t - A number. Uses double as an intermediate type. This
-// reduces template bloat by limiting parameter types. This is the same type of
-// generic number approach Java_script uses. Always 64-bit.
+/// hxconsolenumber_t - A number. Uses double as an intermediate type. This
+/// reduces template bloat by limiting parameter types. This is the same type of
+/// generic number approach Java_script uses. Always 64-bit.
 class hxconsolenumber_t {
 public:
-    // Zero
+    /// Zero
     hxconsolenumber_t(void) : m_x_(0.0) { }
 
-    // Construct from any number
+    /// Construct from any number
     template<typename T_> hxconsolenumber_t(T_ x_) : m_x_((double)x_) { }
 
-    // Automatic casts to all number types.
+    /// Automatic casts to all number types.
     template<typename T_> operator T_() const;
 	operator bool(void) const { return m_x_ != 0.0; }
 	operator float(void) const { return (float)m_x_; }
@@ -37,19 +37,19 @@ private:
     double m_x_;
 };
 
-// hxconsolehex_t - A hex value. Uses uint64_t as an intermediate type. This
-// type of command parameter parses hex and then uses a C-style cast to
-// convert to any type. Useful for passing pointers and hash values via the
-// console. Always 64-bit.
+/// hxconsolehex_t - A hex value. Uses uint64_t as an intermediate type. This
+/// type of command parameter parses hex and then uses a C-style cast to
+/// convert to any type. Useful for passing pointers and hash values via the
+/// console. Always 64-bit.
 class hxconsolehex_t {
 public:
-    // Zero
+    /// Zero
     hxconsolehex_t(void) : m_x_(0u) { }
 
-    // Construct from any integer.
+    /// Construct from any integer.
     hxconsolehex_t(uint64_t x_) : m_x_(x_) { }
 
-    // Automatic cast to all integer types.
+    /// Automatic cast to all integer types.
     template<typename T_> operator T_() const;
 
 private:
@@ -57,59 +57,59 @@ private:
 	uint64_t m_x_;
 };
 
-// hxconsole_command - Registers a function using a global constructor. Use in a
-// global scope. Command will have the same name and args as the function.
-// - x: Valid C identifier that evaluates to a function pointer.
-//   E.g. hxconsole_command(srand);
+/// hxconsole_command - Registers a function using a global constructor. Use in a
+/// global scope. Command will have the same name and args as the function.
+/// - x: Valid C identifier that evaluates to a function pointer.
+///   E.g. hxconsole_command(srand);
 #define hxconsole_command(x_) static hxconsole_constructor_ \
     g_hxconsole_symbol_##x_(hxconsole_command_factory_(&(x_)), #x_)
 
-// hxconsole_command_named - Registers a named function using a global constructor.
-// Use in a global scope. Provided name_ must be a valid C identifier.
-// - x: Any expression that evaluates to a function pointer.
-// - name: Valid C identifier that identifies the command.
-//   E.g. hxconsole_command_named(srand, seed_rand);
+/// hxconsole_command_named - Registers a named function using a global constructor.
+/// Use in a global scope. Provided name_ must be a valid C identifier.
+/// - x: Any expression that evaluates to a function pointer.
+/// - name: Valid C identifier that identifies the command.
+///   E.g. hxconsole_command_named(srand, seed_rand);
 #define hxconsole_command_named(x_, name_) static hxconsole_constructor_ \
     g_hxconsole_symbol_##name_(hxconsole_command_factory_(&(x_)), #name_)
 
-// hxconsole_variable - Registers a variable. Use in a global scope. Will have the
-// same name as the variable.
-// - x: Valid C identifier that evaluates to a variable.
-//   E.g.
-//   static bool is_my_hack_enabled=false;
-//   hxconsole_variable(is_my_hack_enabled);
+/// hxconsole_variable - Registers a variable. Use in a global scope. Will have the
+/// same name as the variable.
+/// - x: Valid C identifier that evaluates to a variable.
+///   E.g.
+///   static bool is_my_hack_enabled=false;
+///   hxconsole_variable(is_my_hack_enabled);
 #define hxconsole_variable(x_) static hxconsole_constructor_ \
     g_hxconsole_symbol_##x_(hxconsole_variable_factory_(&(x_)), #x_)
 
-// hxconsole_variable_named - Registers a named variable. Use in a global scope.
-// Provided name must be a valid C identifier.
-// - x: Any expression that evaluates to a variable.
-// - name: Valid C identifier that identifies the variable.
-//   E.g.
-//   static bool is_my_hack_enabled=false;
-//   hxconsole_variable_named(is_my_hack_enabled, f_hack); // add "f_hack" to the console.
+/// hxconsole_variable_named - Registers a named variable. Use in a global scope.
+/// Provided name must be a valid C identifier.
+/// - x: Any expression that evaluates to a variable.
+/// - name: Valid C identifier that identifies the variable.
+///   E.g.
+///   static bool is_my_hack_enabled=false;
+///   hxconsole_variable_named(is_my_hack_enabled, f_hack); /// add "f_hack" to the console.
 #define hxconsole_variable_named(x_, name_) static hxconsole_constructor_ \
     g_hxconsole_symbol_##name_(hxconsole_variable_factory_(&(x_)), #name_)
 
-// hxconsole_deregister - Explicit de-registration of a console symbol.
-// - id: Valid C identifier that identifies the variable.
+/// hxconsole_deregister - Explicit de-registration of a console symbol.
+/// - id: Valid C identifier that identifies the variable.
 void hxconsole_deregister(const char* id_);
 
-// hxconsole_exec_line - Evaluates a console command to either call a function or
-// set a variable. E.g.: "srand 77" or "a_variable 5"
-// - command: A string executed by the console.
+/// hxconsole_exec_line - Evaluates a console command to either call a function or
+/// set a variable. E.g.: "srand 77" or "a_variable 5"
+/// - command: A string executed by the console.
 bool hxconsole_exec_line(const char* command_);
 
-// hxconsole_exec_file - Executes a configuration file which is opened for reading.
-// Ignores blank lines and comments starting with #.
-// - file: A file containing commands.
+/// hxconsole_exec_file - Executes a configuration file which is opened for reading.
+/// Ignores blank lines and comments starting with #.
+/// - file: A file containing commands.
 bool hxconsole_exec_file(hxfile& file_);
 
-// hxconsole_exec_filename - Opens a configuration file by name and executes it.
-// - filename: A file containing commands.
+/// hxconsole_exec_filename - Opens a configuration file by name and executes it.
+/// - filename: A file containing commands.
 bool hxconsole_exec_filename(const char* filename_);
 
-// hxconsole_help - Logs all console symbols to the console log.
+/// hxconsole_help - Logs all console symbols to the console log.
 bool hxconsole_help(void);
 
 // Include internals after hxconsolehex_t

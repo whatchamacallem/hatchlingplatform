@@ -17,11 +17,16 @@ def is_project_header(cursor):
         and "include/hx/internal/" not in header_str
     )
 
+def uses_va_list(cursor):
+    return any("va_list" in a.type.spelling for a in cursor.get_arguments())
+
 def is_public_function(cursor):
     return (
         cursor.kind == clang.cindex.CursorKind.FUNCTION_DECL # type: ignore
         and cursor.linkage == clang.cindex.LinkageKind.EXTERNAL # type: ignore
         and is_project_header(cursor)
+        and not cursor.type.is_function_variadic()
+        and not uses_va_list(cursor)
     )
 
 def is_public_class(cursor):
@@ -39,6 +44,8 @@ def is_public_method(cursor):
     return (
         cursor.kind == clang.cindex.CursorKind.CXX_METHOD # type: ignore
         and cursor.access_specifier == clang.cindex.AccessSpecifier.PUBLIC # type: ignore
+        and not cursor.type.is_function_variadic()
+        and not uses_va_list(cursor)
     )
 
 def is_public_constructor(cursor):
@@ -73,22 +80,44 @@ def is_public_enum(cursor):
         and is_project_header(cursor)  # Only include project enums
     )
 
+def get_cursor_doc(cursor):
+    """Extracts and formats the raw comment for use as a docstring."""
+    comment = cursor.raw_comment
+    if comment:
+        # Remove leading comment markers and whitespace
+        lines = comment.splitlines()
+        cleaned = []
+        for line in lines:
+            line = line.strip()
+            if line.startswith("//"):
+                line = line[2:].strip()
+            elif line.startswith("/*"):
+                line = line[2:].strip()
+            elif line.endswith("*/"):
+                line = line[:-2].strip()
+            cleaned.append(line)
+        return "\\n".join(cleaned)
+    return ""
+
 def get_pybind_function(cursor):
-    # Use py::overload_cast for overloaded functions
     params = [a.type.spelling for a in cursor.get_arguments()]
+    doc = get_cursor_doc(cursor)
+    doc_str = f', R"doc({doc})doc"' if doc else ""
     if params:
         args = ", ".join(params)
-        return f'    m.def("{cursor.spelling}", py::overload_cast<{args}>(&{cursor.spelling}));'
+        return f'    m.def("{cursor.spelling}", py::overload_cast<{args}>(&{cursor.spelling}){doc_str});'
     else:
-        return f'    m.def("{cursor.spelling}", py::overload_cast<>(&{cursor.spelling}));'
+        return f'    m.def("{cursor.spelling}", py::overload_cast<>(&{cursor.spelling}){doc_str});'
 
 def get_pybind_method(cursor, class_name):
     params = [a.type.spelling for a in cursor.get_arguments()]
+    doc = get_cursor_doc(cursor)
+    doc_str = f', R"doc({doc})doc"' if doc else ""
     if params:
         args = ", ".join(params)
-        return f'        .def("{cursor.spelling}", py::overload_cast<{args}>(&{class_name}::{cursor.spelling}))'
+        return f'        .def("{cursor.spelling}", py::overload_cast<{args}>(&{class_name}::{cursor.spelling}){doc_str})'
     else:
-        return f'        .def("{cursor.spelling}", py::overload_cast<>(&{class_name}::{cursor.spelling}))'
+        return f'        .def("{cursor.spelling}", py::overload_cast<>(&{class_name}::{cursor.spelling}){doc_str})'
 
 def get_pybind_constructor(cursor, class_name):
     # Support any kind of constructor, select by parameter count
@@ -101,7 +130,7 @@ def get_pybind_constructor(cursor, class_name):
         args = ", ".join(param_types)
         # Use py::init<...>() and a lambda to select by parameter count
         # The lambda is only needed if you want to disambiguate, but py::init<...>() is enough for pybind11
-        return f'        .def(py::init<{args}>())  // {param_count} params'
+        return f'        .def(py::init<{args}>())  /// {param_count} params'
 
 def get_function_signature(cursor):
     params = tuple(a.type.spelling for a in cursor.get_arguments())

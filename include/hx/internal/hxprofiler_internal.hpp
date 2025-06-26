@@ -41,13 +41,13 @@ hxstatic_assert(0, "Implement hxtime_sample_cycles");
 
 namespace hxx_ {
 
-// Use direct access to an object with static linkage for speed.
+/// Use direct access to an object with static linkage for speed.
 extern class hxprofiler_internal_ g_hxprofiler_;
 
-// Address of s_hxprofiler_thread_id_address_ used to uniquely identify thread.
+/// Address of s_hxprofiler_thread_id_address_ used to uniquely identify thread.
 extern hxthread_local char s_hxprofiler_thread_id_address_;
 
-// hxprofiler_internal_ - Manager object for internal use.
+/// hxprofiler_internal_ - Manager object for internal use.
 class hxprofiler_internal_ {
 public:
 	hxprofiler_internal_() : m_is_started_(false) { };
@@ -82,7 +82,7 @@ private:
 	hxarray<hxprofiler_record_, HX_PROFILER_MAX_RECORDS> m_records;
 };
 
-// hxprofiler_scope_internal_ - RAII object for internal use.
+/// hxprofiler_scope_internal_ - RAII object for internal use.
 template<hxcycles_t min_cycles_=0u>
 class hxprofiler_scope_internal_ {
 public:
