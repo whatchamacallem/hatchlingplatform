@@ -2,20 +2,24 @@
 
 set -o errexit
 
-# Keep a cached copy of the python bindings for clang. They are in a python
-# module named clang.
-PY_MODULE_NAME="clang"
-PY_MODULE_VERSION="18.1.8"
+# Keep a cached copy of the python modules required.
+PY_CLANG_NAME="clang"
+PY_CLANG_VERSION="18.1.8"
+
+PY_BIND_NAME="pybind11"
+PY_BIND_VERSION="2.13.6"
+
 PY_LIB_DIR="cache/py"
 
-TEST_PY="import sys; sys.path.insert(0, \"$PY_LIB_DIR\"); import $PY_MODULE_NAME"
+TEST_PY="import sys; sys.path.insert(0, \"$PY_LIB_DIR\"); import $PY_CLANG_NAME; import $PY_BIND_NAME"
 if [ -d "$PY_LIB_DIR" ] && python3 -c "$TEST_PY" > /dev/null 2>&1; then
-    echo "successfully tested $PY_MODULE_NAME from $PY_LIB_DIR..."
+    echo "tested $PY_CLANG_NAME, $PY_BIND_NAME from $PY_LIB_DIR..."
 else
-    echo "downloading and installing $PY_MODULE_NAME to $PY_LIB_DIR"
+    echo "downloading and installing $PY_CLANG_NAME to $PY_LIB_DIR"
     set +x
     mkdir -p $PY_LIB_DIR
-    pip install --target=$PY_LIB_DIR --no-cache-dir $PY_MODULE_NAME==$PY_MODULE_VERSION
+    pip install --target=$PY_LIB_DIR --no-cache-dir $PY_CLANG_NAME==$PY_CLANG_VERSION
+    pip install --target=$PY_LIB_DIR --no-cache-dir $PY_BIND_NAME==$PY_BIND_VERSION
 fi
 
 export PYTHONPATH="`pwd`/$PY_LIB_DIR:."

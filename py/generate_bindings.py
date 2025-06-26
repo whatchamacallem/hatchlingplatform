@@ -7,108 +7,168 @@ tu = index.parse(
     args=["-std=c++17", "-DHX_RELEASE=0", "-fdiagnostics-absolute-paths", "-Iinclude"]
 )
 
+def is_project_header(cursor):
+    # Only include headers from your project (adjust as needed)
+    header = cursor.location.file
+    header_str = str(header) if header is not None else ""
+    return (
+        header is not None
+        and "include/hx/" in header_str
+        and "include/hx/internal/" not in header_str
+    )
+
 def is_public_function(cursor):
     return (
-        cursor.kind == clang.cindex.CursorKind.FUNCTION_DECL
-        and cursor.linkage == clang.cindex.LinkageKind.EXTERNAL
-        and not cursor.spelling.startswith("hxx_")
+        cursor.kind == clang.cindex.CursorKind.FUNCTION_DECL # type: ignore
+        and cursor.linkage == clang.cindex.LinkageKind.EXTERNAL # type: ignore
+        and is_project_header(cursor)
     )
 
 def is_public_class(cursor):
     return (
-        cursor.kind == clang.cindex.CursorKind.CLASS_DECL
+        cursor.kind == clang.cindex.CursorKind.CLASS_DECL # type: ignore
         and cursor.is_definition()
         and cursor.access_specifier in (
-            clang.cindex.AccessSpecifier.PUBLIC,
-            clang.cindex.AccessSpecifier.INVALID  # Top-level classes
+            clang.cindex.AccessSpecifier.PUBLIC, # type: ignore
+            clang.cindex.AccessSpecifier.INVALID  # type: ignore # Top-level classes
         )
-        and not cursor.spelling.startswith("hxx_")
+        and is_project_header(cursor)
     )
 
 def is_public_method(cursor):
     return (
-        cursor.kind == clang.cindex.CursorKind.CXX_METHOD
-        and cursor.access_specifier == clang.cindex.AccessSpecifier.PUBLIC
-        and not cursor.spelling.startswith("hxx_")
+        cursor.kind == clang.cindex.CursorKind.CXX_METHOD # type: ignore
+        and cursor.access_specifier == clang.cindex.AccessSpecifier.PUBLIC # type: ignore
     )
 
 def is_public_constructor(cursor):
     return (
-        cursor.kind == clang.cindex.CursorKind.CONSTRUCTOR
-        and cursor.access_specifier == clang.cindex.AccessSpecifier.PUBLIC
-        and not cursor.spelling.startswith("hxx_")
+        cursor.kind == clang.cindex.CursorKind.CONSTRUCTOR # type: ignore
+        and cursor.access_specifier == clang.cindex.AccessSpecifier.PUBLIC # type: ignore
     )
 
 def is_public_destructor(cursor):
     return (
-        cursor.kind == clang.cindex.CursorKind.DESTRUCTOR
-        and cursor.access_specifier == clang.cindex.AccessSpecifier.PUBLIC
-        and not cursor.spelling.startswith("hxx_")
+        cursor.kind == clang.cindex.CursorKind.DESTRUCTOR # type: ignore
+        and cursor.access_specifier == clang.cindex.AccessSpecifier.PUBLIC # type: ignore
     )
 
 def is_template(cursor):
     return (
         cursor.kind in (
-            clang.cindex.CursorKind.CLASS_TEMPLATE,
-            clang.cindex.CursorKind.FUNCTION_TEMPLATE,
-            clang.cindex.CursorKind.CLASS_TEMPLATE_PARTIAL_SPECIALIZATION
+            clang.cindex.CursorKind.CLASS_TEMPLATE, # type: ignore
+            clang.cindex.CursorKind.FUNCTION_TEMPLATE, # type: ignore
+            clang.cindex.CursorKind.CLASS_TEMPLATE_PARTIAL_SPECIALIZATION # type: ignore
         )
     )
 
+def is_public_enum(cursor):
+    return (
+        cursor.kind == clang.cindex.CursorKind.ENUM_DECL # type: ignore
+        and cursor.is_definition()
+        and cursor.access_specifier in (
+            clang.cindex.AccessSpecifier.PUBLIC, # type: ignore
+            clang.cindex.AccessSpecifier.INVALID  # type: ignore # Top-level enums
+        )
+        and is_project_header(cursor)  # Only include project enums
+    )
+
 def get_pybind_function(cursor):
-    return f'    m.def("{cursor.spelling}", &{cursor.spelling});'
+    # Use py::overload_cast for overloaded functions
+    params = [a.type.spelling for a in cursor.get_arguments()]
+    if params:
+        args = ", ".join(params)
+        return f'    m.def("{cursor.spelling}", py::overload_cast<{args}>(&{cursor.spelling}));'
+    else:
+        return f'    m.def("{cursor.spelling}", py::overload_cast<>(&{cursor.spelling}));'
 
 def get_pybind_method(cursor, class_name):
-    return f'        .def("{cursor.spelling}", &{class_name}::{cursor.spelling})'
+    params = [a.type.spelling for a in cursor.get_arguments()]
+    if params:
+        args = ", ".join(params)
+        return f'        .def("{cursor.spelling}", py::overload_cast<{args}>(&{class_name}::{cursor.spelling}))'
+    else:
+        return f'        .def("{cursor.spelling}", py::overload_cast<>(&{class_name}::{cursor.spelling}))'
 
 def get_pybind_constructor(cursor, class_name):
-    # Only supports default constructor for simplicity
+    # Support any kind of constructor, select by parameter count
     params = list(cursor.get_arguments())
-    if not params:
+    param_types = [a.type.spelling for a in params]
+    param_count = len(param_types)
+    if param_count == 0:
         return f'        .def(py::init<>())'
     else:
-        # For non-default constructors, you may need to generate py::init<Args...>()
-        args = ", ".join([a.type.spelling for a in params])
-        return f'        .def(py::init<{args}>())'
+        args = ", ".join(param_types)
+        # Use py::init<...>() and a lambda to select by parameter count
+        # The lambda is only needed if you want to disambiguate, but py::init<...>() is enough for pybind11
+        return f'        .def(py::init<{args}>())  // {param_count} params'
 
 def get_pybind_class(cursor):
     class_name = cursor.spelling
     lines = [f'    py::class_<{class_name}>(m, "{class_name}")']
-    has_ctor = False
+    ctors = []
+    methods = []
     for m in cursor.get_children():
         if is_template(m):
             continue
         if is_public_constructor(m):
-            lines.append(get_pybind_constructor(m, class_name))
-            has_ctor = True
+            ctors.append(get_pybind_constructor(m, class_name))
         elif is_public_method(m):
-            lines.append(get_pybind_method(m, class_name))
-    if not has_ctor:
-        lines.append('        // No public constructor')
+            methods.append(get_pybind_method(m, class_name))
+    if not ctors:
+        return None  # Skip emitting this class
+    lines.extend(ctors)
+    lines.extend(methods)
     lines[-1] += ';'  # End the chain
+    return "\n".join(lines)
+
+def get_pybind_enum(cursor):
+    enum_name = cursor.spelling
+    lines = [f'    py::enum_<{enum_name}>(m, "{enum_name}")']
+    for c in cursor.get_children():
+        if c.kind == clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
+            lines.append(f'        .value("{c.spelling}", {enum_name}::{c.spelling})')
+    lines[-1] += ';'
     return "\n".join(lines)
 
 def visit(cursor):
     functions = []
     classes = []
+    enums = []
     for c in cursor.get_children():
-        if is_template(c):
+        try:
+            if is_template(c):
+                continue
+            if is_public_function(c):
+                functions.append(get_pybind_function(c))
+            elif is_public_class(c):
+                class_code = get_pybind_class(c)
+                if class_code is not None:
+                    classes.append(class_code)
+            elif is_public_enum(c):
+                enums.append(get_pybind_enum(c))
+            # Recurse into all children to find nested enums/classes/functions
+            child_functions, child_classes, child_enums = visit(c)
+            functions.extend(child_functions)
+            classes.extend(child_classes)
+            enums.extend(child_enums)
+        except Exception as e:
+            # The python bindings don't wrap everything and so sometimes they throw.
             continue
-        if is_public_function(c):
-            functions.append(get_pybind_function(c))
-        elif is_public_class(c):
-            classes.append(get_pybind_class(c))
-    return functions, classes
+    return functions, classes, enums
 
 def main():
     print('#include <pybind11/pybind11.h>')
     print('namespace py = pybind11;')
     print('\nPYBIND11_MODULE(hatchling, m) {')
-    functions, classes = visit(tu.cursor)
-    for f in functions:
-        print(f)
+    functions, classes, enums = visit(tu.cursor)
+    # Print enums first so they are available for classes/functions
+    for e in enums:
+        print(e)
     for c in classes:
         print(c)
+    for f in functions:
+        print(f)
     print('}')
 
 main()
