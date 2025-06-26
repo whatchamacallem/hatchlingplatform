@@ -46,6 +46,7 @@
         "multiset",
         "printhashes",
         "pthread",
+        "pybind",
         "PYTHONPATH",
         "qwertyuiopasdfghjklzxcvbnm",
         "RAII",

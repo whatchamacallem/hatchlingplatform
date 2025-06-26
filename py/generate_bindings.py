@@ -234,7 +234,7 @@ def get_method_signature(cursor):
 def get_pybind_class(cursor):
     """
     Generates pybind11 binding code for a class, including its constructors and methods.
-    Nested enums are collected but emitted separately at module scope.
+    Nested enums are included within the class scope.
     """
     class_name = cursor.spelling
     doc = get_cursor_doc(cursor)
@@ -262,14 +262,15 @@ def get_pybind_class(cursor):
                 methods.append(get_pybind_method(m, class_name))
                 seen_methods.add(sig)
         elif is_public_enum(m):
-            enums.append(get_pybind_enum(m, class_name))
+            enums.append(get_pybind_enum(m, None))  # Pass None for parent_class to avoid prefixing
     if not ctors or not has_public_destructor:
-        return None, []
+        return None
     lines.extend(ctors)
+    lines.extend(enums)  # Add enums within class scope
     lines.extend(methods)
     lines.append('        .def("__del__", [](py::object self) { self.release(); })')
     lines[-1] += ';'  # End the chain
-    return "\n".join(lines), enums
+    return "\n".join(lines)
 
 def get_pybind_enum(cursor, parent_class=None):
     """
@@ -286,7 +287,7 @@ def get_pybind_enum(cursor, parent_class=None):
                 value_doc = get_cursor_doc(c)
                 value_doc_str = f', R"doc({value_doc})doc"' if value_doc else ""
                 lines.append(f'            .value("{c.spelling}", {parent_class}::{enum_name}::{c.spelling}{value_doc_str})')
-        lines[-1] += '.export_values())'
+        lines[-1] += '.export_values());'
         return "\n".join(lines)
     else:
         lines = [f'    py::enum_<{enum_name}>(m, "{enum_name}"{doc_str})']
@@ -318,10 +319,9 @@ def visit(cursor, seen_functions=None):
                     functions.append(get_pybind_function(c))
                     seen_functions.add(sig)
             elif is_public_class(c):
-                class_code, class_enums = get_pybind_class(c)
+                class_code = get_pybind_class(c)
                 if class_code is not None:
                     classes.append(class_code)
-                enums.extend(class_enums)
             elif is_public_enum(c) and c.semantic_parent.kind != clang.cindex.CursorKind.CLASS_DECL: # type: ignore
                 enums.append(get_pybind_enum(c))
             child_functions, child_classes, child_enums = visit(c, seen_functions)
