@@ -39,3 +39,11 @@ fi
 rm -rf ./bin; mkdir ./bin && cd ./bin
 
 python3 $HX_DIR/py/generate_bindings.py $HX_DIR/include/hx/hatchling_pch.hpp python_bindings.cpp
+
+clang -I$HX_DIR/include -O0 -g -DHX_RELEASE=0 -std=c99 \
+	-c $HX_DIR/src/*.c $HX_DIR/test/*.c
+
+clang++ -I$HX_DIR/include -I$HX_DIR/$PY_LIB_DIR/pybind11/include -I/usr/include/python3.12 \
+    -O0 -g -DHX_RELEASE=0 -pthread -lpthread -std=c++11 -lstdc++ \
+    -fdiagnostics-absolute-paths -Wfatal-errors \
+    python_bindings.cpp $HX_DIR/*/*.cpp *.o -o hxtest
