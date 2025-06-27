@@ -38,6 +38,10 @@ CLANG_ARGS = [
 
 VERBOSE = True
 
+def verbose(msg):
+    if VERBOSE:
+        print(f" - {msg}")
+
 def is_project_header(cursor):
     """
     Returns True if the cursor's location is in a project-specific header file.
@@ -140,6 +144,17 @@ def is_public_enum(cursor):
         and is_project_header(cursor)  # Only include project enums
     )
 
+def is_namespace(cursor):
+    """
+    Returns True if the cursor is a namespace definition in the project.
+    """
+    return (
+        cursor.kind == clang.cindex.CursorKind.NAMESPACE  # type: ignore
+        and cursor.is_definition()
+        and cursor.access_specifier == clang.cindex.AccessSpecifier.INVALID  # type: ignore
+        and is_project_header(cursor)
+    )
+
 def get_cursor_doc(cursor):
     """
     Extracts and formats the raw comment for use as a docstring.
@@ -160,7 +175,7 @@ def get_cursor_doc(cursor):
 
             line = line.replace('\\', '\\\\').replace('"', '\\"')
             cleaned.append(line)
-        return "\\n".join(cleaned) if len(cleaned) else ""
+        return "\\n".join(cleaned) if cleaned else ""
     return ""
 
 def get_pybind_function(cursor):
@@ -172,7 +187,7 @@ def get_pybind_function(cursor):
     doc_str = f', R"doc({doc})doc"' if doc else ""
     params = [a.type.spelling for a in cursor.get_arguments()]
     ret_type = cursor.result_type.spelling
-    args = ", ".join(params) if len(params) else ""
+    args = ", ".join(params) if params else ""
     return f'm.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{cursor.spelling}){doc_str});'
 
 def get_pybind_method(cursor, class_name):
@@ -185,7 +200,7 @@ def get_pybind_method(cursor, class_name):
     params = [a.type.spelling for a in cursor.get_arguments()]
     ret_type = cursor.result_type.spelling
     const = " const" if cursor.is_const_method() else ""
-    args = ", ".join(params) if len(params) else ""
+    args = ", ".join(params) if params else ""
     return (
         f'.def("{cursor.spelling}", '
         f'static_cast<{ret_type} ({class_name}::*)({args}){const}>(&{class_name}::{cursor.spelling}){doc_str})'
@@ -198,7 +213,7 @@ def get_pybind_constructor(cursor, class_name):
     """
     params = list(cursor.get_arguments())
     param_types = [a.type.spelling for a in params]
-    args = ", ".join(param_types) if len(param_types) else ""
+    args = ", ".join(param_types) if param_types else ""
     return f'.def(py::init<{args}>())'
 
 def get_function_signature(cursor):
@@ -278,9 +293,7 @@ def visit(cursor, seen_functions=None):
     """
     if seen_functions is None:
         seen_functions = set()
-    functions = []
-    classes = []
-    enums = []
+    lines = []
     for c in cursor.get_children():
         try:
             if is_template(c):
@@ -288,25 +301,19 @@ def visit(cursor, seen_functions=None):
             if is_public_function(c):
                 sig = get_function_signature(c)
                 if sig not in seen_functions:
-                    functions.append(get_pybind_function(c))
+                    lines.append(get_pybind_function(c))
                     seen_functions.add(sig)
             elif is_public_class(c):
                 class_code = get_pybind_class(c)
                 if class_code is not None:
-                    classes.append(class_code)
+                    lines.append(class_code)
             elif is_public_enum(c) and c.semantic_parent.kind != clang.cindex.CursorKind.CLASS_DECL: # type: ignore
-                enums.append(get_pybind_enum(c))
-            child_functions, child_classes, child_enums = visit(c, seen_functions)
-            functions.extend(child_functions)
-            classes.extend(child_classes)
-            enums.extend(child_enums)
+                lines.append(get_pybind_enum(c))
+            child_lines = visit(c, seen_functions)
+            lines.extend(child_lines)
         except Exception as e:
             continue
-    return functions, classes, enums
-
-def status(msg):
-    if VERBOSE:
-        print(f"[generate_bindings] {msg}")
+    return lines
 
 def main():
     """
@@ -330,49 +337,47 @@ def main():
     header_file = sys.argv[1]
     output_file = sys.argv[2]
 
-    status(f"Using header file: {header_file}")
-    status(f"Output will be written to: {output_file}")
+    verbose(f"Using header file: {header_file}")
+    verbose(f"Output will be written to: {output_file}")
 
     clang.cindex.Config.set_library_file(CLANG_LIBRARY_FILE)
-    status("Initialized Clang library.")
+    verbose("Initialized Clang library.")
 
     index = clang.cindex.Index.create()
-    status("Parsing translation unit...")
+    verbose("Parsing translation unit...")
     tu = index.parse(
         header_file,
         args=CLANG_ARGS
     )
 
-    status("Processing diagnostics...")
+    verbose("Processing diagnostics...")
     for diag in tu.diagnostics:
         print(diag)
 
     if not tu or (len(tu.diagnostics) > 0 and any(d.severity >= clang.cindex.Diagnostic.Error for d in tu.diagnostics)):
-        status("Parsing failed due to errors.")
+        verbose("Parsing failed due to errors.")
         sys.exit(1)
 
-    status("Visiting AST and generating bindings...")
-    output_lines = []
-    output_lines.append('// hatchling python bindings generator')
-    output_lines.append('#include <hx/hatchling_pch.hpp>')
-    output_lines.append('#include <pybind11/pybind11.h>')
-    output_lines.append('namespace py = pybind11;')
-    output_lines.append('\nPYBIND11_MODULE(hatchling, m) {')
-    functions, classes, enums = visit(tu.cursor)
-    for e in enums:
-        output_lines.append(e)
-    for c in classes:
-        output_lines.append(c)
-    for f in functions:
-        output_lines.append(f)
+    verbose("Visiting AST and generating bindings...")
+    output_lines = [
+        '// hatchling python bindings generator',
+        '#include <hx/hatchling_pch.hpp>',
+        '#include <pybind11/pybind11.h>',
+        'namespace py = pybind11;\n',
+        'PYBIND11_MODULE(hatchling, m) {'
+    ]
+
+    child_lines = visit(tu.cursor)
+    output_lines.extend(child_lines)
+
     output_lines.append('}\n')
 
-    status("Writing output file...")
+    verbose("Writing output file...")
 
     with open(output_file, "w") as f:
-        f.write("\n".join(output_lines) if len(output_lines) else "")
+        f.write("\n".join(output_lines) if output_lines else "")
 
-    status("Binding generation complete.")
+    verbose("Binding generation complete.")
 
 if __name__ == "__main__":
     main()

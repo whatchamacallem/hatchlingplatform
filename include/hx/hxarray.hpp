@@ -101,6 +101,12 @@ public:
         this->assign(rhs_.begin(), rhs_.end());
     }
 
+    /// Check if array is empty by casting it to bool.  This one is a Python
+    /// extension.
+    hxconstexpr_fn operator bool(void) {
+        return !this->empty();
+    }
+
     /// Returns a const_iterator to the beginning of the array.
     hxconstexpr_fn const T_* begin(void) const { return this->data(); }
 
