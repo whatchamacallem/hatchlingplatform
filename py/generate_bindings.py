@@ -172,9 +172,22 @@ def get_cursor_doc(cursor):
         return "\\n".join(cleaned) if cleaned else ""
     return ""
 
+def get_full_namespace(cursor):
+    """
+    Returns the fully qualified namespace path for a cursor (e.g., 'outer::inner').
+    Traverses semantic parents to build the namespace chain.
+    """
+    namespaces = []
+    current = cursor.semantic_parent
+    while current and current.kind == clang.cindex.CursorKind.NAMESPACE: # type: ignore
+        namespaces.append(current.spelling)
+        current = current.semantic_parent
+    return "::".join(reversed(namespaces)) if namespaces else ""
+
 def get_pybind_function(cursor):
     """
     Generates a pybind11 binding line for a free function.
+    Includes the full namespace in the function reference if applicable.
     Includes docstring if available.
     """
     doc = get_cursor_doc(cursor)
@@ -182,7 +195,19 @@ def get_pybind_function(cursor):
     params = [a.type.spelling for a in cursor.get_arguments()]
     ret_type = cursor.result_type.spelling
     args = ", ".join(params) if params else ""
-    return f'm.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{cursor.spelling}){doc_str});'
+
+    # Get the full namespace path
+    namespace = get_full_namespace(cursor)
+    namespace_prefix = f"{namespace}::" if namespace else ""
+
+    # Determine the module to bind to (based on namespace)
+    module_name = "m"
+    if namespace:
+        # Use the innermost namespace as the module name
+        innermost_namespace = namespace.split("::")[-1]
+        module_name = innermost_namespace
+
+    return f'{module_name}.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{namespace_prefix}{cursor.spelling}){doc_str});'
 
 def get_pybind_method(cursor, class_name):
     """
@@ -226,15 +251,16 @@ def get_method_signature(cursor):
     params = tuple(a.type.spelling for a in cursor.get_arguments())
     return (cursor.spelling, params)
 
-def get_pybind_namespace(cursor):
+def get_pybind_namespace(cursor, parent_module="m"):
     """
-    Generates pybind11 binding code for a namespace, including its public functions and enums.
+    Generates pybind11 binding code for a namespace, including its public functions, enums, and nested namespaces.
     Creates a pybind11 module scope for the namespace and binds its contents.
     """
     namespace_name = cursor.spelling
     doc = get_cursor_doc(cursor)
     doc_str = f', R"doc({doc})doc"' if doc else ""
-    lines = [f'py::module_ {namespace_name} = m.def_submodule("{namespace_name}"{doc_str});']
+    module_var = f"{namespace_name}_mod"
+    lines = [f'py::module_ {module_var} = {parent_module}.def_submodule("{namespace_name}"{doc_str});']
     functions = []
     enums = []
     seen_functions = set()
@@ -245,23 +271,24 @@ def get_pybind_namespace(cursor):
         elif is_public_function(m):
             sig = get_function_signature(m)
             if sig not in seen_functions:
-                # Adjust function binding to use the namespace module
+                # Generate function binding using the current namespace's module
                 doc_m = get_cursor_doc(m)
                 doc_m_str = f', R"doc({doc_m})doc"' if doc_m else ""
                 params = [a.type.spelling for a in m.get_arguments()]
                 ret_type = m.result_type.spelling
                 args = ", ".join(params) if params else ""
+                namespace_prefix = get_full_namespace(m)
+                namespace_prefix = f"{namespace_prefix}::" if namespace_prefix else ""
                 functions.append(
-                    f'{namespace_name}.def("{m.spelling}", '
-                    f'static_cast<{ret_type}(*)({args})>(&{m.spelling}){doc_m_str});'
+                    f'{module_var}.def("{m.spelling}", '
+                    f'static_cast<{ret_type}(*)({args})>(&{namespace_prefix}{m.spelling}){doc_m_str});'
                 )
                 seen_functions.add(sig)
         elif is_public_enum(m):
-            # Generate enum bindings within the namespace scope
             enum_name = m.spelling
             doc_m = get_cursor_doc(m)
             doc_m_str = f', R"doc({doc_m})doc"' if doc_m else ""
-            enum_lines = [f'py::enum_<{enum_name}>({namespace_name}, "{enum_name}"{doc_m_str})']
+            enum_lines = [f'py::enum_<{enum_name}>({module_var}, "{enum_name}"{doc_m_str})']
             for c in m.get_children():
                 if c.kind == clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
                     value_doc = get_cursor_doc(c)
@@ -269,6 +296,10 @@ def get_pybind_namespace(cursor):
                     enum_lines.append(f'.value("{c.spelling}", {enum_name}::{c.spelling}{value_doc_str})')
             enum_lines[-1] += f'.export_values();'
             enums.append("\n".join(enum_lines))
+        elif is_namespace(m):
+            # Recursively process nested namespaces
+            nested_lines = get_pybind_namespace(m, module_var)
+            lines.append(nested_lines)
 
     lines.extend(functions)
     lines.extend(enums)
@@ -318,7 +349,6 @@ def get_pybind_enum(cursor):
     enum_name = cursor.spelling
     doc = get_cursor_doc(cursor)
     doc_str = f', R"doc({doc})doc"' if doc else ""
-
     lines = [f'py::enum_<{enum_name}>(m, "{enum_name}"{doc_str})']
     for c in cursor.get_children():
         if c.kind == clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
@@ -338,31 +368,28 @@ def visit(cursor, depth=0, seen_functions=None):
     lines = []
     for c in cursor.get_children():
         try:
-
             if not is_project_header(c) or is_template(c):
                 continue
-
             if is_namespace(c):
-                verbose(c.spelling)
+                verbose(f"Processing namespace: {c.spelling}")
                 t = get_pybind_namespace(c)
-                if t is not None:
+                if t:
                     lines.append(t)
-
-
-            if is_public_function(c):
+            elif is_public_function(c):
                 t = get_function_signature(c)
                 if t not in seen_functions:
                     lines.append(get_pybind_function(c))
                     seen_functions.add(t)
             elif is_public_class(c):
                 t = get_pybind_class(c)
-                if t is not None:
+                if t:
                     lines.append(t)
             elif is_public_enum(c) and c.semantic_parent.kind != clang.cindex.CursorKind.CLASS_DECL: # type: ignore
                 lines.append(get_pybind_enum(c))
             child_lines = visit(c, depth + 1, seen_functions)
             lines.extend(child_lines)
         except Exception as e:
+            verbose(f"Error processing cursor {c.spelling}: {str(e)}")
             continue
     return lines
 
@@ -424,7 +451,6 @@ def main():
     output_lines.append('}\n')
 
     verbose("Writing output file...")
-
     with open(output_file, "w") as f:
         f.write("\n".join(output_lines) if output_lines else "")
 
