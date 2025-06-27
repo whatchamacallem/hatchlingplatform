@@ -20,7 +20,7 @@ Adjust the CLANG_LIBRARY_FILE and CLANG_ARGS variables at the top of the script 
 for your environment and project.
 """
 
-import sys
+import sys, os
 import clang.cindex
 
 # Path to the libclang shared library.
@@ -39,7 +39,7 @@ VERBOSE = True
 
 def verbose(msg):
     if VERBOSE:
-        print(f" ===>>> {msg}")
+        print(f" - {msg}")
 
 def is_project_header(cursor):
     """
@@ -74,7 +74,7 @@ def is_public_function(cursor):
 
 def is_public_class(cursor):
     """
-    Returns True if the cursor is a public class definition in the project.
+    Returns True if the cursor is a public class definition.
     """
     return (
         cursor.kind == clang.cindex.CursorKind.CLASS_DECL # type: ignore
@@ -129,7 +129,7 @@ def is_template(cursor):
 
 def is_public_enum(cursor):
     """
-    Returns True if the cursor is a public enum definition in the project.
+    Returns True if the cursor is a public enum definition.
     """
     return (
         cursor.kind == clang.cindex.CursorKind.ENUM_DECL # type: ignore
@@ -142,7 +142,7 @@ def is_public_enum(cursor):
 
 def is_namespace(cursor):
     """
-    Returns True if the cursor is a namespace definition in the project.
+    Returns True if the cursor is a namespace definition.
     """
     return (
         cursor.kind == clang.cindex.CursorKind.NAMESPACE  # type: ignore
@@ -165,7 +165,6 @@ def get_cursor_doc(cursor):
                 line = line[3:].strip()
             elif line.startswith("//"):
                 line = line[2:].strip()
-                line = line[:-2].strip()
 
             line = line.replace('\\', '\\\\').replace('"', '\\"')
             cleaned.append(line)
@@ -200,14 +199,7 @@ def get_pybind_function(cursor):
     namespace = get_full_namespace(cursor)
     namespace_prefix = f"{namespace}::" if namespace else ""
 
-    # Determine the module to bind to (based on namespace)
-    module_name = "m"
-    if namespace:
-        # Use the innermost namespace as the module name
-        innermost_namespace = namespace.split("::")[-1]
-        module_name = innermost_namespace
-
-    return f'{module_name}.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{namespace_prefix}{cursor.spelling}){doc_str});'
+    return f'm.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{namespace_prefix}{cursor.spelling}){doc_str});'
 
 def get_pybind_method(cursor, class_name):
     """
@@ -251,16 +243,16 @@ def get_method_signature(cursor):
     params = tuple(a.type.spelling for a in cursor.get_arguments())
     return (cursor.spelling, params)
 
-def get_pybind_namespace(cursor, parent_module="m"):
+def get_pybind_namespace(cursor):
     """
-    Generates pybind11 binding code for a namespace, including its public functions, enums, and nested namespaces.
-    Creates a pybind11 module scope for the namespace and binds its contents.
+    Generates pybind11 binding code for a namespace, using a static py::class_ instead of a py::module_.
+    Binds public functions, enums, and nested namespaces as attributes of the class.
     """
     namespace_name = cursor.spelling
     doc = get_cursor_doc(cursor)
     doc_str = f', R"doc({doc})doc"' if doc else ""
-    module_var = f"{namespace_name}_mod"
-    lines = [f'py::module_ {module_var} = {parent_module}.def_submodule("{namespace_name}"{doc_str});']
+    # Define a py::class_ for the namespace, using an empty struct as the type
+    lines = [f'py::class_<py::object>(m, "{namespace_name}"{doc_str})']
     functions = []
     enums = []
     seen_functions = set()
@@ -271,7 +263,7 @@ def get_pybind_namespace(cursor, parent_module="m"):
         elif is_public_function(m):
             sig = get_function_signature(m)
             if sig not in seen_functions:
-                # Generate function binding using the current namespace's module
+                # Generate function binding using the namespace's class
                 doc_m = get_cursor_doc(m)
                 doc_m_str = f', R"doc({doc_m})doc"' if doc_m else ""
                 params = [a.type.spelling for a in m.get_arguments()]
@@ -280,25 +272,25 @@ def get_pybind_namespace(cursor, parent_module="m"):
                 namespace_prefix = get_full_namespace(m)
                 namespace_prefix = f"{namespace_prefix}::" if namespace_prefix else ""
                 functions.append(
-                    f'{module_var}.def("{m.spelling}", '
-                    f'static_cast<{ret_type}(*)({args})>(&{namespace_prefix}{m.spelling}){doc_m_str});'
+                    f'.def_static("{m.spelling}", '
+                    f'static_cast<{ret_type}(*)({args})>(&{namespace_prefix}{m.spelling}){doc_m_str})'
                 )
                 seen_functions.add(sig)
         elif is_public_enum(m):
             enum_name = m.spelling
             doc_m = get_cursor_doc(m)
             doc_m_str = f', R"doc({doc_m})doc"' if doc_m else ""
-            enum_lines = [f'py::enum_<{enum_name}>({module_var}, "{enum_name}"{doc_m_str})']
+            enum_lines = [f'py::enum_<{enum_name}>({cursor.spelling}, "{enum_name}"{doc_m_str})']
             for c in m.get_children():
                 if c.kind == clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
                     value_doc = get_cursor_doc(c)
                     value_doc_str = f', R"doc({value_doc})doc"' if value_doc else ""
                     enum_lines.append(f'.value("{c.spelling}", {enum_name}::{c.spelling}{value_doc_str})')
-            enum_lines[-1] += f'.export_values();'
+            enum_lines[-1] += f'.export_values()'
             enums.append("\n".join(enum_lines))
         elif is_namespace(m):
-            # Recursively process nested namespaces
-            nested_lines = get_pybind_namespace(m, module_var)
+            # Recursively process nested namespaces, binding to the current namespace's class
+            nested_lines = get_pybind_namespace(m)
             lines.append(nested_lines)
 
     lines.extend(functions)
@@ -370,7 +362,7 @@ def get_pybind_enum(cursor):
     lines[-1] += f'.export_values();'
     return "\n".join(lines)
 
-def visit(cursor, depth=0, seen_functions=None):
+def visit(cursor, seen_functions=None):
     """
     Recursively visits AST nodes starting from the given cursor.
     Collects functions, classes, and enums that are public and project-specific.
@@ -383,7 +375,7 @@ def visit(cursor, depth=0, seen_functions=None):
             if not is_project_header(c) or is_template(c):
                 continue
             if is_namespace(c):
-                verbose(f"+++++++++++++++ {c.spelling}")
+                continue;
                 t = get_pybind_namespace(c)
                 if t:
                     lines.append(t)
@@ -398,12 +390,68 @@ def visit(cursor, depth=0, seen_functions=None):
                     lines.append(t)
             elif is_public_enum(c) and c.semantic_parent.kind != clang.cindex.CursorKind.CLASS_DECL: # type: ignore
                 lines.append(get_pybind_enum(c))
-            child_lines = visit(c, depth + 1, seen_functions)
+            child_lines = visit(c, seen_functions)
             lines.extend(child_lines)
         except Exception as e:
-            verbose(f"Error processing cursor {c.spelling}: {str(e)}")
+            print(f"Error processing cursor {c.spelling}: {str(e)}")
             continue
     return lines
+
+# Check if the command line has changed or any included file has changed.
+# N.B. Uses timestamps only. The dep_file will be younger than the output
+# file and will need to be touched again to make the build final. The
+# output file will be listed as the first dependency file.
+def load_translation_unit_if_changed(header_file, clang_args, output_file, dep_file):
+    full_args = f"{header_file} {' '.join(clang_args)} {output_file}"
+
+    try:
+        with open(dep_file, 'r') as f:
+            last_build_time = os.path.getmtime(dep_file)
+            lines = f.read().splitlines()
+            cached_args = lines[0] if lines else ""
+            cached_deps = set(lines[1:])
+
+            # Check if args match and dep file is newer than header and includes
+            has_changed = False
+            if full_args != cached_args:
+                print("Args changed.")
+                has_changed = True
+
+            for file_path in [header_file, output_file] + list(cached_deps):
+                if os.path.exists(file_path) and os.path.getmtime(file_path) > last_build_time:
+                    print("File changed: " + file_path)
+                    has_changed = True
+
+            if not has_changed:
+                return None
+    except IOError as e:
+        verbose("Not found: " + dep_file)
+
+    index = clang.cindex.Index.create()
+    tu = index.parse( header_file, clang_args)
+
+    for diag in tu.diagnostics:
+        print(diag)
+
+    if not tu or (len(tu.diagnostics) > 0 and any(d.severity >= clang.cindex.Diagnostic.Error for d in tu.diagnostics)):
+        print("Parsing failed due to errors.")
+        sys.exit(1)
+
+    # Get all included files (direct and transitive)
+    include_files = set()
+    for inc in tu.get_includes():
+        include_files.add(inc.include.name)
+
+    # Write new dependency file
+    try:
+        with open(dep_file, 'w') as f:
+            f.write(full_args + '\n')
+            for dep in include_files:
+                f.write(dep + '\n')
+    except IOError as e:
+        print(f"Error: Failed to write the dependency file: {e}")
+
+    return tu
 
 def main():
     """
@@ -424,31 +472,22 @@ def main():
         )
         sys.exit(1)
 
-    header_file = sys.argv[1]
-    output_file = sys.argv[2]
+    header_file = os.path.abspath(sys.argv[1])
+    output_file = os.path.abspath(sys.argv[2])
+    dependency_file = output_file + '.d.txt'
 
-    verbose(f"Using header file: {header_file}")
-    verbose(f"Output will be written to: {output_file}")
+    verbose(f"Generating {output_file} from {header_file}")
 
+    verbose("Initializing Clang library.")
     clang.cindex.Config.set_library_file(CLANG_LIBRARY_FILE)
-    verbose("Initialized Clang library.")
 
-    index = clang.cindex.Index.create()
-    verbose("Parsing translation unit...")
-    tu = index.parse(
-        header_file,
-        args=CLANG_ARGS
-    )
+    verbose("Checking dependency file and parsing if needed.")
+    tu = load_translation_unit_if_changed(header_file, CLANG_ARGS, output_file, dependency_file)
+    if tu == None:
+        print("Nothing changed. All done.")
+        return 0
 
-    verbose("Processing diagnostics...")
-    for diag in tu.diagnostics:
-        print(diag)
-
-    if not tu or (len(tu.diagnostics) > 0 and any(d.severity >= clang.cindex.Diagnostic.Error for d in tu.diagnostics)):
-        verbose("Parsing failed due to errors.")
-        sys.exit(1)
-
-    verbose("Visiting AST and generating bindings...")
+    verbose("Visiting AST and generating bindings.")
     output_lines = [
         '// hatchling python bindings generator',
         '#include <hx/hatchling_pch.hpp>',
@@ -459,14 +498,19 @@ def main():
 
     child_lines = visit(tu.cursor)
     output_lines.extend(child_lines)
-
     output_lines.append('}\n')
 
-    verbose("Writing output file...")
+    verbose("Writing output and then updating timestamp of dependency file...")
     with open(output_file, "w") as f:
         f.write("\n".join(output_lines) if output_lines else "")
 
-    verbose("Binding generation complete.")
+    # Mark the dependency_file as being older than the output_file. This will
+    # detect modification of the output file and regenerate it in that case.
+    os.utime(dependency_file, None)
+
+    print(f"Wrote {output_file}...")
+
+    return 0
 
 if __name__ == "__main__":
-    main()
+    exit(main())

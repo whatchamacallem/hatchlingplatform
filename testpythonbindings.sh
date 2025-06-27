@@ -29,9 +29,11 @@ PY_BIND_VERSION="2.13.6"
 PY_LIB_DIR="cache/py"
 HX_DIR="`pwd`"
 
-export PYTHONPATH="`pwd`/$PY_LIB_DIR:."
-export LLVM_CONFIG=llvm-config-18
+# Shell variables for external tools.
+export PYTHONPATH="$HX_DIR/$PY_LIB_DIR"
+export LLVM_CONFIG=llvm-config-$CLANG_VERSION_REQ
 
+# Run python with the two cached packages and see if it works.
 TEST_PY="import sys; sys.path.insert(0, \"$PY_LIB_DIR\"); import $PY_CLANG_NAME; import $PY_BIND_NAME"
 if [ -d "$PY_LIB_DIR" ] && python3 -c "$TEST_PY" > /dev/null 2>&1; then
     echo "tested $PY_CLANG_NAME, $PY_BIND_NAME from $PY_LIB_DIR..."
@@ -44,17 +46,20 @@ else
     { set +x; } 2> /dev/null
 fi
 
+# Only nuke the bin dir if it is not being used for binding already.
+if [ ! -f "bin/python_bindings.cpp" ]; then
+	rm -rf ./bin; mkdir ./bin && cd ./bin
+else
+	cd ./bin
+fi
 
 PY_CFLAGS=$(python3-config --cflags)
 PY_LDFLAGS=$(python3-config --ldflags)
-
 PYBIND11_INCLUDE=$($PYTHON_EXEC -c "import pybind11; print(pybind11.get_include())")
 
-
-# Build artifacts are not retained.
-rm -rf ./bin; mkdir ./bin && cd ./bin
 set -x
 
+# Check timestamps and regenerate the bindings if they have changed.
 $PYTHON_EXEC $HX_DIR/py/generate_bindings.py $HX_DIR/include/hx/hatchling_pch.hpp python_bindings.cpp
 
 clang -I$HX_DIR/include -DHX_RELEASE=0 -std=c99 -I$PYBIND11_INCLUDE $PY_CFLAGS \
