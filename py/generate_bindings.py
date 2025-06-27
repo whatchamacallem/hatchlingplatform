@@ -104,13 +104,13 @@ def is_public_constructor(cursor):
         and cursor.access_specifier == clang.cindex.AccessSpecifier.PUBLIC # type: ignore
     )
 
-def is_public_destructor(cursor):
+def is_nonpublic_destructor(cursor):
     """
-    Returns True if the cursor is a public destructor.
+    Returns True if the cursor is a non-public destructor.
     """
     return (
         cursor.kind == clang.cindex.CursorKind.DESTRUCTOR # type: ignore
-        and cursor.access_specifier == clang.cindex.AccessSpecifier.PUBLIC # type: ignore
+        and cursor.access_specifier != clang.cindex.AccessSpecifier.PUBLIC # type: ignore
     )
 
 def is_template(cursor):
@@ -160,7 +160,7 @@ def get_cursor_doc(cursor):
             elif line.endswith("*/"):
                 line = line[:-2].strip()
             cleaned.append(line)
-        return "\\n".join(cleaned)
+        return "\\n".join(cleaned) if len(cleaned) else ""
     return ""
 
 def get_pybind_function(cursor):
@@ -172,11 +172,8 @@ def get_pybind_function(cursor):
     doc_str = f', R"doc({doc})doc"' if doc else ""
     params = [a.type.spelling for a in cursor.get_arguments()]
     ret_type = cursor.result_type.spelling
-    if params:
-        args = ", ".join(params)
-        return f'    m.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{cursor.spelling}){doc_str});'
-    else:
-        return f'    m.def("{cursor.spelling}", static_cast<{ret_type}(*)()>(&{cursor.spelling}){doc_str});'
+    args = ", ".join(params) if len(params) else ""
+    return f'  m.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{cursor.spelling}){doc_str});'
 
 def get_pybind_method(cursor, class_name):
     """
@@ -188,17 +185,11 @@ def get_pybind_method(cursor, class_name):
     params = [a.type.spelling for a in cursor.get_arguments()]
     ret_type = cursor.result_type.spelling
     const = " const" if cursor.is_const_method() else ""
-    if params:
-        args = ", ".join(params)
-        return (
-            f'        .def("{cursor.spelling}", '
-            f'static_cast<{ret_type} ({class_name}::*)({args}){const}>(&{class_name}::{cursor.spelling}){doc_str})'
-        )
-    else:
-        return (
-            f'        .def("{cursor.spelling}", '
-            f'static_cast<{ret_type} ({class_name}::*)(){const}>(&{class_name}::{cursor.spelling}){doc_str})'
-        )
+    args = ", ".join(params) if len(params) else ""
+    return (
+        f'  .def("{cursor.spelling}", '
+        f'static_cast<{ret_type} ({class_name}::*)({args}){const}>(&{class_name}::{cursor.spelling}){doc_str})'
+    )
 
 def get_pybind_constructor(cursor, class_name):
     """
@@ -207,12 +198,8 @@ def get_pybind_constructor(cursor, class_name):
     """
     params = list(cursor.get_arguments())
     param_types = [a.type.spelling for a in params]
-    param_count = len(param_types)
-    if param_count == 0:
-        return f'        .def(py::init<>())'
-    else:
-        args = ", ".join(param_types)
-        return f'        .def(py::init<{args}>())'
+    args = ", ".join(param_types) if len(param_types) else ""
+    return f'  .def(py::init<{args}>())'
 
 def get_function_signature(cursor):
     """
@@ -242,38 +229,31 @@ def get_pybind_class(cursor):
     lines = [f'    py::class_<{class_name}>(m, "{class_name}"{doc_str})']
     ctors = []
     methods = []
-    enums = []
     seen_methods = set()
-    has_public_destructor = True  # Assume public destructor by default
+    has_public_destructor = True
     for m in cursor.get_children():
         if is_template(m):
             continue
-        if is_public_constructor(m):
+        elif is_public_constructor(m):
             sig = get_method_signature(m)
             if sig not in seen_methods:
                 ctors.append(get_pybind_constructor(m, class_name))
                 seen_methods.add(sig)
-        elif m.kind == clang.cindex.CursorKind.DESTRUCTOR:  # type: ignore
-            if not is_public_destructor(m):
-                has_public_destructor = False
+        elif is_nonpublic_destructor(m):
+            has_public_destructor = False
         elif is_public_method(m):
             sig = get_method_signature(m)
             if sig not in seen_methods:
                 methods.append(get_pybind_method(m, class_name))
                 seen_methods.add(sig)
-        elif is_public_enum(m):
-            enums.append(get_pybind_enum(m, None))  # Pass None for parent_class to avoid prefixing
     if not ctors or not has_public_destructor:
         return None
     lines.extend(ctors)
-    lines.extend(enums)
     lines.extend(methods)
-    if has_public_destructor:
-        lines.append('        .def("__del__", [](py::object self) { self.release(); })')
-    lines[-1] += ';'  # End the chain
-    return "\n".join(lines)
+    lines.append('  .def("__del__", [](py::object self) { self.release(); });')
+    return "\n".join(lines) if len(lines) else ""
 
-def get_pybind_enum(cursor, parent_class=None):
+def get_pybind_enum(cursor):
     """
     Generates pybind11 binding code for an enum, either at module scope or nested within a class.
     Includes all enum constants as values.
@@ -281,24 +261,15 @@ def get_pybind_enum(cursor, parent_class=None):
     enum_name = cursor.spelling
     doc = get_cursor_doc(cursor)
     doc_str = f', R"doc({doc})doc"' if doc else ""
-    if parent_class:
-        lines = [f'        .def(py::enum_<{parent_class}::{enum_name}>(m, "{enum_name}"{doc_str})']
-        for c in cursor.get_children():
-            if c.kind == clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
-                value_doc = get_cursor_doc(c)
-                value_doc_str = f', R"doc({value_doc})doc"' if value_doc else ""
-                lines.append(f'            .value("{c.spelling}", {parent_class}::{enum_name}::{c.spelling}{value_doc_str})')
-        lines[-1] += '.export_values();'
-        return "\n".join(lines)
-    else:
-        lines = [f'    py::enum_<{enum_name}>(m, "{enum_name}"{doc_str})']
-        for c in cursor.get_children():
-            if c.kind == clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
-                value_doc = get_cursor_doc(c)
-                value_doc_str = f', R"doc({value_doc})doc"' if value_doc else ""
-                lines.append(f'        .value("{c.spelling}", {enum_name}::{c.spelling}{value_doc_str})')
-        lines[-1] += '.export_values();'
-        return "\n".join(lines)
+
+    lines = [f'    py::enum_<{enum_name}>(m, "{enum_name}"{doc_str})']
+    for c in cursor.get_children():
+        if c.kind == clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
+            value_doc = get_cursor_doc(c)
+            value_doc_str = f', R"doc({value_doc})doc"' if value_doc else ""
+            lines.append(f'    .value("{c.spelling}", {enum_name}::{c.spelling}{value_doc_str})')
+    lines[-1] += f'.export_values();'
+    return "\n".join(lines) if len(lines) else ""
 
 def visit(cursor, seen_functions=None):
     """
@@ -382,24 +353,24 @@ def main():
 
     status("Visiting AST and generating bindings...")
     output_lines = []
+    output_lines.append('// hatchling python bindings generator')
     output_lines.append('#include <hx/hatchling_pch.hpp>')
     output_lines.append('#include <pybind11/pybind11.h>')
     output_lines.append('namespace py = pybind11;')
     output_lines.append('\nPYBIND11_MODULE(hatchling, m) {')
     functions, classes, enums = visit(tu.cursor)
-    # Print enums first so they are available for classes/functions
     for e in enums:
         output_lines.append(e)
     for c in classes:
         output_lines.append(c)
     for f in functions:
         output_lines.append(f)
-    output_lines.append('}')
+    output_lines.append('}\n')
 
     status("Writing output file...")
+
     with open(output_file, "w") as f:
-        f.write("\n".join(output_lines))
-        f.write("\n// hatchling python bindings generator\n")
+        f.write("\n".join(output_lines) if len(output_lines) else "")
 
     status("Binding generation complete.")
 

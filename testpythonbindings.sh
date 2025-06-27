@@ -6,8 +6,16 @@ set -o errexit
 CLANG_VERSION_REQ=18
 CLANG_VERSION_STR=`clang --version 2>/dev/null | head -n 1`
 CLANG_VERSION_NUM=`echo "$CLANG_VERSION_STR" | sed 's/[^0-9]*\([0-9][0-9]*\).*/\1/'`
+
 if [ "$CLANG_VERSION_NUM" != "$CLANG_VERSION_REQ" ]; then
     echo "Error: clang $CLANG_VERSION_REQ required."
+    exit 1
+fi
+
+# Check for Python3.
+PYTHON_EXEC=$(which python3)
+if [ -z "$PYTHON_EXEC" ]; then
+    echo "Error: Python executable not found" >&2
     exit 1
 fi
 
@@ -29,21 +37,29 @@ if [ -d "$PY_LIB_DIR" ] && python3 -c "$TEST_PY" > /dev/null 2>&1; then
     echo "tested $PY_CLANG_NAME, $PY_BIND_NAME from $PY_LIB_DIR..."
 else
     echo "downloading and installing $PY_CLANG_NAME to $PY_LIB_DIR"
-    set +x
+    set -x
     mkdir -p $PY_LIB_DIR
     pip install --target=$PY_LIB_DIR --no-cache-dir $PY_CLANG_NAME==$PY_CLANG_VERSION
     pip install --target=$PY_LIB_DIR --no-cache-dir $PY_BIND_NAME==$PY_BIND_VERSION
+    { set +x; } 2> /dev/null
 fi
+
+
+PY_CFLAGS=$(python3-config --cflags)
+PY_LDFLAGS=$(python3-config --ldflags)
+
+PYBIND11_INCLUDE=$($PYTHON_EXEC -c "import pybind11; print(pybind11.get_include())")
+
 
 # Build artifacts are not retained.
 rm -rf ./bin; mkdir ./bin && cd ./bin
+set -x
 
-python3 $HX_DIR/py/generate_bindings.py $HX_DIR/include/hx/hatchling_pch.hpp python_bindings.cpp
+$PYTHON_EXEC $HX_DIR/py/generate_bindings.py $HX_DIR/include/hx/hatchling_pch.hpp python_bindings.cpp
 
-clang -I$HX_DIR/include -O0 -g -DHX_RELEASE=0 -std=c99 \
-	-c $HX_DIR/src/*.c $HX_DIR/test/*.c
+clang -I$HX_DIR/include -DHX_RELEASE=0 -std=c99 -I$PYBIND11_INCLUDE $PY_CFLAGS \
+    -fdiagnostics-absolute-paths -Wfatal-errors -c $HX_DIR/src/*.c $HX_DIR/test/*.c
 
-clang++ -I$HX_DIR/include -I$HX_DIR/$PY_LIB_DIR/pybind11/include -I/usr/include/python3.12 \
-    -O0 -g -DHX_RELEASE=0 -pthread -lpthread -std=c++11 -lstdc++ \
-    -fdiagnostics-absolute-paths -Wfatal-errors \
-    python_bindings.cpp $HX_DIR/*/*.cpp *.o -o hxtest
+clang++ -I$HX_DIR/include -I$PYBIND11_INCLUDE $PY_CFLAGS $PY_LDFLAGS \
+    -DHX_RELEASE=0 -pthread -lpthread -std=c++11 -lstdc++ \
+    -fdiagnostics-absolute-paths -Wfatal-errors python_bindings.cpp $HX_DIR/*/*.cpp *.o -o hxtest
