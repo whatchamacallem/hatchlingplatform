@@ -8,7 +8,6 @@ to Python via pybind11.
 
 Key Features:
 - Filters only project-specific public symbols (functions, classes, methods, enums) for binding.
-    - See is_project_header.
 - Skips internal headers, variadic functions, and templates to avoid ambiguous or unsafe bindings.
 - Extracts and formats C++ documentation comments as Python docstrings for each binding.
 - Handles class constructors, destructors, and methods, including overloaded signatures.
@@ -40,7 +39,7 @@ VERBOSE = True
 
 def verbose(msg):
     if VERBOSE:
-        print(f" - {msg}")
+        print(f" ===>>> {msg}")
 
 def is_project_header(cursor):
     """
@@ -69,7 +68,6 @@ def is_public_function(cursor):
     return (
         cursor.kind == clang.cindex.CursorKind.FUNCTION_DECL # type: ignore
         and cursor.linkage == clang.cindex.LinkageKind.EXTERNAL # type: ignore
-        and is_project_header(cursor)
         and not cursor.type.is_function_variadic()
         and not uses_va_list(cursor)
     )
@@ -85,7 +83,6 @@ def is_public_class(cursor):
             clang.cindex.AccessSpecifier.PUBLIC, # type: ignore
             clang.cindex.AccessSpecifier.INVALID  # type: ignore # Top-level classes
         )
-        and is_project_header(cursor)
     )
 
 def is_public_method(cursor):
@@ -141,7 +138,6 @@ def is_public_enum(cursor):
             clang.cindex.AccessSpecifier.PUBLIC, # type: ignore
             clang.cindex.AccessSpecifier.INVALID  # type: ignore # Top-level enums
         )
-        and is_project_header(cursor)  # Only include project enums
     )
 
 def is_namespace(cursor):
@@ -151,8 +147,6 @@ def is_namespace(cursor):
     return (
         cursor.kind == clang.cindex.CursorKind.NAMESPACE  # type: ignore
         and cursor.is_definition()
-        and cursor.access_specifier == clang.cindex.AccessSpecifier.INVALID  # type: ignore
-        and is_project_header(cursor)
     )
 
 def get_cursor_doc(cursor):
@@ -232,6 +226,54 @@ def get_method_signature(cursor):
     params = tuple(a.type.spelling for a in cursor.get_arguments())
     return (cursor.spelling, params)
 
+def get_pybind_namespace(cursor):
+    """
+    Generates pybind11 binding code for a namespace, including its public functions and enums.
+    Creates a pybind11 module scope for the namespace and binds its contents.
+    """
+    namespace_name = cursor.spelling
+    doc = get_cursor_doc(cursor)
+    doc_str = f', R"doc({doc})doc"' if doc else ""
+    lines = [f'py::module_ {namespace_name} = m.def_submodule("{namespace_name}"{doc_str});']
+    functions = []
+    enums = []
+    seen_functions = set()
+
+    for m in cursor.get_children():
+        if is_template(m):
+            continue
+        elif is_public_function(m):
+            sig = get_function_signature(m)
+            if sig not in seen_functions:
+                # Adjust function binding to use the namespace module
+                doc_m = get_cursor_doc(m)
+                doc_m_str = f', R"doc({doc_m})doc"' if doc_m else ""
+                params = [a.type.spelling for a in m.get_arguments()]
+                ret_type = m.result_type.spelling
+                args = ", ".join(params) if params else ""
+                functions.append(
+                    f'{namespace_name}.def("{m.spelling}", '
+                    f'static_cast<{ret_type}(*)({args})>(&{m.spelling}){doc_m_str});'
+                )
+                seen_functions.add(sig)
+        elif is_public_enum(m):
+            # Generate enum bindings within the namespace scope
+            enum_name = m.spelling
+            doc_m = get_cursor_doc(m)
+            doc_m_str = f', R"doc({doc_m})doc"' if doc_m else ""
+            enum_lines = [f'py::enum_<{enum_name}>({namespace_name}, "{enum_name}"{doc_m_str})']
+            for c in m.get_children():
+                if c.kind == clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
+                    value_doc = get_cursor_doc(c)
+                    value_doc_str = f', R"doc({value_doc})doc"' if value_doc else ""
+                    enum_lines.append(f'.value("{c.spelling}", {enum_name}::{c.spelling}{value_doc_str})')
+            enum_lines[-1] += f'.export_values();'
+            enums.append("\n".join(enum_lines))
+
+    lines.extend(functions)
+    lines.extend(enums)
+    return "\n".join(lines)
+
 def get_pybind_class(cursor):
     """
     Generates pybind11 binding code for a class, including its constructors and methods.
@@ -286,7 +328,7 @@ def get_pybind_enum(cursor):
     lines[-1] += f'.export_values();'
     return "\n".join(lines)
 
-def visit(cursor, seen_functions=None):
+def visit(cursor, depth=0, seen_functions=None):
     """
     Recursively visits AST nodes starting from the given cursor.
     Collects functions, classes, and enums that are public and project-specific.
@@ -296,20 +338,29 @@ def visit(cursor, seen_functions=None):
     lines = []
     for c in cursor.get_children():
         try:
-            if is_template(c):
+
+            if not is_project_header(c) or is_template(c):
                 continue
+
+            if is_namespace(c):
+                verbose(c.spelling)
+                t = get_pybind_namespace(c)
+                if t is not None:
+                    lines.append(t)
+
+
             if is_public_function(c):
-                sig = get_function_signature(c)
-                if sig not in seen_functions:
+                t = get_function_signature(c)
+                if t not in seen_functions:
                     lines.append(get_pybind_function(c))
-                    seen_functions.add(sig)
+                    seen_functions.add(t)
             elif is_public_class(c):
-                class_code = get_pybind_class(c)
-                if class_code is not None:
-                    lines.append(class_code)
+                t = get_pybind_class(c)
+                if t is not None:
+                    lines.append(t)
             elif is_public_enum(c) and c.semantic_parent.kind != clang.cindex.CursorKind.CLASS_DECL: # type: ignore
                 lines.append(get_pybind_enum(c))
-            child_lines = visit(c, seen_functions)
+            child_lines = visit(c, depth + 1, seen_functions)
             lines.extend(child_lines)
         except Exception as e:
             continue
