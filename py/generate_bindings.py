@@ -305,22 +305,34 @@ def get_pybind_namespace(cursor, parent_module="m"):
     lines.extend(enums)
     return "\n".join(lines)
 
+def is_pure_virtual_method(cursor):
+    """
+    Returns True if the cursor is a pure virtual method (declared with = 0).
+    """
+    return (
+        cursor.kind == clang.cindex.CursorKind.CXX_METHOD  # type: ignore
+        and cursor.is_pure_virtual_method()  # Check for pure virtual
+    )
+
 def get_pybind_class(cursor):
     """
     Generates pybind11 binding code for a class, including its constructors and methods.
     Nested enums are included within the class scope.
+    Skips constructor bindings for abstract classes (those with pure virtual methods).
     Assumes a public destructor unless a protected or private one is found.
     """
     class_name = cursor.spelling
     doc = get_cursor_doc(cursor)
     doc_str = f', R"doc({doc})doc"' if doc else ""
-    lines = [f' py::class_<{class_name}>(m, "{class_name}"{doc_str})']
+    lines = [f'py::class_<{class_name}>(m, "{class_name}"{doc_str})']
     ctors = []
     methods = []
     seen_methods = set()
     has_public_destructor = True
     for m in cursor.get_children():
-        if is_template(m):
+        if is_pure_virtual_method(m):
+            return None
+        elif is_template(m):
             continue
         elif is_public_constructor(m):
             sig = get_method_signature(m)
@@ -371,7 +383,7 @@ def visit(cursor, depth=0, seen_functions=None):
             if not is_project_header(c) or is_template(c):
                 continue
             if is_namespace(c):
-                verbose(f"Processing namespace: {c.spelling}")
+                verbose(f"+++++++++++++++ {c.spelling}")
                 t = get_pybind_namespace(c)
                 if t:
                     lines.append(t)
