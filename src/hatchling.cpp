@@ -32,17 +32,17 @@ HX_REGISTER_FILENAME_HASH
 #endif
 
 // New rule. Use -ffast-math in release. Or set -DHX_FLOATING_POINT_TRAPS=0.
-hxstatic_assert((HX_RELEASE) < 1 || !(HX_FLOATING_POINT_TRAPS),
+hxstatic_assert((HX_RELEASE) == 0 || !(HX_FLOATING_POINT_TRAPS),
 	"Floating point exceptions enabled in release. use -ffast-math.");
 
-// There are exception handling intrinsics in use in case they are on. However
+// There are exception handling semantics in use in case they are on. However
 // you are advised to use -fno-exceptions. Exceptions add overhead to c++ and
 // add untested pathways. In this codebase memory allocation cannot fail. It
 // is designed to force you to allocate enough memory for everything in advance.
 // The creation of hxthread.h classes cannot fail. By design there are no
 // exceptions to handle.
-#if defined __cpp_exceptions && !defined __INTELLISENSE__
-hxstatic_assert(0, "C++ exceptions should not be enabled");
+#if (HX_RELEASE) >= 1 && defined __cpp_exceptions && !defined __INTELLISENSE__
+hxstatic_assert(0, "C++ exceptions should not be enabled.");
 #endif
 
 // No reason for this to be visible.
@@ -57,7 +57,7 @@ int __cxa_guard_acquire(size_t *guard) {
 	// Return 0 if already constructed.
 	if(*guard == 1u) { return 0; }
 
-	// Check if the constructor is already in progress.
+	// Check if the constructor is already in progress due to a race condition.
 	hxassertrelease(*guard != 2u, "function_scope_static race");
 
 	// Run the constructor.

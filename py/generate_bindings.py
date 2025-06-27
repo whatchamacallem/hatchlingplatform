@@ -32,7 +32,7 @@ CLANG_ARGS = [
     "-std=c++17",
     "-DHX_RELEASE=0",
     "-fdiagnostics-absolute-paths",
-    "-fno-exceptions",
+    "-Wall",
     "-I../include"
 ]
 
@@ -144,6 +144,7 @@ def get_cursor_doc(cursor):
     """
     Extracts and formats the raw comment for use as a docstring.
     Strips comment markers and leading/trailing whitespace.
+    Escapes characters (\\n, \\", \\) for safe embedding in a C string.
     """
     comment = cursor.raw_comment
     if comment:
@@ -155,10 +156,9 @@ def get_cursor_doc(cursor):
                 line = line[3:].strip()
             elif line.startswith("//"):
                 line = line[2:].strip()
-            elif line.startswith("/*"):
-                line = line[2:].strip()
-            elif line.endswith("*/"):
                 line = line[:-2].strip()
+
+            line = line.replace('\\', '\\\\').replace('"', '\\"')
             cleaned.append(line)
         return "\\n".join(cleaned) if len(cleaned) else ""
     return ""
@@ -173,7 +173,7 @@ def get_pybind_function(cursor):
     params = [a.type.spelling for a in cursor.get_arguments()]
     ret_type = cursor.result_type.spelling
     args = ", ".join(params) if len(params) else ""
-    return f'  m.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{cursor.spelling}){doc_str});'
+    return f'm.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{cursor.spelling}){doc_str});'
 
 def get_pybind_method(cursor, class_name):
     """
@@ -187,7 +187,7 @@ def get_pybind_method(cursor, class_name):
     const = " const" if cursor.is_const_method() else ""
     args = ", ".join(params) if len(params) else ""
     return (
-        f'  .def("{cursor.spelling}", '
+        f'.def("{cursor.spelling}", '
         f'static_cast<{ret_type} ({class_name}::*)({args}){const}>(&{class_name}::{cursor.spelling}){doc_str})'
     )
 
@@ -199,7 +199,7 @@ def get_pybind_constructor(cursor, class_name):
     params = list(cursor.get_arguments())
     param_types = [a.type.spelling for a in params]
     args = ", ".join(param_types) if len(param_types) else ""
-    return f'  .def(py::init<{args}>())'
+    return f'.def(py::init<{args}>())'
 
 def get_function_signature(cursor):
     """
@@ -226,7 +226,7 @@ def get_pybind_class(cursor):
     class_name = cursor.spelling
     doc = get_cursor_doc(cursor)
     doc_str = f', R"doc({doc})doc"' if doc else ""
-    lines = [f'    py::class_<{class_name}>(m, "{class_name}"{doc_str})']
+    lines = [f' py::class_<{class_name}>(m, "{class_name}"{doc_str})']
     ctors = []
     methods = []
     seen_methods = set()
@@ -250,8 +250,8 @@ def get_pybind_class(cursor):
         return None
     lines.extend(ctors)
     lines.extend(methods)
-    lines.append('  .def("__del__", [](py::object self) { self.release(); });')
-    return "\n".join(lines) if len(lines) else ""
+    lines.append('.def("__del__", [](py::object self) { self.release(); });')
+    return "\n".join(lines)
 
 def get_pybind_enum(cursor):
     """
@@ -262,14 +262,14 @@ def get_pybind_enum(cursor):
     doc = get_cursor_doc(cursor)
     doc_str = f', R"doc({doc})doc"' if doc else ""
 
-    lines = [f'    py::enum_<{enum_name}>(m, "{enum_name}"{doc_str})']
+    lines = [f'py::enum_<{enum_name}>(m, "{enum_name}"{doc_str})']
     for c in cursor.get_children():
         if c.kind == clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
             value_doc = get_cursor_doc(c)
             value_doc_str = f', R"doc({value_doc})doc"' if value_doc else ""
-            lines.append(f'    .value("{c.spelling}", {enum_name}::{c.spelling}{value_doc_str})')
+            lines.append(f'.value("{c.spelling}", {enum_name}::{c.spelling}{value_doc_str})')
     lines[-1] += f'.export_values();'
-    return "\n".join(lines) if len(lines) else ""
+    return "\n".join(lines)
 
 def visit(cursor, seen_functions=None):
     """
