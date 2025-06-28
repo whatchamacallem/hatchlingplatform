@@ -5,6 +5,7 @@
 
     "cSpell.words": [
         "asan",
+        "CFLAGS",
         "checkasserts",
         "checkhash",
         "cindex",
@@ -36,7 +37,9 @@
         "gtest",
         "I../include",
         "Iinclude",
+        "LDFLAGS",
         "lpthread",
+        "lpython",
         "lstdc",
         "lubsan",
         "mftb",
