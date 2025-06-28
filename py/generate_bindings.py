@@ -1,17 +1,17 @@
 """
-generate_bindings.py: Automatic Pybind11 Binding Generator for C++ Projects
+generate_bindings.py: Automatic Binding Binding Generator for C++ Projects
 
-This script automates the generation of Python bindings for C++ code using pybind11 and libclang.
+This script automates the generation of Python bindings for C++ code using nanobind and libclang.
 It parses a given C++ header file, discovers public functions, classes, methods, constructors,
 destructors, and enums defined in a project, and then emits C++ code that exposes these symbols
-to Python via pybind11.
+to Python via nanobind.
 
 Key Features:
 - Filters only project-specific public symbols (functions, classes, methods, enums) for binding.
 - Skips internal headers, variadic functions, and templates to avoid ambiguous or unsafe bindings.
 - Extracts and formats C++ documentation comments as Python docstrings for each binding.
 - Handles class constructors, destructors, and methods, including overloaded signatures.
-- Emits pybind11 code for enums, including nested enums within classes.
+- Emits nanobind code for enums, including nested enums within classes.
 
 Usage:
     python generate_bindings.py <HEADER_FILE> <OUTPUT_FILE>
@@ -39,7 +39,7 @@ VERBOSE = True
 
 def verbose(msg):
     if VERBOSE:
-        print(f" - {msg}")
+        print(f" * {msg}")
 
 def is_project_header(cursor):
     """
@@ -51,7 +51,7 @@ def is_project_header(cursor):
     return (
         header is not None
         and "include/hx/" in header_str
-        and "include/hx/internal/" not in header_str
+        and "include/hx/detail/" not in header_str
     )
 
 def uses_va_list(cursor):
@@ -185,7 +185,7 @@ def get_full_namespace(cursor):
 
 def get_pybind_function(cursor):
     """
-    Generates a pybind11 binding line for a free function.
+    Generates a binding line for a free function.
     Includes the full namespace in the function reference if applicable.
     Includes docstring if available.
     """
@@ -203,7 +203,7 @@ def get_pybind_function(cursor):
 
 def get_pybind_method(cursor, class_name):
     """
-    Generates a pybind11 binding line for a class method.
+    Generates a binding line for a class method.
     Handles constness and docstrings.
     """
     doc = get_cursor_doc(cursor)
@@ -219,13 +219,13 @@ def get_pybind_method(cursor, class_name):
 
 def get_pybind_constructor(cursor, class_name):
     """
-    Generates a pybind11 binding line for a class constructor.
+    Generates a binding line for a class constructor.
     Handles overloaded constructors by parameter count.
     """
     params = list(cursor.get_arguments())
     param_types = [a.type.spelling for a in params]
     args = ", ".join(param_types) if param_types else ""
-    return f'.def(py::init<{args}>())'
+    return f'.def(nanobind::init<{args}>())'
 
 def get_function_signature(cursor):
     """
@@ -245,14 +245,15 @@ def get_method_signature(cursor):
 
 def get_pybind_namespace(cursor):
     """
-    Generates pybind11 binding code for a namespace, using a static py::class_ instead of a py::module_.
+    Generates binding code for a namespace, using a static nanobind::class_
+    instead of a nanobind::module_.
     Binds public functions, enums, and nested namespaces as attributes of the class.
     """
     namespace_name = cursor.spelling
     doc = get_cursor_doc(cursor)
     doc_str = f', R"doc({doc})doc"' if doc else ""
-    # Define a py::class_ for the namespace, using an empty struct as the type
-    lines = [f'py::class_<py::object>(m, "{namespace_name}"{doc_str})']
+    # Define a nanobind::class_ for the namespace, using an empty struct as the type
+    lines = [f'nanobind::class_<nanobind::object>(m, "{namespace_name}"{doc_str})']
     functions = []
     enums = []
     seen_functions = set()
@@ -280,7 +281,7 @@ def get_pybind_namespace(cursor):
             enum_name = m.spelling
             doc_m = get_cursor_doc(m)
             doc_m_str = f', R"doc({doc_m})doc"' if doc_m else ""
-            enum_lines = [f'py::enum_<{enum_name}>({cursor.spelling}, "{enum_name}"{doc_m_str})']
+            enum_lines = [f'nanobind::enum_<{enum_name}>({cursor.spelling}, "{enum_name}"{doc_m_str})']
             for c in m.get_children():
                 if c.kind == clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
                     value_doc = get_cursor_doc(c)
@@ -308,7 +309,7 @@ def is_pure_virtual_method(cursor):
 
 def get_pybind_class(cursor):
     """
-    Generates pybind11 binding code for a class, including its constructors and methods.
+    Generates binding code for a class, including its constructors and methods.
     Nested enums are included within the class scope.
     Skips constructor bindings for abstract classes (those with pure virtual methods).
     Assumes a public destructor unless a protected or private one is found.
@@ -316,7 +317,7 @@ def get_pybind_class(cursor):
     class_name = cursor.spelling
     doc = get_cursor_doc(cursor)
     doc_str = f', R"doc({doc})doc"' if doc else ""
-    lines = [f'py::class_<{class_name}>(m, "{class_name}"{doc_str})']
+    lines = [f'nanobind::class_<{class_name}>(m, "{class_name}"{doc_str})']
     ctors = []
     methods = []
     seen_methods = set()
@@ -342,18 +343,18 @@ def get_pybind_class(cursor):
         return None
     lines.extend(ctors)
     lines.extend(methods)
-    lines.append('.def("__del__", [](py::object self) { self.release(); });')
+    lines.append('.def("__del__", [](nanobind::object self) { self.release(); });')
     return "\n".join(lines)
 
 def get_pybind_enum(cursor):
     """
-    Generates pybind11 binding code for an enum, either at module scope or nested within a class.
+    Generates binding code for an enum, either at module scope or nested within a class.
     Includes all enum constants as values.
     """
     enum_name = cursor.spelling
     doc = get_cursor_doc(cursor)
     doc_str = f', R"doc({doc})doc"' if doc else ""
-    lines = [f'py::enum_<{enum_name}>(m, "{enum_name}"{doc_str})']
+    lines = [f'nanobind::enum_<{enum_name}>(m, "{enum_name}"{doc_str})']
     for c in cursor.get_children():
         if c.kind == clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
             value_doc = get_cursor_doc(c)
@@ -418,7 +419,7 @@ def load_translation_unit_if_changed(header_file, clang_args, output_file, dep_f
                 has_changed = True
 
             for file_path in [header_file, output_file] + list(cached_deps):
-                if os.path.exists(file_path) and os.path.getmtime(file_path) > last_build_time:
+                if not os.path.exists(file_path) or os.path.getmtime(file_path) > last_build_time:
                     print("File changed: " + file_path)
                     has_changed = True
 
@@ -462,11 +463,11 @@ def main():
         print(
             "Usage: python generate_bindings.py <HEADER_FILE> <OUTPUT_FILE>\n"
             "\n"
-            "This tool parses a C++ header file using libclang and generates pybind11 binding code.\n"
+            "This tool parses a C++ header file using libclang and generates binding code.\n"
             "\n"
             "Arguments:\n"
             "  <HEADER_FILE>   Path to the C++ header file to parse\n"
-            "  <OUTPUT_FILE>   Path to write the generated C++ pybind11 binding code\n"
+            "  <OUTPUT_FILE>   Path to write the generated C++ binding code\n"
             "\n"
             "Make sure to adjust CLANG_LIBRARY_FILE and CLANG_ARGS at the top of this script if needed."
         )
@@ -490,10 +491,9 @@ def main():
     verbose("Visiting AST and generating bindings.")
     output_lines = [
         '// hatchling python bindings generator',
-        '#include <hx/hatchling_pch.hpp>',
-        '#include <pybind11/pybind11.h>',
-        'namespace py = pybind11;\n',
-        'PYBIND11_MODULE(hatchling, m) {'
+        f'#include <{header_file}>',
+        '#include <nanobind/nanobind.h>',
+        'NB_MODULE(hatchling, m) {'
     ]
 
     child_lines = visit(tu.cursor)

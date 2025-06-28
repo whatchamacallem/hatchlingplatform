@@ -60,7 +60,7 @@
 #if HX_USE_GOOGLE_TEST
 #include <gtest/gtest.h>
 #else // !HX_USE_GOOGLE_TEST
-#include <hx/internal/hxtest_internal.hpp>
+#include <hx/detail/hxtest_internal.hpp>
 
 /// testing - A partial Google Test reimplementation. Use -DHX_TEST_MAX_CASES
 /// to provide enough room for all tests.

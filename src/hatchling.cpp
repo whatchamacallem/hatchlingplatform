@@ -90,7 +90,7 @@ void __sanitizer_report_error_summary(const char *error_summary) {
 // ----------------------------------------------------------------------------
 #if (HX_RELEASE) < 1
 // Implements HX_REGISTER_FILENAME_HASH in debug. See hxstring_literal_hash.h.
-namespace hxx_ {
+namespace hxdetail_ {
 class hxhash_string_literal_
 		: public hxhash_table<hxregister_string_literal_hash, 5, hxdo_not_delete> { };
 
@@ -106,12 +106,12 @@ hxhash_string_literal_& hxstring_literal_hashes_(void) {
 	return s_hxstring_literal_hashes_;
 }
 
-} // hxx_ {
+} // hxdetail_ {
 
 // The key for the table is a string hash.
 hxregister_string_literal_hash::hxregister_string_literal_hash(const char* str_)
         : m_hash_next_(0), m_hash_(hxstring_literal_hash_debug(str_)), m_str_(str_) {
-    hxx_::hxstring_literal_hashes_().insert_node(this);
+    hxdetail_::hxstring_literal_hashes_().insert_node(this);
 }
 
 // The hash table code expects to be able to hash a key_t and compare it equal

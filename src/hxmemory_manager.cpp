@@ -67,7 +67,7 @@ static hxmutex s_hxmemory_manager_mutex;
 #define HX_MEMORY_MANAGER_LOCK_() (void)0
 #endif
 
-namespace hxx_ {
+namespace hxdetail_ {
 
 // Needs to be a pointer to prevent a constructor running at a bad time.
 class hxmemory_manager* s_hxmemory_manager = hxnull;
@@ -462,8 +462,8 @@ void hxmemory_manager::free(void* ptr) {
 	m_memory_allocator_heap.on_free_non_virtual(ptr);
 }
 
-} // hxx_
-using namespace hxx_;
+} // hxdetail_
+using namespace hxdetail_;
 
 // ----------------------------------------------------------------------------
 // hxsystem_allocator_scope

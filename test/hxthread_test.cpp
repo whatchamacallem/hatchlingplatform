@@ -5,7 +5,7 @@
 
 #if HX_USE_THREADS
 
-namespace hxx_ {
+namespace hxdetail_ {
 
 struct hxthread_test_simple_parameters_t_ {
     hxmutex* mutex_;
@@ -70,8 +70,8 @@ void* hxthread_test_func_wait_notify_sequence(hxthread_test_parameters_t_* param
     return hxnull;
 }
 
-} // hxx_
-using namespace hxx_;
+} // hxdetail_
+using namespace hxdetail_;
 
 TEST(hxunique_lock, basic_lock_unlock) {
     hxmutex mutex_;

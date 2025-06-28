@@ -44,6 +44,7 @@
         "msvc",
         "multilib",
         "multiset",
+        "nanobind",
         "printhashes",
         "pthread",
         "pybind",

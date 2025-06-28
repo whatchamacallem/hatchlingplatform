@@ -7,7 +7,7 @@
 
 hxstatic_assert(!HX_USE_GOOGLE_TEST, "Do not this file include directly");
 
-namespace hxx_ {
+namespace hxdetail_ {
 
 // hxtest_case_interface_ - Internal. Used to interrogate and dispatch tests.
 class hxtest_case_interface_ {
@@ -190,5 +190,5 @@ private:
 	size_t m_assert_fail_count_;
 };
 
-} // hxx_
-using namespace hxx_;
+} // hxdetail_
+using namespace hxdetail_;
