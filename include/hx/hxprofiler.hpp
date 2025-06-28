@@ -27,9 +27,9 @@ typedef size_t hxcycles_t;
 #endif
 
 /// hxcycles_per_second - TODO: customize for your processor speed. This assumes
-/// 2ghz. These are really only used with printf which promotes everything to
+/// 2.8ghz. These are really only used with printf which promotes everything to
 /// double anyhow.
-static const double hxcycles_per_second = 2.0e+9;
+static const double hxcycles_per_second = 2.8e+9;
 static const double hxmilliseconds_per_cycle = 1.0e+3 / hxcycles_per_second;
 static const double hxmicroseconds_per_cycle = 1.0e+6 / hxcycles_per_second;
 static const hxcycles_t hxdefault_cycles_cutoff = 1000;

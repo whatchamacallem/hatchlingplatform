@@ -3,10 +3,14 @@
 
 # Hatchling Platform
 
+<img src="hatchling_banner.jpg" alt="banner" width="400" height="400"
+style="float: right; padding-right: 20px; padding-left: 20px;">
+<div style="width: 90%; margin: 0 auto; text-align: justify; font-size: 120%;">
+
 This is a small C++ run-time intended to be developed against on the desktop
 before cross compiling to an embedded target with limited RAM. Does not make
 dynamic allocations except when allocating system allocators. Requires C99
-libraries, a C++98 compiler and may require customization to run freestanding.
+libraries, a C++98 compiler and does not require the C++ standard library.
 
 Lately I am using this to learn about C++ library design in the context of core
 C++ runtime features. These are things I might suggest to the realtime working
@@ -46,6 +50,9 @@ build is for profiling and capturing assert call-stacks in the wild. E.g. for
 CMake's "MinSizeRel". Filenames are hashed at compile time.
 3 - Nothing sacred. No asserts or tear down and very minimal logging. This build
 is only for releasing to customers after testing with the above.
+
+</div><br/>
+<div style="width: 80%; margin: 0 auto; text-align: justify; font-size: 120%;">
 
  * Testing. Provides a lightweight streamlined reimplementation of Google Test.
    Allows running CI tests on a development board.
@@ -89,3 +96,5 @@ Tested using:
  * emcc (Emscripten 4.0.5)
  * valgrind-3.22.0 (tested in 64-bit mode.)
  * See `testmatrix.sh`
+
+</div>

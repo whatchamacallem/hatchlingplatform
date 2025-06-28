@@ -205,7 +205,7 @@ def get_bind_function(cursor: Cursor) -> str:
     namespace = get_full_namespace(cursor)
     namespace_prefix = f"{namespace}::" if namespace else ""
 
-    return f'm.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{namespace_prefix}{cursor.spelling}){doc_str});'
+    return f'binder_.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{namespace_prefix}{cursor.spelling}){doc_str});'
 
 def get_bind_method(cursor: Cursor, class_name: str) -> str:
     """
@@ -257,42 +257,42 @@ def get_bind_namespace(cursor: Cursor) -> str:
     namespace_name = cursor.spelling
     doc_str = get_cursor_doc(cursor)
     # Define a nanobind::class_ for the namespace, using an empty struct as the type
-    lines: List[str] = [f'nanobind::class_<nanobind::object>(m, "{namespace_name}"{doc_str})']
+    lines: List[str] = [f'nanobind::class_<nanobind::object>(binder_, "{namespace_name}"{doc_str})']
     functions: List[str] = []
     enums: List[str] = []
     seen_functions: Set[Tuple[str, Tuple[str, ...]]] = set()
 
-    for m in cursor.get_children():
-        if is_template(m):
+    for child in cursor.get_children():
+        if is_template(child):
             continue
-        elif is_public_function(m):
-            sig: Tuple[str, Tuple[str, ...]] = get_function_signature(m)
+        elif is_public_function(child):
+            sig: Tuple[str, Tuple[str, ...]] = get_function_signature(child)
             if sig not in seen_functions:
                 # Generate function binding using the namespace's class
-                doc_m_str = get_cursor_doc(m)
-                params: List[str] = [a.type.spelling for a in m.get_arguments()]
-                ret_type = m.result_type.spelling
+                doc_m_str = get_cursor_doc(child)
+                params: List[str] = [a.type.spelling for a in child.get_arguments()]
+                ret_type = child.result_type.spelling
                 args = ", ".join(params) if params else ""
-                namespace_prefix = get_full_namespace(m)
+                namespace_prefix = get_full_namespace(child)
                 namespace_prefix = f"{namespace_prefix}::" if namespace_prefix else ""
                 functions.append(
-                    f'.def_static("{m.spelling}", '
-                    f'static_cast<{ret_type}(*)({args})>(&{namespace_prefix}{m.spelling}){doc_m_str})'
+                    f'.def_static("{child.spelling}", '
+                    f'static_cast<{ret_type}(*)({args})>(&{namespace_prefix}{child.spelling}){doc_m_str})'
                 )
                 seen_functions.add(sig)
-        elif is_public_enum(m):
-            enum_name = m.spelling
-            doc_m_str = get_cursor_doc(m)
+        elif is_public_enum(child):
+            enum_name = child.spelling
+            doc_m_str = get_cursor_doc(child)
             enum_lines: List[str] = [f'nanobind::enum_<{enum_name}>({cursor.spelling}, "{enum_name}"{doc_m_str})']
-            for c in m.get_children():
+            for c in child.get_children():
                 if c.kind is clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
                     value_doc_str = get_cursor_doc(c)
                     enum_lines.append(f'.value("{c.spelling}", {enum_name}::{c.spelling}{value_doc_str})')
             enum_lines[-1] += f'.export_values()'
             enums.append("\n".join(enum_lines))
-        elif is_namespace(m):
+        elif is_namespace(child):
             # Recursively process nested namespaces, binding to the current namespace's class
-            nested_lines = get_bind_namespace(m)
+            nested_lines = get_bind_namespace(child)
             lines.append(nested_lines)
 
     lines.extend(functions)
@@ -317,27 +317,27 @@ def get_bind_class(cursor: Cursor) -> Optional[str]:
     """
     class_name = cursor.spelling
     doc_str = get_cursor_doc(cursor)
-    lines: List[str] = [f'nanobind::class_<{class_name}>(m, "{class_name}"{doc_str})']
+    lines: List[str] = [f'nanobind::class_<{class_name}>(binder_, "{class_name}"{doc_str})']
     ctors: List[str] = []
     methods: List[str] = []
     seen_methods: Set[Tuple[str, Tuple[str, ...]]] = set()
     has_public_destructor = True
-    for m in cursor.get_children():
-        if is_pure_virtual_method(m):
+    for child in cursor.get_children():
+        if is_pure_virtual_method(child):
             return None
-        elif is_template(m):
+        elif is_template(child):
             continue
-        elif is_public_constructor(m):
-            sig: Tuple[str, Tuple[str, ...]] = get_method_signature(m)
+        elif is_public_constructor(child):
+            sig: Tuple[str, Tuple[str, ...]] = get_method_signature(child)
             if sig not in seen_methods:
-                ctors.append(get_bind_constructor(m, class_name))
+                ctors.append(get_bind_constructor(child, class_name))
                 seen_methods.add(sig)
-        elif is_nonpublic_destructor(m):
+        elif is_nonpublic_destructor(child):
             has_public_destructor = False
-        elif is_public_method(m):
-            sig = get_method_signature(m)
+        elif is_public_method(child):
+            sig = get_method_signature(child)
             if sig not in seen_methods:
-                methods.append(get_bind_method(m, class_name))
+                methods.append(get_bind_method(child, class_name))
                 seen_methods.add(sig)
     if not ctors or not has_public_destructor:
         return None
@@ -353,7 +353,7 @@ def get_bind_enum(cursor: Cursor) -> str:
     """
     enum_name = cursor.spelling
     doc_str = get_cursor_doc(cursor)
-    lines: List[str] = [f'nanobind::enum_<{enum_name}>(m, "{enum_name}"{doc_str})']
+    lines: List[str] = [f'nanobind::enum_<{enum_name}>(binder_, "{enum_name}"{doc_str})']
     for c in cursor.get_children():
         if c.kind is clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
             value_doc_str = get_cursor_doc(c)
@@ -492,7 +492,7 @@ def main() -> int:
         '// hatchling python bindings generator',
         f'#include <{header_file}>',
         '#include <nanobind/nanobind.h>',
-        'NB_MODULE(hatchling, m) {'
+        'NB_MODULE(hatchling, binder_) {'
     ]
 
     child_lines: List[str] = visit(tu.cursor)

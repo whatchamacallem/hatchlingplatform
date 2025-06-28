@@ -3,7 +3,9 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/include/**"
+                "${workspaceFolder}/include",
+                "/usr/share/nanobind/include",
+                "/usr/include/python3.12"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
