@@ -35,6 +35,7 @@ CLANG_LIBRARY_FILE = "/usr/lib/llvm-18/lib/libclang.so.1"
 CLANG_ARGS: List[str] = [
     "-std=c++17",
     "-DHX_RELEASE=0",
+    "-DHX_BIND_GEN=1",
     "-fdiagnostics-absolute-paths",
     "-Wall",
     "-I../include"
@@ -268,8 +269,7 @@ def get_bind_namespace(cursor: Cursor) -> str:
             sig: Tuple[str, Tuple[str, ...]] = get_function_signature(m)
             if sig not in seen_functions:
                 # Generate function binding using the namespace's class
-                doc_m = get_cursor_doc(m)
-                doc_m_str = f', R"doc({doc_m})doc"' if doc_m else ""
+                doc_m_str = get_cursor_doc(m)
                 params: List[str] = [a.type.spelling for a in m.get_arguments()]
                 ret_type = m.result_type.spelling
                 args = ", ".join(params) if params else ""
@@ -282,13 +282,11 @@ def get_bind_namespace(cursor: Cursor) -> str:
                 seen_functions.add(sig)
         elif is_public_enum(m):
             enum_name = m.spelling
-            doc_m = get_cursor_doc(m)
-            doc_m_str = f', R"doc({doc_m})doc"' if doc_m else ""
+            doc_m_str = get_cursor_doc(m)
             enum_lines: List[str] = [f'nanobind::enum_<{enum_name}>({cursor.spelling}, "{enum_name}"{doc_m_str})']
             for c in m.get_children():
                 if c.kind is clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
-                    value_doc = get_cursor_doc(c)
-                    value_doc_str = f', R"doc({value_doc})doc"' if value_doc else ""
+                    value_doc_str = get_cursor_doc(c)
                     enum_lines.append(f'.value("{c.spelling}", {enum_name}::{c.spelling}{value_doc_str})')
             enum_lines[-1] += f'.export_values()'
             enums.append("\n".join(enum_lines))
@@ -358,8 +356,7 @@ def get_bind_enum(cursor: Cursor) -> str:
     lines: List[str] = [f'nanobind::enum_<{enum_name}>(m, "{enum_name}"{doc_str})']
     for c in cursor.get_children():
         if c.kind is clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
-            value_doc = get_cursor_doc(c)
-            value_doc_str = f', R"doc({value_doc})doc"' if value_doc else ""
+            value_doc_str = get_cursor_doc(c)
             lines.append(f'.value("{c.spelling}", {enum_name}::{c.spelling}{value_doc_str})')
     lines[-1] += f'.export_values();'
     return "\n".join(lines)

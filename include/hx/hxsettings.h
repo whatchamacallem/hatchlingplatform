@@ -31,6 +31,12 @@
 #define HX_CPLUSPLUS 0
 #endif
 
+/// HX_BIND_GEN - Indicates script bindings are being generated from C++. Allows
+/// disabling code that is not meant to be used for that.
+#if !defined HX_BIND_GEN
+#define HX_BIND_GEN 0
+#endif
+
 // ----------------------------------------------------------------------------
 // MSVC doesn't support C++ feature test macros very well.
 #if defined _MSC_VER
