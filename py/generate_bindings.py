@@ -38,33 +38,44 @@ _verbose = True
 
 # Processed command line arguments.
 _arg_compiler_flags: List[str] = []
-_arg_package_name: str
+_arg_package_name: str = ""
 _arg_header_files: List[str] = []
-_arg_output_file: str
-_arg_dependency_file: str
-
+_arg_output_file: str = ""
+_arg_dependency_file: str = ""
 
 def verbose(msg: str) -> None:
     if _verbose:
         print(f" * {msg}")
 
-def parse_argv() -> None:
+def parse_argv() -> bool:
+    global _arg_compiler_flags
+    global _arg_package_name
+    global _arg_header_files
+    global _arg_output_file
+    global _arg_dependency_file
+
+    non_flags: List[str] = []
     for arg in sys.argv[1:]:
         if arg.startswith('-'):
             _arg_compiler_flags.append(arg)
         else:
-            _arg_header_files.append(arg)
+            non_flags.append(arg)
 
-    # the last filename was actually the output file.
-    _arg_output_file = _arg_header_files.pop()
+    if len(non_flags) < 3:
+        return False # Needed more non-switch args.
+
+    # the first non-switch was the package_name.
+    _arg_package_name = non_flags.pop(0)
+
+    # the last non-switch was the output file.
+    _arg_output_file = non_flags.pop()
+
+    # the rest are headers.
+    _arg_header_files = non_flags
 
     _arg_dependency_file = _arg_output_file + '.d.txt'
 
-    verbose("compiler_flags:" + ' '.join(_arg_compiler_flags))
-    verbose("compiler_flags:" + ' '.join(_arg_compiler_flags))
-    verbose("compiler_flags:" + ' '.join(_arg_compiler_flags))
-
-
+    return True
 
 def is_project_header(cursor: Cursor) -> bool:
     """
@@ -444,6 +455,7 @@ def check_dependencies_changed() -> bool:
                 return True
     except IOError as e:
         verbose("Not found: " + _arg_dependency_file)
+        return True # deletion is modification.
     return False
 
 def load_translation_unit_and_deps(header_file: str) -> Tuple[TranslationUnit, Set[str]]:
@@ -486,7 +498,7 @@ def main() -> int:
     and generates binding code for the given header file.
     """
 
-    if len(sys.argv) < 4: # program, package, at least one header file and an output file
+    if not parse_argv():
         print("""\
 Usage: python3 generate_bindings.py <compiler_flags> <package_name> <header_files>... <output_file>
 
@@ -502,7 +514,11 @@ Make sure to adjust _libclang_path at the top of this script if needed.
 """)
         sys.exit(1)
 
-    parse_argv()
+    verbose("compiler_flags: " + ' '.join(_arg_compiler_flags))
+    verbose("package_name: " + _arg_package_name)
+    verbose("header_files: " + ' '.join(_arg_header_files))
+    verbose("output_file: " + _arg_output_file)
+    verbose("dependency_file: " + _arg_dependency_file)
 
     verbose("Initializing Clang library.")
     clang.cindex.Config.set_library_file(_libclang_path)
