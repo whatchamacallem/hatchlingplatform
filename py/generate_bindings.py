@@ -485,7 +485,7 @@ def main() -> int:
     tu: Optional[TranslationUnit] = load_translation_unit_if_changed(header_file, CLANG_ARGS, output_file, dependency_file)
     if tu is None:
         print("Nothing changed. All done.")
-        return 0
+        return 1 # it is "failure" that bindings were generated.
 
     verbose("Visiting AST and generating bindings.")
     output_lines: List[str] = [
@@ -508,7 +508,7 @@ def main() -> int:
     os.utime(dependency_file, None)
 
     print(f"Wrote {output_file}...")
-    return 0
+    return 0 # it is "success" that bindings were generated.
 
 if __name__ == "__main__":
     exit(main())
