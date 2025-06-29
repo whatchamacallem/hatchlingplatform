@@ -14,7 +14,7 @@ else
 fi
 
 PY_CFLAGS="$(python3-config --cflags)"
-PY_LDFLAGS="$(python3-config --ldflags) -lpython3.12" # wtf this library was missing.
+PY_LDFLAGS="$(python3-config --ldflags --embed)"
 
 PY_BIND="/usr/share/nanobind"
 
@@ -33,8 +33,8 @@ set -x
 # Check timestamps and regenerate the bindings if they have changed.
 # bin/python_bindings.cpp nanobind/src/*.cpp -> bin/*.o
 if python3 $HX_DIR/py/generate_bindings.py bindings_test -DHX_BIND_GEN=1 -std=c++17 \
-    $HX_CFLAGS $HX_DIR/include/hx/hatchling_pch.hpp \
-        python_bindings.cpp; then
+    $HX_CFLAGS $HX_DIR/include/hx/hatchling_pch.hpp python_bindings.cpp; then
+
     # Build nanobind and the bindings in the bin directory.
     clang++ $HX_CFLAGS -I$PY_BIND/include -std=c++17 -pthread \
         -c $PY_BIND/src/*.cpp $HX_DIR/bin/python_bindings.cpp

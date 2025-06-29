@@ -45,7 +45,7 @@ namespace hxdetail_ {
 extern class hxprofiler_internal_ g_hxprofiler_;
 
 /// Address of s_hxprofiler_thread_id_address_ used to uniquely identify thread.
-extern hxthread_local char s_hxprofiler_thread_id_address_;
+extern hxthread_local<char> s_hxprofiler_thread_id_address_;
 
 /// hxprofiler_internal_ - Manager object for internal use.
 class hxprofiler_internal_ {

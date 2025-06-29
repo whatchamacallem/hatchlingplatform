@@ -33,7 +33,7 @@ hxconsole_command_named(hxprofiler_write_to_chrome_tracing_command_, profilewrit
 // variables
 
 // Use the address of a thread local variable as a unique thread id.
-hxthread_local char s_hxprofiler_thread_id_address_ = 0;
+hxthread_local<char> s_hxprofiler_thread_id_address_ = 0;
 
 hxprofiler_internal_ g_hxprofiler_;
 

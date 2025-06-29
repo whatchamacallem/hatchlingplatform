@@ -48,8 +48,8 @@
 #endif
 
 #if !defined HX_USE_THREADS
-/// HX_USE_THREADS - _MSC_VER specific thread support macro.
-#define HX_USE_THREADS __STDCPP_THREADS__
+/// HX_USE_THREADS - _MSC_VER indicates pthread support.
+#define HX_USE_THREADS 1
 #endif
 
 /// A hosted environment has an OS and C++ standard library.
@@ -73,10 +73,15 @@
 #else // target settings (clang and gcc.)
 // Other compilers will require customization.
 
-// hxthreads.hpp should work in C++11 now. But WASM still needs to be hooked up.
-// thread_local is missing for C++98.
+// hxthreads.hpp should work in C++11 with pthread.h. WASM still needs to be
+// hooked up. _POSIX_THREADS is the correct way to observe the -pthread compiler
+// flag.
 #if !defined HX_USE_THREADS
-#define HX_USE_THREADS (HX_CPLUSPLUS >= 201103L)
+#if defined _POSIX_THREADS
+#define HX_USE_THREADS 1
+#else
+#define HX_USE_THREADS 0
+#endif
 #endif
 
 #ifdef __GLIBC__
@@ -101,7 +106,7 @@
 #endif
 
 /// hxnoexcept_intrinsic - Use GCC/Clang nothrow attribute. Unlike noexcept this
-/// is undefined when violated. hxnoexcept - Use noexcept when available.
+/// is undefined when violated. hxnoexcept - Uses noexcept when available.
 #if HX_CPLUSPLUS >= 201103L
 #define hxnoexcept_intrinsic __attribute__((nothrow))
 #define hxnoexcept noexcept
@@ -135,14 +140,6 @@
 #define hxconstexpr_fn constexpr
 #else
 #define hxconstexpr_fn inline
-#endif
-
-/// hxthread_local - A version of thread_local that compiles to nothing when
-/// there is no threading.
-#if HX_USE_THREADS
-#define hxthread_local thread_local
-#else
-#define hxthread_local
 #endif
 
 /// HX_MAX_LINE - Set to 500 if not defined. Maximum length for formatted messages

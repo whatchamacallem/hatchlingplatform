@@ -5,10 +5,17 @@
 
 #if HX_USE_THREADS
 #include <pthread.h>
+#endif
 
 // hxthread.hpp - Threading primitives that mostly adhere to the C++ standard.
 // This header provides lightweight C++ wrappers around POSIX pthreads for
 // thread synchronization and management. The following classes are defined:
+//
+// - hxthread_local<T>
+//     Provides a C++ template for thread-local storage, allowing each thread to
+//     maintain its own instance of a specified type T. It uses POSIX threads
+//     (pthreads) to manage thread-specific data, ensuring thread safety.
+//     This class is available for compatibility when threading is off.
 //
 // - hxmutex
 //     Mutex wrapper for pthreads. Provides lock/unlock functionality, error
@@ -31,6 +38,73 @@
 //     Thread wrapper for pthreads. Provides thread creation, joining, and
 //     detaching. Ensures threads are not left joinable on destruction. Not copyable.
 //     Errors are threated as release mode asserts instead of being tracked.
+
+
+/// hxthread_local<T> - Provides a C++ template for thread-local storage, allowing
+/// each thread to maintain its own instance of a specified type T. This class is
+/// available for compatibility when threading is off.
+template<typename T_>
+class hxthread_local {
+public:
+    /// Construct with default value for each thread.
+    hxthread_local(const T_& default_value_ = T_()) : m_default_value_(default_value_) {
+#if HX_USE_THREADS
+        int code_ = pthread_key_create(&m_key_, destroy_local_);
+        hxassertrelease(code_ == 0, "Failed to create pthread key");
+    }
+
+    /// Destroy every thread's private copy.
+    ~hxthread_local() {
+        pthread_key_delete(m_key_);
+#endif
+    }
+
+    /// Set the thread local value from T.
+    void operator=(const T_& local_) { *get_local_() = local_; }
+
+    /// Cast the thread local value to T.
+    operator const T_&() const { return *get_local_(); }
+    operator T_&() { return *get_local_(); }
+
+    /// "address of" operator returns T*.
+    T_* operator&() { return get_local_(); }
+    const T_* operator&() const { return get_local_(); }
+
+private:
+    // This is still mutable when const. A thread shouldn't find out whether it
+    // has storage allocated.
+    T_* get_local_() const {
+#if HX_USE_THREADS
+        T_* local_ = static_cast<T_*>(pthread_getspecific(m_key_));
+        if (!local_) {
+            local_ = new T_(m_default_value_);
+            int code_ = pthread_setspecific(m_key_, local_);
+            hxassertrelease(code_ == 0, "Failed to set pthread specific local_");
+        }
+        return local_;
+#else
+        return m_default_value_;
+#endif
+    }
+
+    static void destroy_local_(void* ptr) hxnoexcept {
+        if (ptr) {
+            delete static_cast<T_*>(ptr);
+        }
+    }
+
+    hxthread_local(const hxthread_local&) hxdelete_fn;
+    hxthread_local& operator=(const hxthread_local&) hxdelete_fn;
+
+#if HX_USE_THREADS
+    pthread_key_t m_key_;
+#endif
+    T_ m_default_value_;
+};
+
+// The remaining classes are only available when threading is enabled. Emulating
+// pthreads is a little too nutty because it has a range of valid implementations.
+#if HX_USE_THREADS
 
 /// hxmutex - std::mutex style wrapper for pthreads. Asserts on unexpected failure
 /// by the posix api. Currently default pthread behavior. That means non-recursive,

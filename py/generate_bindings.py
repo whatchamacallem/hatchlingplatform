@@ -15,7 +15,7 @@ Key Features:
 
 Usage:
     python generate_bindings.py <compiler_flags> <package_name> <header_files>... <output_file>
-        compiler_flags  - Flags to pass to clang.
+        compiler_flags  - Flags to pass to clang. Can be in any order on command line.
         package_name    - Package name to bind everything to.
         header_files... - Path(s) to the C++ header file(s) to parse.
         output_file     - Path to write the generated C++ binding code.
@@ -505,7 +505,7 @@ Usage: python3 generate_bindings.py <compiler_flags> <package_name> <header_file
 This tool parses a C++ header file using libclang and generates binding code.
 
 Arguments:
-    compiler_flags  - Flags to pass to clang.
+    compiler_flags  - Flags to pass to clang. Can be in any order on command line.
     package_name    - Package name to bind everything to.
     header_files... - Path(s) to the C++ header file(s) to parse.
     output_file     - Path to write the generated C++ binding code.

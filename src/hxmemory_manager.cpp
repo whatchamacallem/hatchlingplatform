@@ -342,7 +342,7 @@ private:
 	friend class hxsystem_allocator_scope;
 
 	// Nota bene:  The current allocator is a thread local attribute.
-	static hxthread_local hxsystem_allocator_t s_hxcurrent_memory_allocator;
+	static hxthread_local<hxsystem_allocator_t> s_hxcurrent_memory_allocator;
 
 	hxsystem_allocator_base* m_memory_allocators[hxsystem_allocator_current];
 
@@ -351,7 +351,7 @@ private:
 	hxsystem_allocator_temp_stack  m_memory_allocator_temporary_stack;
 };
 
-hxthread_local hxsystem_allocator_t
+hxthread_local<hxsystem_allocator_t>
 hxmemory_manager::s_hxcurrent_memory_allocator = hxsystem_allocator_heap;
 
 void hxmemory_manager::construct(void) {
