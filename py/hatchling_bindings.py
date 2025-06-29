@@ -1,5 +1,5 @@
 """
-generate_bindings.py: Automatic Binding Binding Generator for C++ Projects
+hatchling_bindings.py: Automatic Binding Binding Generator for C++ Projects
 
 This script automates the generation of Python bindings for C++ code using nanobind and libclang.
 It parses a given C++ header file, discovers public functions, classes, methods, constructors,
@@ -14,7 +14,7 @@ Key Features:
 - Emits nanobind code for enums, including nested enums within classes.
 
 Usage:
-    python generate_bindings.py <compiler_flags> <package_name> <header_files>... <output_file>
+    python hatchling_bindings.py <compiler_flags> <package_name> <header_files>... <output_file>
         compiler_flags  - Flags to pass to clang. Can be in any order on command line.
         package_name    - Package name to bind everything to.
         header_files... - Path(s) to the C++ header file(s) to parse.
@@ -34,7 +34,13 @@ from clang.cindex import Cursor, CursorKind, TranslationUnit, LinkageKind
 # Path to the libclang shared library. TODO.
 _libclang_path = "/usr/lib/llvm-18/lib/libclang.so.1"
 
+# Debug flag.
 _verbose = True
+
+# Exit codes.
+_exit_bindings_generated = 0
+_exit_nothing_changed = 1
+_exit_error = 2
 
 # Processed command line arguments.
 _arg_compiler_flags: List[str] = []
@@ -452,7 +458,7 @@ def check_dependencies_changed() -> bool:
                     has_changed = True
 
             return has_changed
-    except IOError as e:
+    except Exception as e:
         verbose("Not found: " + _arg_dependency_file)
 
     return True # deletion is modification.
@@ -462,14 +468,19 @@ def load_translation_unit_and_deps(header_file: str) -> Tuple[TranslationUnit, S
     full_args = ' '.join(sys.argv)
 
     index = clang.cindex.Index.create()
-    tu: TranslationUnit = index.parse(header_file, _arg_compiler_flags)
+    tu: Optional[TranslationUnit] = None
+    try:
+        tu = index.parse(header_file, _arg_compiler_flags)
+    except Exception as e:
+        print(f"Error: {e} {header_file}")
+        sys.exit(_exit_error)
 
     for diag in tu.diagnostics:
         print(diag)
 
     if not tu or (len(tu.diagnostics) > 0 and any(d.severity >= clang.cindex.Diagnostic.Error for d in tu.diagnostics)):
         print("Parsing failed due to errors.")
-        sys.exit(1)
+        sys.exit(_exit_error)
 
     # Get all included files (direct and transitive)
     include_files: Set[str] = set()
@@ -488,7 +499,7 @@ def write_deps(include_files: Set[str]) -> None:
             f.write(full_args + '\n')
             for dep in include_files:
                 f.write(dep + '\n')
-    except IOError as e:
+    except Exception as e:
         print(f"Error: Failed to write the dependency file: {e}")
 
 def main() -> int:
@@ -499,7 +510,7 @@ def main() -> int:
 
     if not parse_argv():
         print("""\
-Usage: python3 generate_bindings.py <compiler_flags> <package_name> <header_files>... <output_file>
+Usage: python3 hatchling_bindings.py <compiler_flags> <package_name> <header_files>... <output_file>
 
 This tool parses a C++ header file using libclang and generates binding code.
 
@@ -511,7 +522,7 @@ Arguments:
 
 Make sure to adjust _libclang_path at the top of this script if needed.
 """)
-        sys.exit(1)
+        sys.exit(_exit_error)
 
     verbose("compiler_flags: " + ' '.join(_arg_compiler_flags))
     verbose("package_name: " + _arg_package_name)
@@ -525,7 +536,7 @@ Make sure to adjust _libclang_path at the top of this script if needed.
     verbose(f"Checking dependencies for generating {_arg_output_file}...")
     if not check_dependencies_changed():
         print("Nothing changed. All done.")
-        return 1 # it is "failure" that bindings were generated.
+        return _exit_nothing_changed
 
     output_lines: List[str] = [
         '#include <nanobind/nanobind.h>',
@@ -558,7 +569,7 @@ Make sure to adjust _libclang_path at the top of this script if needed.
     write_deps(include_files)
 
     print(f"Wrote {_arg_output_file}...")
-    return 0 # it is "success" that bindings were generated.
+    return _exit_bindings_generated
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())

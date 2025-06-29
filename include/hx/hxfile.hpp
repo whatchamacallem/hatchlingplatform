@@ -67,7 +67,6 @@ public:
 	/// - count: Number of bytes to write to the file.
 	size_t write(const void* bytes_, size_t count_);
 
-#if !(HX_BIND_GEN)
 	/// Reads an \n or EOF terminated character sequence. Allowed to fail on
 	/// EOF without needing to be hxfile::failable. Automatically determines
 	/// the size of the provided char array.
@@ -80,7 +79,6 @@ public:
 	/// - buffer: Pointer to a char array where the line will be stored.
 	/// - buffer_size: Size of the buffer array.
 	bool get_line(char* buffer_, size_t buffer_size_);
-#endif
 
 	/// Writes a formatted string to the file. Must be less than HX_MAX_LINE characters.
 	/// - format: Format string, similar to printf.
