@@ -19,8 +19,8 @@ PY_LDFLAGS="$(python3-config --ldflags) -lpython3.12" # wtf this library was mis
 PY_BIND="/usr/share/nanobind"
 
 HX_DIR=`pwd`
-HX_FLAGS="$PY_CFLAGS -fdiagnostics-absolute-paths -Wfatal-errors \
-    -I$HX_DIR/include -DHX_RELEASE=0 -I$PY_BIND/include -I."
+HX_CFLAGS="$PY_CFLAGS -fdiagnostics-absolute-paths -Wfatal-errors \
+    -I$HX_DIR/include -DHX_RELEASE=0"
 
 # Only nuke the bin dir if it is not being used for binding already.
 if [ ! -f "bin/python_bindings.cpp" ]; then
@@ -32,16 +32,17 @@ set -x
 
 # Check timestamps and regenerate the bindings if they have changed.
 # bin/python_bindings.cpp nanobind/src/*.cpp -> bin/*.o
-if python3 $HX_DIR/py/generate_bindings.py $HX_DIR/include/hx/hatchling_pch.hpp \
+if python3 $HX_DIR/py/generate_bindings.py -DHX_BIND_GEN=1 -std=c++17 \
+    $HX_CFLAGS $HX_DIR/include/hx/hatchling_pch.hpp \
         python_bindings.cpp; then
     # Build nanobind and the bindings in the bin directory.
-    clang++ $HX_FLAGS -std=c++17 -pthread \
+    clang++ $HX_CFLAGS -I$PY_BIND/include -I. -std=c++17 -pthread \
         -c $PY_BIND/src/*.cpp $HX_DIR/bin/python_bindings.cpp
 fi
 
 # {src,test}/*.c -> bin/*.o
-clang $HX_FLAGS -std=c17 -pthread -c $HX_DIR/src/*.c $HX_DIR/test/*.c
+clang $HX_CFLAGS -std=c17 -pthread -c $HX_DIR/src/*.c $HX_DIR/test/*.c
 
 # {src,test}/*.cpp bin/*.o -> bin/hxtest
-clang++ $HX_FLAGS $PY_LDFLAGS -std=c++17 -lstdc++ -pthread -lpthread \
+clang++ $HX_CFLAGS $PY_LDFLAGS -std=c++17 -lstdc++ -pthread -lpthread \
     $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp *.o -o hxtest

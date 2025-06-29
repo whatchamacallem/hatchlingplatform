@@ -14,9 +14,13 @@ Key Features:
 - Emits nanobind code for enums, including nested enums within classes.
 
 Usage:
-    python generate_bindings.py <HEADER_FILE> <OUTPUT_FILE>
+    python generate_bindings.py <compiler_flags> <package_name> <header_files>... <output_file>
+        compiler_flags  - Flags to pass to clang.
+        package_name    - Package name to bind everything to.
+        header_files... - Path(s) to the C++ header file(s) to parse.
+        output_file     - Path to write the generated C++ binding code.
 
-Adjust the CLANG_LIBRARY_FILE and CLANG_ARGS variables at the top of the script as needed
+Adjust the _libclang_path and compiler_flags variables at the top of the script as needed
 for your environment and project.
 """
 
@@ -25,27 +29,42 @@ import os
 import clang.cindex
 
 from typing import List, Set, Tuple, Optional
-from clang.cindex import Cursor, TranslationUnit
+from clang.cindex import Cursor, CursorKind, TranslationUnit, LinkageKind
 
+# Path to the libclang shared library. TODO.
+_libclang_path = "/usr/lib/llvm-18/lib/libclang.so.1"
 
-# Path to the libclang shared library.
-CLANG_LIBRARY_FILE = "/usr/lib/llvm-18/lib/libclang.so.1"
+_verbose = True
 
-# Arguments passed to Clang when parsing the header file.
-CLANG_ARGS: List[str] = [
-    "-std=c++17",
-    "-DHX_RELEASE=0",
-    "-DHX_BIND_GEN=1",
-    "-fdiagnostics-absolute-paths",
-    "-Wall",
-    "-I../include"
-]
+# Processed command line arguments.
+_arg_compiler_flags: List[str] = []
+_arg_package_name: str
+_arg_header_files: List[str] = []
+_arg_output_file: str
+_arg_dependency_file: str
 
-VERBOSE = True
 
 def verbose(msg: str) -> None:
-    if VERBOSE:
+    if _verbose:
         print(f" * {msg}")
+
+def parse_argv() -> None:
+    for arg in sys.argv[1:]:
+        if arg.startswith('-'):
+            _arg_compiler_flags.append(arg)
+        else:
+            _arg_header_files.append(arg)
+
+    # the last filename was actually the output file.
+    _arg_output_file = _arg_header_files.pop()
+
+    _arg_dependency_file = _arg_output_file + '.d.txt'
+
+    verbose("compiler_flags:" + ' '.join(_arg_compiler_flags))
+    verbose("compiler_flags:" + ' '.join(_arg_compiler_flags))
+    verbose("compiler_flags:" + ' '.join(_arg_compiler_flags))
+
+
 
 def is_project_header(cursor: Cursor) -> bool:
     """
@@ -56,8 +75,7 @@ def is_project_header(cursor: Cursor) -> bool:
     header_str = str(header) if header is not None else ""
     return (
         header is not None
-        and "include/hx/" in header_str
-        and "include/hx/detail/" not in header_str
+        and all(h in header_str for h in _arg_header_files)
     )
 
 def uses_va_list(cursor: Cursor) -> bool:
@@ -72,8 +90,8 @@ def is_public_function(cursor: Cursor) -> bool:
     Returns True if the cursor is a public, non-variadic, non-template, project function.
     """
     return (
-        cursor.kind is clang.cindex.CursorKind.FUNCTION_DECL # type: ignore
-        and cursor.linkage is clang.cindex.LinkageKind.EXTERNAL # type: ignore
+        cursor.kind is CursorKind.FUNCTION_DECL # type: ignore
+        and cursor.linkage is LinkageKind.EXTERNAL # type: ignore
         and not cursor.type.is_function_variadic()
         and not uses_va_list(cursor)
     )
@@ -83,7 +101,7 @@ def is_public_class(cursor: Cursor) -> bool:
     Returns True if the cursor is a public class definition.
     """
     return (
-        cursor.kind is clang.cindex.CursorKind.CLASS_DECL # type: ignore
+        cursor.kind is CursorKind.CLASS_DECL # type: ignore
         and cursor.is_definition()
         and cursor.access_specifier in (
             clang.cindex.AccessSpecifier.PUBLIC, # type: ignore
@@ -96,7 +114,7 @@ def is_public_method(cursor: Cursor) -> bool:
     Returns True if the cursor is a public, non-variadic, non-template method.
     """
     return (
-        cursor.kind is clang.cindex.CursorKind.CXX_METHOD # type: ignore
+        cursor.kind is CursorKind.CXX_METHOD # type: ignore
         and cursor.access_specifier is clang.cindex.AccessSpecifier.PUBLIC # type: ignore
         and not cursor.type.is_function_variadic()
         and not uses_va_list(cursor)
@@ -107,7 +125,7 @@ def is_public_constructor(cursor: Cursor) -> bool:
     Returns True if the cursor is a public constructor.
     """
     return (
-        cursor.kind is clang.cindex.CursorKind.CONSTRUCTOR # type: ignore
+        cursor.kind is CursorKind.CONSTRUCTOR # type: ignore
         and cursor.access_specifier is clang.cindex.AccessSpecifier.PUBLIC # type: ignore
     )
 
@@ -116,7 +134,7 @@ def is_nonpublic_destructor(cursor: Cursor) -> bool:
     Returns True if the cursor is a non-public destructor.
     """
     return (
-        cursor.kind is clang.cindex.CursorKind.DESTRUCTOR # type: ignore
+        cursor.kind is CursorKind.DESTRUCTOR # type: ignore
         and cursor.access_specifier != clang.cindex.AccessSpecifier.PUBLIC # type: ignore
     )
 
@@ -127,9 +145,9 @@ def is_template(cursor: Cursor) -> bool:
     """
     return (
         cursor.kind in (
-            clang.cindex.CursorKind.CLASS_TEMPLATE, # type: ignore
-            clang.cindex.CursorKind.FUNCTION_TEMPLATE, # type: ignore
-            clang.cindex.CursorKind.CLASS_TEMPLATE_PARTIAL_SPECIALIZATION # type: ignore
+            CursorKind.CLASS_TEMPLATE, # type: ignore
+            CursorKind.FUNCTION_TEMPLATE, # type: ignore
+            CursorKind.CLASS_TEMPLATE_PARTIAL_SPECIALIZATION # type: ignore
         )
     )
 
@@ -138,7 +156,7 @@ def is_public_enum(cursor: Cursor) -> bool:
     Returns True if the cursor is a public enum definition.
     """
     return (
-        cursor.kind is clang.cindex.CursorKind.ENUM_DECL # type: ignore
+        cursor.kind is CursorKind.ENUM_DECL # type: ignore
         and cursor.is_definition()
         and cursor.access_specifier in (
             clang.cindex.AccessSpecifier.PUBLIC, # type: ignore
@@ -151,7 +169,7 @@ def is_namespace(cursor: Cursor) -> bool:
     Returns True if the cursor is a namespace definition.
     """
     return (
-        cursor.kind is clang.cindex.CursorKind.NAMESPACE  # type: ignore
+        cursor.kind is CursorKind.NAMESPACE  # type: ignore
         and cursor.is_definition()
     )
 
@@ -185,7 +203,7 @@ def get_full_namespace(cursor: Cursor) -> str:
     """
     namespaces: List[str] = []
     current: Optional[Cursor] = cursor.semantic_parent
-    while current and current.kind is clang.cindex.CursorKind.NAMESPACE: # type: ignore
+    while current and current.kind is CursorKind.NAMESPACE: # type: ignore
         namespaces.append(current.spelling)
         current = current.semantic_parent
     return "::".join(reversed(namespaces)) if namespaces else ""
@@ -285,7 +303,7 @@ def get_bind_namespace(cursor: Cursor) -> str:
             doc_m_str = get_cursor_doc(child)
             enum_lines: List[str] = [f'nanobind::enum_<{enum_name}>({cursor.spelling}, "{enum_name}"{doc_m_str})']
             for c in child.get_children():
-                if c.kind is clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
+                if c.kind is CursorKind.ENUM_CONSTANT_DECL: # type: ignore
                     value_doc_str = get_cursor_doc(c)
                     enum_lines.append(f'.value("{c.spelling}", {enum_name}::{c.spelling}{value_doc_str})')
             enum_lines[-1] += f'.export_values()'
@@ -304,7 +322,7 @@ def is_pure_virtual_method(cursor: Cursor) -> bool:
     Returns True if the cursor is a pure virtual method (declared with = 0).
     """
     return (
-        cursor.kind is clang.cindex.CursorKind.CXX_METHOD  # type: ignore
+        cursor.kind is CursorKind.CXX_METHOD  # type: ignore
         and cursor.is_pure_virtual_method()  # Check for pure virtual
     )
 
@@ -355,7 +373,7 @@ def get_bind_enum(cursor: Cursor) -> str:
     doc_str = get_cursor_doc(cursor)
     lines: List[str] = [f'nanobind::enum_<{enum_name}>(binder_, "{enum_name}"{doc_str})']
     for c in cursor.get_children():
-        if c.kind is clang.cindex.CursorKind.ENUM_CONSTANT_DECL: # type: ignore
+        if c.kind is CursorKind.ENUM_CONSTANT_DECL: # type: ignore
             value_doc_str = get_cursor_doc(c)
             lines.append(f'.value("{c.spelling}", {enum_name}::{c.spelling}{value_doc_str})')
     lines[-1] += f'.export_values();'
@@ -386,7 +404,7 @@ def visit(cursor: Cursor, seen_functions: Optional[Set[Tuple[str, Tuple[str, ...
                 t: Optional[str] = get_bind_class(c)
                 if t:
                     lines.append(t)
-            elif is_public_enum(c) and c.semantic_parent.kind != clang.cindex.CursorKind.CLASS_DECL: # type: ignore
+            elif is_public_enum(c) and c.semantic_parent.kind != CursorKind.CLASS_DECL: # type: ignore
                 lines.append(get_bind_enum(c))
             child_lines: List[str] = visit(c, seen_functions)
             lines.extend(child_lines)
@@ -395,18 +413,18 @@ def visit(cursor: Cursor, seen_functions: Optional[Set[Tuple[str, Tuple[str, ...
             continue
     return lines
 
-# Check if the command line has changed or any included file has changed.
-# N.B. Uses timestamps only. The dep_file will be younger than the output
-# file and will need to be touched again to make the build final. The
-# output file will be listed as the first dependency file.
-def load_translation_unit_if_changed(header_file: str, clang_args: List[str],
-        output_file: str, dep_file: str) -> Optional[TranslationUnit]:
+def check_dependencies_changed() -> bool:
 
-    full_args = f"{header_file} {' '.join(clang_args)} {output_file}"
+    """Check if the command line has changed or any included file has changed.
+    N.B. Uses timestamps only. The _arg_dependency_file will be younger than the output
+    file and will need to be touched again to make the build final. The
+    output file will be listed as the first dependency file."""
+
+    full_args = ' '.join(sys.argv)
 
     try:
-        with open(dep_file, 'r') as f:
-            last_build_time: float = os.path.getmtime(dep_file)
+        with open(_arg_dependency_file, 'r') as f:
+            last_build_time: float = os.path.getmtime(_arg_dependency_file)
             lines: List[str] = f.read().splitlines()
             cached_args = lines[0] if lines else ""
             cached_deps: Set[str] = set(lines[1:])
@@ -417,18 +435,23 @@ def load_translation_unit_if_changed(header_file: str, clang_args: List[str],
                 print("Args changed.")
                 has_changed = True
 
-            for file_path in [header_file, output_file] + list(cached_deps):
+            for file_path in _arg_header_files + [_arg_output_file] + list(cached_deps):
                 if not os.path.exists(file_path) or os.path.getmtime(file_path) > last_build_time:
                     print("File changed: " + file_path)
                     has_changed = True
 
             if not has_changed:
-                return None
+                return True
     except IOError as e:
-        verbose("Not found: " + dep_file)
+        verbose("Not found: " + _arg_dependency_file)
+    return False
+
+def load_translation_unit_and_deps(header_file: str) -> Tuple[TranslationUnit, Set[str]]:
+
+    full_args = ' '.join(sys.argv)
 
     index = clang.cindex.Index.create()
-    tu: TranslationUnit = index.parse(header_file, clang_args)
+    tu: TranslationUnit = index.parse(header_file, _arg_compiler_flags)
 
     for diag in tu.diagnostics:
         print(diag)
@@ -442,72 +465,84 @@ def load_translation_unit_if_changed(header_file: str, clang_args: List[str],
     for inc in tu.get_includes():
         include_files.add(inc.include.name)
 
-    # Write new dependency file
+    return tu, include_files
+
+def write_deps(include_files: Set[str]) -> None:
+    """Write new dependency file"""
+
+    full_args = ' '.join(sys.argv)
+
     try:
-        with open(dep_file, 'w') as f:
+        with open(_arg_dependency_file, 'w') as f:
             f.write(full_args + '\n')
             for dep in include_files:
                 f.write(dep + '\n')
     except IOError as e:
         print(f"Error: Failed to write the dependency file: {e}")
 
-    return tu
-
 def main() -> int:
     """
     Main entry point for the script. Parses command-line arguments, initializes Clang,
     and generates binding code for the given header file.
     """
-    if len(sys.argv) != 3:
-        print(
-            "Usage: python generate_bindings.py <HEADER_FILE> <OUTPUT_FILE>\n"
-            "\n"
-            "This tool parses a C++ header file using libclang and generates binding code.\n"
-            "\n"
-            "Arguments:\n"
-            "  <HEADER_FILE>   Path to the C++ header file to parse\n"
-            "  <OUTPUT_FILE>   Path to write the generated C++ binding code\n"
-            "\n"
-            "Make sure to adjust CLANG_LIBRARY_FILE and CLANG_ARGS at the top of this script if needed."
-        )
+
+    if len(sys.argv) < 4: # program, package, at least one header file and an output file
+        print("""\
+Usage: python3 generate_bindings.py <compiler_flags> <package_name> <header_files>... <output_file>
+
+This tool parses a C++ header file using libclang and generates binding code.
+
+Arguments:
+    compiler_flags  - Flags to pass to clang.
+    package_name    - Package name to bind everything to.
+    header_files... - Path(s) to the C++ header file(s) to parse.
+    output_file     - Path to write the generated C++ binding code.
+
+Make sure to adjust _libclang_path at the top of this script if needed.
+""")
         sys.exit(1)
 
-    header_file = os.path.abspath(sys.argv[1])
-    output_file = os.path.abspath(sys.argv[2])
-    dependency_file = output_file + '.d.txt'
-
-    verbose(f"Generating {output_file} from {header_file}")
+    parse_argv()
 
     verbose("Initializing Clang library.")
-    clang.cindex.Config.set_library_file(CLANG_LIBRARY_FILE)
+    clang.cindex.Config.set_library_file(_libclang_path)
 
-    verbose("Checking dependency file and parsing if needed.")
-    tu: Optional[TranslationUnit] = load_translation_unit_if_changed(header_file, CLANG_ARGS, output_file, dependency_file)
-    if tu is None:
+    verbose(f"Checking dependencies for generating {_arg_output_file}...")
+    if not check_dependencies_changed():
         print("Nothing changed. All done.")
         return 1 # it is "failure" that bindings were generated.
 
-    verbose("Visiting AST and generating bindings.")
     output_lines: List[str] = [
-        '// hatchling python bindings generator',
-        f'#include <{header_file}>',
         '#include <nanobind/nanobind.h>',
-        'NB_MODULE(hatchling, binder_) {'
+        f'NB_MODULE({_arg_package_name}, binder_) ',
+        '{'
     ]
 
-    child_lines: List[str] = visit(tu.cursor)
-    output_lines.extend(child_lines)
+    include_files: Set[str] = set()
+
+    for header_file in _arg_header_files:
+        # prepend a full path include into the header.
+        output_lines.insert(0, f'#include <{os.path.abspath(header_file)}>')
+
+        verbose(f"Visiting AST and generating bindings from {header_file}...")
+        tu, inc = load_translation_unit_and_deps(header_file)
+
+        child_lines: List[str] = visit(tu.cursor)
+        output_lines.extend(child_lines)
+
+        include_files |= inc
+
     output_lines.append('}\n')
 
     verbose("Writing output and then updating timestamp of dependency file...")
-    with open(output_file, "w") as f:
+    with open(_arg_output_file, "w") as f:
         f.write("\n".join(output_lines) if output_lines else "")
 
-    # Mark the dependency_file as being older than the output_file. This will
+    # Mark the _arg_dependency_file as being older than the _arg_output_file. This will
     # detect modification of the output file and regenerate it in that case.
-    os.utime(dependency_file, None)
+    write_deps(include_files)
 
-    print(f"Wrote {output_file}...")
+    print(f"Wrote {_arg_output_file}...")
     return 0 # it is "success" that bindings were generated.
 
 if __name__ == "__main__":
