@@ -2,8 +2,8 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: g++ build active file",
-            "command": "./debugbuild.sh",
+            "label": "Clang build",
+            "command": "./testpythonbindings.sh",
             "args": [
             ],
             "options": {

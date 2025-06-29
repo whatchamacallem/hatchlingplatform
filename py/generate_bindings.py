@@ -451,12 +451,11 @@ def check_dependencies_changed() -> bool:
                     print("File changed: " + file_path)
                     has_changed = True
 
-            if not has_changed:
-                return True
+            return has_changed
     except IOError as e:
         verbose("Not found: " + _arg_dependency_file)
-        return True # deletion is modification.
-    return False
+
+    return True # deletion is modification.
 
 def load_translation_unit_and_deps(header_file: str) -> Tuple[TranslationUnit, Set[str]]:
 
