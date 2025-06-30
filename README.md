@@ -3,8 +3,8 @@
 
 # Hatchling Platform
 
-<img src="hatchling_banner.jpg" alt="banner" width="400" height="400"
-style="float: right; padding-right: 20px; padding-left: 20px;">
+<br/><img src="hatchling_logo.png" alt="logo" style="display: block; margin: auto;"><br/>
+
 <div style="width: 90%; margin: 0 auto; text-align: justify; font-size: 120%;">
 
 This is a small C++ run-time intended to be developed against on the desktop
@@ -21,6 +21,9 @@ already doing. And the compilers are still refusing to evaluate the kind of
 template bloat in the standard 100% at compile time because they don't seem to
 think it is a priority. So I don't think this codebase is obsolete yet. It might
 be perfect for WASM actually.
+
+<img src="hatchling_banner.jpg" alt="banner" width="400" height="400"
+style="float: right; padding-right: 20px; padding-left: 20px;">
 
 What makes this codebase really shine is Clang's Undefined Behavior Sanitizer
 (UBSan) because it allows you to write code the way C++ was originally designed
