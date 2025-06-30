@@ -2,9 +2,6 @@
 
 #include <hx/hatchling.h>
 
-extern int g_a, g_b, g_c;
-extern float g_f, g_g, g_h;
-
 // - Multiple declarations followed by a definition and 6 overloads.
 
 /// fn1 - Returns a float.
@@ -13,6 +10,9 @@ float fn1(void);
 float fn1(void);
 
 // - Overloads by arity.
+
+extern int g_a, g_b, g_c;
+extern float g_f, g_g, g_h;
 
 /// fn1 - Returns the sum of global variables g_a, g_b, g_c, g_f, g_g, and g_h.
 inline float fn1(void) { return g_a + g_b + g_c + g_f + g_g + g_h; }
@@ -44,10 +44,13 @@ inline float fn1(float f, float g) { g_f = f; g_g = g; return fn1(); }
 /// - h: A float value to assign to g_h.
 inline float fn1(float f, float g, float h) { g_f = f; g_g = g; g_h = h; return fn1(); }
 
-/// - Multiple declarations, external linkage.
+// - Multiple declarations, external linkage.
+
 /// fn2 - Returns an integer.
-int fn2(void);
-int fn2(void);
+float fn2(void);
+float fn2(void);
+
+// - Enums
 
 /// enum1 - An empty enumeration.
 enum enum1 { };
@@ -74,6 +77,8 @@ class class1 {
 public:
 };
 
+// - Classes
+
 /// class2 - Two constructors and zero destructors.
 class class2 {
 public:
@@ -86,7 +91,6 @@ public:
 	/// fn3 - Returns the private member m_x.
 	int fn3(void) { return m_x; }
 private:
-	/// m_x - Private integer member variable.
 	int m_x;
 };
 
@@ -127,7 +131,7 @@ public:
 	inline float fn4(float f, float g, float h) { m_f = f; m_g = g; m_h = h; return fn4(); }
 
 	/// fn5 - External linkage. Returns fn4();
-	int fn5(void);
+	float fn5(void);
 
 private:
 	int m_a, m_b, m_c;

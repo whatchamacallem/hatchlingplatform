@@ -14,14 +14,13 @@ Key Features:
 - Emits nanobind code for enums, including nested enums within classes.
 
 Usage:
-    python hatchling_bindings.py <compiler_flags> <package_name> <header_files>... <output_file>
+    python hatchling_bindings.py <compiler_flags> <module_name> <header_files>... <output_file>
         compiler_flags  - Flags to pass to clang. Can be in any order on command line.
-        package_name    - Package name to bind everything to.
+        module_name     - Module name to bind everything to.
         header_files... - Path(s) to the C++ header file(s) to parse.
         output_file     - Path to write the generated C++ binding code.
 
-Adjust the _libclang_path and compiler_flags variables at the top of the script as needed
-for your environment and project.
+Adjust the _libclang_path at the top of the script as needed for your environment and project.
 """
 
 import sys
@@ -38,13 +37,13 @@ _libclang_path = "/usr/lib/llvm-18/lib/libclang.so.1"
 _verbose = True
 
 # Exit codes.
-_exit_nothing_changed = 0
-_exit_bindings_generated = 1
+_exit_bindings_generated = 0
+_exit_nothing_changed = 1
 _exit_error = 2
 
 # Processed command line arguments.
 _arg_compiler_flags: List[str] = []
-_arg_package_name: str = ""
+_arg_module_name: str = ""
 _arg_header_files: List[str] = []
 _arg_output_file: str = ""
 _arg_dependency_file: str = ""
@@ -55,7 +54,7 @@ def verbose(msg: str) -> None:
 
 def parse_argv() -> bool:
     global _arg_compiler_flags
-    global _arg_package_name
+    global _arg_module_name
     global _arg_header_files
     global _arg_output_file
     global _arg_dependency_file
@@ -70,8 +69,8 @@ def parse_argv() -> bool:
     if len(non_flags) < 3:
         return False # Needed more non-switch args.
 
-    # the first non-switch was the package_name.
-    _arg_package_name = non_flags.pop(0)
+    # the first non-switch was the module_name.
+    _arg_module_name = non_flags.pop(0)
 
     # the last non-switch was the output file.
     _arg_output_file = non_flags.pop()
@@ -240,7 +239,7 @@ def get_bind_function(cursor: Cursor) -> str:
     namespace = get_full_namespace(cursor)
     namespace_prefix = f"{namespace}::" if namespace else ""
 
-    return f'binder_.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{namespace_prefix}{cursor.spelling}){doc_str});'
+    return f'module_root_.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{namespace_prefix}{cursor.spelling}){doc_str});'
 
 def get_bind_method(cursor: Cursor, class_name: str) -> str:
     """
@@ -292,7 +291,7 @@ def get_bind_namespace(cursor: Cursor) -> str:
     namespace_name = cursor.spelling
     doc_str = get_cursor_doc(cursor)
     # Define a nanobind::class_ for the namespace, using an empty struct as the type
-    lines: List[str] = [f'nanobind::class_<nanobind::object>(binder_, "{namespace_name}"{doc_str})']
+    lines: List[str] = [f'nanobind::class_<nanobind::object>(module_root_, "{namespace_name}"{doc_str})']
     functions: List[str] = []
     enums: List[str] = []
     seen_functions: Set[Tuple[str, Tuple[str, ...]]] = set()
@@ -352,7 +351,7 @@ def get_bind_class(cursor: Cursor) -> Optional[str]:
     """
     class_name = cursor.spelling
     doc_str = get_cursor_doc(cursor)
-    lines: List[str] = [f'nanobind::class_<{class_name}>(binder_, "{class_name}"{doc_str})']
+    lines: List[str] = [f'nanobind::class_<{class_name}>(module_root_, "{class_name}"{doc_str})']
     ctors: List[str] = []
     methods: List[str] = []
     seen_methods: Set[Tuple[str, Tuple[str, ...]]] = set()
@@ -388,7 +387,7 @@ def get_bind_enum(cursor: Cursor) -> str:
     """
     enum_name = cursor.spelling
     doc_str = get_cursor_doc(cursor)
-    lines: List[str] = [f'nanobind::enum_<{enum_name}>(binder_, "{enum_name}"{doc_str})']
+    lines: List[str] = [f'nanobind::enum_<{enum_name}>(module_root_, "{enum_name}"{doc_str})']
     for c in cursor.get_children():
         if c.kind is CursorKind.ENUM_CONSTANT_DECL: # type: ignore
             value_doc_str = get_cursor_doc(c)
@@ -396,7 +395,7 @@ def get_bind_enum(cursor: Cursor) -> str:
     lines[-1] += f'.export_values();'
     return "\n".join(lines)
 
-def visit(cursor: Cursor, seen_functions: Optional[Set[Tuple[str, Tuple[str, ...]]]] = None) -> List[str]:
+def visit_namespace(cursor: Cursor, seen_functions: Optional[Set[Tuple[str, Tuple[str, ...]]]] = None) -> List[str]:
     """
     Recursively visits AST nodes starting from the given cursor.
     Collects functions, classes, and enums that are public and project-specific.
@@ -423,7 +422,7 @@ def visit(cursor: Cursor, seen_functions: Optional[Set[Tuple[str, Tuple[str, ...
                     lines.append(t)
             elif is_public_enum(c) and c.semantic_parent.kind != CursorKind.CLASS_DECL: # type: ignore
                 lines.append(get_bind_enum(c))
-            child_lines: List[str] = visit(c, seen_functions)
+            child_lines: List[str] = visit_namespace(c, seen_functions)
             lines.extend(child_lines)
         except Exception as e:
             print(f"Error processing cursor {c.spelling}: {str(e)}")
@@ -444,7 +443,7 @@ def check_dependencies_changed() -> bool:
             last_build_time: float = os.path.getmtime(_arg_dependency_file)
             lines: List[str] = f.read().splitlines()
             cached_args = lines[0] if lines else ""
-            cached_deps: Set[str] = set(lines[1:])
+            cached_dependencies: Set[str] = set(lines[1:])
 
             # Check if args match and dep file is newer than header and includes
             has_changed = False
@@ -452,7 +451,7 @@ def check_dependencies_changed() -> bool:
                 print("Args changed.")
                 has_changed = True
 
-            for file_path in _arg_header_files + [_arg_output_file] + list(cached_deps):
+            for file_path in _arg_header_files + [_arg_output_file] + list(cached_dependencies):
                 if not os.path.exists(file_path) or os.path.getmtime(file_path) > last_build_time:
                     print("File changed: " + file_path)
                     has_changed = True
@@ -463,33 +462,31 @@ def check_dependencies_changed() -> bool:
 
     return True # deletion is modification.
 
-def load_translation_unit_and_deps(header_file: str) -> Tuple[TranslationUnit, Set[str]]:
-
-    full_args = ' '.join(sys.argv)
-
+def load_translation_unit_and_dependencies(header_file: str) -> Tuple[TranslationUnit, Set[str]]:
     index = clang.cindex.Index.create()
-    tu: Optional[TranslationUnit] = None
+    translation_unit: Optional[TranslationUnit] = None
     try:
-        tu = index.parse(header_file, _arg_compiler_flags)
+        translation_unit = index.parse(header_file, _arg_compiler_flags)
     except Exception as e:
         print(f"Error: {e} {header_file}")
         sys.exit(_exit_error)
 
-    for diag in tu.diagnostics:
-        print(diag)
+    for diagnostic in translation_unit.diagnostics:
+        print(diagnostic)
 
-    if not tu or (len(tu.diagnostics) > 0 and any(d.severity >= clang.cindex.Diagnostic.Error for d in tu.diagnostics)):
+    if not translation_unit or (len(translation_unit.diagnostics) > 0
+            and any(d.severity >= clang.cindex.Diagnostic.Error for d in translation_unit.diagnostics)):
         print("Parsing failed due to errors.")
         sys.exit(_exit_error)
 
     # Get all included files (direct and transitive)
-    include_files: Set[str] = set()
-    for inc in tu.get_includes():
-        include_files.add(inc.include.name)
+    dependencies: Set[str] = set()
+    for include in translation_unit.get_includes():
+        dependencies.add(include.include.name)
 
-    return tu, include_files
+    return translation_unit, dependencies
 
-def write_deps(include_files: Set[str]) -> None:
+def write_dependencies(include_files: Set[str]) -> None:
     """Write new dependency file"""
 
     full_args = ' '.join(sys.argv)
@@ -499,8 +496,10 @@ def write_deps(include_files: Set[str]) -> None:
             f.write(full_args + '\n')
             for dep in include_files:
                 f.write(dep + '\n')
+        verbose("Wrote " + _arg_dependency_file)
     except Exception as e:
         print(f"Error: Failed to write the dependency file: {e}")
+        sys.exit(_exit_error)
 
 def main() -> int:
     """
@@ -510,13 +509,13 @@ def main() -> int:
 
     if not parse_argv():
         print("""\
-Usage: python3 hatchling_bindings.py <compiler_flags> <package_name> <header_files>... <output_file>
+Usage: python3 hatchling_bindings.py <compiler_flags> <module_name> <header_files>... <output_file>
 
 This tool parses a C++ header file using libclang and generates binding code.
 
 Arguments:
     compiler_flags  - Flags to pass to clang. Can be in any order on command line.
-    package_name    - Package name to bind everything to.
+    module_name     - Module name to bind everything to.
     header_files... - Path(s) to the C++ header file(s) to parse.
     output_file     - Path to write the generated C++ binding code.
 
@@ -525,7 +524,7 @@ Make sure to adjust _libclang_path at the top of this script if needed.
         sys.exit(_exit_error)
 
     verbose("compiler_flags: " + ' '.join(_arg_compiler_flags))
-    verbose("package_name: " + _arg_package_name)
+    verbose("module_name: " + _arg_module_name)
     verbose("header_files: " + ' '.join(_arg_header_files))
     verbose("output_file: " + _arg_output_file)
     verbose("dependency_file: " + _arg_dependency_file)
@@ -538,37 +537,36 @@ Make sure to adjust _libclang_path at the top of this script if needed.
         print("Nothing changed. All done.")
         return _exit_nothing_changed
 
-    output_lines: List[str] = [
-        '#include <nanobind/nanobind.h>',
-        f'NB_MODULE({_arg_package_name}, binder_) ',
-        '{'
-    ]
-
-    include_files: Set[str] = set()
+    # Begin data gathering loop
+    output_headers: List[str] = [ '#include <nanobind/nanobind.h>', ]
+    output_lines: List[str] = [ f'NB_MODULE({_arg_module_name}, module_root_) ', '{' ]
+    dependencies: Set[str] = set()
 
     for header_file in _arg_header_files:
         # prepend a full path include into the header.
-        output_lines.insert(0, f'#include <{os.path.abspath(header_file)}>')
+        output_headers.append(f'#include <{os.path.abspath(header_file)}>')
 
         verbose(f"Visiting AST and generating bindings from {header_file}...")
-        tu, inc = load_translation_unit_and_deps(header_file)
+        translation_unit, deps = load_translation_unit_and_dependencies(header_file)
 
-        child_lines: List[str] = visit(tu.cursor)
+
+            # get_full_namespace() -> a per-namespace seen list. just qualify symbol with namespace.
+        child_lines: List[str] = visit_namespace(translation_unit.cursor, "module_root_) xxx
         output_lines.extend(child_lines)
-
-        include_files |= inc
+        dependencies |= deps
 
     output_lines.append('}\n')
+    output_lines = output_headers + output_lines
 
-    verbose("Writing output and then updating timestamp of dependency file...")
+    # Write out gathered data.
     with open(_arg_output_file, "w") as f:
         f.write("\n".join(output_lines) if output_lines else "")
+        print(f"Wrote {_arg_output_file}...")
 
-    # Mark the _arg_dependency_file as being older than the _arg_output_file. This will
+    # Make the _arg_dependency_file older than the _arg_output_file. This will
     # detect modification of the output file and regenerate it in that case.
-    write_deps(include_files)
+    write_dependencies(dependencies)
 
-    print(f"Wrote {_arg_output_file}...")
     return _exit_bindings_generated
 
 if __name__ == "__main__":

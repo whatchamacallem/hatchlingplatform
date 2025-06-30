@@ -24,7 +24,6 @@ echo runtests | ./hxtest help printhashes "checkhash 0" execstdin
 
 gcovr --html-details coverage.html --root .. .
 
-# turn off tracing silently.
 { set +o xtrace; } 2> /dev/null
 
 # Launch Chrome if it is installed.
