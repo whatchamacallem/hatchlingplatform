@@ -120,6 +120,15 @@
 // ----------------------------------------------------------------------------
 // Target independent C++11/C++14 polyfill.
 
+/// HX_APPEND_COUNTER - Used to generate unique identifiers. This is weird
+/// because the ## operator happens before macro arg evaluation and both
+/// happen before general macro evaluation.
+#define HX_APPEND_COUNTER2_(x, y) x ## y
+// Does evaluates the macro args.
+#define HX_APPEND_COUNTER1_(x, y) HX_APPEND_COUNTER2_(x,y)
+// Submits __COUNTER__ to be evaluated by HX_APPEND_COUNTER1_.
+#define HX_APPEND_COUNTER_(x) HX_APPEND_COUNTER1_(x,__COUNTER__)
+
 #if HX_CPLUSPLUS >= 201103L
 /// hxstatic_assert - Use static_assert when available, polyfill otherwise.
 #define hxstatic_assert(x_,...) static_assert((bool)(x_), __VA_ARGS__)
@@ -129,7 +138,7 @@
 #define hxdelete_fn = delete
 #else // !HX_CPLUSPLUS
 /// hxstatic_assert - Fallback static assert for pre-C++11.
-#define hxstatic_assert(x_,...) typedef int hxstatic_assert_fail_##__COUNTER__ [!!(x_) ? 1 : -1]
+#define hxstatic_assert(x_,...) typedef int HX_APPEND_COUNTER_(hxstatic_assert_fail_) [!!(x_) ? 1 : -1]
 #define hxoverride
 #define hxdelete_fn
 #endif

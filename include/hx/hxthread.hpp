@@ -11,33 +11,41 @@
 // This header provides lightweight C++ wrappers around POSIX pthreads for
 // thread synchronization and management. The following classes are defined:
 //
-// - hxthread_local<T>
+// - hxthread_local<T> (Available single threaded as well.)
 //     Provides a C++ template for thread-local storage, allowing each thread to
 //     maintain its own instance of a specified type T. This class is available
 //     for compatibility when threading is off.
 //
-// - hxmutex
+// - hxmutex (HX_USE_THREADS only)
 //     Mutex wrapper for pthreads. Provides lock/unlock functionality, error
 //     tracking, and ensures proper initialization and destruction. Not copyable.
 //     Asserts in debug and uses 2 bytes to track validity and last pthread error
 //     code otherwise.
 //
-// - hxunique_lock
+// - hxunique_lock (HX_USE_THREADS only)
 //     RAII-style unique lock for hxmutex. Locks the mutex on construction and
 //     unlocks on destruction. Supports deferred locking and ownership checks.
 //     Not copyable.
 //
-// - hxcondition_variable
+// - hxcondition_variable (HX_USE_THREADS only)
 //     Condition variable wrapper for pthreads. Allows threads to wait for
 //     notifications, supports predicate-based waiting, and provides notify_one
 //     and notify_all methods. Not copyable. Asserts in debug and uses 2 bytes
 //     to track validity and last pthread error code otherwise.
 //
-// - hxthread
+// - hxthread (HX_USE_THREADS only)
 //     Thread wrapper for pthreads. Provides thread creation, joining, and
 //     detaching. Ensures threads are not left joinable on destruction. Not copyable.
 //     Errors are threated as release mode asserts instead of being tracked.
 
+/// Return the current thread id. Returns 0 when threads are disabled.
+inline size_t hxthread_id() {
+#if HX_USE_THREADS
+    return (size_t)pthread_self();
+#else
+    return 0; // Single threaded.
+#endif
+}
 
 /// hxthread_local<T> - Provides a C++ template for thread-local storage, allowing
 /// each thread to maintain its own instance of a specified type T. This class is
@@ -46,14 +54,17 @@ template<typename T_>
 class hxthread_local {
 public:
     /// Construct with default value for each thread.
-    inline hxthread_local(const T_& default_value_ = T_()) : m_default_value_(default_value_) {
+    inline explicit hxthread_local(const T_& default_value_ = T_())
+            : m_default_value_(default_value_) {
 #if HX_USE_THREADS
         int code_ = pthread_key_create(&m_key_, destroy_local_);
-        hxassertrelease(code_ == 0, "Failed to create pthread key"); (void)code_;
+        hxassertrelease(code_ == 0, "pthread_key_create %s", ::strerror(code_)); (void)code_;
+#endif
     }
 
     /// Destroy every thread's private copy.
     inline ~hxthread_local() {
+#if HX_USE_THREADS
         pthread_key_delete(m_key_);
 #endif
     }
@@ -77,8 +88,9 @@ private:
         T_* local_ = static_cast<T_*>(pthread_getspecific(m_key_));
         if (!local_) {
             local_ = new T_(m_default_value_);
+            hxassertrelease(local_, "new T");
             int code_ = pthread_setspecific(m_key_, local_);
-            hxassertrelease(code_ == 0, "Failed to set pthread specific local_"); (void)code_;
+            hxassertrelease(code_ == 0, "pthread_setspecific %s", ::strerror(code_)); (void)code_;
         }
         return local_;
     }
@@ -93,7 +105,7 @@ private:
         }
     }
 
-    hxthread_local(const hxthread_local&) hxdelete_fn;
+    explicit hxthread_local(const hxthread_local&) hxdelete_fn;
     hxthread_local& operator=(const hxthread_local&) hxdelete_fn;
 
 #if HX_USE_THREADS

@@ -352,7 +352,7 @@ private:
 };
 
 hxthread_local<hxsystem_allocator_t>
-hxmemory_manager::s_hxcurrent_memory_allocator = hxsystem_allocator_heap;
+hxmemory_manager::s_hxcurrent_memory_allocator(hxsystem_allocator_heap);
 
 void hxmemory_manager::construct(void) {
 	s_hxcurrent_memory_allocator = hxsystem_allocator_heap;

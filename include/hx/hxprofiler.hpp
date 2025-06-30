@@ -45,7 +45,7 @@ inline hxcycles_t hxtime_sample_cycles(void);
 /// - label_string_literal: A string literal label for the sample.
 #define hxprofile_scope(label_string_literal_) \
     HX_PROFILE_ONLY_(hxprofiler_scope_internal_<> \
-        hxprofile_scope_##__COUNTER__(label_string_literal_))
+        HX_APPEND_COUNTER_(hxprofile_scope_)(label_string_literal_))
 
 /// hxprofile_scope_min(const char* label_string_literal, hxcycles_t min_cycles) -
 /// Declares an RAII-style profiling sample with a minimum cycle cutoff. Compiles
@@ -54,7 +54,7 @@ inline hxcycles_t hxtime_sample_cycles(void);
 /// - min_cycles_: A minimum number of cycles required for a sample to be recorded.
 #define hxprofile_scope_min(label_string_literal_, min_cycles_) \
     HX_PROFILE_ONLY_(hxprofiler_scope_internal_<min_cycles_> \
-        hxprofile_scope_##__COUNTER__(label_string_literal_))
+        HX_APPEND_COUNTER_(hxprofile_scope_)(label_string_literal_))
 
 /// hxprofiler_start() - Clears samples and begins sampling. Compiles to a NOP when
 /// not in use.
