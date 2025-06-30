@@ -3,9 +3,9 @@
 #
 # sudo apt install musl musl-dev musl-tools
 
-export POSIXLY_CORRECT=1
-
 set -o errexit
+
+export POSIXLY_CORRECT=1
 
 HX_RELEASE="-DHX_RELEASE=3"
 
@@ -22,7 +22,7 @@ HX_DIR=`pwd`
 # Build artifacts are not retained.
 rm -rf ./bin; mkdir ./bin && cd ./bin
 
-set -x
+set -o xtrace
 
 musl-gcc $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I$HX_DIR/include \
 	-std=c17 -c $HX_DIR/src/*.c $HX_DIR/test/*.c
@@ -35,7 +35,7 @@ musl-gcc $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I$HX_DIR/include \
 strip -o hxtest-strip --strip-unneeded hxtest
 
 # turn off tracing silently and make sure the command returns 0.
-{ set +x; } 2> /dev/null
+{ set +o xtrace; } 2> /dev/null
 
 cd ..
 

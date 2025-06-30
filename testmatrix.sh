@@ -13,9 +13,9 @@
 #
 # will run the tests with HX_TEST_ERROR_HANDLING defined to be 1.
 
-export POSIXLY_CORRECT=1
-
 set -o errexit
+
+export POSIXLY_CORRECT=1
 
 # Fatal warning flags. preceded by -pedantic-errors except with c++98.
 HX_ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \

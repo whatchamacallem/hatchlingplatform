@@ -38,8 +38,8 @@ _libclang_path = "/usr/lib/llvm-18/lib/libclang.so.1"
 _verbose = True
 
 # Exit codes.
-_exit_bindings_generated = 0
-_exit_nothing_changed = 1
+_exit_nothing_changed = 0
+_exit_bindings_generated = 1
 _exit_error = 2
 
 # Processed command line arguments.

@@ -1,7 +1,9 @@
 #!/bin/sh
+# Copyright 2017-2025 Adrian Johnston
 #
 # sudo apt install python3 python3-clang nanobind-dev
-#
+
+set -o errexit
 
 # Smoke test.
 if python3 -c 'import clang'; then
@@ -34,17 +36,17 @@ cd ./bin
 python3 $HX_DIR/py/hatchling_bindings.py -DHX_BINDINGS_PASS=1 -std=c++17 \
     $HX_CFLAGS $HX_MODULE $HX_HEADERS $HX_MODULE.cpp
 
-set -o errexit
 if [ $? -eq 0 ]; then
+    # All done.
+    set -o xtrace
+elif [ $? -eq 1 ]; then
     # Build nanobind and the bindings in the bin directory.
-    set -x
+    set -o xtrace
     clang++ $HX_CFLAGS -I$PY_BIND/include -std=c++17 -pthread \
         -c $PY_BIND/src/*.cpp $HX_MODULE.cpp
-elif [ $? -eq 2 ]; then
-    exit 1 # Assume error messages have been printed.
+else
+    exit $? # Assume error messages have been printed.
 fi
-
-set -x
 
 # {src,test}/*.c -> bin/*.o
 clang $HX_CFLAGS -std=c17 -pthread -c $HX_DIR/src/*.c $HX_DIR/test/*.c

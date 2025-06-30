@@ -1,4 +1,5 @@
 #!/bin/sh
+# Copyright 2017-2025 Adrian Johnston
 
 # POSIXLY_CORRECT=1 was breaking gcovr.
 # Using a subdirectory was breaking gcovr. See "--root .. ."
@@ -10,7 +11,7 @@ HX_DIR=`pwd`
 # Build artifacts are not retained.
 rm -rf ./bin; mkdir ./bin && cd ./bin
 
-set -x
+set -o xtrace
 
 gcc -I$HX_DIR/include --coverage -O0 -g -DHX_RELEASE=0 -std=c99 \
 	-c $HX_DIR/src/*.c $HX_DIR/test/*.c
@@ -24,7 +25,7 @@ echo runtests | ./hxtest help printhashes "checkhash 0" execstdin
 gcovr --html-details coverage.html --root .. .
 
 # turn off tracing silently.
-{ set +x; } 2> /dev/null
+{ set +o xtrace; } 2> /dev/null
 
 # Launch Chrome if it is installed.
 if [ "$1" != "--headless" ] && which google-chrome; then

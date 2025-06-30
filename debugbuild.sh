@@ -4,9 +4,9 @@
 # The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:
 #   sudo apt-get install gcc-multilib g++-multilib
 
-export POSIXLY_CORRECT=1
-
 set -o errexit
+
+export POSIXLY_CORRECT=1
 
 HX_RELEASE="-DHX_RELEASE=0"
 
@@ -22,7 +22,7 @@ HX_FLAGS="-m32 -ffast-math -ggdb3 -fdiagnostics-absolute-paths"
 # Build artifacts are not retained.
 rm -rf ./bin; mkdir ./bin && cd ./bin
 
-set -x
+set -o xtrace
 
 clang $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
 	-std=c17 -c ../src/*.c ../test/*.c
@@ -37,5 +37,5 @@ clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
 	../*/*.cpp *.o -lpthread -lstdc++ -lm -o hxtest
 
 # turn off tracing silently and make sure the command returns 0.
-{ set +x; } 2> /dev/null
+{ set +o xtrace; } 2> /dev/null
 echo 🐉🐉🐉

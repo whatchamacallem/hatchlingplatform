@@ -3,9 +3,9 @@
 
 # Only rerun cmake manually as is customary. Build artifacts ARE retained.
 
-export POSIXLY_CORRECT=1
-
 set -o errexit
+
+export POSIXLY_CORRECT=1
 
 if [ ! -f "bin/Makefile" ]; then
 	rm -rf ./bin; mkdir ./bin && cd ./bin

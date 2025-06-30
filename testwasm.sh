@@ -4,6 +4,8 @@
 #
 #   ./emsdk activate latest && source ./emsdk_env.sh
 
+set -o errexit
+
 export POSIXLY_CORRECT=1
 
 # Use the sort command to do a version aware comparison of two strings on two
@@ -20,8 +22,7 @@ else
 	exit 1;
 fi
 
-set -o errexit
-set -m # job control
+set -o monitor # job control
 
 # Build artifacts are not retained.
 rm -rf ./bin; mkdir ./bin && cd ./bin

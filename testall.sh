@@ -8,8 +8,7 @@
 clear
 echo Running all test scripts...
 
-set -o errexit
-set -x
+set -o errexit -o xtrace
 
 time ./debugbuild.sh
 time ./teststrip.sh
@@ -20,5 +19,5 @@ time ./testcoverage.sh --headless
 time ./testwasm.sh --headless
 ./clean.sh
 
-{ set +x; } 2> /dev/null
+{ set +o xtrace; } 2> /dev/null
 echo All test scripts done.

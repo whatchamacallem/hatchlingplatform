@@ -3,9 +3,9 @@
 #
 # sudo apt install musl musl-dev musl-tools
 
-export POSIXLY_CORRECT=1
-
 set -o errexit
+
+export POSIXLY_CORRECT=1
 
 if [ ! -f bin/hxtest ]; then
     echo "bin/hxtest not found..."
