@@ -49,7 +49,7 @@ public:
     inline hxthread_local(const T_& default_value_ = T_()) : m_default_value_(default_value_) {
 #if HX_USE_THREADS
         int code_ = pthread_key_create(&m_key_, destroy_local_);
-        hxassertrelease(code_ == 0, "Failed to create pthread key");
+        hxassertrelease(code_ == 0, "Failed to create pthread key"); (void)code_;
     }
 
     /// Destroy every thread's private copy.
@@ -66,29 +66,30 @@ public:
     inline operator T_&() { return *get_local_(); }
 
     /// "address of" operator returns T*.
-    inline T_* operator&() { return get_local_(); }
     inline const T_* operator&() const { return get_local_(); }
+    inline T_* operator&() { return get_local_(); }
 
 private:
-    // This is still mutable when const. A thread shouldn't find out whether it
-    // has storage allocated.
-    inline T_* get_local_() const {
+    // This is a form of "mutable when const." A thread should not
+    // know or care when storage is allocated for it.
 #if HX_USE_THREADS
+    inline T_* get_local_() const {
         T_* local_ = static_cast<T_*>(pthread_getspecific(m_key_));
         if (!local_) {
             local_ = new T_(m_default_value_);
             int code_ = pthread_setspecific(m_key_, local_);
-            hxassertrelease(code_ == 0, "Failed to set pthread specific local_");
+            hxassertrelease(code_ == 0, "Failed to set pthread specific local_"); (void)code_;
         }
         return local_;
-#else
-        return &m_default_value_;
-#endif
     }
+#else
+    inline const T_* get_local_() const { return &m_default_value_; }
+    inline T_* get_local_() { return &m_default_value_; }
+#endif
 
-    static void destroy_local_(void* ptr) hxnoexcept {
-        if (ptr) {
-            delete static_cast<T_*>(ptr);
+    static void destroy_local_(void* ptr_) hxnoexcept {
+        if (ptr_) {
+            delete static_cast<T_*>(ptr_);
         }
     }
 
