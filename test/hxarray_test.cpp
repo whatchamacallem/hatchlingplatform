@@ -159,12 +159,14 @@ TEST_F(hxarray_test, modification) {
 		static const int32_t nums[5] = { 91, 92, 93, 94, 95 };
 
 		hxarray<test_object> objs;
+		EXPECT_FALSE(objs);
 		objs.assign(nums, nums + (sizeof nums / sizeof *nums));
+		EXPECT_TRUE(objs);
 
 		EXPECT_EQ(objs.capacity(), 5u);
 		EXPECT_EQ(objs.size(), 5u);
 
-		// 91, 92, 93, 94
+		// 91, 92, 93, 94, 95
 
 		objs.pop_back();
 		objs.pop_back();
@@ -180,14 +182,56 @@ TEST_F(hxarray_test, modification) {
 
 		objs.erase_unordered(1);
 
-		// 91, -2, -1
+		// 91, -1, -2, -3
 
+		EXPECT_EQ(objs.size(), 4);
+
+		static const int32_t nums_2[1] = { 99 };
+		hxarray<test_object> objs2;
+		objs2.assign(nums_2, nums_2 + 1);
+		objs += objs2;
+
+		// 91, -1, -2, -3, 99
+
+		EXPECT_EQ(objs.size(), 5);
 		EXPECT_EQ(objs[0].id, 91);
-		EXPECT_EQ(objs[1].id, -2);
-		EXPECT_EQ(objs[2].id, -1);
+		EXPECT_EQ(objs[1].id, -1);
+		EXPECT_EQ(objs[2].id, -2);
+		EXPECT_EQ(objs[3].id, -3);
+		EXPECT_EQ(objs[4].id, 99);
 	}
 
 	EXPECT_TRUE(Check_totals(9));
+}
+
+TEST_F(hxarray_test, for_each) {
+	static const unsigned char nums[5] = { 91, 92, 93, 94, 95 };
+	hxarray<int> objs;
+	objs.assign(nums, nums + (sizeof nums / sizeof *nums));
+
+	// 91, 92, 93, 94, 95
+
+#if HX_CPLUSPLUS >= 201103L
+	objs.for_each([](int& x) { x -= 90; });
+#else
+	struct X { void operator()(int& x) const { x -= 90; } } x;
+	objs.for_each<X>( x );
+#endif
+
+	// 1, 2, 3, 4, 5
+
+	EXPECT_EQ(objs.size(), 5);
+	EXPECT_EQ(objs[0], 1);
+	EXPECT_EQ(objs[1], 2);
+	EXPECT_EQ(objs[2], 3);
+	EXPECT_EQ(objs[3], 4);
+	EXPECT_EQ(objs[4], 5);
+
+	// Run it empty for correctness
+
+	objs.clear();
+	struct Y { void operator()(int&) const { hxassertmsg(0, "internal error"); } } y;
+	objs.for_each(y);
 }
 
 TEST_F(hxarray_test, resizing) {

@@ -38,8 +38,8 @@ _verbose = True
 
 # Exit codes.
 _exit_bindings_generated = 0
-_exit_nothing_changed = 1
-_exit_error = 2
+_exit_error = 1
+_exit_nothing_changed = 2
 
 # Processed command line arguments.
 _arg_compiler_flags: List[str] = []
@@ -82,6 +82,7 @@ def parse_argv() -> bool:
 
     return True
 
+# TODO: make more flexible and efficient.
 def is_project_header(cursor: Cursor) -> bool:
     """
     Returns True if the cursor's location is in a project-specific header file.
@@ -92,66 +93,6 @@ def is_project_header(cursor: Cursor) -> bool:
     return (
         header is not None
         and all(h in header_str for h in _arg_header_files)
-    )
-
-def uses_va_list(cursor: Cursor) -> bool:
-    """
-    Returns True if any argument to the function uses va_list (variadic argument list).
-    Such functions are skipped for binding.
-    """
-    return any("va_list" in a.type.spelling for a in cursor.get_arguments())
-
-def is_public_function(cursor: Cursor) -> bool:
-    """
-    Returns True if the cursor is a public, non-variadic, non-template, project function.
-    """
-    return (
-        cursor.kind is CursorKind.FUNCTION_DECL # type: ignore
-        and cursor.linkage is LinkageKind.EXTERNAL # type: ignore
-        and not cursor.type.is_function_variadic()
-        and not uses_va_list(cursor)
-    )
-
-def is_public_class(cursor: Cursor) -> bool:
-    """
-    Returns True if the cursor is a public class definition.
-    """
-    return (
-        cursor.kind is CursorKind.CLASS_DECL # type: ignore
-        and cursor.is_definition()
-        and cursor.access_specifier in (
-            clang.cindex.AccessSpecifier.PUBLIC, # type: ignore
-            clang.cindex.AccessSpecifier.INVALID  # type: ignore # Top-level classes
-        )
-    )
-
-def is_public_method(cursor: Cursor) -> bool:
-    """
-    Returns True if the cursor is a public, non-variadic, non-template method.
-    """
-    return (
-        cursor.kind is CursorKind.CXX_METHOD # type: ignore
-        and cursor.access_specifier is clang.cindex.AccessSpecifier.PUBLIC # type: ignore
-        and not cursor.type.is_function_variadic()
-        and not uses_va_list(cursor)
-    )
-
-def is_public_constructor(cursor: Cursor) -> bool:
-    """
-    Returns True if the cursor is a public constructor.
-    """
-    return (
-        cursor.kind is CursorKind.CONSTRUCTOR # type: ignore
-        and cursor.access_specifier is clang.cindex.AccessSpecifier.PUBLIC # type: ignore
-    )
-
-def is_nonpublic_destructor(cursor: Cursor) -> bool:
-    """
-    Returns True if the cursor is a non-public destructor.
-    """
-    return (
-        cursor.kind is CursorKind.DESTRUCTOR # type: ignore
-        and cursor.access_specifier != clang.cindex.AccessSpecifier.PUBLIC # type: ignore
     )
 
 def is_template(cursor: Cursor) -> bool:
@@ -167,6 +108,15 @@ def is_template(cursor: Cursor) -> bool:
         )
     )
 
+def is_namespace(cursor: Cursor) -> bool:
+    """
+    Returns True if the cursor is a namespace definition.
+    """
+    return (
+        cursor.kind is CursorKind.NAMESPACE  # type: ignore
+        and cursor.is_definition()
+    )
+
 def is_public_enum(cursor: Cursor) -> bool:
     """
     Returns True if the cursor is a public enum definition.
@@ -180,16 +130,89 @@ def is_public_enum(cursor: Cursor) -> bool:
         )
     )
 
-def is_namespace(cursor: Cursor) -> bool:
+def is_arg_va_list(cursor: Cursor) -> bool:
     """
-    Returns True if the cursor is a namespace definition.
+    Returns True if any argument to the function uses va_list (variadic argument list).
+    Such functions are skipped for binding.
+    """
+    return any("va_list" in a.type.spelling for a in cursor.get_arguments())
+
+def is_public_function(cursor: Cursor) -> bool:
+    """
+    Returns True if the cursor is a public, non-variadic, non-template, project function.
     """
     return (
-        cursor.kind is CursorKind.NAMESPACE  # type: ignore
-        and cursor.is_definition()
+        cursor.kind is CursorKind.FUNCTION_DECL # type: ignore
+        and cursor.linkage is LinkageKind.EXTERNAL # type: ignore
+        and not cursor.type.is_function_variadic()
+        and not is_arg_va_list(cursor)
     )
 
-def get_cursor_doc(cursor: Cursor) -> str:
+def is_public_class(cursor: Cursor) -> bool:
+    """
+    Returns True if the cursor is a public class definition.
+    """
+    return (
+        cursor.kind is CursorKind.CLASS_DECL # type: ignore
+        and cursor.is_definition()
+        and cursor.access_specifier in (
+            clang.cindex.AccessSpecifier.PUBLIC, # type: ignore
+            clang.cindex.AccessSpecifier.INVALID  # type: ignore # Top-level classes
+        )
+    )
+
+def is_public_constructor(cursor: Cursor) -> bool:
+    """
+    Returns True if the cursor is a public constructor.
+    """
+    return (
+        cursor.kind is CursorKind.CONSTRUCTOR # type: ignore
+        and cursor.access_specifier is clang.cindex.AccessSpecifier.PUBLIC # type: ignore
+    )
+
+def is_pure_virtual_method(cursor: Cursor) -> bool:
+    """
+    Returns True if the cursor is a pure virtual method (declared with = 0).
+    """
+    return (
+        cursor.kind is CursorKind.CXX_METHOD  # type: ignore
+        and cursor.is_pure_virtual_method()  # Check for pure virtual
+    )
+
+def is_public_method(cursor: Cursor) -> bool:
+    """
+    Returns True if the cursor is a public, non-variadic, non-template method.
+    """
+    return (
+        cursor.kind is CursorKind.CXX_METHOD # type: ignore
+        and cursor.access_specifier is clang.cindex.AccessSpecifier.PUBLIC # type: ignore
+        and not cursor.type.is_function_variadic()
+        and not is_arg_va_list(cursor)
+    )
+
+def calculate_namespace_prefix(cursor: Cursor) -> str:
+    """
+    Returns the fully qualified namespace path for a cursor (e.g., 'outer::inner').
+    Traverses semantic parents to build the namespace chain.
+    """
+    namespaces: List[str] = []
+    current: Optional[Cursor] = cursor.semantic_parent
+    while current and current.kind is CursorKind.NAMESPACE: # type: ignore
+        namespaces.append(current.spelling)
+        current = current.semantic_parent
+    if namespaces:
+        namespaces.append("")
+    return "::".join(reversed(namespaces))
+
+def calculate_signature(cursor: Cursor) -> Tuple[str, Tuple[str, ...]]:
+    """
+    Returns a tuple uniquely identifying a function/method by name and parameter types.
+    Used to avoid duplicate bindings for overloads.
+    """
+    params: Tuple[str, ...] = tuple(a.type.spelling for a in cursor.get_arguments())
+    return (calculate_namespace_prefix(cursor) + cursor.spelling, params)
+
+def format_doc(cursor: Cursor) -> str:
     """
     Extracts and formats the raw comment for use as a docstring.
     Strips comment markers and leading/trailing whitespace.
@@ -212,53 +235,55 @@ def get_cursor_doc(cursor: Cursor) -> str:
         return f', R"doc({doc})doc"' if doc else ""
     return ""
 
-def get_full_namespace(cursor: Cursor) -> str:
+def format_enum(cursor: Cursor, parent_handle: str) -> List[str]:
     """
-    Returns the fully qualified namespace path for a cursor (e.g., 'outer::inner').
-    Traverses semantic parents to build the namespace chain.
+    Generates binding code for an enum, either at module scope or nested within a class.
+    Includes all enum constants as values.
     """
-    namespaces: List[str] = []
-    current: Optional[Cursor] = cursor.semantic_parent
-    while current and current.kind is CursorKind.NAMESPACE: # type: ignore
-        namespaces.append(current.spelling)
-        current = current.semantic_parent
-    return "::".join(reversed(namespaces)) if namespaces else ""
+    enum_name = cursor.spelling
+    doc_str = format_doc(cursor)
+    lines: List[str] = [f'nanobind::enum_<{enum_name}>({parent_handle}, "{enum_name}"{doc_str})']
+    for c in cursor.get_children():
+        if c.kind is CursorKind.ENUM_CONSTANT_DECL: # type: ignore
+            value_doc_str = format_doc(c)
+            lines.append(f'.value("{c.spelling}", {enum_name}::{c.spelling}{value_doc_str})')
+    lines[-1] += f'.export_values();'
+    return lines
 
-def get_bind_function(cursor: Cursor) -> str:
+def format_function(cursor: Cursor, parent_handle: str) -> str:
     """
     Generates a binding line for a free function.
     Includes the full namespace in the function reference if applicable.
     Includes docstring if available.
     """
-    doc_str = get_cursor_doc(cursor)
+    doc_str = format_doc(cursor)
     params: List[str] = [a.type.spelling for a in cursor.get_arguments()]
     ret_type = cursor.result_type.spelling
     args = ", ".join(params) if params else ""
 
     # Get the full namespace path
-    namespace = get_full_namespace(cursor)
-    namespace_prefix = f"{namespace}::" if namespace else ""
+    namespace_prefix = calculate_namespace_prefix(cursor)
 
-    return f'module_root_.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{namespace_prefix}{cursor.spelling}){doc_str});'
+    return f'{parent_handle}.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{namespace_prefix}{cursor.spelling}){doc_str});'
 
-def get_bind_method(cursor: Cursor, class_name: str) -> str:
+def format_method(cursor: Cursor, class_namespace: str) -> str:
     """
-    Generates a binding line for a class method.
+    Generates a binding line for a class method. No trailing ;.
     Handles constness and docstrings.
     """
-    doc_str = get_cursor_doc(cursor)
+    doc_str = format_doc(cursor)
     params: List[str] = [a.type.spelling for a in cursor.get_arguments()]
     ret_type = cursor.result_type.spelling
     const = " const" if cursor.is_const_method() else ""
     args = ", ".join(params) if params else ""
     return (
         f'.def("{cursor.spelling}", '
-        f'static_cast<{ret_type} ({class_name}::*)({args}){const}>(&{class_name}::{cursor.spelling}){doc_str})'
+        f'static_cast<{ret_type} ({class_namespace}::*)({args}){const}>(&{class_namespace}::{cursor.spelling}){doc_str})'
     )
 
-def get_bind_constructor(cursor: Cursor, class_name: str) -> str:
+def format_constructor(cursor: Cursor) -> str:
     """
-    Generates a binding line for a class constructor.
+    Generates a binding line for a class constructor. No trailing ;.
     Handles overloaded constructors by parameter count.
     """
     params: List[Cursor] = list(cursor.get_arguments())
@@ -266,136 +291,41 @@ def get_bind_constructor(cursor: Cursor, class_name: str) -> str:
     args = ", ".join(param_types) if param_types else ""
     return f'.def(nanobind::init<{args}>())'
 
-def get_function_signature(cursor: Cursor) -> Tuple[str, Tuple[str, ...]]:
+def format_class(cursor: Cursor, parent_handle: str, seen_signatures: Set[Tuple[str, Tuple[str, ...]]]) -> List[str]:
     """
-    Returns a tuple uniquely identifying a function by name and parameter types.
-    Used to avoid duplicate bindings for overloaded functions.
+    Skips constructor bindings for abstract classes and those without public destructors.
+    Assumes a default public destructor unless a protected or private one is found.
     """
-    params: Tuple[str, ...] = tuple(a.type.spelling for a in cursor.get_arguments())
-    return (cursor.spelling, params)
-
-def get_method_signature(cursor: Cursor) -> Tuple[str, Tuple[str, ...]]:
-    """
-    Returns a tuple uniquely identifying a method by name and parameter types.
-    Used to avoid duplicate bindings for overloaded methods.
-    """
-    params: Tuple[str, ...] = tuple(a.type.spelling for a in cursor.get_arguments())
-    return (cursor.spelling, params)
-
-def get_bind_namespace(cursor: Cursor) -> str:
-    """
-    Generates binding code for a namespace, using a static nanobind::class_
-    instead of a nanobind::module_.
-    Binds public functions, enums, and nested namespaces as attributes of the class.
-    """
-    namespace_name = cursor.spelling
-    doc_str = get_cursor_doc(cursor)
-    # Define a nanobind::class_ for the namespace, using an empty struct as the type
-    lines: List[str] = [f'nanobind::class_<nanobind::object>(module_root_, "{namespace_name}"{doc_str})']
-    functions: List[str] = []
-    enums: List[str] = []
-    seen_functions: Set[Tuple[str, Tuple[str, ...]]] = set()
+    class_namespace = calculate_namespace_prefix(cursor) + cursor.spelling
+    doc_str = format_doc(cursor)
+    lines: List[str] = [f'nanobind::class_<{class_namespace}>({parent_handle}, "{cursor.spelling}"{doc_str})']
 
     for child in cursor.get_children():
+        # A full instantiation of a template should not be dismissed as a
+        # template. The language is clear about the difference between a template
+        # and it's full instantiation. However support needs to be added for
+        # declaring class/function bindings every time the binding API instantiates
+        # a template class/function as part of the API.
         if is_template(child):
             continue
-        elif is_public_function(child):
-            sig: Tuple[str, Tuple[str, ...]] = get_function_signature(child)
-            if sig not in seen_functions:
-                # Generate function binding using the namespace's class
-                doc_m_str = get_cursor_doc(child)
-                params: List[str] = [a.type.spelling for a in child.get_arguments()]
-                ret_type = child.result_type.spelling
-                args = ", ".join(params) if params else ""
-                namespace_prefix = get_full_namespace(child)
-                namespace_prefix = f"{namespace_prefix}::" if namespace_prefix else ""
-                functions.append(
-                    f'.def_static("{child.spelling}", '
-                    f'static_cast<{ret_type}(*)({args})>(&{namespace_prefix}{child.spelling}){doc_m_str})'
-                )
-                seen_functions.add(sig)
-        elif is_public_enum(child):
-            enum_name = child.spelling
-            doc_m_str = get_cursor_doc(child)
-            enum_lines: List[str] = [f'nanobind::enum_<{enum_name}>({cursor.spelling}, "{enum_name}"{doc_m_str})']
-            for c in child.get_children():
-                if c.kind is CursorKind.ENUM_CONSTANT_DECL: # type: ignore
-                    value_doc_str = get_cursor_doc(c)
-                    enum_lines.append(f'.value("{c.spelling}", {enum_name}::{c.spelling}{value_doc_str})')
-            enum_lines[-1] += f'.export_values()'
-            enums.append("\n".join(enum_lines))
-        elif is_namespace(child):
-            # Recursively process nested namespaces, binding to the current namespace's class
-            nested_lines = get_bind_namespace(child)
-            lines.append(nested_lines)
-
-    lines.extend(functions)
-    lines.extend(enums)
-    return "\n".join(lines)
-
-def is_pure_virtual_method(cursor: Cursor) -> bool:
-    """
-    Returns True if the cursor is a pure virtual method (declared with = 0).
-    """
-    return (
-        cursor.kind is CursorKind.CXX_METHOD  # type: ignore
-        and cursor.is_pure_virtual_method()  # Check for pure virtual
-    )
-
-def get_bind_class(cursor: Cursor) -> Optional[str]:
-    """
-    Generates binding code for a class, including its constructors and methods.
-    Nested enums are included within the class scope.
-    Skips constructor bindings for abstract classes (those with pure virtual methods).
-    Assumes a public destructor unless a protected or private one is found.
-    """
-    class_name = cursor.spelling
-    doc_str = get_cursor_doc(cursor)
-    lines: List[str] = [f'nanobind::class_<{class_name}>(module_root_, "{class_name}"{doc_str})']
-    ctors: List[str] = []
-    methods: List[str] = []
-    seen_methods: Set[Tuple[str, Tuple[str, ...]]] = set()
-    has_public_destructor = True
-    for child in cursor.get_children():
-        if is_pure_virtual_method(child):
-            return None
-        elif is_template(child):
-            continue
+        elif is_pure_virtual_method(child):
+            return [ ]
         elif is_public_constructor(child):
-            sig: Tuple[str, Tuple[str, ...]] = get_method_signature(child)
-            if sig not in seen_methods:
-                ctors.append(get_bind_constructor(child, class_name))
-                seen_methods.add(sig)
-        elif is_nonpublic_destructor(child):
-            has_public_destructor = False
+            sig: Tuple[str, Tuple[str, ...]] = calculate_signature(child)
+            if sig not in seen_signatures:
+                lines.append(format_constructor(child))
+                seen_signatures.add(sig)
         elif is_public_method(child):
-            sig = get_method_signature(child)
-            if sig not in seen_methods:
-                methods.append(get_bind_method(child, class_name))
-                seen_methods.add(sig)
-    if not ctors or not has_public_destructor:
-        return None
-    lines.extend(ctors)
-    lines.extend(methods)
-    lines.append('.def("__del__", [](nanobind::object self) { self.release(); });')
-    return "\n".join(lines)
+            sig = calculate_signature(child)
+            if sig not in seen_signatures:
+                lines.append(format_method(child, class_namespace))
+                seen_signatures.add(sig)
 
-def get_bind_enum(cursor: Cursor) -> str:
-    """
-    Generates binding code for an enum, either at module scope or nested within a class.
-    Includes all enum constants as values.
-    """
-    enum_name = cursor.spelling
-    doc_str = get_cursor_doc(cursor)
-    lines: List[str] = [f'nanobind::enum_<{enum_name}>(module_root_, "{enum_name}"{doc_str})']
-    for c in cursor.get_children():
-        if c.kind is CursorKind.ENUM_CONSTANT_DECL: # type: ignore
-            value_doc_str = get_cursor_doc(c)
-            lines.append(f'.value("{c.spelling}", {enum_name}::{c.spelling}{value_doc_str})')
-    lines[-1] += f'.export_values();'
-    return "\n".join(lines)
+    lines[-1] += ";"
 
-def visit_namespace(cursor: Cursor, seen_functions: Optional[Set[Tuple[str, Tuple[str, ...]]]] = None) -> List[str]:
+    return lines
+
+def format_namespace(cursor: Cursor, seen_functions: Optional[Set[Tuple[str, Tuple[str, ...]]]] = None) -> List[str]:
     """
     Recursively visits AST nodes starting from the given cursor.
     Collects functions, classes, and enums that are public and project-specific.
@@ -405,29 +335,43 @@ def visit_namespace(cursor: Cursor, seen_functions: Optional[Set[Tuple[str, Tupl
     lines: List[str] = []
     for c in cursor.get_children():
         try:
-            if not is_project_header(c) or is_template(c):
+            if not is_project_header(c):
                 continue
             if is_namespace(c):
                 continue
-                ns = get_bind_namespace(c)
+                ns = format_namespace(c)
                 lines.append(ns)
             elif is_public_function(c):
-                fn: Tuple[str, Tuple[str, ...]] = get_function_signature(c)
+                fn: Tuple[str, Tuple[str, ...]] = calculate_signature(c)
                 if fn not in seen_functions:
-                    lines.append(get_bind_function(c))
+                    lines.append(format_function(c))
                     seen_functions.add(fn)
             elif is_public_class(c):
-                t: Optional[str] = get_bind_class(c)
+                t: Optional[str] = format_class(c)
                 if t:
                     lines.append(t)
             elif is_public_enum(c) and c.semantic_parent.kind != CursorKind.CLASS_DECL: # type: ignore
-                lines.append(get_bind_enum(c))
-            child_lines: List[str] = visit_namespace(c, seen_functions)
-            lines.extend(child_lines)
+                lines.append(format_enum(c))
+
+
+
+#            child_lines: List[str] = format_namespace(c, seen_functions)
+#            lines.extend(child_lines)
         except Exception as e:
             print(f"Error processing cursor {c.spelling}: {str(e)}")
             continue
     return lines
+
+
+
+
+
+
+
+
+
+
+
 
 def check_dependencies_changed() -> bool:
 
@@ -481,7 +425,7 @@ def load_translation_unit_and_dependencies(header_file: str) -> Tuple[Translatio
 
     # Get all included files (direct and transitive)
     dependencies: Set[str] = set()
-    for include in translation_unit.get_includes():
+    for include in translation_unit.format_includes():
         dependencies.add(include.include.name)
 
     return translation_unit, dependencies
@@ -550,13 +494,20 @@ Make sure to adjust _libclang_path at the top of this script if needed.
         translation_unit, deps = load_translation_unit_and_dependencies(header_file)
 
 
-            # get_full_namespace() -> a per-namespace seen list. just qualify symbol with namespace.
-        child_lines: List[str] = visit_namespace(translation_unit.cursor, "module_root_) xxx
+            # calculate_namespace_prefix() -> a per-namespace seen list. just qualify symbol with namespace.
+        child_lines: List[str] = format_namespace(translation_unit.cursor, "module_root_) xxx
         output_lines.extend(child_lines)
         dependencies |= deps
 
+
+
+
+
+
+
+
     output_lines.append('}\n')
-    output_lines = output_headers + output_lines
+    output_lines = output_headers + output_lines # prepend headers
 
     # Write out gathered data.
     with open(_arg_output_file, "w") as f:

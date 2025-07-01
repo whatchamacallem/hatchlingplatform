@@ -62,8 +62,9 @@ public:
         this->assign(list_.begin(), list_.end());
     }
 #endif
+
     /// Copy constructs an array from the elements of a container with random
-    /// access iterators.
+    /// access iterators. (Non-standard.)
     /// rhs - Any container implementing begin and end.
     template <typename rhs_t_>
     hxconstexpr_fn hxarray(const rhs_t_& rhs_) : hxallocator<T_, capacity_>() {
@@ -101,8 +102,23 @@ public:
         this->assign(rhs_.begin(), rhs_.end());
     }
 
-    /// Check if array is empty by casting it to bool.  This one is a Python
-    /// extension.
+    /// Appends an element.  (Non-standard.)
+    /// Vector math is not a goal so this should not end up overloaded.
+    /// x - An object to append. Not a temporary.
+    hxconstexpr_fn void operator+=(const T_& x_) {
+            new(this->emplace_back_unconstructed()) T_(x_);
+    }
+
+    /// Appends the contents of another array.  (Non-standard, from Python.)
+    /// Vector math is not a goal so this should not end up overloaded.
+    /// rhs - Another array. Not a temporary.
+    hxconstexpr_fn void operator+=(const hxarray& rhs_) {
+        for(const T_* it_ = rhs_.begin(), *end_ = rhs_.end(); it_ != end_; ++it_) {
+            new(this->emplace_back_unconstructed()) T_(*it_);
+        }
+    }
+
+    /// Check if array is empty by casting it to bool. (Non-standard, from Python.)
     hxconstexpr_fn operator bool(void) {
         return !this->empty();
     }
@@ -131,25 +147,25 @@ public:
     /// Returns a const_iterator to the end of the array (alias for end()).
     hxconstexpr_fn const T_* cend(void) { return m_end_; }
 
-    /// Returns a const reference to the first element in the array.
+    /// Returns a const reference to the begin element in the array.
     hxconstexpr_fn const T_& front(void) const {
         hxassertmsg(!this->empty(), "invalid_reference");
         return *this->data();
     }
 
-    /// Returns a reference to the first element in the array.
+    /// Returns a reference to the begin element in the array.
     hxconstexpr_fn T_& front(void) {
         hxassertmsg(!this->empty(), "invalid_reference");
         return *this->data();
     }
 
-    /// Returns a const reference to the last element in the array.
+    /// Returns a const reference to the end element in the array.
     hxconstexpr_fn const T_& back(void) const {
         hxassertmsg(!this->empty(), "invalid_reference");
         return *(m_end_ - 1);
     }
 
-    /// Returns a reference to the last element in the array.
+    /// Returns a reference to the end element in the array.
     hxconstexpr_fn T_& back(void) {
         hxassertmsg(!this->empty(), "invalid_reference");
         return *(m_end_ - 1);
@@ -244,21 +260,21 @@ public:
         ::new (m_end_++) T_(t_);
     }
 
-    /// Removes the last element from the array.
+    /// Removes the end element from the array.
     hxconstexpr_fn void pop_back(void) {
         hxassertmsg(!this->empty(), "stack_underflow");
         (--m_end_)->~T_();
     }
 
     /// Assigns elements from a range defined by iterators to the array.
-    /// - first: The beginning iterator.
-    /// - last: The end iterator.
+    /// - begin: The beginning iterator.
+    /// - end: The end iterator.
     template <typename iter_t_>
-    hxconstexpr_fn void assign(iter_t_ first_, iter_t_ last_) {
-        this->reserve((size_t)(last_ - first_));
+    hxconstexpr_fn void assign(iter_t_ begin_, iter_t_ end_) {
+        this->reserve((size_t)(end_ - begin_));
         T_* it_ = this->data();
         this->destruct_(it_, m_end_);
-        while (first_ != last_) { ::new (it_++) T_(*first_++); }
+        while (begin_ != end_) { ::new (it_++) T_(*begin_++); }
         m_end_ = it_;
     }
 
@@ -273,19 +289,21 @@ public:
     /// --------------------------------------------------------------------------
     /// Non-standard but useful
 
-    /// Constructs an array of T from an array of U.
+    /// Constructs an array of T from an array of U. (Non-standard.)
     /// - a: The array.
     /// - Sz: Its size.
     template<typename U_, size_t size_>
     hxconstexpr_fn void assign(const U_(&a_)[size_]) { this->assign(a_ + 0, a_ + size_); }
 
     /// Variant of emplace_back() that returns a pointer for use with placement new.
+    /// (Non-standard.)
     hxconstexpr_fn void* emplace_back_unconstructed(void) {
         hxassertmsg(!this->full(), "stack_overflow");
         return (void*)m_end_++;
     }
 
     /// Variant of erase() that moves the end element down to replace erased element.
+    /// (Non-standard.)
     /// - index: The index of the element to erase.
     hxconstexpr_fn void erase_unordered(size_t index_) {
         hxassertmsg(index_ < this->size(), "invalid_index");
@@ -297,6 +315,7 @@ public:
     }
 
     /// Variant of erase() that moves the end element down to replace the erased element.
+    /// (Non-standard.)
     /// - it: Pointer to the element to erase.
     hxconstexpr_fn void erase_unordered(T_* it_) {
         hxassertmsg(it_ >= this->data() && it_ < m_end_, "invalid_iterator");
@@ -306,18 +325,38 @@ public:
         m_end_->~T_();
     }
 
-    /// Returns true when the array is full (size equals capacity).
+    /// Returns true when the array is full (size equals capacity). (Non-standard.)
     hxconstexpr_fn bool full(void) {
         return this->size() == this->capacity();
     }
 
+    /// Calls fn on each element. (Non-standard.)
+    /// fn - A functor of type: <void-like> fn(T&);
+    template<typename functor_t_>
+    void for_each(const functor_t_& fn_) {
+        for(T_* it_ = this->data(); it_ != m_end_; ++it_) {
+            fn_(*it_);
+        }
+    }
+
+    // Lambdas and std::function can be temporaries. Allow them. Do not mark fn
+    // as temp as it is used repeatedly.  Wtf. (Non-standard.)
+#if HX_CPLUSPLUS >= 201103L
+    template<typename functor_t_>
+    void for_each(functor_t_&& fn_) {
+        for(T_* it_ = this->data(); it_ != m_end_; ++it_) {
+            fn_(*it_);
+        }
+    }
+#endif
+
 private:
-    /// Destroys elements in the range [first, last].
-    /// - first: Pointer to the beginning of the range.
-    /// - last: Pointer to the end of the range.
-    hxconstexpr_fn void destruct_(T_* first_, T_* last_) {
-        while (first_ != last_) {
-            first_++->~T_();
+    // Destroys elements in the range [begin, end].
+    // - begin: Pointer to the beginning of the range.
+    // - end: Pointer to the end of the range.
+    hxconstexpr_fn void destruct_(T_* begin_, T_* end_) {
+        while (begin_ != end_) {
+            begin_++->~T_();
         }
     }
     T_* m_end_;

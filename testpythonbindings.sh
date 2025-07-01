@@ -46,18 +46,18 @@ if [ $? -eq 0 ]; then
     clang++ $HX_CFLAGS -I$PY_BIND/include -std=c++17 -pthread \
         -c $PY_BIND/src/*.cpp $HX_OUTPUT_FILE
 elif [ $? -eq 1 ]; then
-    # All done.
-    set -o errexit -o xtrace
+    exit $? # Either the script failed somehow or it returned failure.
 else
-    exit $? # Returns 2. Assume error messages have been printed.
+    # Code 2: All done.
+    set -o errexit -o xtrace
 fi
 
 # {src,test}/*.c -> bin/*.o
-clang $HX_CFLAGS -std=c17 -pthread -c $HX_DIR/src/*.c $HX_DIR/test/*.c
+clang $HX_CFLAGS -std=c17 -fvisibility=hidden -pthread -c $HX_DIR/src/*.c $HX_DIR/test/*.c
 
 # {src,test}/*.cpp bin/*.o -> bin/hxtest
-clang++ $HX_CFLAGS $PY_LDFLAGS -std=c++17 -lstdc++ -pthread -lpthread \
-    $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp *.o -o hxtest
+clang++ $HX_CFLAGS $PY_LDFLAGS -std=c++17 -fvisibility=hidden -lstdc++ -Wl,-s \
+    -pthread -lpthread $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp *.o -o hxtest
 
 { set +o xtrace; } 2> /dev/null
 echo 🐉🐉🐉

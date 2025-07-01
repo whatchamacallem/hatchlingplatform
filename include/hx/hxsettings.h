@@ -138,7 +138,7 @@
 #define hxdelete_fn = delete
 #else // !HX_CPLUSPLUS
 /// hxstatic_assert - Fallback static assert for pre-C++11.
-#define hxstatic_assert(x_,...) typedef int HX_APPEND_COUNTER_(hxstatic_assert_fail_) [!!(x_) ? 1 : -1]
+#define hxstatic_assert(x_,...) typedef int HX_APPEND_COUNTER_(hxstatic_assert_fail_) [(bool)(x_) ? 1 : -1]
 #define hxoverride
 #define hxdelete_fn
 #endif

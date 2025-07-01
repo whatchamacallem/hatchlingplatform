@@ -4,6 +4,7 @@
 #include <hx/hatchling.h>
 
 #if HX_USE_THREADS
+#include <errno.h>
 #include <pthread.h>
 #endif
 
@@ -136,11 +137,12 @@ public:
         hxassertmsg(code_ == 0, "pthread_mutex_destroy %s", ::strerror(code_)); (void)code_;
     }
 
-    /// Locks the mutex. Returns true on success, asserts and returns false
-    /// otherwise. Something is very wrong if this fails.
+    /// Locks the mutex. Returns true on success, asserts on invalid arguments
+    /// and returns false on failure.
     inline bool lock(void) {
         int code_ = ::pthread_mutex_lock(&m_mutex_);
-        hxassertmsg(code_ == 0, "pthread_mutex_lock %s", ::strerror(code_));
+        hxassertmsg(code_ != EINVAL && code_ != EDEADLK, "pthread_mutex_lock %s", ::strerror(code_));
+        hxwarnmsg(code_ , "pthread_mutex_lock %s", ::strerror(code_));
         return code_ == 0;
     }
 
@@ -171,8 +173,8 @@ class hxunique_lock {
 public:
     /// Constructs with option to defer locking.
     /// - defer_lock: If true, does not lock the mutex immediately.
-    inline hxunique_lock(hxmutex& m_, bool defer_lock_=false)
-            : m_mutex_(m_), m_owns_(false) {
+    inline hxunique_lock(hxmutex& mtx_, bool defer_lock_=false)
+            : m_mutex_(mtx_), m_owns_(false) {
         if (!defer_lock_) {
             lock();
         }

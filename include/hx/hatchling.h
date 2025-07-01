@@ -70,21 +70,24 @@ hxstatic_assert((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE must be [0..
 /// only evaluated when HX_RELEASE == 0.
 /// - x: The condition to evaluate.
 /// - ...: Variadic arguments for the formatted log message.
-#define hxassertmsg(x_, ...) (void)(!!(x_) || (hxloghandler(hxloglevel_assert, __VA_ARGS__), \
-	hxasserthandler(__FILE__, __LINE__)) || hxbreakpoint())
+#define hxassertmsg(x_, ...) (void)((bool)(x_) \
+	|| (hxloghandler(hxloglevel_assert, __VA_ARGS__), hxasserthandler(__FILE__, __LINE__)) \
+	|| hxbreakpoint())
 
 /// hxassert(bool x) - Logs an error and terminates execution if x is false. This is only
 /// evaluated when HX_RELEASE == 0.
-/// - ...: The condition to evaluate.
-#define hxassert(...) (void)(!!(__VA_ARGS__) || (hxloghandler(hxloglevel_assert, #__VA_ARGS__), \
-	hxasserthandler(__FILE__, __LINE__)) || hxbreakpoint())
+/// - x: The condition to evaluate.
+#define hxassert(x_) (void)((bool)(x_) \
+	|| (hxloghandler(hxloglevel_assert, #x_), hxasserthandler(__FILE__, __LINE__)) \
+	|| hxbreakpoint())
 
-/// hxassertrelease(bool x, ...) - Logs an error and terminates execution if x is false up to
-/// release level 2. This is only evaluated when HX_RELEASE < 3.
+/// hxassertrelease(bool x, ...) - Logs an error and terminates execution if x is false
+/// up to release level 2. This is only evaluated when HX_RELEASE < 3.
 /// - x: The condition to evaluate.
 /// - ...: Variadic arguments for the formatted log message.
-#define hxassertrelease(x_, ...) (void)(!!(x_) || ((hxloghandler(hxloglevel_assert, __VA_ARGS__), \
-	hxasserthandler(__FILE__, __LINE__)) || hxbreakpoint()))
+#define hxassertrelease(x_, ...) (void)((bool)(x_) \
+	|| (hxloghandler(hxloglevel_assert, __VA_ARGS__), hxasserthandler(__FILE__, __LINE__)) \
+	|| hxbreakpoint())
 
 /// Assert handler. Do not call directly, signature changes and then is removed.
 hxnoexcept_intrinsic int hxasserthandler(const char* file_, size_t line_);
@@ -116,7 +119,7 @@ hxnoexcept_intrinsic hxnoreturn void hxasserthandler(uint32_t file_, size_t line
 /// x is false. This is only evaluated when HX_RELEASE <= 1.
 /// - x: The condition to evaluate.
 /// - ...: Variadic arguments for the formatted warning message.
-#define hxwarnmsg(x_, ...) (void)(!!(x_) || (hxloghandler(hxloglevel_warning, __VA_ARGS__), 0))
+#define hxwarnmsg(x_, ...) (void)((bool)(x_) || (hxloghandler(hxloglevel_warning, __VA_ARGS__), 0))
 
 #else // HX_RELEASE >= 2
 #define hxlogrelease(...) ((void)0)
@@ -127,10 +130,11 @@ hxnoexcept_intrinsic hxnoreturn void hxasserthandler(uint32_t file_, size_t line
 
 // hxassertrelease has 4 variations. See above. It is only evaluated when HX_RELEASE < 3.
 #if (HX_RELEASE) == 1
-#define hxassertrelease(x_, ...) (void)(!!(x_) || (hxloghandler(hxloglevel_assert, __VA_ARGS__), \
+#define hxassertrelease(x_, ...) (void)((bool)(x_) || (hxloghandler(hxloglevel_assert, __VA_ARGS__), \
 	hxasserthandler(hxstring_literal_hash(__FILE__), __LINE__), 0))
 #elif (HX_RELEASE) == 2
-#define hxassertrelease(x_, ...) (void)(!!(x_) || (hxasserthandler(hxstring_literal_hash(__FILE__), __LINE__), 0))
+#define hxassertrelease(x_, ...) (void)((bool)(x_) \
+	|| (hxasserthandler(hxstring_literal_hash(__FILE__), __LINE__), 0))
 #elif (HX_RELEASE) == 3
 #define hxassertrelease(x_, ...) ((void)0)
 #endif

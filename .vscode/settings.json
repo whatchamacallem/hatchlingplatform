@@ -29,6 +29,7 @@
         "filt",
         "fpic",
         "fsanitize",
+        "fvisibility",
         "gcda",
         "gcno",
         "gcovr",
@@ -91,10 +92,5 @@
         "Xclang"
     ],
     "editor.cursorBlinking": "solid",
-    "python.analysis.typeCheckingMode": "standard",
-    "python.analysis.diagnosticSeverityOverrides": {
-    },
-    "python.analysis.extraPaths": [
-        "./cache/py"
-    ]
+    "python.analysis.typeCheckingMode": "standard"
  }
