@@ -51,7 +51,6 @@ TYPE_MAP = {
     'char*': (ctypes.c_char_p, 'bytes'),
     'const char*': (ctypes.c_char_p, 'bytes'),
     'void*': (ctypes.c_void_p, 'Any'),
-    # Add basic pointer types
     'int*': (ctypes.POINTER(ctypes.c_int), 'Any'),
     'float*': (ctypes.POINTER(ctypes.c_float), 'Any'),
     'double*': (ctypes.POINTER(ctypes.c_double), 'Any'),
@@ -273,10 +272,10 @@ def map_type(cpp_type: clang.cindex.Type, structs: Dict[str, str], enums: Dict[s
         return (ctypes.POINTER(base_type), 'Any')
     return (ctypes.c_void_p, 'Any')  # Fallback
 
-def format_function(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str]) -> List[str]:
+def format_function(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str], overload_index: int = 0) -> List[str]:
     """
     Generates binding lines for a free function.
-    Includes docstring if available.
+    Includes docstring and overload decorator if needed.
     """
     mangled_name = get_mangled_name(cursor)
     doc_str = format_doc(cursor)
@@ -289,23 +288,18 @@ def format_function(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, st
     lines: List[str] = []
     if doc_str:
         lines.append(doc_str)
+    if overload_index > 0:
+        lines.append(f"@overload")
     lines.append(f"lib.{mangled_name}.restype = {return_type.__name__}")
     if arg_types:
         args = [arg[0].__name__ for arg in arg_types]
         lines.append(f"lib.{mangled_name}.argtypes = [{', '.join(args)}]")
-    lines.append(f"def {cursor.spelling}(*args: Union[{', '.join(set(arg[1] for arg in arg_types))}]) -> {return_py_type}:")
-    if arg_types:
-        lines.append(f"    if len(args) == {len(arg_types)} and all(isinstance(x, {arg_types[0][1]}) for x in args):")
-        args_str = ", ".join(f"args[{i}]" for i in range(len(arg_types)))
-        lines.append(f"        return lib.{mangled_name}({args_str})")
-        lines.append(f"    raise TypeError('Invalid argument types or number')")
-    else:
-        lines.append(f"    return lib.{mangled_name}()")
     return lines
 
-def format_method(cursor: Cursor, class_name: str, structs: Dict[str, str], enums: Dict[str, str]) -> List[str]:
+def format_method(cursor: Cursor, class_name: str, structs: Dict[str, str], enums: Dict[str, str], overload_index: int = 0) -> List[str]:
     """
     Generates binding lines for a class method.
+    Includes overload decorator if needed.
     """
     mangled_name = get_mangled_name(cursor)
     doc_str = format_doc(cursor)
@@ -318,19 +312,13 @@ def format_method(cursor: Cursor, class_name: str, structs: Dict[str, str], enum
     lines: List[str] = []
     if doc_str:
         lines.append(doc_str)
-    lines.append(f"    def {cursor.spelling}(self, *args: Union[{', '.join(set(arg[1] for arg in arg_types))}]) -> {return_py_type}:")
-    if arg_types:
-        lines.append(f"        if len(args) == {len(arg_types)} and all(isinstance(x, {arg_types[0][1]}) for x in args):")
-        args_str = ", ".join(f"args[{i}]" for i in range(len(arg_types)))
-        lines.append(f"            return lib.{mangled_name}(ctypes.byref(self._ptr), {args_str})")
-        lines.append(f"        raise TypeError('Invalid argument types or number')")
-    else:
-        lines.append(f"        return lib.{mangled_name}(ctypes.byref(self._ptr))")
-    return lines
+    if overload_index > 0:
+        lines.append(f"    @overload")
 
-def format_constructor(cursor: Cursor, class_name: str, structs: Dict[str, str], enums: Dict[str, str]) -> List[str]:
+def format_constructor(cursor: Cursor, class_name: str, structs: Dict[str, str], enums: Dict[str, str], overload_index: int = 0) -> List[str]:
     """
     Generates binding lines for a class constructor.
+    Includes overload decorator if needed.
     """
     mangled_name = get_mangled_name(cursor)
     arg_types = []
@@ -339,19 +327,10 @@ def format_constructor(cursor: Cursor, class_name: str, structs: Dict[str, str],
         arg_types.append((ctypes_type, py_type))
 
     lines: List[str] = []
-    lines.append(f"    def __init__(self, *args: Union[{', '.join(set(arg[1] for arg in arg_types))}]) -> None:")
-    lines.append(f"        self._ptr = {structs.get(class_name, class_name)}()")
-    if arg_types:
-        lines.append(f"        if len(args) == {len(arg_types)} and all(isinstance(x, {arg_types[0][1]}) for x in args):")
-        args_str = ", ".join(f"args[{i}]" for i in range(len(arg_types)))
-        lines.append(f"            lib.{mangled_name}(ctypes.byref(self._ptr), {args_str})")
-        lines.append(f"        else:")
-        lines.append(f"            raise TypeError('Invalid argument types or number')")
-    else:
-        lines.append(f"        lib.{mangled_name}(ctypes.byref(self._ptr))")
-    return lines
+    if overload_index > 0:
+        lines.append(f"    @overload")
 
-def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str], seen_signatures: Set[Tuple[str, Tuple[str, ...]]]) -> List[str]:
+def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str], seen_signatures: Set[str]) -> List[str]:
     """
     Generates binding code for a class.
     Skips constructor bindings for abstract classes and those without public destructors.
@@ -372,18 +351,33 @@ def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str],
     else:
         lines.append(f"    pass")
 
+    # Collect constructors and methods for overload handling
+    constructors = []
+    methods = {}
     for child in cursor.get_children():
         if is_template(child) or is_pure_virtual_method(child):
             return []
         elif is_public_constructor(child):
-            sig: Tuple[str, Tuple[str, ...]] = calculate_signature(child)
-            if sig not in seen_signatures:
-                lines.extend(format_constructor(child, class_name, structs, enums))
-                seen_signatures.add(sig)
+            constructors.append(child)
         elif is_public_method(child):
-            sig = calculate_signature(child)
+            method_name = child.spelling
+            if method_name not in methods:
+                methods[method_name] = []
+            methods[method_name].append(child)
+
+    # Generate constructor bindings
+    for i, child in enumerate(constructors):
+        sig = get_mangled_name(child)
+        if sig not in seen_signatures:
+            lines.extend(format_constructor(child, class_name, structs, enums, i))
+            seen_signatures.add(sig)
+
+    # Generate method bindings with overloads
+    for method_name, method_list in methods.items():
+        for i, child in enumerate(method_list):
+            sig = get_mangled_name(child)
             if sig not in seen_signatures:
-                lines.extend(format_method(child, class_name, structs, enums))
+                lines.extend(format_method(child, class_name, structs, enums, i))
                 seen_signatures.add(sig)
 
     return lines
@@ -402,15 +396,14 @@ def calculate_namespace_prefix(cursor: Cursor) -> str:
         namespaces.append("")
     return "::".join(reversed(namespaces))
 
-def calculate_signature(cursor: Cursor) -> Tuple[str, Tuple[str, ...]]:
+def calculate_signature(cursor: Cursor) -> str:
     """
-    Returns a tuple uniquely identifying a function/method by name and parameter types.
+    Returns the mangled name as the unique signature for a function/method.
     Used to avoid duplicate bindings for overloads.
     """
-    params: Tuple[str, ...] = tuple(a.type.spelling for a in cursor.get_arguments())
-    return (calculate_namespace_prefix(cursor) + cursor.spelling, params)
+    return get_mangled_name(cursor)
 
-def format_namespace(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str], seen_functions: Optional[Set[Tuple[str, Tuple[str, ...]]]] = None) -> List[str]:
+def format_namespace(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str], seen_functions: Optional[Set[str]] = None) -> List[str]:
     """
     Recursively visits AST nodes starting from the given cursor.
     Collects functions, classes, and enums that are public and project-specific.
@@ -425,9 +418,9 @@ def format_namespace(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, s
             if is_namespace(c):
                 lines.extend(format_namespace(c, structs, enums, seen_functions))
             elif is_public_function(c):
-                fn: Tuple[str, Tuple[str, ...]] = calculate_signature(c)
+                fn = calculate_signature(c)
                 if fn not in seen_functions:
-                    lines.extend(format_function(c, structs, enums))
+                    lines.extend(format_function(c, structs, enums, len([f for f in seen_functions if f.startswith(c.spelling)])))
                     seen_functions.add(fn)
             elif is_public_class(c):
                 class_lines = format_class(c, structs, enums, seen_functions)
@@ -436,7 +429,7 @@ def format_namespace(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, s
             elif is_public_enum(c) and c.semantic_parent.kind != CursorKind.CLASS_DECL: # type: ignore
                 lines.extend(format_enum(c))
         except Exception as e:
-            print(f"Error processing cursor {c.spelling}: {str(e)}")
+            print(f"Unexpected error processing cursor {c.spelling}: {str(e)}")
             continue
     return lines
 
