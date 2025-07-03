@@ -306,7 +306,7 @@ def format_function(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, st
     verbose2(f"function {cursor.spelling}: {lines}")
     return lines
 
-def format_method(cursor: Cursor, class_name: str, structs: Dict[str, str], enums: Dict[str, str], overload_index: int = 0) -> List[str]:
+def format_method(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str], overload_index: int = 0) -> List[str]:
     """
     Generates binding lines for a class method.
     Includes overload decorator if needed.
@@ -334,7 +334,7 @@ def format_method(cursor: Cursor, class_name: str, structs: Dict[str, str], enum
     verbose2(f"method {cursor.spelling}: {lines}")
     return lines
 
-def format_constructor(cursor: Cursor, class_name: str, structs: Dict[str, str], enums: Dict[str, str], overload_index: int = 0) -> List[str]:
+def format_constructor(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str], overload_index: int = 0) -> List[str]:
     """
     Generates binding lines for a class constructor.
     Includes overload decorator if needed.
@@ -360,7 +360,7 @@ def format_constructor(cursor: Cursor, class_name: str, structs: Dict[str, str],
     verbose2(f"constructor {cursor.spelling}: {lines}")
     return lines
 
-def generate_overload_selector(name: str, overloads: List[Cursor], is_method: bool = False) -> List[str]:
+def generate_overload_selector(name: str, overloads: List[Cursor], is_method: bool) -> List[str]:
     """
     Generates a wrapper function to select between overloads based on argument count.
     Raises compile-time errors for ambiguous or missing overloads.
@@ -442,12 +442,12 @@ def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str],
     for i, child in enumerate(constructors):
         sig = get_mangled_name(child)
         if sig not in seen_signatures:
-            constructor_lines = format_constructor(child, class_name, structs, enums, i)
+            constructor_lines = format_constructor(child, structs, enums, i)
             lines.extend(constructor_lines)
             constructor_overloads.append(child)
             seen_signatures.add(sig)
     if constructor_overloads:
-        lines.extend(generate_overload_selector('__init__', constructor_overloads, is_method=True, class_name=class_name))
+        lines.extend(generate_overload_selector('__init__', constructor_overloads, True))
 
     # Generate method bindings with overloads
     for method_name, method_list in methods.items():
@@ -455,12 +455,12 @@ def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str],
         for i, child in enumerate(method_list):
             sig = get_mangled_name(child)
             if sig not in seen_signatures:
-                method_lines = format_method(child, class_name, structs, enums, i)
+                method_lines = format_method(child, structs, enums, i)
                 lines.extend(method_lines)
                 method_overloads.append(child)
                 seen_signatures.add(sig)
         if method_overloads:
-            lines.extend(generate_overload_selector(method_name, method_overloads, is_method=True, class_name=class_name))
+            lines.extend(generate_overload_selector(method_name, method_overloads, True))
 
     return lines
 
@@ -531,7 +531,7 @@ def format_namespace(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, s
         for i, cursor in enumerate(overloads[1:], 1):
             lines.extend(format_function(cursor, structs, enums, i))  # Additional overloads
         if len(overloads) > 1:
-            lines.extend(generate_overload_selector(func_name, overloads))
+            lines.extend(generate_overload_selector(func_name, overloads, False))
 
     return lines
 
