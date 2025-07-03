@@ -360,18 +360,18 @@ def format_constructor(cursor: Cursor, class_name: str, structs: Dict[str, str],
     verbose2(f"constructor {cursor.spelling}: {lines}")
     return lines
 
-def generate_overload_selector(name: str, overloads: List[Tuple[Cursor, List[Tuple[Any, str]], str]], is_method: bool = False, class_name: str = '') -> List[str]:
+def generate_overload_selector(name: str, overloads: List[Cursor], is_method: bool = False) -> List[str]:
     """
-    Generates a wrapper function to select between overloads based on argument count and first argument type.
+    Generates a wrapper function to select between overloads based on argument count.
     Raises compile-time errors for ambiguous or missing overloads.
     """
     # Group overloads by argument count
-    arg_count_map: Dict[int, List[Tuple[Cursor, List[Tuple[Any, str]], str]]] = {}
-    for overload in overloads:
-        arg_count = len(overload[1]) - (1 if is_method else 0)
+    arg_count_map: Dict[int, List[Cursor]] = {}
+    for cursor in overloads:
+        arg_count = len(list(cursor.get_arguments())) - (1 if is_method else 0)
         if arg_count not in arg_count_map:
             arg_count_map[arg_count] = []
-        arg_count_map[arg_count].append(overload)
+        arg_count_map[arg_count].append(cursor)
 
     lines: List[str] = []
     lines.append(f"def {name}(" + ("self, " if is_method else "") + "*args, **kwargs) -> Any:")
@@ -382,13 +382,9 @@ def generate_overload_selector(name: str, overloads: List[Tuple[Cursor, List[Tup
         if not overload_group:
             continue
         lines.append(f"    if len(args) == {arg_count}:")
-        # Check first argument type for disambiguation
-        first_arg_types = set(ov[1][0][1] for ov in overload_group) if overload_group[0][1] else {'None'}
-        if len(first_arg_types) > 1 and arg_count > 0:
-            raise ValueError(f"Ambiguous overloads for {name} with {arg_count} arguments: first argument types {first_arg_types} are not unique")
         if len(overload_group) > 1:
-            raise ValueError(f"Multiple overloads for {name} with {arg_count} arguments and same first argument type: cannot disambiguate")
-        cursor, arg_types, _ = overload_group[0]
+            raise ValueError(f"Multiple overloads for {name} with {arg_count} arguments: cannot disambiguate")
+        cursor = overload_group[0]
         mangled_name = get_mangled_name(cursor)
         arg_list = ', '.join(f'arg{i}' for i in range(arg_count))
         if is_method:
@@ -426,7 +422,7 @@ def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str],
 
     # Collect constructors and methods for overload handling
     constructors = []
-    methods = {}
+    methods: Dict[str, List[Cursor]] = {}
     for child in cursor.get_children():
         if is_template(child):
             verbose2(f"skipping template {child.spelling}")
@@ -448,8 +444,7 @@ def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str],
         if sig not in seen_signatures:
             constructor_lines = format_constructor(child, class_name, structs, enums, i)
             lines.extend(constructor_lines)
-            constructor_overloads.append((child, [(structs.get(class_name, class_name), class_name)] +
-                [(map_type(arg.type, structs, enums)) for arg in child.get_arguments()], sig))
+            constructor_overloads.append(child)
             seen_signatures.add(sig)
     if constructor_overloads:
         lines.extend(generate_overload_selector('__init__', constructor_overloads, is_method=True, class_name=class_name))
@@ -462,13 +457,11 @@ def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str],
             if sig not in seen_signatures:
                 method_lines = format_method(child, class_name, structs, enums, i)
                 lines.extend(method_lines)
-                method_overloads.append((child, [(structs.get(class_name, class_name), class_name)] +
-                    [(map_type(arg.type, structs, enums)) for arg in child.get_arguments()], sig))
+                method_overloads.append(child)
                 seen_signatures.add(sig)
         if method_overloads:
             lines.extend(generate_overload_selector(method_name, method_overloads, is_method=True, class_name=class_name))
 
-#    verbose2(f"Class {class_name} binding generated: {lines}")
     return lines
 
 def calculate_namespace_prefix(cursor: Cursor) -> str:
@@ -500,7 +493,7 @@ def format_namespace(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, s
     if seen_functions is None:
         seen_functions = set()
     lines: List[str] = []
-    function_overloads: Dict[str, List[Tuple[Cursor, List[Tuple[Any, str]], str]]] = {}
+    function_overloads: Dict[str, List[Cursor]] = {}
     namespace = calculate_namespace_prefix(cursor)
     verbose2(f"namespace {namespace}{cursor.spelling}")
     for c in cursor.get_children():
@@ -516,10 +509,9 @@ def format_namespace(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, s
                 fn = calculate_signature(c)
                 if fn not in seen_functions:
                     func_name = c.spelling
-                    arg_types = [(map_type(arg.type, structs, enums)) for arg in c.get_arguments()]
                     if func_name not in function_overloads:
                         function_overloads[func_name] = []
-                    function_overloads[func_name].append((c, arg_types, fn))
+                    function_overloads[func_name].append(c)
                     seen_functions.add(fn)
             elif is_public_class(c):
                 class_lines = format_class(c, structs, enums, seen_functions)
@@ -535,8 +527,8 @@ def format_namespace(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, s
 
     # Generate function overload selectors
     for func_name, overloads in function_overloads.items():
-        lines.extend(format_function(overloads[0][0], structs, enums, 0))  # First overload
-        for i, (cursor, arg_types, sig) in enumerate(overloads[1:], 1):
+        lines.extend(format_function(overloads[0], structs, enums, 0))  # First overload
+        for i, cursor in enumerate(overloads[1:], 1):
             lines.extend(format_function(cursor, structs, enums, i))  # Additional overloads
         if len(overloads) > 1:
             lines.extend(generate_overload_selector(func_name, overloads))

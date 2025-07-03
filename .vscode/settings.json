@@ -49,6 +49,7 @@
         "multilib",
         "multiset",
         "nanobind",
+        "pointee",
         "printhashes",
         "pthread",
         "pybind",
