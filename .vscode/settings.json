@@ -77,6 +77,7 @@
         "testwasm",
         "tsan",
         "ubsan",
+        "ulonglong",
         "unconstructed",
         "valgrind",
         "WASD",

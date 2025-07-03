@@ -27,7 +27,9 @@ import sys
 import os
 import clang.cindex
 import ctypes
-from typing import Dict, List, Set, Tuple, Optional, Any, Union
+from typing import Dict, List, Set, Tuple, Optional, Any
+from clang.cindex import Index, TranslationUnit, Diagnostic, Cursor, CursorKind
+from clang.cindex import TypeKind, Type, LinkageKind, Config
 
 # Path to the libclang shared library. TODO.
 _libclang_path = "/usr/lib/llvm-18/lib/libclang.so.1"
@@ -56,8 +58,8 @@ TYPE_MAP = {
     'double*': (ctypes.POINTER(ctypes.c_double), 'Any'),
 }
 
-# Debug flag.
-_verbose = True
+# Verbose 0: Normal status and errors. 1: Processing steps. 2: AST traversal.
+_verbose = 2
 
 # Exit codes.
 _exit_bindings_generated = 0
@@ -72,7 +74,7 @@ _arg_output_file: str = ""
 _arg_dependency_file: str = ""
 
 def verbose(msg: str) -> None:
-    if _verbose:
+    if _verbose >= 1:
         print(f" * {msg}")
 
 def verbose2(msg: str) -> None:
@@ -270,7 +272,7 @@ def map_type(cpp_type: Type, structs: Dict[str, str], enums: Dict[str, str]) -> 
         return (structs[spelling], 'Any')
     elif spelling in enums:
         return (ctypes.c_int, 'int')
-    elif cpp_type.kind == TypeKind.POINTER:
+    elif cpp_type.kind == TypeKind.POINTER: # type: ignore
         pointee = cpp_type.get_pointee()
         base_type, _ = map_type(pointee, structs, enums)
         return (ctypes.POINTER(base_type), 'Any')
@@ -394,7 +396,7 @@ def generate_overload_selector(name: str, overloads: List[Tuple[Cursor, List[Tup
         else:
             lines.append(f"        return lib.{mangled_name}({arg_list})")
 
-    lines.append(f"    raise ValueError('No matching overload for {name} with {len(args)} arguments')")
+    lines.append(f"    raise ValueError('No matching overload for {name}" + " with {len(args)} arguments')")
     verbose2(f"selector {name}: {lines}")
     return lines
 
@@ -412,7 +414,7 @@ def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str],
     lines.append(f"class {structs.get(class_name, class_name)}(ctypes.Structure):")
     fields = []
     for child in cursor.get_children():
-        if child.kind == CursorKind.FIELD_DECL:
+        if child.kind == CursorKind.FIELD_DECL: # type: ignore
             ctypes_type, _ = map_type(child.type, structs, enums)
             fields.append(f'("{child.spelling}", {ctypes_type.__name__})')
     if fields:
@@ -585,7 +587,7 @@ def load_translation_unit_and_dependencies(header_file: str) -> Tuple[Translatio
         print(f"Error: {e} {header_file}")
         sys.exit(_exit_error)
 
-    for diagnostic in translation_unit.diagnostics:
+    for diagnostic in translation_unit.diagnostics: # type: ignore
         print(diagnostic)
 
     if not translation_unit or (len(translation_unit.diagnostics) > 0
