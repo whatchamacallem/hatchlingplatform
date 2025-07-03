@@ -75,6 +75,10 @@ def verbose(msg: str) -> None:
     if _verbose:
         print(f" * {msg}")
 
+def verbose2(msg: str) -> None:
+    if _verbose >= 2:
+        print(f" - {msg}")
+
 def parse_argv() -> bool:
     global _arg_compiler_flags
     global _arg_module_name
@@ -235,7 +239,6 @@ def format_doc(cursor: Cursor) -> str:
                 line = line[3:].strip()
             elif line.startswith("//"):
                 line = line[2:].strip()
-
             line = line.replace('\\', '\\\\').replace('"', '\\"')
             cleaned.append(line)
         doc = "\n".join(cleaned) if cleaned else ""
@@ -252,6 +255,7 @@ def format_enum(cursor: Cursor) -> List[str]:
     doc_str = format_doc(cursor)
     if doc_str:
         lines.insert(0, doc_str)
+    verbose2(f"enum {enum_name}: {lines}")
     return lines
 
 def map_type(cpp_type: Type, structs: Dict[str, str], enums: Dict[str, str]) -> Tuple[Any, str]:
@@ -297,6 +301,7 @@ def format_function(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, st
     if arg_types:
         args = [arg[0].__name__ for arg in arg_types]
         lines.append(f"lib.{mangled_name}.argtypes = [{', '.join(args)}]")
+    verbose2(f"function {cursor.spelling}: {lines}")
     return lines
 
 def format_method(cursor: Cursor, class_name: str, structs: Dict[str, str], enums: Dict[str, str], overload_index: int = 0) -> List[str]:
@@ -324,6 +329,7 @@ def format_method(cursor: Cursor, class_name: str, structs: Dict[str, str], enum
     if arg_types:
         args = [arg[0].__name__ for arg in arg_types]
         lines.append(f"        lib.{mangled_name}.argtypes = [{', '.join(args)}]")
+    verbose2(f"method {cursor.spelling}: {lines}")
     return lines
 
 def format_constructor(cursor: Cursor, class_name: str, structs: Dict[str, str], enums: Dict[str, str], overload_index: int = 0) -> List[str]:
@@ -344,11 +350,12 @@ def format_constructor(cursor: Cursor, class_name: str, structs: Dict[str, str],
     if overload_index > 0:
         lines.append(f"    @overload")
     arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
-    lines.append(f"    def __init__({arg_hints}) -> {return_py_type}: ...")
-    lines.append(f"        lib.{mangled_name}.restype = {return_type.__name__}")
+    lines.append(f"    def __init__({arg_hints}) -> None: ...")
+    lines.append(f"        lib.{mangled_name}.restype = None")
     if arg_types:
         args = [arg[0].__name__ for arg in arg_types]
         lines.append(f"        lib.{mangled_name}.argtypes = [{', '.join(args)}]")
+    verbose2(f"constructor {cursor.spelling}: {lines}")
     return lines
 
 def generate_overload_selector(name: str, overloads: List[Tuple[Cursor, List[Tuple[Any, str]], str]], is_method: bool = False, class_name: str = '') -> List[str]:
@@ -388,6 +395,7 @@ def generate_overload_selector(name: str, overloads: List[Tuple[Cursor, List[Tup
             lines.append(f"        return lib.{mangled_name}({arg_list})")
 
     lines.append(f"    raise ValueError('No matching overload for {name} with {len(args)} arguments')")
+    verbose2(f"selector {name}: {lines}")
     return lines
 
 def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str], seen_signatures: Set[str]) -> List[str]:
@@ -396,6 +404,7 @@ def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str],
     Skips constructor bindings for abstract classes and those without public destructors.
     """
     class_name = cursor.spelling or f"class_{cursor.hash % 1000000}"
+    verbose2(f"class {class_name}:")
     doc_str = format_doc(cursor)
     lines: List[str] = []
     if doc_str:
@@ -408,14 +417,20 @@ def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str],
             fields.append(f'("{child.spelling}", {ctypes_type.__name__})')
     if fields:
         lines.append(f"    _fields_ = [{', '.join(fields)}]")
+        verbose2(f"Class {class_name} fields: {fields}")
     else:
         lines.append(f"    pass")
+        verbose2(f"Class {class_name} has no fields")
 
     # Collect constructors and methods for overload handling
     constructors = []
     methods = {}
     for child in cursor.get_children():
-        if is_template(child) or is_pure_virtual_method(child):
+        if is_template(child):
+            verbose2(f"skipping template {child.spelling}")
+            return []
+        elif is_pure_virtual_method(child):
+            verbose2(f"skipping virtual class {class_name} due to {child.spelling}")
             return []
         elif is_public_constructor(child):
             constructors.append(child)
@@ -425,7 +440,6 @@ def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str],
                 methods[method_name] = []
             methods[method_name].append(child)
 
-    # Generate constructor bindings and selector
     constructor_overloads = []
     for i, child in enumerate(constructors):
         sig = get_mangled_name(child)
@@ -452,6 +466,7 @@ def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str],
         if method_overloads:
             lines.extend(generate_overload_selector(method_name, method_overloads, is_method=True, class_name=class_name))
 
+#    verbose2(f"Class {class_name} binding generated: {lines}")
     return lines
 
 def calculate_namespace_prefix(cursor: Cursor) -> str:
@@ -484,12 +499,17 @@ def format_namespace(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, s
         seen_functions = set()
     lines: List[str] = []
     function_overloads: Dict[str, List[Tuple[Cursor, List[Tuple[Any, str]], str]]] = {}
+    namespace = calculate_namespace_prefix(cursor)
+    verbose2(f"namespace {namespace}{cursor.spelling}")
     for c in cursor.get_children():
         try:
             if not is_project_header(c):
+                verbose2(f"Skipping {c.spelling}, not in project header")
                 continue
             if is_namespace(c):
+                verbose2(f"namespace_enter {c.spelling}")
                 lines.extend(format_namespace(c, structs, enums, seen_functions))
+                verbose2(f"namespace_exit {c.spelling}")
             elif is_public_function(c):
                 fn = calculate_signature(c)
                 if fn not in seen_functions:
@@ -505,6 +525,8 @@ def format_namespace(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, s
                     lines.extend(class_lines)
             elif is_public_enum(c) and c.semantic_parent.kind != CursorKind.CLASS_DECL: # type: ignore
                 lines.extend(format_enum(c))
+            else:
+                verbose2(f"unknown {c.spelling}")
         except Exception as e:
             print(f"Unexpected error processing cursor {c.spelling}: {str(e)}")
             continue
@@ -546,6 +568,7 @@ def check_dependencies_changed() -> bool:
                     print("File changed: " + file_path)
                     has_changed = True
 
+            verbose2(f"Dependencies changed: {has_changed}")
             return has_changed
     except Exception as e:
         verbose("Not found: " + _arg_dependency_file)
@@ -554,6 +577,7 @@ def check_dependencies_changed() -> bool:
 
 def load_translation_unit_and_dependencies(header_file: str) -> Tuple[TranslationUnit, Set[str]]:
     index = Index.create()
+    verbose2(f"Parsing translation unit for {header_file}")
     translation_unit: Optional[TranslationUnit] = None
     try:
         translation_unit = index.parse(header_file, _arg_compiler_flags)
@@ -569,7 +593,6 @@ def load_translation_unit_and_dependencies(header_file: str) -> Tuple[Translatio
         print("Parsing failed due to errors.")
         sys.exit(_exit_error)
 
-    # Get all included files (direct and transitive)
     dependencies: Set[str] = set()
     for include in translation_unit.get_includes():
         dependencies.add(include.include.name)
@@ -579,6 +602,7 @@ def write_dependencies(include_files: Set[str]) -> None:
     """
     Write new dependency file
     """
+    verbose2(f"Writing dependency file {_arg_dependency_file}")
     full_args = ' '.join(sys.argv)
     try:
         with open(_arg_dependency_file, 'w') as f:
@@ -595,6 +619,7 @@ def main() -> int:
     Main entry point for the script. Parses command-line arguments, initializes Clang,
     and generates binding code for the given header file.
     """
+    verbose2("main...")
     if not parse_argv():
         print("""\
 Usage: python3 hatchling_bindings.py <compiler_flags> <module_name> <header_files>... <output_file>
@@ -617,7 +642,7 @@ Make sure to adjust _libclang_path at the top of this script if needed.
     verbose("output_file: " + _arg_output_file)
     verbose("dependency_file: " + _arg_dependency_file)
 
-    verbose("Initializing Clang library.")
+    verbose(f"Setting libclang path: {_libclang_path}")
     Config.set_library_file(_libclang_path)
 
     verbose(f"Checking dependencies for generating {_arg_output_file}...")
@@ -625,7 +650,6 @@ Make sure to adjust _libclang_path at the top of this script if needed.
         print("Nothing changed. All done.")
         return _exit_nothing_changed
 
-    # Begin data gathering loop
     output_lines: List[str] = ["import ctypes", "from typing import Union, overload, Any", ""]
     output_lines.append(f"# Load the shared library")
     output_lines.append(f"lib = ctypes.CDLL('lib{_arg_module_name}.so')")
@@ -644,15 +668,14 @@ Make sure to adjust _libclang_path at the top of this script if needed.
         child_lines: List[str] = format_namespace(translation_unit.cursor, structs, enums, set())
         output_lines.extend(child_lines)
         dependencies |= deps
+        verbose2(f"Added {len(child_lines)} lines from {header_file}, {len(deps)} dependencies")
 
-    # Write out gathered data.
     with open(_arg_output_file, "w") as f:
         f.write("\n".join(output_lines) if output_lines else "")
-        print(f"Wrote {_arg_output_file}...")
+        print(f"Wrote {_arg_output_file}: {len(output_lines)} lines")
 
-    # Make the _arg_dependency_file older than the _arg_output_file.
     write_dependencies(dependencies)
-
+    verbose2("exit 0")
     return _exit_bindings_generated
 
 if __name__ == "__main__":
