@@ -1,24 +1,24 @@
 """
-hatchling_bindings.py: Automatic Binding Binding Generator for C++ Projects
+hatchling_bindings.py: Automatic Binding Generator for C++ Projects
 
-This script automates the generation of Python bindings for C++ code using nanobind and libclang.
+This script automates the generation of Python bindings for C++ code using ctypes and libclang.
 It parses a given C++ header file, discovers public functions, classes, methods, constructors,
-destructors, and enums defined in a project, and then emits C++ code that exposes these symbols
-to Python via nanobind.
+destructors, and enums defined in a project, and then emits Python code that exposes these symbols
+to Python via ctypes.
 
 Key Features:
 - Filters only project-specific public symbols (functions, classes, methods, enums) for binding.
 - Skips internal headers, variadic functions, and templates to avoid ambiguous or unsafe bindings.
 - Extracts and formats C++ documentation comments as Python docstrings for each binding.
 - Handles class constructors, destructors, and methods, including overloaded signatures.
-- Emits nanobind code for enums, including nested enums within classes.
+- Emits ctypes code for enums, including nested enums within classes.
 
 Usage:
     python hatchling_bindings.py <compiler_flags> <module_name> <header_files>... <output_file>
         compiler_flags  - Flags to pass to clang. Can be in any order on command line.
         module_name     - Module name to bind everything to.
         header_files... - Path(s) to the C++ header file(s) to parse.
-        output_file     - Path to write the generated C++ binding code.
+        output_file     - Path to write the generated Python binding code.
 
 Adjust the _libclang_path at the top of the script as needed for your environment and project.
 """
@@ -26,12 +26,32 @@ Adjust the _libclang_path at the top of the script as needed for your environmen
 import sys
 import os
 import clang.cindex
-
-from typing import List, Set, Tuple, Optional
+import ctypes
+from typing import Dict, List, Set, Tuple, Optional
 from clang.cindex import Cursor, CursorKind, TranslationUnit, LinkageKind
 
 # Path to the libclang shared library. TODO.
 _libclang_path = "/usr/lib/llvm-18/lib/libclang.so.1"
+
+# Mapping C++ types to ctypes and Python type hints
+TYPE_MAP = {
+    'void': (ctypes.c_void_p, 'None'),
+    'bool': (ctypes.c_bool, 'bool'),
+    'char': (ctypes.c_char, 'int'),
+    'unsigned char': (ctypes.c_ubyte, 'int'),
+    'short': (ctypes.c_short, 'int'),
+    'unsigned short': (ctypes.c_ushort, 'int'),
+    'int': (ctypes.c_int, 'int'),
+    'unsigned int': (ctypes.c_uint, 'int'),
+    'long': (ctypes.c_long, 'int'),
+    'unsigned long': (ctypes.c_ulong, 'int'),
+    'long long': (ctypes.c_longlong, 'int'),
+    'unsigned long long': (ctypes.c_ulonglong, 'int'),
+    'float': (ctypes.c_float, 'float'),
+    'double': (ctypes.c_double, 'float'),
+    'char*': (ctypes.c_char_p, 'bytes'),
+    'const char*': (ctypes.c_char_p, 'bytes'),
+}
 
 # Debug flag.
 _verbose = True
@@ -92,7 +112,7 @@ def is_project_header(cursor: Cursor) -> bool:
     header_str = str(header) if header is not None else ""
     return (
         header is not None
-        and all(h in header_str for h in _arg_header_files)
+        and any(h in header_str for h in _arg_header_files)
     )
 
 def is_template(cursor: Cursor) -> bool:
@@ -190,6 +210,163 @@ def is_public_method(cursor: Cursor) -> bool:
         and not is_arg_va_list(cursor)
     )
 
+def get_mangled_name(cursor: Cursor) -> str:
+    """
+    Get mangled name of a function or constructor.
+    """
+    return cursor.mangled_name or cursor.spelling
+
+
+def format_doc(cursor: Cursor) -> str:
+    """
+    Extracts and formats the raw comment for use as a docstring.
+    Strips comment markers and leading/trailing whitespace.
+    Escapes characters (\\n, \\", \\) for safe embedding in a Python string.
+    """
+    comment = cursor.raw_comment
+    if comment:
+        lines: List[str] = comment.splitlines()
+        cleaned: List[str] = []
+        for line in lines:
+            line = line.strip()
+            if line.startswith("///"):
+                line = line[3:].strip()
+            elif line.startswith("//"):
+                line = line[2:].strip()
+
+            line = line.replace('\\', '\\\\').replace('"', '\\"')
+            cleaned.append(line)
+        doc = "\n".join(cleaned) if cleaned else ""
+        return f'"""{doc}"""' if doc else ""
+    return ""
+
+def format_enum(cursor: Cursor) -> List[str]:
+    """
+    Generates binding code for an enum.
+    Includes all enum constants as values.
+    """
+    enum_name = cursor.spelling or f"enum_{cursor.hash % 1000000}"
+    lines: List[str] = [f"{enum_name} = ctypes.c_int"]
+    doc_str = format_doc(cursor)
+    if doc_str:
+        lines.insert(0, doc_str)
+    return lines
+
+def format_function(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str]) -> List[str]:
+    """
+    Generates binding lines for a free function.
+    Includes docstring if available.
+    """
+    mangled_name = get_mangled_name(cursor)
+    doc_str = format_doc(cursor)
+    arg_types = []
+    for arg in cursor.get_arguments():
+        ctypes_type, py_type = map_type(arg.type, structs, enums)
+        arg_types.append((ctypes_type, py_type))
+    return_type, return_py_type = map_type(cursor.result_type, structs, enums)
+
+    lines: List[str] = []
+    if doc_str:
+        lines.append(doc_str)
+    lines.append(f"lib.{mangled_name}.restype = {return_type.__name__}")
+    if arg_types:
+        args = [arg[0].__name__ for arg in arg_types]
+        lines.append(f"lib.{mangled_name}.argtypes = [{', '.join(args)}]")
+    lines.append(f"def {cursor.spelling}(*args: Union[{', '.join(set(arg[1] for arg in arg_types))}]) -> {return_py_type}:")
+    if arg_types:
+        lines.append(f"    if len(args) == {len(arg_types)} and all(isinstance(x, {arg_types[0][1]}) for x in args):")
+        args_str = ", ".join(f"args[{i}]" for i in range(len(arg_types)))
+        lines.append(f"        return lib.{mangled_name}({args_str})")
+        lines.append(f"    raise TypeError('Invalid argument types or number')")
+    else:
+        lines.append(f"    return lib.{mangled_name}()")
+    return lines
+
+def format_method(cursor: Cursor, class_name: str, structs: Dict[str, str], enums: Dict[str, str]) -> List[str]:
+    """
+    Generates binding lines for a class method.
+    """
+    mangled_name = get_mangled_name(cursor)
+    doc_str = format_doc(cursor)
+    arg_types = []
+    for arg in cursor.get_arguments():
+        ctypes_type, py_type = map_type(arg.type, structs, enums)
+        arg_types.append((ctypes_type, py_type))
+    return_type, return_py_type = map_type(cursor.result_type, structs, enums)
+
+    lines: List[str] = []
+    if doc_str:
+        lines.append(doc_str)
+    lines.append(f"    def {cursor.spelling}(self, *args: Union[{', '.join(set(arg[1] for arg in arg_types))}]) -> {return_py_type}:")
+    if arg_types:
+        lines.append(f"        if len(args) == {len(arg_types)} and all(isinstance(x, {arg_types[0][1]}) for x in args):")
+        args_str = ", ".join(f"args[{i}]" for i in range(len(arg_types)))
+        lines.append(f"            return lib.{mangled_name}(ctypes.byref(self._ptr), {args_str})")
+        lines.append(f"        raise TypeError('Invalid argument types or number')")
+    else:
+        lines.append(f"        return lib.{mangled_name}(ctypes.byref(self._ptr))")
+    return lines
+
+def format_constructor(cursor: Cursor, class_name: str, structs: Dict[str, str], enums: Dict[str, str]) -> List[str]:
+    """
+    Generates binding lines for a class constructor.
+    """
+    mangled_name = get_mangled_name(cursor)
+    arg_types = []
+    for arg in cursor.get_arguments():
+        ctypes_type, py_type = map_type(arg.type, structs, enums)
+        arg_types.append((ctypes_type, py_type))
+
+    lines: List[str] = []
+    lines.append(f"    def __init__(self, *args: Union[{', '.join(set(arg[1] for arg in arg_types))}]) -> None:")
+    lines.append(f"        self._ptr = {structs.get(class_name, class_name)}()")
+    if arg_types:
+        lines.append(f"        if len(args) == {len(arg_types)} and all(isinstance(x, {arg_types[0][1]}) for x in args):")
+        args_str = ", ".join(f"args[{i}]" for i in range(len(arg_types)))
+        lines.append(f"            lib.{mangled_name}(ctypes.byref(self._ptr), {args_str})")
+        lines.append(f"        else:")
+        lines.append(f"            raise TypeError('Invalid argument types or number')")
+    else:
+        lines.append(f"        lib.{mangled_name}(ctypes.byref(self._ptr))")
+    return lines
+
+def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str], seen_signatures: Set[Tuple[str, Tuple[str, ...]]]) -> List[str]:
+    """
+    Generates binding code for a class.
+    Skips constructor bindings for abstract classes and those without public destructors.
+    """
+    class_name = cursor.spelling or f"class_{cursor.hash % 1000000}"
+    doc_str = format_doc(cursor)
+    lines: List[str] = []
+    if doc_str:
+        lines.append(doc_str)
+    lines.append(f"class {structs.get(class_name, class_name)}(ctypes.Structure):")
+    fields = []
+    for child in cursor.get_children():
+        if child.kind == CursorKind.FIELD_DECL:
+            ctypes_type, _ = map_type(child.type, structs, enums)
+            fields.append(f'("{child.spelling}", {ctypes_type.__name__})')
+    if fields:
+        lines.append(f"    _fields_ = [{', '.join(fields)}]")
+    else:
+        lines.append(f"    pass")
+
+    for child in cursor.get_children():
+        if is_template(child) or is_pure_virtual_method(child):
+            return []
+        elif is_public_constructor(child):
+            sig: Tuple[str, Tuple[str, ...]] = calculate_signature(child)
+            if sig not in seen_signatures:
+                lines.extend(format_constructor(child, class_name, structs, enums))
+                seen_signatures.add(sig)
+        elif is_public_method(child):
+            sig = calculate_signature(child)
+            if sig not in seen_signatures:
+                lines.extend(format_method(child, class_name, structs, enums))
+                seen_signatures.add(sig)
+
+    return lines
+
 def calculate_namespace_prefix(cursor: Cursor) -> str:
     """
     Returns the fully qualified namespace path for a cursor (e.g., 'outer::inner').
@@ -212,120 +389,7 @@ def calculate_signature(cursor: Cursor) -> Tuple[str, Tuple[str, ...]]:
     params: Tuple[str, ...] = tuple(a.type.spelling for a in cursor.get_arguments())
     return (calculate_namespace_prefix(cursor) + cursor.spelling, params)
 
-def format_doc(cursor: Cursor) -> str:
-    """
-    Extracts and formats the raw comment for use as a docstring.
-    Strips comment markers and leading/trailing whitespace.
-    Escapes characters (\\n, \\", \\) for safe embedding in a C string.
-    """
-    comment = cursor.raw_comment
-    if comment:
-        lines: List[str] = comment.splitlines()
-        cleaned: List[str] = []
-        for line in lines:
-            line = line.strip()
-            if line.startswith("///"):
-                line = line[3:].strip()
-            elif line.startswith("//"):
-                line = line[2:].strip()
-
-            line = line.replace('\\', '\\\\').replace('"', '\\"')
-            cleaned.append(line)
-        doc = "\\n".join(cleaned) if cleaned else ""
-        return f', R"doc({doc})doc"' if doc else ""
-    return ""
-
-def format_enum(cursor: Cursor, parent_handle: str) -> List[str]:
-    """
-    Generates binding code for an enum, either at module scope or nested within a class.
-    Includes all enum constants as values.
-    """
-    enum_name = cursor.spelling
-    doc_str = format_doc(cursor)
-    lines: List[str] = [f'nanobind::enum_<{enum_name}>({parent_handle}, "{enum_name}"{doc_str})']
-    for c in cursor.get_children():
-        if c.kind is CursorKind.ENUM_CONSTANT_DECL: # type: ignore
-            value_doc_str = format_doc(c)
-            lines.append(f'.value("{c.spelling}", {enum_name}::{c.spelling}{value_doc_str})')
-    lines[-1] += f'.export_values();'
-    return lines
-
-def format_function(cursor: Cursor, parent_handle: str) -> str:
-    """
-    Generates a binding line for a free function.
-    Includes the full namespace in the function reference if applicable.
-    Includes docstring if available.
-    """
-    doc_str = format_doc(cursor)
-    params: List[str] = [a.type.spelling for a in cursor.get_arguments()]
-    ret_type = cursor.result_type.spelling
-    args = ", ".join(params) if params else ""
-
-    # Get the full namespace path
-    namespace_prefix = calculate_namespace_prefix(cursor)
-
-    return f'{parent_handle}.def("{cursor.spelling}", static_cast<{ret_type}(*)({args})>(&{namespace_prefix}{cursor.spelling}){doc_str});'
-
-def format_method(cursor: Cursor, class_namespace: str) -> str:
-    """
-    Generates a binding line for a class method. No trailing ;.
-    Handles constness and docstrings.
-    """
-    doc_str = format_doc(cursor)
-    params: List[str] = [a.type.spelling for a in cursor.get_arguments()]
-    ret_type = cursor.result_type.spelling
-    const = " const" if cursor.is_const_method() else ""
-    args = ", ".join(params) if params else ""
-    return (
-        f'.def("{cursor.spelling}", '
-        f'static_cast<{ret_type} ({class_namespace}::*)({args}){const}>(&{class_namespace}::{cursor.spelling}){doc_str})'
-    )
-
-def format_constructor(cursor: Cursor) -> str:
-    """
-    Generates a binding line for a class constructor. No trailing ;.
-    Handles overloaded constructors by parameter count.
-    """
-    params: List[Cursor] = list(cursor.get_arguments())
-    param_types: List[str] = [a.type.spelling for a in params]
-    args = ", ".join(param_types) if param_types else ""
-    return f'.def(nanobind::init<{args}>())'
-
-def format_class(cursor: Cursor, parent_handle: str, seen_signatures: Set[Tuple[str, Tuple[str, ...]]]) -> List[str]:
-    """
-    Skips constructor bindings for abstract classes and those without public destructors.
-    Assumes a default public destructor unless a protected or private one is found.
-    """
-    class_namespace = calculate_namespace_prefix(cursor) + cursor.spelling
-    doc_str = format_doc(cursor)
-    lines: List[str] = [f'nanobind::class_<{class_namespace}>({parent_handle}, "{cursor.spelling}"{doc_str})']
-
-    for child in cursor.get_children():
-        # A full instantiation of a template should not be dismissed as a
-        # template. The language is clear about the difference between a template
-        # and it's full instantiation. However support needs to be added for
-        # declaring class/function bindings every time the binding API instantiates
-        # a template class/function as part of the API.
-        if is_template(child):
-            continue
-        elif is_pure_virtual_method(child):
-            return [ ]
-        elif is_public_constructor(child):
-            sig: Tuple[str, Tuple[str, ...]] = calculate_signature(child)
-            if sig not in seen_signatures:
-                lines.append(format_constructor(child))
-                seen_signatures.add(sig)
-        elif is_public_method(child):
-            sig = calculate_signature(child)
-            if sig not in seen_signatures:
-                lines.append(format_method(child, class_namespace))
-                seen_signatures.add(sig)
-
-    lines[-1] += ";"
-
-    return lines
-
-def format_namespace(cursor: Cursor, seen_functions: Optional[Set[Tuple[str, Tuple[str, ...]]]] = None) -> List[str]:
+def format_namespace(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str], seen_functions: Optional[Set[Tuple[str, Tuple[str, ...]]]] = None) -> List[str]:
     """
     Recursively visits AST nodes starting from the given cursor.
     Collects functions, classes, and enums that are public and project-specific.
@@ -338,48 +402,30 @@ def format_namespace(cursor: Cursor, seen_functions: Optional[Set[Tuple[str, Tup
             if not is_project_header(c):
                 continue
             if is_namespace(c):
-                continue
-                ns = format_namespace(c)
-                lines.append(ns)
+                continue  # Skip namespace definitions
             elif is_public_function(c):
                 fn: Tuple[str, Tuple[str, ...]] = calculate_signature(c)
                 if fn not in seen_functions:
-                    lines.append(format_function(c))
+                    lines.extend(format_function(c, structs, enums))
                     seen_functions.add(fn)
             elif is_public_class(c):
-                t: Optional[str] = format_class(c)
-                if t:
-                    lines.append(t)
+                class_lines = format_class(c, structs, enums, seen_functions)
+                if class_lines:
+                    lines.extend(class_lines)
             elif is_public_enum(c) and c.semantic_parent.kind != CursorKind.CLASS_DECL: # type: ignore
-                lines.append(format_enum(c))
-
-
-
-#            child_lines: List[str] = format_namespace(c, seen_functions)
-#            lines.extend(child_lines)
+                lines.extend(format_enum(c))
         except Exception as e:
             print(f"Error processing cursor {c.spelling}: {str(e)}")
             continue
     return lines
 
-
-
-
-
-
-
-
-
-
-
-
 def check_dependencies_changed() -> bool:
-
-    """Check if the command line has changed or any included file has changed.
+    """
+    Check if the command line has changed or any included file has changed.
     N.B. Uses timestamps only. The _arg_dependency_file will be younger than the output
     file and will need to be touched again to make the build final. The
-    output file will be listed as the first dependency file."""
-
+    output file will be listed as the first dependency file.
+    """
     full_args = ' '.join(sys.argv)
 
     try:
@@ -425,16 +471,15 @@ def load_translation_unit_and_dependencies(header_file: str) -> Tuple[Translatio
 
     # Get all included files (direct and transitive)
     dependencies: Set[str] = set()
-    for include in translation_unit.format_includes():
+    for include in translation_unit.get_includes():
         dependencies.add(include.include.name)
-
     return translation_unit, dependencies
 
 def write_dependencies(include_files: Set[str]) -> None:
-    """Write new dependency file"""
-
+    """
+    Write new dependency file
+    """
     full_args = ' '.join(sys.argv)
-
     try:
         with open(_arg_dependency_file, 'w') as f:
             f.write(full_args + '\n')
@@ -450,7 +495,6 @@ def main() -> int:
     Main entry point for the script. Parses command-line arguments, initializes Clang,
     and generates binding code for the given header file.
     """
-
     if not parse_argv():
         print("""\
 Usage: python3 hatchling_bindings.py <compiler_flags> <module_name> <header_files>... <output_file>
@@ -461,7 +505,7 @@ Arguments:
     compiler_flags  - Flags to pass to clang. Can be in any order on command line.
     module_name     - Module name to bind everything to.
     header_files... - Path(s) to the C++ header file(s) to parse.
-    output_file     - Path to write the generated C++ binding code.
+    output_file     - Path to write the generated Python binding code.
 
 Make sure to adjust _libclang_path at the top of this script if needed.
 """)
@@ -482,9 +526,13 @@ Make sure to adjust _libclang_path at the top of this script if needed.
         return _exit_nothing_changed
 
     # Begin data gathering loop
-    output_headers: List[str] = [ '#include <nanobind/nanobind.h>', ]
-    output_lines: List[str] = [ f'NB_MODULE({_arg_module_name}, module_root_) ', '{' ]
+    output_lines: List[str] = ["import ctypes", "from typing import Union, overload, Any", ""]
+    output_lines.append(f"# Load the shared library")
+    output_lines.append(f"lib = ctypes.CDLL('lib{_arg_module_name}.so')")
+    output_lines.append("")
     dependencies: Set[str] = set()
+    structs: Dict[str, str] = {}
+    enums: Dict[str, str] = {}
 
     for header_file in _arg_header_files:
         # prepend a full path include into the header.
@@ -499,23 +547,12 @@ Make sure to adjust _libclang_path at the top of this script if needed.
         output_lines.extend(child_lines)
         dependencies |= deps
 
-
-
-
-
-
-
-
-    output_lines.append('}\n')
-    output_lines = output_headers + output_lines # prepend headers
-
     # Write out gathered data.
     with open(_arg_output_file, "w") as f:
         f.write("\n".join(output_lines) if output_lines else "")
         print(f"Wrote {_arg_output_file}...")
 
-    # Make the _arg_dependency_file older than the _arg_output_file. This will
-    # detect modification of the output file and regenerate it in that case.
+    # Make the _arg_dependency_file older than the _arg_output_file.
     write_dependencies(dependencies)
 
     return _exit_bindings_generated

@@ -21,7 +21,6 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/yourusername/example-package',
-    py_modules=['example_test'], # list of .py files
     ext_modules=[example_cpp_ext_module],
     install_requires=[], # runtime dependencies
     classifiers=[
