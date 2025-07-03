@@ -34,30 +34,6 @@ from clang.cindex import TypeKind, Type, LinkageKind, Config
 # Path to the libclang shared library. TODO.
 _libclang_path = "/usr/lib/llvm-18/lib/libclang.so.1"
 
-# Mapping C++ types to ctypes and Python type hints
-TYPE_MAP = {
-    'void': (ctypes.c_void_p, 'None'),
-    'bool': (ctypes.c_bool, 'bool'),
-    'char': (ctypes.c_char, 'int'),
-    'unsigned char': (ctypes.c_ubyte, 'int'),
-    'short': (ctypes.c_short, 'int'),
-    'unsigned short': (ctypes.c_ushort, 'int'),
-    'int': (ctypes.c_int, 'int'),
-    'unsigned int': (ctypes.c_uint, 'int'),
-    'long': (ctypes.c_long, 'int'),
-    'unsigned long': (ctypes.c_ulong, 'int'),
-    'long long': (ctypes.c_longlong, 'int'),
-    'unsigned long long': (ctypes.c_ulonglong, 'int'),
-    'float': (ctypes.c_float, 'float'),
-    'double': (ctypes.c_double, 'float'),
-    'char*': (ctypes.c_char_p, 'bytes'),
-    'const char*': (ctypes.c_char_p, 'bytes'),
-    'void*': (ctypes.c_void_p, 'Any'),
-    'int*': (ctypes.POINTER(ctypes.c_int), 'Any'),
-    'float*': (ctypes.POINTER(ctypes.c_float), 'Any'),
-    'double*': (ctypes.POINTER(ctypes.c_double), 'Any'),
-}
-
 # Verbose 0: Normal status and errors. 1: Processing steps. 2: AST traversal.
 _verbose = 2
 
@@ -72,6 +48,35 @@ _arg_module_name: str = ""
 _arg_header_files: List[str] = []
 _arg_output_file: str = ""
 _arg_dependency_file: str = ""
+
+# Mapping C++ types to ctypes and Python type hints
+_c_type_map = {
+    'void': (None, 'None'),
+    'bool': (ctypes.c_bool, 'bool'),
+    'char': (ctypes.c_char, 'int'),
+    'signed char': (ctypes.c_byte, 'int'),
+    'unsigned char': (ctypes.c_ubyte, 'int'),
+    'short': (ctypes.c_short, 'int'),
+    'unsigned short': (ctypes.c_ushort, 'int'),
+    'int': (ctypes.c_int, 'int'),
+    'unsigned int': (ctypes.c_uint, 'int'),
+    'long': (ctypes.c_long, 'int'),
+    'unsigned long': (ctypes.c_ulong, 'int'),
+    'long long': (ctypes.c_longlong, 'int'),
+    'unsigned long long': (ctypes.c_ulonglong, 'int'),
+    'float': (ctypes.c_float, 'float'),
+    'double': (ctypes.c_double, 'float'),
+    'long double': (ctypes.c_longdouble, 'float'),
+    'wchar_t': (ctypes.c_wchar, 'str'),
+    'char16_t': (ctypes.c_uint16, 'int'),
+    'char32_t': (ctypes.c_uint32, 'int'),
+    'char*': (ctypes.c_char_p, 'bytes'),
+    'const char*': (ctypes.c_char_p, 'bytes'),
+    'wchar_t*': (ctypes.c_wchar_p, 'str'),
+    'const wchar_t*': (ctypes.c_wchar_p, 'str'),
+    'void*': (ctypes.c_void_p, 'Any'),
+    'const void*': (ctypes.c_void_p, 'Any')
+}
 
 def verbose(msg: str) -> None:
     if _verbose >= 1:
@@ -266,8 +271,8 @@ def map_type(cpp_type: Type, structs: Dict[str, str], enums: Dict[str, str]) -> 
     Handles basic types, pointers, structs, and enums.
     """
     spelling = cpp_type.spelling
-    if spelling in TYPE_MAP:
-        return TYPE_MAP[spelling]
+    if spelling in _c_type_map:
+        return _c_type_map[spelling]
     elif spelling in structs:
         return (structs[spelling], 'Any')
     elif spelling in enums:
