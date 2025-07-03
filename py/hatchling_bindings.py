@@ -27,8 +27,7 @@ import sys
 import os
 import clang.cindex
 import ctypes
-from typing import Dict, List, Set, Tuple, Optional
-from clang.cindex import Cursor, CursorKind, TranslationUnit, LinkageKind
+from typing import Dict, List, Set, Tuple, Optional, Any, Union
 
 # Path to the libclang shared library. TODO.
 _libclang_path = "/usr/lib/llvm-18/lib/libclang.so.1"
@@ -51,6 +50,11 @@ TYPE_MAP = {
     'double': (ctypes.c_double, 'float'),
     'char*': (ctypes.c_char_p, 'bytes'),
     'const char*': (ctypes.c_char_p, 'bytes'),
+    'void*': (ctypes.c_void_p, 'Any'),
+    # Add basic pointer types
+    'int*': (ctypes.POINTER(ctypes.c_int), 'Any'),
+    'float*': (ctypes.POINTER(ctypes.c_float), 'Any'),
+    'double*': (ctypes.POINTER(ctypes.c_double), 'Any'),
 }
 
 # Debug flag.
@@ -216,7 +220,6 @@ def get_mangled_name(cursor: Cursor) -> str:
     """
     return cursor.mangled_name or cursor.spelling
 
-
 def format_doc(cursor: Cursor) -> str:
     """
     Extracts and formats the raw comment for use as a docstring.
@@ -251,6 +254,24 @@ def format_enum(cursor: Cursor) -> List[str]:
     if doc_str:
         lines.insert(0, doc_str)
     return lines
+
+def map_type(cpp_type: clang.cindex.Type, structs: Dict[str, str], enums: Dict[str, str]) -> Tuple[Any, str]:
+    """
+    Maps C++ types to ctypes types and Python type hints.
+    Handles basic types, pointers, structs, and enums.
+    """
+    spelling = cpp_type.spelling
+    if spelling in TYPE_MAP:
+        return TYPE_MAP[spelling]
+    elif spelling in structs:
+        return (structs[spelling], 'Any')
+    elif spelling in enums:
+        return (ctypes.c_int, 'int')
+    elif cpp_type.kind == clang.cindex.TypeKind.POINTER:
+        pointee = cpp_type.get_pointee()
+        base_type, _ = map_type(pointee, structs, enums)
+        return (ctypes.POINTER(base_type), 'Any')
+    return (ctypes.c_void_p, 'Any')  # Fallback
 
 def format_function(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str]) -> List[str]:
     """
@@ -402,7 +423,7 @@ def format_namespace(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, s
             if not is_project_header(c):
                 continue
             if is_namespace(c):
-                continue  # Skip namespace definitions
+                lines.extend(format_namespace(c, structs, enums, seen_functions))
             elif is_public_function(c):
                 fn: Tuple[str, Tuple[str, ...]] = calculate_signature(c)
                 if fn not in seen_functions:
@@ -530,6 +551,7 @@ Make sure to adjust _libclang_path at the top of this script if needed.
     output_lines.append(f"# Load the shared library")
     output_lines.append(f"lib = ctypes.CDLL('lib{_arg_module_name}.so')")
     output_lines.append("")
+    output_headers: List[str] = []
     dependencies: Set[str] = set()
     structs: Dict[str, str] = {}
     enums: Dict[str, str] = {}
@@ -540,10 +562,7 @@ Make sure to adjust _libclang_path at the top of this script if needed.
 
         verbose(f"Visiting AST and generating bindings from {header_file}...")
         translation_unit, deps = load_translation_unit_and_dependencies(header_file)
-
-
-            # calculate_namespace_prefix() -> a per-namespace seen list. just qualify symbol with namespace.
-        child_lines: List[str] = format_namespace(translation_unit.cursor, "module_root_) xxx
+        child_lines: List[str] = format_namespace(translation_unit.cursor, structs, enums, set())
         output_lines.extend(child_lines)
         dependencies |= deps
 
