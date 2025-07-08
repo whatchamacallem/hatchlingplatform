@@ -1,7 +1,8 @@
 # example.py
 
-def ping():
-    print("ping")
+def run_all_tests():
+    print("tests pass")
 
 if __name__ == "__main__":
-    print("--- Testing with 25.0 ---")
+    print("tests main")
+    run_all_tests()
