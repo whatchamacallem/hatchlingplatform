@@ -49,33 +49,26 @@ _arg_header_files: List[str] = []
 _arg_output_file: str = ""
 _arg_dependency_file: str = ""
 
-# Mapping C++ types to ctypes and Python type hints
-_c_type_map = {
-    'void': (None, 'None'),
-    'bool': (ctypes.c_bool, 'bool'),
-    'char': (ctypes.c_char, 'int'),
-    'signed char': (ctypes.c_byte, 'int'),
-    'unsigned char': (ctypes.c_ubyte, 'int'),
-    'short': (ctypes.c_short, 'int'),
-    'unsigned short': (ctypes.c_ushort, 'int'),
-    'int': (ctypes.c_int, 'int'),
-    'unsigned int': (ctypes.c_uint, 'int'),
-    'long': (ctypes.c_long, 'int'),
-    'unsigned long': (ctypes.c_ulong, 'int'),
-    'long long': (ctypes.c_longlong, 'int'),
-    'unsigned long long': (ctypes.c_ulonglong, 'int'),
-    'float': (ctypes.c_float, 'float'),
-    'double': (ctypes.c_double, 'float'),
-    'long double': (ctypes.c_longdouble, 'float'),
-    'wchar_t': (ctypes.c_wchar, 'str'),
-    'char16_t': (ctypes.c_uint16, 'int'),
-    'char32_t': (ctypes.c_uint32, 'int'),
-    'char*': (ctypes.c_char_p, 'bytes'),
-    'const char*': (ctypes.c_char_p, 'bytes'),
-    'wchar_t*': (ctypes.c_wchar_p, 'str'),
-    'const wchar_t*': (ctypes.c_wchar_p, 'str'),
-    'void*': (ctypes.c_void_p, 'Any'),
-    'const void*': (ctypes.c_void_p, 'Any')
+# Maps Clang's TypeKind -> ( ctypes, Python, C ).
+_fundamental_type_map: Dict[TypeKind, Tuple[str, str, str]] = {
+    TypeKind.BOOL:      ('ctypes.c_bool',      'bool',   'bool'),           # type: ignore
+    TypeKind.CHAR_S:    ('ctypes.c_char',      'int',    'char'),           # type: ignore # 'char' can be signed or unsigned
+    TypeKind.CHAR_U:    ('ctypes.c_ubyte',     'int',    'unsigned char'),  # type: ignore # Explicitly unsigned char
+    TypeKind.DOUBLE:    ('ctypes.c_double',    'float',  'double'),         # type: ignore
+    TypeKind.FLOAT:     ('ctypes.c_float',     'float',  'float'),          # type: ignore
+    TypeKind.INT:       ('ctypes.c_int',       'int',    'int'),            # type: ignore
+    TypeKind.LONG:      ('ctypes.c_long',      'int',    'long'),           # type: ignore
+    TypeKind.LONGDOUBLE:('ctypes.c_longdouble','float',  'long double'),    # type: ignore
+    TypeKind.LONGLONG:  ('ctypes.c_longlong',  'int',    'long long'),      # type: ignore
+    TypeKind.SCHAR:     ('ctypes.c_byte',      'int',    'signed char'),    # type: ignore # Explicitly signed char
+    TypeKind.SHORT:     ('ctypes.c_short',     'int',    'short'),          # type: ignore
+    TypeKind.UCHAR:     ('ctypes.c_ubyte',     'int',    'unsigned char'),  # type: ignore # Equivalent to unsigned char
+    TypeKind.UINT:      ('ctypes.c_uint',      'int',    'unsigned int'),   # type: ignore
+    TypeKind.ULONG:     ('ctypes.c_ulong',     'int',    'unsigned long'),  # type: ignore
+    TypeKind.ULONGLONG: ('ctypes.c_ulonglong', 'int',    'unsigned long long'), # type: ignore
+    TypeKind.USHORT:    ('ctypes.c_ushort',    'int',    'unsigned short'), # type: ignore
+    TypeKind.VOID:      ('None',               'None',   'void'),           # type: ignore # For functions returning nothing
+    TypeKind.WCHAR:     ('ctypes.c_wchar',     'int',    'wchar_t'),        # type: ignore # Wide character
 }
 
 def verbose(msg: str) -> None:
@@ -116,23 +109,21 @@ def parse_argv() -> bool:
 
     return True
 
-# TODO: make more flexible and efficient.
 def is_project_header(cursor: Cursor) -> bool:
     """
-    Returns True if the cursor's location is in a project-specific header file.
-    Adjust the string checks as needed for your project's include structure.
+    Returns true if the symbol is in a file that was on the command line.
     """
     header = cursor.location.file
-    header_str = str(header) if header is not None else ""
     return (
         header is not None
-        and any(h in header_str for h in _arg_header_files)
+        and any(h in str(header) for h in _arg_header_files)
     )
 
 def is_template(cursor: Cursor) -> bool:
     """
-    Returns True if the cursor is a template (class or function).
-    Templates are skipped for binding.
+    Templates are skipped for binding. TODO: These nodes could be cached
+    and then evaluated when an explicit instantiation was encountered.
+    (Technically the instantiation of a template is not a template.)
     """
     return (
         cursor.kind in (
@@ -225,9 +216,6 @@ def is_public_method(cursor: Cursor) -> bool:
     )
 
 def get_mangled_name(cursor: Cursor) -> str:
-    """
-    Get mangled name of a function or constructor.
-    """
     return cursor.mangled_name or cursor.spelling
 
 def format_doc(cursor: Cursor) -> str:
@@ -253,34 +241,57 @@ def format_doc(cursor: Cursor) -> str:
     return ""
 
 def format_enum(cursor: Cursor) -> List[str]:
-    """
-    Generates binding code for an enum.
-    Includes all enum constants as values.
-    """
-    enum_name = cursor.spelling or f"enum_{cursor.hash % 1000000}"
-    lines: List[str] = [f"{enum_name} = ctypes.c_int"]
+    """Formats the enum binding code with type hints and constants."""
+    enum_name = cursor.spelling or "enum_"+cursor.hash
+    lines: List[str] = []
+
+    ctypes_type = _fundamental_type_map[cursor.enum_type][0]
+
     doc_str = format_doc(cursor)
     if doc_str:
-        lines.insert(0, doc_str)
+        lines.append(doc_str)
+
+    lines.append(f"class {enum_name}(Enum):")
+
+    for child in cursor.get_children():
+        if child.kind == CursorKind.ENUM_CONSTANT_DECL: # type: ignore
+            lines.append(f"{child.spelling} = {child.enum_value}")
+
+    # TODO
+    if not any(line.startswith("    ") for line in lines[1:]):
+        lines.append("    pass")
+
     verbose2(f"enum {enum_name}: {lines}")
     return lines
 
-def map_type(cpp_type: Type, structs: Dict[str, str], enums: Dict[str, str]) -> Tuple[Any, str]:
-    """
-    Maps C++ types to ctypes types and Python type hints.
-    Handles basic types, pointers, structs, and enums.
-    """
+def type_map(cpp_type: Type, structs: Dict[str, str], enums: Dict[str, str]) -> Tuple[Any, str]:
+    """ clang type -> (ctype, python, C)"""
+
+# typedefs. TODO. Wtf a typedef isn't even a "Type."
+#    while cpp_type.kind == CursorKind.TYPE_REF: # type: ignore
+#        cpp_type = cpp_type.referenced()
+
+    # Use clang's type system for built in types.
+    if cpp_type.kind in _fundamental_type_map:
+        return _fundamental_type_map[cpp_type.kind][0:2]
+
+    # Passing data as pointers should just work with ctypes and allows for passing
+    # references across languages. In a blatant violation of the C++ language
+    # standard C++ references of type & and && are also supported.
+    elif ( cpp_type.kind == TypeKind.POINTER # type: ignore
+        or cpp_type.kind == TypeKind.LVALUEREFERENCE # type: ignore
+        or cpp_type.kind == TypeKind.RVALUEREFERENCE): # type: ignore
+        pointee = cpp_type.get_pointee()
+        pointee_ctype, pointee_py_type = type_map(pointee, structs, enums)
+        # Pointers don't have pointer type in python. TODO: References to C types
+        # could also be passed by assuming references are actually pointers.
+        return (f"ctypes.POINTER({pointee_ctype})", pointee_py_type)
+
     spelling = cpp_type.spelling
-    if spelling in _c_type_map:
-        return _c_type_map[spelling]
-    elif spelling in structs:
+    if spelling in structs:
         return (structs[spelling], 'Any')
     elif spelling in enums:
-        return (ctypes.c_int, 'int')
-    elif cpp_type.kind == TypeKind.POINTER: # type: ignore
-        pointee = cpp_type.get_pointee()
-        base_type, _ = map_type(pointee, structs, enums)
-        return (ctypes.POINTER(base_type), 'Any')
+        return _fundamental_type_map[cpp_type.kind][0:2]
     raise ValueError(f"Unrecognized C++ type '{spelling}' may cause memory corruption")
 
 def format_function(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str], overload_index: int = 0) -> List[str]:
@@ -292,9 +303,9 @@ def format_function(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, st
     doc_str = format_doc(cursor)
     arg_types = []
     for arg in cursor.get_arguments():
-        ctypes_type, py_type = map_type(arg.type, structs, enums)
+        ctypes_type, py_type = type_map(arg.type, structs, enums)
         arg_types.append((ctypes_type, py_type))
-    return_type, return_py_type = map_type(cursor.result_type, structs, enums)
+    return_type, return_py_type = type_map(cursor.result_type, structs, enums)
 
     lines: List[str] = []
     if doc_str:
@@ -304,7 +315,7 @@ def format_function(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, st
     arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
     return_hint = f' -> {return_py_type}' if return_py_type != 'None' else ''
     lines.append(f"def {cursor.spelling}({arg_hints}){return_hint}: ...")
-    lines.append(f"    lib.{mangled_name}.restype = {return_type.__name__}")
+    lines.append(f"lib.{mangled_name}.restype = {return_type.__name__}")
     if arg_types:
         args = [arg[0].__name__ for arg in arg_types]
         lines.append(f"lib.{mangled_name}.argtypes = [{', '.join(args)}]")
@@ -320,22 +331,22 @@ def format_method(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str]
     doc_str = format_doc(cursor)
     arg_types = []
     for arg in cursor.get_arguments():
-        ctypes_type, py_type = map_type(arg.type, structs, enums)
+        ctypes_type, py_type = type_map(arg.type, structs, enums)
         arg_types.append((ctypes_type, py_type))
-    return_type, return_py_type = map_type(cursor.result_type, structs, enums)
+    return_type, return_py_type = type_map(cursor.result_type, structs, enums)
 
     lines: List[str] = []
     if doc_str:
         lines.append(doc_str)
     if overload_index > 0:
-        lines.append(f"    @overload")
+        lines.append(f"@overload")
     arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
     return_hint = f' -> {return_py_type}' if return_py_type != 'None' else ''
-    lines.append(f"    def {cursor.spelling}({arg_hints}){return_hint}: ...")
-    lines.append(f"        lib.{mangled_name}.restype = {return_type.__name__}")
+    lines.append(f"def {cursor.spelling}({arg_hints}){return_hint}: ...")
+    lines.append(f"lib.{mangled_name}.restype = {return_type.__name__}")
     if arg_types:
         args = [arg[0].__name__ for arg in arg_types]
-        lines.append(f"        lib.{mangled_name}.argtypes = [{', '.join(args)}]")
+        lines.append(f"lib.{mangled_name}.argtypes = [{', '.join(args)}]")
     verbose2(f"method {cursor.spelling}: {lines}")
     return lines
 
@@ -348,20 +359,20 @@ def format_constructor(cursor: Cursor, structs: Dict[str, str], enums: Dict[str,
     doc_str = format_doc(cursor)
     arg_types = []
     for arg in cursor.get_arguments():
-        ctypes_type, py_type = map_type(arg.type, structs, enums)
+        ctypes_type, py_type = type_map(arg.type, structs, enums)
         arg_types.append((ctypes_type, py_type))
 
     lines: List[str] = []
     if doc_str:
-        lines.append(f"    {doc_str}")
+        lines.append(f"{doc_str}")
     if overload_index > 0:
-        lines.append(f"    @overload")
+        lines.append(f"@overload")
     arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
-    lines.append(f"    def __init__({arg_hints}) -> None: ...")
-    lines.append(f"        lib.{mangled_name}.restype = None")
+    lines.append(f"def __init__({arg_hints}) -> None: ...")
+    lines.append(f"lib.{mangled_name}.restype = None")
     if arg_types:
         args = [arg[0].__name__ for arg in arg_types]
-        lines.append(f"        lib.{mangled_name}.argtypes = [{', '.join(args)}]")
+        lines.append(f"lib.{mangled_name}.argtypes = [{', '.join(args)}]")
     verbose2(f"constructor {cursor.spelling}: {lines}")
     return lines
 
@@ -380,24 +391,24 @@ def generate_overload_selector(name: str, overloads: List[Cursor], is_method: bo
 
     lines: List[str] = []
     lines.append(f"def {name}(" + ("self, " if is_method else "") + "*args, **kwargs) -> Any:")
-    lines.append(f"    # Selects the appropriate overload for {name}")
+    lines.append(f"# Selects the appropriate overload for {name}")
 
     # Check for each possible argument count
     for arg_count, overload_group in sorted(arg_count_map.items()):
         if not overload_group:
             continue
-        lines.append(f"    if len(args) == {arg_count}:")
+        lines.append(f"if len(args) == {arg_count}:")
         if len(overload_group) > 1:
             raise ValueError(f"Multiple overloads for {name} with {arg_count} arguments: cannot disambiguate")
         cursor = overload_group[0]
         mangled_name = get_mangled_name(cursor)
         arg_list = ', '.join(f'arg{i}' for i in range(arg_count))
         if is_method:
-            lines.append(f"        return lib.{mangled_name}(self{', ' + arg_list if arg_list else ''})")
+            lines.append(f"return lib.{mangled_name}(self{', ' + arg_list if arg_list else ''})")
         else:
-            lines.append(f"        return lib.{mangled_name}({arg_list})")
+            lines.append(f"return lib.{mangled_name}({arg_list})")
 
-    lines.append(f"    raise ValueError('No matching overload for {name}" + " with {len(args)} arguments')")
+    lines.append(f"raise ValueError('No matching overload for {name}" + " with {len(args)} arguments')")
     verbose2(f"selector {name}: {lines}")
     return lines
 
@@ -416,13 +427,13 @@ def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str],
     fields = []
     for child in cursor.get_children():
         if child.kind == CursorKind.FIELD_DECL: # type: ignore
-            ctypes_type, _ = map_type(child.type, structs, enums)
+            ctypes_type, _ = type_map(child.type, structs, enums)
             fields.append(f'("{child.spelling}", {ctypes_type.__name__})')
     if fields:
-        lines.append(f"    _fields_ = [{', '.join(fields)}]")
+        lines.append(f"_fields_ = [{', '.join(fields)}]")
         verbose2(f"Class {class_name} fields: {fields}")
     else:
-        lines.append(f"    pass")
+        lines.append(f"pass")
         verbose2(f"Class {class_name} has no fields")
 
     # Collect constructors and methods for overload handling
@@ -435,6 +446,8 @@ def format_class(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str],
         elif is_pure_virtual_method(child):
             verbose2(f"skipping virtual class {class_name} due to {child.spelling}")
             return []
+        elif is_public_enum(child):
+            lines.extend(format_enum(child))
         elif is_public_constructor(child):
             constructors.append(child)
         elif is_public_method(child):
@@ -490,13 +503,12 @@ def calculate_signature(cursor: Cursor) -> str:
     """
     return get_mangled_name(cursor)
 
-def format_namespace(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str], seen_functions: Optional[Set[str]] = None) -> List[str]:
+def format_namespace(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, str], seen_functions: Set[str]) -> List[str]:
     """
     Recursively visits AST nodes starting from the given cursor.
     Collects functions, classes, and enums that are public and project-specific.
     """
-    if seen_functions is None:
-        seen_functions = set()
+
     lines: List[str] = []
     function_overloads: Dict[str, List[Cursor]] = {}
     namespace = calculate_namespace_prefix(cursor)
@@ -522,7 +534,7 @@ def format_namespace(cursor: Cursor, structs: Dict[str, str], enums: Dict[str, s
                 class_lines = format_class(c, structs, enums, seen_functions)
                 if class_lines:
                     lines.extend(class_lines)
-            elif is_public_enum(c) and c.semantic_parent.kind != CursorKind.CLASS_DECL: # type: ignore
+            elif is_public_enum(c):
                 lines.extend(format_enum(c))
             else:
                 verbose2(f"unknown {c.spelling}")
@@ -649,22 +661,25 @@ Make sure to adjust _libclang_path at the top of this script if needed.
         print("Nothing changed. All done.")
         return _exit_nothing_changed
 
-    output_lines: List[str] = ["import ctypes", "from typing import Union, overload, Any", ""]
-    output_lines.append(f"# Load the shared library")
-    output_lines.append(f"lib = ctypes.CDLL('lib{_arg_module_name}.so')")
-    output_lines.append("")
-    output_headers: List[str] = []
-    dependencies: Set[str] = set()
-    structs: Dict[str, str] = {}
-    enums: Dict[str, str] = {}
+    output_lines: List[str] = [
+        "# Generated by hatchling_bindings.py",
+        "import ctypes",
+        "from typing import Union, overload, Any",
+        "from enum import Enum",
+        "# Load the shared library",
+        f"lib = ctypes.CDLL('lib{{_arg_module_name}}.so')",
+        ""
+    ]
+
+    dependencies: Set[str] = set() # input header files
+    structs: Dict[str, str] = {} # check for declaration of classes and structs
+    enums: Dict[str, str] = {} # check for declaration of enums
+    seen_functions: Set[str] = set() # check for duplicates, not overloads
 
     for header_file in _arg_header_files:
-        # prepend a full path include into the header.
-        output_headers.append(f'#include <{os.path.abspath(header_file)}>')
-
         verbose(f"Visiting AST and generating bindings from {header_file}...")
         translation_unit, deps = load_translation_unit_and_dependencies(header_file)
-        child_lines: List[str] = format_namespace(translation_unit.cursor, structs, enums, set())
+        child_lines: List[str] = format_namespace(translation_unit.cursor, structs, enums, seen_functions)
         output_lines.extend(child_lines)
         dependencies |= deps
         verbose2(f"Added {len(child_lines)} lines from {header_file}, {len(deps)} dependencies")
