@@ -1,6 +1,6 @@
-# Example Package
+# Template Package for the entanglement.py.
 
-Description.
+This text left intentionally blank.
 
 ## Contents
 
