@@ -38,7 +38,7 @@ set +o errexit
 
 # Check timestamps and regenerate the bindings if they have changed.
 # bin/$HX_MODULE.cpp nanobind/src/*.cpp -> bin/*.o
-python3 $HX_DIR/py/hatchling_bindings.py -DHX_BINDINGS_PASS=1 -std=c++17 \
+python3 $HX_DIR/py/entanglement.py -DHX_BINDINGS_PASS=1 -std=c++17 \
     $HX_CFLAGS $HX_MODULE $HX_HEADER_FILES $HX_OUTPUT_FILE
 if [ $? -eq 0 ]; then
     # Build nanobind and the bindings in the bin directory.
