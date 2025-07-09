@@ -2,15 +2,15 @@ import time
 import logging
 import inspect
 import functools
-from typing import get_type_hints
+import typing
+
+VERBOSE = 1
 
 # Allow other modules to configure logging coming from here.
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-VERBOSE = 1
-
-# Cache signatures to avoid repeated computation
+# Cache signatures to avoid repeated computation.
 @functools.lru_cache(maxsize=128)
 def get_cached_signature(func):
     return inspect.signature(func)
@@ -22,15 +22,13 @@ def debug_decorator(func):
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        # Use cached signature for performance
         sig = get_cached_signature(func)
         try:
             bound_args = sig.bind(*args, **kwargs)
         except TypeError as e:
             raise TypeError(f"invalid_argument {func.__name__}: {e}")
 
-        # Use get_type_hints for robust type checking
-        type_hints = get_type_hints(func)
+        type_hints = typing.get_type_hints(func)
         for name, value in bound_args.arguments.items():
             if name in type_hints:
                 expected_type = type_hints[name]

@@ -16,11 +16,6 @@ Usage:
 # - Consider a debug mode "validation, timing and logging" decorator
 #   that is only enabled in __debug__.
 #
-# @classmethod
-# @staticmethod
-# @abc.abstractmethod
-#
-
 
 
 import sys
@@ -29,7 +24,7 @@ import clang.cindex
 import ctypes
 from typing import Dict, List, Set, Tuple, Optional, Any
 from clang.cindex import Index, TranslationUnit, Diagnostic, Cursor, CursorKind
-from clang.cindex import TypeKind, Type, LinkageKind, Config
+from clang.cindex import TypeKind, Type, LinkageKind, Config, AccessSpecifier
 
 # Path to the libclang shared library. TODO.
 #_libclang_path = "/usr/lib/llvm-18/lib/libclang.so.1"
@@ -204,6 +199,15 @@ def is_pure_virtual_method(cursor: Cursor) -> bool:
         and cursor.is_pure_virtual_method()  # Check for pure virtual
     )
 
+def is_static_method(cursor: Cursor) -> bool:
+    """
+    Returns True if the cursor is a static method.
+    """
+    return (
+        cursor.kind is CursorKind.CXX_METHOD # type: ignore
+        and cursor.is_static_method()
+    )
+
 def is_public_method(cursor: Cursor) -> bool:
     """
     Returns True if the cursor is a public, non-variadic, non-template method.
@@ -323,7 +327,7 @@ def format_function(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, st
 def format_method(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str], overload_index: int = 0) -> List[str]:
     """
     Generates binding lines for a class method.
-    Includes overload decorator if needed.
+    Includes overload, classmethod, staticmethod, or abstractmethod decorators if needed.
     """
     mangled_name = get_mangled_name(cursor)
     doc_str = format_doc(cursor)
@@ -338,6 +342,12 @@ def format_method(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str]
         lines.append(doc_str)
     if overload_index > 0:
         lines.append(f"@overload")
+
+    if is_public_method(cursor):
+        lines.append("@classmethod")
+    elif is_static_method(cursor):
+        lines.append("@staticmethod")
+
     arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
     return_hint = f' -> {return_py_type}' if return_py_type != 'None' else ''
     lines.append(f"def {cursor.spelling}({arg_hints}){return_hint}: ...")
@@ -366,7 +376,7 @@ def format_constructor(cursor: Cursor, classes: Dict[str, str], enums: Dict[str,
     if overload_index > 0:
         lines.append(f"@overload")
     arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
-    lines.append(f"def __init__({arg_hints}) -> None: ...")
+    lines.append(f"def __init__(self, {arg_hints}) -> None: ...")
     lines.append(f"lib.{mangled_name}.restype = None")
     if arg_types:
         args = [arg[0] for arg in arg_types]
@@ -374,24 +384,29 @@ def format_constructor(cursor: Cursor, classes: Dict[str, str], enums: Dict[str,
     verbose2(f"constructor {cursor.spelling}: {lines}")
     return lines
 
-def generate_overload_selector(name: str, overloads: List[Cursor], is_method: bool) -> List[str]:
+def generate_overload_selector(name: str, overloads: List[Cursor]) -> List[str]:
     """
     Generates a wrapper function to select between overloads based on argument count.
     Raises compile-time errors for ambiguous or missing overloads.
+    TODO No support for overloading static and non-static members together.
     """
     # Group overloads by argument count
     arg_count_map: Dict[int, List[Cursor]] = {}
     for cursor in overloads:
-        arg_count = len(list(cursor.get_arguments())) - (1 if is_method else 0)
+        arg_count = len(list(cursor.get_arguments())) # TODO
         if arg_count not in arg_count_map:
             arg_count_map[arg_count] = []
         arg_count_map[arg_count].append(cursor)
 
     lines: List[str] = []
-    lines.append(f"def {name}(" + ("self, " if is_method else "") + "*args, **kwargs) -> Any:")
-    lines.append(f"# Selects the appropriate overload for {name}")
+    if any(is_public_method(cursor) for cursor in overloads):
+        lines.append("@classmethod")
+    elif any(is_static_method(cursor) for cursor in overloads):
+        lines.append("@staticmethod")
 
-    # Check for each possible argument count
+    lines.append(f"def {name}(*args, **kwargs) -> Any:")
+
+    # TODO Dispatch by argument count first and then by first parameter type second.
     for arg_count, overload_group in sorted(arg_count_map.items()):
         if not overload_group:
             continue
@@ -401,10 +416,7 @@ def generate_overload_selector(name: str, overloads: List[Cursor], is_method: bo
         cursor = overload_group[0]
         mangled_name = get_mangled_name(cursor)
         arg_list = ', '.join(f'arg{i}' for i in range(arg_count))
-        if is_method:
-            lines.append(f"return lib.{mangled_name}(self{', ' + arg_list if arg_list else ''})")
-        else:
-            lines.append(f"return lib.{mangled_name}({arg_list})")
+        lines.append(f"return lib.{mangled_name}({arg_list})")
 
     lines.append(f"raise ValueError('No matching overload for {name}" + " with {len(args)} arguments')")
     verbose2(f"selector {name}: {lines}")
@@ -415,11 +427,14 @@ def format_class(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str],
     Generates binding code for a class and registers it in classes.
     Skips constructor bindings for abstract classes and those without public destructors.
     """
-    class_name = cursor.spelling or f"class_{cursor.hash % 1000000}"
+    class_name = cursor.spelling
     verbose2(f"class {class_name}:")
 
-    # TODO. Register the class in classes
-    classes[class_name] = class_name  # Map to the ctypes.Structure subclass name
+    # TODO ctypes doesn't support .vtables directly. One solution would be to
+    # use undefined behavior to force it to do so.
+    has_pure_virtual = any(is_pure_virtual_method(child) for child in cursor.get_children())
+    if has_pure_virtual:
+        return []
 
     doc_str = format_doc(cursor)
     lines: List[str] = []
@@ -444,9 +459,6 @@ def format_class(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str],
     for child in cursor.get_children():
         if is_template(child):
             verbose2(f"skipping template {child.spelling}")
-            return []
-        elif is_pure_virtual_method(child):
-            verbose2(f"skipping virtual class {class_name} due to {child.spelling}")
             return []
         elif is_public_enum(child):
             enum_lines = format_enum(child, enums)
@@ -482,6 +494,9 @@ def format_class(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str],
                 seen_signatures.add(sig)
         if method_overloads:
             lines.extend(generate_overload_selector(method_name, method_overloads, True))
+
+    # TODO. Register the class in classes
+    classes[class_name] = class_name  # Map to the ctypes.Structure subclass name
 
     return lines
 
@@ -538,7 +553,7 @@ def format_namespace(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, s
                 if class_lines:
                     lines.extend(class_lines)
             elif is_public_enum(c):
-                lines.extend(format_enum(c, classes))
+                lines.extend(format_enum(c, enums))
             else:
                 verbose2(f"unknown {c.spelling}")
         except Exception as e:
