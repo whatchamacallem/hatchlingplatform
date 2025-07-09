@@ -1,6 +1,6 @@
 # setup.py
 #
-# Building C++ still requires a setup.py file. This just runs _cpp_setup_command.
+# Building C++ still requires a setup.py file. This just runs _setup_cpp_argv.
 
 import os
 import sys
@@ -9,17 +9,38 @@ import subprocess
 from typing import List
 
 # C++ build command.  E.g. cmake, make, ./build.sh.
-_cpp_setup_command = ["./setup_cpp.sh"]
+_setup_cpp_argv = ["./setup_cpp.sh"]
 
-def run_command(command: List[str]):
+_verbose = 1
+
+def verbose(x: str) -> None:
+    if _verbose >= 1:
+        print(x)
+
+def run_argv(argv: List[str]) -> None:
     try:
-        subprocess.check_call(command, cwd=os.getcwd())
+        result = subprocess.run(
+            argv,
+            cwd=os.getcwd(),
+            stdout=subprocess.PIPE, # a.k.a capture
+            stderr=subprocess.STDOUT,
+            text=True,
+            check=True,
+        )
+        verbose(result.stdout)
+
     except subprocess.CalledProcessError as e:
-        print(f"Error: {' '.join(command)}: {e}")
+        print(f"Error: {' '.join(argv)}: {e}", file=sys.stderr)
+        if e.stdout:
+            print(e.stdout, file=sys.stderr)
+        sys.exit(e.returncode if e.returncode else 1)
+
+    except Exception as e:
+        print(e, file=sys.stderr)
         sys.exit(1)
 
-# Just run the command. There is no trick to it.
-run_command(_cpp_setup_command)
+# There is no trick to it.
+run_argv(_setup_cpp_argv)
 
 # Legacy: The manifest is now supposed to be in the .toml file.
 setuptools.setup(
