@@ -141,8 +141,7 @@ public:
     /// and returns false on failure.
     inline bool lock(void) {
         int code_ = ::pthread_mutex_lock(&m_mutex_);
-        hxassertmsg(code_ != EINVAL && code_ != EDEADLK, "pthread_mutex_lock %s", ::strerror(code_));
-        hxwarnmsg(code_ , "pthread_mutex_lock %s", ::strerror(code_));
+        hxassertmsg(code_ == 0 || code_ == EINVAL || code_ == EDEADLK, "pthread_mutex_lock %s", ::strerror(code_));
         return code_ == 0;
     }
 

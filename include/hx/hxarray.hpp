@@ -330,21 +330,27 @@ public:
         return this->size() == this->capacity();
     }
 
-    /// Calls fn on each element. (Non-standard.)
-    /// fn - A functor of type: <void-like> fn(T&);
+#if HX_CPLUSPLUS >= 201103L
+    /// Calls a function, lambda or std::function on each element. (Non-standard.)
+    /// fn - A function like object.
     template<typename functor_t_>
-    void for_each(const functor_t_& fn_) {
-        for(T_* it_ = this->data(); it_ != m_end_; ++it_) {
+    void for_each(functor_t_& fn_) {
+        T_* end_ = m_end_;
+        for(T_* it_ = this->data(); it_ != end_; ++it_) {
             fn_(*it_);
         }
     }
 
-    // Lambdas and std::function can be temporaries. Allow them. Do not mark fn
-    // as temp as it is used repeatedly.  Wtf. (Non-standard.)
-#if HX_CPLUSPLUS >= 201103L
+    /// Calls a function, lambda or std::function on each element. (Non-standard.)
+    /// Lambdas and std::function can be provided as temporaries and that has to be
+    /// allowed. It is standard to cast function objects to && but that is not
+    /// being done here as they are not actually intended to be consumed on first
+    /// use and are reused.
+    /// fn - A function like object.
     template<typename functor_t_>
     void for_each(functor_t_&& fn_) {
-        for(T_* it_ = this->data(); it_ != m_end_; ++it_) {
+        T_* end_ = m_end_;
+        for(T_* it_ = this->data(); it_ != end_; ++it_) {
             fn_(*it_);
         }
     }
