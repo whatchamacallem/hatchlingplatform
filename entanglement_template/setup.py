@@ -21,7 +21,7 @@ def run_command(command: List[str]):
 # Just run the command. There is no trick to it.
 run_command(_cpp_setup_command)
 
-# The manifest is supposed to be in the .toml file.
+# Legacy: The manifest is now supposed to be in the .toml file.
 setuptools.setup(
     install_requires=[],
     python_requires='>=3.7',

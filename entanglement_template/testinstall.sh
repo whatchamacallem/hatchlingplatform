@@ -10,4 +10,4 @@ python -c "import entanglement_test; entanglement_test.run_all_tests();"
 
 deactivate
 
-rm -rf python_venv __pycache__ entanglement_test.egg-info
+rm -rf python_venv __pycache__ build entanglement_test.egg-info

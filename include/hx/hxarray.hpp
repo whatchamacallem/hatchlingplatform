@@ -119,7 +119,7 @@ public:
     }
 
     /// Check if array is empty by casting it to bool. (Non-standard, from Python.)
-    hxconstexpr_fn operator bool(void) {
+    hxconstexpr_fn operator bool(void) const {
         return !this->empty();
     }
 
