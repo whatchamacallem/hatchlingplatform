@@ -11,11 +11,7 @@ Usage:
 
 #
 # TODO
-# - Read Python preconditions for functions from C++ comments.
-# - Read Python decorators from comments like @atexit.register.
-# - Consider a debug mode "validation, timing and logging" decorator
-#   that is only enabled in __debug__.
-#
+# - Read Python assert() preconditions for functions from C++ comments.
 
 
 import sys
@@ -24,7 +20,7 @@ import clang.cindex
 import ctypes
 from typing import Dict, List, Set, Tuple, Optional, Any
 from clang.cindex import Index, TranslationUnit, Diagnostic, Cursor, CursorKind
-from clang.cindex import TypeKind, Type, LinkageKind, Config, AccessSpecifier
+from clang.cindex import TypeKind, Type, LinkageKind, AccessSpecifier
 
 # Path to the libclang shared library. TODO.
 #_libclang_path = "/usr/lib/llvm-18/lib/libclang.so.1"
@@ -480,7 +476,7 @@ def format_class(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str],
             constructor_overloads.append(child)
             seen_signatures.add(sig)
     if constructor_overloads:
-        lines.extend(generate_overload_selector('__init__', constructor_overloads, True))
+        lines.extend(generate_overload_selector('__init__', constructor_overloads))
 
     # Generate method bindings with overloads
     for method_name, method_list in methods.items():
@@ -493,7 +489,7 @@ def format_class(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str],
                 method_overloads.append(child)
                 seen_signatures.add(sig)
         if method_overloads:
-            lines.extend(generate_overload_selector(method_name, method_overloads, True))
+            lines.extend(generate_overload_selector(method_name, method_overloads))
 
     # TODO. Register the class in classes
     classes[class_name] = class_name  # Map to the ctypes.Structure subclass name
@@ -566,7 +562,7 @@ def format_namespace(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, s
         for i, cursor in enumerate(overloads[1:], 1):
             lines.extend(format_function(cursor, classes, enums, i))
         if len(overloads) > 1:
-            lines.extend(generate_overload_selector(func_name, overloads, False))
+            lines.extend(generate_overload_selector(func_name, overloads))
 
     return lines
 

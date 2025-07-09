@@ -8,7 +8,7 @@ set -o errexit
 HX_DIR=`pwd`
 
 HX_MODULE="entanglement_template"
-HX_HEADER_FILES="$HX_DIR/test/entanglement_test.hpp"
+HX_HEADER_FILES="$HX_DIR/test/entanglement_module_test.hpp"
 HX_OUTPUT_FILE="$HX_MODULE.py"
 
 PY_CFLAGS="$(python3-config --cflags)"

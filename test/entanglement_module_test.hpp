@@ -1,12 +1,15 @@
 // Copyright 2017-2025 Adrian Johnston
+#pragma once
 
 #include <hx/hatchling.h>
 
 // - Multiple declarations followed by a definition and 6 overloads.
 
-/// fn1 - Returns a float.
+/// fn1 - Returns the sum of global variables g_a, g_b, g_c, g_f, g_g, and g_h.
 float fn1(void);
-/// fn1 - Returns a float.
+
+#if 0
+/// fn1 - Second declaration.
 float fn1(void);
 
 // - Overloads by arity.
@@ -14,8 +17,6 @@ float fn1(void);
 extern int g_a, g_b, g_c;
 extern float g_f, g_g, g_h;
 
-/// fn1 - Returns the sum of global variables g_a, g_b, g_c, g_f, g_g, and g_h.
-inline float fn1(void) { return g_a + g_b + g_c + g_f + g_g + g_h; }
 /// fn1 - Sets the global variable g_a and returns the sum of global variables.
 /// - a: An integer value to assign to g_a.
 inline float fn1(int a) { g_a = a; return fn1(); }
@@ -137,3 +138,5 @@ private:
 	int m_a, m_b, m_c;
 	float m_f, m_g, m_h;
 };
+
+#endif
