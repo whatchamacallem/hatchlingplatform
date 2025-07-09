@@ -5,7 +5,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "entanglement_template"
+name = "entanglement_package_template"
 version = "0.0.1"
 authors = [
   { name="Your Name", email="your.email@example.com" },
