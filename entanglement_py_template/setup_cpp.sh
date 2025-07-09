@@ -9,7 +9,7 @@ VERBOSE=1
 
 HX_DIR=$(dirname "$(pwd)")
 
-HX_PACKAGE="entanglement_package_template"
+HX_PACKAGE="entanglement_py_template"
 HX_HEADER_FILES="$HX_DIR/test/entanglement_cpp_test.hpp"
 HX_OUTPUT_FILE="$HX_PACKAGE.py"
 
@@ -53,9 +53,13 @@ set -o errexit -o xtrace
 # {src,test}/*.c -> bin/*.o
 clang $HX_CFLAGS -std=c17 -fvisibility=hidden -pthread -c $HX_DIR/src/*.c $HX_DIR/test/*.c
 
-# {src,test}/*.cpp bin/*.o -> bin/hxtest
-clang++ $HX_CFLAGS $PY_LDFLAGS -std=c++17 -fvisibility=hidden -lstdc++ -Wl,-s \
-    -pthread -lpthread $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp *.o -o hxtest
+# {src,test}/*.cpp -> bin/hxtest
+clang++ $HX_CFLAGS $PY_LDFLAGS -std=c++17 -fvisibility=hidden \
+    -pthread $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp
+
+# entanglement_py_template/*.cpp bin/*.o -> bin/hxtest
+clang++ $HX_CFLAGS $PY_LDFLAGS -std=c++17 -lstdc++ -Wl,-s \
+    -pthread -lpthread $HX_DIR/entanglement_py_template/*.cpp *.o -o hxtest
 
 { set +o xtrace; } 2> /dev/null
 echo 🐉🐉🐉

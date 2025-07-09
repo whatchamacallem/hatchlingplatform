@@ -3,7 +3,7 @@
 
 set -o xtrace
 
-cd ./entanglement_package_template
+cd ./entanglement_py_template
 
 # Create and activate a Python virtual environment.
 python3 -m venv python_venv
@@ -13,8 +13,8 @@ source python_venv/bin/activate
 pip install .
 
 # Run Python tests for the package.
-python -c "import entanglement_package_template; entanglement_package_template.run_all_tests();"
+python -c "import entanglement_py_template; entanglement_py_template.run_all_tests();"
 
 # Shut down the virtual environment and clean up.
 deactivate
-rm -rf python_venv __pycache__ build entanglement_package_template.egg-info
+rm -rf python_venv __pycache__ build entanglement_py_template.egg-info
