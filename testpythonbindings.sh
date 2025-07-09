@@ -3,6 +3,7 @@
 
 set -o xtrace
 
+# TODO cd bin and install from there.
 cd ./entanglement_py_template
 
 # Create and activate a Python virtual environment.

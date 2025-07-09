@@ -1,6 +1,8 @@
 """
 entanglement.py: Automatic Binding Generator for C++ Projects
 
+version: 0.0.1-pre-alpha
+
 Usage:
     python entanglement.py <compiler_flags> <module_name> <header_files>... <output_file>
         compiler_flags  - Flags to pass to clang. Can be in any order on command line.
@@ -9,7 +11,6 @@ Usage:
         output_file     - Path to write the generated Python binding code.
 """
 
-#
 # TODO
 # - Read Python assert() preconditions for functions from C++ comments.
 
@@ -18,12 +19,12 @@ import sys
 import os
 import clang.cindex
 import ctypes
-from typing import Dict, List, Set, Tuple, Optional, Any
+from typing import Dict, List, Set, Tuple, Optional
 from clang.cindex import Index, TranslationUnit, Diagnostic, Cursor, CursorKind
-from clang.cindex import TypeKind, Type, LinkageKind, AccessSpecifier
+from clang.cindex import TypeKind, Type, LinkageKind, AccessSpecifier, Config
 
-# Path to the libclang shared library. TODO.
-#_libclang_path = "/usr/lib/llvm-18/lib/libclang.so.1"
+# Path to the libclang shared library. TODO: THIS FAILS SILENTLY.
+_libclang_path = "/usr/lib/llvm-18/lib/libclang.so.1"
 
 # Verbose - 0: Normal status and errors. 1: Processing steps. 2: AST traversal.
 VERBOSE = 2
@@ -99,6 +100,17 @@ def parse_argv() -> bool:
     _arg_dependency_file = _arg_output_file + '.d.txt'
 
     return True
+
+def exception_handler(e: Exception) -> None:
+    for attribute_name in dir(e):
+        try:
+            attribute_value = getattr(e, attribute_name)
+            print(f"  {attribute_name}: {attribute_value}")
+        except:
+            pass
+
+    print(e)
+    sys.exit(_exit_error)
 
 def is_project_header(cursor: Cursor) -> bool:
     """
@@ -607,8 +619,7 @@ def load_translation_unit_and_dependencies(header_file: str) -> Tuple[Translatio
     try:
         translation_unit = index.parse(header_file, _arg_compiler_flags)
     except Exception as e:
-        print(f"Error: {e} {header_file}")
-        sys.exit(_exit_error)
+        exception_handler(e)
 
     for diagnostic in translation_unit.diagnostics: # type: ignore
         print(diagnostic)
@@ -636,15 +647,14 @@ def write_dependencies(include_files: Set[str]) -> None:
                 f.write(dep + '\n')
         verbose("Wrote " + _arg_dependency_file)
     except Exception as e:
-        print(f"Error: Failed to write the dependency file: {e}")
-        sys.exit(_exit_error)
+        print(f"Error: Failed to write the dependency file.")
+        exception_handler(e)
 
 def main() -> int:
     """
     Main entry point for the script. Parses command-line arguments, initializes Clang,
     and generates binding code for the given header file.
     """
-    verbose2("main...")
     if not parse_argv():
         print("""\
 Usage: python3 entanglement.py <compiler_flags> <module_name> <header_files>... <output_file>
@@ -667,8 +677,8 @@ Make sure to adjust _libclang_path at the top of this script if needed.
     verbose("output_file: " + _arg_output_file)
     verbose("dependency_file: " + _arg_dependency_file)
 
-#    verbose(f"Setting libclang path: {_libclang_path}")
-#    Config.set_library_file(_libclang_path)
+    verbose(f"Setting libclang path: {_libclang_path}")
+    Config.set_library_file(_libclang_path)
 
     verbose(f"Checking dependencies for generating {_arg_output_file}...")
     if not check_dependencies_changed():
@@ -697,6 +707,8 @@ Make sure to adjust _libclang_path at the top of this script if needed.
         output_lines.extend(child_lines)
         dependencies |= deps
         verbose2(f"Added {len(child_lines)} lines from {header_file}, {len(deps)} dependencies")
+
+    output_lines += ['# 🐉🐉🐉', '']
 
     with open(_arg_output_file, "w") as f:
         f.write("\n".join(output_lines) if output_lines else "")

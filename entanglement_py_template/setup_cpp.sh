@@ -10,7 +10,7 @@ VERBOSE=1
 HX_DIR=$(dirname "$(pwd)")
 
 HX_PACKAGE="entanglement_py_template"
-HX_HEADER_FILES="$HX_DIR/test/entanglement_cpp_test.hpp"
+HX_HEADER_FILES="$HX_DIR/$HX_PACKAGE/entanglement_cpp_test.hpp"
 HX_OUTPUT_FILE="$HX_PACKAGE.py"
 
 PY_CFLAGS="$(python3-config --cflags)"
@@ -47,7 +47,13 @@ if [ $? -ne 0 ] && [ $? -ne 2 ]; then
     exit $? # Either the script failed somehow or it returned failure.
 fi
 
-cd ./bin
+python3 $HX_OUTPUT_FILE
+
+# =============================
+exit 1
+
+rm -rf ./bin; mkdir ./bin && cd ./bin
+
 set -o errexit -o xtrace
 
 # {src,test}/*.c -> bin/*.o
