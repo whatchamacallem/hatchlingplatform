@@ -11,10 +11,12 @@ from typing import List
 # C++ build command.  E.g. cmake, make, ./build.sh.
 _setup_cpp_argv = ["./setup_cpp.sh"]
 
-_verbose = 1
+VERBOSE = 1
+
+_exit_error = 1
 
 def verbose(x: str) -> None:
-    if _verbose >= 1:
+    if VERBOSE >= 1:
         print(x)
 
 def run_argv(argv: List[str]) -> None:
@@ -33,16 +35,16 @@ def run_argv(argv: List[str]) -> None:
         print(f"Error: {' '.join(argv)}: {e}", file=sys.stderr)
         if e.stdout:
             print(e.stdout, file=sys.stderr)
-        sys.exit(e.returncode if e.returncode else 1)
+        sys.exit(e.returncode if e.returncode else _exit_error)
 
     except Exception as e:
         print(e, file=sys.stderr)
-        sys.exit(1)
+        sys.exit(_exit_error)
 
 # There is no trick to it.
 run_argv(_setup_cpp_argv)
 
-# Legacy: The manifest is now supposed to be in the .toml file.
+# This is legacy. The manifest is now supposed to be in the .toml file.
 setuptools.setup(
     install_requires=[],
     python_requires='>=3.7',

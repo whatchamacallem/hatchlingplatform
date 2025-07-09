@@ -7,12 +7,9 @@ set -o errexit
 
 HX_DIR=`pwd`
 
-HX_MODULE="bindings_test"
-HX_HEADER_FILES="$HX_DIR/test/$HX_MODULE.hpp"
-HX_OUTPUT_FILE="$HX_MODULE.bind.cpp"
-
-# TODO.
-PY_BIND="/usr/share/nanobind"
+HX_MODULE="entanglement_template"
+HX_HEADER_FILES="$HX_DIR/test/entanglement_test.hpp"
+HX_OUTPUT_FILE="$HX_MODULE.py"
 
 PY_CFLAGS="$(python3-config --cflags)"
 PY_LDFLAGS="$(python3-config --ldflags --embed)"

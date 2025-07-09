@@ -9,6 +9,20 @@ Usage:
         output_file     - Path to write the generated Python binding code.
 """
 
+#
+# TODO
+# - Read Python preconditions for functions from C++ comments.
+# - Read Python decorators from comments like @atexit.register.
+# - Consider a debug mode "validation, timing and logging" decorator
+#   that is only enabled in __debug__.
+#
+# @classmethod
+# @staticmethod
+# @abc.abstractmethod
+#
+
+
+
 import sys
 import os
 import clang.cindex
@@ -21,7 +35,7 @@ from clang.cindex import TypeKind, Type, LinkageKind, Config
 #_libclang_path = "/usr/lib/llvm-18/lib/libclang.so.1"
 
 # Verbose - 0: Normal status and errors. 1: Processing steps. 2: AST traversal.
-_verbose = 2
+VERBOSE = 2
 
 # Exit codes.
 _exit_bindings_generated = 0
@@ -57,13 +71,13 @@ _fundamental_type_map: Dict[TypeKind, Tuple[str, str, str]] = {
     TypeKind.WCHAR:     ('ctypes.c_wchar',     'int',    'wchar_t'),        # type: ignore # Wide character
 }
 
-def verbose(msg: str) -> None:
-    if _verbose >= 1:
-        print(f" * {msg}")
+def verbose(x: str) -> None:
+    if VERBOSE >= 1:
+        print(f" * {x}")
 
-def verbose2(msg: str) -> None:
-    if _verbose >= 2:
-        print(f" - {msg}")
+def verbose2(x: str) -> None:
+    if VERBOSE >= 2:
+        print(f" - {x}")
 
 def parse_argv() -> bool:
     global _arg_compiler_flags
