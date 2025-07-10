@@ -428,9 +428,9 @@ def generate_overload_selector(name: str, overloads: List[Cursor]) -> List[str]:
         cursor = overload_group[0]
         mangled_name = get_mangled_name(cursor)
         arg_list = ', '.join(f'arg{i}' for i in range(arg_count))
-        lines.append(f"\treturn __clib.{mangled_name}({arg_list})")
+        lines.append(f"\t\treturn __clib.{mangled_name}({arg_list})")
 
-    lines.append(f"\traise ValueError('No matching overload for {name}" + " with {len(args)} arguments')")
+    lines.append(f"\traise ValueError(f'overload_resolution {name}"+"with {len(args)} arguments')")
     return lines
 
 def format_class(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str], seen_signatures: Set[str]) -> List[str]:
@@ -578,41 +578,8 @@ def format_namespace(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, s
 
     return lines
 
-def check_dependencies_changed() -> bool:
-    """
-    Check if the command line has changed or any included file has changed.
-    N.B. Uses timestamps only. The _arg_dependency_file will be younger than the output
-    file and will need to be touched again to make the build final. The
-    output file will be listed as the first dependency file.
-    """
-    full_args = ' '.join(sys.argv)
 
-    try:
-        with open(_arg_dependency_file, 'r') as f:
-            last_build_time: float = os.path.getmtime(_arg_dependency_file)
-            lines: List[str] = f.read().splitlines()
-            cached_args = lines[0] if lines else ""
-            cached_dependencies: Set[str] = set(lines[1:])
-
-            # Check if args match and dep file is newer than header and includes
-            has_changed = False
-            if full_args != cached_args:
-                print("Args changed.")
-                has_changed = True
-
-            for file_path in _arg_header_files + [_arg_output_file, os.path.abspath(__file__)] + list(cached_dependencies):
-                if not os.path.exists(file_path) or os.path.getmtime(file_path) > last_build_time:
-                    print("File changed: " + file_path)
-                    has_changed = True
-
-            verbose2(f"Dependencies changed: {has_changed}")
-            return has_changed
-    except Exception as e:
-        verbose("Not found: " + _arg_dependency_file)
-
-    return True # deletion is modification.
-
-def load_translation_unit_and_dependencies(header_file: str) -> Tuple[TranslationUnit, Set[str]]:
+def load_translation_unit(header_file: str) -> TranslationUnit:
     index = Index.create()
     verbose2(f"Parsing translation unit for {header_file}")
     translation_unit: Optional[TranslationUnit] = None
@@ -629,26 +596,7 @@ def load_translation_unit_and_dependencies(header_file: str) -> Tuple[Translatio
         print("Parsing failed due to errors.")
         sys.exit(_exit_error)
 
-    dependencies: Set[str] = set()
-    for include in translation_unit.get_includes():
-        dependencies.add(include.include.name)
-    return translation_unit, dependencies
-
-def write_dependencies(include_files: Set[str]) -> None:
-    """
-    Write new dependency file
-    """
-    verbose2(f"Writing dependency file {_arg_dependency_file}")
-    full_args = ' '.join(sys.argv)
-    try:
-        with open(_arg_dependency_file, 'w') as f:
-            f.write(full_args + '\n')
-            for dep in include_files:
-                f.write(dep + '\n')
-        verbose("Wrote " + _arg_dependency_file)
-    except Exception as e:
-        print(f"Error: Failed to write the dependency file.")
-        exception_handler(e)
+    return translation_unit
 
 def main() -> int:
     """
@@ -678,11 +626,6 @@ Arguments:
     verbose(f"Setting libclang path: {_libclang_path}")
     Config.set_library_file(_libclang_path)
 
-    verbose(f"Checking dependencies for generating {_arg_output_file}...")
-    if not check_dependencies_changed():
-        print("Nothing changed. All done.")
-        return _exit_nothing_changed
-
     output_lines: List[str] = [
         '# entanglement.py',
         'import sys, os, ctypes',
@@ -700,11 +643,10 @@ Arguments:
 
     for header_file in _arg_header_files:
         verbose(f"Visiting AST and generating bindings from {header_file}...")
-        translation_unit, deps = load_translation_unit_and_dependencies(header_file)
+        translation_unit = load_translation_unit(header_file)
         child_lines: List[str] = format_namespace(translation_unit.cursor, classes, enums, seen_functions)
         output_lines.extend(child_lines)
-        dependencies |= deps
-        verbose2(f"Added {len(child_lines)} lines from {header_file}, {len(deps)} dependencies")
+        verbose2(f"Added {len(child_lines)} lines from {header_file}")
 
     output_lines += ['if __name__ == "__main__":', '\tprint("🐉🐉🐉")', '']
 
@@ -712,7 +654,6 @@ Arguments:
         f.write("\n".join(output_lines) if output_lines else "")
         print(f"Wrote {_arg_output_file}: {len(output_lines)} lines")
 
-    write_dependencies(dependencies)
     verbose2("exit 0")
     return _exit_bindings_generated
 
