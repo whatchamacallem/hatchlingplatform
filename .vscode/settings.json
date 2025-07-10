@@ -103,5 +103,10 @@
         "Xclang"
     ],
     "editor.cursorBlinking": "solid",
-    "python.analysis.typeCheckingMode": "standard"
- }
+    "python.analysis.typeCheckingMode": "standard",
+    "markdownlint.config": {
+        "MD033": {
+            "allowed_elements": ["div", "img", "br"]
+        }
+    }
+}
