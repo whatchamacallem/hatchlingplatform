@@ -246,7 +246,7 @@ def format_doc(cursor: Cursor) -> str:
             line = line.replace('\\', '\\\\').replace('"', '\\"')
             cleaned.append(line)
         doc = "\n".join(cleaned) if cleaned else ""
-        return f'"""{doc}"""' if doc else ""
+        return f'\t"""{doc}"""' if doc else ""
     return ""
 
 def format_enum(cursor: Cursor, enums: Dict[str, str]) -> List[str]:
@@ -258,18 +258,18 @@ def format_enum(cursor: Cursor, enums: Dict[str, str]) -> List[str]:
     enums[enum_name] = _fundamental_type_map[cursor.enum_type][0]
 
     doc_str = format_doc(cursor)
+
+    lines.append(f"class {enum_name}(Enum):")
     if doc_str:
         lines.append(doc_str)
 
-    lines.append(f"class {enum_name}(Enum):")
-
     for child in cursor.get_children():
         if child.kind == CursorKind.ENUM_CONSTANT_DECL: # type: ignore
-            lines.append(f"{child.spelling} = {child.enum_value}")
+            lines.append(f"\t{child.spelling}={child.enum_value}")
 
     # TODO
     if not any(line.startswith("    ") for line in lines[1:]):
-        lines.append("    pass")
+        lines.append("\tpass")
 
     verbose2(f"enum {enum_name}: {lines}")
     return lines
@@ -316,17 +316,20 @@ def format_function(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, st
     return_type, return_py_type = type_map(cursor.result_type, classes, enums)
 
     lines: List[str] = []
-    if doc_str:
-        lines.append(doc_str)
-    if overload_index > 0:
-        lines.append(f"@overload")
-    arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
-    return_hint = f' -> {return_py_type}' if return_py_type != 'None' else ''
-    lines.append(f"def {cursor.spelling}({arg_hints}){return_hint}: ...")
-    lines.append(f"__clib.{mangled_name}.restype = {return_type}")
     if arg_types:
         args = [arg[0] for arg in arg_types]
         lines.append(f"__clib.{mangled_name}.argtypes = [{', '.join(args)}]")
+    lines.append(f"__clib.{mangled_name}.restype = {return_type}")
+
+    if overload_index > 0:
+        lines.append(f"@overload")
+
+    arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
+    return_hint = f' -> {return_py_type}' if return_py_type != 'None' else ''
+    lines.append(f"def {cursor.spelling}({arg_hints}){return_hint}:")
+    if doc_str:
+        lines.append(doc_str)
+    lines.append(f"\treturn __clib.{mangled_name}({', '.join(f'arg{i}' for i in range(len(arg_types)))})")
     verbose2(f"function {cursor.spelling}: {lines}")
     return lines
 
@@ -344,11 +347,14 @@ def format_method(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str]
     return_type, return_py_type = type_map(cursor.result_type, classes, enums)
 
     lines: List[str] = []
-    if doc_str:
-        lines.append(doc_str)
+
+    if arg_types:
+        args = [arg[0] for arg in arg_types]
+        lines.append(f"__clib.{mangled_name}.argtypes = [{', '.join(args)}]")
+    lines.append(f"__clib.{mangled_name}.restype = {return_type}")
+
     if overload_index > 0:
         lines.append(f"@overload")
-
     if is_public_method(cursor):
         lines.append("@classmethod")
     elif is_static_method(cursor):
@@ -356,11 +362,10 @@ def format_method(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str]
 
     arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
     return_hint = f' -> {return_py_type}' if return_py_type != 'None' else ''
-    lines.append(f"def {cursor.spelling}({arg_hints}){return_hint}: ...")
-    lines.append(f"__clib.{mangled_name}.restype = {return_type}")
-    if arg_types:
-        args = [arg[0] for arg in arg_types]
-        lines.append(f"__clib.{mangled_name}.argtypes = [{', '.join(args)}]")
+    lines.append(f"def {cursor.spelling}({arg_hints}){return_hint}:")
+    if doc_str:
+        lines.append(doc_str)
+    lines.append(f"\treturn __clib.{mangled_name}({', '.join(f'arg{i}' for i in range(len(arg_types)))})")
     verbose2(f"method {cursor.spelling}: {lines}")
     return lines
 
@@ -377,16 +382,18 @@ def format_constructor(cursor: Cursor, classes: Dict[str, str], enums: Dict[str,
         arg_types.append((ctypes_type, py_type))
 
     lines: List[str] = []
-    if doc_str:
-        lines.append(f"{doc_str}")
-    if overload_index > 0:
-        lines.append(f"@overload")
-    arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
-    lines.append(f"def __init__(self, {arg_hints}) -> None: ...")
     lines.append(f"__clib.{mangled_name}.restype = None")
     if arg_types:
         args = [arg[0] for arg in arg_types]
         lines.append(f"__clib.{mangled_name}.argtypes = [{', '.join(args)}]")
+    if overload_index > 0:
+        lines.append(f"@overload")
+
+    arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
+    lines.append(f"def __init__(self, {arg_hints}) -> None:")
+    if doc_str:
+        lines.append(f"\t{doc_str}")
+    lines.append(f"\t__clib.{mangled_name}({', '.join(f'arg{i}' for i in range(len(arg_types)))})")
     verbose2(f"constructor {cursor.spelling}: {lines}")
     return lines
 
@@ -416,15 +423,15 @@ def generate_overload_selector(name: str, overloads: List[Cursor]) -> List[str]:
     for arg_count, overload_group in sorted(arg_count_map.items()):
         if not overload_group:
             continue
-        lines.append(f"if len(args) == {arg_count}:")
+        lines.append(f"\tif len(args) == {arg_count}:")
         if len(overload_group) > 1:
             raise ValueError(f"Multiple overloads for {name} with {arg_count} arguments: cannot disambiguate")
         cursor = overload_group[0]
         mangled_name = get_mangled_name(cursor)
         arg_list = ', '.join(f'arg{i}' for i in range(arg_count))
-        lines.append(f"return __clib.{mangled_name}({arg_list})")
+        lines.append(f"\treturn __clib.{mangled_name}({arg_list})")
 
-    lines.append(f"raise ValueError('No matching overload for {name}" + " with {len(args)} arguments')")
+    lines.append(f"\traise ValueError('No matching overload for {name}" + " with {len(args)} arguments')")
     verbose2(f"selector {name}: {lines}")
     return lines
 
@@ -444,19 +451,19 @@ def format_class(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str],
 
     doc_str = format_doc(cursor)
     lines: List[str] = []
+    lines.append(f"class {class_name}(ctypes.Structure):")
     if doc_str:
         lines.append(doc_str)
-    lines.append(f"class {class_name}(ctypes.Structure):")
     fields = []
     for child in cursor.get_children():
         if child.kind == CursorKind.FIELD_DECL: # type: ignore
             ctypes_type, _ = type_map(child.type, classes, enums)
             fields.append(f'("{child.spelling}", {ctypes_type})')
     if fields:
-        lines.append(f"_fields_ = [{', '.join(fields)}]")
+        lines.append(f"\t_fields_ = [{', '.join(fields)}]")
         verbose2(f"Class {class_name} fields: {fields}")
     else:
-        lines.append(f"pass")
+        lines.append(f"\tpass")
         verbose2(f"Class {class_name} has no fields")
 
     # Collect constructors and methods for overload handling
