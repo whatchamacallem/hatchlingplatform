@@ -16,8 +16,10 @@ HX_OUTPUT_FILE="$HX_PACKAGE.py"
 PY_CFLAGS="$(python3-config --cflags)"
 PY_LDFLAGS="$(python3-config --ldflags --embed)"
 
-HX_CFLAGS="$PY_CFLAGS -I$HX_DIR/include -DHX_RELEASE=0 \
+HX_CFLAGS="$PY_CFLAGS -fPIC -pthread -I$HX_DIR/include -DHX_RELEASE=0 \
     -fdiagnostics-absolute-paths -Wfatal-errors"
+
+HX_LDFLAGS="$PY_LDFLAGS -shared -Wl,-s"
 
 # VERBOSE > 0
 if [ "$VERBOSE" -ne 0 ]; then
@@ -47,25 +49,24 @@ if [ $? -ne 0 ] && [ $? -ne 2 ]; then
     exit $? # Either the script failed somehow or it returned failure.
 fi
 
+if [ ! -f "libentanglement_py_template.so.1" ]; then
+    set -o errexit -o xtrace
+
+    # {src,test}/*.c -> bin/*.o
+    clang $HX_CFLAGS -std=c17 -fvisibility=hidden -c $HX_DIR/src/*.c $HX_DIR/test/*.c
+
+    # {src,test}/*.cpp -> bin/hxtest
+    clang++ $HX_CFLAGS -std=c++17 -fvisibility=hidden \
+        -c $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp
+
+    # entanglement_py_template/*.cpp bin/*.o -> bin/hxtest
+    clang++ $HX_CFLAGS $HX_LDFLAGS -std=c++17 -lstdc++ -lpthread \
+        $HX_DIR/entanglement_py_template/*.cpp *.o -o libentanglement_py_template.so.1
+
+    rm *.o
+fi
+
 python3 $HX_OUTPUT_FILE
-
-# =============================
-exit 1
-
-rm -rf ./bin; mkdir ./bin && cd ./bin
-
-set -o errexit -o xtrace
-
-# {src,test}/*.c -> bin/*.o
-clang $HX_CFLAGS -std=c17 -fvisibility=hidden -pthread -c $HX_DIR/src/*.c $HX_DIR/test/*.c
-
-# {src,test}/*.cpp -> bin/hxtest
-clang++ $HX_CFLAGS $PY_LDFLAGS -std=c++17 -fvisibility=hidden \
-    -pthread $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp
-
-# entanglement_py_template/*.cpp bin/*.o -> bin/hxtest
-clang++ $HX_CFLAGS $PY_LDFLAGS -std=c++17 -lstdc++ -Wl,-s \
-    -pthread -lpthread $HX_DIR/entanglement_py_template/*.cpp *.o -o hxtest
 
 { set +o xtrace; } 2> /dev/null
 echo 🐉🐉🐉

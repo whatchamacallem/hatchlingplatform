@@ -23,9 +23,6 @@ from typing import Dict, List, Set, Tuple, Optional
 from clang.cindex import Index, TranslationUnit, Diagnostic, Cursor, CursorKind
 from clang.cindex import TypeKind, Type, LinkageKind, AccessSpecifier, Config
 
-# Path to the libclang shared library. TODO: THIS FAILS SILENTLY.
-_libclang_path = "/usr/lib/llvm-18/lib/libclang.so.1"
-
 # Verbose - 0: Normal status and errors. 1: Processing steps. 2: AST traversal.
 VERBOSE = 2
 
@@ -287,7 +284,8 @@ def type_map(cpp_type: Type, classes: Dict[str, str], enums: Dict[str, str]) -> 
     if cpp_type.kind in _fundamental_type_map:
         return _fundamental_type_map[cpp_type.kind][0:2]
 
-    # Pointers and references
+    # Pointers and references. Let me know when you find an ABI where
+    # reinterpreting as pointers doesn't work.
     if cpp_type.kind in (TypeKind.POINTER, TypeKind.LVALUEREFERENCE, TypeKind.RVALUEREFERENCE):  # type: ignore
         pointee = cpp_type.get_pointee()
         pointee_ctype, pointee_py_type = type_map(pointee, classes, enums)
@@ -325,10 +323,10 @@ def format_function(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, st
     arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
     return_hint = f' -> {return_py_type}' if return_py_type != 'None' else ''
     lines.append(f"def {cursor.spelling}({arg_hints}){return_hint}: ...")
-    lines.append(f"lib.{mangled_name}.restype = {return_type}")
+    lines.append(f"__clib.{mangled_name}.restype = {return_type}")
     if arg_types:
         args = [arg[0] for arg in arg_types]
-        lines.append(f"lib.{mangled_name}.argtypes = [{', '.join(args)}]")
+        lines.append(f"__clib.{mangled_name}.argtypes = [{', '.join(args)}]")
     verbose2(f"function {cursor.spelling}: {lines}")
     return lines
 
@@ -359,10 +357,10 @@ def format_method(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str]
     arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
     return_hint = f' -> {return_py_type}' if return_py_type != 'None' else ''
     lines.append(f"def {cursor.spelling}({arg_hints}){return_hint}: ...")
-    lines.append(f"lib.{mangled_name}.restype = {return_type}")
+    lines.append(f"__clib.{mangled_name}.restype = {return_type}")
     if arg_types:
         args = [arg[0] for arg in arg_types]
-        lines.append(f"lib.{mangled_name}.argtypes = [{', '.join(args)}]")
+        lines.append(f"__clib.{mangled_name}.argtypes = [{', '.join(args)}]")
     verbose2(f"method {cursor.spelling}: {lines}")
     return lines
 
@@ -385,10 +383,10 @@ def format_constructor(cursor: Cursor, classes: Dict[str, str], enums: Dict[str,
         lines.append(f"@overload")
     arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
     lines.append(f"def __init__(self, {arg_hints}) -> None: ...")
-    lines.append(f"lib.{mangled_name}.restype = None")
+    lines.append(f"__clib.{mangled_name}.restype = None")
     if arg_types:
         args = [arg[0] for arg in arg_types]
-        lines.append(f"lib.{mangled_name}.argtypes = [{', '.join(args)}]")
+        lines.append(f"__clib.{mangled_name}.argtypes = [{', '.join(args)}]")
     verbose2(f"constructor {cursor.spelling}: {lines}")
     return lines
 
@@ -424,7 +422,7 @@ def generate_overload_selector(name: str, overloads: List[Cursor]) -> List[str]:
         cursor = overload_group[0]
         mangled_name = get_mangled_name(cursor)
         arg_list = ', '.join(f'arg{i}' for i in range(arg_count))
-        lines.append(f"return lib.{mangled_name}({arg_list})")
+        lines.append(f"return __clib.{mangled_name}({arg_list})")
 
     lines.append(f"raise ValueError('No matching overload for {name}" + " with {len(args)} arguments')")
     verbose2(f"selector {name}: {lines}")
@@ -600,7 +598,7 @@ def check_dependencies_changed() -> bool:
                 print("Args changed.")
                 has_changed = True
 
-            for file_path in _arg_header_files + [_arg_output_file] + list(cached_dependencies):
+            for file_path in _arg_header_files + [_arg_output_file, os.path.abspath(__file__)] + list(cached_dependencies):
                 if not os.path.exists(file_path) or os.path.getmtime(file_path) > last_build_time:
                     print("File changed: " + file_path)
                     has_changed = True
@@ -666,8 +664,6 @@ Arguments:
     module_name     - Module name to bind everything to.
     header_files... - Path(s) to the C++ header file(s) to parse.
     output_file     - Path to write the generated Python binding code.
-
-Make sure to adjust _libclang_path at the top of this script if needed.
 """)
         sys.exit(_exit_error)
 
@@ -677,22 +673,19 @@ Make sure to adjust _libclang_path at the top of this script if needed.
     verbose("output_file: " + _arg_output_file)
     verbose("dependency_file: " + _arg_dependency_file)
 
-    verbose(f"Setting libclang path: {_libclang_path}")
-    Config.set_library_file(_libclang_path)
-
     verbose(f"Checking dependencies for generating {_arg_output_file}...")
     if not check_dependencies_changed():
         print("Nothing changed. All done.")
         return _exit_nothing_changed
 
     output_lines: List[str] = [
-        "# Generated by entanglement.py",
-        "import ctypes",
-        "from typing import Union, overload, Any",
-        "from enum import Enum",
-        "# Load the shared library",
-        f"lib = ctypes.CDLL('lib{_arg_module_name}.so')",
-        ""
+        '# entanglement.py',
+        'import sys, os, ctypes',
+        'from typing import Dict, List, Set, Tuple, Optional, overload, Any',
+        'from enum import Enum',
+        '',
+        f"__clib = ctypes.CDLL(os.path.join(os.getcwd(),'lib{_arg_module_name}.so.1'))",
+        ''
     ]
 
     dependencies: Set[str] = set() # input header files
