@@ -1,6 +1,6 @@
 # setup.py
 #
-# Building C++ still requires a setup.py file. This just runs _setup_cpp_argv.
+# Building C++ still requires a setup.py file.
 
 import os
 import sys
@@ -9,18 +9,23 @@ import subprocess
 from typing import List
 
 # C++ build command.  E.g. cmake, make, ./build.sh.
-_setup_cpp_argv = ["./setup_cpp.sh"]
+SETUP_CPP_COMMAND = ["./setup_cpp.sh"]
+
+LIBRARY="libentanglement_py_template.so.1"
+HEADER_FILES=["entanglement_cpp_test.hpp"]
+OUTPUT_FILE="entanglement_py_template.py"
 
 VERBOSE = 1
 
 _exit_error = 1
 
-def verbose(x: str) -> None:
-    if VERBOSE >= 1:
+def _verbose(x: str) -> None:
+    if VERBOSE:
         print(x)
 
-def run_argv(argv: List[str]) -> None:
+def _run_argv(argv: List[str]) -> None:
     try:
+        _verbose(' '.join(argv))
         result = subprocess.run(
             argv,
             cwd=os.getcwd(),
@@ -29,10 +34,9 @@ def run_argv(argv: List[str]) -> None:
             text=True,
             check=True,
         )
-        verbose(result.stdout)
+        _verbose(result.stdout)
 
     except subprocess.CalledProcessError as e:
-        print(f"Error: {' '.join(argv)}: {e}", file=sys.stderr)
         if e.stdout:
             print(e.stdout, file=sys.stderr)
         sys.exit(e.returncode if e.returncode else _exit_error)
@@ -41,8 +45,12 @@ def run_argv(argv: List[str]) -> None:
         print(e, file=sys.stderr)
         sys.exit(_exit_error)
 
-# There is no trick to it.
-run_argv(_setup_cpp_argv)
+# Run Commands #
+
+_run_argv(SETUP_CPP_COMMAND)
+
+#_run_argv(['python3', 'entanglement.py', '-std=c++17', '-DHX_BINDINGS_PASS=1',
+#        LIBRARY] + HEADER_FILES + [OUTPUT_FILE])
 
 # This is legacy. The manifest is now supposed to be in the .toml file.
 setuptools.setup(

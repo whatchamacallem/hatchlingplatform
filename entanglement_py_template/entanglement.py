@@ -4,9 +4,9 @@ entanglement.py: Automatic Binding Generator for C++ Projects
 version: 0.0.1-pre-alpha
 
 Usage:
-    python entanglement.py <compiler_flags> <module_name> <header_files>... <output_file>
+    python entanglement.py <compiler_flags> <lib_name> <header_files>... <output_file>
         compiler_flags  - Flags to pass to clang. Can be in any order on command line.
-        module_name     - Module name to bind everything to.
+        lib_name        - C/C++ library/.so name to bind everything to.
         header_files... - Path(s) to the C++ header file(s) to parse.
         output_file     - Path to write the generated Python binding code.
 """
@@ -26,6 +26,9 @@ from clang.cindex import TypeKind, Type, LinkageKind, AccessSpecifier, Config
 # Verbose - 0: Normal status and errors. 1: Processing steps. 2: AST traversal.
 VERBOSE = 2
 
+# Path to the libclang shared library. TODO: THIS FAILS SILENTLY.
+_libclang_path = "/usr/lib/llvm-18/lib/libclang.so.1"
+
 # Exit codes.
 _exit_bindings_generated = 0
 _exit_error = 1
@@ -33,7 +36,7 @@ _exit_nothing_changed = 2
 
 # Processed command line arguments.
 _arg_compiler_flags: List[str] = []
-_arg_module_name: str = ""
+_arg_lib_name: str = ""
 _arg_header_files: List[str] = []
 _arg_output_file: str = ""
 _arg_dependency_file: str = ""
@@ -70,7 +73,7 @@ def verbose2(x: str) -> None:
 
 def parse_argv() -> bool:
     global _arg_compiler_flags
-    global _arg_module_name
+    global _arg_lib_name
     global _arg_header_files
     global _arg_output_file
     global _arg_dependency_file
@@ -85,8 +88,8 @@ def parse_argv() -> bool:
     if len(non_flags) < 3:
         return False # Needed more non-switch args.
 
-    # the first non-switch was the module_name.
-    _arg_module_name = non_flags.pop(0)
+    # the first non-switch was the lib_name.
+    _arg_lib_name = non_flags.pop(0)
 
     # the last non-switch was the output file.
     _arg_output_file = non_flags.pop()
@@ -271,7 +274,6 @@ def format_enum(cursor: Cursor, enums: Dict[str, str]) -> List[str]:
     if not any(line.startswith("    ") for line in lines[1:]):
         lines.append("\tpass")
 
-    verbose2(f"enum {enum_name}: {lines}")
     return lines
 
 def type_map(cpp_type: Type, classes: Dict[str, str], enums: Dict[str, str]) -> Tuple[str, str]:
@@ -330,7 +332,6 @@ def format_function(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, st
     if doc_str:
         lines.append(doc_str)
     lines.append(f"\treturn __clib.{mangled_name}({', '.join(f'arg{i}' for i in range(len(arg_types)))})")
-    verbose2(f"function {cursor.spelling}: {lines}")
     return lines
 
 def format_method(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str], overload_index: int = 0) -> List[str]:
@@ -366,7 +367,6 @@ def format_method(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str]
     if doc_str:
         lines.append(doc_str)
     lines.append(f"\treturn __clib.{mangled_name}({', '.join(f'arg{i}' for i in range(len(arg_types)))})")
-    verbose2(f"method {cursor.spelling}: {lines}")
     return lines
 
 def format_constructor(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str], overload_index: int = 0) -> List[str]:
@@ -394,7 +394,6 @@ def format_constructor(cursor: Cursor, classes: Dict[str, str], enums: Dict[str,
     if doc_str:
         lines.append(f"\t{doc_str}")
     lines.append(f"\t__clib.{mangled_name}({', '.join(f'arg{i}' for i in range(len(arg_types)))})")
-    verbose2(f"constructor {cursor.spelling}: {lines}")
     return lines
 
 def generate_overload_selector(name: str, overloads: List[Cursor]) -> List[str]:
@@ -432,7 +431,6 @@ def generate_overload_selector(name: str, overloads: List[Cursor]) -> List[str]:
         lines.append(f"\treturn __clib.{mangled_name}({arg_list})")
 
     lines.append(f"\traise ValueError('No matching overload for {name}" + " with {len(args)} arguments')")
-    verbose2(f"selector {name}: {lines}")
     return lines
 
 def format_class(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str], seen_signatures: Set[str]) -> List[str]:
@@ -461,10 +459,8 @@ def format_class(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str],
             fields.append(f'("{child.spelling}", {ctypes_type})')
     if fields:
         lines.append(f"\t_fields_ = [{', '.join(fields)}]")
-        verbose2(f"Class {class_name} fields: {fields}")
     else:
         lines.append(f"\tpass")
-        verbose2(f"Class {class_name} has no fields")
 
     # Collect constructors and methods for overload handling
     constructors = []
@@ -543,11 +539,10 @@ def format_namespace(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, s
     lines: List[str] = []
     function_overloads: Dict[str, List[Cursor]] = {}
     namespace = calculate_namespace_prefix(cursor)
-    verbose2(f"namespace {namespace}{cursor.spelling}")
+
     for c in cursor.get_children():
         try:
-            if not is_project_header(c):
-                verbose2(f"Skipping {c.spelling}, not in project header")
+            if not c.spelling or not is_project_header(c):
                 continue
             if is_namespace(c):
                 verbose2(f"namespace_enter {c.spelling}")
@@ -568,7 +563,7 @@ def format_namespace(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, s
             elif is_public_enum(c):
                 lines.extend(format_enum(c, enums))
             else:
-                verbose2(f"unknown {c.spelling}")
+                verbose2(f"skipped {c.spelling}")
         except Exception as e:
             print(f"Unexpected error processing cursor {c.spelling}: {str(e)}")
             continue
@@ -662,23 +657,26 @@ def main() -> int:
     """
     if not parse_argv():
         print("""\
-Usage: python3 entanglement.py <compiler_flags> <module_name> <header_files>... <output_file>
+Usage: python3 entanglement.py <compiler_flags> <lib_name> <header_files>... <output_file>
 
 This tool parses a C++ header file using libclang and generates binding code.
 
 Arguments:
     compiler_flags  - Flags to pass to clang. Can be in any order on command line.
-    module_name     - Module name to bind everything to.
+    lib_name        - C/C++ library/.so name to bind everything to.
     header_files... - Path(s) to the C++ header file(s) to parse.
     output_file     - Path to write the generated Python binding code.
 """)
         sys.exit(_exit_error)
 
     verbose("compiler_flags: " + ' '.join(_arg_compiler_flags))
-    verbose("module_name: " + _arg_module_name)
+    verbose("lib_name: " + _arg_lib_name)
     verbose("header_files: " + ' '.join(_arg_header_files))
     verbose("output_file: " + _arg_output_file)
     verbose("dependency_file: " + _arg_dependency_file)
+
+    verbose(f"Setting libclang path: {_libclang_path}")
+    Config.set_library_file(_libclang_path)
 
     verbose(f"Checking dependencies for generating {_arg_output_file}...")
     if not check_dependencies_changed():
@@ -691,7 +689,7 @@ Arguments:
         'from typing import Dict, List, Set, Tuple, Optional, overload, Any',
         'from enum import Enum',
         '',
-        f"__clib = ctypes.CDLL(os.path.join(os.getcwd(),'lib{_arg_module_name}.so.1'))",
+        f"__clib = ctypes.CDLL(os.path.join(os.getcwd(),'{_arg_lib_name}'))",
         ''
     ]
 
@@ -708,7 +706,7 @@ Arguments:
         dependencies |= deps
         verbose2(f"Added {len(child_lines)} lines from {header_file}, {len(deps)} dependencies")
 
-    output_lines += ['# 🐉🐉🐉', '']
+    output_lines += ['if __name__ == "__main__":', '\tprint("🐉🐉🐉")', '']
 
     with open(_arg_output_file, "w") as f:
         f.write("\n".join(output_lines) if output_lines else "")

@@ -8,7 +8,6 @@
 /// fn1 - Returns the sum of global variables g_a, g_b, g_c, g_f, g_g, and g_h.
 float fn1(void);
 
-#if 0
 /// fn1 - Second declaration.
 float fn1(void);
 
@@ -29,6 +28,8 @@ inline float fn1(int a, int b) { g_a = a; g_b = b; return fn1(); }
 /// - b: An integer value to assign to g_b.
 /// - c: An integer value to assign to g_c.
 inline float fn1(int a, int b, int c) { g_a = a; g_b = b; g_c = c; return fn1(); }
+
+#if 0
 
 // - Overloads by first paramater type (int vs. float) and then arity.
 
