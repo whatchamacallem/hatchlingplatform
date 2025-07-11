@@ -37,26 +37,46 @@ _arg_header_files: List[str] = []
 _arg_output_file: str = ""
 _arg_dependency_file: str = ""
 
-# Maps Clang's TypeKind -> ( ctypes, Python, C ).
-_fundamental_type_map: Dict[TypeKind, Tuple[str, str, str]] = {
-    TypeKind.BOOL:      ('ctypes.c_bool',      'bool',   'bool'),           # type: ignore
-    TypeKind.CHAR_S:    ('ctypes.c_char',      'int',    'char'),           # type: ignore # 'char' can be signed or unsigned
-    TypeKind.CHAR_U:    ('ctypes.c_ubyte',     'int',    'unsigned char'),  # type: ignore # Explicitly unsigned char
-    TypeKind.DOUBLE:    ('ctypes.c_double',    'float',  'double'),         # type: ignore
-    TypeKind.FLOAT:     ('ctypes.c_float',     'float',  'float'),          # type: ignore
-    TypeKind.INT:       ('ctypes.c_int',       'int',    'int'),            # type: ignore
-    TypeKind.LONG:      ('ctypes.c_long',      'int',    'long'),           # type: ignore
-    TypeKind.LONGDOUBLE:('ctypes.c_longdouble','float',  'long double'),    # type: ignore
-    TypeKind.LONGLONG:  ('ctypes.c_longlong',  'int',    'long long'),      # type: ignore
-    TypeKind.SCHAR:     ('ctypes.c_byte',      'int',    'signed char'),    # type: ignore # Explicitly signed char
-    TypeKind.SHORT:     ('ctypes.c_short',     'int',    'short'),          # type: ignore
-    TypeKind.UCHAR:     ('ctypes.c_ubyte',     'int',    'unsigned char'),  # type: ignore # Equivalent to unsigned char
-    TypeKind.UINT:      ('ctypes.c_uint',      'int',    'unsigned int'),   # type: ignore
-    TypeKind.ULONG:     ('ctypes.c_ulong',     'int',    'unsigned long'),  # type: ignore
-    TypeKind.ULONGLONG: ('ctypes.c_ulonglong', 'int',    'unsigned long long'), # type: ignore
-    TypeKind.USHORT:    ('ctypes.c_ushort',    'int',    'unsigned short'), # type: ignore
-    TypeKind.VOID:      ('None',               'None',   'void'),           # type: ignore # For functions returning nothing
-    TypeKind.WCHAR:     ('ctypes.c_wchar',     'int',    'wchar_t'),        # type: ignore # Wide character
+_clang_to_ctypes: Dict[TypeKind, str] = {
+    TypeKind.BOOL:      'ctypes.c_bool',       # type: ignore # bool
+    TypeKind.CHAR_S:    'ctypes.c_char',       # type: ignore # char
+    TypeKind.CHAR_U:    'ctypes.c_ubyte',      # type: ignore # unsigned char
+    TypeKind.DOUBLE:    'ctypes.c_double',     # type: ignore # double
+    TypeKind.FLOAT:     'ctypes.c_float',      # type: ignore # float
+    TypeKind.INT:       'ctypes.c_int',        # type: ignore # int
+    TypeKind.LONG:      'ctypes.c_long',       # type: ignore # long
+    TypeKind.LONGDOUBLE:'ctypes.c_longdouble', # type: ignore # long double
+    TypeKind.LONGLONG:  'ctypes.c_longlong',   # type: ignore # long long
+    TypeKind.SCHAR:     'ctypes.c_byte',       # type: ignore # signed char
+    TypeKind.SHORT:     'ctypes.c_short',      # type: ignore # short
+    TypeKind.UCHAR:     'ctypes.c_ubyte',      # type: ignore # unsigned char
+    TypeKind.UINT:      'ctypes.c_uint',       # type: ignore # unsigned int
+    TypeKind.ULONG:     'ctypes.c_ulong',      # type: ignore # unsigned long
+    TypeKind.ULONGLONG: 'ctypes.c_ulonglong',  # type: ignore # unsigned long long
+    TypeKind.USHORT:    'ctypes.c_ushort',     # type: ignore # unsigned short
+    TypeKind.VOID:      'ctypes.c_void',       # type: ignore # void
+    TypeKind.WCHAR:     'ctypes.c_wchar',      # type: ignore # wchar_t
+}
+
+_clang_to_python: Dict[TypeKind, str] = {
+    TypeKind.BOOL:       'bool',  # type: ignore
+    TypeKind.CHAR_S:     'int',   # type: ignore
+    TypeKind.CHAR_U:     'int',   # type: ignore
+    TypeKind.DOUBLE:     'float', # type: ignore
+    TypeKind.FLOAT:      'float', # type: ignore
+    TypeKind.INT:        'int',   # type: ignore
+    TypeKind.LONG:       'int',   # type: ignore
+    TypeKind.LONGDOUBLE: 'float', # type: ignore
+    TypeKind.LONGLONG:   'int',   # type: ignore
+    TypeKind.SCHAR:      'int',   # type: ignore
+    TypeKind.SHORT:      'int',   # type: ignore
+    TypeKind.UCHAR:      'int',   # type: ignore
+    TypeKind.UINT:       'int',   # type: ignore
+    TypeKind.ULONG:      'int',   # type: ignore
+    TypeKind.ULONGLONG:  'int',   # type: ignore
+    TypeKind.USHORT:     'int',   # type: ignore
+    TypeKind.VOID:       'None',  # type: ignore
+    TypeKind.WCHAR:      'int',   # type: ignore
 }
 
 def verbose(x: str) -> None:
@@ -253,8 +273,8 @@ def format_enum(cursor: Cursor, enums: Dict[str, str]) -> List[str]:
     enum_name = cursor.spelling or f"enum_{cursor.hash}"
     lines: List[str] = []
 
-    # TODO
-    enums[enum_name] = _fundamental_type_map[cursor.enum_type][0]
+    # TODO preprocess. Only built in types are valid here.
+    enums[enum_name] = _clang_to_ctypes[cursor.enum_type]
 
     lines.append(f"class {enum_name}(Enum):")
     lines += format_doc(cursor)
@@ -276,8 +296,8 @@ def type_map(cpp_type: Type, classes: Dict[str, str], enums: Dict[str, str]) -> 
         cpp_type = cpp_type.get_canonical()
 
     # Fundamental types
-    if cpp_type.kind in _fundamental_type_map:
-        return _fundamental_type_map[cpp_type.kind][0:2]
+    if cpp_type.kind in _clang_to_ctypes:
+        return (_clang_to_ctypes[cpp_type.kind], _clang_to_python[cpp_type.kind])
 
     # Pointers and references. Let me know when you find an ABI where
     # reinterpreting as pointers doesn't work.
@@ -310,10 +330,6 @@ def format_function(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, st
     return_type, return_py_type = type_map(cursor.result_type, classes, enums)
 
     lines: List[str] = []
-    if arg_types:
-        args = [arg[0] for arg in arg_types]
-        lines.append(f"__clib.{mangled_name}.argtypes = [{', '.join(args)}]")
-    lines.append(f"__clib.{mangled_name}.restype = {return_type}")
 
     if overloaded:
         lines.append(f"@overload")
@@ -327,6 +343,12 @@ def format_function(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, st
     else:
         lines += format_doc(cursor)
         lines.append(f"\treturn __clib.{mangled_name}({', '.join(f'arg{i}' for i in range(len(arg_types)))})")
+
+    if arg_types:
+        args = [arg[0] for arg in arg_types]
+        lines.append(f"__clib.{mangled_name}.argtypes = [{', '.join(args)}]")
+    lines.append(f"__clib.{mangled_name}.restype = {return_type}")
+
     return lines
 
 def format_method(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str], overload_index: int = 0) -> List[str]:
