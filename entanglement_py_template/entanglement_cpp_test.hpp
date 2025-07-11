@@ -18,18 +18,16 @@ extern float g_f, g_g, g_h;
 
 /// fn1 - Sets the global variable g_a and returns the sum of global variables.
 /// - a: An integer value to assign to g_a.
-inline float fn1(int a) { g_a = a; return fn1(); }
+//inline float fn1(int a) { g_a = a; return fn1(); }
 /// fn1 - Sets global variables g_a and g_b and returns the sum of global variables.
 /// - a: An integer value to assign to g_a.
 /// - b: An integer value to assign to g_b.
-inline float fn1(int a, int b) { g_a = a; g_b = b; return fn1(); }
+inline float fn1(char a, short b) { g_a = a; g_b = b; return fn1(); }
 /// fn1 - Sets global variables g_a, g_b, and g_c and returns the sum of global variables.
 /// - a: An integer value to assign to g_a.
 /// - b: An integer value to assign to g_b.
 /// - c: An integer value to assign to g_c.
-inline float fn1(int a, int b, int c) { g_a = a; g_b = b; g_c = c; return fn1(); }
-
-#if 0
+//inline float fn1(bool a, unsigned short b, float c) { g_a = a; g_b = b; g_c = c; return fn1(); }
 
 // - Overloads by first paramater type (int vs. float) and then arity.
 
@@ -39,18 +37,22 @@ inline float fn1(float f) { g_f = f; return fn1(); }
 /// fn1 - Sets global variables g_f and g_g and returns the sum of global variables.
 /// - f: A float value to assign to g_f.
 /// - g: A float value to assign to g_g.
-inline float fn1(float f, float g) { g_f = f; g_g = g; return fn1(); }
+//inline float fn1(double f, float g) { g_f = f; g_g = g; return fn1(); }
 /// fn1 - Sets global variables g_f, g_g, and g_h and returns the sum of global variables.
 /// - f: A float value to assign to g_f.
 /// - g: A float value to assign to g_g.
 /// - h: A float value to assign to g_h.
-inline float fn1(float f, float g, float h) { g_f = f; g_g = g; g_h = h; return fn1(); }
+inline float fn1(float* f, float g, float h) { g_f = *f; g_g = g; g_h = h; return fn1(); }
+
+float fn2(void);
+float fn2(void);
+
+
+#if 0
 
 // - Multiple declarations, external linkage.
 
 /// fn2 - Returns an integer.
-float fn2(void);
-float fn2(void);
 
 // - Enums
 

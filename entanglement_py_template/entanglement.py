@@ -11,10 +11,6 @@ Usage:
         output_file     - Path to write the generated Python binding code.
 """
 
-# TODO
-# - Read Python assert() preconditions for functions from C++ comments.
-
-
 import sys
 import os
 import clang.cindex
@@ -26,7 +22,7 @@ from clang.cindex import TypeKind, Type, LinkageKind, AccessSpecifier, Config
 # Verbose - 0: Normal status and errors. 1: Processing steps. 2: AST traversal.
 VERBOSE = 2
 
-# Path to the libclang shared library. TODO: THIS FAILS SILENTLY.
+# Path to the libclang shared library. TODO throws exceptions.
 _libclang_path = "/usr/lib/llvm-18/lib/libclang.so.1"
 
 # Exit codes.
@@ -230,7 +226,7 @@ def is_public_method(cursor: Cursor) -> bool:
 def get_mangled_name(cursor: Cursor) -> str:
     return cursor.mangled_name or cursor.spelling
 
-def format_doc(cursor: Cursor) -> str:
+def format_doc(cursor: Cursor) -> List[str]:
     """
     Extracts and formats the raw comment for use as a docstring.
     Strips comment markers and leading/trailing whitespace.
@@ -248,9 +244,9 @@ def format_doc(cursor: Cursor) -> str:
                 line = line[2:].strip()
             line = line.replace('\\', '\\\\').replace('"', '\\"')
             cleaned.append(line)
-        doc = "\n".join(cleaned) if cleaned else ""
-        return f'\t"""{doc}"""' if doc else ""
-    return ""
+        doc = "\n\t".join(cleaned) if cleaned else ""
+        return [f'\t"""{doc}"""' if doc else ""]
+    return [ ]
 
 def format_enum(cursor: Cursor, enums: Dict[str, str]) -> List[str]:
     """Formats the enum binding code with type hints and constants."""
@@ -260,11 +256,8 @@ def format_enum(cursor: Cursor, enums: Dict[str, str]) -> List[str]:
     # TODO
     enums[enum_name] = _fundamental_type_map[cursor.enum_type][0]
 
-    doc_str = format_doc(cursor)
-
     lines.append(f"class {enum_name}(Enum):")
-    if doc_str:
-        lines.append(doc_str)
+    lines += format_doc(cursor)
 
     for child in cursor.get_children():
         if child.kind == CursorKind.ENUM_CONSTANT_DECL: # type: ignore
@@ -304,13 +297,12 @@ def type_map(cpp_type: Type, classes: Dict[str, str], enums: Dict[str, str]) -> 
 
     raise ValueError(f"Unrecognized C++ type '{spelling}' may cause memory corruption")
 
-def format_function(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str], overload_index: int = 0) -> List[str]:
+def format_function(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str], overloaded: bool) -> List[str]:
     """
     Generates binding lines for a free function.
     Includes docstring and overload decorator if needed.
     """
     mangled_name = get_mangled_name(cursor)
-    doc_str = format_doc(cursor)
     arg_types = []
     for arg in cursor.get_arguments():
         ctypes_type, py_type = type_map(arg.type, classes, enums)
@@ -323,15 +315,18 @@ def format_function(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, st
         lines.append(f"__clib.{mangled_name}.argtypes = [{', '.join(args)}]")
     lines.append(f"__clib.{mangled_name}.restype = {return_type}")
 
-    if overload_index > 0:
+    if overloaded:
         lines.append(f"@overload")
 
     arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
     return_hint = f' -> {return_py_type}' if return_py_type != 'None' else ''
     lines.append(f"def {cursor.spelling}({arg_hints}){return_hint}:")
-    if doc_str:
-        lines.append(doc_str)
-    lines.append(f"\treturn __clib.{mangled_name}({', '.join(f'arg{i}' for i in range(len(arg_types)))})")
+
+    if overloaded:
+        lines[-1] += ' ...'
+    else:
+        lines += format_doc(cursor)
+        lines.append(f"\treturn __clib.{mangled_name}({', '.join(f'arg{i}' for i in range(len(arg_types)))})")
     return lines
 
 def format_method(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str], overload_index: int = 0) -> List[str]:
@@ -340,7 +335,6 @@ def format_method(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str]
     Includes overload, classmethod, staticmethod, or abstractmethod decorators if needed.
     """
     mangled_name = get_mangled_name(cursor)
-    doc_str = format_doc(cursor)
     arg_types = []
     for arg in cursor.get_arguments():
         ctypes_type, py_type = type_map(arg.type, classes, enums)
@@ -364,8 +358,7 @@ def format_method(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str]
     arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
     return_hint = f' -> {return_py_type}' if return_py_type != 'None' else ''
     lines.append(f"def {cursor.spelling}({arg_hints}){return_hint}:")
-    if doc_str:
-        lines.append(doc_str)
+    lines += format_doc(cursor)
     lines.append(f"\treturn __clib.{mangled_name}({', '.join(f'arg{i}' for i in range(len(arg_types)))})")
     return lines
 
@@ -375,7 +368,6 @@ def format_constructor(cursor: Cursor, classes: Dict[str, str], enums: Dict[str,
     Includes overload decorator if needed.
     """
     mangled_name = get_mangled_name(cursor)
-    doc_str = format_doc(cursor)
     arg_types = []
     for arg in cursor.get_arguments():
         ctypes_type, py_type = type_map(arg.type, classes, enums)
@@ -391,8 +383,7 @@ def format_constructor(cursor: Cursor, classes: Dict[str, str], enums: Dict[str,
 
     arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
     lines.append(f"def __init__(self, {arg_hints}) -> None:")
-    if doc_str:
-        lines.append(f"\t{doc_str}")
+    lines += format_doc(cursor)
     lines.append(f"\t__clib.{mangled_name}({', '.join(f'arg{i}' for i in range(len(arg_types)))})")
     return lines
 
@@ -405,7 +396,7 @@ def generate_overload_selector(name: str, overloads: List[Cursor]) -> List[str]:
     # Group overloads by argument count
     arg_count_map: Dict[int, List[Cursor]] = {}
     for cursor in overloads:
-        arg_count = len(list(cursor.get_arguments())) # TODO
+        arg_count = len(list(cursor.get_arguments()))
         if arg_count not in arg_count_map:
             arg_count_map[arg_count] = []
         arg_count_map[arg_count].append(cursor)
@@ -416,21 +407,23 @@ def generate_overload_selector(name: str, overloads: List[Cursor]) -> List[str]:
     elif any(is_static_method(cursor) for cursor in overloads):
         lines.append("@staticmethod")
 
-    lines.append(f"def {name}(*args, **kwargs) -> Any:")
+    lines.append(f"def {name}(*args: Any, **kwargs: Any) -> Any:")
+    lines.append('\tmatch len(args):')
 
     # TODO Dispatch by argument count first and then by first parameter type second.
     for arg_count, overload_group in sorted(arg_count_map.items()):
         if not overload_group:
             continue
-        lines.append(f"\tif len(args) == {arg_count}:")
         if len(overload_group) > 1:
             raise ValueError(f"Multiple overloads for {name} with {arg_count} arguments: cannot disambiguate")
         cursor = overload_group[0]
         mangled_name = get_mangled_name(cursor)
-        arg_list = ', '.join(f'arg{i}' for i in range(arg_count))
-        lines.append(f"\t\treturn __clib.{mangled_name}({arg_list})")
+        arg_list = ', '.join(f'args[{i}]' for i in range(arg_count))
+        lines.append(f"\t\tcase {arg_count}:")
+        lines.append(f"\t\t\treturn __clib.{mangled_name}({arg_list})")
 
-    lines.append(f"\traise ValueError(f'overload_resolution {name}"+"with {len(args)} arguments')")
+    lines.append(f"\t\tcase _:")
+    lines.append(f"\t\t\traise ValueError(f'overload_resolution {name} with {{len(args)}} arguments')")
     return lines
 
 def format_class(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str], seen_signatures: Set[str]) -> List[str]:
@@ -447,11 +440,9 @@ def format_class(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str],
     if has_pure_virtual:
         return []
 
-    doc_str = format_doc(cursor)
     lines: List[str] = []
     lines.append(f"class {class_name}(ctypes.Structure):")
-    if doc_str:
-        lines.append(doc_str)
+    lines += format_doc(cursor)
     fields = []
     for child in cursor.get_children():
         if child.kind == CursorKind.FIELD_DECL: # type: ignore
@@ -570,14 +561,15 @@ def format_namespace(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, s
 
     # Generate function overload selectors
     for func_name, overloads in function_overloads.items():
-        lines.extend(format_function(overloads[0], classes, enums, 0))
-        for i, cursor in enumerate(overloads[1:], 1):
-            lines.extend(format_function(cursor, classes, enums, i))
         if len(overloads) > 1:
+            for cursor in overloads:
+                lines.extend(format_function(cursor, classes, enums, True))
             lines.extend(generate_overload_selector(func_name, overloads))
+        else:
+            lines.extend(format_function(overloads[0], classes, enums, False))
+
 
     return lines
-
 
 def load_translation_unit(header_file: str) -> TranslationUnit:
     index = Index.create()
@@ -627,16 +619,15 @@ Arguments:
     Config.set_library_file(_libclang_path)
 
     output_lines: List[str] = [
-        '# entanglement.py',
-        'import sys, os, ctypes',
-        'from typing import Dict, List, Set, Tuple, Optional, overload, Any',
+        f'""" Generated by entanglement.py from {', '.join(_arg_header_files)}."""',
+        'import os, ctypes',
+        'from typing import Any, overload',
         'from enum import Enum',
         '',
         f"__clib = ctypes.CDLL(os.path.join(os.getcwd(),'{_arg_lib_name}'))",
         ''
     ]
 
-    dependencies: Set[str] = set() # input header files
     classes: Dict[str, str] = {} # check for declaration of classes and structs
     enums: Dict[str, str] = {} # check for declaration of enums
     seen_functions: Set[str] = set() # check for duplicates, not overloads
