@@ -48,7 +48,6 @@ float fn2(void);
 float fn2(void);
 
 
-#if 0
 
 // - Multiple declarations, external linkage.
 
@@ -59,9 +58,11 @@ float fn2(void);
 /// enum1 - An empty enumeration.
 enum enum1 { };
 /// enum2 - An enumeration with a single member.
-enum enum2 { enum2_1=0u };
+enum class enum2 { enum2_1=0u };
 /// enum3 - An enumeration with multiple members.
-enum enum3 { enum3_1=-10, enum3_2=0, enum3_3=10 };
+enum enum3 : short { enum3_1=-10, enum3_2=0, enum3_3=10 };
+
+#if 0
 
 /// fn1 - Returns the input enum1 value.
 /// - x: The enum1 value to return.
