@@ -11,6 +11,20 @@ Usage:
         output_file     - Path to write the generated Python binding code.
 """
 
+
+#    def is_abstract_record(self):
+#    def is_pure_virtual_method(self): # throw in constructor?
+
+#    def get_array_element_type(self):
+#    def get_array_size(self):
+#    def get_size(self): # assert(sizeof == get_size())
+#    def get_fields(self): # classes
+#    def is_bitfield(self):
+#    def get_bitfield_width(self):
+
+
+
+
 import sys
 import os
 import clang.cindex
@@ -118,8 +132,8 @@ def parse_argv() -> bool:
 
     return True
 
-# cindex has weird messages in their exceptions.
-def exception_handler(e: Exception) -> None:
+# cindex may have extra exception data.
+def exception_debugger(e: Exception) -> None:
     for attribute_name in dir(e):
         try:
             attribute_value = getattr(e, attribute_name)
@@ -129,6 +143,9 @@ def exception_handler(e: Exception) -> None:
 
     print(e)
     sys.exit(_exit_error)
+
+def throw_cursor(c: Cursor, message: str) -> None:
+    raise ValueError(c.displayname() + ': ' + message + '\n' + c.location())
 
 def get_counter() -> int:
     global _counter
@@ -253,6 +270,47 @@ def is_public_method(cursor: Cursor) -> bool:
 def get_mangled_name(cursor: Cursor) -> str:
     return cursor.mangled_name or cursor.spelling
 
+def type_map(cpp_type: Type, classes: Dict[str, str], enums: Dict[str, str]) -> Tuple[str, str]:
+    """ clang type -> (ctype, python, C)"""
+    # Handle typedefs by resolving to the canonical type
+    while cpp_type.kind == TypeKind.TYPEDEF:  # type: ignore
+        cpp_type = cpp_type.get_canonical()
+
+    # Fundamental types
+    if cpp_type.kind in _clang_to_ctypes:
+        return (_clang_to_ctypes[cpp_type.kind], _clang_to_python[cpp_type.kind])
+
+    # Pointers and references. Treating references as pointers is "implementation-defined
+    # behavior" that depends on the C++ ABIs. If it doesn't work then it is a language
+    # extension provided by this tool that should be unsupported on your platform.
+    if cpp_type.kind in (TypeKind.POINTER, TypeKind.LVALUEREFERENCE, TypeKind.RVALUEREFERENCE):  # type: ignore
+        pointee = cpp_type.get_pointee()
+        pointee_ctype, pointee_py_type = type_map(pointee, classes, enums)
+        return (f"ctypes.POINTER({pointee_ctype})", pointee_py_type)
+
+    # Structs, classes and enums.
+    spelling = cpp_type.spelling
+    if spelling in classes:
+        return (spelling, spelling)  # Use class name as ctype and Python type.
+    if spelling in enums:
+        return (enums[spelling], spelling)  # Use ctype and enum name as Python type.
+
+    raise ValueError(f"Unrecognized C++ type '{spelling}' may cause memory corruption")
+
+def calculate_namespace_prefix(cursor: Cursor) -> str:
+    """
+    Returns the fully qualified namespace path for a cursor (e.g., 'outer::inner').
+    Traverses semantic parents to build the namespace chain.
+    """
+    namespaces: List[str] = []
+    current: Optional[Cursor] = cursor.semantic_parent
+    while current and current.kind is CursorKind.NAMESPACE: # type: ignore
+        namespaces.append(current.spelling)
+        current = current.semantic_parent
+    if namespaces:
+        namespaces.append("")
+    return "::".join(reversed(namespaces))
+
 def format_doc(cursor: Cursor) -> List[str]:
     """
     Extracts and formats the raw comment for use as a docstring.
@@ -306,33 +364,6 @@ def format_enum(cursor: Cursor, enums: Dict[str, str]) -> List[str]:
                 lines.append(f"{child.spelling}={enum_name}.{child.spelling}")
 
     return lines
-
-def type_map(cpp_type: Type, classes: Dict[str, str], enums: Dict[str, str]) -> Tuple[str, str]:
-    """ clang type -> (ctype, python, C)"""
-    # Handle typedefs by resolving to the canonical type
-    while cpp_type.kind == TypeKind.TYPEDEF:  # type: ignore
-        cpp_type = cpp_type.get_canonical()
-
-    # Fundamental types
-    if cpp_type.kind in _clang_to_ctypes:
-        return (_clang_to_ctypes[cpp_type.kind], _clang_to_python[cpp_type.kind])
-
-    # Pointers and references. Treating references as pointers is "implementation-defined
-    # behavior" that depends on the C++ ABIs. If it doesn't work then it is a language
-    # extension provided by this tool that should be unsupported on your platform.
-    if cpp_type.kind in (TypeKind.POINTER, TypeKind.LVALUEREFERENCE, TypeKind.RVALUEREFERENCE):  # type: ignore
-        pointee = cpp_type.get_pointee()
-        pointee_ctype, pointee_py_type = type_map(pointee, classes, enums)
-        return (f"ctypes.POINTER({pointee_ctype})", pointee_py_type)
-
-    # Structs, classes and enums.
-    spelling = cpp_type.spelling
-    if spelling in classes:
-        return (spelling, spelling)  # Use class name as ctype and Python type.
-    if spelling in enums:
-        return (enums[spelling], spelling)  # Use ctype and enum name as Python type.
-
-    raise ValueError(f"Unrecognized C++ type '{spelling}' may cause memory corruption")
 
 def format_function(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str], overloaded: bool) -> List[str]:
     """
@@ -541,27 +572,6 @@ def format_class(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str],
 
     return lines
 
-def calculate_namespace_prefix(cursor: Cursor) -> str:
-    """
-    Returns the fully qualified namespace path for a cursor (e.g., 'outer::inner').
-    Traverses semantic parents to build the namespace chain.
-    """
-    namespaces: List[str] = []
-    current: Optional[Cursor] = cursor.semantic_parent
-    while current and current.kind is CursorKind.NAMESPACE: # type: ignore
-        namespaces.append(current.spelling)
-        current = current.semantic_parent
-    if namespaces:
-        namespaces.append("")
-    return "::".join(reversed(namespaces))
-
-def calculate_signature(cursor: Cursor) -> str:
-    """
-    Returns the mangled name as the unique signature for a function/method.
-    Used to avoid duplicate bindings for overloads.
-    """
-    return get_mangled_name(cursor)
-
 def format_namespace(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str], seen_functions: Set[str]) -> List[str]:
     """
     Recursively visits AST nodes starting from the given cursor.
@@ -581,7 +591,7 @@ def format_namespace(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, s
                 lines.extend(format_namespace(c, classes, enums, seen_functions))
                 verbose2(f"namespace_exit {c.spelling}")
             elif is_public_function(c):
-                fn = calculate_signature(c)
+                fn = get_mangled_name(c)
                 if fn not in seen_functions:
                     func_name = c.spelling
                     if func_name not in function_overloads:
@@ -612,14 +622,116 @@ def format_namespace(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, s
 
     return lines
 
+
+
+
+
+# The fields of an anonymous enum are available from their parent. As such the
+# path can be the parents path. Anonymous namespaces must also be retained as
+# they may contain implementation details like base class layouts that are
+# needed by the bindings code.
+def format_python_package_path(cursor: Cursor) -> str:
+    """ Generate the Python package path for the symbol. """
+    namespaces: List[str] = []
+    current: Optional[Cursor] = cursor
+    while current and current.kind is CursorKind.NAMESPACE: # type: ignore
+        if current.spelling:
+            namespaces.append(current.spelling)
+        current = current.semantic_parent
+    return '.'.join(reversed(namespaces))
+
+def print_symbols(symbols: Dict[str, List[Cursor]]) -> None:
+    for _, cursor_list in symbols.items():
+        for cursor in cursor_list:
+            print(f"{cursor.displayname} {len(cursor_list)}")
+            break
+
+def add_symbol(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
+    """ Add the symbol to the symbol table. """
+    usr : str = cursor.get_usr()
+    if usr not in symbols:
+        assert usr
+        symbols[usr] = [ cursor ]
+    else:
+        symbols[usr].append(cursor)
+    verbose(f'added {cursor.displayname}')
+
+def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
+    """
+    Traverse nodes of interest accumulating cursors by namespace qualified name.
+    Quality can be checked beyond simple examination once they are gathered.
+    """
+
+#    verbose2(f'visiting {cursor.kind.name} {cursor.displayname}')
+
+    if cursor.kind in (CursorKind.TRANSLATION_UNIT, CursorKind.NAMESPACE): # type: ignore
+        pass # fallthrough
+
+    # TODO
+    elif not is_project_header(cursor):
+        return
+
+    elif (cursor.kind in (
+            CursorKind.CLASS_TEMPLATE, # type: ignore
+            CursorKind.FUNCTION_TEMPLATE, # type: ignore
+            CursorKind.CLASS_TEMPLATE_PARTIAL_SPECIALIZATION # type: ignore
+        )):
+        verbose2(f'skipping template {cursor.displayname}')
+        return
+
+    elif cursor.kind is CursorKind.ENUM_DECL: # type: ignore
+        if cursor.is_definition() and cursor.access_specifier in (
+                AccessSpecifier.PUBLIC, # type: ignore
+                AccessSpecifier.INVALID): # type: ignore # Top-level enums
+            add_symbol(cursor, symbols)
+        else:
+            verbose2(f'skipping enum {cursor.displayname}')
+        return
+
+    elif cursor.kind is CursorKind.FUNCTION_DECL: # type: ignore
+        if (cursor.linkage is LinkageKind.EXTERNAL # type: ignore
+                and not cursor.type.is_function_variadic()
+                and not is_arg_va_list(cursor)):
+            add_symbol(cursor, symbols)
+        else:
+            verbose2(f'skipping function {cursor.displayname}')
+        return
+
+    elif cursor.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
+        if (cursor.is_definition() and cursor.access_specifier in (
+                AccessSpecifier.PUBLIC, # type: ignore
+                AccessSpecifier.INVALID)): # type: ignore # Top-level classes/classes
+            add_symbol(cursor, symbols)
+        else:
+            verbose2(f'skipping class {cursor.displayname}')
+            return
+        # fallthrough
+
+    elif cursor.kind in (CursorKind.CONSTRUCTOR, CursorKind.DESTRUCTOR, CursorKind.CXX_METHOD): # type: ignore
+        if (cursor.access_specifier is AccessSpecifier.PUBLIC # type: ignore
+                and not cursor.type.is_function_variadic()
+                and not is_arg_va_list(cursor)):
+            add_symbol(cursor, symbols)
+        else:
+            verbose2(f'skipping class method {cursor.displayname}')
+        return
+
+    else:
+        verbose2(f'not gathering {cursor.kind.name} {cursor.displayname}')
+        return
+
+    # fallthrough to children.
+    for c in cursor.get_children():
+        gather_symbols_of_interest(c, symbols)
+
 def load_translation_unit(header_file: str) -> TranslationUnit:
     index = Index.create()
-    verbose2(f"Parsing translation unit for {header_file}")
     translation_unit: Optional[TranslationUnit] = None
     try:
-        translation_unit = index.parse(header_file, _arg_compiler_flags)
+        translation_unit = index.parse(header_file, _arg_compiler_flags,
+            options=clang.cindex.TranslationUnit.PARSE_SKIP_FUNCTION_BODIES)
     except Exception as e:
-        exception_handler(e)
+        exception_debugger(e)
 
     for diagnostic in translation_unit.diagnostics: # type: ignore
         print(diagnostic)
@@ -660,13 +772,24 @@ Arguments:
     Config.set_library_file(_libclang_path)
 
     output_lines: List[str] = [
-        f'""" Generated by entanglement.py from {', '.join(_arg_header_files)}."""',
-        'import os, ctypes, enum',
+        f'""" Generated from {', '.join(_arg_header_files)}."""',
+        'import ctypes, enum, os',
         'from typing import Any, overload',
         '',
         f"__clib = ctypes.CDLL(os.path.join(os.getcwd(),'{_arg_lib_name}'))",
         ''
     ]
+
+    symbols: Dict[str, List[Cursor]] = { }
+    for header_file in _arg_header_files:
+        verbose(f"Gathering symbols from {header_file}...")
+        translation_unit = load_translation_unit(header_file)
+        gather_symbols_of_interest(translation_unit.cursor, symbols)
+
+    print_symbols(symbols)
+
+    exit(0)
+
 
     classes: Dict[str, str] = {} # check for declaration of classes and structs
     enums: Dict[str, str] = {} # check for declaration of enums

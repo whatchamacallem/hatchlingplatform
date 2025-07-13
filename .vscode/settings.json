@@ -5,6 +5,7 @@
 
     "cSpell.words": [
         "asan",
+        "bitfield",
         "CFLAGS",
         "checkasserts",
         "checkhash",
@@ -16,6 +17,7 @@
         "debugbuild",
         "demangle",
         "Demangled",
+        "displayname",
         "docstrings",
         "DTEST",
         "emcc",
