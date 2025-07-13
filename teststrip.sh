@@ -42,7 +42,7 @@ cd ..
 echo ==========================================================================
 echo = Largest elf symbols...
 echo ==========================================================================
-./list_symbols.sh
+./listsymbols.sh
 
 echo ==========================================================================
 # prints summary stats for the necessary components of the executable.

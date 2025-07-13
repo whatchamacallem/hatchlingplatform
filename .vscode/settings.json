@@ -42,6 +42,7 @@
         "Iinclude",
         "LDFLAGS",
         "libentanglement",
+        "listsymbols",
         "lpthread",
         "lpython",
         "lstdc",
@@ -111,5 +112,6 @@
         "MD033": {
             "allowed_elements": ["div", "img", "br"]
         }
-    }
+    },
+    "git.suggestSmartCommit": false
 }

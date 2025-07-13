@@ -22,7 +22,7 @@ extern float g_f, g_g, g_h;
 /// fn1 - Sets global variables g_a and g_b and returns the sum of global variables.
 /// - a: An integer value to assign to g_a.
 /// - b: An integer value to assign to g_b.
-float fn1(char a, short b) { g_a = a; g_b = b; return fn1(); }
+float fn1(char a, short b);
 /// fn1 - Sets global variables g_a, g_b, and g_c and returns the sum of global variables.
 /// - a: An integer value to assign to g_a.
 /// - b: An integer value to assign to g_b.
@@ -33,7 +33,7 @@ float fn1(char a, short b) { g_a = a; g_b = b; return fn1(); }
 
 /// fn1 - Sets the global variable g_f and returns the sum of global variables.
 /// - f: A float value to assign to g_f.
-float fn1(float f) { g_f = f; return fn1(); }
+float fn1(float f);
 /// fn1 - Sets global variables g_f and g_g and returns the sum of global variables.
 /// - f: A float value to assign to g_f.
 /// - g: A float value to assign to g_g.
@@ -42,7 +42,7 @@ float fn1(float f) { g_f = f; return fn1(); }
 /// - f: A float value to assign to g_f.
 /// - g: A float value to assign to g_g.
 /// - h: A float value to assign to g_h.
-float fn1(float* f, float g, float h) { g_f = *f; g_g = g; g_h = h; return fn1(); }
+float fn1(float* f, float g, float h);
 
 float fn2(void);
 float fn2(void);
@@ -62,20 +62,19 @@ enum class enum2 { enum2_1=0u };
 /// enum3 - An enumeration with multiple members.
 enum enum3 : short { enum3_1=-10, enum3_2=0, enum3_3=10 };
 
-#if 0
-
 /// fn1 - Returns the input enum1 value.
 /// - x: The enum1 value to return.
-enum1 fn1(enum1 x) { return x; }
+enum1 fn2(enum1 x);
 /// fn1 - Compares two enum2 values for equality.
 /// - a: The first enum2 value.
 /// - b: The second enum2 value.
-bool fn1(enum2 a, enum2 b) { return a == b; }
+bool fn2(enum2 a, enum2 b);
 /// fn1 - Compares two enum3 values and returns one of the inputs.
 /// - a: The first enum3 value.
 /// - b: The second enum3 value.
 /// - c: The third enum3 value.
-enum3 fn1(enum3 a, enum3 b, enum3 c) { return a == b ? a : c; }
+enum3 fn2(enum3 a, enum3 b, enum3 c);
+
 
 /// class1 - Null test for a struct/class. It has a public constructor.
 class class1 {
@@ -89,15 +88,19 @@ class class2 {
 public:
 	/// class2 - Constructs a class2 object with an integer value.
 	/// - x: An integer value to initialize m_x.
-	explicit class2(int x) : m_x(x) { }
+	explicit class2(int x);
 	/// class2 - Constructs a class2 object with a float value, cast to an integer.
 	/// - x: A float value to initialize m_x.
-	explicit class2(float x) : m_x((int)x) { }
+	explicit class2(float x, float y);
 	/// fn3 - Returns the private member m_x.
-	int fn3(void) { return m_x; }
+	int fn3(void);
 private:
 	int m_x;
+	double m_y;
+	char m_z;
 };
+
+#if 0
 
 /// class3 - A complex class with a constructor, virtual destructor, and overloaded methods.
 class class3 {

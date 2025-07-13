@@ -278,7 +278,7 @@ def format_doc(cursor: Cursor) -> List[str]:
 def format_enum(cursor: Cursor, enums: Dict[str, str]) -> List[str]:
     """Formats the enum binding code with type hints and constants."""
     enum_name = cursor.spelling or f"__enum_{get_counter()}"
-    lines: List[str] = []
+    lines: List[str] = ['']
 
     # TODO pre-pass. Only built in types are valid here.
     enums[enum_name] = _clang_to_ctypes[cursor.enum_type.kind]
@@ -290,20 +290,20 @@ def format_enum(cursor: Cursor, enums: Dict[str, str]) -> List[str]:
 
     lines += format_doc(cursor)
 
+    is_pass = True
     for child in cursor.get_children():
         if child.kind == CursorKind.ENUM_CONSTANT_DECL: # type: ignore
             lines.append(f"\t{child.spelling}={child.enum_value}")
+            is_pass = False
+
+    if is_pass:
+        lines.append("\tpass")
 
     # Put the named constants in the surrounding namespace.
-    is_pass = True
     if not cursor.is_scoped_enum():
         for child in cursor.get_children():
             if child.kind == CursorKind.ENUM_CONSTANT_DECL: # type: ignore
                 lines.append(f"{child.spelling}={enum_name}.{child.spelling}")
-                is_pass = False
-
-    if is_pass:
-        lines.append("\tpass")
 
     return lines
 
@@ -346,7 +346,7 @@ def format_function(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, st
         arg_types.append((ctypes_type, py_type))
     return_type, return_py_type = type_map(cursor.result_type, classes, enums)
 
-    lines: List[str] = []
+    lines: List[str] = ['']
 
     if overloaded:
         lines.append(f"@overload")
@@ -380,7 +380,7 @@ def format_method(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str]
         arg_types.append((ctypes_type, py_type))
     return_type, return_py_type = type_map(cursor.result_type, classes, enums)
 
-    lines: List[str] = []
+    lines: List[str] = ['']
 
     if arg_types:
         args = [arg[0] for arg in arg_types]
@@ -412,7 +412,7 @@ def format_constructor(cursor: Cursor, classes: Dict[str, str], enums: Dict[str,
         ctypes_type, py_type = type_map(arg.type, classes, enums)
         arg_types.append((ctypes_type, py_type))
 
-    lines: List[str] = []
+    lines: List[str] = ['']
     lines.append(f"__clib.{mangled_name}.restype = None")
     if arg_types:
         args = [arg[0] for arg in arg_types]
@@ -440,7 +440,7 @@ def generate_overload_selector(name: str, overloads: List[Cursor]) -> List[str]:
             arg_count_map[arg_count] = []
         arg_count_map[arg_count].append(cursor)
 
-    lines: List[str] = []
+    lines: List[str] = ['']
     if any(is_public_method(cursor) for cursor in overloads):
         lines.append("@classmethod")
     elif any(is_static_method(cursor) for cursor in overloads):
@@ -479,16 +479,18 @@ def format_class(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, str],
     if has_pure_virtual:
         return []
 
-    lines: List[str] = []
+    lines: List[str] = ['']
     lines.append(f"class {class_name}(ctypes.Structure):")
     lines += format_doc(cursor)
     fields = []
     for child in cursor.get_children():
         if child.kind == CursorKind.FIELD_DECL: # type: ignore
             ctypes_type, _ = type_map(child.type, classes, enums)
-            fields.append(f'("{child.spelling}", {ctypes_type})')
+            fields.append(f'\t\t("{child.spelling}", {ctypes_type}),')
     if fields:
-        lines.append(f"\t_fields_ = [{', '.join(fields)}]")
+        lines.append("\t_fields_ = [")
+        lines += fields
+        lines.append("\t]")
     else:
         lines.append(f"\tpass")
 
