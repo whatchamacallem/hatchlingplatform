@@ -68,7 +68,7 @@ private:
 #else
     union {
         char m_allocator_[fixed_capacity_ * sizeof(T_)];
-        double m_alignas_double;
+        char* m_alignas;
     };
 #endif
 #if (HX_RELEASE) < 1
