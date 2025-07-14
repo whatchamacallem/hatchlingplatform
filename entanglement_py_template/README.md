@@ -63,11 +63,9 @@ symbols into your .so regardless of whether they were used:
 - It should be possible to instantiate templates in header files and have
 them linkable with ENTANGLE_API.
 
-- C++ operators and default parmas.  E.g. hxrandom.
+- C++ operators and default params.  E.g. hxrandom.
 
 - Yet another config file?
-
-
 
 This compiles and runs.
 

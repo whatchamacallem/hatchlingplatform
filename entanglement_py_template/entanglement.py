@@ -29,6 +29,7 @@ import sys
 import os
 import clang.cindex
 import ctypes
+from datetime import datetime
 from typing import Dict, List, Set, Tuple, Optional
 from clang.cindex import Index, TranslationUnit, Diagnostic, Cursor, CursorKind
 from clang.cindex import TypeKind, Type, LinkageKind, AccessSpecifier, Config
@@ -622,38 +623,39 @@ def format_namespace(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, s
 
     return lines
 
+def emit_python_api(sorted_symbols: List[List[Cursor]], api: List[str]) -> None:
+    pass
 
+def emit_structure_list(sorted_symbols: List[List[Cursor]], structure_list: List[str]) -> None:
+    pass
 
+def emit_symbol_table(sorted_symbols: List[List[Cursor]], symbol_table: List[str]) -> None:
+    pass
 
 
 # The fields of an anonymous enum are available from their parent. As such the
 # path can be the parents path. Anonymous namespaces must also be retained as
 # they may contain implementation details like base class layouts that are
-# needed by the bindings code.
+# needed by the bindings code. Global anonymous enums will have the key "".
 def format_python_package_path(cursor: Cursor) -> str:
     """ Generate the Python package path for the symbol. """
     namespaces: List[str] = []
     current: Optional[Cursor] = cursor
-    while current and current.kind is CursorKind.NAMESPACE: # type: ignore
+    while current and current.kind is not CursorKind.TRANSLATION_UNIT: # type: ignore
         if current.spelling:
             namespaces.append(current.spelling)
         current = current.semantic_parent
     return '.'.join(reversed(namespaces))
 
-def print_symbols(symbols: Dict[str, List[Cursor]]) -> None:
-    for _, cursor_list in symbols.items():
-        for cursor in cursor_list:
-            print(f"{cursor.displayname} {len(cursor_list)}")
-            break
-
+# Gather symbols by their python path. They will have to work together.
 def add_symbol(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
     """ Add the symbol to the symbol table. """
-    usr : str = cursor.get_usr()
-    if usr not in symbols:
-        assert usr
-        symbols[usr] = [ cursor ]
+    sym : str = format_python_package_path(cursor)
+    if sym not in symbols:
+        assert sym
+        symbols[sym] = [ cursor ]
     else:
-        symbols[usr].append(cursor)
+        symbols[sym].append(cursor)
     verbose(f'added {cursor.displayname}')
 
 def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
@@ -724,6 +726,15 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
     for c in cursor.get_children():
         gather_symbols_of_interest(c, symbols)
 
+# This is the final output order for the python api.
+def sort_symbols(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]]) -> None:
+    for key in sorted(symbols.keys()):
+        sorted_symbols.append(symbols[key])
+
+def print_sorted_symbols(sorted_symbols: List[List[Cursor]]) -> None:
+    for cursor_list in sorted_symbols:
+        print(f"{format_python_package_path(cursor_list[0])} {len(cursor_list)}")
+
 def load_translation_unit(header_file: str) -> TranslationUnit:
     index = Index.create()
     translation_unit: Optional[TranslationUnit] = None
@@ -771,44 +782,68 @@ Arguments:
     verbose(f"Setting libclang path: {_libclang_path}")
     Config.set_library_file(_libclang_path)
 
-    output_lines: List[str] = [
-        f'""" Generated from {', '.join(_arg_header_files)}."""',
-        'import ctypes, enum, os',
-        'from typing import Any, overload',
-        '',
-        f"__clib = ctypes.CDLL(os.path.join(os.getcwd(),'{_arg_lib_name}'))",
-        ''
-    ]
-
+    # Using a Python class to implement namespaces requires merging the namespace
+    # declarations. And Python's function overloading solution requires figuring
+    # out all of the function overloads in advance.
     symbols: Dict[str, List[Cursor]] = { }
     for header_file in _arg_header_files:
         verbose(f"Gathering symbols from {header_file}...")
         translation_unit = load_translation_unit(header_file)
         gather_symbols_of_interest(translation_unit.cursor, symbols)
 
-    print_symbols(symbols)
+    # Sort the symbols into their final order.
 
-    exit(0)
+    sorted_symbols: List[List[Cursor]] = []
+    sort_symbols(symbols, sorted_symbols)
+    if VERBOSE >= 2:
+        verbose2('print_sorted_symbols:')
+        print_sorted_symbols(sorted_symbols)
 
+    # Build the script sections
 
-    classes: Dict[str, str] = {} # check for declaration of classes and structs
-    enums: Dict[str, str] = {} # check for declaration of enums
-    seen_functions: Set[str] = set() # check for duplicates, not overloads
+    python_api: List[str] = []
+    emit_python_api(sorted_symbols, python_api)
 
-    for header_file in _arg_header_files:
-        verbose(f"Visiting AST and generating bindings from {header_file}...")
-        translation_unit = load_translation_unit(header_file)
-        child_lines: List[str] = format_namespace(translation_unit.cursor, classes, enums, seen_functions)
-        output_lines.extend(child_lines)
-        verbose2(f"Added {len(child_lines)} lines from {header_file}")
+    structure_list: List[str] = []
+    emit_structure_list(sorted_symbols, structure_list)
 
-    output_lines += ['if __name__ == "__main__":', '\tprint("🐉🐉🐉")', '']
+    symbol_table: List[str] = []
+    emit_symbol_table(sorted_symbols, symbol_table)
+
+    # Assemble the script sections
+
+    output_lines: List[str] = [
+        f'""" {' '.join(sys.argv)}',
+        f'    {datetime.now()} """',
+        'import ctypes, enum, os',
+        'from typing import Any, overload',
+        '',
+        f"__clib = ctypes.CDLL('{os.path.abspath(_arg_lib_name)}')",
+        '',
+        f'# PYTHON_API {_arg_lib_name}',
+        ''
+    ] + python_api + [
+        '',
+        f'# STRUCTURE_LIST {_arg_lib_name}',
+        ''
+    ] + structure_list + [
+        '',
+        f'# SYMBOL_TABLE {_arg_lib_name}',
+        ''
+    ] + symbol_table + [
+        '',
+        "if __name__ == '__main__':",
+        "\tprint('🐉🐉🐉') # link succeeded",
+        ''
+    ]
+
+    # Write output
 
     with open(_arg_output_file, "w") as f:
         f.write("\n".join(output_lines) if output_lines else "")
         print(f"Wrote {_arg_output_file}: {len(output_lines)} lines")
 
-    verbose2("exit 0")
+    verbose2("exit ok")
     return _exit_bindings_generated
 
 if __name__ == "__main__":
