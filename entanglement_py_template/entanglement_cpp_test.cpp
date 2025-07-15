@@ -21,7 +21,7 @@ enum3 fn2(enum3 a, enum3 b, enum3 c) { return a == b ? a : c; }
 
 class2::class2(int x) : m_x(x) { }
 
-class2::class2(float x, float y) : m_x((int)x) { }
+class2::class2(float x, float) : m_x((int)x) { }
 
 int class2::fn3(void) { return m_x; }
 

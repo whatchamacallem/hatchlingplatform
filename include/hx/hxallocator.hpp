@@ -9,7 +9,7 @@
 /// A capacity value that allows for dynamic allocation.
 #define hxallocator_dynamic_capacity 0u
 
-/// hxallocator<1+> - Provides static allocation when capacity is greater than
+/// `hxallocator<1+>` - Provides static allocation when capacity is greater than
 /// zero.
 template<typename T_, size_t fixed_capacity_>
 class hxallocator {
@@ -44,9 +44,9 @@ public:
 protected:
     /// Used to ensure initial capacity as reserve_storage() will not reallocate.
     /// Provided for interface compatibility with the dynamic allocator.
-    /// - size: The number of elements of type T to ensure are available.
-    /// - allocator: Ignored.
-    /// - alignment: The alignment of the allocator is checked against this.
+    /// - `size` : The number of elements of type T to ensure are available.
+    /// - `allocator` : Ignored.
+    /// - `alignment` : The alignment of the allocator is checked against this.
     hxconstexpr_fn void reserve_storage(size_t size_,
             hxsystem_allocator_t allocator_=hxsystem_allocator_current,
             uintptr_t alignment_=HX_ALIGNMENT) {
@@ -77,7 +77,7 @@ private:
 #endif
 };
 
-/// hxallocator<0> - Capacity is set by first call to reserve_storage() and may
+/// `hxallocator<0>` - Capacity is set by first call to reserve_storage() and may
 /// not be extended.
 template<typename T_>
 class hxallocator<T_, hxallocator_dynamic_capacity> {
@@ -119,9 +119,9 @@ public:
 
 protected:
     /// Capacity is set by first call to reserve_storage and may not be extended.
-    /// - size: The number of elements of type T to allocate space for.
-    /// - allocator: The memory manager ID to use for allocation (default: hxsystem_allocator_current)
-    /// - alignment: The alignment to for the allocation. (default: HX_ALIGNMENT)
+    /// - `size` : The number of elements of type T to allocate space for.
+    /// - `allocator` : The memory manager ID to use for allocation (default: hxsystem_allocator_current)
+    /// - `alignment` : The alignment to for the allocation. (default: HX_ALIGNMENT)
     hxconstexpr_fn void reserve_storage(size_t size_,
             hxsystem_allocator_t allocator_=hxsystem_allocator_current,
             uintptr_t alignment_=HX_ALIGNMENT) {

@@ -4,7 +4,7 @@ The goal here is to demonstrate an automatic transpilation of a C/C++17 API into
 a Python wrapper using implementation-defined behavior to allow Python to call
 C++ directly. This is enabled by using a scripted clang transpiler that is able
 to configure Python's C marshalling package to publish the C++ symbol table in an
-.so. Clang is only needed to build the bindings and is not used at runtime.
+.so. clang is only needed to build the bindings and is not used at runtime.
 
 There are a few other very interesting projects that bind Python to C++ and there
 are different tradeoffs involved. Automatically generated binding code for an

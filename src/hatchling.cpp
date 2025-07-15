@@ -77,7 +77,7 @@ void __cxa_guard_abort(uint64_t *guard) {
 #endif
 
 // ----------------------------------------------------------------------------
-// Hook Clang's sanitizers in the debugger. This overrides a weak library symbol
+// Hook clang's sanitizers in the debugger. This overrides a weak library symbol
 // in the sanitizer support library. This provides clickable error messages
 // in vscode. Unused otherwise.
 
@@ -117,7 +117,7 @@ hxregister_string_literal_hash::hxregister_string_literal_hash(const char* str_)
 // The hash table code expects to be able to hash a key_t and compare it equal
 // to the Node::hash value. That results in double hashing here. It is just
 // another multiply.
-uint32_t hxregister_string_literal_hash::hash(void) const {
+hxhash_t hxregister_string_literal_hash::hash(void) const {
 	return hxkey_hash(m_hash_);
 };
 
@@ -244,7 +244,7 @@ hxnoexcept_intrinsic int hxasserthandler(const char* file, size_t line) {
 }
 #else
 extern "C"
-hxnoexcept_intrinsic hxnoreturn void hxasserthandler(uint32_t file, size_t line) {
+hxnoexcept_intrinsic hxnoreturn void hxasserthandler(hxhash_t file, size_t line) {
 	hxloghandler(hxloglevel_assert, "exit file %08zx line %zu\n", (size_t)file, line);
 	_Exit(EXIT_FAILURE);
 }

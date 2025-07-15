@@ -39,7 +39,7 @@
 //     detaching. Ensures threads are not left joinable on destruction. Not copyable.
 //     Errors are threated as release mode asserts instead of being tracked.
 
-/// Return the current thread id. Returns 0 when threads are disabled.
+/// Return the current thread id. Returns `0` when threads are disabled.
 inline size_t hxthread_id() {
 #if HX_USE_THREADS
     return (size_t)pthread_self();
@@ -48,7 +48,7 @@ inline size_t hxthread_id() {
 #endif
 }
 
-/// hxthread_local<T> - Provides a C++ template for thread-local storage, allowing
+/// `hxthread_local<T>` - Provides a C++ template for thread-local storage, allowing
 /// each thread to maintain its own instance of a specified type T. This class is
 /// available for compatibility when threading is off.
 template<typename T_>
@@ -70,14 +70,14 @@ public:
 #endif
     }
 
-    /// Set the thread local value from T.
+    /// Set the thread local value from `T`.
     inline void operator=(const T_& local_) { *get_local_() = local_; }
 
-    /// Cast the thread local value to T.
+    /// Cast the thread local value to `T`.
     inline operator const T_&() const { return *get_local_(); }
     inline operator T_&() { return *get_local_(); }
 
-    /// "address of" operator returns T*.
+    /// "address of" operator returns `T*`.
     inline const T_* operator&() const { return get_local_(); }
     inline T_* operator&() { return get_local_(); }
 
@@ -119,7 +119,7 @@ private:
 // pthreads is a little too nutty because it has a range of valid implementations.
 #if HX_USE_THREADS
 
-/// hxmutex - std::mutex style wrapper for pthreads. Asserts on unexpected failure
+/// `hxmutex` - `std::mutex` style wrapper for pthreads. Asserts on unexpected failure
 /// by the posix api. Currently default pthread behavior. That means non-recursive,
 /// no error-checking and no translation layer.
 class hxmutex {
@@ -166,12 +166,12 @@ private:
 	pthread_mutex_t m_mutex_;
 };
 
-/// hxunique_lock - std::unique_lock style RAII-style unique lock for hxmutex.
+/// `hxunique_lock` - `std::unique_lock` style RAII-style unique lock for `hxmutex`.
 /// Locks the mutex on construction and unlocks on destruction.
 class hxunique_lock {
 public:
     /// Constructs with option to defer locking.
-    /// - defer_lock: If true, does not lock the mutex immediately.
+    /// - `defer_lock` : If true, does not lock the mutex immediately.
     inline hxunique_lock(hxmutex& mtx_, bool defer_lock_=false)
             : m_mutex_(mtx_), m_owns_(false) {
         if (!defer_lock_) {
@@ -213,7 +213,7 @@ private:
     bool m_owns_;
 };
 
-/// hxcondition_variable - std::condition_variable style condition variable
+/// `hxcondition_variable` - `std::condition_variable` style condition variable
 /// wrapper for pthreads. Allows threads to wait for notifications.
 class hxcondition_variable {
 public:
@@ -231,23 +231,23 @@ public:
 
     /// Waits for the condition variable to be notified. Returns true on success,
     /// false otherwise.
-    /// - mutex: The mutex to use for waiting.
+    /// - `mutex` : The mutex to use for waiting.
     inline bool wait(hxmutex& mutex_) {
         int code_ = ::pthread_cond_wait(&m_cond_, mutex_.native_handle());
         hxassertmsg(code_ == 0, "pthread_cond_init %s", ::strerror(code_));
         return code_ == 0;
     }
 
-    /// Overload: Waits using a hxunique_lock. Returns true on success, false
+    /// Overload: Waits using a `hxunique_lock`. Returns true on success, false
     /// otherwise.
-    /// - lock: The unique lock to use for waiting.
+    /// - `lock` : The unique lock to use for waiting.
     inline bool wait(hxunique_lock& lock_) {
         return wait(lock_.mutex());
     }
 
     /// Waits until the predicate returns true.
-    /// - lock: The unique lock to use for waiting.
-    /// - pred: Predicate function to check.
+    /// - `lock` : The unique lock to use for waiting.
+    /// - `pred` : Predicate function to check.
     template<typename predicate_t_>
     inline void wait(hxunique_lock& lock_, predicate_t_ pred_) {
         while (!pred_()) {
@@ -281,7 +281,7 @@ private:
 	pthread_cond_t m_cond_;
 };
 
-/// hxthread - std::thread style thread wrapper for pthreads. Provides thread
+/// `hxthread` - `std::thread` style thread wrapper for pthreads. Provides thread
 /// creation and joining.
 class hxthread {
 public:
@@ -292,8 +292,8 @@ public:
     /// Does not free arg. Any function that takes a single pointer and returns
     /// a void pointer should work. The return value is ignored but may be unsafe
     /// to cast to a function with a different return type.
-    /// - entry_point: Function pointer of type: void* fn(T*).
-    /// - parameter: T* to pass to the function.
+    /// - `entry_point` : Function pointer of type: void* fn(T*).
+    /// - `parameter` : T* to pass to the function.
     template<typename parameter_t_>
     inline explicit hxthread(void* (*entry_point_)(parameter_t_*), parameter_t_* parameter_)
             : m_started_(false), m_joined_(false) {
@@ -306,20 +306,20 @@ public:
     }
 
     /// Starts a thread with the given function and argument. Does not free arg.
-    /// Any function that takes a single T pointer and returns a void pointer
+    /// Any function that takes a single `T` pointer and returns a `void` pointer
     /// should work. The return value is ignored but is required by pthreads
     /// calling convention.
-    /// - entry_point: Function pointer of type: void* entry_point(T*).
-    /// - parameter: T* to pass to the function.
+    /// - `entry_point` : Function pointer of type: void* entry_point(T*).
+    /// - `parameter` : T* to pass to the function.
     template<typename parameter_t_>
     inline void start(void* (*entry_point_)(parameter_t_*), parameter_t_* parameter_) {
 		hxassertmsg(!this->joinable(), "thread_still_running");
 
-        /// Stay on the right side of the C++ standard by avoiding assumptions
-        /// about pointer representations. The parameter_ pointer is never cast
-        /// between types. Instead the bit pattern of the pointer is preserved
-        /// while it is passed through the pthread api. This requires the pointers
-        /// to use the same number of bytes.
+        // Stay on the right side of the C++ standard by avoiding assumptions
+        // about pointer representations. The parameter pointer is never cast
+        // between types. Instead the bit pattern of the pointer is preserved
+        // while it is passed through the pthread api. This requires the pointers
+        // to use the same number of bytes.
         hxstatic_assert(sizeof(void*) == sizeof(parameter_t_*), "Incompatible pointer types");
 
         void* reinterpreted_parameter_=hxnull;
@@ -350,6 +350,7 @@ private:
 
     // Deleted copy constructor.
     hxthread(const hxthread&) hxdelete_fn;
+
     // Deleted copy assignment operator.
     hxthread& operator=(const hxthread&) hxdelete_fn;
 

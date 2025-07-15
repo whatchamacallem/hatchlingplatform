@@ -10,21 +10,20 @@
 // safety is guaranteed; use noexcept types or disable exceptions.
 
 #include <hx/hatchling.h>
-#include <hx/hxkey.hpp>
 #include <hx/hxarray.hpp>
 
-/// hxinsertion_sort - Sorts the elements in the range [begin_, end_) in comparison
+/// `hxinsertion_sort` - Sorts the elements in the range [begin_, end_) in comparison
 /// order using the insertion sort algorithm. The end_ parameter points past the
 /// end of the array. Exceptions during operation are not supported. Declare your
-/// copy constructor and assignment operator noexcept or turn off exceptions.
-/// The compare parameter is a function object that returns true if the first
-/// argument is ordered before (i.e. is less than) the second. See hxkey_less.
-/// - begin: Pointer to the beginning of the range to sort.
-/// - end: Pointer to one past the last element in the range to sort.
-/// - less: Comparison function object that takes two const T_& parameters and
-/// returns a bool.
-template<typename T_, typename Less_>
-void hxinsertion_sort(T_* begin_, T_* end_, const Less_& less_) {
+/// copy constructor and assignment operator `noexcept` or turn off exceptions.
+/// The `less` parameter is a function object that returns true if the first
+/// argument is ordered before (i.e. is less than) the second. See `hxkey_less`.
+/// - `begin` : Pointer to the beginning of the range to sort.
+/// - `end` : Pointer to one past the last element in the range to sort.
+/// - `less` : Comparison function object that takes two `const T&` parameters and
+/// returns a `bool`.
+template<typename T_, typename less_t_>
+void hxinsertion_sort(T_* begin_, T_* end_, const less_t_& less_) {
     if(begin_ == end_) { return; } // don't add +1 to null.
 
     // i points to insertion location. j points to next unsorted value.
@@ -41,27 +40,27 @@ void hxinsertion_sort(T_* begin_, T_* end_, const Less_& less_) {
     }
 }
 
-/// hxinsertion_sort (specialization) - A specialization of hxinsertion_sort using
-/// hxkey_less. c++98 junk.
-/// - begin: Pointer to the beginning of the range to sort.
-/// - end: Pointer to one past the last element in the range to sort.
+/// `hxinsertion_sort (specialization)` - A specialization of `hxinsertion_sort` using
+/// `hxkey_less`. c++98 junk.
+/// - `begin` : Pointer to the beginning of the range to sort.
+/// - `end` : Pointer to one past the last element in the range to sort.
 template<typename T_>
 void hxinsertion_sort(T_* begin_, T_* end_) {
     hxinsertion_sort(begin_, end_, hxkey_less<T_>);
 }
 
-/// hxbinary_search - Performs a binary search in the range [first, last). Returns
-/// hxnull if the value is not found. Unsorted data will lead to errors.
-/// Non-unique values will be selected between arbitrarily.
+/// `hxbinary_search` - Performs a binary search in the range [first, last). Returns
+/// `null` if the value is not found. Unsorted data will lead to errors.
+/// Non-unique values will be selected from arbitrarily.
 ///
 /// The compare parameter is a function object that returns true if the first
-/// argument is ordered before (i.e. is less than) the second. See hxkey_less.
-/// - begin: Pointer to the beginning of the range to search.
-/// - end: Pointer to one past the last element in the range to search.
-/// - val: The value to search for.
-/// - less: Comparison function object.
-template<typename T_, typename Less_>
-T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_, const Less_& less_) {
+/// argument is ordered before (i.e. is less than) the second. `See hxkey_less`.
+/// - `begin` : Pointer to the beginning of the range to search.
+/// - `end` : Pointer to one past the last element in the range to search.
+/// - `val` : The value to search for.
+/// - `less` : Comparison function object.
+template<typename T_, typename less_t_>
+T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_, const less_t_& less_) {
     // don't operate on null pointer args. unallocated containers have this.
     if(begin_ == end_) { return hxnull; }
 
@@ -90,8 +89,8 @@ T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_) {
 }
 
 /// const correct wrapper
-template<typename T_, typename Less_>
-const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_, const Less_& less_) {
+template<typename T_, typename less_t_>
+const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_, const less_t_& less_) {
     return hxbinary_search(const_cast<T_*>(begin_), const_cast<T_*>(end_), val_, less_);
 }
 
@@ -101,26 +100,26 @@ const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_) {
     return hxbinary_search(const_cast<T_*>(begin_), const_cast<T_*>(end_), val_, hxkey_less<T_>);
 }
 
-/// hxradix_sort_base. Operations that are independent of hxradix_sort type.
-/// See hxradix_sort<K, V> below.
+/// `hxradix_sort_base`. Operations that are independent of `hxradix_sort` type.
+/// See `hxradix_sort<K, V>` below.
 class hxradix_sort_base {
 public:
-    /// See hxkey_value_pair(float key, void* val).
+    // See hxkey_value_pair(float key, void* val).
     hxstatic_assert((int32_t)0x80000000u >> 31 == ~(int32_t)0,
         "2's compliment arithmetic right shift expected");
 
-    explicit hxradix_sort_base(uint32_t size_=0u) : m_array_() { m_array_.reserve(size_); }
+    explicit hxradix_sort_base(size_t size_=0u) : m_array_() { m_array_.reserve(size_); }
 
-    /// Reserves memory for the internal array to hold at least `size_` elements.
-    /// - size: The number of elements to reserve memory for.
-    void reserve(uint32_t size_) { m_array_.reserve(size_); }
+    /// Reserves memory for the internal array to hold at least `size` elements.
+    /// - `size` : The number of elements to reserve memory for.
+    void reserve(size_t size_) { m_array_.reserve(size_); }
 
     /// Clears the internal array, removing all elements.
     void clear(void) { m_array_.clear(); }
 
     /// Sorts the internal array using the provided temporary memory allocator to
     /// store histograms.
-    /// - temp_memory: A hxsystem_allocator_t id.
+    /// - `temp_memory` : A hxsystem_allocator_t id.
     void sort(hxsystem_allocator_t temp_memory);
 
 protected:
@@ -165,29 +164,33 @@ private:
 };
 
 /// hxradix_sort. Sorts an array of value* by keys. K is the key and V the value.
-///
-/// Nota bene: Keys of double, int64_t and uint64_t are not supported. Keys
-/// are stored as uint32_t to reduce generated code.
+/// Keys of double, int64_t and uint64_t are not supported. To sort an array of
+/// doubles with the radix sort it would make sense to sort first by a float key
+/// and then run an `hxinsertion_sort` over the nearly sorted data. `hxradix_sort`
+/// scales linearly with the byte length of the key whereas `hxinsertion_sort` is
+/// O(n) on mostly sorted data.
 template<typename key_t_, class value_t_>
 class hxradix_sort : public hxradix_sort_base {
 public:
-    typedef key_t_ key_t;   /// Type of the key used for sorting.
-    typedef value_t_ value_t; /// Type of the value associated with the key.
+    /// Type of the key used for sorting.
+    typedef key_t_ key_t;
+    /// Type of the value associated with the key.
+    typedef value_t_ value_t;
 
-    /// Forward_iterator over Values. Not currently bound to std::iterator_traits
-    /// or std::forward_iterator_tag.
+    /// `forward_iterator` over Values. Not currently bound to `std::iterator_traits`
+    /// or `std::forward_iterator_tag`.
     class const_iterator {
     public:
-        /// Constructs a const_iterator from an hxarray<hxkey_value_pair>::const_iterator.
+        /// Constructs a `const_iterator` from an `hxarray<hxkey_value_pair>::const_iterator`.
         const_iterator(hxarray<hxkey_value_pair>::const_iterator it_) : m_ptr_(it_) { }
 
-        /// Constructs an invalid const_iterator.
+        /// Constructs an invalid `const_iterator`.
         const_iterator() : m_ptr_(hxnull) { }
 
-        /// Pre-increment operator. Moves the iterator to the next element.
+        /// Pre-increment operator. Moves the `iterator` to the next element.
         const_iterator& operator++(void) { ++m_ptr_; return *this; }
 
-        /// Post-increment operator. Moves the iterator to the next element and returns the previous state.
+        /// Post-increment operator. Moves the `iterator` to the next element and returns the previous state.
         const_iterator operator++(int) { const_iterator t_(*this); operator++(); return t_; }
 
         /// Equality comparison operator.
@@ -206,10 +209,10 @@ public:
         hxarray<hxkey_value_pair>::const_iterator m_ptr_; /// Internal pointer to the current element.
     };
 
-    /// Iterator that can be cast to a const_iterator.
+    /// Iterator that can be cast to a `const_iterator`.
     class iterator : public const_iterator {
     public:
-        /// Constructs an iterator from an hxarray<hxkey_value_pair>::iterator.
+        /// Constructs an iterator from an `hxarray<hxkey_value_pair>::iterator`.
         iterator(hxarray<hxkey_value_pair>::iterator it_) : const_iterator(it_) { }
 
         /// Constructs an invalid iterator.
@@ -228,46 +231,46 @@ public:
         value_t_* operator->(void) const { return (value_t_*)this->m_ptr_->m_val_; }
     };
 
-    explicit hxradix_sort(uint32_t size_=0u) : hxradix_sort_base(size_) { }
+    explicit hxradix_sort(size_t size_=0u) : hxradix_sort_base(size_) { }
 
     /// Accesses the value at the specified index (const version).
-    const value_t_& operator[](uint32_t index_) const { return *(value_t_*)m_array_[index_].m_val_; }
+    const value_t_& operator[](size_t index_) const { return *(value_t_*)m_array_[index_].m_val_; }
 
     /// Accesses the value at the specified index (non-const version).
-    value_t_& operator[](uint32_t index_) { return *(value_t_*)m_array_[index_].m_val_; }
+    value_t_& operator[](size_t index_) { return *(value_t_*)m_array_[index_].m_val_; }
 
     /// Returns a pointer to the value at the specified index (const version).
-    const value_t_* get(uint32_t index_) const { return (value_t_*)m_array_[index_].m_val_; }
+    const value_t_* get(size_t index_) const { return (value_t_*)m_array_[index_].m_val_; }
 
     /// Returns a pointer to the value at the specified index (non-const version).
-    value_t_* get(uint32_t index_) { return (value_t_*)m_array_[index_].m_val_; }
+    value_t_* get(size_t index_) { return (value_t_*)m_array_[index_].m_val_; }
 
-    /// Returns a const_iterator to the beginning of the array.
+    /// Returns a `const_iterator` to the beginning of the array.
     const_iterator begin(void) const { return const_iterator(m_array_.cbegin()); }
 
-    /// Returns an iterator to the beginning of the array.
+    /// Returns an `iterator` to the beginning of the array.
     iterator begin(void) { return iterator(m_array_.begin()); }
 
-    /// Returns a const_iterator to the beginning of the array (const version).
+    /// Returns a `const_iterator` to the beginning of the array (const version).
     const_iterator cbegin(void) const { return const_iterator(m_array_.cbegin()); }
 
-    /// Returns a const_iterator to the beginning of the array (non-const version).
+    /// Returns a `const_iterator` to the beginning of the array (non-const version).
     const_iterator cbegin(void) { return const_iterator(m_array_.cbegin()); }
 
-    /// Returns a const_iterator to the end of the array.
+    /// Returns a `const_iterator` to the end of the array.
     const_iterator end(void) const { return const_iterator(m_array_.cend()); }
 
-    /// Returns an iterator to the end of the array.
+    /// Returns an `iterator` to the end of the array.
     iterator end(void) { return iterator(m_array_.end()); }
 
-    /// Returns a const_iterator to the end of the array (const version).
+    /// Returns a `const_iterator` to the end of the array (const version).
     const_iterator cend(void) const { return const_iterator(m_array_.cend()); }
 
-    /// Returns a const_iterator to the end of the array (non-const version).
+    /// Returns a `const_iterator` to the end of the array (non-const version).
     const_iterator cend(void) { return const_iterator(m_array_.cend()); }
 
     /// Returns the number of elements in the array.
-    uint32_t size(void) const { return m_array_.size(); }
+    size_t size(void) const { return m_array_.size(); }
 
     /// Returns true if the array is empty, false otherwise.
     bool empty(void) const { return m_array_.empty(); }
@@ -275,9 +278,9 @@ public:
     /// Returns true if the array is full, false otherwise.
     bool full(void) const { return m_array_.full(); }
 
-    /// Adds a key and value pointer to the array. Ownership is not taken.
-    /// - key: The key used for sorting.
-    /// - val: Pointer to the value associated with the key.
+    /// Adds a key and value pair to the array. Ownership is not taken.
+    /// - `key` : The key used for sorting.
+    /// - `value` : Pointer to the value associated with the key.
     void insert(key_t_ key_, value_t_* val_) {
         hxassertrelease(!this->full(), "reallocation_disallowed");
 

@@ -4,6 +4,7 @@
     ],
 
     "cSpell.words": [
+        "argtypes",
         "asan",
         "bitfield",
         "CFLAGS",
@@ -71,6 +72,7 @@
         "readelf",
         "Reenqueuing",
         "reimplementation",
+        "restype",
         "riscv",
         "rodata",
         "rtti",

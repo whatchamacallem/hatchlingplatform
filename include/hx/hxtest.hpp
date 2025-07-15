@@ -1,18 +1,14 @@
 #pragma once
 // Copyright 2017-2025 Adrian Johnston
-
-// This framework provides a Google Test-compatable interface for writing unit
-// tests. Use TEST and TEST_F macros to define test cases, assertions for
-// validation, and RUN_ALL_TESTS() to execute all tests. Both simple and
-// fixture-based tests are supported.
+//
+// hxtest - This is a Google Test-compatable framework for writing unit tests.
 //
 // - TEST(suite, name) - Defines a test case without a fixture.
 // - TEST_F(fixture, name) - Defines a test case using a fixture class.
 // - Use ASSERT_* for fatal assertions, EXPECT_* for non-fatal.
-// - All macros accept any C++ expression as arguments.
-// - See test/*.cpp for more examples.
+// - See RUN_ALL_TESTS() in test/hxtest_main.cpp for example.
 //
-// - Simple Test Case (no fixture)
+// - Simple Test Case (no fixture):
 //
 //   TEST(Math, Addition) {
 //       int a = 2, b = 3;
@@ -22,7 +18,7 @@
 //       SUCCEED();
 //   }
 //
-// - Fixture-Based Test Case (using TEST_F)
+// - Fixture-Based Test Case (using TEST_F):
 //
 //   class MyFixture : public testing::Test {
 //   public:
@@ -38,7 +34,7 @@
 //       EXPECT_NE(value, 42);
 //   }
 //
-// - Condition Check Macros
+// - Condition Check Macros:
 //
 //   EXPECT_TRUE(expr);      // Checks expr is true
 //   EXPECT_FALSE(expr);     // Checks expr is false
@@ -56,17 +52,17 @@
 
 #include <hx/hatchling.h>
 
-/// HX_USE_GOOGLE_TEST - Enable this to use Google Test instead of hxtest_.
+// HX_USE_GOOGLE_TEST - Enable this to use Google Test instead of hxtest.
 #if HX_USE_GOOGLE_TEST
 #include <gtest/gtest.h>
 #else // !HX_USE_GOOGLE_TEST
 #include <hx/detail/hxtest_internal.hpp>
 
-/// testing - A partial Google Test reimplementation. Use -DHX_TEST_MAX_CASES
+/// `testing` - A partial Google Test reimplementation. Use `-DHX_TEST_MAX_CASES`
 /// to provide enough room for all tests.
 namespace testing {
 
-/// Test - Base class for tests required by Google Test's TEST_F.
+/// `Test` - Base class for tests required by Google Test's `TEST_F`.
 class Test {
 public:
     /// User overrides for fixtures.
@@ -82,28 +78,28 @@ public:
     }
 
 private:
-    // Provided and used by the TEST_F macro.
+    // Provided and used by the `TEST_F` macro.
     virtual void run_code_() = 0;
 };
 
-/// InitGoogleTest - Initializes Google Test with command-line arguments. No-op in
+/// `InitGoogleTest` - Initializes Google Test with command-line arguments. No-op in
 /// this implementation.
 hxconstexpr_fn void InitGoogleTest(int *argc_, char **argv_) { (void)argc_; (void)argv_; }
 
-/// InitGoogleTest - Overloaded version of InitGoogleTest with no arguments. No-op
+/// `InitGoogleTest` - Overloaded version of `InitGoogleTest` with no arguments. No-op
 /// in this implementation.
 hxconstexpr_fn void InitGoogleTest(void) { }
 
 } // namespace testing
 
-/// HX_TEST_NAME_ - Macro for concatenating 3 arguments into one name.
+/// `HX_TEST_NAME_` - Macro for concatenating 3 arguments into one name.
 /// Macro parameters will be evaluated before concatenating.
 #define HX_TEST_NAME_(x_, y_, z_) x_ ## y_ ## _ ## z_ ## _
 
-/// TEST(suite_name, case_name) - Google Test reimplementation. Defines a test
+/// `TEST(suite_name, case_name)` - Google Test reimplementation. Defines a test
 /// case with a suite name and case name.
-/// - suite_name: A C valid identifier for the test suite.
-/// - case_name: A C valid identifier for the test case.
+/// - `suite_name` : A C valid identifier for the test suite.
+/// - `case_name` : A C valid identifier for the test case.
 #define TEST(suite_name_, case_name_) \
     class HX_TEST_NAME_(hxtest_, suite_name_, case_name_) : public hxtest_case_interface_ { \
     public: \
@@ -116,10 +112,10 @@ hxconstexpr_fn void InitGoogleTest(void) { }
     } static HX_TEST_NAME_(s_hxtest_, suite_name_, case_name_); \
     void HX_TEST_NAME_(hxtest_, suite_name_, case_name_)::run_(void)
 
-/// TEST_F(suite_name, case_name) - Google Test reimplementation for fixture-based tests.
-/// Defines a test case where the suite_name is a subclass of testing::Test.
-/// - suite_name: A C valid identifier for the test suite.
-/// - case_name: A C valid identifier for the test case.
+/// `TEST_F(suite_name, case_name)` - Google Test reimplementation for fixture-based tests.
+/// Defines a test case where the `suite_name` is a subclass of `testing::Test`.
+/// - `suite_name` : A C valid identifier for the test suite.
+/// - `case_name` : A C valid identifier for the test case.
 #define TEST_F(suite_name_, case_name_) \
     class HX_TEST_NAME_(hxtest_, suite_name_, case_name_) : public hxtest_case_interface_ { \
     public: \
@@ -133,57 +129,57 @@ hxconstexpr_fn void InitGoogleTest(void) { }
     } static HX_TEST_NAME_(s_hxtest, suite_name_, case_name_); \
     void HX_TEST_NAME_(hxtest_, suite_name_, case_name_)::hxtest_case_dispatcher_::run_code_(void)
 
-/// int RUN_ALL_TESTS() - Executes all registered test cases.
+/// `int RUN_ALL_TESTS()` - Executes all registered test cases.
 #define RUN_ALL_TESTS() hxtest_::dispatcher_().run_all_tests_()
 
-/// void SUCCEED() - Marks the current test as successful without any checks.
+/// `void SUCCEED()` - Marks the current test as successful without any checks.
 #define SUCCEED() hxtest_::dispatcher_().condition_check_(true, __FILE__, __LINE__, hxnull, false)
 
-/// void FAIL() - Marks the current test as failed.
+/// `void FAIL()` - Marks the current test as failed.
 #define FAIL() hxtest_::dispatcher_().condition_check_(false, __FILE__, __LINE__, "FAIL()", false)
 
-/// void EXPECT_TRUE(bool) - Checks that the condition is true.
+/// `void EXPECT_TRUE(bool)` - Checks that the condition is true.
 #define EXPECT_TRUE(x_) hxtest_::dispatcher_().condition_check_((x_), __FILE__, __LINE__, #x_, false)
-/// void EXPECT_FALSE(bool) - Checks that the condition is false.
+/// `void EXPECT_FALSE(bool)` - Checks that the condition is false.
 #define EXPECT_FALSE(x_) hxtest_::dispatcher_().condition_check_(!(x_), __FILE__, __LINE__, "!" #x_, false)
 
-/// void EXPECT_NEAR(T expected, T actual, T absolute_range) - Checks that two values are within a given range.
+/// `void EXPECT_NEAR(T expected, T actual, T absolute_range)` - Checks that two values are within a given range.
 #define EXPECT_NEAR(expected_, actual_, absolute_range_) hxtest_::dispatcher_().condition_check_( \
     (((expected_) < (actual_)) ? ((actual_)-(expected_)) : ((expected_)-(actual_))) <= (absolute_range_), \
     __FILE__, __LINE__, "abs(" #expected_ "-" #actual_ ") <= " #absolute_range_, false)
-/// void EXPECT_LT(T lhs, T rhs) - Checks lhs < rhs.
-#define EXPECT_LT(lhs_, rhs_) hxtest_::dispatcher_().condition_check_((lhs_) < (rhs_), __FILE__, __LINE__, #lhs_ " < " #rhs_, false)
-/// void EXPECT_GT(T lhs, T rhs) - Checks lhs > rhs.
-#define EXPECT_GT(lhs_, rhs_) hxtest_::dispatcher_().condition_check_((rhs_) < (lhs_), __FILE__, __LINE__, #lhs_ " > " #rhs_, false)
-/// void EXPECT_LE(T lhs, T rhs) - Checks lhs <= rhs.
-#define EXPECT_LE(lhs_, rhs_) hxtest_::dispatcher_().condition_check_(!((rhs_) < (lhs_)), __FILE__, __LINE__, #lhs_ " <= " #rhs_, false)
-/// void EXPECT_GE(T lhs, T rhs) - Checks lhs >= rhs.
-#define EXPECT_GE(lhs_, rhs_) hxtest_::dispatcher_().condition_check_(!((lhs_) < (rhs_)), __FILE__, __LINE__, #lhs_ " >= " #rhs_, false)
-/// void EXPECT_EQ(T lhs, T rhs) - Checks lhs == rhs.
-#define EXPECT_EQ(lhs_, rhs_) hxtest_::dispatcher_().condition_check_((lhs_) == (rhs_), __FILE__, __LINE__, #lhs_ " == " #rhs_, false)
-/// void EXPECT_NE(T lhs, T rhs) - Checks lhs != rhs.
-#define EXPECT_NE(lhs_, rhs_) hxtest_::dispatcher_().condition_check_(!((lhs_) == (rhs_)), __FILE__, __LINE__, #lhs_ " != " #rhs_, false)
+/// `void EXPECT_LT(T a, T b)` - Checks `a < b`.
+#define EXPECT_LT(a_, b_) hxtest_::dispatcher_().condition_check_((a_) < (b_), __FILE__, __LINE__, #a_ " < " #b_, false)
+/// `void EXPECT_GT(T a, T b)` - Checks `a > b`.
+#define EXPECT_GT(a_, b_) hxtest_::dispatcher_().condition_check_((b_) < (a_), __FILE__, __LINE__, #a_ " > " #b_, false)
+/// `void EXPECT_LE(T a, T b)` - Checks `a <= b`.
+#define EXPECT_LE(a_, b_) hxtest_::dispatcher_().condition_check_(!((b_) < (a_)), __FILE__, __LINE__, #a_ " <= " #b_, false)
+/// `void EXPECT_GE(T a, T b)` - Checks `a >= b`.
+#define EXPECT_GE(a_, b_) hxtest_::dispatcher_().condition_check_(!((a_) < (b_)), __FILE__, __LINE__, #a_ " >= " #b_, false)
+/// `void EXPECT_EQ(T a, T b)` - Checks `a == b`.
+#define EXPECT_EQ(a_, b_) hxtest_::dispatcher_().condition_check_((a_) == (b_), __FILE__, __LINE__, #a_ " == " #b_, false)
+/// `void EXPECT_NE(T a, T b)` - Checks `a != b`.
+#define EXPECT_NE(a_, b_) hxtest_::dispatcher_().condition_check_(!((a_) == (b_)), __FILE__, __LINE__, #a_ " != " #b_, false)
 
-/// void ASSERT_TRUE(bool) - Asserts that the condition is true.
+/// `void ASSERT_TRUE(bool)` - Asserts that the condition is true.
 #define ASSERT_TRUE(x_) hxtest_::dispatcher_().condition_check_((x_), __FILE__, __LINE__, #x_, true)
-/// void ASSERT_FALSE(bool) - Asserts that the condition is false.
+/// `void ASSERT_FALSE(bool)` - Asserts that the condition is false.
 #define ASSERT_FALSE(x_) hxtest_::dispatcher_().condition_check_(!(x_), __FILE__, __LINE__, "!" #x_, true)
 
-/// void ASSERT_NEAR(T expected, T actual, T absolute_range) - Asserts that two values are within a given range.
+/// `void ASSERT_NEAR(T expected, T actual, T absolute_range)` - Asserts that two values are within a given range.
 #define ASSERT_NEAR(expected_, actual_, absolute_range_) hxtest_::dispatcher_().condition_check_( \
     (((expected_) < (actual_)) ? ((actual_)-(expected_)) : ((expected_)-(actual_))) <= (absolute_range_), \
     __FILE__, __LINE__, "abs(" #expected_ "-" #actual_ ") <= " #absolute_range_, true)
-/// void ASSERT_LT(T lhs, T rhs) - Asserts lhs < rhs.
-#define ASSERT_LT(lhs_, rhs_) hxtest_::dispatcher_().condition_check_((lhs_) < (rhs_), __FILE__, __LINE__, #lhs_ " < " #rhs_, true)
-/// void ASSERT_GT(T lhs, T rhs) - Asserts lhs > rhs.
-#define ASSERT_GT(lhs_, rhs_) hxtest_::dispatcher_().condition_check_((rhs_) < (lhs_), __FILE__, __LINE__, #lhs_ " > " #rhs_, true)
-/// void ASSERT_LE(T lhs, T rhs) - Asserts lhs <= rhs.
-#define ASSERT_LE(lhs_, rhs_) hxtest_::dispatcher_().condition_check_(!((rhs_) < (lhs_)), __FILE__, __LINE__, #lhs_ " <= " #rhs_, true)
-/// void ASSERT_GE(T lhs, T rhs) - Asserts lhs >= rhs.
-#define ASSERT_GE(lhs_, rhs_) hxtest_::dispatcher_().condition_check_(!((lhs_) < (rhs_)), __FILE__, __LINE__, #lhs_ " >= " #rhs_, true)
-/// void ASSERT_EQ(T lhs, T rhs) - Asserts lhs == rhs.
-#define ASSERT_EQ(lhs_, rhs_) hxtest_::dispatcher_().condition_check_((lhs_) == (rhs_), __FILE__, __LINE__, #lhs_ " == " #rhs_, true)
-/// void ASSERT_NE(T lhs, T rhs) - Asserts lhs != rhs.
-#define ASSERT_NE(lhs_, rhs_) hxtest_::dispatcher_().condition_check_(!((lhs_) == (rhs_)), __FILE__, __LINE__, #lhs_ " != " #rhs_, true)
+/// `void ASSERT_LT(T a, T b)` - Asserts `a < b`.
+#define ASSERT_LT(a_, b_) hxtest_::dispatcher_().condition_check_((a_) < (b_), __FILE__, __LINE__, #a_ " < " #b_, true)
+/// `void ASSERT_GT(T a, T b)` - Asserts `a > b`.
+#define ASSERT_GT(a_, b_) hxtest_::dispatcher_().condition_check_((b_) < (a_), __FILE__, __LINE__, #a_ " > " #b_, true)
+/// `void ASSERT_LE(T a, T b)` - Asserts `a <= b`.
+#define ASSERT_LE(a_, b_) hxtest_::dispatcher_().condition_check_(!((b_) < (a_)), __FILE__, __LINE__, #a_ " <= " #b_, true)
+/// `void ASSERT_GE(T a, T b)` - Asserts `a >= b`.
+#define ASSERT_GE(a_, b_) hxtest_::dispatcher_().condition_check_(!((a_) < (b_)), __FILE__, __LINE__, #a_ " >= " #b_, true)
+/// `void ASSERT_EQ(T a, T b)` - Asserts `a == b`.
+#define ASSERT_EQ(a_, b_) hxtest_::dispatcher_().condition_check_((a_) == (b_), __FILE__, __LINE__, #a_ " == " #b_, true)
+/// `void ASSERT_NE(T a, T b)` - Asserts `a != b`.
+#define ASSERT_NE(a_, b_) hxtest_::dispatcher_().condition_check_(!((a_) == (b_)), __FILE__, __LINE__, #a_ " != " #b_, true)
 
 #endif // !HX_USE_GOOGLE_TEST

@@ -10,14 +10,14 @@
 
 namespace hxdetail_ {
 
-template<typename node_t_, uint32_t table_size_bits_>
+template<typename node_t_, hxhash_t table_size_bits_>
 class hxhash_table_internal_allocator_ : public hxallocator<node_t_*, 1u << table_size_bits_> {
 public:
 	hxconstexpr_fn hxhash_table_internal_allocator_(void) {
 		::memset(this->data(), 0x00, sizeof(node_t_*) * this->capacity());
 	}
-	hxconstexpr_fn uint32_t get_table_size_bits(void) const { return table_size_bits_; }
-	hxconstexpr_fn void set_table_size_bits(uint32_t bits) {
+	hxconstexpr_fn hxhash_t get_table_size_bits(void) const { return table_size_bits_; }
+	hxconstexpr_fn void set_table_size_bits(hxhash_t bits) {
 		hxassertmsg(bits == table_size_bits_, "fixed_capacity"); (void)bits;
 	}
 };
@@ -28,12 +28,12 @@ class hxhash_table_internal_allocator_<node_t_, hxallocator_dynamic_capacity>
 public:
 	hxconstexpr_fn hxhash_table_internal_allocator_() : m_table_size_bits_(0u) { }
 
-	hxconstexpr_fn uint32_t get_table_size_bits(void) const {
+	hxconstexpr_fn hxhash_t get_table_size_bits(void) const {
 		hxassertmsg(m_table_size_bits_ != 0u, "container_unallocated");
 		return m_table_size_bits_;
 	}
 
-	hxconstexpr_fn void set_table_size_bits(uint32_t bits_) {
+	hxconstexpr_fn void set_table_size_bits(hxhash_t bits_) {
 		hxassertmsg(m_table_size_bits_ == 0u || bits_ == m_table_size_bits_, "reallocation_disallowed");
 		if (m_table_size_bits_ == 0u) {
 			hxassertmsg(bits_ > 0u && bits_ <= 31u, "bad_hash_bits %d", (int)bits_);
@@ -44,7 +44,7 @@ public:
 	}
 
 private:
-	uint32_t m_table_size_bits_;
+	hxhash_t m_table_size_bits_;
 };
 
 } // hxdetail_

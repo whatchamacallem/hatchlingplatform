@@ -14,7 +14,7 @@ This project serves as both a practical tool and a research platform for explori
 <img src="hatchling_banner.jpg" alt="banner" width="400" height="400"
 style="float: right; padding-right: 20px; padding-left: 20px;">
 
-A key strength of this codebase is its integration with Clang's Undefined Behavior Sanitizer (UBSan), which enables developers to write pointer-centric C++ code while enjoying runtime safety guarantees comparable to managed languages. This approach combines C++'s raw power with modern safety features. The implementation maintains strict compatibility with all major warning flags and sanitizers across gcc, clang, and MSVC, with rigorous type safety throughout.
+A key strength of this codebase is its integration with clang's Undefined Behavior Sanitizer (UBSan), which enables developers to write pointer-centric C++ code while enjoying runtime safety guarantees comparable to managed languages. This approach combines C++'s raw power with modern safety features. The implementation maintains strict compatibility with all major warning flags and sanitizers across gcc, clang, and MSVC, with rigorous type safety throughout.
 
 The `hx/hatchling.h` header requires C99 support. When compiled as C++98, it includes necessary C99 headers (which were formally added to C++11 but are universally supported by C++98 compilers). The codebase relies on `stdint.h` for fixed-width integers and selectively incorporates C++17 features and compiler intrinsics when available.
 
