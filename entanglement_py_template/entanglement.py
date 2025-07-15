@@ -623,8 +623,140 @@ def format_namespace(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, s
 
     return lines
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def emit_python_api_doc(namespace_tabs: str, cursor: Cursor) -> List[str]:
+    """
+    Extracts and formats the raw comment for use as a docstring.
+    Strips comment markers and leading/trailing whitespace.
+    Escapes characters (\\n, \\", \\) for safe embedding in a Python string.
+    """
+    comment = cursor.raw_comment
+    if comment:
+        lines: List[str] = comment.splitlines()
+        cleaned: List[str] = []
+        for line in lines:
+            line = line.strip()
+            if line.startswith('///'):
+                line = line[3:].strip()
+            elif line.startswith('//'):
+                line = line[2:].strip()
+            line = line.replace('\\', '\\\\').replace('"', '\\"')
+            cleaned.append(line)
+        doc = f'\n{namespace_tabs}'.join(cleaned) if cleaned else ''
+        return [f'{namespace_tabs}"""{doc}"""' if doc else ""]
+    return [ ]
+
+def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
+    """Formats the enum binding code with type hints and constants."""
+    enum_name = cursor.spelling or f'__{hash(cursor.get_usr())}'
+    lines: List[str] = ['']
+
+    if cursor.is_scoped_enum():
+        lines.append(f"{namespace_tabs}class {enum_name}(enum.Enum):")
+    else:
+        lines.append(f"{namespace_tabs}class {enum_name}(enum.IntFlag):")
+
+    enum_tabs = namespace_tabs + '\t'
+    lines += emit_python_api_doc(enum_tabs, cursor)
+
+    is_pass = True
+    for child in cursor.get_children():
+        if child.kind == CursorKind.ENUM_CONSTANT_DECL: # type: ignore
+            lines.append(f'{enum_tabs}{child.spelling}={child.enum_value}')
+            is_pass = False
+
+    if is_pass:
+        lines.append('\tpass')
+
+    # Put the named constants in the surrounding namespace.
+    if not cursor.is_scoped_enum():
+        for child in cursor.get_children():
+            if child.kind == CursorKind.ENUM_CONSTANT_DECL: # type: ignore
+                lines.append(f'{namespace_tabs}{child.spelling}={enum_name}.{child.spelling}')
+
+    return lines
+
+def calculate_namespace(cursor: Cursor) -> List[str]:
+    """
+    Traverses semantic parents to build the namespace chain.
+    """
+    namespaces: List[str] = []
+    current: Optional[Cursor] = cursor.semantic_parent
+    while current and current.kind is not CursorKind.TRANSLATION_UNIT: # type: ignore
+        if current.spelling:
+            namespaces.append(current.spelling)
+        current = current.semantic_parent
+    namespaces.reverse()
+    return namespaces
+
 def emit_python_api(sorted_symbols: List[List[Cursor]], api: List[str]) -> None:
-    pass
+
+    current_namespace : List[str] = []
+
+    # The cursors have been sorted according to their python identifier. This
+    # means their encapsulating namespaces (from namespaces, structs and classes)
+    # will be visited in "collation order." This is used to produce push and pop
+    # operations when the namespace stack changes. Those produce a Python class
+    # hierarchy.
+    for cursor_list in sorted_symbols:
+        # Expect all cursors in a list to be the same type as a condition of the
+        # code having compiled. Anonymous cursors have been given unique names.
+        assert all(cursor.kind == cursor_list[0].kind for cursor in cursor_list)
+
+        cursor = cursor_list[0]
+        cursor_namespace = calculate_namespace(cursor)
+
+        # Find the prefix of the current namespace needed by the next symbol.
+        # This is Python so there is nothing to do but drop indentation.
+        while (current_namespace and (len(current_namespace) > len(cursor_namespace)
+                or current_namespace != cursor_namespace[:len(current_namespace)])):
+            leaving_namespace = current_namespace.pop() # nothing else to do
+            verbose2(f'leaving namespace {leaving_namespace}...')
+
+        # Cursors for namespaces are not being selected. Instead missing namespace
+        # declarations are only being added as needed.
+        while (len(current_namespace) - len(cursor_namespace)) > 1:
+            namespace_depth = len(current_namespace)
+            next_namespace : str = cursor_namespace[namespace_depth]
+            api.append(f"{'\t' * namespace_depth}class {next_namespace}:")
+            current_namespace.append(next_namespace)
+            verbose2(f'entering namespace {next_namespace}...')
+
+        namespace_depth = len(current_namespace)
+        namespace_tabs = '\t' * namespace_depth
+        first_kind = cursor.kind
+
+        print(f"{format_python_package_path(cursor)} {len(cursor_list)}")
+
+
+        if cursor.kind is CursorKind.ENUM_DECL: # type: ignore
+            assert len(cursor_list) is 1
+            api += emit_python_api_enum(namespace_tabs, cursor)
+        elif cursor.kind is CursorKind.FUNCTION_DECL: # type: ignore
+            pass
+        elif cursor.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
+            pass
+        elif cursor.kind in (CursorKind.CONSTRUCTOR, CursorKind.DESTRUCTOR, CursorKind.CXX_METHOD): # type: ignore
+            pass
+
+
+
 
 def emit_structure_list(sorted_symbols: List[List[Cursor]], structure_list: List[str]) -> None:
     pass
@@ -633,14 +765,15 @@ def emit_symbol_table(sorted_symbols: List[List[Cursor]], symbol_table: List[str
     pass
 
 
-# The fields of an anonymous enum are available from their parent. As such the
-# path can be the parents path. Anonymous namespaces must also be retained as
-# they may contain implementation details like base class layouts that are
-# needed by the bindings code. Global anonymous enums will have the key "".
+# Anonymous namespaces are traversed as they may contain implementation details
+# like base class layouts that are needed by the bindings code. Anonymous enums
+# and structs are given globally unique ids.
 def format_python_package_path(cursor: Cursor) -> str:
     """ Generate the Python package path for the symbol. """
     namespaces: List[str] = []
     current: Optional[Cursor] = cursor
+    if not current.spelling:
+        namespaces.append(f'__{hash(cursor.get_usr())}')
     while current and current.kind is not CursorKind.TRANSLATION_UNIT: # type: ignore
         if current.spelling:
             namespaces.append(current.spelling)
@@ -756,7 +889,7 @@ def load_translation_unit(header_file: str) -> TranslationUnit:
 
 def main() -> int:
     """
-    Main entry point for the script. Parses command-line arguments, initializes Clang,
+    Main entry point for the script. Parses command-line arguments, initializes clang,
     and generates binding code for the given header file.
     """
     if not parse_argv():

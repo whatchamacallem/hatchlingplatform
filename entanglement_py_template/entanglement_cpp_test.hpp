@@ -3,6 +3,8 @@
 
 #include <hx/hatchling.h>
 
+namespace ns0 {
+
 // - Multiple declarations followed by a definition and 6 overloads.
 
 /// `fn1` - Returns the sum of global variables g_a, g_b, g_c, g_f, g_g, and g_h.
@@ -13,8 +15,12 @@ float fn1(void);
 
 // - Overloads by arity.
 
-extern int g_a, g_b, g_c;
-extern float g_f, g_g, g_h;
+// Should all be ignored.
+namespace ns1 {
+extern int g_a, g_b, g_c; // Ignored.
+extern float g_f, g_g, g_h; // Ignored.
+} // namespace ns1
+using namespace ns1; // Ignored.
 
 /// `fn1` - Sets the global variable g_a and returns the sum of global variables.
 /// - `a` : An integer value to assign to g_a.
@@ -47,7 +53,9 @@ float fn1(float* f, float g, float h);
 float fn2(void);
 float fn2(void);
 
+} // namespace ns0
 
+namespace ns0 {
 
 // - Multiple declarations, external linkage.
 
@@ -98,8 +106,6 @@ private:
 	int m_x;
 };
 
-#if 0
-
 /// `class3` - A complex class with a constructor, virtual destructor, and overloaded methods.
 class class3 {
 public:
@@ -144,4 +150,4 @@ private:
 	float m_f, m_g, m_h;
 };
 
-#endif
+} // namespace ns0
