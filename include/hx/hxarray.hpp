@@ -469,24 +469,24 @@ private:
 
 /// `bool hxequal(hxarray<T>& x, hxarray<T>& y)` - Compares the contents of x and y.
 template<typename T_>
-hxconstexpr_fn bool hxkey_equal(hxarray<T_>& x_, hxarray<T_>& y_) {
+hxconstexpr_fn bool hxkey_equal(const hxarray<T_>& x_, const hxarray<T_>& y_) {
 	return x_.equal(y_);
 }
 
 /// `hxhash_t hxhash(hxarray<T>& x)` - Hashes the contents of x.
 template<typename T_>
-hxconstexpr_fn hxhash_t hxhash(hxarray<T_>& x_) {
+hxconstexpr_fn hxhash_t hxhash(const hxarray<T_>& x_) {
 	return x_.hash();
 }
 
 /// `bool hxkey_less(hxarray<T>& x, hxarray<T>& y)` - Compares the contents of x and y.
 template<typename T_>
-hxconstexpr_fn bool hxkey_less(hxarray<T_>& x_, hxarray<T_>& y_) {
+hxconstexpr_fn bool hxkey_less(const hxarray<T_>& x_, const hxarray<T_>& y_) {
 	return x_.less(y_);
 }
 
 /// `void hxswap(hxarray<T>& x, hxarray<T>& y)` - Exchanges the contents of x and y.
 template<typename T_>
-hxconstexpr_fn void hxswap(hxarray<T_>& x_, hxarray<T_>& y_) {
+hxconstexpr_fn void hxswap(const hxarray<T_>& x_, const hxarray<T_>& y_) {
 	x_.swap(y_);
 }
