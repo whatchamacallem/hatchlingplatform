@@ -46,7 +46,7 @@ void hxinsertion_sort(T_* begin_, T_* end_, const less_t_& less_) {
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename T_>
 void hxinsertion_sort(T_* begin_, T_* end_) {
-    hxinsertion_sort(begin_, end_, hxkey_less<T_>);
+    hxinsertion_sort(begin_, end_, hxkey_less_function<T_>());
 }
 
 /// `hxbinary_search` - Performs a binary search in the range [first, last). Returns
@@ -85,7 +85,7 @@ T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_, const less_t_& less_) 
 // c++98 junk.
 template<typename T_>
 T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_) {
-    return hxbinary_search(begin_, end_, val_, hxkey_less<T_>);
+    return hxbinary_search(begin_, end_, val_, hxkey_less_function<T_>());
 }
 
 /// const correct wrapper
@@ -97,7 +97,8 @@ const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_, cons
 // c++98 junk.
 template<typename T_>
 const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_) {
-    return hxbinary_search(const_cast<T_*>(begin_), const_cast<T_*>(end_), val_, hxkey_less<T_>);
+    return hxbinary_search(const_cast<T_*>(begin_), const_cast<T_*>(end_), val_,
+        hxkey_less_function<T_>());
 }
 
 /// `hxradix_sort_base`. Operations that are independent of `hxradix_sort` type.

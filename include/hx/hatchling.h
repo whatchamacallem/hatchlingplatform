@@ -183,6 +183,7 @@ const char* hxbasename(const char* path_);
 
 /// ----------------------------------------------------------------------------
 /// C++ utility template API
+
 #if HX_CPLUSPLUS
 } // extern "C"
 

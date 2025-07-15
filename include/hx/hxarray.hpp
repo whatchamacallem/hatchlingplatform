@@ -359,14 +359,14 @@ public:
 
     /// Returns true if the arrays are equal.
     /// - `x` : The other array.
-    hxconstexpr_fn bool less(const hxarray& x) const {
-        for(const T_ *it0_ = this->data(), *it1_ = x.data();
-                it0_ != m_end_ && it1_ != x.m_end_; ++it0_, ++it1_) {
+    hxconstexpr_fn bool less(const hxarray& x_) const {
+        for(const T_ *it0_ = this->data(), *it1_ = x_.data();
+                it0_ != m_end_ && it1_ != x_.m_end_; ++it0_, ++it1_) {
             if(!hxkey_equal(*it0_, *it1_)) {
                 return hxkey_less(*it0_, *it1_);
             }
         }
-        return this->size() < x.size();
+        return this->size() < x_.size();
     }
 
     /// Removes the end element from the array.
@@ -469,22 +469,21 @@ private:
 
 /// `bool hxequal(hxarray<T>& x, hxarray<T>& y)` - Compares the contents of x and y.
 template<typename T_>
-hxconstexpr_fn void hxkey_equal(hxarray<T_>& x_, hxarray<T_>& y_) {
-	x_.equal(y_);
+hxconstexpr_fn bool hxkey_equal(hxarray<T_>& x_, hxarray<T_>& y_) {
+	return x_.equal(y_);
 }
 
-/// `bool hxhash(hxarray<T>& x)` - Hashes the contents of x.
+/// `hxhash_t hxhash(hxarray<T>& x)` - Hashes the contents of x.
 template<typename T_>
-hxconstexpr_fn void hxhash(hxarray<T_>& x_) {
-	x_.hash();
+hxconstexpr_fn hxhash_t hxhash(hxarray<T_>& x_) {
+	return x_.hash();
 }
 
-// TODO: This is breaking hxkey_less with ambiguous errors.
-// `bool hxkey_less(hxarray<T>& x, hxarray<T>& y)` - Compares the contents of x and y.
-//template<typename T_>
-//hxconstexpr_fn void hxkey_less(hxarray<T_>& x_, hxarray<T_>& y_) {
-//	x_.less(y_);
-//}
+/// `bool hxkey_less(hxarray<T>& x, hxarray<T>& y)` - Compares the contents of x and y.
+template<typename T_>
+hxconstexpr_fn bool hxkey_less(hxarray<T_>& x_, hxarray<T_>& y_) {
+	return x_.less(y_);
+}
 
 /// `void hxswap(hxarray<T>& x, hxarray<T>& y)` - Exchanges the contents of x and y.
 template<typename T_>
