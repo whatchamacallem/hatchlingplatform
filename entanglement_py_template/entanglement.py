@@ -922,16 +922,37 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
             api += emit_python_api_class(namespace_tabs, cursor0)
             current_namespace += [ cursor0.spelling ]
 
-        elif cursor0.kind in (CursorKind.CONSTRUCTOR, CursorKind.DESTRUCTOR, CursorKind.CXX_METHOD): # type: ignore
-            pass
-
-
-
-
 def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], structure_list: List[str]) -> None:
-    pass
+    for cursor_list in sorted_symbols:
+        cursor0 = cursor_list[0]
+        if cursor0.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
+            assert len(cursor_list) == 1
+
+            fields : List[str] = []
+            for child in cursor0.get_children():
+                if child.kind == CursorKind.FIELD_DECL: # type: ignore
+                    ctypes_type, _ = calculate_python_api_type_map(child.type, symbols)
+                    fields.append(f'\t("{child.spelling}", {ctypes_type}),')
+            if fields:
+                structure_list.append(f'{calculate_python_package_path(cursor0)}._fields_ = [')
+                structure_list += fields
+                structure_list.append("]")
+            else:
+                structure_list.append(f"\tpass")
 
 def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], symbol_table: List[str]) -> None:
+    """             arg_types : List[str]= []
+                for arg in cursor0.get_arguments():
+                    ctypes_type, _ = calculate_python_api_type_map(arg.type, symbols)
+                    arg_types.append(ctypes_type)
+                return_type, _ = calculate_python_api_type_map(cursor0.result_type, symbols)
+
+                mangled_name = get_mangled_name(cursor0)
+
+                if arg_types:
+                    lines.append(f"__clib.{mangled_name}.argtypes = [{', '.join(arg_types)}]")
+                lines.append(f"__clib.{mangled_name}.restype = {return_type}")
+    """
     pass
 
 # Gather symbols by their python path. They will have to work together. This is
@@ -944,7 +965,11 @@ def add_symbol(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
         symbols[sym] = [ cursor ]
     elif not any(c.get_usr() == cursor.get_usr() for c in symbols[sym]):
         symbols[sym].append(cursor)
-    verbose(f'added {cursor.displayname}')
+
+# This is the final output order for the python api.
+def sort_symbols(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]]) -> None:
+    for key in sorted(symbols.keys()):
+        sorted_symbols.append(symbols[key])
 
 def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
     """
@@ -1013,11 +1038,6 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
     # fallthrough to children.
     for c in cursor.get_children():
         gather_symbols_of_interest(c, symbols)
-
-# This is the final output order for the python api.
-def sort_symbols(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]]) -> None:
-    for key in sorted(symbols.keys()):
-        sorted_symbols.append(symbols[key])
 
 def load_translation_unit(header_file: str) -> TranslationUnit:
     index = Index.create()
