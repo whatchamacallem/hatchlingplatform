@@ -57,7 +57,11 @@ def _run_argv(argv: List[str]) -> None:
 
 _run_argv(ENTANGLEMENT_COMMAND)
 
+_run_argv(['cat', 'entanglement_py_template.py'])
+
 _run_argv(['python3', 'entanglement_py_template.py'])
+
+
 
 # This is legacy. The manifest is now supposed to be in the .toml file.
 #setuptools.setup(

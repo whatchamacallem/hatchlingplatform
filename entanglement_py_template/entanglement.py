@@ -721,26 +721,29 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
     Includes docstring and overload decorator if needed.
     """
     mangled_name = get_mangled_name(cursor)
-    arg_types = []
+    arg_types : List[Tuple[str, str]] = []
+    arg_index = 0
     for arg in cursor.get_arguments():
-        ctypes_type, py_type = calculate_python_api_type_map(arg.type, symbols)
-        arg_types.append((ctypes_type, py_type))
-    return_type, return_py_type = calculate_python_api_type_map(cursor.result_type, symbols)
+        _, py_type = calculate_python_api_type_map(arg.type, symbols)
+        c_name = arg.spelling if arg.spelling else f'_arg{arg_index}'
+        arg_types.append((c_name, py_type))
+        arg_index = arg_index + 1
+    _, return_py_type = calculate_python_api_type_map(cursor.result_type, symbols)
 
     lines: List[str] = ['']
 
     if overloaded:
-        lines.append(f"@overload")
+        lines.append(f'{namespace_tabs}@overload')
 
-    arg_hints = ', '.join(f"arg{i}: '{py_type}'" for i, (_, py_type) in enumerate(arg_types))
+    arg_hints = ', '.join(f"{c_name}: '{py_type}'" for i, (c_name, py_type) in enumerate(arg_types))
     return_hint = f" -> '{return_py_type}'"
-    lines.append(f"def {cursor.spelling}({arg_hints}){return_hint}:")
+    lines.append(f'{namespace_tabs}def {cursor.spelling}({arg_hints}){return_hint}:')
 
     if overloaded:
         lines[-1] += ' ...'
     else:
         lines += format_doc(cursor)
-        lines.append(f"\treturn __clib.{mangled_name}({', '.join(f'arg{i}' for i in range(len(arg_types)))})")
+        lines.append(f"{namespace_tabs}\treturn __clib.{mangled_name}({', '.join(f'arg{i}' for i in range(len(arg_types)))})")
 
     return lines
 
@@ -864,22 +867,21 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
         while (current_namespace and (len(current_namespace) > len(cursor_namespace)
                 or current_namespace != cursor_namespace[:len(current_namespace)])):
             leaving_namespace = current_namespace.pop() # nothing else to do
-            verbose2(f'leaving namespace {leaving_namespace}...')
+            verbose(f'leaving namespace {leaving_namespace}...')
 
         # Cursors for namespaces are not being selected. Instead missing namespace
         # declarations are only being added as needed.
-        while (len(current_namespace) - len(cursor_namespace)) > 1:
+        while len(current_namespace) < len(cursor_namespace):
             namespace_depth = len(current_namespace)
             next_namespace : str = cursor_namespace[namespace_depth]
             api.append(f"{'\t' * namespace_depth}class {next_namespace}:")
             current_namespace.append(next_namespace)
-            verbose2(f'entering namespace {next_namespace}...')
+            verbose(f'entering namespace {next_namespace}...')
 
         namespace_depth = len(current_namespace)
         namespace_tabs = '\t' * namespace_depth
 
-        print(f"{calculate_python_package_path(cursor0)} {len(cursor_list)}")
-
+        verbose2(f"namespace '{':'.join(current_namespace)}' kind {cursor0.kind.name}")
 
         if cursor0.kind is CursorKind.ENUM_DECL: # type: ignore
             assert len(cursor_list) == 1
@@ -993,10 +995,6 @@ def sort_symbols(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cur
     for key in sorted(symbols.keys()):
         sorted_symbols.append(symbols[key])
 
-def print_sorted_symbols(sorted_symbols: List[List[Cursor]]) -> None:
-    for cursor_list in sorted_symbols:
-        print(f"{calculate_python_package_path(cursor_list[0])} {len(cursor_list)}")
-
 def load_translation_unit(header_file: str) -> TranslationUnit:
     index = Index.create()
     translation_unit: Optional[TranslationUnit] = None
@@ -1045,9 +1043,10 @@ Arguments:
     verbose(f"Setting libclang path: {_libclang_path}")
     Config.set_library_file(_libclang_path)
 
+    # Merge and sort all the cursors of interest from all the translation units.
     # Using a Python class to implement namespaces requires merging the namespace
-    # declarations. And Python's function overloading solution requires figuring
-    # out all of the function overloads in advance.
+    # declarations. And Python's function overloading situationship requires
+    # figuring out all of the function overloads in advance.
     symbols: Dict[str, List[Cursor]] = { }
     for header_file in _arg_header_files:
         verbose(f"Gathering symbols from {header_file}...")
@@ -1055,26 +1054,18 @@ Arguments:
         gather_symbols_of_interest(translation_unit.cursor, symbols)
 
     # Sort the symbols into their final order.
-
     sorted_symbols: List[List[Cursor]] = []
     sort_symbols(symbols, sorted_symbols)
-    if VERBOSE >= 2:
-        verbose2('print_sorted_symbols:')
-        print_sorted_symbols(sorted_symbols)
 
     # Build the script sections
-
     python_api: List[str] = []
-    emit_python_api(symbols, sorted_symbols, python_api)
-
     structure_list: List[str] = []
-    emit_structure_list(symbols, sorted_symbols, structure_list)
-
     symbol_table: List[str] = []
+    emit_python_api(symbols, sorted_symbols, python_api)
+    emit_structure_list(symbols, sorted_symbols, structure_list)
     emit_symbol_table(symbols, sorted_symbols, symbol_table)
 
     # Assemble the script sections
-
     output_lines: List[str] = [
         f'""" {' '.join(sys.argv)}',
         f'    {datetime.now()} """',
@@ -1101,7 +1092,6 @@ Arguments:
     ]
 
     # Write output
-
     with open(_arg_output_file, "w") as f:
         f.write("\n".join(output_lines) if output_lines else "")
         print(f"Wrote {_arg_output_file}: {len(output_lines)} lines")
