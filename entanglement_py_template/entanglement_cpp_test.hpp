@@ -110,37 +110,25 @@ private:
 class class3 {
 public:
 	/// `class3` - Constructs a class3 object, initializing all members to zero.
-	explicit class3() : m_a(0), m_b(0), m_c(0), m_f(0.0f), m_g(0.0f), m_h(0.0f) { }
+	explicit class3(void);
 	/// `~class3` - Virtual destructor for class3.
-	virtual ~class3() { }
+	virtual ~class3(void);
 
 	/// `fn4` - Returns the sum of private member variables m_a, m_b, m_c, m_f, m_g, and m_h.
 	/// Checks method overload resolution as well.
-	float fn4(void) { return m_a + m_b + m_c + m_f + m_g + m_h; }
-	/// `fn4` - Sets the private member variable m_a and returns the sum of private members.
-	/// - `a` : An integer value to assign to m_a.
-	float fn4(int a) { m_a = a; return fn4(); }
+	float fn4(void);
 	/// `fn4` - Sets private member variables m_a and m_b and returns the sum of private members.
 	/// - `a` : An integer value to assign to m_a.
 	/// - `b` : An integer value to assign to m_b.
-	float fn4(int a, int b) { m_a = a; m_b = b; return fn4(); }
-	/// `fn4` - Sets private member variables m_a, m_b, and m_c and returns the sum of private members.
-	/// - `a` : An integer value to assign to m_a.
-	/// - `b` : An integer value to assign to m_b.
-	/// - `c` : An integer value to assign to m_c.
-	float fn4(int a, int b, int c) { m_a = a; m_b = b; m_c = c; return fn4(); }
+	float fn4(int a, int b);
 	/// `fn4` - Sets the private member variable m_f and returns the sum of private members.
 	/// - `f` : A float value to assign to m_f.
-	float fn4(float f) { m_f = f; return fn4(); }
-	/// `fn4` - Sets private member variables m_f and m_g and returns the sum of private members.
-	/// - `f` : A float value to assign to m_f.
-	/// - `g` : A float value to assign to m_g.
-	float fn4(float f, float g) { m_f = f; m_g = g; return fn4(); }
+	float fn4(float f);
 	/// `fn4` - Sets private member variables m_f, m_g, and m_h and returns the sum of private members.
 	/// - `f` : A float value to assign to m_f.
 	/// - `g` : A float value to assign to m_g.
 	/// - `h` : A float value to assign to m_h.
-	float fn4(float f, float g, float h) { m_f = f; m_g = g; m_h = h; return fn4(); }
+	float fn4(float f, float g, float h);
 
 	/// `fn5` - External linkage. Returns fn4();
 	float fn5(void);

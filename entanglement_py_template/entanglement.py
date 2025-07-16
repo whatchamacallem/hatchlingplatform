@@ -64,7 +64,7 @@ _clang_to_ctypes: Dict[TypeKind, str] = {
     TypeKind.ULONG:     'ctypes.c_ulong',      # type: ignore # unsigned long
     TypeKind.ULONGLONG: 'ctypes.c_ulonglong',  # type: ignore # unsigned long long
     TypeKind.USHORT:    'ctypes.c_ushort',     # type: ignore # unsigned short
-    TypeKind.VOID:      'ctypes.c_void',       # type: ignore # void
+    TypeKind.VOID:      'None',                # type: ignore # void
     TypeKind.WCHAR:     'ctypes.c_wchar',      # type: ignore # wchar_t
 }
 
@@ -669,7 +669,7 @@ def emit_python_api_doc(tabs: str, cursor: Cursor) -> List[str]:
             line = line.replace('\\', '\\\\').replace('"', '\\"')
             cleaned.append(line)
         doc = f'\n{tabs}'.join(cleaned) if cleaned else ''
-        return [f'{tabs}"""{doc}"""' if doc else ""]
+        return [f'{tabs}"""\n{tabs}{doc} """' if doc else ""]
     return [ ]
 
 def calculate_namespace(cursor: Cursor) -> List[str]:
@@ -773,12 +773,14 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
     return_hint = f" -> '{return_py_type}'"
     lines.append(f'{namespace_tabs}def {function_name}({self_parameter}{arg_hints}){return_hint}:')
 
+    function_tabs : str = namespace_tabs + '\t'
     if overloaded:
-        lines[-1] += ' ...'
+        lines += emit_python_api_doc(function_tabs, cursor)
+        lines.append(function_tabs + '...')
     else:
         mangled_name = get_mangled_name(cursor)
-        lines += emit_python_api_doc(namespace_tabs + '\t', cursor)
-        lines.append(f"{namespace_tabs}\treturn __clib.{mangled_name}({self_parameter}{', '.join(f'arg{i}' for i in range(len(arg_types)))})")
+        lines += emit_python_api_doc(function_tabs, cursor)
+        lines.append(f"{namespace_tabs}\treturn _{mangled_name}({self_parameter}{', '.join(f'arg{i}' for i in range(len(arg_types)))})")
 
     return lines
 
@@ -803,8 +805,9 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
     elif cursor0.kind is CursorKind.DESTRUCTOR: # type: ignore
         function_name = '__del__'
 
-    lines.append(f"{namespace_tabs}def {function_name}({self_parameter}*args: Any, **kwargs: Any) -> Any:")
-    lines.append(namespace_tabs + '\tmatch len(args):')
+    lines += [  f'{namespace_tabs}def {function_name}({self_parameter}*args, **kwargs):',
+                f"{namespace_tabs}\tassert not kwargs, 'keyword_arguments'",
+                f'{namespace_tabs}\tmatch len(args):' ]
 
     # Group overloads by argument count
     arg_count_map: Dict[int, List[Cursor]] = {}
@@ -822,11 +825,14 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
         cursor = overload_group[0]
         mangled_name = get_mangled_name(cursor)
         arg_list = ', '.join(f'args[{i}]' for i in range(arg_count))
-        lines.append(f"{namespace_tabs}\t\tcase {arg_count}:")
-        lines.append(f"{namespace_tabs}\t\t\treturn __clib.{mangled_name}({self_parameter}{arg_list})")
+        lines += [
+            f"{namespace_tabs}\t\tcase {arg_count}:",
+            f"{namespace_tabs}\t\t\treturn _{mangled_name}({self_parameter}{arg_list})"
+        ]
 
-    lines.append(f"{namespace_tabs}\t\tcase _:")
-    lines.append(f"{namespace_tabs}\t\t\traise ValueError(f'overload_resolution {function_name} with {{len(args)}} args.')")
+    lines += [  f"{namespace_tabs}\t\tcase _:",
+                f"{namespace_tabs}\t\t\tassert False, f'overload_resolution len {{len(args)}}'",
+                f"{namespace_tabs}\t\t\tpass" ]
     return lines
 
 def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
@@ -928,32 +934,38 @@ def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[L
         if cursor0.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
             assert len(cursor_list) == 1
 
-            fields : List[str] = []
+            structure_list.append(f'{calculate_python_package_path(cursor0)}._fields_ = [')
+
             for child in cursor0.get_children():
                 if child.kind == CursorKind.FIELD_DECL: # type: ignore
                     ctypes_type, _ = calculate_python_api_type_map(child.type, symbols)
-                    fields.append(f'\t("{child.spelling}", {ctypes_type}),')
-            if fields:
-                structure_list.append(f'{calculate_python_package_path(cursor0)}._fields_ = [')
-                structure_list += fields
-                structure_list.append("]")
-            else:
-                structure_list.append(f"\tpass")
+                    structure_list.append(f'\t("{child.spelling}", {ctypes_type}),')
+
+            structure_list.append("]")
 
 def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], symbol_table: List[str]) -> None:
-    """             arg_types : List[str]= []
-                for arg in cursor0.get_arguments():
+    for cursor_list in sorted_symbols:
+        if cursor_list[0].kind in ( CursorKind.FUNCTION_DECL, # type: ignore
+                                    CursorKind.CONSTRUCTOR,   # type: ignore
+                                    CursorKind.DESTRUCTOR,    # type: ignore
+                                    CursorKind.CXX_METHOD):   # type: ignore
+            for cursor in cursor_list:
+                # Get types
+                arg_types : List[str]= []
+                for arg in cursor.get_arguments():
                     ctypes_type, _ = calculate_python_api_type_map(arg.type, symbols)
                     arg_types.append(ctypes_type)
-                return_type, _ = calculate_python_api_type_map(cursor0.result_type, symbols)
+                return_type, _ = calculate_python_api_type_map(cursor.result_type, symbols)
 
-                mangled_name = get_mangled_name(cursor0)
+                # format them
+                mangled_name = get_mangled_name(cursor)
+                comment = f' # {calculate_python_package_path(cursor)}'
+                symbol_table += [
+                    f"_{mangled_name} = __clib.{mangled_name}{comment}",
+                    f"_{mangled_name}.argtypes = [{', '.join(arg_types)}]",
+                    f"_{mangled_name}.restype = {return_type}"
+                ]
 
-                if arg_types:
-                    lines.append(f"__clib.{mangled_name}.argtypes = [{', '.join(arg_types)}]")
-                lines.append(f"__clib.{mangled_name}.restype = {return_type}")
-    """
-    pass
 
 # Gather symbols by their python path. They will have to work together. This is
 # where symbols get dropped due to the ODR rule.
