@@ -384,7 +384,7 @@ def format_function(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, st
         lines.append(f"@overload")
 
     arg_hints = ', '.join(f'arg{i}: {py_type}' for i, (_, py_type) in enumerate(arg_types)) if arg_types else ''
-    return_hint = f' -> {return_py_type}' if return_py_type != 'None' else ''
+    return_hint = f' -> {return_py_type}'
     lines.append(f"def {cursor.spelling}({arg_hints}){return_hint}:")
 
     if overloaded:
@@ -715,6 +715,10 @@ def calculate_python_api_type_map(cpp_type_ref: Type, symbols: Dict[str, List[Cu
     # Classes and structs are usable directly by ctypes. These need to be full path.
     return (py_name, py_name)
 
+def is_classmethod(cursor: Cursor) -> bool:
+    """ Returns true if @classmethod should be applied. """
+    return cursor.kind in (CursorKind.CONSTRUCTOR, CursorKind.DESTRUCTOR, CursorKind.CXX_METHOD) # type: ignore
+
 def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[str, List[Cursor]], overloaded: bool) -> List[str]:
     """
     Generates binding lines for a free function.
@@ -732,6 +736,10 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
 
     lines: List[str] = ['']
 
+    if is_classmethod(cursor):
+        lines.append(namespace_tabs + "@classmethod")
+    else:
+        lines.append(namespace_tabs + "@staticmethod")
     if overloaded:
         lines.append(f'{namespace_tabs}@overload')
 
@@ -753,7 +761,7 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
     Raises transpile-time errors for ambiguous overloads. """
 
     lines: List[str] = ['']
-    if any(is_public_method(cursor) for cursor in overloads):
+    if any(is_classmethod(cursor) for cursor in overloads):
         lines.append(namespace_tabs + "@classmethod")
     else:
         lines.append(namespace_tabs + "@staticmethod")
@@ -793,7 +801,7 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
 
 
 
-def emit_python_api_doc(namespace_tabs: str, cursor: Cursor) -> List[str]:
+def emit_python_api_doc(tabs: str, cursor: Cursor) -> List[str]:
     """
     Extracts and formats the raw comment for use as a docstring.
     Strips comment markers and leading/trailing whitespace.
@@ -811,19 +819,19 @@ def emit_python_api_doc(namespace_tabs: str, cursor: Cursor) -> List[str]:
                 line = line[2:].strip()
             line = line.replace('\\', '\\\\').replace('"', '\\"')
             cleaned.append(line)
-        doc = f'\n{namespace_tabs}'.join(cleaned) if cleaned else ''
-        return [f'{namespace_tabs}"""{doc}"""' if doc else ""]
+        doc = f'\n{tabs}'.join(cleaned) if cleaned else ''
+        return [f'{tabs}"""{doc}"""' if doc else ""]
     return [ ]
 
 def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
     """Formats the enum binding code with type hints and constants."""
     enum_name = cursor.spelling or f'__{hash(cursor.get_usr())}'
-    lines: List[str] = ['']
 
+    lines: List[str] = ['']
     if cursor.is_scoped_enum():
-        lines.append(f"{namespace_tabs}class {enum_name}(enum.Enum):")
+        lines.append(f'{namespace_tabs}class {enum_name}(enum.Enum):')
     else:
-        lines.append(f"{namespace_tabs}class {enum_name}(enum.IntFlag):")
+        lines.append(f'{namespace_tabs}class {enum_name}(enum.IntFlag):')
 
     enum_tabs = namespace_tabs + '\t'
     lines += emit_python_api_doc(enum_tabs, cursor)
@@ -833,9 +841,8 @@ def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
         if child.kind == CursorKind.ENUM_CONSTANT_DECL: # type: ignore
             lines.append(f'{enum_tabs}{child.spelling}={child.enum_value}')
             is_pass = False
-
     if is_pass:
-        lines.append('\tpass')
+        lines.append(f'{enum_tabs}pass')
 
     # Put the named constants in the surrounding namespace.
     if not cursor.is_scoped_enum():
@@ -843,6 +850,13 @@ def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
             if child.kind == CursorKind.ENUM_CONSTANT_DECL: # type: ignore
                 lines.append(f'{namespace_tabs}{child.spelling}={enum_name}.{child.spelling}')
 
+    return lines
+
+def emit_python_api_class(namespace_tabs: str, cursor: Cursor) -> List[str]:
+    verbose2(f"emit_python_api_class {cursor.spelling}:")
+
+    lines: List[str] = [f'{namespace_tabs}class {cursor.spelling}(ctypes.Structure):']
+    lines += emit_python_api_doc(namespace_tabs + '\t', cursor)
     return lines
 
 def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], api: List[str]) -> None:
@@ -864,14 +878,16 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
 
         # Find the prefix of the current namespace needed by the next symbol.
         # This is Python so there is nothing to do but drop indentation.
-        while (current_namespace and (len(current_namespace) > len(cursor_namespace)
-                or current_namespace != cursor_namespace[:len(current_namespace)])):
-            leaving_namespace = current_namespace.pop() # nothing else to do
+        # They keyword "pass" is being used to prevent errors.
+        while (len(cursor_namespace) < len(current_namespace)
+                or current_namespace != cursor_namespace[:len(current_namespace)]):
+            api.append(f"{'\t' * len(current_namespace)}pass")
+            leaving_namespace = current_namespace.pop()
             verbose(f'leaving namespace {leaving_namespace}...')
 
         # Cursors for namespaces are not being selected. Instead missing namespace
         # declarations are only being added as needed.
-        while len(current_namespace) < len(cursor_namespace):
+        while len(cursor_namespace) > len(current_namespace):
             namespace_depth = len(current_namespace)
             next_namespace : str = cursor_namespace[namespace_depth]
             api.append(f"{'\t' * namespace_depth}class {next_namespace}:")
@@ -881,7 +897,7 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
         namespace_depth = len(current_namespace)
         namespace_tabs = '\t' * namespace_depth
 
-        verbose2(f"namespace '{':'.join(current_namespace)}' kind {cursor0.kind.name}")
+        verbose2(f'emit_python_api {calculate_python_package_path(cursor0)} kind {cursor0.kind.name}')
 
         if cursor0.kind is CursorKind.ENUM_DECL: # type: ignore
             assert len(cursor_list) == 1
@@ -890,13 +906,14 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
         elif cursor0.kind is CursorKind.FUNCTION_DECL: # type: ignore
             if len(cursor_list) > 1:
                 for cursor in cursor_list:
-                    api.extend(emit_python_api_function(namespace_tabs, cursor, symbols, True))
-                api.extend(emit_python_api_overload_selector(namespace_tabs, cursor_list, symbols))
+                    api += emit_python_api_function(namespace_tabs, cursor, symbols, True)
+                api += emit_python_api_overload_selector(namespace_tabs, cursor_list, symbols)
             else:
-                api.extend(emit_python_api_function(namespace_tabs, cursor0, symbols, False))
+                api += emit_python_api_function(namespace_tabs, cursor0, symbols, False)
 
         elif cursor0.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
-            pass
+            api += emit_python_api_class(namespace_tabs, cursor0)
+            current_namespace += [ cursor0.spelling ]
 
         elif cursor0.kind in (CursorKind.CONSTRUCTOR, CursorKind.DESTRUCTOR, CursorKind.CXX_METHOD): # type: ignore
             pass
