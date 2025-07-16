@@ -146,7 +146,7 @@ def exception_debugger(e: Exception) -> None:
     sys.exit(_exit_error)
 
 def throw_cursor(c: Cursor, message: str) -> None:
-    raise ValueError(c.displayname() + ': ' + message + '\n' + c.location())
+    raise ValueError(f'{c.location.file}:{c.location.line}:{c.location.offset} {message}\n')
 
 def get_counter() -> int:
     global _counter
@@ -640,6 +640,156 @@ def format_namespace(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, s
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def calculate_namespace(cursor: Cursor) -> List[str]:
+    """ Traverses semantic parents to build the namespace chain. """
+    namespaces: List[str] = []
+    current: Optional[Cursor] = cursor.semantic_parent
+    while current and current.kind is not CursorKind.TRANSLATION_UNIT: # type: ignore
+        if current.spelling:
+            namespaces.append(current.spelling)
+        current = current.semantic_parent
+    namespaces.reverse()
+    return namespaces
+
+# Anonymous namespaces are traversed as they may contain implementation details
+# like base class layouts that are needed by the bindings code. Anonymous enums
+# and structs are given globally unique ids.
+def calculate_python_package_path(cursor: Cursor) -> str:
+    """ Generate the Python package path for the symbol. """
+    namespaces: List[str] = []
+    current: Optional[Cursor] = cursor
+    if not current.spelling:
+        namespaces.append(f'__{hash(cursor.get_usr())}')
+    while current and current.kind is not CursorKind.TRANSLATION_UNIT: # type: ignore
+        if current.spelling:
+            namespaces.append(current.spelling)
+        current = current.semantic_parent
+    return '.'.join(reversed(namespaces))
+
+def calculate_python_api_type_map(cpp_type_ref: Type, symbols: Dict[str, List[Cursor]]) -> Tuple[str, str]:
+    """ clang type -> (ctype, python, C)"""
+
+    # Handle typedefs by resolving to the canonical type
+    cpp_type = cpp_type_ref.get_canonical()
+
+    # Handle fundamental types
+    if cpp_type.kind in _clang_to_ctypes:
+        return (_clang_to_ctypes[cpp_type.kind], _clang_to_python[cpp_type.kind])
+
+    # Pointers and references. The ctypes documentation describes the C level
+    # coercion issues involved here. Furthermore, treating references as pointers
+    # is "implementation-defined behavior" that depends on the C++ ABI.
+    if cpp_type.kind in (TypeKind.POINTER, TypeKind.LVALUEREFERENCE, TypeKind.RVALUEREFERENCE):  # type: ignore
+        pointee = cpp_type.get_pointee()
+        pointee_ctype, pointee_py_type = calculate_python_api_type_map(pointee, symbols)
+        return (f"ctypes.POINTER({pointee_ctype})", pointee_py_type)
+
+    # If it isn't a fundamental type then there has to be a definition available.
+    cursor = cpp_type.get_declaration()
+    if not cursor or not cursor.spelling or not cursor.is_definition():
+        raise ValueError(f'Incomplete type: {cpp_type_ref.spelling}')
+
+    py_name = calculate_python_package_path(cursor)
+
+    if not py_name in symbols:
+        throw_cursor(cursor, f'Unregistered definition: {py_name}')
+
+    if cursor.kind == CursorKind.ENUM_DECL: # type: ignore
+        # Just tell ctypes to marshal enums to their underlying type.
+        return (_clang_to_ctypes[cursor.enum_type.kind], py_name)
+
+    # Classes and structs are usable directly by ctypes. These need to be full path.
+    return (py_name, py_name)
+
+def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[str, List[Cursor]], overloaded: bool) -> List[str]:
+    """
+    Generates binding lines for a free function.
+    Includes docstring and overload decorator if needed.
+    """
+    mangled_name = get_mangled_name(cursor)
+    arg_types = []
+    for arg in cursor.get_arguments():
+        ctypes_type, py_type = calculate_python_api_type_map(arg.type, symbols)
+        arg_types.append((ctypes_type, py_type))
+    return_type, return_py_type = calculate_python_api_type_map(cursor.result_type, symbols)
+
+    lines: List[str] = ['']
+
+    if overloaded:
+        lines.append(f"@overload")
+
+    arg_hints = ', '.join(f"arg{i}: '{py_type}'" for i, (_, py_type) in enumerate(arg_types))
+    return_hint = f" -> '{return_py_type}'"
+    lines.append(f"def {cursor.spelling}({arg_hints}){return_hint}:")
+
+    if overloaded:
+        lines[-1] += ' ...'
+    else:
+        lines += format_doc(cursor)
+        lines.append(f"\treturn __clib.{mangled_name}({', '.join(f'arg{i}' for i in range(len(arg_types)))})")
+
+    return lines
+
+
+def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Cursor], symbols: Dict[str, List[Cursor]]) -> List[str]:
+    """ Generates a wrapper function to select between overloads based on argument count.
+    Raises transpile-time errors for ambiguous overloads. """
+
+    lines: List[str] = ['']
+    if any(is_public_method(cursor) for cursor in overloads):
+        lines.append(namespace_tabs + "@classmethod")
+    else:
+        lines.append(namespace_tabs + "@staticmethod")
+
+    cursor0 = overloads[0]
+    lines.append(f"{namespace_tabs}def {cursor0.spelling}(*args: Any, **kwargs: Any) -> Any:")
+    lines.append(namespace_tabs + '\tmatch len(args):')
+
+    # Group overloads by argument count
+    arg_count_map: Dict[int, List[Cursor]] = {}
+    for cursor in overloads:
+        arg_count = len(list(cursor.get_arguments()))
+        if arg_count not in arg_count_map:
+            arg_count_map[arg_count] = []
+        arg_count_map[arg_count].append(cursor)
+
+    # TODO Dispatch by argument count first and then by parameter type(s) second.
+    for arg_count, overload_group in sorted(arg_count_map.items()):
+        if not overload_group:
+            continue
+        if len(overload_group) > 1:
+            throw_cursor(overload_group[0], f"Multiple overloads for {overload_group[0].spelling} with {arg_count} arguments.")
+        cursor = overload_group[0]
+        mangled_name = get_mangled_name(cursor)
+        arg_list = ', '.join(f'args[{i}]' for i in range(arg_count))
+        lines.append(f"{namespace_tabs}\t\tcase {arg_count}:")
+        lines.append(f"{namespace_tabs}\t\t\treturn __clib.{mangled_name}({arg_list})")
+
+    lines.append(f"{namespace_tabs}\t\tcase _:")
+    lines.append(f"{namespace_tabs}\t\t\traise ValueError(f'overload_resolution {cursor0.spelling} with {{len(args)}} args.')")
+    return lines
+
+
+
+
+
+
+
+
 def emit_python_api_doc(namespace_tabs: str, cursor: Cursor) -> List[str]:
     """
     Extracts and formats the raw comment for use as a docstring.
@@ -692,20 +842,7 @@ def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
 
     return lines
 
-def calculate_namespace(cursor: Cursor) -> List[str]:
-    """
-    Traverses semantic parents to build the namespace chain.
-    """
-    namespaces: List[str] = []
-    current: Optional[Cursor] = cursor.semantic_parent
-    while current and current.kind is not CursorKind.TRANSLATION_UNIT: # type: ignore
-        if current.spelling:
-            namespaces.append(current.spelling)
-        current = current.semantic_parent
-    namespaces.reverse()
-    return namespaces
-
-def emit_python_api(sorted_symbols: List[List[Cursor]], api: List[str]) -> None:
+def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], api: List[str]) -> None:
 
     current_namespace : List[str] = []
 
@@ -719,8 +856,8 @@ def emit_python_api(sorted_symbols: List[List[Cursor]], api: List[str]) -> None:
         # code having compiled. Anonymous cursors have been given unique names.
         assert all(cursor.kind == cursor_list[0].kind for cursor in cursor_list)
 
-        cursor = cursor_list[0]
-        cursor_namespace = calculate_namespace(cursor)
+        cursor0 = cursor_list[0]
+        cursor_namespace = calculate_namespace(cursor0)
 
         # Find the prefix of the current namespace needed by the next symbol.
         # This is Python so there is nothing to do but drop indentation.
@@ -740,54 +877,46 @@ def emit_python_api(sorted_symbols: List[List[Cursor]], api: List[str]) -> None:
 
         namespace_depth = len(current_namespace)
         namespace_tabs = '\t' * namespace_depth
-        first_kind = cursor.kind
 
-        print(f"{format_python_package_path(cursor)} {len(cursor_list)}")
+        print(f"{calculate_python_package_path(cursor0)} {len(cursor_list)}")
 
 
-        if cursor.kind is CursorKind.ENUM_DECL: # type: ignore
-            assert len(cursor_list) is 1
-            api += emit_python_api_enum(namespace_tabs, cursor)
-        elif cursor.kind is CursorKind.FUNCTION_DECL: # type: ignore
+        if cursor0.kind is CursorKind.ENUM_DECL: # type: ignore
+            assert len(cursor_list) == 1
+            api += emit_python_api_enum(namespace_tabs, cursor0)
+
+        elif cursor0.kind is CursorKind.FUNCTION_DECL: # type: ignore
+            if len(cursor_list) > 1:
+                for cursor in cursor_list:
+                    api.extend(emit_python_api_function(namespace_tabs, cursor, symbols, True))
+                api.extend(emit_python_api_overload_selector(namespace_tabs, cursor_list, symbols))
+            else:
+                api.extend(emit_python_api_function(namespace_tabs, cursor0, symbols, False))
+
+        elif cursor0.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
             pass
-        elif cursor.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
+
+        elif cursor0.kind in (CursorKind.CONSTRUCTOR, CursorKind.DESTRUCTOR, CursorKind.CXX_METHOD): # type: ignore
             pass
-        elif cursor.kind in (CursorKind.CONSTRUCTOR, CursorKind.DESTRUCTOR, CursorKind.CXX_METHOD): # type: ignore
-            pass
 
 
 
 
-def emit_structure_list(sorted_symbols: List[List[Cursor]], structure_list: List[str]) -> None:
+def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], structure_list: List[str]) -> None:
     pass
 
-def emit_symbol_table(sorted_symbols: List[List[Cursor]], symbol_table: List[str]) -> None:
+def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], symbol_table: List[str]) -> None:
     pass
 
-
-# Anonymous namespaces are traversed as they may contain implementation details
-# like base class layouts that are needed by the bindings code. Anonymous enums
-# and structs are given globally unique ids.
-def format_python_package_path(cursor: Cursor) -> str:
-    """ Generate the Python package path for the symbol. """
-    namespaces: List[str] = []
-    current: Optional[Cursor] = cursor
-    if not current.spelling:
-        namespaces.append(f'__{hash(cursor.get_usr())}')
-    while current and current.kind is not CursorKind.TRANSLATION_UNIT: # type: ignore
-        if current.spelling:
-            namespaces.append(current.spelling)
-        current = current.semantic_parent
-    return '.'.join(reversed(namespaces))
-
-# Gather symbols by their python path. They will have to work together.
+# Gather symbols by their python path. They will have to work together. This is
+# where symbols get dropped due to the ODR rule.
 def add_symbol(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
     """ Add the symbol to the symbol table. """
-    sym : str = format_python_package_path(cursor)
+    sym : str = calculate_python_package_path(cursor)
     if sym not in symbols:
         assert sym
         symbols[sym] = [ cursor ]
-    else:
+    elif not any(c.get_usr() == cursor.get_usr() for c in symbols[sym]):
         symbols[sym].append(cursor)
     verbose(f'added {cursor.displayname}')
 
@@ -866,7 +995,7 @@ def sort_symbols(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cur
 
 def print_sorted_symbols(sorted_symbols: List[List[Cursor]]) -> None:
     for cursor_list in sorted_symbols:
-        print(f"{format_python_package_path(cursor_list[0])} {len(cursor_list)}")
+        print(f"{calculate_python_package_path(cursor_list[0])} {len(cursor_list)}")
 
 def load_translation_unit(header_file: str) -> TranslationUnit:
     index = Index.create()
@@ -904,6 +1033,7 @@ Arguments:
     header_files... - Path(s) to the C++ header file(s) to parse.
     output_file     - Path to write the generated Python binding code.
 """)
+
         sys.exit(_exit_error)
 
     verbose("compiler_flags: " + ' '.join(_arg_compiler_flags))
@@ -935,13 +1065,13 @@ Arguments:
     # Build the script sections
 
     python_api: List[str] = []
-    emit_python_api(sorted_symbols, python_api)
+    emit_python_api(symbols, sorted_symbols, python_api)
 
     structure_list: List[str] = []
-    emit_structure_list(sorted_symbols, structure_list)
+    emit_structure_list(symbols, sorted_symbols, structure_list)
 
     symbol_table: List[str] = []
-    emit_symbol_table(sorted_symbols, symbol_table)
+    emit_symbol_table(symbols, sorted_symbols, symbol_table)
 
     # Assemble the script sections
 
