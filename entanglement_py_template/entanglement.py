@@ -23,16 +23,12 @@ Usage:
 #    def get_bitfield_width(self):
 
 
-
-
-import sys
-import os
+import ctypes, os, sys
 import clang.cindex
-import ctypes
+from typing import Dict, List, Optional, Set, Tuple
+from clang.cindex import AccessSpecifier, Config, Cursor, CursorKind, Diagnostic
+from clang.cindex import Index, LinkageKind, StorageClass, TranslationUnit, Type, TypeKind
 from datetime import datetime
-from typing import Dict, List, Set, Tuple, Optional
-from clang.cindex import Index, TranslationUnit, Diagnostic, Cursor, CursorKind
-from clang.cindex import TypeKind, Type, LinkageKind, AccessSpecifier, Config
 
 # Verbose - 0: Normal status and errors. 1: Processing steps. 2: AST traversal.
 VERBOSE = 2
@@ -145,8 +141,9 @@ def exception_debugger(e: Exception) -> None:
     print(e)
     sys.exit(_exit_error)
 
+# Format the source code location and leave the message to the caller.
 def throw_cursor(c: Cursor, message: str) -> None:
-    raise ValueError(f'{c.location.file}:{c.location.line}:{c.location.offset} {message}\n')
+    raise ValueError(f'{c.location.file}:{c.location.line}:{c.location.column} {message}\n')
 
 def get_counter() -> int:
     global _counter
@@ -653,6 +650,27 @@ def format_namespace(cursor: Cursor, classes: Dict[str, str], enums: Dict[str, s
 
 
 
+def emit_python_api_doc(tabs: str, cursor: Cursor) -> List[str]:
+    """
+    Extracts and formats the raw comment for use as a docstring.
+    Strips comment markers and leading/trailing whitespace.
+    Escapes characters (\\n, \\", \\) for safe embedding in a Python string.
+    """
+    comment = cursor.raw_comment
+    if comment:
+        lines: List[str] = comment.splitlines()
+        cleaned: List[str] = []
+        for line in lines:
+            line = line.strip()
+            if line.startswith('///'):
+                line = line[3:].strip()
+            elif line.startswith('//'):
+                line = line[2:].strip()
+            line = line.replace('\\', '\\\\').replace('"', '\\"')
+            cleaned.append(line)
+        doc = f'\n{tabs}'.join(cleaned) if cleaned else ''
+        return [f'{tabs}"""{doc}"""' if doc else ""]
+    return [ ]
 
 def calculate_namespace(cursor: Cursor) -> List[str]:
     """ Traverses semantic parents to build the namespace chain. """
@@ -696,7 +714,7 @@ def calculate_python_api_type_map(cpp_type_ref: Type, symbols: Dict[str, List[Cu
     if cpp_type.kind in (TypeKind.POINTER, TypeKind.LVALUEREFERENCE, TypeKind.RVALUEREFERENCE):  # type: ignore
         pointee = cpp_type.get_pointee()
         pointee_ctype, pointee_py_type = calculate_python_api_type_map(pointee, symbols)
-        return (f"ctypes.POINTER({pointee_ctype})", pointee_py_type)
+        return (f'ctypes.POINTER({pointee_ctype})', pointee_py_type)
 
     # If it isn't a fundamental type then there has to be a definition available.
     cursor = cpp_type.get_declaration()
@@ -715,16 +733,17 @@ def calculate_python_api_type_map(cpp_type_ref: Type, symbols: Dict[str, List[Cu
     # Classes and structs are usable directly by ctypes. These need to be full path.
     return (py_name, py_name)
 
-def is_classmethod(cursor: Cursor) -> bool:
+def is_staticmethod(cursor: Cursor) -> bool:
     """ Returns true if @classmethod should be applied. """
-    return cursor.kind in (CursorKind.CONSTRUCTOR, CursorKind.DESTRUCTOR, CursorKind.CXX_METHOD) # type: ignore
+    return cursor.kind is CursorKind.FUNCTION_DECL or ( # type: ignore
+        cursor.kind is CursorKind.CXX_METHOD and cursor.storage_class == StorageClass.STATIC) # type: ignore
 
 def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[str, List[Cursor]], overloaded: bool) -> List[str]:
     """
     Generates binding lines for a free function.
     Includes docstring and overload decorator if needed.
     """
-    mangled_name = get_mangled_name(cursor)
+
     arg_types : List[Tuple[str, str]] = []
     arg_index = 0
     for arg in cursor.get_arguments():
@@ -736,22 +755,30 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
 
     lines: List[str] = ['']
 
-    if is_classmethod(cursor):
-        lines.append(namespace_tabs + "@classmethod")
-    else:
-        lines.append(namespace_tabs + "@staticmethod")
+    static_method = is_staticmethod(cursor)
+    if static_method:
+        lines.append(namespace_tabs + '@staticmethod')
     if overloaded:
-        lines.append(f'{namespace_tabs}@overload')
+        lines.append(namespace_tabs + '@overload')
 
+    # TODO
+    function_name = cursor.spelling
+    if cursor.kind is CursorKind.CONSTRUCTOR: # type: ignore
+        function_name = '__init__'
+    elif cursor.kind is CursorKind.DESTRUCTOR: # type: ignore
+        function_name = '__del__'
+
+    self_parameter = 'self, ' if not static_method else ''
     arg_hints = ', '.join(f"{c_name}: '{py_type}'" for i, (c_name, py_type) in enumerate(arg_types))
     return_hint = f" -> '{return_py_type}'"
-    lines.append(f'{namespace_tabs}def {cursor.spelling}({arg_hints}){return_hint}:')
+    lines.append(f'{namespace_tabs}def {function_name}({self_parameter}{arg_hints}){return_hint}:')
 
     if overloaded:
         lines[-1] += ' ...'
     else:
-        lines += format_doc(cursor)
-        lines.append(f"{namespace_tabs}\treturn __clib.{mangled_name}({', '.join(f'arg{i}' for i in range(len(arg_types)))})")
+        mangled_name = get_mangled_name(cursor)
+        lines += emit_python_api_doc(namespace_tabs + '\t', cursor)
+        lines.append(f"{namespace_tabs}\treturn __clib.{mangled_name}({self_parameter}{', '.join(f'arg{i}' for i in range(len(arg_types)))})")
 
     return lines
 
@@ -761,13 +788,22 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
     Raises transpile-time errors for ambiguous overloads. """
 
     lines: List[str] = ['']
-    if any(is_classmethod(cursor) for cursor in overloads):
-        lines.append(namespace_tabs + "@classmethod")
-    else:
+    static_method = False
+    if any(is_staticmethod(cursor) for cursor in overloads):
         lines.append(namespace_tabs + "@staticmethod")
+        static_method = True
 
+    self_parameter = 'self, ' if not static_method else ''
     cursor0 = overloads[0]
-    lines.append(f"{namespace_tabs}def {cursor0.spelling}(*args: Any, **kwargs: Any) -> Any:")
+
+    # TODO
+    function_name = cursor0.spelling
+    if cursor0.kind is CursorKind.CONSTRUCTOR: # type: ignore
+        function_name = '__init__'
+    elif cursor0.kind is CursorKind.DESTRUCTOR: # type: ignore
+        function_name = '__del__'
+
+    lines.append(f"{namespace_tabs}def {function_name}({self_parameter}*args: Any, **kwargs: Any) -> Any:")
     lines.append(namespace_tabs + '\tmatch len(args):')
 
     # Group overloads by argument count
@@ -780,48 +816,18 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
 
     # TODO Dispatch by argument count first and then by parameter type(s) second.
     for arg_count, overload_group in sorted(arg_count_map.items()):
-        if not overload_group:
-            continue
         if len(overload_group) > 1:
             throw_cursor(overload_group[0], f"Multiple overloads for {overload_group[0].spelling} with {arg_count} arguments.")
+        assert overload_group
         cursor = overload_group[0]
         mangled_name = get_mangled_name(cursor)
         arg_list = ', '.join(f'args[{i}]' for i in range(arg_count))
         lines.append(f"{namespace_tabs}\t\tcase {arg_count}:")
-        lines.append(f"{namespace_tabs}\t\t\treturn __clib.{mangled_name}({arg_list})")
+        lines.append(f"{namespace_tabs}\t\t\treturn __clib.{mangled_name}({self_parameter}{arg_list})")
 
     lines.append(f"{namespace_tabs}\t\tcase _:")
-    lines.append(f"{namespace_tabs}\t\t\traise ValueError(f'overload_resolution {cursor0.spelling} with {{len(args)}} args.')")
+    lines.append(f"{namespace_tabs}\t\t\traise ValueError(f'overload_resolution {function_name} with {{len(args)}} args.')")
     return lines
-
-
-
-
-
-
-
-
-def emit_python_api_doc(tabs: str, cursor: Cursor) -> List[str]:
-    """
-    Extracts and formats the raw comment for use as a docstring.
-    Strips comment markers and leading/trailing whitespace.
-    Escapes characters (\\n, \\", \\) for safe embedding in a Python string.
-    """
-    comment = cursor.raw_comment
-    if comment:
-        lines: List[str] = comment.splitlines()
-        cleaned: List[str] = []
-        for line in lines:
-            line = line.strip()
-            if line.startswith('///'):
-                line = line[3:].strip()
-            elif line.startswith('//'):
-                line = line[2:].strip()
-            line = line.replace('\\', '\\\\').replace('"', '\\"')
-            cleaned.append(line)
-        doc = f'\n{tabs}'.join(cleaned) if cleaned else ''
-        return [f'{tabs}"""{doc}"""' if doc else ""]
-    return [ ]
 
 def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
     """Formats the enum binding code with type hints and constants."""
@@ -903,7 +909,7 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
             assert len(cursor_list) == 1
             api += emit_python_api_enum(namespace_tabs, cursor0)
 
-        elif cursor0.kind is CursorKind.FUNCTION_DECL: # type: ignore
+        elif cursor0.kind in (CursorKind.FUNCTION_DECL, CursorKind.CONSTRUCTOR, CursorKind.DESTRUCTOR, CursorKind.CXX_METHOD): # type: ignore
             if len(cursor_list) > 1:
                 for cursor in cursor_list:
                     api += emit_python_api_function(namespace_tabs, cursor, symbols, True)
@@ -912,6 +918,7 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
                 api += emit_python_api_function(namespace_tabs, cursor0, symbols, False)
 
         elif cursor0.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
+            assert len(cursor_list) == 1
             api += emit_python_api_class(namespace_tabs, cursor0)
             current_namespace += [ cursor0.spelling ]
 
