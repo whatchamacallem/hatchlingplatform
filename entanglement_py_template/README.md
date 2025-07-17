@@ -55,59 +55,18 @@ symbols into your .so regardless of whether they were used:
 
 ## TODO
 
+- `__attribute__((annotation("entanglement")))`.
+
 - add __vtable when no virtual parent. abort when multiple virtual parents.
-
-- Support compiler specific annotation as the way of identifying the API
-  instead of header matching. E.g. `__attribute__((annotation("entanglement")))`.
-
-- It should be possible to instantiate templates in header files and have
-them linkable with ENTANGLE_API.
 
 - C++ operators and default params.  E.g. hxrandom.
 
 - Yet another config file?
 
-This compiles and runs.
 
 ```cpp
-import ctypes
-
-class MyAPI:
-    class VirtualBaseClass(ctypes.Structure):
-        _fields_ = [
-            ("__vtable", ctypes.c_void_p)
-        ]
-
-    class NestedStruct(ctypes.Structure):
-        _fields_ = [
-            ("nested_field1", ctypes.c_double),
-            ("nested_field2", ctypes.c_char_p)
-        ]
-
-        # Use string quotes to defer Pylance type lookup.
-        def __init__(self, arg0: 'MyAPI.VirtualBaseClass') -> None:
-            pass
-
-        def __del__(self) -> None:
-            pass
-
-    class DerivedStruct(VirtualBaseClass):
-        pass
-
-# STRUCTURE TABLE
-
-MyAPI.DerivedStruct._fields_ = [
-    ("nested", MyAPI.NestedStruct),
-    ("derived_field", ctypes.c_uint32),
-    ("global_enum_field", ctypes.c_uint32),
-]
 
 x = MyAPI.NestedStruct(MyAPI.VirtualBaseClass())
 print(f"Size of DerivedStruct: {ctypes.sizeof(x)} bytes")
 
-# SYMBOL TABLE
-
-_Z3fn1f = __clib._Z3fn1f
-_Z3fn1f.argtypes = [ctypes.c_float]
-_Z3fn1f.restype = ctypes.c_float
 ```
