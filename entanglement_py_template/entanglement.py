@@ -288,7 +288,7 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
     else:
         mangled_name = get_mangled_name(cursor)
         lines += emit_python_api_doc(function_tabs, cursor)
-        lines.append(f"{namespace_tabs}\treturn _{mangled_name}({self_parameter}{', '.join(f'arg{i}' for i in range(len(arg_types)))})")
+        lines.append(f"{namespace_tabs}\treturn {mangled_name}({self_parameter}{', '.join(f'arg{i}' for i in range(len(arg_types)))})")
 
     return lines
 
@@ -337,7 +337,7 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
         arg_list = ', '.join(f'args[{i}]' for i in range(arg_count))
         lines += [
             f"{namespace_tabs}\t\tcase {arg_count}:",
-            f"{namespace_tabs}\t\t\treturn _{mangled_name}({self_parameter}{arg_list})"
+            f"{namespace_tabs}\t\t\treturn {mangled_name}({self_parameter}{arg_list})"
         ]
 
     lines += [  f"{namespace_tabs}\t\tcase _:",
@@ -471,11 +471,10 @@ def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[Lis
                 mangled_name = get_mangled_name(cursor)
                 comment = f' # {calculate_python_package_path(cursor)}'
                 symbol_table += [
-                    f"_{mangled_name} = ___lib.{mangled_name}{comment}",
-                    f"_{mangled_name}.argtypes = [{', '.join(arg_types)}]",
-                    f"_{mangled_name}.restype = {return_type}"
+                    f"{mangled_name} = _CLib.{mangled_name}{comment}",
+                    f"{mangled_name}.argtypes = [{', '.join(arg_types)}]",
+                    f"{mangled_name}.restype = {return_type}"
                 ]
-
 
 # Gather symbols by their python path. They will have to work together. This is
 # where symbols get dropped due to the ODR rule.
@@ -642,7 +641,7 @@ Arguments:
         'import ctypes, enum, os',
         'from typing import Any, overload',
         '',
-        f"___lib = ctypes.CDLL('{os.path.abspath(_arg_lib_name)}')",
+        f"_CLib = ctypes.CDLL('{os.path.abspath(_arg_lib_name)}')",
         '',
         f'# PYTHON_API {_arg_lib_name}',
         ''
@@ -656,8 +655,7 @@ Arguments:
         ''
     ] + symbol_table + [
         '',
-        "if __name__ == '__main__':",
-        "\tprint('🐉🐉🐉') # link succeeded",
+        '# 🐉🐉🐉',
         ''
     ]
 

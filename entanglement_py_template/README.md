@@ -63,7 +63,6 @@ symbols into your .so regardless of whether they were used:
 
 - Yet another config file?
 
-
 ```cpp
 
 x = MyAPI.NestedStruct(MyAPI.VirtualBaseClass())
