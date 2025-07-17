@@ -53,7 +53,7 @@ namespace ns0 {
 // - Enums
 
 /// `enum1` - An empty enumeration.
-enum ENTANGLEMENT_TYPE enum1 { };
+enum ENTANGLEMENT_TYPE enum1 { DUMMY };
 /// `enum2` - An enumeration with a single member.
 enum class ENTANGLEMENT_TYPE enum2 { enum2_1=0u };
 /// `enum3` - An enumeration with multiple members.

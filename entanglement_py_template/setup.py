@@ -15,7 +15,7 @@ LIBRARY='libentanglement_py_template.so.1'
 HEADER_FILES=['entanglement_cpp_test.hpp']
 OUTPUT_FILE='entanglement_py_template.py'
 
-ENTANGLEMENT_COMMAND=['python3', 'entanglement.py', '-std=c++17', '-DHX_BINDINGS_PASS=1',
+ENTANGLEMENT_COMMAND=['python3', 'entanglement.py', '-std=c++17', '-DENTANGLEMENT_PASS=1',
     '-I../include', '-DHX_RELEASE=0', '-fdiagnostics-absolute-paths',
     '-Wfatal-errors', LIBRARY] + HEADER_FILES + [OUTPUT_FILE]
 
@@ -56,8 +56,6 @@ def _run_argv(argv: List[str]) -> None:
 #_run_argv(SETUP_CPP_COMMAND)
 
 _run_argv(ENTANGLEMENT_COMMAND)
-
-_run_argv(['cat', 'entanglement_py_template.py'])
 
 _run_argv(['python3', 'entanglement_py_template.py'])
 

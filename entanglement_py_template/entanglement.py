@@ -11,18 +11,6 @@ Usage:
         output_file     - Path to write the generated Python binding code.
 """
 
-
-#    def is_abstract_record(self):
-#    def is_pure_virtual_method(self): # throw in constructor?
-
-#    def get_array_element_type(self):
-#    def get_array_size(self):
-#    def get_size(self): # assert(sizeof == get_size())
-#    def get_fields(self): # classes
-#    def is_bitfield(self):
-#    def get_bitfield_width(self):
-
-
 import ctypes, os, sys
 import clang.cindex
 from typing import Dict, List, Optional, Set, Tuple
@@ -146,7 +134,7 @@ def throw_cursor(c: Cursor, message: str) -> None:
     raise ValueError(f'{c.location.file}:{c.location.line}:{c.location.column} {message}\n')
 
 def get_bare_name(cursor: Cursor) -> str:
-    return cursor.spelling if not cursor.is_anonymous() else '__A' +  str(hex(hash(cursor.get_usr())))[4:12]
+    return cursor.spelling if not cursor.is_anonymous() else '_ID' +  str(hex(hash(cursor.get_usr())))[4:12]
 
 def get_mangled_name(cursor: Cursor) -> str:
     return cursor.mangled_name or get_bare_name(cursor)
@@ -185,7 +173,7 @@ def calculate_namespace(cursor: Cursor) -> List[str]:
     namespaces: List[str] = []
     current: Optional[Cursor] = cursor.semantic_parent
     while current and current.kind is not CursorKind.TRANSLATION_UNIT: # type: ignore
-        if current.spelling:
+        if not current.is_anonymous():
             namespaces.append(current.spelling)
         current = current.semantic_parent
     namespaces.reverse()
@@ -193,18 +181,15 @@ def calculate_namespace(cursor: Cursor) -> List[str]:
 
 # Anonymous namespaces are traversed as they may contain implementation details
 # like base class layouts that are needed by the bindings code. Anonymous enums
-# and structs are given globally unique ids.
+# and structs are given globally unique ids. TODO: correct operator names.
 def calculate_python_package_path(cursor: Cursor) -> str:
     """ Generate the Python package path for the symbol. """
-    namespaces: List[str] = []
-    current: Optional[Cursor] = cursor
-    if not current.spelling:
-        namespaces.append(get_bare_name(cursor))
-    while current and current.kind is not CursorKind.TRANSLATION_UNIT: # type: ignore
-        if current.spelling:
-            namespaces.append(current.spelling)
-        current = current.semantic_parent
-    return '.'.join(reversed(namespaces))
+    namespaces: List[str] = calculate_namespace(cursor)
+
+    # Only the last base name gets listed if it is anonymous.
+    namespaces.append(get_bare_name(cursor))
+
+    return '.'.join(namespaces)
 
 def calculate_python_api_type_map(cpp_type_ref: Type, symbols: Dict[str, List[Cursor]]) -> Tuple[str, str]:
     """ clang type -> (ctype, python, C)"""
@@ -286,6 +271,7 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
         lines += emit_python_api_doc(function_tabs, cursor)
         lines.append(function_tabs + '...')
     else:
+        self_parameter = 'ctypes.byref(self), ' if not static_method else ''
         mangled_name = get_mangled_name(cursor)
         lines += emit_python_api_doc(function_tabs, cursor)
         lines.append(f"{namespace_tabs}\treturn {mangled_name}({self_parameter}{', '.join(f'arg{i}' for i in range(len(arg_types)))})")
@@ -303,7 +289,6 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
         lines.append(namespace_tabs + "@staticmethod")
         static_method = True
 
-    self_parameter = 'self, ' if not static_method else ''
     cursor0 = overloads[0]
 
     # TODO
@@ -313,6 +298,7 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
     elif cursor0.kind is CursorKind.DESTRUCTOR: # type: ignore
         function_name = '__del__'
 
+    self_parameter = 'self, ' if not static_method else ''
     lines += [  f'{namespace_tabs}def {function_name}({self_parameter}*args, **kwargs):',
                 f"{namespace_tabs}\tassert not kwargs, 'keyword_arguments'",
                 f'{namespace_tabs}\tmatch len(args):' ]
@@ -334,6 +320,7 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
         assert overload_group
         cursor = overload_group[0]
         mangled_name = get_mangled_name(cursor)
+        self_parameter = 'ctypes.byref(self), ' if not static_method else ''
         arg_list = ', '.join(f'args[{i}]' for i in range(arg_count))
         lines += [
             f"{namespace_tabs}\t\tcase {arg_count}:",
@@ -351,20 +338,20 @@ def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
 
     lines: List[str] = ['']
     if cursor.is_scoped_enum():
-        lines.append(f'{namespace_tabs}class {enum_name}(enum.Enum):')
+        lines.append(f'{namespace_tabs}class {enum_name}(enum.IntEnum):')
     else:
         lines.append(f'{namespace_tabs}class {enum_name}(enum.IntFlag):')
 
     enum_tabs = namespace_tabs + '\t'
     lines += emit_python_api_doc(enum_tabs, cursor)
 
-    is_pass = True
+    is_empty = True
     for child in cursor.get_children():
         if child.kind == CursorKind.ENUM_CONSTANT_DECL: # type: ignore
             lines.append(f'{enum_tabs}{child.spelling}={child.enum_value}')
-            is_pass = False
-    if is_pass:
-        lines.append(f'{enum_tabs}pass')
+            is_empty = False
+    if is_empty:
+        throw_cursor(cursor, "Empty enums not allowed in Python: " + enum_name)
 
     # Put the named constants in the surrounding namespace.
     if not cursor.is_scoped_enum():
@@ -470,10 +457,12 @@ def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[Lis
                 # format them
                 mangled_name = get_mangled_name(cursor)
                 comment = f' # {calculate_python_package_path(cursor)}'
+                self_ptr = 'ctypes.c_void_p,' if cursor.kind != CursorKind.FUNCTION_DECL else '' # type: ignore
+
                 symbol_table += [
-                    f"{mangled_name} = _CLib.{mangled_name}{comment}",
-                    f"{mangled_name}.argtypes = [{', '.join(arg_types)}]",
-                    f"{mangled_name}.restype = {return_type}"
+                    f"{mangled_name}=_CLib.{mangled_name}{comment}",
+                    f"{mangled_name}.argtypes=[{self_ptr}{','.join(arg_types)}]",
+                    f"{mangled_name}.restype={return_type}"
                 ]
 
 # Gather symbols by their python path. They will have to work together. This is
@@ -538,7 +527,7 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
         return
 
     elif cursor.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
-        if (cursor.is_definition() and cursor.access_specifier in (
+        if (cursor.is_definition() and not cursor.is_anonymous() and cursor.access_specifier in (
                 AccessSpecifier.PUBLIC, # type: ignore
                 AccessSpecifier.INVALID)): # type: ignore # Top-level classes/classes
             add_symbol(cursor, symbols)
