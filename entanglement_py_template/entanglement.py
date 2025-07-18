@@ -33,7 +33,6 @@ _arg_compiler_flags: List[str] = []
 _arg_lib_name: str = ""
 _arg_header_files: List[str] = []
 _arg_output_file: str = ""
-_arg_dependency_file: str = ""
 
 _clang_to_ctypes: Dict[TypeKind, str] = {
     TypeKind.BOOL:      'ctypes.c_bool',       # type: ignore # bool
@@ -92,7 +91,6 @@ def parse_argv() -> bool:
     global _arg_lib_name
     global _arg_header_files
     global _arg_output_file
-    global _arg_dependency_file
 
     non_flags: List[str] = []
     for arg in sys.argv[1:]:
@@ -113,8 +111,6 @@ def parse_argv() -> bool:
     # the rest are headers.
     _arg_header_files = non_flags
 
-    _arg_dependency_file = _arg_output_file + '.d.txt'
-
     return True
 
 # cindex may have extra exception data.
@@ -127,6 +123,7 @@ def exception_debugger(e: Exception) -> None:
             pass
 
     print(e)
+    verbose('exit_error')
     sys.exit(_exit_error)
 
 # Format the source code location and leave the message to the caller.
@@ -211,7 +208,7 @@ def calculate_python_api_type_map(cpp_type_ref: Type, symbols: Dict[str, List[Cu
 
     # If it isn't a fundamental type then there has to be a definition available.
     cursor = cpp_type.get_declaration()
-    if not cursor or not cursor.spelling or not cursor.is_definition():
+    if not cursor or not cursor.is_definition():
         raise ValueError(f'Incomplete type: {cpp_type_ref.displayname}')
 
     py_name = calculate_python_package_path(cursor)
@@ -345,10 +342,15 @@ def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
     enum_tabs = namespace_tabs + '\t'
     lines += emit_python_api_doc(enum_tabs, cursor)
 
+    # HACK. Fix unsigned 64-bit types as clib is reinterpreting them as signed.
+    underlying_type = cursor.enum_type.get_canonical()
+    force_unsigned = underlying_type.kind in (TypeKind.UINT, TypeKind.ULONG, TypeKind.ULONGLONG) # type: ignore
+
     is_empty = True
     for child in cursor.get_children():
         if child.kind == CursorKind.ENUM_CONSTANT_DECL: # type: ignore
-            lines.append(f'{enum_tabs}{child.spelling}={child.enum_value}')
+            child_enum_value = child.enum_value if not force_unsigned else child.enum_value & 0xffffffffffffffff
+            lines.append(f'{enum_tabs}{child.spelling}={child_enum_value}')
             is_empty = False
     if is_empty:
         throw_cursor(cursor, "Empty enums not allowed in Python: " + enum_name)
@@ -406,7 +408,7 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
         namespace_depth = len(current_namespace)
         namespace_tabs = '\t' * namespace_depth
 
-        verbose2(f'emit_python_api {calculate_python_package_path(cursor0)} kind {cursor0.kind.name}')
+        verbose2(f'emit_python_api {calculate_python_package_path(cursor0)} {cursor0.kind.name}')
 
         if cursor0.kind is CursorKind.ENUM_DECL: # type: ignore
             assert len(cursor_list) == 1
@@ -487,7 +489,7 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
     Quality can be checked beyond simple examination once they are gathered.
     """
 
-#    verbose2(f'visiting {cursor.kind.name} {cursor.displayname}')
+#    print(f'visiting {cursor.kind.name} {cursor.displayname}')
 
     is_annotated : bool = False
     for c in cursor.get_children():
@@ -505,7 +507,7 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
             CursorKind.FUNCTION_TEMPLATE, # type: ignore
             CursorKind.CLASS_TEMPLATE_PARTIAL_SPECIALIZATION # type: ignore
         )):
-        verbose2(f'skipping template {cursor.displayname}')
+        throw_cursor(cursor, f'unsupported_api {cursor.displayname} Templates are not supported.')
         return
 
     elif cursor.kind is CursorKind.ENUM_DECL: # type: ignore
@@ -514,7 +516,7 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
                 AccessSpecifier.INVALID): # type: ignore # Top-level enums
             add_symbol(cursor, symbols)
         else:
-            verbose2(f'skipping enum {cursor.displayname}')
+            throw_cursor(cursor, f'unsupported_api {get_bare_name(cursor)} Enum is incomplete or private.')
         return
 
     elif cursor.kind is CursorKind.FUNCTION_DECL: # type: ignore
@@ -523,7 +525,7 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
                 and not is_arg_va_list(cursor)):
             add_symbol(cursor, symbols)
         else:
-            verbose2(f'skipping function {cursor.displayname}')
+            throw_cursor(cursor, f'unsupported_api {cursor.displayname} Functions must be extern and not variadic.')
         return
 
     elif cursor.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
@@ -532,21 +534,22 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
                 AccessSpecifier.INVALID)): # type: ignore # Top-level classes/classes
             add_symbol(cursor, symbols)
         else:
-            verbose2(f'skipping class {cursor.displayname}')
+            throw_cursor(cursor, f'unsupported_api {get_bare_name(cursor)} Structs and classes must be complete, not be anonymous and be public.')
             return
         # fallthrough
 
     elif cursor.kind in (CursorKind.CONSTRUCTOR, CursorKind.DESTRUCTOR, CursorKind.CXX_METHOD): # type: ignore
         if (cursor.access_specifier is AccessSpecifier.PUBLIC # type: ignore
+                and cursor.linkage is LinkageKind.EXTERNAL # type: ignore
                 and not cursor.type.is_function_variadic()
                 and not is_arg_va_list(cursor)):
             add_symbol(cursor, symbols)
         else:
-            verbose2(f'skipping class method {cursor.displayname}')
+            throw_cursor(cursor, f'unsupported_api {cursor.displayname} Methods must be public, extern and not variadic.')
         return
 
     else:
-        verbose2(f'not gathering {cursor.kind.name} {cursor.displayname}')
+        verbose2(f'not_gathering {cursor.kind.name} {get_bare_name(cursor)}')
         return
 
     # fallthrough to children.
@@ -562,12 +565,13 @@ def load_translation_unit(header_file: str) -> TranslationUnit:
     except Exception as e:
         exception_debugger(e)
 
-    for diagnostic in translation_unit.diagnostics: # type: ignore
-        print(diagnostic)
+    if translation_unit:
+        for diagnostic in translation_unit.diagnostics:
+            print(diagnostic)
 
-    if not translation_unit or (len(translation_unit.diagnostics) > 0
-            and any(d.severity >= Diagnostic.Error for d in translation_unit.diagnostics)):
-        print("Parsing failed due to errors.")
+    if not translation_unit or any(
+            d.severity >= Diagnostic.Error for d in translation_unit.diagnostics):
+        verbose('exit_error')
         sys.exit(_exit_error)
 
     return translation_unit
@@ -589,16 +593,15 @@ Arguments:
     header_files... - Path(s) to the C++ header file(s) to parse.
     output_file     - Path to write the generated Python binding code.
 """)
-
+        verbose('exit_error')
         sys.exit(_exit_error)
 
-    verbose("compiler_flags: " + ' '.join(_arg_compiler_flags))
-    verbose("lib_name: " + _arg_lib_name)
-    verbose("header_files: " + ' '.join(_arg_header_files))
-    verbose("output_file: " + _arg_output_file)
-    verbose("dependency_file: " + _arg_dependency_file)
+    verbose("compiler_flags " + ' '.join(_arg_compiler_flags))
+    verbose("lib_name " + _arg_lib_name)
+    verbose("header_files " + ' '.join(_arg_header_files))
+    verbose("output_file " + _arg_output_file)
 
-    verbose(f"Setting libclang path: {_libclang_path}")
+    verbose(f'set_library_file {_libclang_path}')
     Config.set_library_file(_libclang_path)
 
     # Merge and sort all the cursors of interest from all the translation units.
@@ -607,9 +610,13 @@ Arguments:
     # figuring out all of the function overloads in advance.
     symbols: Dict[str, List[Cursor]] = { }
     for header_file in _arg_header_files:
-        verbose(f"Gathering symbols from {header_file}...")
+        verbose(f"load_translation_unit {header_file}...")
         translation_unit = load_translation_unit(header_file)
         gather_symbols_of_interest(translation_unit.cursor, symbols)
+
+    if not symbols:
+        print('exit_error No symbols found. Use -DENTANGLEMENT_PASS=1, ENTANGLEMENT_TYPE and ENTANGLEMENT_LINK.')
+        sys.exit(_exit_error)
 
     # Sort the symbols into their final order.
     sorted_symbols: List[List[Cursor]] = []
@@ -651,9 +658,9 @@ Arguments:
     # Write output
     with open(_arg_output_file, "w") as f:
         f.write("\n".join(output_lines) if output_lines else "")
-        print(f"Wrote {_arg_output_file}: {len(output_lines)} lines")
+        verbose(f"status Wrote {len(output_lines)} lines to {_arg_output_file}.")
 
-    verbose2("exit ok")
+    verbose("exit_ok")
     return _exit_bindings_generated
 
 if __name__ == "__main__":

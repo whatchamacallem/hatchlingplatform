@@ -12,7 +12,7 @@ from typing import List
 SETUP_CPP_COMMAND = ['./setup_cpp.sh']
 
 LIBRARY='libentanglement_py_template.so.1'
-HEADER_FILES=['entanglement_cpp_test.hpp']
+HEADER_FILES=['entanglement_test.hpp']
 OUTPUT_FILE='entanglement_py_template.py'
 
 ENTANGLEMENT_COMMAND=['python3', 'entanglement.py', '-std=c++17', '-DENTANGLEMENT_PASS=1',

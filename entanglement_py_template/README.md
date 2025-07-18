@@ -71,6 +71,8 @@ symbols into your .so regardless of whether they were used.
 - is_pure_virtual_method(self): # throw in constructor?
 
 - C++ operators and default params.  E.g. hxrandom.
+- Plain C linkage.
+- dll loading for real.
 
 - get_array_element_type(self):
 - get_array_size(self):
