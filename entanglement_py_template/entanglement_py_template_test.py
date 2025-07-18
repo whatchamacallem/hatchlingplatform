@@ -4,10 +4,10 @@
 
 import unittest
 
-from . import entanglement_py_template as package_under_test
+from . import entanglement_py_template as system_under_test
 
 class run_all_tests(unittest.TestCase):
-    def assertInstanceEqual(self, result, expected_type, expected_value):
+    def assert_instance_equal(self, result, expected_type, expected_value):
         self.assertIsInstance(result, expected_type, 'unit_test_assert is instance')
         self.assertEqual(result, expected_value, 'unit_test_assert is equal')
 
@@ -15,18 +15,18 @@ class run_all_tests(unittest.TestCase):
         self.assertIsInstance(result, expected_type, 'unit_test_assert is instance')
         self.assertIn(result, expected_value_list, "unit_test_assert is in list")
 
-    def setUp(self):
-        pass
+    def test_function_roundtrip(self):
+        self.assert_instance_equal(system_under_test.function_roundtrip_int8(-77), int, -77)
+        self.assert_instance_equal(system_under_test.function_roundtrip_uint16(88), int, 88)
+        self.assert_instance_equal(system_under_test.function_roundtrip_int32(-99), int, -99)
+        self.assert_instance_equal(system_under_test.function_roundtrip_uint64(111), int, 111)
 
-    def test_fn1(self):
-        """Test all overloads of ns0.fn1 with expected return values."""
-        # Test fn1() with no arguments (sum of g_a, g_b, g_c, g_f, g_g, g_h, initially 0)
-        result = package_under_test.ns0.fn1()
-        self.assertInstanceEqual(result, float, 0.0)
+    def test_function_overload(self):
+        self.assertEqual(system_under_test.function_overload(), None)
+        self.assert_instance_equal(system_under_test.function_overload(1,2), int, -1)
+        self.assert_instance_equal(system_under_test.function_overload(1,2,3,4), float, -2)
 
-        # Test fn1(a: int, b: int) (sets g_a, g_b, sums all)
-        result = package_under_test.ns0.fn1(1, 2)
-        self.assertInstanceEqual(result, float, 3.0)
+
 
 
 

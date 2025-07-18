@@ -259,7 +259,7 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
         function_name = '__del__'
 
     self_parameter = 'self, ' if not static_method else ''
-    arg_hints = ', '.join(f"{c_name}: '{py_type}'" for i, (c_name, py_type) in enumerate(arg_types))
+    arg_hints = ', '.join(f"{c_name}: '{py_type}'" for c_name, py_type in arg_types)
     return_hint = f" -> '{return_py_type}'"
     lines.append(f'{namespace_tabs}def {function_name}({self_parameter}{arg_hints}){return_hint}:')
 
@@ -270,8 +270,9 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
     else:
         self_parameter = 'ctypes.byref(self), ' if not static_method else ''
         mangled_name = get_mangled_name(cursor)
+        arg_names = ', '.join(c_name for c_name, _ in arg_types)
         lines += emit_python_api_doc(function_tabs, cursor)
-        lines.append(f"{namespace_tabs}\treturn {mangled_name}({self_parameter}{', '.join(f'arg{i}' for i in range(len(arg_types)))})")
+        lines.append(f"{namespace_tabs}\treturn {mangled_name}({self_parameter}{arg_names})")
 
     return lines
 

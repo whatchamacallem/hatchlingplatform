@@ -1,2 +1,4 @@
 bin/
 cache/
+entanglement_py_template/entanglement_py_template.py
+entanglement_py_template/libentanglement_py_template.so.1

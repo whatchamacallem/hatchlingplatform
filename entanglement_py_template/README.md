@@ -57,11 +57,11 @@ symbols into your .so regardless of whether they were used.
 // Include the entanglement link attribute and the api type attribute.
 #include <entanglement.h>
 
-// Attribute registers functions, constructors, destructors and method calls.
-#define ENTANGLEMENT_LINK
-
 // Attribute registers enums, functions, classes.
 #define ENTANGLEMENT_TYPE
+
+// Attribute registers functions, constructors, destructors and method calls.
+#define ENTANGLEMENT_LINK
 
 ```
 
