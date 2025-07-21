@@ -15,6 +15,26 @@ class run_all_tests(unittest.TestCase):
         self.assertIsInstance(result, expected_type, 'unit_test_assert is instance')
         self.assertIn(result, expected_value_list, "unit_test_assert is in list")
 
+    def test_enums(self):
+        t = (system_under_test.ENUM_C_STYLE_TWO_CONSTANTS_1
+             | system_under_test.ENUM_C_STYLE_TWO_CONSTANTS_2)
+        self.assert_instance_equal(t, int, 3)
+        self.assert_instance_equal(system_under_test.ENUM_INT16_THREE_CONSTANTS_0,
+                                   system_under_test.EnumInt16ThreeConstants, -32768)
+        self.assert_instance_equal(system_under_test.ENUM_INT16_THREE_CONSTANTS_1,
+                                   system_under_test.EnumInt16ThreeConstants, -1)
+        self.assert_instance_equal(system_under_test.ENUM_INT16_THREE_CONSTANTS_2,
+                                   system_under_test.EnumInt16ThreeConstants, 32767)
+        self.assert_instance_equal(system_under_test.EnumScopedUInt64.ENUM_SCOPED_UINT64_0,
+                                   system_under_test.EnumScopedUInt64, 12379813738877118345)
+        self.assert_instance_equal(system_under_test.ANONYMOUS_ENUM_0, int, 0)
+
+        # Iterate over EnumInt16ThreeConstants and show the sum is -2.
+        total_value = 0
+        for member in system_under_test.EnumInt16ThreeConstants:
+            total_value += member.value
+        self.assert_instance_equal(total_value, int, -2)
+
     def test_function_roundtrip(self):
         self.assert_instance_equal(system_under_test.function_roundtrip_int8(-77), int, -77)
         self.assert_instance_equal(system_under_test.function_roundtrip_uint16(88), int, 88)
