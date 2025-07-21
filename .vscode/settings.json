@@ -59,6 +59,7 @@
         "multilib",
         "multiset",
         "nanobind",
+        "ndarray",
         "noexcept",
         "Noname",
         "nowthrow",
@@ -117,12 +118,10 @@
         "Wwrite",
         "Xclang"
     ],
-    "editor.cursorBlinking": "solid",
     "python.analysis.typeCheckingMode": "standard",
     "markdownlint.config": {
         "MD033": {
             "allowed_elements": ["div", "img", "br"]
         }
-    },
-    "git.suggestSmartCommit": false
+    }
 }

@@ -4,6 +4,7 @@
 #include <entanglement.h>
 #include <stdint.h>
 #include <cstddef>
+#include <cstdio>
 
 // Enums.
 enum ENTANGLEMENT_TYPE {
@@ -35,15 +36,23 @@ ENTANGLEMENT_LINK float function_overload(int, int, int, int) { return -2.0; }
 
 // Pointers and arrays. Writes a series of numbers starting at a value.
 // E.g. size=3 and value=3 results in [3,4,5].
-ENTANGLEMENT_LINK void function_ref_int8(int8_t* x, size_t size, int8_t value) {
+ENTANGLEMENT_LINK int8_t* function_ref_int8(int8_t* x, size_t size, int8_t value) {
 	while(size--) { x[size] = value + size; }
+	return x;
 }
-ENTANGLEMENT_LINK void function_ref_uint16(uint16_t* x, size_t size, int16_t value) {
+ENTANGLEMENT_LINK uint16_t* function_ref_uint16(uint16_t* x, size_t size, int16_t value) {
 	while(size--) { x[size] = value + size; }
+	return x;
 }
-ENTANGLEMENT_LINK void function_ref_int32(int32_t* x, size_t size, int32_t value) {
+ENTANGLEMENT_LINK int32_t* function_ref_int32(int32_t* x, size_t size, int32_t value) {
 	while(size--) { x[size] = value + size; }
+	return x;
 }
-ENTANGLEMENT_LINK void function_ref_uint64(uint64_t* x, size_t size, int64_t value) {
+ENTANGLEMENT_LINK uint64_t* function_ref_uint64(uint64_t* x, size_t size, int64_t value) {
 	while(size--) { x[size] = value + size; }
+	return x;
 }
+
+struct ENTANGLEMENT_TYPE HasACPointer {
+	int32_t* pint;
+};

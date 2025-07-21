@@ -3,6 +3,7 @@
 #   python3 -m entanglement_py_template.entanglement_py_template_test
 
 import unittest
+import ctypes
 
 from . import entanglement_py_template as system_under_test
 
@@ -26,9 +27,30 @@ class run_all_tests(unittest.TestCase):
         self.assert_instance_equal(system_under_test.function_overload(1,2), int, -1)
         self.assert_instance_equal(system_under_test.function_overload(1,2,3,4), float, -2)
 
+    def do_test_function_ref(self, test_function, c_type, size :int, value: int):
+        input_array = (c_type * size)()
+        output_array = test_function(input_array, size, value)
+        expected = [i + value for i in range(size)]
 
+        # Can iterate on a ctypes.Array with modified values.
+        self.assertEqual([int(x) for x in input_array], expected)
 
+        # Can't iterate on a pointer but array access still works.
+        self.assertEqual([output_array[i] for i in range(size)], expected)
 
+    def test_function_ref_int8(self):
+        self.do_test_function_ref(system_under_test.function_ref_int8, ctypes.c_int8, 0, 0)
+        self.do_test_function_ref(system_under_test.function_ref_int8, ctypes.c_int8, 1, -7)
+        self.do_test_function_ref(system_under_test.function_ref_int8, ctypes.c_int8, 33, -10)
+
+    def test_function_ref_uint16(self):
+        self.do_test_function_ref(system_under_test.function_ref_uint16, ctypes.c_uint16, 33, 10)
+
+    def test_function_ref_int32(self):
+        self.do_test_function_ref(system_under_test.function_ref_int32, ctypes.c_int32, 22, -20)
+
+    def test_function_ref_uint64(self):
+        self.do_test_function_ref(system_under_test.function_ref_uint64, ctypes.c_uint64, 11, 30)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
