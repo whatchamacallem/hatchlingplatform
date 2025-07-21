@@ -24,12 +24,13 @@
 #if ENTANGLEMENT_PASS
 
 /// `ENTANGLEMENT_LINK` - Indicates that a function, constructor, destructor or
-/// method should be made available in Python and also included in an .so even
-/// if it is declared inline. It is recommended to be used with -fvisibility=hidden
-/// so that symbols that are not part of the .so's intended API are dead-stripped
-/// away. Header file libraries using this attribute are fine but they have to be
-/// included in at least one C++ translation unit included in the .so for Python
-/// to be able to load them. The `nowthrow` C++ attribute is recommended with this.
+/// method should be made available in Python and also included in an .so. The
+/// only way to guarantee a symbol is available for Python to link against is to
+/// declare it out of line in a .cpp file. An explicit constructor and
+/// destructor will be required for your class and they will have to be
+/// annotated and then declared separately. (TODO default operators.) This
+/// header is recommended to be used with -fvisibility=hidden so that symbols
+/// that are not part of the .so's intended API are dead-stripped away.
 /// - `__attribute__((annotate("entanglement")))` : Used by entanglement.py to identify the API.
 /// - `__attribute__((used))` : Causes the compiler to emit the function regardless of use.
 /// - `__attribute__((visibility("default")))` : Causes the linker to keep the symbol.

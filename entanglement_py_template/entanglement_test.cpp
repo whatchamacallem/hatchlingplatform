@@ -1,3 +1,43 @@
 // Copyright 2017-2025 Adrian Johnston
 
 #include "entanglement_test.hpp"
+
+int8_t function_roundtrip_int8(int8_t x) { return x; }
+
+uint16_t function_roundtrip_uint16(uint16_t x) { return x; }
+
+int32_t function_roundtrip_int32(int32_t x) { return x; }
+
+uint64_t function_roundtrip_uint64(uint64_t x) { return x; }
+
+void function_overload() { }
+
+int function_overload(int a, int b) { (void)a; (void)b; return -1; }
+
+float function_overload(int, int, int, int) { return -2.0; }
+
+int8_t* function_pointer_int8(int8_t* x, size_t size, int8_t value) {
+	while(size--) { x[size] = value + size; }
+	return x;
+}
+
+uint16_t* function_pointer_uint16(uint16_t* x, size_t size, int16_t value) {
+	while(size--) { x[size] = value + size; }
+	return x;
+}
+
+int32_t* function_pointer_int32(int32_t* x, size_t size, int32_t value) {
+	while(size--) { x[size] = value + size; }
+	return x;
+}
+
+uint64_t* function_pointer_uint64(uint64_t* x, size_t size, int64_t value) {
+	while(size--) { x[size] = value + size; }
+	return x;
+}
+
+StructCPointer::StructCPointer(double* ptr) { m_double = ptr; }
+
+StructCPointer::~StructCPointer() { }
+
+float StructCPointer::AsFloat() { return (float)*m_double; }
