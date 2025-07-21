@@ -76,7 +76,16 @@ _clang_to_python: Dict[TypeKind, str] = {
     TypeKind.WCHAR:      'int',   # type: ignore
 }
 
-_counter = 0
+# The order symbols are sorted within a particular namespace.
+_sort_order = [
+    CursorKind.ENUM_DECL, # type: ignore
+    CursorKind.FUNCTION_DECL, # type: ignore
+    CursorKind.STRUCT_DECL, # type: ignore
+    CursorKind.CLASS_DECL, # type: ignore
+    CursorKind.CONSTRUCTOR, # type: ignore
+    CursorKind.DESTRUCTOR, # type: ignore
+    CursorKind.CXX_METHOD # type: ignore
+]
 
 def verbose(verbose_level: int, x: str) -> None:
     if VERBOSE >= verbose_level:
@@ -120,7 +129,7 @@ def exception_debugger(e: Exception) -> None:
 
     print(e)
     verbose(1, 'exit_error')
-    sys.exit(_exit_error)
+    exit(_exit_error)
 
 # Format the source code location and leave the message to the caller.
 def throw_cursor(c: Cursor, message: str) -> NoReturn:
@@ -171,13 +180,10 @@ def calculate_namespace(cursor: Cursor) -> List[str]:
 
 # Anonymous namespaces are traversed as they may contain implementation details
 # like base class layouts that are needed by the bindings code. Anonymous enums
-# and structs are given globally unique ids. TODO: correct operator names.
+# and structs are given globally unique ids. TODO operator names.
 def calculate_python_package_path(cursor: Cursor) -> str:
     namespaces: List[str] = calculate_namespace(cursor)
-
-    # Only the last base name gets listed if it is anonymous.
     namespaces.append(get_bare_name(cursor))
-
     return '.'.join(namespaces)
 
 def calculate_python_api_type_map(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str, List[Cursor]], is_return: bool, depth: int = 0) -> Tuple[str, str]:
@@ -477,10 +483,29 @@ def add_symbol(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
     elif not any(c.get_usr().encode() == cursor.get_usr().encode() for c in symbols[sym]):
         symbols[sym].append(cursor)
 
-# This is the final output order for the python api.
+# This is the final output order for the python api. Symbols are sorted first by
+# namespace, then by cursor kind and then by name, if any. The symbols object
+# is built up using the Python path instead of exposing the sort key. This keeps
+# the details of the sort local to this function.
 def sort_symbols(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]]) -> None:
-    for key in sorted(symbols.keys()):
-        sorted_symbols.append(symbols[key])
+    symbols_by_sort_key: Dict[str, List[Cursor]] = { }
+
+    for cursor_list in symbols.values():
+        cursor0 = cursor_list[0]
+        sort_key = calculate_namespace(cursor0)
+        index : int = 0
+        for i in range(len(_sort_order)):
+            if _sort_order[i] == cursor0.kind:
+                index = i + 1
+                break
+        sort_key.append(str(index))
+        sort_key.append(get_bare_name(cursor0))
+        sort_key_str = '.'.join(sort_key)
+        assert not sort_key_str in symbols_by_sort_key
+        symbols_by_sort_key[sort_key_str] = cursor_list
+
+    for key in sorted(symbols_by_sort_key.keys()):
+        sorted_symbols.append(symbols_by_sort_key[key])
 
 def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
     verbose(3, f'visiting {cursor.kind.name} {cursor.displayname}')
@@ -555,7 +580,7 @@ def load_translation_unit(header_file: str) -> TranslationUnit:
     if not translation_unit or any(
             d.severity >= Diagnostic.Error for d in translation_unit.diagnostics):
         verbose(1, 'exit_error')
-        sys.exit(_exit_error)
+        exit(_exit_error)
 
     return translation_unit
 
@@ -577,7 +602,7 @@ Arguments:
     output_file     - Path to write the generated Python binding code.
 """)
         verbose(1, 'exit_error')
-        sys.exit(_exit_error)
+        exit(_exit_error)
 
     verbose(1, 'compiler_flags ' + ' '.join(_arg_compiler_flags))
     verbose(1, 'lib_name ' + _arg_lib_name)
@@ -599,7 +624,7 @@ Arguments:
 
     if not symbols:
         print('exit_error No symbols found. Use -DENTANGLEMENT_PASS=1, ENTANGLEMENT_TYPE and ENTANGLEMENT_LINK.')
-        sys.exit(_exit_error)
+        exit(_exit_error)
 
     # Sort the symbols into their final order.
     sorted_symbols: List[List[Cursor]] = []
@@ -661,4 +686,4 @@ Arguments:
     return _exit_bindings_generated
 
 if __name__ == '__main__':
-    sys.exit(main())
+    exit(main())
