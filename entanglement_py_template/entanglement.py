@@ -35,24 +35,24 @@ _arg_header_files: List[str] = []
 _arg_output_file: str = ''
 
 _clang_to_ctypes: Dict[TypeKind, str] = {
-    TypeKind.BOOL:      'ctypes.c_bool',       # type: ignore # bool
-    TypeKind.CHAR_S:    'ctypes.c_char',       # type: ignore # char
-    TypeKind.CHAR_U:    'ctypes.c_ubyte',      # type: ignore # unsigned char
-    TypeKind.DOUBLE:    'ctypes.c_double',     # type: ignore # double
-    TypeKind.FLOAT:     'ctypes.c_float',      # type: ignore # float
-    TypeKind.INT:       'ctypes.c_int',        # type: ignore # int
-    TypeKind.LONG:      'ctypes.c_long',       # type: ignore # long
-    TypeKind.LONGDOUBLE:'ctypes.c_longdouble', # type: ignore # long double
-    TypeKind.LONGLONG:  'ctypes.c_longlong',   # type: ignore # long long
-    TypeKind.SCHAR:     'ctypes.c_byte',       # type: ignore # signed char
-    TypeKind.SHORT:     'ctypes.c_short',      # type: ignore # short
-    TypeKind.UCHAR:     'ctypes.c_ubyte',      # type: ignore # unsigned char
-    TypeKind.UINT:      'ctypes.c_uint',       # type: ignore # unsigned int
-    TypeKind.ULONG:     'ctypes.c_ulong',      # type: ignore # unsigned long
-    TypeKind.ULONGLONG: 'ctypes.c_ulonglong',  # type: ignore # unsigned long long
-    TypeKind.USHORT:    'ctypes.c_ushort',     # type: ignore # unsigned short
+    TypeKind.BOOL:      '_E_ctypes.c_bool',       # type: ignore # bool
+    TypeKind.CHAR_S:    '_E_ctypes.c_char',       # type: ignore # char
+    TypeKind.CHAR_U:    '_E_ctypes.c_ubyte',      # type: ignore # unsigned char
+    TypeKind.DOUBLE:    '_E_ctypes.c_double',     # type: ignore # double
+    TypeKind.FLOAT:     '_E_ctypes.c_float',      # type: ignore # float
+    TypeKind.INT:       '_E_ctypes.c_int',        # type: ignore # int
+    TypeKind.LONG:      '_E_ctypes.c_long',       # type: ignore # long
+    TypeKind.LONGDOUBLE:'_E_ctypes.c_longdouble', # type: ignore # long double
+    TypeKind.LONGLONG:  '_E_ctypes.c_longlong',   # type: ignore # long long
+    TypeKind.SCHAR:     '_E_ctypes.c_byte',       # type: ignore # signed char
+    TypeKind.SHORT:     '_E_ctypes.c_short',      # type: ignore # short
+    TypeKind.UCHAR:     '_E_ctypes.c_ubyte',      # type: ignore # unsigned char
+    TypeKind.UINT:      '_E_ctypes.c_uint',       # type: ignore # unsigned int
+    TypeKind.ULONG:     '_E_ctypes.c_ulong',      # type: ignore # unsigned long
+    TypeKind.ULONGLONG: '_E_ctypes.c_ulonglong',  # type: ignore # unsigned long long
+    TypeKind.USHORT:    '_E_ctypes.c_ushort',     # type: ignore # unsigned short
     TypeKind.VOID:      'None',                # type: ignore # void
-    TypeKind.WCHAR:     'ctypes.c_wchar',      # type: ignore # wchar_t
+    TypeKind.WCHAR:     '_E_ctypes.c_wchar',      # type: ignore # wchar_t
 }
 
 _clang_to_python: Dict[TypeKind, str] = {
@@ -133,10 +133,10 @@ def exception_debugger(e: Exception) -> None:
 
 # Format the source code location and leave the message to the caller.
 def throw_cursor(c: Cursor, message: str) -> NoReturn:
-    raise ValueError(f'{c.location.file}:{c.location.line}:{c.location.column} {message}\n')
+    raise ValueError(f'{c.location.file}:{c.location.line}:{c.location.column} Error: {message}\n')
 
 def get_bare_name(cursor: Cursor) -> str:
-    return cursor.spelling if not cursor.is_anonymous() else '_E_' +  str(hex(hash(cursor.get_usr())))[4:12]
+    return cursor.spelling if not cursor.is_anonymous() else '_E_' +  str(hex(hash(cursor.get_usr())))[3:]
 
 def get_mangled_name(cursor: Cursor) -> str:
     return cursor.mangled_name or get_bare_name(cursor)
@@ -164,8 +164,10 @@ def emit_python_api_doc(tabs: str, cursor: Cursor) -> List[str]:
                 line = line[2:].strip()
             line = line.replace('\\', '\\\\').replace('"', '\\"')
             cleaned.append(line)
-        doc = f'\n{tabs}'.join(cleaned) if cleaned else ''
-        return [f'{tabs}"""\n{tabs}{doc} """' if doc else ""]
+        doc = f'\n{tabs}'.join(cleaned)
+        if not doc or doc.isspace():
+            return [ ]
+        return [f'{tabs}"""\n{tabs}{doc} """']
     return [ ]
 
 def calculate_namespace(cursor: Cursor) -> List[str]:
@@ -192,7 +194,7 @@ def calculate_python_api_type_map(cursor: Cursor, cpp_type_ref: Type, symbols: D
     # Handle typedefs by resolving to the canonical type
     cpp_type = cpp_type_ref.get_canonical()
     if not cpp_type:
-        throw_cursor(cursor, 'calculate_python_api_type_map get_canonical')
+        throw_cursor(cursor, 'get_canonical')
 
     # Handle fundamental types
     if cpp_type.kind in _clang_to_ctypes:
@@ -200,7 +202,7 @@ def calculate_python_api_type_map(cursor: Cursor, cpp_type_ref: Type, symbols: D
             # Have type hints that allow pointers to be used with any array
             # class. Then _pass_array_to_ctypes provides runtime resolution and
             # asserts.
-            return (_clang_to_ctypes[cpp_type.kind], 'Any')
+            return (_clang_to_ctypes[cpp_type.kind], '_E_Any')
         return (_clang_to_ctypes[cpp_type.kind], _clang_to_python[cpp_type.kind])
 
     # Pointers and references. The ctypes documentation describes the C level
@@ -208,21 +210,21 @@ def calculate_python_api_type_map(cursor: Cursor, cpp_type_ref: Type, symbols: D
     # is "implementation-defined behavior" that depends on the C++ ABI.
     if cpp_type.kind in (TypeKind.POINTER, TypeKind.LVALUEREFERENCE, TypeKind.RVALUEREFERENCE):  # type: ignore
         if depth:
-            throw_cursor(cursor, "type_error Only one pointer or reference allowed in a type.")
+            throw_cursor(cursor, 'Only one pointer or reference allowed in a type.')
         pointee = cpp_type.get_pointee()
         pointee_ctype, pointee_py_type = calculate_python_api_type_map(cursor, pointee, symbols, is_return, 1)
-        return (f'ctypes.POINTER({pointee_ctype})', pointee_py_type)
+        return (f'_E_ctypes.POINTER({pointee_ctype})', pointee_py_type)
 
     # If it isn't a fundamental type then there has to be a separate definition available.
     declaration_cursor = cpp_type.get_declaration()
     if not declaration_cursor or not declaration_cursor.is_definition():
-        throw_cursor(cursor, 'type_error Incomplete type: {cpp_type_ref.displayname}')
+        throw_cursor(cursor, 'Incomplete type: {cpp_type_ref.displayname}')
 
     if cpp_type.kind in (CursorKind.ENUM_DECL, CursorKind.STRUCT_DECL, CursorKind.CLASS_DECL): # type: ignore
         py_name = calculate_python_package_path(declaration_cursor)
 
         if not py_name in symbols:
-            throw_cursor(declaration_cursor, f'type_error Unregistered definition: {py_name}')
+            throw_cursor(declaration_cursor, f'Unregistered definition: {py_name}')
 
         if declaration_cursor.kind == CursorKind.ENUM_DECL: # type: ignore
             # Just tell ctypes to marshal enums to their underlying type.
@@ -231,7 +233,7 @@ def calculate_python_api_type_map(cursor: Cursor, cpp_type_ref: Type, symbols: D
         # Classes and structs are usable directly by ctypes. These need to be full path.
         return (py_name, py_name)
 
-    throw_cursor(cursor, 'type_error Unsupported declaration type.')
+    throw_cursor(cursor, 'Unsupported declaration type.')
 
 def is_staticmethod(cursor: Cursor) -> bool:
     return cursor.kind is CursorKind.FUNCTION_DECL or ( # type: ignore
@@ -247,13 +249,13 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
         arg_index = arg_index + 1
     _, return_py_type = calculate_python_api_type_map(cursor, cursor.result_type, symbols, True)
 
-    lines: List[str] = ['']
+    lines: List[str] = []
 
     static_method = is_staticmethod(cursor)
     if static_method:
         lines.append(namespace_tabs + '@staticmethod')
     if overloaded:
-        lines.append(namespace_tabs + '@overload')
+        lines.append(namespace_tabs + '@_E_overload')
 
     # TODO
     function_name = get_bare_name(cursor)
@@ -272,7 +274,7 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
         lines += emit_python_api_doc(function_tabs, cursor)
         lines.append(function_tabs + '...')
     else:
-        self_parameter = 'ctypes.byref(self),' if not static_method else ''
+        self_parameter = '_E_ctypes.byref(self),' if not static_method else ''
         mangled_name = get_mangled_name(cursor)
         arg_names = ','.join(c_name for c_name, _ in arg_types)
         lines += emit_python_api_doc(function_tabs, cursor)
@@ -282,7 +284,7 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
 
 
 def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Cursor], symbols: Dict[str, List[Cursor]]) -> List[str]:
-    lines: List[str] = ['']
+    lines: List[str] = []
     static_method = False
     if any(is_staticmethod(cursor) for cursor in overloads):
         lines.append(namespace_tabs + "@staticmethod")
@@ -315,12 +317,12 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
             # TODO Dispatch by argument count first and then by parameter type(s) second.
             for item in overload_group:
                 print('error: ' + item.displayname)
-            throw_cursor(overload_group[0], f"multiple_overloads {overload_group[0].spelling} args {arg_count}")
+            throw_cursor(overload_group[0], f"Multiple overloads {overload_group[0].spelling} args {arg_count}")
 
         assert overload_group
         cursor = overload_group[0]
         mangled_name = get_mangled_name(cursor)
-        self_parameter = 'ctypes.byref(self), ' if not static_method else ''
+        self_parameter = '_E_ctypes.byref(self), ' if not static_method else ''
         arg_list = ','.join(f'args[{i}]' for i in range(arg_count))
         lines += [
             f"{namespace_tabs}\t\tcase {arg_count}:",
@@ -335,11 +337,11 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
 def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
     enum_name = get_bare_name(cursor)
 
-    lines: List[str] = ['']
+    lines: List[str] = []
     if cursor.is_scoped_enum():
-        lines.append(f'{namespace_tabs}class {enum_name}(enum.IntEnum):')
+        lines.append(f'{namespace_tabs}class {enum_name}(_E_enum.IntEnum):')
     else:
-        lines.append(f'{namespace_tabs}class {enum_name}(enum.IntFlag):')
+        lines.append(f'{namespace_tabs}class {enum_name}(_E_enum.IntFlag):')
 
     enum_tabs = namespace_tabs + '\t'
     lines += emit_python_api_doc(enum_tabs, cursor)
@@ -355,7 +357,7 @@ def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
             lines.append(f'{enum_tabs}{child.spelling}={child_enum_value}')
             is_empty = False
     if is_empty:
-        throw_cursor(cursor, "Empty enums not allowed in Python: " + enum_name)
+        throw_cursor(cursor, 'Empty enums not allowed in Python: ' + enum_name)
 
     # Put the named constants in the surrounding namespace.
     if not cursor.is_scoped_enum():
@@ -368,7 +370,7 @@ def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
 def emit_python_api_class(namespace_tabs: str, cursor: Cursor) -> List[str]:
     verbose(2, f"emit_python_api_class {get_bare_name(cursor)}:")
 
-    lines: List[str] = [f'{namespace_tabs}class {get_bare_name(cursor)}(ctypes.Structure):']
+    lines: List[str] = [f'{namespace_tabs}class {get_bare_name(cursor)}(_E_ctypes.Structure):']
     lines += emit_python_api_doc(namespace_tabs + '\t', cursor)
     return lines
 
@@ -435,6 +437,7 @@ def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[L
         if cursor0.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
             assert len(cursor_list) == 1
 
+            # TODO what happens when _fields_ contains _fields_. Does it break?
             structure_list.append(f'{calculate_python_package_path(cursor0)}._fields_ = [')
 
             for child in cursor0.get_children():
@@ -461,7 +464,7 @@ def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[Lis
                 # format them
                 mangled_name = get_mangled_name(cursor)
                 comment = f' # {cursor.displayname}'
-                self_ptr = 'ctypes.c_void_p,' if cursor.kind != CursorKind.FUNCTION_DECL else '' # type: ignore
+                self_ptr = '_E_ctypes.c_void_p,' if cursor.kind != CursorKind.FUNCTION_DECL else '' # type: ignore
 
                 symbol_table += [
                     f"{mangled_name}=_E_cdll.{mangled_name}{comment}",
@@ -528,7 +531,7 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
             CursorKind.FUNCTION_TEMPLATE, # type: ignore
             CursorKind.CLASS_TEMPLATE_PARTIAL_SPECIALIZATION # type: ignore
         )):
-        throw_cursor(cursor, f'unsupported_api {cursor.displayname} Templates are not supported.')
+        throw_cursor(cursor, f'{cursor.displayname} Templates are not supported.')
 
     elif cursor.kind is CursorKind.ENUM_DECL: # type: ignore
         if cursor.is_definition() and cursor.access_specifier in (
@@ -536,7 +539,7 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
                 AccessSpecifier.INVALID): # type: ignore # Top-level enums
             add_symbol(cursor, symbols)
         else:
-            throw_cursor(cursor, f'unsupported_api {get_bare_name(cursor)} Enum is incomplete or private.')
+            throw_cursor(cursor, f'{get_bare_name(cursor)} Enum is incomplete or private.')
 
     elif cursor.kind is CursorKind.FUNCTION_DECL: # type: ignore
         if (cursor.linkage is LinkageKind.EXTERNAL # type: ignore
@@ -544,7 +547,7 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
                 and not is_arg_va_list(cursor)):
             add_symbol(cursor, symbols)
         else:
-            throw_cursor(cursor, f'unsupported_api {cursor.displayname} Functions must be extern and not variadic.')
+            throw_cursor(cursor, f'{cursor.displayname} Functions must be extern and not variadic.')
 
     elif cursor.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
         if (cursor.is_definition() and not cursor.is_anonymous() and cursor.access_specifier in (
@@ -552,7 +555,7 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
                 AccessSpecifier.INVALID)): # type: ignore # Top-level classes/classes
             add_symbol(cursor, symbols)
         else:
-            throw_cursor(cursor, f'unsupported_api {get_bare_name(cursor)} Structs and classes must be complete, not be anonymous and be public.')
+            throw_cursor(cursor, f'{get_bare_name(cursor)} Structs and classes must be complete, not be anonymous and be public.')
 
     elif cursor.kind in (CursorKind.CONSTRUCTOR, CursorKind.DESTRUCTOR, CursorKind.CXX_METHOD): # type: ignore
         if (cursor.access_specifier is AccessSpecifier.PUBLIC # type: ignore
@@ -561,10 +564,10 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
                 and not is_arg_va_list(cursor)):
             add_symbol(cursor, symbols)
         else:
-            throw_cursor(cursor, f'unsupported_api {cursor.displayname} Methods must be public, extern and not variadic.')
+            throw_cursor(cursor, f'{cursor.displayname} Methods must be public, extern and not variadic.')
 
     else:
-        throw_cursor(cursor, f'unsupported_api Unsupported {cursor.kind.name} {get_bare_name(cursor)}')
+        throw_cursor(cursor, f'Unsupported {cursor.kind.name} {get_bare_name(cursor)}')
 
     # fallthrough to children.
     for c in cursor.get_children():
@@ -589,6 +592,57 @@ def load_translation_unit(header_file: str) -> TranslationUnit:
         exit(_exit_error)
 
     return translation_unit
+
+def assemble_output_file(python_api: List[str], structure_list: List[str], symbol_table: List[str]) -> List[str]:
+    # Assemble the script sections
+    return [
+        f'""" entanglement.py {_arg_lib_name}',
+        f'\t{' '.join(sys.argv)}',
+        f'\t{datetime.now()} """',
+
+"""
+import ctypes as _E_ctypes
+import enum as _E_enum
+import numpy as _E_numpy
+import os as _E_os
+import sys as _E_sys
+from typing import Any as _E_Any
+from typing import overload as _E_overload
+
+# PYTHON API ----------------------------------------------------------
+
+def _E_array_to_ctypes(arr: _E_Any, c_type):
+    assert isinstance(c_type, type), '_E_array_to_ctypes c_type not a type'
+    if isinstance(arr, _E_ctypes.POINTER(c_type)):
+        return arr
+    elif isinstance(arr, _E_ctypes.Array):
+        return arr
+    elif isinstance(arr, _E_numpy.ndarray):
+        arr = _E_numpy.ascontiguousarray(arr)
+        return arr.ctypes.data_as(_E_ctypes.POINTER(c_type))
+    else:
+        raise ValueError(f'_E_array_to_ctypes Expected ctypes.POINTER({c_type.__name__}), ctypes.Array or numpy.ndarray')
+"""
+    ] + python_api + [
+"""
+# STRUCTURE LIST ------------------------------------------------------
+"""
+    ] + structure_list + [
+f"""
+# SYMBOL TABLE --------------------------------------------------------
+
+_E_path = _E_os.path.join(_E_os.path.dirname(_E_os.path.abspath(__file__)), '{_arg_lib_name}')
+try:
+    _E_cdll = _E_ctypes.CDLL(_E_path)
+except Exception as e:
+    __builtins__.print(f'missing_library {{e}}', file=_E_sys.stderr)
+    _E_sys.exit(1)
+"""
+    ] + symbol_table + [
+"""
+# 🐉🐉🐉
+"""
+    ]
 
 def main() -> int:
     if not parse_argv():
@@ -632,7 +686,7 @@ Arguments:
     sorted_symbols: List[List[Cursor]] = []
     sort_symbols(symbols, sorted_symbols)
 
-    # Build the script sections
+    # Build the script sections.
     python_api: List[str] = []
     structure_list: List[str] = []
     symbol_table: List[str] = []
@@ -640,48 +694,12 @@ Arguments:
     emit_structure_list(symbols, sorted_symbols, structure_list)
     emit_symbol_table(symbols, sorted_symbols, symbol_table)
 
-    # Assemble the script sections
-    output_lines: List[str] = [
-        f'""" {_arg_lib_name}',
-        f'    {' '.join(sys.argv)}',
-        f'    {datetime.now()} """',
-        'import ctypes,enum,numpy,os,sys',
-        'from typing import Any,overload',
-        '',
-        '# PYTHON_API',
-        '',
-        'def _E_array_to_ctypes(arr: Any, c_type) -> ctypes._Pointer:',
-        "    assert isinstance(c_type, type), '_E_array_to_ctypes c_type not a type'",
-        '    if isinstance(arr, ctypes.Array):',
-        '        return arr',
-        '    elif isinstance(arr, numpy.ndarray):',
-        '        return arr.ctypes.data_as(ctypes.POINTER(c_type))',
-        '    else:',
-        "        raise ValueError('_E_array_to_ctypes Expected ctypes.Array or numpy.ndarray')",
-        '',
-    ] + python_api + [
-        '',
-        '# STRUCTURE_LIST',
-        '',
-    ] + structure_list + [
-        '',
-        '# SYMBOL_TABLE',
-        '',
-        f"_E_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '{_arg_lib_name}')",
-        'try:',
-        '    _E_cdll = ctypes.CDLL(_E_path)',
-        'except Exception as e:',
-        f"    print(f'missing_library {{e}}', file=sys.stderr)",
-        '    exit(1)',
-    ] + symbol_table + [
-        '',
-        '# 🐉🐉🐉',
-        '',
-    ]
+    # Assemble them into an output file.
+    output_lines: List[str] = assemble_output_file(python_api, structure_list, symbol_table)
 
-    # Write output
+    # Write output.
     with open(_arg_output_file, 'w') as f:
-        f.write('\n'.join(output_lines) if output_lines else '')
+        f.write('\n'.join(output_lines))
         verbose(1, f'status Wrote {len(output_lines)} lines to {_arg_output_file}.')
 
     verbose(1, 'exit_ok')

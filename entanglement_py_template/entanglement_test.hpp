@@ -55,4 +55,8 @@ ENTANGLEMENT_LINK uint64_t* function_ref_uint64(uint64_t* x, size_t size, int64_
 
 struct ENTANGLEMENT_TYPE HasACPointer {
 	int32_t* pint;
+
+	ENTANGLEMENT_LINK HasACPointer();
+	ENTANGLEMENT_LINK ~HasACPointer();
+	ENTANGLEMENT_LINK void foo();
 };

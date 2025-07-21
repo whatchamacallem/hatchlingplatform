@@ -6,6 +6,7 @@
     "cSpell.words": [
         "argtypes",
         "asan",
+        "ascontiguousarray",
         "bitfield",
         "CFLAGS",
         "checkasserts",

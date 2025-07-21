@@ -2,9 +2,8 @@
 #
 #   python3 -m entanglement_py_template.entanglement_py_template_test
 
-import unittest
-import ctypes
-
+import ctypes, unittest
+import numpy as np
 from . import entanglement_py_template as system_under_test
 
 class run_all_tests(unittest.TestCase):
@@ -32,11 +31,29 @@ class run_all_tests(unittest.TestCase):
         output_array = test_function(input_array, size, value)
         expected = [i + value for i in range(size)]
 
-        # Can iterate on a ctypes.Array with modified values.
+        # Confirm modification of array. Can iterate on a ctypes.Array with
+        # modified values.
         self.assertEqual([int(x) for x in input_array], expected)
 
         # Can't iterate on a pointer but array access still works.
         self.assertEqual([output_array[i] for i in range(size)], expected)
+
+        # do it again with a pointer cast.
+        input_array_cast = ctypes.cast(input_array, ctypes.POINTER(ctypes.c_int))
+        test_function(input_array_cast, size, value * 2)
+        expected2 = [i + value * 2 for i in range(size)]
+        self.assertEqual([input_array_cast[i] for i in range(size)], expected2)
+
+        # np.array.
+        np_array_input = np.array([i for i in range(size)])
+        np_array_output = test_function(np_array_input, size, value)
+        np_array_expected = np.array([i + value for i in range(size)])
+
+        # Confirm modification of array.
+        self.assertEqual(np_array_input, np_array_expected)
+
+        # Can't iterate on a pointer to numpy guts but array access still works.
+        self.assertEqual([np_array_output[i] for i in range(size)], np_array_expected)
 
     def test_function_ref_int8(self):
         self.do_test_function_ref(system_under_test.function_ref_int8, ctypes.c_int8, 0, 0)
