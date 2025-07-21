@@ -197,8 +197,9 @@ def calculate_python_api_type_map(cursor: Cursor, cpp_type_ref: Type, symbols: D
     # Handle fundamental types
     if cpp_type.kind in _clang_to_ctypes:
         if depth and not is_return: #xxx
-            # Have type hints that allow pointers to be used with any array class.
-            # Then _pass_array_to_ctypes provides runtime resolution and asserts.
+            # Have type hints that allow pointers to be used with any array
+            # class. Then _pass_array_to_ctypes provides runtime resolution and
+            # asserts.
             return (_clang_to_ctypes[cpp_type.kind], 'Any')
         return (_clang_to_ctypes[cpp_type.kind], _clang_to_python[cpp_type.kind])
 
@@ -376,10 +377,10 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
     current_namespace : List[str] = []
 
     # The cursors have been sorted according to their python identifier. This
-    # means their encapsulating namespaces (from namespaces, structs and classes)
-    # will be visited in "collation order." This is used to produce push and pop
-    # operations when the namespace stack changes. Those produce a Python class
-    # hierarchy.
+    # means their encapsulating namespaces (from namespaces, structs and
+    # classes) will be visited in "collation order." This is used to produce
+    # push and pop operations when the namespace stack changes. Those produce a
+    # Python class hierarchy.
     for cursor_list in sorted_symbols:
         # Expect all cursors in a list to be the same type as a condition of the
         # code having compiled. Anonymous cursors have been given unique names.
@@ -397,8 +398,8 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
             leaving_namespace = current_namespace.pop()
             verbose(2, f'leaving_namespace {leaving_namespace}...')
 
-        # Cursors for namespaces are not being selected. Instead missing namespace
-        # declarations are only being added as needed.
+        # Cursors for namespaces are not being selected. Instead missing
+        # namespace declarations are only being added as needed.
         while len(cursor_namespace) > len(current_namespace):
             namespace_depth = len(current_namespace)
             next_namespace : str = cursor_namespace[namespace_depth]
@@ -468,24 +469,29 @@ def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[Lis
                     f"{mangled_name}.restype={return_type}"
                 ]
 
-# Gather symbols by their python path. They will have to work together. This is
-# where symbols get dropped due to the ODR rule.
+# Gather symbols by their python path. The symbols for each path will have to
+# all be the same type. This is where symbols get dropped because they have
+# already been seen in another translation unit.
 def add_symbol(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
-    if not (cursor.is_anonymous()
-            or not cursor.spelling.startswith('_')
-            or not (len(cursor.spelling) > 1 and cursor.spelling[1].isupper())):
-        throw_cursor(cursor, 'Leading underscores followed by capital letters reserved by implementation.')
+    if not cursor.is_anonymous():
+        if cursor.spelling.startswith('__'):
+            throw_cursor(cursor, '2 leading underscores reserved by Python.')
+        if (cursor.spelling.startswith('_')
+                and len(cursor.spelling) > 1 and cursor.spelling[1].isupper()):
+            # The C/C++ standards also reserve the _[A-Z] prefix and the __
+            # prefix will break due to Python's automatic renaming. This leaves
+            # _[A-Z] as the only safe place to put the symbol table and shims.
+            throw_cursor(cursor, '1 leading underscore followed by a capital letter reserved by entanglement.py.')
 
     sym : str = calculate_python_package_path(cursor)
     if sym not in symbols:
-        assert sym
         symbols[sym] = [ cursor ]
-    elif not any(c.get_usr().encode() == cursor.get_usr().encode() for c in symbols[sym]):
+    elif not any(c.get_usr() == cursor.get_usr() for c in symbols[sym]):
         symbols[sym].append(cursor)
 
 # This is the final output order for the python api. Symbols are sorted first by
-# namespace, then by cursor kind and then by name, if any. The symbols object
-# is built up using the Python path instead of exposing the sort key. This keeps
+# namespace, then by cursor kind and then by name, if any. The symbols object is
+# built up using the Python path instead of exposing the sort key. This keeps
 # the details of the sort local to this function.
 def sort_symbols(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]]) -> None:
     symbols_by_sort_key: Dict[str, List[Cursor]] = { }
@@ -585,10 +591,6 @@ def load_translation_unit(header_file: str) -> TranslationUnit:
     return translation_unit
 
 def main() -> int:
-    """
-    Main entry point for the script. Parses command-line arguments, initializes clang,
-    and generates binding code for the given header file.
-    """
     if not parse_argv():
         print("""\
 Usage: python3 entanglement.py <compiler_flags> <lib_name> <header_files>... <output_file>
@@ -613,9 +615,9 @@ Arguments:
     Config.set_library_file(_libclang_path)
 
     # Merge and sort all the cursors of interest from all the translation units.
-    # Using a Python class to implement namespaces requires merging the namespace
-    # declarations. And Python's function overloading situationship requires
-    # figuring out all of the function overloads in advance.
+    # Using a Python class to implement namespaces requires merging the
+    # namespace declarations. And Python's function overloading situationship
+    # requires figuring out all of the function overloads in advance.
     symbols: Dict[str, List[Cursor]] = { }
     for header_file in _arg_header_files:
         verbose(1, f'load_translation_unit {header_file}...')
