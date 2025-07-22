@@ -35,17 +35,20 @@ class run_all_tests(unittest.TestCase):
             total_value += member.value
         self.assert_instance_equal(total_value, int, -2)
 
+    # Check C calling convention first.
     def test_function_roundtrip(self):
         self.assert_instance_equal(system_under_test.function_roundtrip_int8(-77), int, -77)
         self.assert_instance_equal(system_under_test.function_roundtrip_uint16(88), int, 88)
         self.assert_instance_equal(system_under_test.function_roundtrip_int32(-99), int, -99)
         self.assert_instance_equal(system_under_test.function_roundtrip_uint64(111), int, 111)
 
+    # Generate overload group and selector.
     def test_function_overload(self):
         self.assertEqual(system_under_test.function_overload(), None)
         self.assert_instance_equal(system_under_test.function_overload(1,2), int, -1)
         self.assert_instance_equal(system_under_test.function_overload(1,2,3,4), float, -2)
 
+    # Arrays of primitive types. These are important to numpy/mathematicians.
     def do_test_function_pointer(self, test_function, c_type, size :int, value: int):
         input_array = (c_type * size)()
         output_array = test_function(input_array, size, value)
@@ -59,7 +62,7 @@ class run_all_tests(unittest.TestCase):
         self.assertEqual([output_array[i] for i in range(size)], expected)
 
         # do it again with a pointer cast.
-        input_array_cast = ctypes.cast(input_array, ctypes.POINTER(ctypes.c_int))
+        input_array_cast = ctypes.cast(input_array, ctypes.POINTER(c_type))
         test_function(input_array_cast, size, value * 2)
         expected2 = [i + value * 2 for i in range(size)]
         self.assertEqual([input_array_cast[i] for i in range(size)], expected2)
@@ -74,6 +77,7 @@ class run_all_tests(unittest.TestCase):
 
         # Can't iterate on a pointer to numpy guts but array access still works.
         self.assertEqual([np_array_output[i] for i in range(size)], np_array_expected)
+
 
     def test_function_pointer_int8(self):
         self.do_test_function_pointer(system_under_test.function_pointer_int8, ctypes.c_int8, 0, 0)
