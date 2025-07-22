@@ -2,6 +2,10 @@
 
 #include "entanglement_test.hpp"
 
+#include <stdio.h>
+#include <string.h>
+#include <wchar.h>
+
 int8_t function_roundtrip_int8(int8_t x) { return x; }
 
 uint16_t function_roundtrip_uint16(uint16_t x) { return x; }
@@ -35,6 +39,23 @@ uint64_t* function_pointer_uint64(uint64_t* x, size_t size, int64_t value) {
 	while(size--) { x[size] = value + size; }
 	return x;
 }
+
+void* function_pointer_void_to_int(void* x_, size_t size, int8_t value) {
+	int* x = reinterpret_cast<int*>(x_);
+	while(size--) { x[size] = value + size; }
+	return x;
+}
+
+char* function_pointer_char(char* x) {
+	::strcpy(x, "🐉🐉🐉 A");
+	return x;
+}
+
+wchar_t* function_pointer_wchar(wchar_t* x) {
+	::wcscpy(x, L"🐉🐉🐉 B");
+	return x;
+}
+
 
 StructCPointer::StructCPointer(double* ptr) { m_double = ptr; }
 

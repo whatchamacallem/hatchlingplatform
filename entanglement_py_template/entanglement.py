@@ -55,6 +55,12 @@ _clang_to_ctypes: Dict[TypeKind, str] = {
     TypeKind.WCHAR:     '_Ctypes.c_wchar',      # type: ignore # wchar_t
 }
 
+_clang_to_ctypes_ptr: Dict[TypeKind, str] = {
+    TypeKind.CHAR_S:    '_Ctypes.c_char_p',     # type: ignore # char
+    TypeKind.VOID:      '_Ctypes.c_void_p',     # type: ignore # void
+    TypeKind.WCHAR:     '_Ctypes.c_wchar_p',    # type: ignore # wchar_t
+}
+
 _clang_to_python: Dict[TypeKind, str] = {
     TypeKind.BOOL:       'bool',  # type: ignore
     TypeKind.CHAR_S:     'int',   # type: ignore
@@ -202,8 +208,8 @@ def calculate_python_api_type_string(cursor: Cursor, cpp_type_ref: Type,
     # Handle fundamental types.
     if cpp_type.kind in _clang_to_ctypes:
         if result_kind is type_string_kind.ctypes_bindings:
-            return _clang_to_python[cpp_type.kind]
-        return _clang_to_ctypes[cpp_type.kind]
+            return _clang_to_ctypes[cpp_type.kind]
+        return _clang_to_python[cpp_type.kind]
 
     # Pointers and references. The ctypes documentation describes the C level
     # coercion issues involved here. Furthermore, treating references as
@@ -228,12 +234,16 @@ def calculate_python_api_type_string(cursor: Cursor, cpp_type_ref: Type,
                 # Reference args take/modify a single ctypes element by
                 # ctypes.ref().
                 return _clang_to_ctypes[pointee_canonical.kind]
+
+            # Use the explicit ctypes pointer types when available.
+            if pointee_canonical.kind in _clang_to_ctypes_ptr:
+                return _clang_to_ctypes_ptr[pointee_canonical.kind]
+
             if result_kind is type_string_kind.return_hint:
                 # Can't declare POINTER() return type due to 'Call expression
-                # not allowed in type expression'
+                # not allowed in type expression.'
                 return '_Any'
-            # Use the ctypes pointer type everywhere else. Return it from the
-            # API even.
+            # Use the ctypes pointer type everywhere else.
             return f'_Ctypes.POINTER({_clang_to_ctypes[pointee_canonical.kind]})'
 
         # Signal that enums, structs and classes may need special handling.
@@ -285,8 +295,8 @@ def emit_ctypes_function_args(cursor: Cursor, symbols: Dict[str, List[Cursor]], 
         if arg_type_kind == TypeKind.POINTER: # type: ignore
             pointee = arg.type.get_pointee()
             pointee_canonical = pointee.get_canonical()
-            return_py_type = calculate_python_api_type_string(cursor, pointee_canonical, symbols, type_string_kind.ctypes_bindings)
-            arg_list.append(f'_Pointer_shim({arg_name}, {return_py_type})')
+            pointee_c_type = calculate_python_api_type_string(cursor, pointee_canonical, symbols, type_string_kind.ctypes_bindings)
+            arg_list.append(f'_Pointer_shim({arg_name}, {pointee_c_type})')
         elif arg_type_kind in (TypeKind.LVALUEREFERENCE, TypeKind.RVALUEREFERENCE): # type: ignore
             arg_list.append(f'_Ctypes.ref({arg_name})')
         else:
@@ -682,13 +692,13 @@ _ValueError = ValueError
 
 # PYTHON API ----------------------------------------------------------
 
-def _Pointer_shim(_Arr: _Any, _CType):
-	if isinstance(_Arr, _CType):
-		return _Ctypes.byref(_Arr)
-	elif isinstance(_Arr, _Numpy.ndarray):
-		_Arr = _Numpy.ascontiguousarray(_Arr)
-		return _Arr.ctypes.data_as(_Ctypes.POINTER(_CType))
-	return _Arr
+def _Pointer_shim(_Obj: _Any, _CType):
+	if isinstance(_Obj, _CType):
+		return _Ctypes.byref(_Obj)
+	elif isinstance(_Obj, _Numpy.ndarray):
+		_Obj = _Numpy.ascontiguousarray(_Obj)
+		return _Obj.ctypes.data_as(_Ctypes.POINTER(_CType))
+	return _Obj
 """
     ] + python_api + [
 """

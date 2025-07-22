@@ -40,6 +40,9 @@ ENTANGLEMENT_LINK int8_t* function_pointer_int8(int8_t* x, size_t size, int8_t v
 ENTANGLEMENT_LINK uint16_t* function_pointer_uint16(uint16_t* x, size_t size, int16_t value);
 ENTANGLEMENT_LINK int32_t* function_pointer_int32(int32_t* x, size_t size, int32_t value);
 ENTANGLEMENT_LINK uint64_t* function_pointer_uint64(uint64_t* x, size_t size, int64_t value);
+ENTANGLEMENT_LINK void* function_pointer_void_to_int(void* x, size_t size, int8_t value);
+ENTANGLEMENT_LINK char* function_pointer_char(char* x);
+ENTANGLEMENT_LINK wchar_t* function_pointer_wchar(wchar_t* x);
 
 /// A struct that points to a double.
 struct ENTANGLEMENT_TYPE StructCPointer {
