@@ -40,7 +40,7 @@ uint64_t* function_pointer_uint64(uint64_t* x, size_t size, int64_t value) {
 	return x;
 }
 
-void* function_pointer_void_to_int(void* x_, size_t size, int8_t value) {
+void* function_pointer_void_to_int(void* x_, size_t size, int value) {
 	int* x = reinterpret_cast<int*>(x_);
 	while(size--) { x[size] = value + size; }
 	return x;
@@ -56,6 +56,13 @@ wchar_t* function_pointer_wchar(wchar_t* x) {
 	return x;
 }
 
+char& function_ref_char(char& x, char value) { x = value; return x; }
+
+uint16_t& function_ref_uint16(uint16_t& x, uint16_t value) { x = value; return x; }
+
+wchar_t& function_ref_wchar(wchar_t& x, wchar_t value) { x = value; return x; }
+
+uint64_t& function_ref_uint64(uint64_t& x, uint64_t value) { x = value; return x; }
 
 StructCPointer::StructCPointer(double* ptr) { m_double = ptr; }
 

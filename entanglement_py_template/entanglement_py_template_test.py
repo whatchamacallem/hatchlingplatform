@@ -90,5 +90,53 @@ class run_all_tests(unittest.TestCase):
     def test_function_pointer_uint64(self):
         self.do_test_function_pointer(system_under_test.function_pointer_uint64, ctypes.c_uint64, np.uint64, 11, 30)
 
+    def test_function_pointer_char(self):
+        one_hundred_characters = (ctypes.c_char * 100)()
+        result : bytes = system_under_test.function_pointer_char(one_hundred_characters)
+        # These are both type "bytes".
+        self.assert_instance_equal(one_hundred_characters.value.decode(), str, '🐉🐉🐉 A')
+        self.assert_instance_equal(result.decode(), str, '🐉🐉🐉 A') # type: ignore
+
+    def test_function_pointer_wchar(self):
+        # Passing string buffers requires an array of ctypes wchar. Returning
+        # wchar* results in a str. Python strings are immutable.  This is what
+        # you get.
+        one_hundred_characters = (ctypes.c_wchar * 100)()
+        result : str = system_under_test.function_pointer_wchar(one_hundred_characters)
+        self.assert_instance_equal(one_hundred_characters.value, str, '🐉🐉🐉 B')
+        self.assert_instance_equal(result, str, '🐉🐉🐉 B')
+
+    def test_function_pointer_void(self):
+        one_int = (ctypes.c_int * 1)()
+        result : int = system_under_test.function_pointer_void_to_int(one_int, 1, 7)
+
+        # This is how a void C pointer is cast to a type.
+        return_ptr = ctypes.cast(result, ctypes.POINTER(ctypes.c_int))
+
+        self.assertEqual(one_int[0], 7)
+        self.assertEqual(return_ptr[0], 7)
+
+    def test_function_ref(self):
+        buf_char = ctypes.c_char(0)
+        result_char = system_under_test.function_ref_char(buf_char, 99)
+        self.assertEqual(buf_char.value, b'c')
+        self.assertEqual(result_char[0], 99)
+
+        buf_uint16 = ctypes.c_ushort(0) # XXX TODO Using ctypes.c_uint16 here breaks Pylance.
+        result_uint16 = system_under_test.function_ref_uint16(buf_uint16, 199)
+        self.assertEqual(buf_uint16.value, 199)
+        self.assertEqual(result_uint16[0], 199)
+
+        buf_wchar = ctypes.c_wchar('a')
+        result_wchar = system_under_test.function_ref_wchar(buf_wchar, 'a') # XXX
+        self.assertEqual(buf_wchar.value, 'a')
+        self.assertEqual(result_wchar[0], 'a')
+
+        buf_uint64 = ctypes.c_ulong(66) # XXX TODO Using ctypes.c_uint64 here breaks Pylance.
+        result_uint64 = system_under_test.function_ref_uint64(buf_uint64, 66)
+        self.assertEqual(buf_uint64.value, 66)
+        self.assertEqual(result_uint64[0], 66)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

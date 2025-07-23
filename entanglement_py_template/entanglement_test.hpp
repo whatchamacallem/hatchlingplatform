@@ -39,9 +39,15 @@ ENTANGLEMENT int8_t* function_pointer_int8(int8_t* x, size_t size, int8_t value)
 ENTANGLEMENT uint16_t* function_pointer_uint16(uint16_t* x, size_t size, int16_t value);
 ENTANGLEMENT int32_t* function_pointer_int32(int32_t* x, size_t size, int32_t value);
 ENTANGLEMENT uint64_t* function_pointer_uint64(uint64_t* x, size_t size, int64_t value);
-ENTANGLEMENT void* function_pointer_void_to_int(void* x, size_t size, int8_t value);
+ENTANGLEMENT void* function_pointer_void_to_int(void* x, size_t size, int value);
 ENTANGLEMENT char* function_pointer_char(char* x);
 ENTANGLEMENT wchar_t* function_pointer_wchar(wchar_t* x);
+
+/// Fundamental references. & and &&. Honey badger don't care.
+ENTANGLEMENT char& function_ref_char(char& x, char value);
+ENTANGLEMENT uint16_t& function_ref_uint16(uint16_t& x, uint16_t value);
+ENTANGLEMENT wchar_t& function_ref_wchar(wchar_t& x, wchar_t value);
+ENTANGLEMENT uint64_t& function_ref_uint64(uint64_t& x, uint64_t value);
 
 /// A struct that points to a double.
 struct ENTANGLEMENT_T StructCPointer {

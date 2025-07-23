@@ -71,6 +71,7 @@
         "pthread",
         "pybind",
         "pycache",
+        "Pylance",
         "pyproject",
         "Pythonian",
         "PYTHONPATH",

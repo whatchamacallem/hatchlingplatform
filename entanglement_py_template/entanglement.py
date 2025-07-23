@@ -51,10 +51,19 @@ _clang_to_ctypes: Dict[TypeKind, str] = {
     TypeKind.WCHAR:     '_Ctypes.c_wchar',      # type: ignore # wchar_t
 }
 
+# ctypes has special types for certain pointers.
 _clang_to_ctypes_ptr: Dict[TypeKind, str] = {
     TypeKind.CHAR_S:    '_Ctypes.c_char_p',     # type: ignore # char
     TypeKind.VOID:      '_Ctypes.c_void_p',     # type: ignore # void
     TypeKind.WCHAR:     '_Ctypes.c_wchar_p',    # type: ignore # wchar_t
+}
+
+# ctypes has special types for certain pointers returned from a function.
+# void* are returned as ints that have to be cast to the right kind of pointer.
+_clang_to_ctypes_ptr_return: Dict[TypeKind, str] = {
+    TypeKind.CHAR_S:    'bytes', # type: ignore # char
+    TypeKind.VOID:      'int',   # type: ignore # void
+    TypeKind.WCHAR:     'str',   # type: ignore # wchar_t
 }
 
 _clang_to_python: Dict[TypeKind, str] = {
@@ -225,17 +234,21 @@ def calculate_python_api_type_string(cursor: Cursor, cpp_type_ref: Type,
                     # Pointer args of fundamental type may be any kind of array.
                     return '_Any'
                 # Reference args take/modify a single ctypes element by
-                # ctypes.ref().
+                # ctypes.byref().
                 return _clang_to_ctypes[pointee_canonical.kind]
+
+            if result_kind is type_string_kind.return_hint:
+                if pointee_canonical.kind in _clang_to_ctypes_ptr_return:
+                    return _clang_to_ctypes_ptr_return[pointee_canonical.kind]
+
+                # Can't declare POINTER() return type due to 'Call expression
+                # not allowed in type expression.'
+                return '_Any'
 
             # Use the explicit ctypes pointer types when available.
             if pointee_canonical.kind in _clang_to_ctypes_ptr:
                 return _clang_to_ctypes_ptr[pointee_canonical.kind]
 
-            if result_kind is type_string_kind.return_hint:
-                # Can't declare POINTER() return type due to 'Call expression
-                # not allowed in type expression.'
-                return '_Any'
             # Use the ctypes pointer type everywhere else.
             return f'_Ctypes.POINTER({_clang_to_ctypes[pointee_canonical.kind]})'
 
@@ -275,8 +288,7 @@ def is_staticmethod(cursor: Cursor) -> bool:
 
 def emit_ctypes_function_args(cursor: Cursor, symbols: Dict[str, List[Cursor]], overloaded: bool) -> str:
     # Function body calls ctypes function. Assemble ctypes function call
-    # args. Inject shims for pointers and references. This version uses the
-    # argument names.
+    # args. Inject shims for pointers and references.
     arg_list = []
     arg_index = 0
     for arg in cursor.get_arguments():
@@ -287,11 +299,13 @@ def emit_ctypes_function_args(cursor: Cursor, symbols: Dict[str, List[Cursor]], 
             arg_name = arg.spelling if arg.spelling else f'_Arg{arg_index}'
         if arg_type_kind == TypeKind.POINTER: # type: ignore
             pointee = arg.type.get_pointee()
-            pointee_canonical = pointee.get_canonical()
-            pointee_c_type = calculate_python_api_type_string(cursor, pointee_canonical, symbols, type_string_kind.ctypes_bindings)
-            arg_list.append(f'_Pointer_shim({arg_name}, {pointee_c_type})')
+            pointee_c_type = calculate_python_api_type_string(cursor, pointee, symbols, type_string_kind.ctypes_bindings)
+            if pointee_c_type != 'None':
+                arg_list.append(f'_Pointer_shim({arg_name}, {pointee_c_type})')
+            else:
+                arg_list.append(arg_name)
         elif arg_type_kind in (TypeKind.LVALUEREFERENCE, TypeKind.RVALUEREFERENCE): # type: ignore
-            arg_list.append(f'_Ctypes.ref({arg_name})')
+            arg_list.append(f'_Ctypes.byref({arg_name})')
         else:
             arg_list.append(arg_name)
         arg_index += 1
