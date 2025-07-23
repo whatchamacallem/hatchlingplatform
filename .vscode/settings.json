@@ -16,6 +16,7 @@
         "cntvct",
         "constness",
         "ctypes",
+        "ctypeslib",
         "debugbuild",
         "demangle",
         "Demangled",

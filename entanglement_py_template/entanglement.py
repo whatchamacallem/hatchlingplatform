@@ -24,10 +24,6 @@ VERBOSE = 2
 # Path to the libclang shared library. TODO throws exceptions.
 _libclang_path = '/usr/lib/llvm-18/lib/libclang.so.1'
 
-# Exit codes.
-_exit_bindings_generated = 0
-_exit_error = 1
-
 # Processed command line arguments.
 _arg_compiler_flags: List[str] = []
 _arg_lib_name: str = ''
@@ -100,16 +96,17 @@ class type_string_kind(enum.Enum):
 
 def verbose(verbose_level: int, x: str) -> None:
     if VERBOSE >= verbose_level:
-        print(f' {'?*+---'[verbose_level]} {x}', file=sys.stderr)
+        print(f' {'?*+-'[verbose_level]} {x}', file=sys.stderr)
 
-def parse_argv() -> bool:
+def parse_argv(argv: List[str]) -> bool:
     global _arg_compiler_flags
     global _arg_lib_name
     global _arg_header_files
     global _arg_output_file
 
+    _arg_compiler_flags = []
     non_flags: List[str] = []
-    for arg in sys.argv[1:]:
+    for arg in argv:
         if arg.startswith('-'):
             _arg_compiler_flags.append(arg)
         else:
@@ -137,10 +134,6 @@ def exception_debugger(e: Exception) -> None:
             print(f'  {attribute_name}: {attribute_value}', file=sys.stderr)
         except:
             pass
-
-    print(e, file=sys.stderr)
-    verbose(1, 'exit_error')
-    exit(_exit_error)
 
 # Format the source code location and leave the message to the caller.
 def throw_cursor(c: Cursor, message: str) -> NoReturn:
@@ -258,7 +251,7 @@ def calculate_python_api_type_string(cursor: Cursor, cpp_type_ref: Type,
     if definition_cursor.kind in (CursorKind.ENUM_DECL, CursorKind.STRUCT_DECL, CursorKind.CLASS_DECL): # type: ignore
         py_name = calculate_python_package_path(definition_cursor)
         if not py_name in symbols:
-            throw_cursor(definition_cursor, f'Missing definition for: {py_name}. Use ENTANGLEMENT_TYPE.')
+            throw_cursor(definition_cursor, f'Missing definition for: {py_name}. Use ENTANGLEMENT_T.')
 
         if definition_cursor.kind == CursorKind.ENUM_DECL: # type: ignore
             if is_pointer:
@@ -601,7 +594,7 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
         pass # fallthrough
 
     elif not is_annotated_entanglement(cursor):
-        # Ignore everything but ENTANGLEMENT_TYPE/ENTANGLEMENT_LINK.
+        # Ignore everything but ENTANGLEMENT_T/ENTANGLEMENT.
         return
 
     elif (cursor.kind in (
@@ -659,6 +652,7 @@ def load_translation_unit(header_file: str) -> TranslationUnit:
             options=TranslationUnit.PARSE_SKIP_FUNCTION_BODIES)
     except Exception as e:
         exception_debugger(e)
+        raise e
 
     if translation_unit:
         for diagnostic in translation_unit.diagnostics:
@@ -666,8 +660,7 @@ def load_translation_unit(header_file: str) -> TranslationUnit:
 
     if not translation_unit or any(
             d.severity >= Diagnostic.Error for d in translation_unit.diagnostics):
-        verbose(1, 'exit_error')
-        exit(_exit_error)
+        raise ValueError(f'Error: Translation unit would not compile: {header_file}')
 
     return translation_unit
 
@@ -696,8 +689,7 @@ def _Pointer_shim(_Obj: _Any, _CType):
 	if isinstance(_Obj, _CType):
 		return _Ctypes.byref(_Obj)
 	elif isinstance(_Obj, _Numpy.ndarray):
-		_Obj = _Numpy.ascontiguousarray(_Obj)
-		return _Obj.ctypes.data_as(_Ctypes.POINTER(_CType))
+		return _Numpy.ctypeslib.as_ctypes(_Obj)
 	return _Obj
 """
     ] + python_api + [
@@ -721,9 +713,9 @@ except Exception as e:
 """
     ]
 
-def main() -> int:
-    if not parse_argv():
-        print("""\
+def exec(argv: List[str]) -> None:
+    if not parse_argv(argv):
+        raise ValueError("""\
 Usage: python3 entanglement.py <compiler_flags> <lib_name> <header_files>... <output_file>
 
 This tool parses a C++ header file using libclang and generates binding code.
@@ -733,9 +725,7 @@ Arguments:
     lib_name        - C/C++ library/.so name to bind everything to.
     header_files... - Path(s) to the C++ header file(s) to parse.
     output_file     - Path to write the generated Python binding code.
-""", file=sys.stderr)
-        verbose(1, 'exit_error')
-        exit(_exit_error)
+""")
 
     verbose(1, 'compiler_flags ' + ' '.join(_arg_compiler_flags))
     verbose(1, 'lib_name ' + _arg_lib_name)
@@ -756,9 +746,7 @@ Arguments:
         gather_symbols_of_interest(translation_unit.cursor, symbols)
 
     if not symbols:
-        print('Error: No symbols found. Use -DENTANGLEMENT_PASS=1, ENTANGLEMENT_TYPE and ENTANGLEMENT_LINK.',
-              file=sys.stderr)
-        exit(_exit_error)
+        raise ValueError('Error: No symbols found. Use -DENTANGLEMENT_PASS=1, ENTANGLEMENT_T and ENTANGLEMENT.')
 
     # Sort the symbols into their final order.
     sorted_symbols: List[List[Cursor]] = []
@@ -778,10 +766,19 @@ Arguments:
     # Write output.
     with open(_arg_output_file, 'w') as f:
         f.write('\n'.join(output_lines))
-        verbose(1, f'status Wrote {len(output_lines)} lines to {_arg_output_file}.')
+        verbose(1, f'status_message Wrote {len(output_lines)} lines to {_arg_output_file}.')
+        return # success
 
-    verbose(1, 'exit_ok')
-    return _exit_bindings_generated
+    raise ValueError(f'Error: File not written: {_arg_output_file}')
+
+def main() -> int:
+    try:
+        # Any failure is reported as an exception.
+        exec(sys.argv[1:])
+        return 0
+    except Exception as e:
+        print(e, file=sys.stderr)
+    return 1
 
 if __name__ == '__main__':
     exit(main())

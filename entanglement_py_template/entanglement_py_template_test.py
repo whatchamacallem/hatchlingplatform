@@ -49,7 +49,7 @@ class run_all_tests(unittest.TestCase):
         self.assert_instance_equal(system_under_test.function_overload(1,2,3,4), float, -2)
 
     # Arrays of primitive types. These are important to numpy/mathematicians.
-    def do_test_function_pointer(self, test_function, c_type, size :int, value: int):
+    def do_test_function_pointer(self, test_function, c_type, d_type, size :int, value: int):
         input_array = (c_type * size)()
         output_array = test_function(input_array, size, value)
         expected = [i + value for i in range(size)]
@@ -61,37 +61,34 @@ class run_all_tests(unittest.TestCase):
         # Can't iterate on a pointer but array access still works.
         self.assertEqual([output_array[i] for i in range(size)], expected)
 
-        # do it again with a pointer cast.
+        # Do it again with a ctypes pointer instead of an array.
         input_array_cast = ctypes.cast(input_array, ctypes.POINTER(c_type))
         test_function(input_array_cast, size, value * 2)
         expected2 = [i + value * 2 for i in range(size)]
         self.assertEqual([input_array_cast[i] for i in range(size)], expected2)
 
         # np.array.
-        np_array_input = np.array([i for i in range(size)])
+        np_array_input = np.array([i for i in range(size)], dtype=d_type)
         np_array_output = test_function(np_array_input, size, value)
-        np_array_expected = np.array([i + value for i in range(size)])
 
         # Confirm modification of array.
-        self.assertEqual(np_array_input, np_array_expected)
-
-        # Can't iterate on a pointer to numpy guts but array access still works.
-        self.assertEqual([np_array_output[i] for i in range(size)], np_array_expected)
-
+        self.assertEqual([np_array_input[i] for i in range(size)], expected)
+        # Can't iterate on a pointer but array access still works.
+        self.assertEqual([np_array_output[i] for i in range(size)], expected)
 
     def test_function_pointer_int8(self):
-        self.do_test_function_pointer(system_under_test.function_pointer_int8, ctypes.c_int8, 0, 0)
-        self.do_test_function_pointer(system_under_test.function_pointer_int8, ctypes.c_int8, 1, -7)
-        self.do_test_function_pointer(system_under_test.function_pointer_int8, ctypes.c_int8, 33, -10)
+        self.do_test_function_pointer(system_under_test.function_pointer_int8, ctypes.c_int8, np.int8, 0, 0)
+        self.do_test_function_pointer(system_under_test.function_pointer_int8, ctypes.c_int8, np.int8, 1, -7)
+        self.do_test_function_pointer(system_under_test.function_pointer_int8, ctypes.c_int8, np.int8, 33, -10)
 
     def test_function_pointer_uint16(self):
-        self.do_test_function_pointer(system_under_test.function_pointer_uint16, ctypes.c_uint16, 33, 10)
+        self.do_test_function_pointer(system_under_test.function_pointer_uint16, ctypes.c_uint16, np.uint16, 33, 10)
 
     def test_function_pointer_int32(self):
-        self.do_test_function_pointer(system_under_test.function_pointer_int32, ctypes.c_int32, 22, -20)
+        self.do_test_function_pointer(system_under_test.function_pointer_int32, ctypes.c_int32, np.int32, 22, -20)
 
     def test_function_pointer_uint64(self):
-        self.do_test_function_pointer(system_under_test.function_pointer_uint64, ctypes.c_uint64, 11, 30)
+        self.do_test_function_pointer(system_under_test.function_pointer_uint64, ctypes.c_uint64, np.uint64, 11, 30)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

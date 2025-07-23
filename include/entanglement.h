@@ -1,18 +1,18 @@
 #pragma once
 // Copyright 2017-2025 Adrian Johnston
 //
-// The ENTANGLEMENT_TYPE and ENTANGLEMENT_LINK attributes define a .so library
+// The ENTANGLEMENT_T and ENTANGLEMENT attributes define a .so library
 // interface. The usage of these C++ attributes is as follows:
 //
 // example.hpp:
 //
-//     enum ENTANGLEMENT_TYPE example_enum { };
+//     enum ENTANGLEMENT_T example_enum { };
 //
-//     ENTANGLEMENT_LINK float example_function(float x) noexcept;
+//     ENTANGLEMENT float example_function(float x) noexcept;
 //
-//     class ENTANGLEMENT_TYPE example_class {
+//     class ENTANGLEMENT_T example_class {
 //     public:
-//         ENTANGLEMENT_LINK int example_method(void) noexcept;
+//         ENTANGLEMENT int example_method(void) noexcept;
 //     };
 //
 // example.cpp:
@@ -32,11 +32,11 @@
 
 #if ENTANGLEMENT_PASS
 
-/// `ENTANGLEMENT_LINK` - Indicates that a function, constructor, destructor or
+/// `ENTANGLEMENT` - Indicates that a function, constructor, destructor or
 /// method should be made available in Python and also included in an .so. The
 /// only way to guarantee a symbol is available for Python to link against is to
 /// declare it non-inline or out-of-line in a .cpp file. Any symbol annotated
-/// with `ENTANGLEMENT_LINK` must be in your .cpp file, outside of any class or
+/// with `ENTANGLEMENT` must be in your .cpp file, outside of any class or
 /// struct definitions and must not be inline. The `__attribute__((noinline))`
 /// and `__attribute__((used))` compiler attributes do not remove the normal C++
 /// inline attribute and weird link errors may still result. (TODO default
@@ -46,17 +46,17 @@
 /// - `__attribute__((annotate("entanglement")))` : Used by entanglement.py to identify the API.
 /// - `__attribute__((used))` : Causes the compiler to emit the function regardless of use.
 /// - `__attribute__((visibility("default")))` : Causes the linker to keep the symbol.
-#define ENTANGLEMENT_LINK \
+#define ENTANGLEMENT \
 	__attribute__((annotate("entanglement"))) \
 	__attribute__((used)) \
 	__attribute__((visibility("default")))
 
-/// `ENTANGLEMENT_TYPE` - Indicates that an enum, class or struct should be
+/// `ENTANGLEMENT_T` - Indicates that an enum, class or struct should be
 /// available in Python. It is an error to use a type that is not marked.
 /// - `__attribute__((annotate("entanglement")))` : Used by entanglement.py to identify the API.
-#define ENTANGLEMENT_TYPE __attribute__((annotate("entanglement")))
+#define ENTANGLEMENT_T __attribute__((annotate("entanglement")))
 
 #else
-#define ENTANGLEMENT_LINK
-#define ENTANGLEMENT_TYPE
+#define ENTANGLEMENT
+#define ENTANGLEMENT_T
 #endif

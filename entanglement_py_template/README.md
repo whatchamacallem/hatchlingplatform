@@ -58,10 +58,10 @@ symbols into your .so regardless of whether they were used.
 #include <entanglement.h>
 
 // Attribute registers enums, functions, classes.
-#define ENTANGLEMENT_TYPE
+#define ENTANGLEMENT_T
 
 // Attribute registers functions, constructors, destructors and method calls.
-#define ENTANGLEMENT_LINK
+#define ENTANGLEMENT
 
 ```
 
