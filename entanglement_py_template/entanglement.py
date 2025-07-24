@@ -136,10 +136,10 @@ def parse_argv(argv: List[str]) -> bool:
     return True
 
 # cindex may have extra exception data.
-def exception_debugger(e: Exception) -> None:
-    for attribute_name in dir(e):
+def object_debugger(obj) -> None:
+    for attribute_name in dir(obj):
         try:
-            attribute_value = getattr(e, attribute_name)
+            attribute_value = getattr(obj, attribute_name)
             print(f'  {attribute_name}: {attribute_value}', file=sys.stderr)
         except:
             pass
@@ -149,7 +149,7 @@ def throw_cursor(c: Cursor, message: str) -> NoReturn:
     raise ValueError(f'{c.location.file}:{c.location.line}:{c.location.column} Error: {message}\n')
 
 def get_bare_name(cursor: Cursor) -> str:
-    return cursor.spelling if not cursor.is_anonymous() else '_ID' +  str(hex(hash(cursor.get_usr())))[3:]
+    return cursor.spelling if not cursor.is_anonymous() else '_ID' + str(hex(hash(cursor.get_usr())))[3:]
 
 def get_mangled_name(cursor: Cursor) -> str:
     return cursor.mangled_name or get_bare_name(cursor)
@@ -205,59 +205,64 @@ def calculate_python_api_type_string(cursor: Cursor, cpp_type_ref: Type,
             symbols: Dict[str, List[Cursor]], result_kind: type_string_kind) -> str:
 
     # Handle typedefs by resolving to the canonical type.
-    cpp_type = cpp_type_ref.get_canonical()
+    cpp_type_canonical = cpp_type_ref.get_canonical()
 
     # Handle fundamental types.
-    if cpp_type.kind in _clang_to_ctypes:
+    if cpp_type_canonical.kind in _clang_to_ctypes:
         if result_kind is type_string_kind.ctypes_bindings:
-            return _clang_to_ctypes[cpp_type.kind]
-        return _clang_to_python[cpp_type.kind]
+            return _clang_to_ctypes[cpp_type_canonical.kind]
+        return _clang_to_python[cpp_type_canonical.kind]
 
     # Pointers and references. The ctypes documentation describes the C level
     # coercion issues involved here. Furthermore, treating references as
     # pointers is "implementation-defined behavior" that depends on the C++ ABI.
     is_pointer = False
-    if cpp_type.kind in (TypeKind.POINTER, TypeKind.LVALUEREFERENCE, TypeKind.RVALUEREFERENCE):  # type: ignore
-        pointee = cpp_type.get_pointee()
-        pointee_canonical = pointee.get_canonical()
+    if cpp_type_canonical.kind in (TypeKind.POINTER,          # type: ignore
+                                   TypeKind.LVALUEREFERENCE,  # type: ignore
+                                   TypeKind.RVALUEREFERENCE): # type: ignore
+        pointee_type = cpp_type_canonical.get_pointee()
+        pointee_type_canonical = pointee_type.get_canonical()
 
         # Max 1 pointer or reference per-type. There is no Pythonian way to map
         # multiple levels of pointer indirection to a language that doesn't have
         # pointers.
-        if pointee_canonical.kind in (TypeKind.POINTER, TypeKind.LVALUEREFERENCE, TypeKind.RVALUEREFERENCE):  # type: ignore
+        if pointee_type_canonical.kind in (TypeKind.POINTER,          # type: ignore
+                                           TypeKind.LVALUEREFERENCE,  # type: ignore
+                                           TypeKind.RVALUEREFERENCE): # type: ignore
             throw_cursor(cursor, 'Only one pointer or reference allowed in an API type.')
 
         # Special case handling for pointers and references to fundamental types.
-        if pointee_canonical.kind in _clang_to_ctypes:
+        if pointee_type_canonical.kind in _clang_to_ctypes:
             if result_kind is type_string_kind.arg_hint:
-                if cpp_type.kind is TypeKind.POINTER:  # type: ignore
+                if cpp_type_canonical.kind is TypeKind.POINTER:  # type: ignore
                     # Pointer args of fundamental type may be any kind of array.
                     return '_Any'
                 # Reference args take/modify a single ctypes element by
                 # ctypes.byref().
-                return _clang_to_ctypes[pointee_canonical.kind]
+                return _clang_to_ctypes[pointee_type_canonical.kind]
 
             if result_kind is type_string_kind.return_hint:
-                if pointee_canonical.kind in _clang_to_ctypes_ptr_return:
-                    return _clang_to_ctypes_ptr_return[pointee_canonical.kind]
+                if pointee_type_canonical.kind in _clang_to_ctypes_ptr_return:
+                    return _clang_to_ctypes_ptr_return[pointee_type_canonical.kind]
 
                 # Can't declare POINTER() return type due to 'Call expression
                 # not allowed in type expression.'
                 return '_Any'
 
             # Use the explicit ctypes pointer types when available.
-            if pointee_canonical.kind in _clang_to_ctypes_ptr:
-                return _clang_to_ctypes_ptr[pointee_canonical.kind]
+            if pointee_type_canonical.kind in _clang_to_ctypes_ptr:
+                return _clang_to_ctypes_ptr[pointee_type_canonical.kind]
 
             # Use the ctypes pointer type everywhere else.
-            return f'_Ctypes.POINTER({_clang_to_ctypes[pointee_canonical.kind]})'
+            return f'_Ctypes.POINTER({_clang_to_ctypes[pointee_type_canonical.kind]})'
 
         # Signal that enums, structs and classes may need special handling.
+        cpp_type_canonical = pointee_type_canonical
         is_pointer = True
 
     # If it isn't a fundamental type then there has to be a separate definition
     # available.
-    definition_cursor = cpp_type.get_declaration()
+    definition_cursor = cpp_type_canonical.get_declaration()
     if not definition_cursor or not definition_cursor.is_definition():
         throw_cursor(cursor, f'Incomplete type: {cpp_type_ref.displayname}')
 
@@ -268,7 +273,7 @@ def calculate_python_api_type_string(cursor: Cursor, cpp_type_ref: Type,
 
         if definition_cursor.kind == CursorKind.ENUM_DECL: # type: ignore
             if is_pointer:
-                throw_cursor(definition_cursor, f'Cannot pass enums by pointer or reference.')
+                throw_cursor(definition_cursor, f'Cannot pass enums by pointer or reference. Use int.')
             if result_kind is type_string_kind.ctypes_bindings:
                 # Just tell ctypes to marshal enums to their underlying type.
                 return _clang_to_ctypes[definition_cursor.enum_type.kind]
@@ -276,7 +281,7 @@ def calculate_python_api_type_string(cursor: Cursor, cpp_type_ref: Type,
 
         # Classes and structs are usable directly by ctypes. These need to be
         # full path.
-        if is_pointer:
+        if is_pointer and result_kind is type_string_kind.ctypes_bindings:
             return f'_Ctypes.POINTER({py_name})'
         return py_name
 
@@ -298,8 +303,8 @@ def emit_ctypes_function_args(cursor: Cursor, symbols: Dict[str, List[Cursor]], 
         else:
             arg_name = arg.spelling if arg.spelling else f'_Arg{arg_index}'
         if arg_type_kind == TypeKind.POINTER: # type: ignore
-            pointee = arg.type.get_pointee()
-            pointee_c_type = calculate_python_api_type_string(cursor, pointee, symbols, type_string_kind.ctypes_bindings)
+            pointee_type = arg.type.get_pointee()
+            pointee_c_type = calculate_python_api_type_string(cursor, pointee_type, symbols, type_string_kind.ctypes_bindings)
             if pointee_c_type != 'None':
                 arg_list.append(f'_Pointer_shim({arg_name}, {pointee_c_type})')
             else:
@@ -665,7 +670,7 @@ def load_translation_unit(header_file: str) -> TranslationUnit:
         translation_unit = index.parse(header_file, _arg_compiler_flags,
             options=TranslationUnit.PARSE_SKIP_FUNCTION_BODIES)
     except Exception as e:
-        exception_debugger(e)
+        object_debugger(e)
         raise e
 
     if translation_unit:
@@ -727,7 +732,7 @@ except Exception as e:
 """
     ]
 
-def exec(argv: List[str]) -> None:
+def main(argv: List[str]) -> None:
     if not parse_argv(argv):
         raise ValueError("""\
 Usage: python3 entanglement.py <compiler_flags> <lib_name> <header_files>... <output_file>
@@ -785,14 +790,7 @@ Arguments:
 
     raise ValueError(f'Error: File not written: {_arg_output_file}')
 
-def main() -> int:
-    try:
-        # Any failure is reported as an exception.
-        exec(sys.argv[1:])
-        return 0
-    except Exception as e:
-        print(e, file=sys.stderr)
-    return 1
-
+# Allow exceptions to go uncaught. This provides stack traces for unexpected
+# failures.
 if __name__ == '__main__':
-    exit(main())
+    main(sys.argv[1:])

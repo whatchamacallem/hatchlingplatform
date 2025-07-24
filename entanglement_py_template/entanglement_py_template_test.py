@@ -134,8 +134,8 @@ class run_all_tests(unittest.TestCase):
 
         # modify and return a wchar by reference.
         buf_wchar = ctypes.c_wchar('a')
-        # XXX wchar args by value are str not int.
-        result_wchar = system_under_test.function_ref_wchar(buf_wchar, 'z')
+        # XXX Pylance error: wchar args by value are str not int.
+        result_wchar = system_under_test.function_ref_wchar(buf_wchar, 'z') # type: ignore
         self.assertEqual(buf_wchar.value, 'z')
         # XXX wchar ref return is a "str" and not a wchar-ref. ctypes has too many opinions.
         self.assertEqual(result_wchar[0], 'z')

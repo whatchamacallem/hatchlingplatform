@@ -64,8 +64,24 @@ wchar_t& function_ref_wchar(wchar_t& x, wchar_t value) { x = value; return x; }
 
 uint64_t& function_ref_uint64(uint64_t& x, uint64_t value) { x = value; return x; }
 
-StructCPointer::StructCPointer(double* ptr) { m_double = ptr; }
+StructFundamentals& function_struct_fundamentals_multiply(StructFundamentals& struct_fundamentals, int multiplier) {
+	struct_fundamentals.m_bool = !struct_fundamentals.m_bool;
+	struct_fundamentals.m_char0 *= multiplier;
+	struct_fundamentals.m_char1 *= multiplier;
+	struct_fundamentals.m_char2 *= multiplier;
+	struct_fundamentals.m_int0 *= multiplier;
+	struct_fundamentals.m_int1 *= multiplier;
+	struct_fundamentals.m_uint2 *= multiplier;
+	struct_fundamentals.m_double *= multiplier;
+	return struct_fundamentals;
+}
 
-StructCPointer::~StructCPointer() { }
-
-float StructCPointer::AsFloat() { return (float)*m_double; }
+StructPointerFundamentals& function_struct_pointer_fundamentals_multiply(StructPointerFundamentals& struct_fundamentals, int multiplier) {
+	*(int*)struct_fundamentals.m_void *= multiplier;
+	*struct_fundamentals.m_char *= multiplier;
+	*struct_fundamentals.m_wchar_t *= multiplier;
+	*struct_fundamentals.m_bool = !*struct_fundamentals.m_bool;
+	*struct_fundamentals.m_float *= multiplier;
+	*struct_fundamentals.m_double *= multiplier;
+	return struct_fundamentals;
+}

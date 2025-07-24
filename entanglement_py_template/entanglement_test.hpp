@@ -49,10 +49,33 @@ ENTANGLEMENT uint16_t& function_ref_uint16(uint16_t& x, uint16_t value);
 ENTANGLEMENT wchar_t& function_ref_wchar(wchar_t& x, wchar_t value);
 ENTANGLEMENT uint64_t& function_ref_uint64(uint64_t& x, uint64_t value);
 
-/// A struct that points to a double.
-struct ENTANGLEMENT_T StructCPointer {
-	ENTANGLEMENT StructCPointer(double* ptr);
-	ENTANGLEMENT ~StructCPointer();
-	ENTANGLEMENT float AsFloat();
+/// Pack a C structure tight with fundamental types and pass it by value.
+/// XXX Size check.
+struct ENTANGLEMENT_T StructFundamentals {
+	bool m_bool;
+	char m_char0;
+	int8_t m_char1;
+	uint8_t m_char2;
+	int m_int0;
+	int32_t m_int1;
+	uint64_t m_uint2;
+	double m_double;
+};
+
+ENTANGLEMENT StructFundamentals function_struct_fundamentals_multiply(
+	StructFundamentals struct_fundamentals, int multiplier);
+
+/// A C structure with fundamental pointer types. Inherit it from previous test
+/// and pass by reference.
+/// XXX Size check.
+struct ENTANGLEMENT_T StructPointerFundamentals {
+	void* m_void;
+	char* m_char;
+	wchar_t* m_wchar_t;
+	bool* m_bool;
+	float* m_float;
 	double* m_double;
 };
+
+ENTANGLEMENT StructPointerFundamentals& function_struct_pointer_fundamentals_multiply(
+	StructPointerFundamentals& struct_fundamentals, int multiplier);
