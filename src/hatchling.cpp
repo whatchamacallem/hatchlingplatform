@@ -170,9 +170,9 @@ hxconsole_command_named(hxcheck_hash, checkhash);
 
 extern "C"
 void hxinit_internal(void) {
-	hxassertrelease(!g_hxisinit_, "not_init");
+	hxassertrelease(!g_hxisinit, "not_init");
 	hxsettings_construct();
-	g_hxisinit_ = 1;
+	g_hxisinit = true;
 
 #if HX_FLOATING_POINT_TRAPS
 	// You need the math library -lm. This is nonstandard glibc/_GNU_SOURCE.
@@ -194,7 +194,7 @@ hxnoexcept_intrinsic void hxloghandler(hxloglevel_t level, const char* format, .
 
 extern "C"
 hxnoexcept_intrinsic void hxloghandler_v(hxloglevel_t level, const char* format, va_list args) {
-	if(g_hxisinit_ && g_hxsettings.log_level > level) {
+	if(g_hxisinit && g_hxsettings.log_level > level) {
 		return;
 	}
 
@@ -218,7 +218,7 @@ hxnoexcept_intrinsic void hxloghandler_v(hxloglevel_t level, const char* format,
 // HX_RELEASE < 3 facilities for testing tear down. Just call _Exit() otherwise.
 extern "C"
 void hxshutdown(void) {
-	if(g_hxisinit_) {
+	if(g_hxisinit) {
 #if (HX_RELEASE) < 3
 		// Will trap further activity and leaks.
 		hxmemory_manager_shut_down();
@@ -230,7 +230,7 @@ void hxshutdown(void) {
 extern "C"
 hxnoexcept_intrinsic int hxasserthandler(const char* file, size_t line) {
 	const char* f = hxbasename(file);
-	if (g_hxisinit_ && g_hxsettings.asserts_to_be_skipped > 0) {
+	if (g_hxisinit && g_hxsettings.asserts_to_be_skipped > 0) {
 		--g_hxsettings.asserts_to_be_skipped;
 		hxloghandler(hxloglevel_assert, "skipped %s(%zu) hash %08zx",
 			f, line, (size_t)hxstring_literal_hash_debug(file));

@@ -4,8 +4,8 @@
 
 // C utils
 
-// g_hxisinit_. Do not initialize to 0. MSVC actually handles that differently.
-int g_hxisinit_;
+// g_hxisinit. Do not initialize to 0. MSVC actually handles that differently.
+bool g_hxisinit;
 
 // g_hxsettings. Declared here in plain C for maximum portability.
 struct hxsettings g_hxsettings;

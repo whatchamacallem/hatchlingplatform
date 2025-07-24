@@ -38,11 +38,11 @@
 /// declare it non-inline or out-of-line in a .cpp file. Any symbol annotated
 /// with `ENTANGLEMENT` must be in your .cpp file, outside of any class or
 /// struct definitions and must not be inline. The `__attribute__((noinline))`
-/// and `__attribute__((used))` compiler attributes do not remove the normal C++
-/// inline attribute and weird link errors may still result. (TODO default
-/// operators.) This header is recommended to be used with -fvisibility=hidden
-/// so that symbols that are not part of the .so's intended API are
-/// dead-stripped away. The gcc/clang attributes used are:
+/// and `__attribute__((used))` compiler attributes do not remove the normal
+/// C++ inline attribute and weird link errors may still result. This header is
+/// recommended to be used with -fvisibility=hidden so that symbols that are not
+/// part of the .so's intended API are dead-stripped away. The gcc/clang
+/// attributes used are:
 /// - `__attribute__((annotate("entanglement")))` : Used by entanglement.py to identify the API.
 /// - `__attribute__((used))` : Causes the compiler to emit the function regardless of use.
 /// - `__attribute__((visibility("default")))` : Causes the linker to keep the symbol.

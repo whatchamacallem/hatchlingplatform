@@ -12,16 +12,15 @@
 #include <hx/hatchling.h>
 #include <hx/hxarray.hpp>
 
-/// `hxinsertion_sort` - Sorts the elements in the range [begin_, end_) in comparison
-/// order using the insertion sort algorithm. The end_ parameter points past the
-/// end of the array. Exceptions during operation are not supported. Declare your
+/// `hxinsertion_sort` - Sorts the elements in the range `[begin, end)` in comparison
+/// order using the insertion sort algorithm. The `end` parameter points just past the
+/// end of the array. Exception handling during operation is undefined. Declare your
 /// copy constructor and assignment operator `noexcept` or turn off exceptions.
-/// The `less` parameter is a function object that returns true if the first
-/// argument is ordered before (i.e. is less than) the second. See `hxkey_less`.
+/// Both `T::T(T&)` and `T::operator=(T&)` are used while `T::T()` is not. See
+/// hxinsertion_sort_using_swap if you want move semantics using &&.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
-/// - `less` : Comparison function object that takes two `const T&` parameters and
-/// returns a `bool`.
+/// - `less` : A key comparison functor definining a less-than ordering relationship.
 template<typename T_, typename less_t_>
 void hxinsertion_sort(T_* begin_, T_* end_, const less_t_& less_) {
     if(begin_ == end_) { return; } // don't add +1 to null.
@@ -40,13 +39,37 @@ void hxinsertion_sort(T_* begin_, T_* end_, const less_t_& less_) {
     }
 }
 
-/// `hxinsertion_sort (specialization)` - A specialization of `hxinsertion_sort` using
-/// `hxkey_less`. c++98 junk.
+/// `hxinsertion_sort (specialization)` - An overload of `hxinsertion_sort` that uses
+/// `hxkey_less`.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename T_>
 void hxinsertion_sort(T_* begin_, T_* end_) {
     hxinsertion_sort(begin_, end_, hxkey_less_function<T_>());
+}
+
+/// `hxinsertion_sort_using_swap` - A version of `hxinsertion_sort` that uses
+/// `hxswap` and `T::T()`. Neither `T::T(T&)` or `T::operator=(T&)` are used to
+/// make copies. This provides move semantics without speculating based on the
+/// operator overloads of T. See the documentation for `hxinsertion_sort`.
+/// XXX Check the generated assembly and see if this can be used for fundamental types.
+template<typename T_, typename less_t_>
+void hxinsertion_sort_using_swap(T_* begin_, T_* end_, const less_t_& less_) {
+    if(begin_ == end_) { return; } // don't add +1 to null.
+
+    // i points to insertion location. j points to next unsorted value.
+    for (T_ *i_ = begin_, *j_ = begin_ + 1; j_ < end_; i_ = j_++) {
+        if (!less_(*i_, *j_)) {
+            T_ t_; // construct
+            hxswap(t_, *j_);
+            hxswap(*j_, *i_);
+            while (begin_ < i_ && !less_(i_[-1], t_)) {
+                hxswap(i_[0], i_[-1]);
+                --i_;
+            }
+            hxswap(*i_, t_);
+        }
+    }
 }
 
 /// `hxbinary_search` - Performs a binary search in the range [first, last). Returns

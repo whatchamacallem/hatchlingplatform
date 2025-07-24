@@ -25,10 +25,10 @@ bool hxctest_clamp(void) {
 
 bool hxctest_swap(void) {
 	char a[] = { 3, 7 };
-	hxswap(a[0], a[1]);
+	hxswap_memcpy(a[0], a[1]);
 
 	struct { unsigned int x; short pad; } b[] = { { 30u, -1 }, { 70u, -2 } };
-	hxswap(b[0], b[1]);
+	hxswap_memcpy(b[0], b[1]);
 
 	return a[0] == 7 && a[1] == 3 && b[0].x == 70u && b[1].x == 30u;
 }
