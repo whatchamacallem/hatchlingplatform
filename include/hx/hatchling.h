@@ -191,7 +191,7 @@ const char* hxbasename(const char* path_);
 /// Converts a `T&` to a `T&&`. Provides C++98 polyfill.
 template<typename T_> hxconstexpr_fn T_&& hxmove(T_& x_) { return static_cast<T_&&>(x_); }
 #else
-template<typename T_> inline & hxmove(T_& x_) { return x_; }
+template<typename T_> inline T_& hxmove(T_& x_) { return x_; }
 #endif
 
 // More portable versions of min, max, abs and clamp using only operator<.

@@ -44,14 +44,14 @@ gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors
 	-std=c99 -m32 "$@" -c $HX_DIR/src/*.c $HX_DIR/test/*.c
 # -std=c++98
 gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -std=c++98 \
-	-fno-exceptions -fno-rtti -Wno-unused-local-typedefs "$@" $HX_DIR/*/*.cpp *.o \
+	-fno-exceptions -fno-rtti -Wno-unused-local-typedefs "$@" $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp *.o \
 	-lstdc++ -m32 -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
 rm -f hxtest *.txt *.bin *.json
 echo gcc c++14 -O$I "$@"...
 # -std=c++14
 gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
-	-pthread -std=c++14 -fno-exceptions -fno-rtti "$@" $HX_DIR/*/*.cpp *.o \
+	-pthread -std=c++14 -fno-exceptions -fno-rtti "$@" $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp *.o \
 	-lpthread -lstdc++ -m32 -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
 rm -f hxtest *.o *.txt *.bin *.json

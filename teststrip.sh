@@ -15,7 +15,7 @@ HX_ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
 	-pedantic-errors -Wfatal-errors"
 
-HX_FLAGS="-DHX_USE_THREADS=1 -g -ffunction-sections -fdata-sections -ffast-math"
+HX_FLAGS="-DHX_USE_THREADS=1 -DENTANGLEMENT_PASS=0 -g -ffunction-sections -fdata-sections -ffast-math"
 
 HX_DIR=`pwd`
 
@@ -30,7 +30,7 @@ musl-gcc $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I$HX_DIR/include \
 # Includes lld specific instruction to dead-strip. musl is the only library.
 musl-gcc $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I$HX_DIR/include \
 	-std=c++17 -Wl,--gc-sections -fno-exceptions -fno-rtti \
-	$HX_DIR/*/*.cpp *.o -o hxtest
+	$HX_DIR/src/*.cpp $HX_DIR/test/*.cpp *.o -o hxtest
 
 strip -o hxtest-strip --strip-unneeded hxtest
 

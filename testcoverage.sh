@@ -18,7 +18,7 @@ gcc -I$HX_DIR/include --coverage -O0 -g -DHX_RELEASE=0 -std=c99 \
 
 g++ -I$HX_DIR/include --coverage -O0 -g -DHX_RELEASE=0 -DHX_TEST_ERROR_HANDLING=1 \
 	-fno-exceptions -pthread -lpthread -std=c++11 -lstdc++ \
-	$HX_DIR/*/*.cpp *.o -o hxtest
+	$HX_DIR/src/*.cpp $HX_DIR/test/*.cpp *.o -o hxtest
 
 echo runtests | ./hxtest help printhashes "checkhash 0" execstdin
 
