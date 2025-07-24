@@ -117,25 +117,35 @@ class run_all_tests(unittest.TestCase):
         self.assertEqual(return_ptr[0], 7)
 
     def test_function_ref(self):
+        # modify and return a char by reference.
         buf_char = ctypes.c_char(0)
         result_char = system_under_test.function_ref_char(buf_char, 99)
         self.assertEqual(buf_char.value, b'c')
+        # XXX char ref return is "bytes" and not a byte-ref. ctypes has too many opinions.
         self.assertEqual(result_char[0], 99)
 
-        buf_uint16 = ctypes.c_ushort(0) # XXX TODO Using ctypes.c_uint16 here breaks Pylance.
+        # modify and return a uint16 by reference.
+        # XXX Using ctypes.c_uint16 here breaks Pylance.
+        buf_uint16 = ctypes.c_ushort(0)
         result_uint16 = system_under_test.function_ref_uint16(buf_uint16, 199)
         self.assertEqual(buf_uint16.value, 199)
-        self.assertEqual(result_uint16[0], 199)
+        # Return a reference, get a pointer.
+        self.assertEqual(result_uint16.contents.value, 199)
 
+        # modify and return a wchar by reference.
         buf_wchar = ctypes.c_wchar('a')
-        result_wchar = system_under_test.function_ref_wchar(buf_wchar, 'a') # XXX
-        self.assertEqual(buf_wchar.value, 'a')
-        self.assertEqual(result_wchar[0], 'a')
+        # XXX wchar args by value are str not int.
+        result_wchar = system_under_test.function_ref_wchar(buf_wchar, 'z')
+        self.assertEqual(buf_wchar.value, 'z')
+        # XXX wchar ref return is a "str" and not a wchar-ref. ctypes has too many opinions.
+        self.assertEqual(result_wchar[0], 'z')
 
-        buf_uint64 = ctypes.c_ulong(66) # XXX TODO Using ctypes.c_uint64 here breaks Pylance.
+        # modify and return a uint64 by reference.
+        # XXX Using ctypes.c_uint64 here breaks Pylance.
+        buf_uint64 = ctypes.c_ulong(66)
         result_uint64 = system_under_test.function_ref_uint64(buf_uint64, 66)
         self.assertEqual(buf_uint64.value, 66)
-        self.assertEqual(result_uint64[0], 66)
+        self.assertEqual(result_uint64.contents.value, 66)
 
 
 if __name__ == '__main__':

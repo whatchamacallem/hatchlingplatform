@@ -21,7 +21,7 @@ from typing import Dict, List, NoReturn, Optional, Tuple
 # 3: AST traversal. All messages go to stderr.
 VERBOSE = 2
 
-# Path to the libclang shared library. TODO throws exceptions.
+# XXX Path to the libclang shared library. Needs to be configurable.
 _libclang_path = '/usr/lib/llvm-18/lib/libclang.so.1'
 
 # Processed command line arguments.
@@ -195,7 +195,7 @@ def calculate_namespace(cursor: Cursor) -> List[str]:
 
 # Anonymous namespaces are traversed as they may contain implementation details
 # like base class layouts that are needed by the bindings code. Anonymous enums
-# and structs are given globally unique ids. TODO operator names.
+# and structs are given globally unique ids.
 def calculate_python_package_path(cursor: Cursor) -> str:
     namespaces: List[str] = calculate_namespace(cursor)
     namespaces.append(get_bare_name(cursor))
@@ -321,7 +321,7 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
     if overloaded:
         lines.append(namespace_tabs + '@_Overload')
 
-    # TODO
+    # XXX operator names??
     function_name = get_bare_name(cursor)
     if cursor.kind is CursorKind.CONSTRUCTOR: # type: ignore
         function_name = '__init__'
@@ -371,7 +371,7 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
     # All cursors are the same type. Use the first one to identify them.
     cursor0 = overloads[0]
 
-    # TODO
+    # XXX operator names??
     function_name = cursor0.spelling
     if cursor0.kind is CursorKind.CONSTRUCTOR: # type: ignore
         function_name = '__init__'
@@ -396,7 +396,7 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
     # Handle each group for each argument count.
     for arg_count, overload_group in sorted(arg_count_map.items()):
         if len(overload_group) > 1:
-            # TODO Dispatch by argument count first and then by parameter type(s) second.
+            # XXX Dispatch by argument count first and then by parameter type(s) second.
             for item in overload_group:
                 print('Error: ' + item.displayname, file=sys.stderr)
             throw_cursor(overload_group[0],
@@ -520,7 +520,7 @@ def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[L
         if cursor0.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
             assert len(cursor_list) == 1
 
-            # TODO what happens when _fields_ contains _fields_. Does it break?
+            # XXX what happens when _fields_ contains _fields_. Does it break?
             structure_list.append(f'{calculate_python_package_path(cursor0)}._fields_ = [')
 
             for child in cursor0.get_children():
