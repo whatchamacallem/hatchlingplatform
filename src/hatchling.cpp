@@ -110,8 +110,8 @@ hxhash_string_literal_& hxstring_literal_hashes_(void) {
 
 // The key for the table is a string hash.
 hxregister_string_literal_hash::hxregister_string_literal_hash(const char* str_)
-        : m_hash_next_(0), m_hash_(hxstring_literal_hash_debug(str_)), m_str_(str_) {
-    hxdetail_::hxstring_literal_hashes_().insert_node(this);
+		: m_hash_next_(0), m_hash_(hxstring_literal_hash_debug(str_)), m_str_(str_) {
+	hxdetail_::hxstring_literal_hashes_().insert_node(this);
 }
 
 // The hash table code expects to be able to hash a key_t and compare it equal
@@ -176,7 +176,7 @@ void hxinit_internal(void) {
 
 #if HX_FLOATING_POINT_TRAPS
 	// You need the math library -lm. This is nonstandard glibc/_GNU_SOURCE.
-    ::feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+	::feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 #endif
 
 	hxmemory_manager_init();

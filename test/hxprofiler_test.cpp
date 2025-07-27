@@ -12,14 +12,14 @@ HX_REGISTER_FILENAME_HASH
 #if HX_PROFILE
 
 static const char* s_hxtest_labels[] = {
-	"Alpha",   "Beta",     "Gamma",
+	"Alpha",   "Beta",	 "Gamma",
 	"Delta",   "Epsilon",  "Zeta",
-	"Eta",     "Theta",    "Iota",
+	"Eta",	 "Theta",	"Iota",
 	"Kappa",   "Lambda",   "Mu",
-	"Nu",       "Xi",      "Omicron",
-	"Pi",       "Rho",     "Sigma",
-	"Tau",      "Upsilon", "Phi",
-	"Chi",      "Psi",     "Omega"
+	"Nu",	   "Xi",	  "Omicron",
+	"Pi",	   "Rho",	 "Sigma",
+	"Tau",	  "Upsilon", "Phi",
+	"Chi",	  "Psi",	 "Omega"
 };
 static const size_t s_hxtest_num_labels = sizeof s_hxtest_labels / sizeof *s_hxtest_labels;
 
@@ -27,20 +27,20 @@ class hxprofiler_test :
 	public testing::Test
 {
 public:
-    class hxprofiler_task_test : public hxtask {
-    public:
-        hxprofiler_task_test() : m_target_ms_(0.0f), m_accumulator_(0) { }
+	class hxprofiler_task_test : public hxtask {
+	public:
+		hxprofiler_task_test() : m_target_ms_(0.0f), m_accumulator_(0) { }
 
-        void construct(const char* label, float target_ms) {
-            set_label(label);
-            m_target_ms_ = target_ms;
-            m_accumulator_ = 0;
-        }
+		void construct(const char* label, float target_ms) {
+			set_label(label);
+			m_target_ms_ = target_ms;
+			m_accumulator_ = 0;
+		}
 
-        virtual void execute(hxtask_queue* q) hxoverride {
-            (void)q;
-            generate_scopes(m_target_ms_);
-        }
+		virtual void execute(hxtask_queue* q) hxoverride {
+			(void)q;
+			generate_scopes(m_target_ms_);
+		}
 
 		virtual void generate_scopes(float target_ms) {
 			hxcycles_t start_cycles = hxtime_sample_cycles();
@@ -54,12 +54,12 @@ public:
 				generate_scopes(subtarget);
 			}
 
-            while ((double)delta * hxmilliseconds_per_cycle < target_ms) {
-                // Perform work that might not be optimized away by the compiler.
-                uint32_t ops = (m_accumulator_ & 0xf) + 1;
-                for (uint32_t i = 0; i < ops; ++i) {
-                    m_accumulator_ ^= (uint32_t)m_test_prng_;
-                }
+			while ((double)delta * hxmilliseconds_per_cycle < target_ms) {
+				// Perform work that might not be optimized away by the compiler.
+				uint32_t ops = (m_accumulator_ & 0xf) + 1;
+				for (uint32_t i = 0; i < ops; ++i) {
+					m_accumulator_ ^= (uint32_t)m_test_prng_;
+				}
 
 				// Unsigned arithmetic handles clock wrapping correctly.
 				delta = hxtime_sample_cycles() - start_cycles;
@@ -67,10 +67,10 @@ public:
 		}
 
 	private:
-        float m_target_ms_;
-        uint32_t m_accumulator_;
-        hxrandom m_test_prng_;
-    };
+		float m_target_ms_;
+		uint32_t m_accumulator_;
+		hxrandom m_test_prng_;
+	};
 };
 
 TEST_F(hxprofiler_test, single1ms) {

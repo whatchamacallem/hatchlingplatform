@@ -26,27 +26,27 @@ typedef uint32_t hxhash_t;
 /// and `checkhash`.
 class hxregister_string_literal_hash {
 public:
-    typedef hxhash_t key_t;
+	typedef hxhash_t key_t;
 
 	// permanently adds object to hxstring_literal_hashes_.
-    hxregister_string_literal_hash(const char* str_);
-    void* hash_next(void) const { return m_hash_next_; }
-    void*& hash_next(void) { return m_hash_next_; }
-    hxhash_t key(void) const { return m_hash_; };
-    hxhash_t hash(void) const; /// this is rehashed.
-    const char* str(void) const { return m_str_; }
+	hxregister_string_literal_hash(const char* str_);
+	void* hash_next(void) const { return m_hash_next_; }
+	void*& hash_next(void) { return m_hash_next_; }
+	hxhash_t key(void) const { return m_hash_; };
+	hxhash_t hash(void) const; /// this is rehashed.
+	const char* str(void) const { return m_str_; }
 
 private:
-    void* m_hash_next_;
-    hxhash_t m_hash_;
-    const char* m_str_;
+	void* m_hash_next_;
+	hxhash_t m_hash_;
+	const char* m_str_;
 };
 
 /// `HX_REGISTER_FILENAME_HASH` - Registers hash of `__FILE__` to be logged in a debug
 /// build. This information will be needed to identify file name hashes in release
 /// builds.
 #define HX_REGISTER_FILENAME_HASH static hxregister_string_literal_hash \
-    s_hxregister_filename_hash(__FILE__);
+	s_hxregister_filename_hash(__FILE__);
 #else
 #define HX_REGISTER_FILENAME_HASH
 #endif

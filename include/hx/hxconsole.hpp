@@ -18,23 +18,23 @@ class hxfile;
 /// generic number approach Java_script uses. Always 64-bit.
 class hxconsolenumber_t {
 public:
-    /// Zero
-    hxconsolenumber_t(void) : m_x_(0.0) { }
+	/// Zero
+	hxconsolenumber_t(void) : m_x_(0.0) { }
 
-    /// Construct from any number
-    template<typename T_> hxconsolenumber_t(T_ x_) : m_x_((double)x_) { }
+	/// Construct from any number
+	template<typename T_> hxconsolenumber_t(T_ x_) : m_x_((double)x_) { }
 
-    /// Automatic casts to all number types.
-    template<typename T_> operator T_() const;
+	/// Automatic casts to all number types.
+	template<typename T_> operator T_() const;
 	operator bool(void) const { return m_x_ != 0.0; }
 	operator float(void) const { return (float)m_x_; }
 	operator double(void) const { return m_x_; }
 
 private:
-    // ERROR - Numbers are not pointers or references.
-    template<typename T_> operator T_*() const hxdelete_fn;
+	// ERROR - Numbers are not pointers or references.
+	template<typename T_> operator T_*() const hxdelete_fn;
 
-    double m_x_;
+	double m_x_;
 };
 
 /// `hxconsolehex_t` - A hex value. Uses uint64_t as an intermediate type. This
@@ -43,17 +43,17 @@ private:
 /// console. Always 64-bit.
 class hxconsolehex_t {
 public:
-    /// Zero
-    hxconsolehex_t(void) : m_x_(0u) { }
+	/// Zero
+	hxconsolehex_t(void) : m_x_(0u) { }
 
-    /// Construct from any integer.
-    hxconsolehex_t(uint64_t x_) : m_x_(x_) { }
+	/// Construct from any integer.
+	hxconsolehex_t(uint64_t x_) : m_x_(x_) { }
 
-    /// Automatic cast to all integer types.
-    template<typename T_> operator T_() const;
+	/// Automatic cast to all integer types.
+	template<typename T_> operator T_() const;
 
 private:
-    hxstatic_assert(sizeof(uint64_t) >= sizeof(uintptr_t), "128-bit pointers?");
+	hxstatic_assert(sizeof(uint64_t) >= sizeof(uintptr_t), "128-bit pointers?");
 	uint64_t m_x_;
 };
 
@@ -62,7 +62,7 @@ private:
 /// - `x` : Valid C identifier that evaluates to a function pointer.
 ///   E.g. hxconsole_command(srand);
 #define hxconsole_command(x_) static hxconsole_constructor_ \
-    g_hxconsole_symbol_##x_(hxconsole_command_factory_(&(x_)), #x_)
+	g_hxconsole_symbol_##x_(hxconsole_command_factory_(&(x_)), #x_)
 
 /// `hxconsole_command_named` - Registers a named function using a global constructor.
 /// Use in a global scope. Provided name_ must be a valid C identifier.
@@ -70,7 +70,7 @@ private:
 /// - `name` : Valid C identifier that identifies the command.
 ///   E.g. hxconsole_command_named(srand, seed_rand);
 #define hxconsole_command_named(x_, name_) static hxconsole_constructor_ \
-    g_hxconsole_symbol_##name_(hxconsole_command_factory_(&(x_)), #name_)
+	g_hxconsole_symbol_##name_(hxconsole_command_factory_(&(x_)), #name_)
 
 /// `hxconsole_variable` - Registers a variable. Use in a global scope. Will have the
 /// same name as the variable.
@@ -79,7 +79,7 @@ private:
 ///   static bool is_my_hack_enabled=false;
 ///   hxconsole_variable(is_my_hack_enabled);
 #define hxconsole_variable(x_) static hxconsole_constructor_ \
-    g_hxconsole_symbol_##x_(hxconsole_variable_factory_(&(x_)), #x_)
+	g_hxconsole_symbol_##x_(hxconsole_variable_factory_(&(x_)), #x_)
 
 /// `hxconsole_variable_named` - Registers a named variable. Use in a global scope.
 /// Provided name must be a valid C identifier.
@@ -89,7 +89,7 @@ private:
 ///   static bool is_my_hack_enabled=false;
 ///   hxconsole_variable_named(is_my_hack_enabled, f_hack); // add "f_hack" to the console.
 #define hxconsole_variable_named(x_, name_) static hxconsole_constructor_ \
-    g_hxconsole_symbol_##name_(hxconsole_variable_factory_(&(x_)), #name_)
+	g_hxconsole_symbol_##name_(hxconsole_variable_factory_(&(x_)), #name_)
 
 /// `hxconsole_deregister` - Explicit de-registration of a console symbol.
 /// - `id` : Valid C identifier that identifies the variable.

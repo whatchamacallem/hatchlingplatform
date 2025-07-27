@@ -8,7 +8,7 @@ set -o errexit
 export POSIXLY_CORRECT=1
 
 if [ ! -f bin/hxtest ]; then
-    echo "bin/hxtest not found..."
+	echo "bin/hxtest not found..."
 	return 2; # file not found.
 fi
 

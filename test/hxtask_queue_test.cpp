@@ -14,27 +14,27 @@ public:
 		max_tasks_ = 20
 	};
 
-    ~hxtask_queue_test(void) {
-    }
-    class task_test_t_ : public hxtask {
-    public:
-        task_test_t_() : m_exec_count_(0), m_reenqueue_count_(0) { }
+	~hxtask_queue_test(void) {
+	}
+	class task_test_t_ : public hxtask {
+	public:
+		task_test_t_() : m_exec_count_(0), m_reenqueue_count_(0) { }
 
-        virtual void execute(hxtask_queue* q) hxoverride {
-            ++m_exec_count_;
-            if (m_reenqueue_count_ > 0) {
-                --m_reenqueue_count_;
-                q->enqueue(this);
-            }
-        }
+		virtual void execute(hxtask_queue* q) hxoverride {
+			++m_exec_count_;
+			if (m_reenqueue_count_ > 0) {
+				--m_reenqueue_count_;
+				q->enqueue(this);
+			}
+		}
 
-        size_t get_exec_count_(void) { return m_exec_count_; }
-        void set_reenqueue_count_(size_t n_) { m_reenqueue_count_ = n_; }
+		size_t get_exec_count_(void) { return m_exec_count_; }
+		void set_reenqueue_count_(size_t n_) { m_reenqueue_count_ = n_; }
 
 	private:
-        size_t m_exec_count_;
-        size_t m_reenqueue_count_;
-    };
+		size_t m_exec_count_;
+		size_t m_reenqueue_count_;
+	};
 };
 
 TEST_F(hxtask_queue_test, nop) {

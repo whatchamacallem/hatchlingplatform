@@ -86,9 +86,9 @@ inline void operator delete[](void*, void*) hxnoexcept { }
 class hxsystem_allocator_scope
 {
 public:
-    /// `hxsystem_allocator_scope` - Constructor: Sets the current memory allocator to the specified ID.
-    /// - `allocator` : The memory manager ID to set for this scope.
-    hxsystem_allocator_scope(hxsystem_allocator_t allocator_);
+	/// `hxsystem_allocator_scope` - Constructor: Sets the current memory allocator to the specified ID.
+	/// - `allocator` : The memory manager ID to set for this scope.
+	hxsystem_allocator_scope(hxsystem_allocator_t allocator_);
 
 	/// Destructor restores the previous memory manager allocator ID.
 	~hxsystem_allocator_scope(void);
@@ -118,10 +118,10 @@ private:
 	// Deleted assignment operator to prevent copying.
 	void operator=(const hxsystem_allocator_scope&) hxdelete_fn;
 
-    hxsystem_allocator_t m_this_allocator_; // The memory manager ID for this scope.
-    hxsystem_allocator_t m_previous_allocator_; // The previous memory manager ID.
-    size_t m_previous_allocation_count_; // Previous allocation count.
-    size_t m_previous_bytes_allocated_; // Previous bytes allocated.
+	hxsystem_allocator_t m_this_allocator_; // The memory manager ID for this scope.
+	hxsystem_allocator_t m_previous_allocator_; // The previous memory manager ID.
+	size_t m_previous_allocation_count_; // Previous allocation count.
+	size_t m_previous_bytes_allocated_; // Previous bytes allocated.
 };
 
 /// `hxmemory_manager_init` - Initializes the memory manager. Must be called before

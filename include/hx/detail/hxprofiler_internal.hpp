@@ -17,26 +17,26 @@
 #endif
 
 inline hxcycles_t hxtime_sample_cycles(void) {
-    uint64_t cycles_ = 0; (void)cycles_;
+	uint64_t cycles_ = 0; (void)cycles_;
 #if defined __EMSCRIPTEN__
-    double t_ = emscripten_get_now() * 1.0e+6;
-    cycles_ = (uint64_t)t_;
+	double t_ = emscripten_get_now() * 1.0e+6;
+	cycles_ = (uint64_t)t_;
 #elif defined __x86_64__ || defined __i386__
-    cycles_ = __rdtsc();
+	cycles_ = __rdtsc();
 #elif defined __aarch64__  // ARMv8-A 64-bit.
-    __asm__ volatile("mrs %0, cntvct_el0" : "=r"(cycles_));
+	__asm__ volatile("mrs %0, cntvct_el0" : "=r"(cycles_));
 #elif defined __arm__  // ARMv7-A 32-bit.
-    uint32_t t_;
-    __asm__ volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(t_));
-    cycles_ = (uint64_t)t_;
+	uint32_t t_;
+	__asm__ volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(t_));
+	cycles_ = (uint64_t)t_;
 #elif defined __riscv && (__riscv_xlen == 64)
-    __asm__ volatile("rdcycle %0" : "=r"(cycles_));
+	__asm__ volatile("rdcycle %0" : "=r"(cycles_));
 #elif defined __powerpc__ || defined __ppc__
-    __asm__ volatile("mftb %0" : "=r"(cycles_));
+	__asm__ volatile("mftb %0" : "=r"(cycles_));
 #else
 hxstatic_assert(0, "Implement hxtime_sample_cycles");
 #endif
-    return (hxcycles_t)cycles_;
+	return (hxcycles_t)cycles_;
 }
 
 namespace hxdetail_ {
@@ -74,7 +74,7 @@ private:
 
 	bool m_is_started_;
 #if HX_USE_THREADS
-    hxmutex m_mutex_;
+	hxmutex m_mutex_;
 #endif
 	hxarray<hxprofiler_record_, HX_PROFILER_MAX_RECORDS> m_records;
 };

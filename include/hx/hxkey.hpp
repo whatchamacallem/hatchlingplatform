@@ -28,7 +28,7 @@ hxconstexpr_fn bool hxkey_equal(const char* a_, const char* b_) {
 /// set of overloaded functions. E.g. `hxkey_equal_function<int>()(1, 7)`
 template<typename T_>
 inline bool(*hxkey_equal_function(void))(const T_&, const T_&) {
-    return static_cast<bool(*)(const T_&, const T_&)>(hxkey_equal<T_>);
+	return static_cast<bool(*)(const T_&, const T_&)>(hxkey_equal<T_>);
 }
 
 /// `hxkey_less(const T&, const T&)` - User overloadable function for performing comparisons.
@@ -41,15 +41,15 @@ hxconstexpr_fn bool hxkey_less(const T_& a_, const T_& b_) {
 
 /// `hxkey_less(const char*, const char*)` - Uses a constexpr "strcmp(a, b) < 0".
 hxconstexpr_fn bool hxkey_less(const char* a_, const char* b_) {
-    while(*a_ != '\0' && *a_ == *b_) { ++a_; ++b_; }
-    return *a_ < *b_;
+	while(*a_ != '\0' && *a_ == *b_) { ++a_; ++b_; }
+	return *a_ < *b_;
 }
 
 /// Utility for making function pointers to `hxkey_less` from a partially specialized
 /// set of overloaded functions. E.g. `hxkey_less_function<int>()(78, 77)`
 template<typename T_>
 inline bool (*hxkey_less_function(void))(const T_&, const T_&) {
-    return static_cast<bool(*)(const T_&, const T_&)>(hxkey_less<T_>);
+	return static_cast<bool(*)(const T_&, const T_&)>(hxkey_less<T_>);
 }
 
 /// `hxkey_hash(T)` - Used by the base class hash table node. It needs to be overridden
@@ -62,8 +62,8 @@ hxconstexpr_fn hxhash_t hxkey_hash(T_ t_) {
 
 /// `hxkey_hash(const char*)` - Uses FNV-1a string hashing.
 hxconstexpr_fn hxhash_t hxkey_hash(const char* k_) {
-    hxhash_t x_ = (hxhash_t)0x811c9dc5;
-    while (*k_ != '\0') {
+	hxhash_t x_ = (hxhash_t)0x811c9dc5;
+	while (*k_ != '\0') {
 		x_ ^= (hxhash_t)*k_++;
 		x_ *= (hxhash_t)0x01000193;
 	}

@@ -12,21 +12,21 @@ class hxradix_sort_test :
 public:
 	template<typename key_t>
 	class test_object {
-    public:
+	public:
 		test_object(key_t k) : id(k) { }
 		~test_object(void) { id = (key_t)0; }
 		bool operator<(const test_object& rhs) const { return id < rhs.id; }
 		key_t id;
 	};
 
-    template<typename key_t>
-    void generate(hxarray<test_object<key_t> >& a, uint32_t size, uint32_t mask, key_t offset) {
-        a.reserve(size);
-        for(uint32_t i= size;i--;) {
-            uint32_t x = m_prng_() & mask;
-            a.push_back((key_t)x - offset);
-        }
-    }
+	template<typename key_t>
+	void generate(hxarray<test_object<key_t> >& a, uint32_t size, uint32_t mask, key_t offset) {
+		a.reserve(size);
+		for(uint32_t i= size;i--;) {
+			uint32_t x = m_prng_() & mask;
+			a.push_back((key_t)x - offset);
+		}
+	}
 
 	template<typename key_t>
 	static int q_sort_compare(const void* a, const void* b) {
@@ -71,7 +71,7 @@ public:
 		EXPECT_EQ(cit, rs.cend());
 	}
 
-    hxrandom m_prng_;
+	hxrandom m_prng_;
 };
 
 TEST_F(hxradix_sort_test, null) {

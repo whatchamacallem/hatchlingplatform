@@ -171,7 +171,7 @@
 
 #if !defined HX_MEMORY_BUDGET_PERMANENT
 /// `HX_MEMORY_BUDGET_PERMANENT` - Pool sizes. Set to 5 KiB if not defined.
-#define HX_MEMORY_BUDGET_PERMANENT        (5u * HX_KIB)
+#define HX_MEMORY_BUDGET_PERMANENT		(5u * HX_KIB)
 #endif
 
 #if !defined HX_MEMORY_BUDGET_TEMPORARY_STACK
@@ -223,15 +223,15 @@ extern "C" {
 /// hxsettings. Constructed by first call to hxinit() which happens when or
 /// before the memory allocator constructs.
 struct hxsettings {
-    /// Logging level for the application (e.g., verbosity of logs).
-    uint8_t log_level;
+	/// Logging level for the application (e.g., verbosity of logs).
+	uint8_t log_level;
 
-    /// Allows deallocation of permanent resources at system shut down.
-    uint8_t deallocate_permanent;
+	/// Allows deallocation of permanent resources at system shut down.
+	uint8_t deallocate_permanent;
 
 #if (HX_RELEASE) < 1
-    /// Number of asserts to skip, useful for testing assert behavior.
-    int asserts_to_be_skipped;
+	/// Number of asserts to skip, useful for testing assert behavior.
+	int asserts_to_be_skipped;
 #endif
 };
 

@@ -130,8 +130,8 @@ private:
 	// Internal function to open a file with a formatted filename and variable arguments.
 	bool openv_(uint16_t mode_, const char* format_, va_list args_);
 
-    char* m_file_pimpl_;   // Pointer to the file implementation.
-    uint16_t m_open_mode_; // Current open mode of the file.
-    bool m_good_; 		   // Indicates if the file stream is in a good state.
-    bool m_eof_;  		   // Indicates if the end of the file has been reached.
+	char* m_file_pimpl_;   // Pointer to the file implementation.
+	uint16_t m_open_mode_; // Current open mode of the file.
+	bool m_good_; 		   // Indicates if the file stream is in a good state.
+	bool m_eof_;  		   // Indicates if the end of the file has been reached.
 };

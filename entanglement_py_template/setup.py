@@ -16,40 +16,40 @@ HEADER_FILES=['entanglement_test.hpp']
 OUTPUT_FILE='entanglement_py_template.py'
 
 ENTANGLEMENT_COMMAND=['python3', 'entanglement.py', '-std=c++17', '-DENTANGLEMENT_PASS=1',
-    '-I../include', '-DHX_RELEASE=0', '-fdiagnostics-absolute-paths',
-    '-Wfatal-errors', LIBRARY] + HEADER_FILES + [OUTPUT_FILE]
+	'-I../include', '-DHX_RELEASE=0', '-fdiagnostics-absolute-paths',
+	'-Wfatal-errors', LIBRARY] + HEADER_FILES + [OUTPUT_FILE]
 
 VERBOSE = 1
 
 _exit_error = 1
 
 def _verbose(x: str) -> None:
-    if VERBOSE:
-        print(x)
+	if VERBOSE:
+		print(x)
 
 # Takes an argv and throws an exception if it doesn't return 0.
 def _run_argv(argv: List[str]) -> None:
-    try:
-        _verbose(' '.join(argv))
-        result = subprocess.run(
-            argv,
-            cwd=os.getcwd(),
-            stdout=subprocess.PIPE, # a.k.a capture
-            stderr=subprocess.STDOUT,
-            text=True,
-            check=True,
-        )
-        _verbose(result.stdout)
+	try:
+		_verbose(' '.join(argv))
+		result = subprocess.run(
+			argv,
+			cwd=os.getcwd(),
+			stdout=subprocess.PIPE, # a.k.a capture
+			stderr=subprocess.STDOUT,
+			text=True,
+			check=True,
+		)
+		_verbose(result.stdout)
 
-    except subprocess.CalledProcessError as e:
-        if e.stdout:
-            print(e.stdout, file=sys.stderr)
-        print(e, file=sys.stderr)
-        sys.exit(e.returncode if e.returncode else _exit_error)
+	except subprocess.CalledProcessError as e:
+		if e.stdout:
+			print(e.stdout, file=sys.stderr)
+		print(e, file=sys.stderr)
+		sys.exit(e.returncode if e.returncode else _exit_error)
 
-    except Exception as e:
-        print(e, file=sys.stderr)
-        sys.exit(_exit_error)
+	except Exception as e:
+		print(e, file=sys.stderr)
+		sys.exit(_exit_error)
 
 # Run Commands #
 
@@ -63,8 +63,8 @@ _run_argv(['python3', 'entanglement_py_template.py'])
 
 # This is legacy. The manifest is now supposed to be in the .toml file.
 #setuptools.setup(
-#    install_requires=[],
-#    python_requires='>=3.7',
+#	install_requires=[],
+#	python_requires='>=3.7',
 #)
 
 print("🐉🐉🐉")

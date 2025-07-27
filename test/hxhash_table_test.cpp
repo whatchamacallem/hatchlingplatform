@@ -12,16 +12,16 @@ class hxhash_table_test :
 	public testing::Test
 {
 public:
-    class test_object {
-    public:
-        test_object(void) {
-            ++s_hxtest_current->m_constructed;
-            id = s_hxtest_current->m_next_id++;
-        }
-        ~test_object(void) {
-            ++s_hxtest_current->m_destructed;
-            id = ~0u;
-        }
+	class test_object {
+	public:
+		test_object(void) {
+			++s_hxtest_current->m_constructed;
+			id = s_hxtest_current->m_next_id++;
+		}
+		~test_object(void) {
+			++s_hxtest_current->m_destructed;
+			id = ~0u;
+		}
 
 		void operator=(const test_object& rhs) { id = rhs.id; }
 		void operator=(int32_t x) { id = x; }
@@ -45,24 +45,24 @@ public:
 		test_object value;
 	};
 
-    hxhash_table_test(void) {
-        hxassert(s_hxtest_current == hxnull);
-        m_constructed = 0;
-        m_destructed = 0;
-        m_next_id = 0;
-        s_hxtest_current = this;
-    }
-    ~hxhash_table_test(void) {
-        s_hxtest_current = 0;
-    }
+	hxhash_table_test(void) {
+		hxassert(s_hxtest_current == hxnull);
+		m_constructed = 0;
+		m_destructed = 0;
+		m_next_id = 0;
+		s_hxtest_current = this;
+	}
+	~hxhash_table_test(void) {
+		s_hxtest_current = 0;
+	}
 
-    bool Check_totals(int32_t total) const {
-        return m_constructed == total && m_destructed == total;
-    }
+	bool Check_totals(int32_t total) const {
+		return m_constructed == total && m_destructed == total;
+	}
 
-    int32_t m_constructed;
-    int32_t m_destructed;
-    int32_t m_next_id;
+	int32_t m_constructed;
+	int32_t m_destructed;
+	int32_t m_next_id;
 };
 
 TEST_F(hxhash_table_test, null) {

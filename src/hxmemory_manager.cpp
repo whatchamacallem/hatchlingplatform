@@ -17,26 +17,26 @@ HX_REGISTER_FILENAME_HASH
 
 #if !HX_HOSTED
 void* operator new(size_t size) {
-    void* ptr = ::malloc(size);
+	void* ptr = ::malloc(size);
 	hxassertrelease(ptr, "malloc %zu", size);
-    return ptr;
+	return ptr;
 }
 void* operator new[](size_t size) {
-    void* ptr = ::malloc(size);
+	void* ptr = ::malloc(size);
 	hxassertrelease(ptr, "malloc %zu", size);
-    return ptr;
+	return ptr;
 }
 void operator delete(void* ptr) hxnoexcept {
-    ::free(ptr);
+	::free(ptr);
 }
 void operator delete(void* ptr, size_t) hxnoexcept {
-    ::free(ptr);
+	::free(ptr);
 }
 void operator delete[](void* ptr) hxnoexcept {
-    ::free(ptr);
+	::free(ptr);
 }
 void operator delete[](void* ptr, size_t) hxnoexcept {
-    ::free(ptr);
+	::free(ptr);
 }
 #endif
 
@@ -81,10 +81,10 @@ public:
 	uintptr_t actual; // address actually returned by malloc.
 
 #if (HX_RELEASE) < 2
-    enum {
-        sentinel_value_allocated = (uint32_t)0x00c0ffee,
-        sentinel_value_freed = (uint32_t)0xdeadbeef
-    } sentinel_value;
+	enum {
+		sentinel_value_allocated = (uint32_t)0x00c0ffee,
+		sentinel_value_freed = (uint32_t)0xdeadbeef
+	} sentinel_value;
 #endif
 };
 #endif
@@ -346,8 +346,8 @@ private:
 
 	hxsystem_allocator_base* m_memory_allocators[hxsystem_allocator_current];
 
-	hxsystem_allocator_os_heap     m_memory_allocator_heap;
-	hxsystem_allocator_stack      m_memory_allocator_permanent;
+	hxsystem_allocator_os_heap	 m_memory_allocator_heap;
+	hxsystem_allocator_stack	  m_memory_allocator_permanent;
 	hxsystem_allocator_temp_stack  m_memory_allocator_temporary_stack;
 };
 

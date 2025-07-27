@@ -31,8 +31,8 @@ private:
 	hxhash_table_node_integer(const hxhash_table_node_integer&) hxdelete_fn;
 	void operator=(const hxhash_table_node_integer&) hxdelete_fn;
 
-    void* m_hash_next_;
-    key_t_ m_key_;
+	void* m_hash_next_;
+	key_t_ m_key_;
 };
 
 /// `hxhash_table_node_string_literal` - Specialization of hxhash_table_set_node for

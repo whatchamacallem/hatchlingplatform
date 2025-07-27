@@ -114,7 +114,7 @@ public:
 		hxlogconsole("[==========] Running tests %s\n", (m_search_term_string_literal_ ? m_search_term_string_literal_ : "all"));
 		for (hxtest_case_interface_** it_ = m_test_cases_; it_ != (m_test_cases_ + m_num_test_cases_); ++it_) {
 			if (!m_search_term_string_literal_ || ::strstr(m_search_term_string_literal_, (*it_)->suite_()) != hxnull) {
-				hxlogconsole("[ RUN      ] %s.%s\n", (*it_)->suite_(), (*it_)->case_());
+				hxlogconsole("[ RUN	  ] %s.%s\n", (*it_)->suite_(), (*it_)->case_());
 
 				m_current_test_ = *it_;
 				m_test_state_ = test_state_nothing_asserted_;
@@ -140,7 +140,7 @@ public:
 				}
 				if (m_test_state_ == test_state_pass_) {
 					++m_pass_count_;
-					hxlogconsole("[       OK ] %s.%s\n", (*it_)->suite_(), (*it_)->case_());
+					hxlogconsole("[	   OK ] %s.%s\n", (*it_)->suite_(), (*it_)->case_());
 				}
 				else {
 					++m_fail_count_;

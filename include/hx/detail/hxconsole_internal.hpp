@@ -56,7 +56,7 @@ template<typename T_> class hxconsole_arg_ {
 private:
 	// Unsupported parameter type. No class, class or reference args allowed.
 	// Use the following overloads.
-    hxconsole_arg_(const char* str_, char** next_) hxdelete_fn;
+	hxconsole_arg_(const char* str_, char** next_) hxdelete_fn;
 };
 template<> class hxconsole_arg_<hxconsolenumber_t> {
 public:

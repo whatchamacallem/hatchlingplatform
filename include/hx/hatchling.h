@@ -269,7 +269,7 @@ hxconstexpr_fn void hxswap_mcpy(T_& x_, T_& y_) {
 /// - `minimum` : The minimum allowable value.
 /// - `maximum` : The maximum allowable value.
 #define hxclamp(x_, minimum_, maximum_) \
-    ((x_) < (minimum_) ? (minimum_) : ((maximum_) < (x_) ? (maximum_) : (x_)))
+	((x_) < (minimum_) ? (minimum_) : ((maximum_) < (x_) ? (maximum_) : (x_)))
 
 /// `hxswap_memcpy` - Exchanges the contents of x and y using a temporary.
 #define hxswap_memcpy(x_,y_) do { \

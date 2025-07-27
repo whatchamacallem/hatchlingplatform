@@ -6,20 +6,20 @@
 //
 // example.hpp:
 //
-//     enum ENTANGLEMENT_T example_enum { };
+//	 enum ENTANGLEMENT_T example_enum { };
 //
-//     ENTANGLEMENT float example_function(float x) noexcept;
+//	 ENTANGLEMENT float example_function(float x) noexcept;
 //
-//     class ENTANGLEMENT_T example_class {
-//     public:
-//         ENTANGLEMENT int example_method(void) noexcept;
-//     };
+//	 class ENTANGLEMENT_T example_class {
+//	 public:
+//		 ENTANGLEMENT int example_method(void) noexcept;
+//	 };
 //
 // example.cpp:
 //
-//     float example_function(float x) noexcept { return 1.0f; };
+//	 float example_function(float x) noexcept { return 1.0f; };
 //
-//     int example_class::example_method(void) noexcept { return 2; }
+//	 int example_class::example_method(void) noexcept { return 2; }
 //
 
 #ifndef ENTANGLEMENT_PASS

@@ -18,7 +18,7 @@ class hxarray_test :
 {
 public:
 	class test_object {
-    public:
+	public:
 		test_object(void) {
 			++s_hxtest_current->m_constructed;
 			id = (INT_MIN < s_hxtest_current->m_next_id) ? s_hxtest_current->m_next_id-- : 0;

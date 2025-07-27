@@ -15,12 +15,12 @@
 // fields and K has an operator== or an hxkey_equal overload.
 //
 // class T {
-//   typedef K key_t;          // tell the hash table what key to use.
-//   T(key_t);                 // construct from key. e.g. for operator[].
-//   void*& hash_next();       // used by hxhash_table for embedded linked list.
+//   typedef K key_t;		  // tell the hash table what key to use.
+//   T(key_t);				 // construct from key. e.g. for operator[].
+//   void*& hash_next();	   // used by hxhash_table for embedded linked list.
 //   void* hash_next() const;  // const version of hash_next.
 //   const key_t& key() const; // returns key constructed with.
-//   hxhash_t hash() const;    // returns hash of key constructed with.
+//   hxhash_t hash() const;	// returns hash of key constructed with.
 // };
 //
 
@@ -432,7 +432,7 @@ private:
 	hxstatic_assert(table_size_bits_ <= 31u, "Hash bits must be [0..31]");
 
 	// Not ideal.
-    hxhash_table(const hxhash_table&) hxdelete_fn;
+	hxhash_table(const hxhash_table&) hxdelete_fn;
 
 	// Pointer to head of singly-linked list for key's hash value.
 	hxconstexpr_fn node_t_** get_bucket_head_(hxhash_t hash_) {

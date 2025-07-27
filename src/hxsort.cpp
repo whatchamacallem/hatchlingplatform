@@ -10,10 +10,10 @@ hxstatic_assert(HX_RADIX_SORT_BITS == 8 || HX_RADIX_SORT_BITS == 11,
 	"Unsupported HX_RADIX_SORT_BITS");
 
 void hxradix_sort_base::sort(hxsystem_allocator_t temp_memory) {
-    if (m_array_.size() <= HX_RADIX_SORT_MIN_SIZE) {
-        hxinsertion_sort(m_array_.begin(), m_array_.end());
-        return;
-    }
+	if (m_array_.size() <= HX_RADIX_SORT_MIN_SIZE) {
+		hxinsertion_sort(m_array_.begin(), m_array_.end());
+		return;
+	}
 
 	hxsystem_allocator_scope allocator_scope(temp_memory);
 
@@ -81,7 +81,7 @@ void hxradix_sort_base::sort(hxsystem_allocator_t temp_memory) {
 		uint32_t* histograms = (uint32_t*)hxmalloc(5120u * sizeof(uint32_t)); // 5120: 2048*2.5
 		::memset(histograms, 0x00, 5120u * sizeof(uint32_t));
 
-		uint32_t* hxrestrict hist0 = histograms +    0u; // 2048 values
+		uint32_t* hxrestrict hist0 = histograms +	0u; // 2048 values
 		uint32_t* hxrestrict hist1 = histograms + 2048u; // 2048 values
 		uint32_t* hxrestrict hist2 = histograms + 4096u; // 1024 values
 
