@@ -11,7 +11,7 @@ Usage:
         output_file     - Path to write the generated Python binding code.
 """
 
-import ctypes, enum, os, keyword, sys
+import enum, keyword, sys
 from clang.cindex import AccessSpecifier, Config, Cursor, CursorKind, Diagnostic
 from clang.cindex import Index, LinkageKind, StorageClass, TranslationUnit, Type, TypeKind
 from datetime import datetime
@@ -51,19 +51,20 @@ _clang_to_ctypes: Dict[TypeKind, str] = {
     TypeKind.WCHAR:     '_Ctypes.c_wchar',      # type: ignore # wchar_t
 }
 
-# ctypes has special types for certain pointers.
+# ctypes has special type names for void*, char* wchar_t*.
 _clang_to_ctypes_ptr: Dict[TypeKind, str] = {
-    TypeKind.CHAR_S:    '_Ctypes.c_char_p',     # type: ignore # char
-    TypeKind.VOID:      '_Ctypes.c_void_p',     # type: ignore # void
-    TypeKind.WCHAR:     '_Ctypes.c_wchar_p',    # type: ignore # wchar_t
+    TypeKind.VOID:      '_Ctypes.c_void_p',     # type: ignore # void*
+    TypeKind.CHAR_S:    '_Ctypes.c_char_p',     # type: ignore # char*
+    TypeKind.WCHAR:     '_Ctypes.c_wchar_p',    # type: ignore # wchar_t*
 }
 
-# ctypes has special types for certain pointers returned from a function.
-# void* are returned as ints that have to be cast to the right kind of pointer.
+# ctypes has special type conversions for void*, char* wchar_t* when they are
+# returned from a function. void* are returned as ints that have to be cast to
+# the right kind of pointer.
 _clang_to_ctypes_ptr_return: Dict[TypeKind, str] = {
-    TypeKind.CHAR_S:    'bytes', # type: ignore # char
-    TypeKind.VOID:      'int',   # type: ignore # void
-    TypeKind.WCHAR:     'str',   # type: ignore # wchar_t
+    TypeKind.VOID:      'int',   # type: ignore # void*
+    TypeKind.CHAR_S:    'bytes', # type: ignore # char*
+    TypeKind.WCHAR:     'str',   # type: ignore # wchar_t*
 }
 
 _clang_to_python: Dict[TypeKind, str] = {
@@ -164,24 +165,9 @@ def is_annotated_entanglement(cursor: Cursor) -> bool:
 def is_arg_va_list(cursor: Cursor) -> bool:
     return any("va_list" in a.type.spelling for a in cursor.get_arguments())
 
-def emit_python_api_doc(tabs: str, cursor: Cursor) -> List[str]:
-    comment = cursor.raw_comment
-    if comment:
-        lines: List[str] = comment.splitlines()
-        cleaned: List[str] = []
-        for line in lines:
-            line = line.strip()
-            if line.startswith('///'):
-                line = line[3:].strip()
-            elif line.startswith('//'):
-                line = line[2:].strip()
-            line = line.replace('\\', '\\\\').replace('"', '\\"')
-            cleaned.append(line)
-        doc = f'\n{tabs}'.join(cleaned)
-        if not doc or doc.isspace():
-            return [ ]
-        return [f'{tabs}"""\n{tabs}{doc} """']
-    return [ ]
+def is_staticmethod(cursor: Cursor) -> bool:
+    return cursor.kind is CursorKind.FUNCTION_DECL or ( # type: ignore
+        cursor.kind is CursorKind.CXX_METHOD and cursor.storage_class == StorageClass.STATIC) # type: ignore
 
 def calculate_namespace(cursor: Cursor) -> List[str]:
     namespaces: List[str] = []
@@ -201,7 +187,7 @@ def calculate_python_package_path(cursor: Cursor) -> str:
     namespaces.append(get_bare_name(cursor))
     return '.'.join(namespaces)
 
-def calculate_python_api_type_string(cursor: Cursor, cpp_type_ref: Type,
+def calculate_type_string(cursor: Cursor, cpp_type_ref: Type,
             symbols: Dict[str, List[Cursor]], result_kind: type_string_kind) -> str:
 
     # Handle typedefs by resolving to the canonical type.
@@ -211,24 +197,27 @@ def calculate_python_api_type_string(cursor: Cursor, cpp_type_ref: Type,
     if cpp_type_canonical.kind in _clang_to_ctypes:
         if result_kind is type_string_kind.ctypes_bindings:
             return _clang_to_ctypes[cpp_type_canonical.kind]
+        if result_kind is type_string_kind.arg_hint:
+            if cpp_type_canonical.kind is TypeKind.WCHAR: # type: ignore
+                return 'str' # Single characters are passed as strings in Python.
         return _clang_to_python[cpp_type_canonical.kind]
 
     # Pointers and references. The ctypes documentation describes the C level
     # coercion issues involved here. Furthermore, treating references as
     # pointers is "implementation-defined behavior" that depends on the C++ ABI.
     is_pointer = False
-    if cpp_type_canonical.kind in (TypeKind.POINTER,          # type: ignore
-                                   TypeKind.LVALUEREFERENCE,  # type: ignore
-                                   TypeKind.RVALUEREFERENCE): # type: ignore
+    if cpp_type_canonical.kind in ( TypeKind.POINTER,          # type: ignore
+                                    TypeKind.LVALUEREFERENCE,  # type: ignore
+                                    TypeKind.RVALUEREFERENCE): # type: ignore
         pointee_type = cpp_type_canonical.get_pointee()
         pointee_type_canonical = pointee_type.get_canonical()
 
         # Max 1 pointer or reference per-type. There is no Pythonian way to map
         # multiple levels of pointer indirection to a language that doesn't have
         # pointers.
-        if pointee_type_canonical.kind in (TypeKind.POINTER,          # type: ignore
-                                           TypeKind.LVALUEREFERENCE,  # type: ignore
-                                           TypeKind.RVALUEREFERENCE): # type: ignore
+        if pointee_type_canonical.kind in ( TypeKind.POINTER,          # type: ignore
+                                            TypeKind.LVALUEREFERENCE,  # type: ignore
+                                            TypeKind.RVALUEREFERENCE): # type: ignore
             throw_cursor(cursor, 'Only one pointer or reference allowed in an API type.')
 
         # Special case handling for pointers and references to fundamental types.
@@ -243,6 +232,10 @@ def calculate_python_api_type_string(cursor: Cursor, cpp_type_ref: Type,
 
             if result_kind is type_string_kind.return_hint:
                 if pointee_type_canonical.kind in _clang_to_ctypes_ptr_return:
+                    if cpp_type_canonical.kind in ( TypeKind.LVALUEREFERENCE,  # type: ignore
+                                                    TypeKind.RVALUEREFERENCE): # type: ignore
+                        # ctypes will convert these to "bytes" and "str" and eventually crash.
+                        throw_cursor(cursor, "Return char and wchar_t by reference unsupported.")
                     return _clang_to_ctypes_ptr_return[pointee_type_canonical.kind]
 
                 # Can't declare POINTER() return type due to 'Call expression
@@ -287,9 +280,24 @@ def calculate_python_api_type_string(cursor: Cursor, cpp_type_ref: Type,
 
     throw_cursor(cursor, f'Unsupported definition kind {definition_cursor.kind}')
 
-def is_staticmethod(cursor: Cursor) -> bool:
-    return cursor.kind is CursorKind.FUNCTION_DECL or ( # type: ignore
-        cursor.kind is CursorKind.CXX_METHOD and cursor.storage_class == StorageClass.STATIC) # type: ignore
+def emit_python_api_doc(tabs: str, cursor: Cursor) -> List[str]:
+    comment = cursor.raw_comment
+    if comment:
+        lines: List[str] = comment.splitlines()
+        cleaned: List[str] = []
+        for line in lines:
+            line = line.strip()
+            if line.startswith('///'):
+                line = line[3:].strip()
+            elif line.startswith('//'):
+                line = line[2:].strip()
+            line = line.replace('\\', '\\\\').replace('"', '\\"')
+            cleaned.append(line)
+        doc = f'\n{tabs}'.join(cleaned)
+        if not doc or doc.isspace():
+            return [ ]
+        return [f'{tabs}"""\n{tabs}{doc} """']
+    return [ ]
 
 def emit_ctypes_function_args(cursor: Cursor, symbols: Dict[str, List[Cursor]], overloaded: bool) -> str:
     # Function body calls ctypes function. Assemble ctypes function call
@@ -304,7 +312,7 @@ def emit_ctypes_function_args(cursor: Cursor, symbols: Dict[str, List[Cursor]], 
             arg_name = arg.spelling if arg.spelling else f'_Arg{arg_index}'
         if arg_type_kind == TypeKind.POINTER: # type: ignore
             pointee_type = arg.type.get_pointee()
-            pointee_c_type = calculate_python_api_type_string(cursor, pointee_type, symbols, type_string_kind.ctypes_bindings)
+            pointee_c_type = calculate_type_string(cursor, pointee_type, symbols, type_string_kind.ctypes_bindings)
             if pointee_c_type != 'None':
                 arg_list.append(f'_Pointer_shim({arg_name}, {pointee_c_type})')
             else:
@@ -337,11 +345,11 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
     arg_types : List[Tuple[str, str]] = []
     arg_index = 0
     for arg in cursor.get_arguments():
-        py_type = calculate_python_api_type_string(cursor, arg.type, symbols, type_string_kind.arg_hint)
+        py_type = calculate_type_string(cursor, arg.type, symbols, type_string_kind.arg_hint)
         arg_name = arg.spelling if arg.spelling else f'_Arg{arg_index}'
         arg_types.append((arg_name, py_type))
         arg_index = arg_index + 1
-    return_py_type = calculate_python_api_type_string(cursor, cursor.result_type, symbols, type_string_kind.return_hint)
+    return_py_type = calculate_type_string(cursor, cursor.result_type, symbols, type_string_kind.return_hint)
 
     # Assemble type hints.
     self_parameter = 'self,' if not static_method else ''
@@ -458,7 +466,16 @@ def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
     return lines
 
 def emit_python_api_class(namespace_tabs: str, cursor: Cursor) -> List[str]:
-    lines: List[str] = [f'{namespace_tabs}class {get_bare_name(cursor)}(_Ctypes.Structure):']
+    base_class_name = '_Ctypes.Structure'
+
+# XXX Use of a class as a base class locks the _fields_ attribute. Meanwhile that attribute
+# may depend on symbols that have not been emitted yet. The plan is to rebase...
+#
+#    for child in cursor.get_children():
+#        if child.kind == CursorKind.CXX_BASE_SPECIFIER: # type: ignore
+#            base_class_name = calculate_python_package_path(child.referenced)
+
+    lines: List[str] = [f'{namespace_tabs}class {get_bare_name(cursor)}({base_class_name}):']
     lines += emit_python_api_doc(namespace_tabs + '\t', cursor)
     return lines
 
@@ -530,7 +547,7 @@ def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[L
 
             for child in cursor0.get_children():
                 if child.kind == CursorKind.FIELD_DECL: # type: ignore
-                    ctypes_type = calculate_python_api_type_string(child, child.type, symbols, type_string_kind.ctypes_bindings)
+                    ctypes_type = calculate_type_string(child, child.type, symbols, type_string_kind.ctypes_bindings)
                     structure_list.append(f'\t("{child.spelling}", {ctypes_type}),')
 
             structure_list.append("]")
@@ -545,9 +562,9 @@ def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[Lis
                 # Get types
                 arg_types : List[str]= []
                 for arg in cursor.get_arguments():
-                    ctypes_type = calculate_python_api_type_string(arg, arg.type, symbols, type_string_kind.ctypes_bindings)
+                    ctypes_type = calculate_type_string(arg, arg.type, symbols, type_string_kind.ctypes_bindings)
                     arg_types.append(ctypes_type)
-                return_type = calculate_python_api_type_string(cursor, cursor.result_type, symbols, type_string_kind.ctypes_bindings)
+                return_type = calculate_type_string(cursor, cursor.result_type, symbols, type_string_kind.ctypes_bindings)
 
                 # format them
                 mangled_name = get_mangled_name(cursor)
@@ -560,10 +577,10 @@ def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[Lis
                     f"{mangled_name}.restype={return_type}"
                 ]
 
-# Gather symbols by their python path. The symbols for each path will have to
+# Add symbols by their python path. The symbols for each path will have to
 # all be the same type. This is where symbols get dropped because they have
 # already been seen in another translation unit.
-def add_symbol(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
+def symbols_add(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
     if not cursor.is_anonymous():
         if cursor.spelling.startswith('__'):
             throw_cursor(cursor, '2 leading underscores reserved by Python.')
@@ -586,7 +603,7 @@ def add_symbol(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
 # namespace, then by cursor kind and then by name, if any. The symbols object is
 # built up using the Python path instead of exposing the sort key. This keeps
 # the details of the sort local to this function.
-def sort_symbols(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]]) -> None:
+def symbols_sort(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]]) -> None:
     symbols_by_sort_key: Dict[str, List[Cursor]] = { }
 
     for cursor_list in symbols.values():
@@ -606,7 +623,7 @@ def sort_symbols(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cur
     for key in sorted(symbols_by_sort_key.keys()):
         sorted_symbols.append(symbols_by_sort_key[key])
 
-def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
+def symbols_gather_interesting(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
     verbose(3, f'ast_traversal {cursor.kind.name} {cursor.displayname}')
 
     if cursor.kind in (CursorKind.TRANSLATION_UNIT, CursorKind.NAMESPACE): # type: ignore
@@ -627,7 +644,7 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
         if cursor.is_definition() and cursor.access_specifier in (
                 AccessSpecifier.PUBLIC, # type: ignore
                 AccessSpecifier.INVALID): # type: ignore # Top-level enums
-            add_symbol(cursor, symbols)
+            symbols_add(cursor, symbols)
         else:
             throw_cursor(cursor, f'{get_bare_name(cursor)} Enum is incomplete or private.')
 
@@ -635,7 +652,7 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
         if (cursor.linkage is LinkageKind.EXTERNAL # type: ignore
                 and not cursor.type.is_function_variadic()
                 and not is_arg_va_list(cursor)):
-            add_symbol(cursor, symbols)
+            symbols_add(cursor, symbols)
         else:
             throw_cursor(cursor, f'{cursor.displayname} Functions must be extern and not variadic.')
 
@@ -643,7 +660,7 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
         if (cursor.is_definition() and not cursor.is_anonymous() and cursor.access_specifier in (
                 AccessSpecifier.PUBLIC, # type: ignore
                 AccessSpecifier.INVALID)): # type: ignore # Top-level classes/classes
-            add_symbol(cursor, symbols)
+            symbols_add(cursor, symbols)
         else:
             throw_cursor(cursor, f'{get_bare_name(cursor)} Structs and classes must be complete, not be anonymous and be public.')
 
@@ -652,7 +669,7 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
                 and cursor.linkage is LinkageKind.EXTERNAL # type: ignore
                 and not cursor.type.is_function_variadic()
                 and not is_arg_va_list(cursor)):
-            add_symbol(cursor, symbols)
+            symbols_add(cursor, symbols)
         else:
             throw_cursor(cursor, f'{cursor.displayname} Methods must be public, extern and not variadic.')
 
@@ -661,7 +678,7 @@ def gather_symbols_of_interest(cursor: Cursor, symbols: Dict[str, List[Cursor]])
 
     # fallthrough to children.
     for c in cursor.get_children():
-        gather_symbols_of_interest(c, symbols)
+        symbols_gather_interesting(c, symbols)
 
 def load_translation_unit(header_file: str) -> TranslationUnit:
     index = Index.create()
@@ -762,14 +779,14 @@ Arguments:
     for header_file in _arg_header_files:
         verbose(1, f'load_translation_unit {header_file}')
         translation_unit = load_translation_unit(header_file)
-        gather_symbols_of_interest(translation_unit.cursor, symbols)
+        symbols_gather_interesting(translation_unit.cursor, symbols)
 
     if not symbols:
         raise ValueError('Error: No symbols found. Use -DENTANGLEMENT_PASS=1, ENTANGLEMENT_T and ENTANGLEMENT.')
 
     # Sort the symbols into their final order.
     sorted_symbols: List[List[Cursor]] = []
-    sort_symbols(symbols, sorted_symbols)
+    symbols_sort(symbols, sorted_symbols)
 
     # Build the script sections.
     python_api: List[str] = []

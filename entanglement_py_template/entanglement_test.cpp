@@ -56,15 +56,15 @@ wchar_t* function_pointer_wchar(wchar_t* x) {
 	return x;
 }
 
-char& function_ref_char(char& x, char value) { x = value; return x; }
+bool& function_ref_bool(bool& x, bool value) { x = value; return x; }
 
 uint16_t& function_ref_uint16(uint16_t& x, uint16_t value) { x = value; return x; }
 
-wchar_t& function_ref_wchar(wchar_t& x, wchar_t value) { x = value; return x; }
+void function_ref_wchar(wchar_t& x, wchar_t value) { x = value; }
 
 uint64_t& function_ref_uint64(uint64_t& x, uint64_t value) { x = value; return x; }
 
-StructFundamentals& function_struct_fundamentals_multiply(StructFundamentals& struct_fundamentals, int multiplier) {
+StructFundamentals function_struct_fundamentals_multiply(StructFundamentals struct_fundamentals, int multiplier) {
 	struct_fundamentals.m_bool = !struct_fundamentals.m_bool;
 	struct_fundamentals.m_char0 *= multiplier;
 	struct_fundamentals.m_char1 *= multiplier;
@@ -77,6 +77,11 @@ StructFundamentals& function_struct_fundamentals_multiply(StructFundamentals& st
 }
 
 StructPointerFundamentals& function_struct_pointer_fundamentals_multiply(StructPointerFundamentals& struct_fundamentals, int multiplier) {
+	// Nuke the base without nuking the .vtable.
+	StructFundamentals& base = struct_fundamentals;
+	::memset(&base, 0xaf, sizeof(StructFundamentals));
+
+	// Proof of life for pointers.
 	*(int*)struct_fundamentals.m_void *= multiplier;
 	*struct_fundamentals.m_char *= multiplier;
 	*struct_fundamentals.m_wchar_t *= multiplier;
@@ -84,4 +89,20 @@ StructPointerFundamentals& function_struct_pointer_fundamentals_multiply(StructP
 	*struct_fundamentals.m_float *= multiplier;
 	*struct_fundamentals.m_double *= multiplier;
 	return struct_fundamentals;
+}
+
+StructPointerFundamentals::StructPointerFundamentals() {
+	null_it_all();
+}
+StructPointerFundamentals::~StructPointerFundamentals() {
+	// nuke .vtable to force a crash if ownership is incorrect.
+	::memset((void*)this, 0x00, sizeof *this);
+}
+void StructPointerFundamentals::null_it_all(void) {
+	m_void = 0;
+	m_char = 0;
+	m_wchar_t = 0;
+	m_bool = 0;
+	m_float = 0;
+	m_double = 0;
 }

@@ -43,10 +43,10 @@ ENTANGLEMENT void* function_pointer_void_to_int(void* x, size_t size, int value)
 ENTANGLEMENT char* function_pointer_char(char* x);
 ENTANGLEMENT wchar_t* function_pointer_wchar(wchar_t* x);
 
-/// Fundamental references. & and &&. Honey badger don't care.
-ENTANGLEMENT char& function_ref_char(char& x, char value);
+/// Fundamental references. & and &&.
+ENTANGLEMENT bool& function_ref_bool(bool& x, bool value);
 ENTANGLEMENT uint16_t& function_ref_uint16(uint16_t& x, uint16_t value);
-ENTANGLEMENT wchar_t& function_ref_wchar(wchar_t& x, wchar_t value);
+ENTANGLEMENT void function_ref_wchar(wchar_t& x, wchar_t value);
 ENTANGLEMENT uint64_t& function_ref_uint64(uint64_t& x, uint64_t value);
 
 /// Pack a C structure tight with fundamental types and pass it by value.
@@ -65,10 +65,13 @@ struct ENTANGLEMENT_T StructFundamentals {
 ENTANGLEMENT StructFundamentals function_struct_fundamentals_multiply(
 	StructFundamentals struct_fundamentals, int multiplier);
 
-/// A C structure with fundamental pointer types. Inherit it from previous test
+/// Fill a virtual structure with fundamental pointer types. Inherit it from previous test
 /// and pass by reference.
 /// XXX Size check.
-struct ENTANGLEMENT_T StructPointerFundamentals {
+struct ENTANGLEMENT_T StructPointerFundamentals : public StructFundamentals {
+	StructPointerFundamentals();
+	virtual ~StructPointerFundamentals();
+	virtual void null_it_all(void);
 	void* m_void;
 	char* m_char;
 	wchar_t* m_wchar_t;

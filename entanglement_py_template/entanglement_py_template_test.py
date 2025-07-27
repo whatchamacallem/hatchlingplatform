@@ -118,14 +118,14 @@ class run_all_tests(unittest.TestCase):
 
     def test_function_ref(self):
         # modify and return a char by reference.
-        buf_char = ctypes.c_char(0)
-        result_char = system_under_test.function_ref_char(buf_char, 99)
-        self.assertEqual(buf_char.value, b'c')
-        # XXX char ref return is "bytes" and not a byte-ref. ctypes has too many opinions.
-        self.assertEqual(result_char[0], 99)
+        buf_bool = ctypes.c_bool(True)
+        result_bool = system_under_test.function_ref_bool(buf_bool, False)
+        self.assertEqual(buf_bool.value, False)
+        # Return a reference, get a pointer.
+        self.assertEqual(result_bool.contents.value, False)
 
         # modify and return a uint16 by reference.
-        # XXX Using ctypes.c_uint16 here breaks Pylance.
+        # XXX Using ctypes.c_uint16 here correctly breaks Pylance.
         buf_uint16 = ctypes.c_ushort(0)
         result_uint16 = system_under_test.function_ref_uint16(buf_uint16, 199)
         self.assertEqual(buf_uint16.value, 199)
@@ -134,14 +134,11 @@ class run_all_tests(unittest.TestCase):
 
         # modify and return a wchar by reference.
         buf_wchar = ctypes.c_wchar('a')
-        # XXX Pylance error: wchar args by value are str not int.
-        result_wchar = system_under_test.function_ref_wchar(buf_wchar, 'z') # type: ignore
+        system_under_test.function_ref_wchar(buf_wchar, 'z')
         self.assertEqual(buf_wchar.value, 'z')
-        # XXX wchar ref return is a "str" and not a wchar-ref. ctypes has too many opinions.
-        self.assertEqual(result_wchar[0], 'z')
 
         # modify and return a uint64 by reference.
-        # XXX Using ctypes.c_uint64 here breaks Pylance.
+        # XXX Using ctypes.c_uint64 here correctly breaks Pylance.
         buf_uint64 = ctypes.c_ulong(66)
         result_uint64 = system_under_test.function_ref_uint64(buf_uint64, 66)
         self.assertEqual(buf_uint64.value, 66)
