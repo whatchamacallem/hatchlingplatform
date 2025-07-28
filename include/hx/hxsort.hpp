@@ -130,7 +130,7 @@ void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
 	// The first grandparent is just clamped to >= 0 because it avoids a special
 	// case when it does not exist.
 	size_t first_grandparent_index_ = hxmax<size_t>(sz_ / 4u - 1u, 0u);
-	T_ first_grandparent_ = begin_ + first_grandparent_index_;
+	T_* first_grandparent_ = begin_ + first_grandparent_index_;
 
 	// Do not visit leaf nodes at all. Then run an optimized version on half the
 	// remaining values that doesn't recurse and do range checks on children
@@ -152,13 +152,18 @@ void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
     }
 }
 
+template<typename T_>
+void hxheapsort(T_* begin_, T_* end_) {
+	hxheapsort(begin_, end_, hxkey_less_function<T_>());
+}
+
 /// Sort `[begin_, end_)` in-place using Dual-Pivot QuickSort. Vladimir Yaroslavskiy 2009.
 /// Average time: `Θ(n log n)`, worst time: `Θ(n²)`. This algorithm is only intended to sort
 /// ranges over length 16 before calling back to the `sort_callback` parameter.
 /// `sort_callback` : A functor with the signature `sort(T* begin, T* end, const less_t& less)`
 template<typename T_, typename less_t_, typename sort_callback_t_>
 void hxpartition_sort(	T_* begin_, T_* end_, const less_t_& less_,
-						const sort_callback_t_& sort_callback_, int depth_=0) {
+						const sort_callback_t_& sort_callback_, int depth_) {
 	hxassertmsg((begin_ - end_) > 16, "range_error Use hxinsertion_sort.");
 	T_* end1_ = end_ - 1;
 
@@ -211,12 +216,12 @@ inline int hxlog2i(size_t n_) {
 	return log + lookup_[n_ & 0xf];
 }
 
-/// hxsort is implemented using hxintro_sort. Uses Introsort, David R. Musser
-/// 1997. hxintro_sort calls itself recursively until it hits its depth limit.
+/// hxsort is implemented using hxintro_sort_. Uses Introsort, David R. Musser
+/// 1997. hxintro_sort_ calls itself recursively until it hits its depth limit.
 /// This is an experiment to see how the std::sort algorithm performs using raw
 /// pointers.
 template<typename T_, typename less_t_>
-void hxintro_sort(T_* begin_, T_* end_, const less_t_& less_, int depth_) {
+void hxintro_sort_(T_* begin_, T_* end_, const less_t_& less_, int depth_) {
 	hxassertmsg(begin_ != hxnull && begin_ >= end_, "range_error hxsort");
 
 	// 16 values is the standard cutoff for switching to insertion sort.
@@ -226,7 +231,7 @@ void hxintro_sort(T_* begin_, T_* end_, const less_t_& less_, int depth_) {
 		hxheapsort(begin_, end_, less_);
 	} else {
 		// Have the partition sort call back to hxsort for each sub-partition.
-		hxpartition_sort(begin_, end_, less_, hxintro_sort<T_>, depth_ - 1u);
+		hxpartition_sort(begin_, end_, less_, hxintro_sort_<T_, less_t_>, depth_ - 1u);
 	}
 }
 
@@ -234,7 +239,12 @@ void hxintro_sort(T_* begin_, T_* end_, const less_t_& less_, int depth_) {
 /// the `hxswap` overloads and a `less` functor which defaults to `hxless`.
 template<typename T_, typename less_t_>
 void hxsort(T_* begin_, T_* end_, const less_t_& less_) {
-	hxintro_sort(begin_, end_, less_, 2u * hxlog2i( end_ - begin_));
+	hxintro_sort_(begin_, end_, less_, 2u * hxlog2i( end_ - begin_));
+}
+
+template<typename T_>
+void hxsort(T_* begin_, T_* end_) {
+	hxintro_sort_(begin_, end_, hxkey_less_function<T_>(), 2u * hxlog2i( end_ - begin_));
 }
 
 /// `hxbinary_search` - Performs a binary search in the range [first, last). Returns
@@ -246,9 +256,9 @@ void hxsort(T_* begin_, T_* end_, const less_t_& less_) {
 /// - `begin` : Pointer to the beginning of the range to search.
 /// - `end` : Pointer to one past the last element in the range to search.
 /// - `val` : The value to search for.
-/// - `less` : Comparison function object.
+/// - `less` : Comparison function object. (Optional)
 template<typename T_, typename less_t_>
-T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_, const less_t_& less_) {
+const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_, const less_t_& less_) {
 	// don't operate on null pointer args. unallocated containers have this.
 	if(begin_ == end_) { return hxnull; }
 
@@ -270,21 +280,20 @@ T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_, const less_t_& less_) 
 	return hxnull;
 }
 
-// c++98 junk.
+// Overload using hxkey_less.
 template<typename T_>
-T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_) {
+const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_) {
 	return hxbinary_search(begin_, end_, val_, hxkey_less_function<T_>());
 }
 
-/// const correct wrapper
+// Non-const overload.
 template<typename T_, typename less_t_>
-const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_, const less_t_& less_) {
-	return hxbinary_search(const_cast<T_*>(begin_), const_cast<T_*>(end_), val_, less_);
+T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_, const less_t_& less_) {
+	return const_cast<T_*>(hxbinary_search(begin_, end_, val_, less_));
 }
 
-// c++98 junk.
+// Non-const overload using hxkey_less.
 template<typename T_>
-const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_) {
-	return hxbinary_search(const_cast<T_*>(begin_), const_cast<T_*>(end_), val_,
-		hxkey_less_function<T_>());
+T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_) {
+	return const_cast<T_*>(hxbinary_search(begin_, end_, val_, hxkey_less_function<T_>()));
 }

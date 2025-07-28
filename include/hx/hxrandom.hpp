@@ -122,7 +122,7 @@ template <typename T_> hxconstexpr_fn  T_ operator&=(T_& a_, hxrandom& b_) {
 	return (a_ = a_ & b_);
 }
 
-/// `operator%(hxrandom& a, T_ b)` - Generate an number of type `T` in the range 0..b.
+/// `operator%(hxrandom& a, T_ b)` - Generate an number of type `T` in the range `[0..b)`.
 /// Works with floating point divisors and uses no actual modulo or division.
 template <typename T_> hxconstexpr_fn  T_ operator%(hxrandom& dividend_, T_ divisor_) {
 	return dividend_.range((T_)0, divisor_);
