@@ -11,12 +11,13 @@
 #include <hx/hatchling.h>
 #include <hx/hxarray.hpp>
 
-/// `hxinsertion_sort` - Sorts the elements in the range `[begin, end)` in comparison
-/// order using the insertion sort algorithm. The `end` parameter points just past the
-/// end of the array. Exception handling during operation is undefined. Declare your
-/// copy constructor and assignment operator `noexcept` or turn off exceptions.
-/// Both `T::T(T&)` and `T::operator=(T&)` are used while `T::T()` is not. See
-/// hxinsertion_sort_using_swap if you want move semantics using &&.
+// XXX Make sure arrays and hash tables can be move assigned to.
+/// `hxinsertion_sort` - Sorts the elements in the range `[begin, end)` in
+/// comparison order using the insertion sort algorithm. The `end` parameter
+/// points just past the end of the array. Exception handling during operation
+/// is undefined. Declare your copy constructor and assignment operator
+/// `noexcept` or turn off exceptions. All of `T::T(&&)`, `T::~T()` and
+/// `T::operator=(T&&)` are used.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
@@ -24,16 +25,18 @@ template<typename T_, typename less_t_>
 void hxinsertion_sort(T_* begin_, T_* end_, const less_t_& less_) {
 	if(begin_ == end_) { return; } // Address sanitizer: Avoids adding 1 to null iterators.
 
-	// i points to insertion location. j points to next unsorted value.
 	for (T_ *i_ = begin_, *j_ = begin_ + 1; j_ < end_; i_ = j_++) {
 		if (!less_(*i_, *j_)) {
-			T_ t_ = *j_;
-			*j_ = *i_;
+			// Default value construct. Use hxmove instead of hxswap because it
+			// should be more efficient for simple types. Complex types will
+			// require an T::operator=(T&&) to be efficient.
+			T_ t_ = hxmove(*j_);
+			*j_ = hxmove(*i_);
 			while (begin_ < i_ && !less_(i_[-1], t_)) {
-				i_[0] = i_[-1];
+				*i_ = hxmove(i_[-1]);
 				--i_;
 			}
-			*i_ = t_;
+			*i_ = hxmove(t_);
 		}
 	}
 }
@@ -47,59 +50,45 @@ void hxinsertion_sort(T_* begin_, T_* end_) {
 	hxinsertion_sort(begin_, end_, hxkey_less_function<T_>());
 }
 
-/// `hxinsertion_sort_using_swap` - A version of `hxinsertion_sort` that uses
-/// `hxswap` and `T::T()`. Neither `T::T(T&)` or `T::operator=(T&)` are used to
-/// make copies. This provides move semantics without speculating based on the
-/// operator overloads of T. See the documentation for `hxinsertion_sort`.
-/// XXX Check the generated assembly and see if this can be used for fundamental types.
-template<typename T_, typename less_t_>
-void hxinsertion_sort_using_swap(T_* begin_, T_* end_, const less_t_& less_) {
-	if(begin_ == end_) { return; } // Address sanitizer: Avoids adding 1 to null iterators.
-
-	// i points to insertion location. j points to next unsorted value.
-	for (T_ *i_ = begin_, *j_ = begin_ + 1; j_ < end_; i_ = j_++) {
-		if (!less_(*i_, *j_)) {
-			T_ t_; // construct
-			hxswap(t_, *j_);
-			hxswap(*j_, *i_);
-			while (begin_ < i_ && !less_(i_[-1], t_)) {
-				hxswap(i_[0], i_[-1]);
-				--i_;
-			}
-			hxswap(*i_, t_);
-		}
-	}
-}
-
+namespace hxdetail_ {
 // Restores the heap property by pushing a value down until it is not
-// greater than it's children. The heap property is (current >= left &&
-// current >= right) for all values in a heap that have left and right
-// children.
+// greater than it's children.
 template<typename T_, typename less_t_>
 void hxheapsort_heapify_(T_* begin_, T_* end_, T_* current_, const less_t_& less_) {
 	for (;;) {
+		hxassertmsg(begin_ >= current_ && current_ < end_, "invalid_iterator");
+
 		T_* left_  = begin_ + 2 * (current_ - begin_) + 1;
 		T_* right_ = left_ + 1;
+		T_* next_  = 0;
 
-		if (right_ < end_ && less_(*current_, *right_)) {
-			// left_ is inside if right_ is.
+		if (right_ < end_) {
+			// Deal with the case where there are two children first.
 			if (less_(*left_, *right_)) {
-				hxswap(*current_, *right_);
-				current_ = right_;
+				next_ = right_;
 			}
 			else {
-				hxswap(*current_, *left_);
-				current_ = left_;
+				next_ = left_;
+			}
+			if (less_(*next_, *current_)) {
+				// Neither child greater.
+				return;
 			}
 		}
-		else if (left_ < end_ && less_(*current_, *left_)) {
-			hxswap(*current_, *left_);
-			current_ = left_;
+		else if (right_ == end_) {
+			// Special case for a single child. It will have no child itself.
+			// Hopefully this uses the processor status flags from the last compare.
+			if (less_(*current_, *left_)) {
+				hxswap(*current_, *left_);
+			}
+			return;
 		}
 		else {
-			break;
+			return; // No children.
 		}
-		heapify_(begin_, end_, current_, less_);
+
+		hxswap(*current_, *next_);
+		current_ = next_;
 	}
 }
 
@@ -109,7 +98,9 @@ void hxheapsort_heapify_bottom_(T_* begin_, T_* end_, T_* current_, const less_t
 	T_* left_  = begin_ + 2 * (current_ - begin_) + 1;
 	T_* right_ = left_ + 1;
 
-	// The very last parent may be missing a right child.
+	// NB The very last parent may be missing a right child.
+	hxassertmsg(begin_ <= left_ && left_ < end_, "invalid_iterator");
+
 	if (right_ < end_ && less_(*current_, *right_)) {
 		if (less_(*left_, *right_)) {
 			hxswap(*current_, *right_);
@@ -122,109 +113,128 @@ void hxheapsort_heapify_bottom_(T_* begin_, T_* end_, T_* current_, const less_t
 		hxswap(*current_, *left_);
 	}
 }
+} // namespace hxdetail_
 
 /// XXX This isn't ready.
 template<typename T_, typename less_t_>
 void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
-
 	size_t sz_ = end_ - begin_;
 	if (sz_ <= 1) {
-		// Already sorted and the following code makes assumptions.
+		// Sequence is already sorted and the following code assumes sz >= 2.
 		return;
 	}
 
-	// Find the index of the first parent node. It will be >= 0.
+	// Find the index of the first parent node. It will be >= 0 because sz >= 2.
 	size_t first_parent_index_ = sz_ / 2u - 1u;
 
-	// The first grandparent is just clamped to >= 0 because it is harmless.
-	size_t first_grandparent_index_ = hxmax(sz_ / 4u - 1u, (size_t)0u);
+	// The first grandparent is just clamped to >= 0 because it avoids a special
+	// case when it does not exist.
+	size_t first_grandparent_index_ = hxmax<size_t>(sz_ / 4u - 1u, 0u);
 	T_ first_grandparent_ = begin_ + first_grandparent_index_;
 
-	// Do not visit leaf nodes at all. Run an optimized version on half the
+	// Do not visit leaf nodes at all. Then run an optimized version on half the
 	// remaining values that doesn't recurse and do range checks on children
 	// that don't exist. This still handles the case where the right child is
-	// missing.
+	// missing from the last parent.
 	for (T_* it_ = begin_ + first_parent_index_; it_ > first_grandparent_; --it_) {
 		hxheapsort_heapify_bottom_(begin_, end_, it_, less_);
 	}
 
+	// Heapify the grandparents using in iterative method.
 	for (T_* it_ = first_grandparent_; it_ >= begin_; --it_) {
 		hxheapsort_heapify_(begin_, end_, it_, less_);
 	}
 
-    // Sort phase.
+    // Sort phase. Swap the largest values to the end of the array.
     for (T_* it_ = end_ - 1; it_ > begin_; --it_) {
         hxswap(*begin_, *it_);
         hxheapsort_heapify_(begin_, it_, begin_, less_);
     }
 }
 
+/// Sort `[begin_, end_)` in-place using Dual-Pivot QuickSort. Vladimir Yaroslavskiy 2009.
+/// Average time: `Θ(n log n)`, worst time: `Θ(n²)`. This algorithm is only intended to sort
+/// ranges over length 16 before calling back to the `sort_callback` parameter.
+/// `sort_callback` : A functor with the signature `sort(T* begin, T* end, const less_t& less)`
+template<typename T_, typename less_t_, typename sort_callback_t_>
+void hxpartition_sort(	T_* begin_, T_* end_, const less_t_& less_,
+						const sort_callback_t_& sort_callback_, int depth_=0) {
+	hxassertmsg((begin_ - end_) > 16, "range_error Use hxinsertion_sort.");
+	T_* end1_ = end_ - 1;
 
-/// XXX docs todo
-/// XXX have a test class that asserts when you swap it with itself.
-/// The Lomuto partition scheme.
-template<typename T, typename less_t_>
-void hxpartition_sort(T* begin_, T* end_, const less_t_& less_) {
-	// Avoid pissing off the sanitizer by subtracting null iterators.
-	if(begin_ == end_) { return; }
+	// Use begin and end-1 as pivots p₁, p₂ with p₁ ≤ p₂
+	if (less_(*end1_, *begin_)) {
+		hxswap(*begin_, *end1_);
+	}
 
-	// 16 values is the standard cutoff for switching to insertion sort.
-	if ((end_ - begin_) < 16) {
-		hxinsertion_sort(begin_, end_, less_);
-	} else {
-		// Chose the end value as the location to store the pivot value.
-		T* pivot_value_ = end_ - 1;
-
-		// Find the median-of-three values (begin, mid, end-1) to use as a pivot.
-		// Swap the selected value up to the end of the array as needed.
-        T* mid_ = begin_ + (end_ - begin_) / 2;
-		if (hxless(*begin_, *mid_)) {
-			if (hxless(*mid_, *pivot_value_)) {
-				hxswap(*mid_, *pivot_value_); // begin < mid < pivot
-			}
-			else if(hxless(*pivot_value_, *begin_)) {
-				hxswap(*pivot_value_, *begin_); // pivot < begin < mid
-			}
+	// Three-way partition into [<p₁], [p₁ ≤ … ≤ p₂], [>p₂]
+	T_* lt_ = begin_ + 1; // Points to beginning of less-than range, after first pivot.
+	T_* gt_ = end1_;      // Points to end of greater-than range, where the last pivot is.
+	for (T_* it_ = lt_; it_ < gt_; ) {
+		if (less_(*it_, *begin_)) {
+			// Swap into less-than range and extend it.
+			hxswap(*it_++, *lt_++);
+		}
+		else if (less_(*end1_, *it_)) {
+			// Swap into greater-than range and extend it.
+			hxswap(*it_, *--gt_);
 		}
 		else {
-			if(hxless(*begin_, *pivot_value_)) {
-				hxswap(*pivot_value_, *begin_); // mid < begin < pivot
-			}
-			else if (hxless(*pivot_value_, *mid_)) {
-				hxswap(*mid_, *pivot_value_); // pivot < mid < begin
-			}
+			// Leave the value in the mid range.
+			++it_;
 		}
-
-		// Values below the boundary are less than the pivot.
-		T* pivot_boundary_ = begin_;
-
-		// Start looking for where to put the pivot by scanning for values
-		// larger than it. (This is a slight modification.) It is OK if values
-		// equivalent to the partition (!(a < b) && !(b < a)) end up on either
-		// side. They will all get sorted to be adjacent eventually.
-		for (; pivot_boundary_ < pivot_value_; ++pivot_boundary_) {
-			if (less_(*pivot_value_, *pivot_boundary_)) {
-				// A larger value than the pivot has been found. Start swapping
-				// smaller values down below the larger values.
-				for (T it_ = pivot_boundary_ + 1; it_ < pivot_value_; ++it_) {
-					if (less_(*it_, *pivot_value_)) {
-						// Extend the "less than pivot" section.
-						hxswap(*pivot_boundary_, *it_);
-						++pivot_boundary_;
-					}
-				}
-
-				// Done sorting. Swap the pivot into location.
-				hxswap(*pivot_boundary_, *pivot_value_);
-				break;
-			}
-		}
-
-		// The value at pivot_boundary_ is not moved again. Sort the ranges
-		// before and after.
-		hxpartition_sort(begin_, pivot_boundary_, less_);
-		hxpartition_sort((pivot_boundary_ + 1), end_, less_);
 	}
+
+	// Swap pivots into final slots.
+	--lt_; // last
+	if(begin_ != lt_) {
+		hxswap(*begin_, *lt_);
+	}
+	if(end1_ != gt_) {
+		hxswap(*end1_, *gt_);
+	}
+
+	// Recurse on the three partitions. Do not re-sort the partition values.
+	sort_callback_(begin_,  lt_ - 1,  less_, depth_);
+	sort_callback_(lt_ + 1, gt_ - 1,  less_, depth_);
+	sort_callback_(gt_ + 1, end_, less_, depth_);
+}
+
+// XXX An intrinsic would probably save a cache miss.
+inline int hxlog2i(size_t n_) {
+    static const char lookup_[32] = {
+        0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4
+    };
+    int log = 0;
+    while(n_ > 0xffu) { n_ >>= 8; log += 8; }
+    if(n_ > 0xfu)     { n_ >>= 4; log += 4; }
+	return log + lookup_[n_ & 0xf];
+}
+
+/// hxsort is implemented using hxintro_sort. Uses Introsort, David R. Musser
+/// 1997. hxintro_sort calls itself recursively until it hits its depth limit.
+/// This is an experiment to see how the std::sort algorithm performs using raw
+/// pointers.
+template<typename T_, typename less_t_>
+void hxintro_sort(T_* begin_, T_* end_, const less_t_& less_, int depth_) {
+	hxassertmsg(begin_ != hxnull && begin_ >= end_, "range_error hxsort");
+
+	// 16 values is the standard cutoff for switching to insertion sort.
+	if ((end_ - begin_) <= 16) {
+		hxinsertion_sort(begin_, end_, less_);
+	} else if (depth_ == 0u) {
+		hxheapsort(begin_, end_, less_);
+	} else {
+		// Have the partition sort call back to hxsort for each sub-partition.
+		hxpartition_sort(begin_, end_, less_, hxintro_sort<T_>, depth_ - 1u);
+	}
+}
+
+/// A general purpose sort routine using `T::T()`, `T::~T()`, `T::operator=(&&)`,
+/// the `hxswap` overloads and a `less` functor which defaults to `hxless`.
+template<typename T_, typename less_t_>
+void hxsort(T_* begin_, T_* end_, const less_t_& less_) {
+	hxintro_sort(begin_, end_, less_, 2u * hxlog2i( end_ - begin_));
 }
 
 /// `hxbinary_search` - Performs a binary search in the range [first, last). Returns

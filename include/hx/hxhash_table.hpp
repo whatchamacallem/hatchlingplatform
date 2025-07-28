@@ -109,7 +109,7 @@ public:
 	typedef node_t_ Node;
 	typedef typename node_t_::key_t key_t;
 
-	/// A forward iterator. Iteration is O(n + (1 << Table_size_bits)).
+	/// A forward iterator. Iteration is Θ(n + (1 << Table_size_bits)).
 	/// Iterators are only invalidated by the removal of the Node referenced.
 	class const_iterator
 	{

@@ -6,7 +6,7 @@
 // memory management.
 
 #include <hx/hatchling.h>
-#include <hx/hxarray.hpp>a
+#include <hx/hxarray.hpp>
 
 /// `hxradix_sort_base`. Operations that are independent of `hxradix_sort` type.
 /// See `hxradix_sort<K, V>` below.
@@ -76,7 +76,7 @@ private:
 /// doubles with the radix sort it would make sense to sort first by a float key
 /// and then run an `hxinsertion_sort` over the nearly sorted data. `hxradix_sort`
 /// scales linearly with the byte length of the key whereas `hxinsertion_sort` is
-/// O(n) on mostly sorted data.
+/// Θ(n) on mostly sorted data.
 template<typename key_t_, class value_t_>
 class hxradix_sort : public hxradix_sort_base {
 public:
