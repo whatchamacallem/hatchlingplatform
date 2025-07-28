@@ -2,6 +2,7 @@
 
 #include <hx/hxrandom.hpp>
 #include <hx/hxsort.hpp>
+#include <hx/hxradix_sort.hpp>
 #include <hx/hxtest.hpp>
 
 HX_REGISTER_FILENAME_HASH

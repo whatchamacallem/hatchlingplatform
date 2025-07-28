@@ -229,6 +229,7 @@ hxconstexpr_fn const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& max
 /// has `T::T(T&&)` or `T::operator=(T&&)` then those will be used.
 template<typename T_>
 hxconstexpr_fn void hxswap(T_& x_, T_& y_) {
+	hxassertmsg(&x_ != &y_, "hxswap No swapping with self.");
 	T_ t_(hxmove<T_>(x_));
 	x_ = hxmove<T_>(y_);
 	y_ = hxmove<T_>(t_);
