@@ -56,7 +56,7 @@ namespace hxdetail_ {
 template<typename T_, typename less_t_>
 void hxheapsort_heapify_(T_* begin_, T_* end_, T_* current_, const less_t_& less_) {
 	for (;;) {
-		hxassertmsg(begin_ >= current_ && current_ < end_, "invalid_iterator");
+		hxassertmsg(begin_ <= current_ && current_ < end_, "invalid_iterator");
 
 		T_* left_  = begin_ + 2 * (current_ - begin_) + 1;
 		T_* right_ = left_ + 1;
@@ -164,17 +164,44 @@ void hxheapsort(T_* begin_, T_* end_) {
 template<typename T_, typename less_t_, typename sort_callback_t_>
 void hxpartition_sort(	T_* begin_, T_* end_, const less_t_& less_,
 						const sort_callback_t_& sort_callback_, int depth_) {
-	hxassertmsg((begin_ - end_) > 16, "range_error Use hxinsertion_sort.");
+	hxassertmsg((end_ - begin_) > 16, "range_error Use hxinsertion_sort.");
+	size_t size_ = end_ - begin_;
+	T_* mid0_ = begin_ + (size_ >> 2);
+	T_* mid1_ = begin_ + ((size_ >> 2) + (size_ >> 1));
 	T_* end1_ = end_ - 1;
 
-	// Use begin and end-1 as pivots p₁, p₂ with p₁ ≤ p₂
-	if (less_(*end1_, *begin_)) {
-		hxswap(*begin_, *end1_);
+	// Select two mid-points as a pair of pivot points and move them to the ends
+	// of the range as pivots p₁, p₂ with p₁ ≤ p₂.
+	if (less_(*mid0_, *mid1_)) {
+		hxswap(*begin_, *mid0_);
+		hxswap(*end1_, *mid1_);
+	}
+	else {
+		hxswap(*begin_, *mid1_);
+		hxswap(*end1_, *mid0_);
 	}
 
 	// Three-way partition into [<p₁], [p₁ ≤ … ≤ p₂], [>p₂]
-	T_* lt_ = begin_ + 1; // Points to beginning of less-than range, after first pivot.
-	T_* gt_ = end1_;      // Points to end of greater-than range, where the last pivot is.
+
+	// Points to end of less-than range, which is empty and is right after the
+	// first pivot.
+	T_* lt_ = begin_ + 1;
+	// Points to beginning of greater-than range, which is empty and also where
+	// the last pivot is stashed.
+	T_* gt_ = end1_;
+
+	// Walk the beginning of the range looking for less-than values. This also
+	// prevents swapping the first item with itself when it is one.
+	for ( ; lt_ < gt_; ++lt_) {
+		if (less_(*begin_, *lt_)) { break; }
+	}
+
+	// Walk the end of the range looking for greater-than values. The middle
+	// list is empty when lt_ == gt_.
+	for ( ; lt_ < gt_; --gt_) {
+		if (less_(gt_[-1], *end_)) { break; }
+	}
+
 	for (T_* it_ = lt_; it_ < gt_; ) {
 		if (less_(*it_, *begin_)) {
 			// Swap into less-than range and extend it.
@@ -190,22 +217,25 @@ void hxpartition_sort(	T_* begin_, T_* end_, const less_t_& less_,
 		}
 	}
 
-	// Swap pivots into final slots.
-	--lt_; // last
-	if(begin_ != lt_) {
+	// Swap pivots into final slots. Insert the lt_ pivot value where the last
+	// last less-than value is, if it exists.
+	if(begin_ != --lt_) {
 		hxswap(*begin_, *lt_);
 	}
+	// Swap the first greater-than value with the gt_ pivot value, if it exists.
 	if(end1_ != gt_) {
 		hxswap(*end1_, *gt_);
 	}
 
-	// Recurse on the three partitions. Do not re-sort the partition values.
-	sort_callback_(begin_,  lt_ - 1,  less_, depth_);
-	sort_callback_(lt_ + 1, gt_ - 1,  less_, depth_);
+	// Recurse on the three partitions. Do not re-sort the partition values. At
+	// this time lt_ and gt_ point right at their pivot values and they are
+	// being used where [begin, end) semantics are expected.
+	sort_callback_(begin_,  lt_,  less_, depth_);
+	sort_callback_(lt_ + 1, gt_,  less_, depth_);
 	sort_callback_(gt_ + 1, end_, less_, depth_);
 }
 
-// XXX An intrinsic would probably save a cache miss.
+// XXX An intrinsic would save a cache miss.
 inline int hxlog2i(size_t n_) {
     static const char lookup_[32] = {
         0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4
@@ -216,13 +246,13 @@ inline int hxlog2i(size_t n_) {
 	return log + lookup_[n_ & 0xf];
 }
 
-/// hxsort is implemented using hxintro_sort_. Uses Introsort, David R. Musser
-/// 1997. hxintro_sort_ calls itself recursively until it hits its depth limit.
-/// This is an experiment to see how the std::sort algorithm performs using raw
-/// pointers.
+// hxsort is implemented using hxintro_sort_. Uses Introsort, David R. Musser
+// 1997. hxintro_sort_ calls itself recursively until it hits its depth limit.
+// This is an experiment to see how the std::sort algorithm performs using raw
+// pointers.
 template<typename T_, typename less_t_>
 void hxintro_sort_(T_* begin_, T_* end_, const less_t_& less_, int depth_) {
-	hxassertmsg(begin_ != hxnull && begin_ >= end_, "range_error hxsort");
+	hxassertmsg(begin_ != hxnull && begin_ <= end_, "range_error hxsort");
 
 	// 16 values is the standard cutoff for switching to insertion sort.
 	if ((end_ - begin_) <= 16) {

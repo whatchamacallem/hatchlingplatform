@@ -34,18 +34,18 @@
 //	   EXPECT_NE(value, 42);
 //   }
 //
-// - Condition Check Macros:
+// - Condition Check Macros: (a and b only require operator< and operator==.)
 //
-//   EXPECT_TRUE(expr);	  // Checks expr is true
+//   EXPECT_TRUE(expr);	     // Checks expr is true
 //   EXPECT_FALSE(expr);	 // Checks expr is false
-//   EXPECT_EQ(a, b);		// Checks a == b
-//   EXPECT_NE(a, b);		// Checks a != b
-//   EXPECT_LT(a, b);		// Checks a < b
-//   EXPECT_GT(a, b);		// Checks a > b
-//   EXPECT_LE(a, b);		// Checks a <= b
-//   EXPECT_GE(a, b);		// Checks a >= b
+//   EXPECT_EQ(a, b);		 // Checks a == b
+//   EXPECT_NE(a, b);		 // Checks a != b
+//   EXPECT_LT(a, b);		 // Checks a < b
+//   EXPECT_GT(a, b);		 // Checks a > b
+//   EXPECT_LE(a, b);		 // Checks a <= b
+//   EXPECT_GE(a, b);		 // Checks a >= b
 //   EXPECT_NEAR(a, b, tol); // Checks |a-b| <= tol
-//   SUCCEED();			  // Marks test as successful
+//   SUCCEED();			     // Marks test as successful
 //   FAIL();				 // Marks test as failed
 //
 // - ASSERT_* macros are equivalent to EXPECT_*
@@ -129,8 +129,9 @@ hxconstexpr_fn void InitGoogleTest(void) { }
 	} static HX_TEST_NAME_(s_hxtest, suite_name_, case_name_); \
 	void HX_TEST_NAME_(hxtest_, suite_name_, case_name_)::hxtest_case_dispatcher_::run_code_(void)
 
-/// `int RUN_ALL_TESTS()` - Executes all registered test cases.
-#define RUN_ALL_TESTS() hxtest_::dispatcher_().run_all_tests_()
+/// `int RUN_ALL_TESTS(...)` - Executes all registered test cases.
+/// `...` : An optional const char* matching a specific test suite to run. (Non-standard.)
+#define RUN_ALL_TESTS(...) hxtest_::dispatcher_().run_all_tests_(__VA_ARGS__)
 
 /// `void SUCCEED()` - Marks the current test as successful without any checks.
 #define SUCCEED() hxtest_::dispatcher_().condition_check_(true, __FILE__, __LINE__, hxnull, false)
@@ -149,15 +150,15 @@ hxconstexpr_fn void InitGoogleTest(void) { }
 	__FILE__, __LINE__, "abs(" #expected_ "-" #actual_ ") <= " #absolute_range_, false)
 /// `void EXPECT_LT(T a, T b)` - Checks `a < b`.
 #define EXPECT_LT(a_, b_) hxtest_::dispatcher_().condition_check_((a_) < (b_), __FILE__, __LINE__, #a_ " < " #b_, false)
-/// `void EXPECT_GT(T a, T b)` - Checks `a > b`.
+/// `void EXPECT_GT(T a, T b)` - Checks `a > b` using `b < a`.
 #define EXPECT_GT(a_, b_) hxtest_::dispatcher_().condition_check_((b_) < (a_), __FILE__, __LINE__, #a_ " > " #b_, false)
-/// `void EXPECT_LE(T a, T b)` - Checks `a <= b`.
+/// `void EXPECT_LE(T a, T b)` - Checks `a <= b` using `!(b < a)`.
 #define EXPECT_LE(a_, b_) hxtest_::dispatcher_().condition_check_(!((b_) < (a_)), __FILE__, __LINE__, #a_ " <= " #b_, false)
-/// `void EXPECT_GE(T a, T b)` - Checks `a >= b`.
+/// `void EXPECT_GE(T a, T b)` - Checks `a >= b` using `!(a < b)`.
 #define EXPECT_GE(a_, b_) hxtest_::dispatcher_().condition_check_(!((a_) < (b_)), __FILE__, __LINE__, #a_ " >= " #b_, false)
 /// `void EXPECT_EQ(T a, T b)` - Checks `a == b`.
 #define EXPECT_EQ(a_, b_) hxtest_::dispatcher_().condition_check_((a_) == (b_), __FILE__, __LINE__, #a_ " == " #b_, false)
-/// `void EXPECT_NE(T a, T b)` - Checks `a != b`.
+/// `void EXPECT_NE(T a, T b)` - Checks `a != b` using `!(a == b)`.
 #define EXPECT_NE(a_, b_) hxtest_::dispatcher_().condition_check_(!((a_) == (b_)), __FILE__, __LINE__, #a_ " != " #b_, false)
 
 /// `void ASSERT_TRUE(bool)` - Asserts that the condition is true.
@@ -171,15 +172,15 @@ hxconstexpr_fn void InitGoogleTest(void) { }
 	__FILE__, __LINE__, "abs(" #expected_ "-" #actual_ ") <= " #absolute_range_, true)
 /// `void ASSERT_LT(T a, T b)` - Asserts `a < b`.
 #define ASSERT_LT(a_, b_) hxtest_::dispatcher_().condition_check_((a_) < (b_), __FILE__, __LINE__, #a_ " < " #b_, true)
-/// `void ASSERT_GT(T a, T b)` - Asserts `a > b`.
+/// `void ASSERT_GT(T a, T b)` - Asserts `a > b` using `b < a`.
 #define ASSERT_GT(a_, b_) hxtest_::dispatcher_().condition_check_((b_) < (a_), __FILE__, __LINE__, #a_ " > " #b_, true)
-/// `void ASSERT_LE(T a, T b)` - Asserts `a <= b`.
+/// `void ASSERT_LE(T a, T b)` - Asserts `a <= b` using `!(b < a)`.
 #define ASSERT_LE(a_, b_) hxtest_::dispatcher_().condition_check_(!((b_) < (a_)), __FILE__, __LINE__, #a_ " <= " #b_, true)
-/// `void ASSERT_GE(T a, T b)` - Asserts `a >= b`.
+/// `void ASSERT_GE(T a, T b)` - Asserts `a >= b` using `!(a < b)`.
 #define ASSERT_GE(a_, b_) hxtest_::dispatcher_().condition_check_(!((a_) < (b_)), __FILE__, __LINE__, #a_ " >= " #b_, true)
 /// `void ASSERT_EQ(T a, T b)` - Asserts `a == b`.
 #define ASSERT_EQ(a_, b_) hxtest_::dispatcher_().condition_check_((a_) == (b_), __FILE__, __LINE__, #a_ " == " #b_, true)
-/// `void ASSERT_NE(T a, T b)` - Asserts `a != b`.
+/// `void ASSERT_NE(T a, T b)` - Asserts `a != b` using `!(a == b)`.
 #define ASSERT_NE(a_, b_) hxtest_::dispatcher_().condition_check_(!((a_) == (b_)), __FILE__, __LINE__, #a_ " != " #b_, true)
 
 #endif // !HX_USE_GOOGLE_TEST

@@ -51,14 +51,10 @@ public:
 	static hxtest_& dispatcher_(void) { static hxtest_ s_hxtest_runner; return s_hxtest_runner; }
 
 	hxtest_(void) {
-		m_search_term_string_literal_ = hxnull;
+		m_test_suite_filter_ = hxnull;
 		m_num_test_cases_ = 0;
 		m_current_test_ = hxnull;
 		::memset(m_test_cases_ + 0, 0x00, sizeof m_test_cases_);
-	}
-
-	void set_search_term_(const char* search_term_string_literal_) {
-		m_search_term_string_literal_ = search_term_string_literal_;
 	}
 
 	void add_test_(hxtest_case_interface_* fn_) {
@@ -105,15 +101,18 @@ public:
 		return this->file_null_();
 	}
 
-	size_t run_all_tests_(void) {
+	size_t run_all_tests_(const char* test_suite_filter_=hxnull) {
 		hxinit(); // RUN_ALL_TESTS could be called first.
 
+		m_test_suite_filter_ = test_suite_filter_;
+
+		// XXX use hxsort.
 		hxinsertion_sort(m_test_cases_, m_test_cases_ + m_num_test_cases_, hxtest_case_sort_());
 
 		m_pass_count_ = m_fail_count_ = m_assert_count_ = 0;
-		hxlogconsole("[==========] Running tests %s\n", (m_search_term_string_literal_ ? m_search_term_string_literal_ : "all"));
+		hxlogconsole("[==========] Running tests %s\n", (m_test_suite_filter_ ? m_test_suite_filter_ : "all"));
 		for (hxtest_case_interface_** it_ = m_test_cases_; it_ != (m_test_cases_ + m_num_test_cases_); ++it_) {
-			if (!m_search_term_string_literal_ || ::strstr(m_search_term_string_literal_, (*it_)->suite_()) != hxnull) {
+			if (!m_test_suite_filter_ || ::strcmp(m_test_suite_filter_, (*it_)->suite_()) == 0) {
 				hxlogconsole("[ RUN	  ] %s.%s\n", (*it_)->suite_(), (*it_)->case_());
 
 				m_current_test_ = *it_;
@@ -179,7 +178,7 @@ private:
 	hxtest_(const hxtest_&) hxdelete_fn;
 	void operator=(const hxtest_&) hxdelete_fn;
 
-	const char* m_search_term_string_literal_;
+	const char* m_test_suite_filter_;
 	hxtest_case_interface_* m_test_cases_[HX_TEST_MAX_CASES];
 	size_t m_num_test_cases_;
 	hxtest_case_interface_* m_current_test_;

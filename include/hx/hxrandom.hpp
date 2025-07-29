@@ -11,9 +11,9 @@
 /// Entirely constexpr if you need test data for template parameters.
 class hxrandom {
 public:
-	/// Constructor to initialize the random number generator with a seed.
-	/// - `seed` : Initial seed value for the random number generator.
-	hxconstexpr_fn hxrandom(uint32_t seed_ = 1u) : m_state_(seed_) { }
+	/// Constructor to initialize the random number generator.
+	/// - `stream` : Index or seed value for a given stream of random numbers.
+	hxconstexpr_fn hxrandom(uint64_t stream_ = 1u) : m_state_(stream_) { }
 
 	/// Functor returns hxrandom& which converts itself to the type it is
 	/// assigned to. Enables traditional syntax.
@@ -73,11 +73,12 @@ public:
 	hxconstexpr_fn uint32_t advance32(void) {
 		m_state_ = 0x5851f42d4c957f2dull * m_state_ + 0x14057b7ef767814full;
 
-		// MODIFICATION: Use the 4 msb bits as a 0..15 bit variable shift control.
-		// Ignores the low 13 bits because they are low quality. Returns 32 bits
-		// chosen at a random offset starting between the 13th and 28th bits.
-		// 4 bits shift control + 32 returned + up to 15 shifted + 13 discarded.
-		uint32_t result_ = (uint32_t)(m_state_ >> ((unsigned int)(m_state_ >> 60) + 13u));
+		// MODIFICATION: Use the 4 msb bits as a random 0..15 bit variable shift
+		// control. Ignores the low 13 bits because they are low quality.
+		// Returns 32 bits chosen at a random offset starting between the 13th
+		// and 28th bits. 4 bits shift control + 32 returned + up to 15 shifted
+		// off + 13 always discarded = 64 bits.
+		uint32_t result_ = (uint32_t)(m_state_ >> ((int)(m_state_ >> 60) + 13u));
 		return result_;
 	}
 
@@ -125,5 +126,5 @@ template <typename T_> hxconstexpr_fn  T_ operator&=(T_& a_, hxrandom& b_) {
 /// `operator%(hxrandom& a, T_ b)` - Generate an number of type `T` in the range `[0..b)`.
 /// Works with floating point divisors and uses no actual modulo or division.
 template <typename T_> hxconstexpr_fn  T_ operator%(hxrandom& dividend_, T_ divisor_) {
-	return dividend_.range((T_)0, divisor_);
+	return dividend_.range(T_(0), divisor_);
 }

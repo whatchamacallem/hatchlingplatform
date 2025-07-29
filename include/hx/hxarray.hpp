@@ -563,6 +563,11 @@ public:
 		return (size_t)(m_end_ - this->data());
 	}
 
+	/// Returns the number of bytes in the array. (Non-standard.)
+	hxconstexpr_fn size_t size_bytes(void) const {
+		return sizeof(T_) * (size_t)(m_end_ - this->data());
+	}
+
 	/// Swap contents with a temporary array. Only works with `hxallocator_dynamic_capacity`.
 	/// Dynamically allocated arrays are swapped with very little overhead.
 	/// - `x` : The array to swap with.

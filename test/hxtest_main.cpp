@@ -23,6 +23,7 @@ TEST(hxdeath_test, fail) {
 	for (int i = 10; i--;) {
 		FAIL() << "this message is intentionally blank.\n";
 	}
+	SUCCEED();
 }
 TEST(hxdeath_test, nothing_asserted) {
 	hxlog("EXPECTING_TEST_FAILURE\n");
@@ -36,7 +37,7 @@ static bool hxrun_all_tests(void) {
 	hxwarnmsg(HX_HATCHLING_PCH_USED, "pch not used");
 
 	// RUN_ALL_TESTS is a Google Test symbol.
-	size_t tests_failing = (size_t)RUN_ALL_TESTS();
+	size_t tests_failing = (size_t)RUN_ALL_TESTS("xxx");
 
 #if HX_TEST_ERROR_HANDLING
 	// The 2 above and one in the console tests.
