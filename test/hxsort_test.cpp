@@ -57,85 +57,27 @@ TEST(hxsort_test, sort_int_case) {
 	do_sort_int_case(hxsort<int, bool (*)(int, int)>);
 }
 
-// Now things get serious. Keep histograms of operator activity and start grinding.
-static struct sort_stats_t {
-	int default_constructor;
-	int int_constructor;
-	int const_ref_constructor;
-	int temp_constructor;
-	int destructor;
-	int assignment_const_ref;
-	int assignment_temp;
-	int less_than;
-} g_sort_api_histogram;
-
-static void print_stats(sort_stats_t& stats_) {
-	printf( "default_constructor: %d int_constructor: %d const_ref_constructor: %d temp_constructor: %d\n"
-			"destructor: %d assignment_const_ref: %d assignment_temp: %d less_than: %d\n",
-		stats_.default_constructor,
-		stats_.int_constructor,
-		stats_.const_ref_constructor,
-		stats_.temp_constructor,
-		stats_.destructor,
-		stats_.assignment_const_ref,
-		stats_.assignment_temp,
-		stats_.less_than);
-}
-
-static int add_stats(sort_stats_t& stats_) {
-	return stats_.default_constructor
-		 + stats_.int_constructor
-		 + stats_.const_ref_constructor
-		 + stats_.temp_constructor
-		 + stats_.destructor
-		 + stats_.assignment_const_ref
-		 + stats_.assignment_temp
-		 + stats_.less_than;
-}
-
 class sort_api_t {
 public:
-    // Keep track of what is being used.
+	// This is not used by the sort code.
+    explicit sort_api_t(int value_) hxnoexcept : value(value_) { }
 
-	sort_api_t() hxnoexcept : value(0) {
-		++g_sort_api_histogram.default_constructor;
-	}
-
-    explicit sort_api_t(int value_) hxnoexcept : value(value_) {
-		++g_sort_api_histogram.int_constructor;
-	}
-
-    sort_api_t(const sort_api_t& other) hxnoexcept : value(other.value) {
-		hxassert(this != &other);
-		++g_sort_api_histogram.const_ref_constructor;
-	}
+	// This is what is being used.
 
     sort_api_t(sort_api_t&& other) hxnoexcept : value(hxmove(other.value)) {
 		hxassert(this != &other);
-		++g_sort_api_histogram.temp_constructor;
 	}
 
-	~sort_api_t() {
-		++g_sort_api_histogram.destructor;
-	}
-
-    sort_api_t& operator=(const sort_api_t& other) hxnoexcept {
-		hxassert(this != &other);
-		++g_sort_api_histogram.assignment_const_ref;
-		value = other.value;
-        return *this;
-    }
+	~sort_api_t() { }
 
     sort_api_t& operator=(sort_api_t&& other) hxnoexcept {
 		hxassert(this != &other);
-		++g_sort_api_histogram.assignment_temp;
 		value = hxmove(other.value);
         return *this;
     }
 
     bool operator<(const sort_api_t& other) const hxnoexcept {
 		hxassert(this != &other);
-		++g_sort_api_histogram.less_than;
         return value < other.value;
     }
 
@@ -144,6 +86,9 @@ public:
 private:
     // Keep track of what isn't being used.
 
+	sort_api_t() hxdelete_fn;
+    sort_api_t(const sort_api_t& other) hxdelete_fn;
+    sort_api_t& operator=(const sort_api_t& other) hxdelete_fn;
     bool operator==(const sort_api_t& other) const hxdelete_fn;
     bool operator!=(const sort_api_t& other) const hxdelete_fn;
     bool operator>(const sort_api_t& other) const hxdelete_fn;
@@ -177,44 +122,27 @@ private:
 
 TEST(hxsort_test, sort_grinder) {
 	hxrandom rng(2);
-	int max_size_mask = 0x2f;
+	int max_size_mask = 0x7f;
 	hxarray<sort_api_t> insertion_sorted; insertion_sorted.reserve(max_size_mask);
 	hxarray<sort_api_t> heap_sorted; heap_sorted.reserve(max_size_mask);
 	hxarray<sort_api_t> generic_sorted; generic_sorted.reserve(max_size_mask);
 
-	for(int i=8; i--; ) {
+	for(int i=12; i--; ) {
 		// Set up the arrays to be sorted.
 		int size = (max_size_mask >> i) & rng;
 		for(int j=size; j--;) {
 			insertion_sorted.push_back(sort_api_t(rng.range(100, 200)));
+			// Use the && constructor and not the const& one.
+			heap_sorted.push_back(sort_api_t(0));
+			generic_sorted.push_back(sort_api_t(0));
 		}
 
-		heap_sorted.resize(size);
 		::memcpy(heap_sorted.data(), insertion_sorted.data(), insertion_sorted.size_bytes());
-
-		generic_sorted.resize(size);
 		::memcpy(generic_sorted.data(), insertion_sorted.data(), insertion_sorted.size_bytes());
 
-		// Clear the histogram and run hxinsertion_sort.
-		::memset(&g_sort_api_histogram, 0x00, sizeof g_sort_api_histogram);
 		hxinsertion_sort(insertion_sorted.begin(), insertion_sorted.end());
-		puts("-----------------------------------------------------------------");
-		printf("insertion_sorted %d -> %d\n", size, add_stats(g_sort_api_histogram));
-		print_stats(g_sort_api_histogram);
-
-		// Clear the histogram and run hxheapsort.
-		::memset(&g_sort_api_histogram, 0x00, sizeof g_sort_api_histogram);
 		hxheapsort(heap_sorted.begin(), heap_sorted.end());
-		puts("-----------------------------------------------------------------");
-		printf("heap_sorted %d -> %d\n", size, add_stats(g_sort_api_histogram));
-		print_stats(g_sort_api_histogram);
-
-		// Clear the histogram and run hxinsertion_sort.
-		::memset(&g_sort_api_histogram, 0x00, sizeof g_sort_api_histogram);
 		hxsort(generic_sorted.begin(), generic_sorted.end());
-		puts("-----------------------------------------------------------------");
-		printf("generic_sorted %d -> %d\n", size, add_stats(g_sort_api_histogram));
-		print_stats(g_sort_api_histogram);
 
 		// Compare the three results to confirm they are sorted.
 		ASSERT_EQ(::memcmp(insertion_sorted.data(), heap_sorted.data(), insertion_sorted.size_bytes()), 0);
@@ -233,7 +161,8 @@ TEST(hxsort_test, sort_grinder_generic) {
 	hxarray<int> histogram(20000, 0);
 
 	for(int i=10; i--; ) {
-		// Pick random values of increasing maximum value up to 2^16 and keep a count of them.
+		// Pick random values of increasing maximum value up to 2^16 and keep a
+		// count of them.
 		int size = (max_size_mask >> i) & rng;
 		if(size <= 16) {
 			continue;
@@ -244,7 +173,6 @@ TEST(hxsort_test, sort_grinder_generic) {
 			++histogram[x];
 		}
 
-		::memset(&g_sort_api_histogram, 0x00, sizeof g_sort_api_histogram);
 		hxsort(sorted.begin(), sorted.end());
 
 		// Check that all values are accounted for starting with the last one.
@@ -294,7 +222,7 @@ TEST(hxbinary_search_test, binary_search_grinder) {
 	hxsort(sorted.begin(), sorted.end());
 
 	for(int i=100; i--; ) {
-		sort_api_t t = sorted[i]; // Don't pass an address that is in the array.
+		sort_api_t t = (sort_api_t&&)sorted[i]; // Don't pass an address that is in the array.
 		sort_api_t* ptr = hxbinary_search(sorted.begin(), sorted.end(), t);
 		// Assert logical equivalence without using ==. The pointer may point
 		// elsewhere.

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <hx/detail/hxhash_table_internal.hpp>
+#include <hx/detail/hxhash_table_detail.hpp>
 #include <hx/hxkey.hpp>
 
 // hxhash_table API - This header implements a hash table that operates without

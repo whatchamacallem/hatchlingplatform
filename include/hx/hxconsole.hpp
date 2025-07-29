@@ -113,4 +113,4 @@ bool hxconsole_exec_filename(const char* filename_);
 bool hxconsole_help(void);
 
 // Include internals after hxconsolehex_t
-#include <hx/detail/hxconsole_internal.hpp>
+#include <hx/detail/hxconsole_detail.hpp>

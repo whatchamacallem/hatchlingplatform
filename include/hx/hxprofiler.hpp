@@ -20,7 +20,7 @@ extern "C" double emscripten_get_now(void);
 typedef size_t hxcycles_t;
 
 #if HX_PROFILE
-#include <hx/detail/hxprofiler_internal.hpp>
+#include <hx/detail/hxprofiler_detail.hpp>
 #define HX_PROFILE_ONLY_(x_) x_
 #else
 #define HX_PROFILE_ONLY_(x_) ((void)0)

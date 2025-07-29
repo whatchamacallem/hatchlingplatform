@@ -164,21 +164,60 @@ template<typename T_, typename less_t_, typename sort_callback_t_>
 void hxpartition_sort(	T_* begin_, T_* end_, const less_t_& less_,
 						const sort_callback_t_& sort_callback_, int depth_) {
 	hxassertmsg((end_ - begin_) > 16, "range_error Use hxinsertion_sort.");
-	size_t size_ = end_ - begin_;
-	T_* mid0_ = begin_ + (size_ >> 2);
-	T_* mid1_ = begin_ + ((size_ >> 2) + (size_ >> 1));
-	T_* end1_ = end_ - 1;
+	size_t length_ = end_ - begin_;
 
-	// Select two mid-points as a pair of pivot points and move them to the ends
-	// of the range as pivots p₁, p₂ with p₁ ≤ p₂.
-	if (less_(*mid0_, *mid1_)) {
-		hxswap(*begin_, *mid0_);
-		hxswap(*end1_, *mid1_);
+	// Select 5 pivot values at 1/7th increments around the middle.
+    size_t seventh_ = (length_ >> 3) + (length_ >> 6) + 1;
+    T_* p2_ = begin_ + (length_ >> 1);
+    T_* p1_ = p2_ - seventh_;
+    T_* p0_ = p1_ - seventh_;
+    T_* p3_ = p2_ + seventh_;
+    T_* p4_ = p3_ + seventh_;
+
+	// Search for the second minimum value and the second maximum value.
+    if (less_(*p1_, *p0_)) {
+		hxswap(p0_, p1_);
 	}
-	else {
-		hxswap(*begin_, *mid1_);
-		hxswap(*end1_, *mid0_);
-	}
+    if (less_(*p2_, *p1_)) {
+		hxswap(p1_, p2_);
+        if (less_(*p1_, *p0_)) {
+			hxswap(p0_, p1_);
+		}
+    }
+    if (less_(*p3_, *p2_)) {
+		hxswap(p2_, p3_);
+        if (less_(*p2_, *p1_)) {
+			hxswap(p1_, p2_);
+            if (less_(*p1_, *p0_)) {
+				hxswap(p0_, p1_);
+			}
+        }
+    }
+    if (less_(*p4_, *p3_)) {
+		hxswap(p3_, p4_);
+        if (less_(*p3_, *p2_)) {
+			hxswap(p2_, p3_);
+            if (less_(*p2_, *p1_)) {
+				hxswap(p1_, p2_);
+                if (less_(*p1_, *p0_)) {
+					hxswap(p0_, p1_);
+				}
+            }
+        }
+    }
+
+	hxassert(!less_(*p1_, *p0_));
+	hxassert(!less_(*p2_, *p1_));
+	hxassert(!less_(*p3_, *p2_));
+	hxassert(!less_(*p4_, *p3_));
+
+
+    T_* back_ = end_ - 1; // Pointer to the last value.
+
+	// Move the selected pivots out of the way by placing them at the ends of
+	// the range.
+    hxswap(*begin_, *p1_);
+    hxswap(*back_, *p3_);
 
 	// Three-way partition into [<p₁], [p₁ ≤ … ≤ p₂], [>p₂]
 
@@ -187,16 +226,7 @@ void hxpartition_sort(	T_* begin_, T_* end_, const less_t_& less_,
 	T_* lt_ = begin_ + 1;
 	// Points to beginning of greater-than range, which is empty and also where
 	// the last pivot is stashed.
-	T_* gt_ = end1_;
-
-	// Walk the beginning of the range looking for less-than values.
-	for ( ; lt_ < gt_ && less_(*lt_, *begin_); ++lt_) {
-	}
-
-	// Walk the end of the range looking for greater-than values. The middle
-	// list is empty when lt_ == gt_.
-	for ( ; lt_ < gt_ && less_(*end1_, gt_[-1]); --gt_) {
-	}
+	T_* gt_ = back_;
 
 	for (T_* i_ = lt_; i_ < gt_; ) {
 		if (less_(*i_, *begin_)) {
@@ -204,10 +234,9 @@ void hxpartition_sort(	T_* begin_, T_* end_, const less_t_& less_,
 			if(lt_ != i_) {
 				hxswap(*i_, *lt_);
 			}
-			++i_;
-			++lt_;
+			++i_; ++lt_;
 		}
-		else if (less_(*end1_, *i_)) {
+		else if (less_(*back_, *i_)) {
 			// Swap into greater-than range and extend it.
 			if(--gt_ != i_) {
 				hxswap(*i_, *gt_);
@@ -225,8 +254,8 @@ void hxpartition_sort(	T_* begin_, T_* end_, const less_t_& less_,
 		hxswap(*begin_, *lt_);
 	}
 	// Swap the first greater-than value with the gt_ pivot value, if it exists.
-	if(end1_ != gt_) {
-		hxswap(*end1_, *gt_);
+	if(back_ != gt_) {
+		hxswap(*back_, *gt_);
 	}
 
 	// Recurse on the three partitions. Do not re-sort the partition values. At
