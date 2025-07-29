@@ -4,9 +4,8 @@
 // hxsort.hpp - Sorting and searching utilities for hatchling platform. Provides
 // insertion sort, binary search, and radix sort implementations for arrays and
 // key-value pairs. Includes generic and specialized templates for sorting with
-// custom comparators. Designed for use with hxarray and hatchling memory
-// management. No exception safety is guaranteed; use noexcept types or disable
-// exceptions.
+// custom comparators. No exception safety is guaranteed; use noexcept types or
+// disable exceptions.
 
 #include <hx/hatchling.h>
 #include <hx/hxarray.hpp>
@@ -115,7 +114,7 @@ void hxheapsort_heapify_bottom_(T_* begin_, T_* end_, T_* current_, const less_t
 }
 } // namespace hxdetail_
 
-/// XXX This isn't ready.
+/// XXX docs.
 template<typename T_, typename less_t_>
 void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
 	size_t sz_ = end_ - begin_;
@@ -190,30 +189,33 @@ void hxpartition_sort(	T_* begin_, T_* end_, const less_t_& less_,
 	// the last pivot is stashed.
 	T_* gt_ = end1_;
 
-	// Walk the beginning of the range looking for less-than values. This also
-	// prevents swapping the first item with itself when it is one.
-	for ( ; lt_ < gt_; ++lt_) {
-		if (less_(*begin_, *lt_)) { break; }
+	// Walk the beginning of the range looking for less-than values.
+	for ( ; lt_ < gt_ && less_(*lt_, *begin_); ++lt_) {
 	}
 
 	// Walk the end of the range looking for greater-than values. The middle
 	// list is empty when lt_ == gt_.
-	for ( ; lt_ < gt_; --gt_) {
-		if (less_(gt_[-1], *end_)) { break; }
+	for ( ; lt_ < gt_ && less_(*end1_, gt_[-1]); --gt_) {
 	}
 
-	for (T_* it_ = lt_; it_ < gt_; ) {
-		if (less_(*it_, *begin_)) {
+	for (T_* i_ = lt_; i_ < gt_; ) {
+		if (less_(*i_, *begin_)) {
 			// Swap into less-than range and extend it.
-			hxswap(*it_++, *lt_++);
+			if(lt_ != i_) {
+				hxswap(*i_, *lt_);
+			}
+			++i_;
+			++lt_;
 		}
-		else if (less_(*end1_, *it_)) {
+		else if (less_(*end1_, *i_)) {
 			// Swap into greater-than range and extend it.
-			hxswap(*it_, *--gt_);
+			if(--gt_ != i_) {
+				hxswap(*i_, *gt_);
+			}
 		}
 		else {
 			// Leave the value in the mid range.
-			++it_;
+			++i_;
 		}
 	}
 
@@ -319,11 +321,13 @@ const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_) {
 // Non-const overload.
 template<typename T_, typename less_t_>
 T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_, const less_t_& less_) {
-	return const_cast<T_*>(hxbinary_search(begin_, end_, val_, less_));
+	return const_cast<T_*>(hxbinary_search(const_cast<const T_*>(begin_),
+		const_cast<const T_*>(end_), val_, less_));
 }
 
 // Non-const overload using hxkey_less.
 template<typename T_>
 T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_) {
-	return const_cast<T_*>(hxbinary_search(begin_, end_, val_, hxkey_less_function<T_>()));
+	return const_cast<T_*>(hxbinary_search(const_cast<const T_*>(begin_),
+		const_cast<const T_*>(end_), val_, hxkey_less_function<T_>()));
 }

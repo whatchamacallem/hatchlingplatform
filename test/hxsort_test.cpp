@@ -226,7 +226,7 @@ TEST(hxsort_test, sort_grinder) {
 	}
 }
 
-TEST(xxx, sort_grinder_generic) {
+TEST(hxsort_test, sort_grinder_generic) {
 	hxrandom rng(3);
 	int max_size_mask = 0xffff;
 	hxarray<sort_api_t> sorted; sorted.reserve(max_size_mask);
@@ -246,10 +246,6 @@ TEST(xxx, sort_grinder_generic) {
 
 		::memset(&g_sort_api_histogram, 0x00, sizeof g_sort_api_histogram);
 		hxsort(sorted.begin(), sorted.end());
-
-		puts("-----------------------------------------------------------------");
-		printf("sorted %d -> %d\n", size, add_stats(g_sort_api_histogram));
-		print_stats(g_sort_api_histogram);
 
 		// Check that all values are accounted for starting with the last one.
 		// Confirm sort order with (j <= j+1) while walking down to the first
@@ -298,9 +294,10 @@ TEST(hxbinary_search_test, binary_search_grinder) {
 	hxsort(sorted.begin(), sorted.end());
 
 	for(int i=100; i--; ) {
-		sort_api_t* ptr = hxbinary_search(sorted.begin(), sorted.end(), sorted[i]);
+		sort_api_t t = sorted[i]; // Don't pass an address that is in the array.
+		sort_api_t* ptr = hxbinary_search(sorted.begin(), sorted.end(), t);
 		// Assert logical equivalence without using ==. The pointer may point
 		// elsewhere.
-		EXPECT_TRUE(!(*ptr < sorted[i]) && !(sorted[i] < *ptr));
+		EXPECT_TRUE(!(*ptr < t) && !(t < *ptr));
 	}
 }

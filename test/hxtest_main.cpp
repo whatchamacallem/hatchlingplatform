@@ -37,7 +37,7 @@ static bool hxrun_all_tests(void) {
 	hxwarnmsg(HX_HATCHLING_PCH_USED, "pch not used");
 
 	// RUN_ALL_TESTS is a Google Test symbol.
-	size_t tests_failing = (size_t)RUN_ALL_TESTS("xxx");
+	size_t tests_failing = (size_t)RUN_ALL_TESTS();
 
 #if HX_TEST_ERROR_HANDLING
 	// The 2 above and one in the console tests.
