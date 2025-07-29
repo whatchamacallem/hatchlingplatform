@@ -39,6 +39,15 @@ hxconstexpr_fn bool hxkey_less(const T_& a_, const T_& b_) {
 	return a_ < b_;
 }
 
+/// `hxkey_less(const T*, const T*)` - User overloadable function for performing comparisons.
+/// Invokes `T::operator<` by default. Pointer `<` comparisons are not available by default
+/// because that is undefined behavior unless the pointers are from the same array. For
+/// example the compiler may silently ignore comparisons between function pointers.
+template<typename T_>
+hxconstexpr_fn bool hxkey_less(const T_* a_, const T_* b_) {
+	return hxkey_less(*a_, *b_);
+}
+
 /// `hxkey_less(const char*, const char*)` - Uses a constexpr "strcmp(a, b) < 0".
 hxconstexpr_fn bool hxkey_less(const char* a_, const char* b_) {
 	while(*a_ != '\0' && *a_ == *b_) { ++a_; ++b_; }
