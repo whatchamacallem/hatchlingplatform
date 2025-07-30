@@ -21,7 +21,7 @@ import traceback
 #
 
 class HxArrayPrinter:
-    """Pretty printer for hxarray structure"""
+    """Pretty printer for hxarray<T, capacity>."""
 
     def __init__(self, val):
         self.val = val
@@ -37,22 +37,21 @@ class HxArrayPrinter:
             # There are two different underlying implementations and this logic
             # works for both of them.
             elem_type = self.val.type.template_argument(0)
-            m_data = int(m_data.address.cast(elem_type.pointer()))
-            m_end = int(m_end.address.cast(elem_type.pointer()))
+            if self.val.type.template_argument(1) != 0:
+                m_data = m_data.address
 
-            size = int(m_end - m_data)
+            size = (m_end - m_data) / elem_type.sizeof
             if self.val.type.template_argument(1) == 0:
                 capacity = int(self.val['m_capacity_'])
             else:
                 capacity = self.val.type.template_argument(1)
 
-            return "{}/{} <{}>".format(size, capacity, elem_type)
+            return "[{}] /{} <{}>".format(size, capacity, elem_type)
         except Exception as e:
             return f"{traceback.format_exc()}"
 
 def build_pretty_printer():
     pp = gdb.printing.RegexpCollectionPrettyPrinter("hxarray_printer")
-    # Match both hxarray<T_, 0> and hxarray<T_, N> patterns
     pp.add_printer('hxarray', '^hxarray<.*,.*>$', HxArrayPrinter)
     return pp
 

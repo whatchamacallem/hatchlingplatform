@@ -69,6 +69,7 @@
         "noexcept",
         "Noname",
         "nowthrow",
+        "objfile",
         "pointee",
         "printhashes",
         "pthread",
