@@ -1,5 +1,7 @@
 #pragma once
-/// Copyright 2017-2025 Adrian Johnston
+// SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+// SPDX-License-Identifier: MIT
+// This file is licensed under the terms of the LICENSE.md file.
 
 #include <hx/hxkey.hpp>
 
@@ -112,8 +114,7 @@ void hxpartition_sort_(	T_* begin_, T_* end_, const less_t_& less_,
     T_* p4_ = p3_ + seventh_;
 
 	// This is a Bose-Nelson sorting network for 5 elements. It should work well
-	// with a processor that has branch prediction. Pairs taken from
-	// github.com/Morwenn/cpp-sort/.../sort5.h.
+	// with a processor that has branch prediction.
 	if (less_(*p3_, *p0_)) { hxswap(p3_, p0_); }
 	if (less_(*p4_, *p1_)) { hxswap(p4_, p1_); }
 	if (less_(*p2_, *p0_)) { hxswap(p2_, p0_); }
@@ -136,23 +137,28 @@ void hxpartition_sort_(	T_* begin_, T_* end_, const less_t_& less_,
 	// Points to end of less-than range, which is empty and is right after the
 	// first pivot.
 	T_* lt_ = begin_ + 1;
-	// Points to beginning of greater-than range, which is empty and also where
-	// the last pivot is stashed.
-	T_* gt_ = back_;
+	// Points to end of greater-than range, which is empty and right before the
+	// last pivot. This is an end iterator that goes left.
+	T_* gt_ = back_ - 1;
 
-	for (T_* i_ = lt_; i_ < gt_; ) {
+	for (T_* i_ = lt_; i_ <= gt_; ) {
 		if (less_(*i_, *begin_)) {
 			// Swap into less-than range and extend it.
 			if(lt_ != i_) {
 				hxswap(*i_, *lt_);
 			}
-			++i_; ++lt_;
+			else {
+				++i_;
+			}
+			++lt_;
 		}
 		else if (less_(*back_, *i_)) {
-			// Swap into greater-than range and extend it.
-			if(--gt_ != i_) {
+			// Swap into greater-than range and extend it. If gt == i then the
+			// loop is about to terminate due to --gt.
+			if(gt_ != i_) {
 				hxswap(*i_, *gt_);
 			}
+			--gt_;
 		}
 		else {
 			// Leave the value in the mid range.
@@ -166,7 +172,7 @@ void hxpartition_sort_(	T_* begin_, T_* end_, const less_t_& less_,
 		hxswap(*begin_, *lt_);
 	}
 	// Swap the first greater-than value with the gt_ pivot value, if it exists.
-	if(back_ != gt_) {
+	if(back_ != ++gt_) {
 		hxswap(*back_, *gt_);
 	}
 

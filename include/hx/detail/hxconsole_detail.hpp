@@ -1,5 +1,7 @@
 #pragma once
-// Copyright 2017-2025 Adrian Johnston
+// SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+// SPDX-License-Identifier: MIT
+// This file is licensed under the terms of the LICENSE.md file.
 // hxconsole inline header and a lot of internals. See hxconsole.h.
 
 // This is a little old fashioned but a simple rewrite wouldn't make the

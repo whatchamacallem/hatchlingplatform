@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+# SPDX-License-Identifier: MIT
+# This file is licensed under the terms of the LICENSE.md file.
+#
 # To run these tests go to the parent directory and execute:
 #
 #   python3 -m entanglement_py_template.entanglement_py_template_test

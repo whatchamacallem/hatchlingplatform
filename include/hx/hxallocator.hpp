@@ -1,5 +1,7 @@
 #pragma once
-// Copyright 2017-2025 Adrian Johnston
+// SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+// SPDX-License-Identifier: MIT
+// This file is licensed under the terms of the LICENSE.md file.
 
 #include <hx/hatchling.h>
 
@@ -62,15 +64,7 @@ private:
 	void swap(hxallocator& rhs) = delete;
 	static const size_t m_capacity_ = fixed_capacity_;
 
-	/// Put x.m_data_ in your watch window for x or have your IDE do it for you.
-#if HX_CPLUSPLUS >= 201703L
 	alignas(T_) char m_allocator_[fixed_capacity_ * sizeof(T_)];
-#else
-	union {
-		char m_allocator_[fixed_capacity_ * sizeof(T_)];
-		char* m_alignas;
-	};
-#endif
 #if (HX_RELEASE) < 1
 	/// debug only reference to the allocator as a T[fixed_capacity];
 	T_ (&m_data_)[fixed_capacity_];

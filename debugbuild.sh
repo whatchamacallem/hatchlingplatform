@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright 2017-2025 Adrian Johnston
+# SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 #
 # The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:
 #   sudo apt-get install gcc-multilib g++-multilib

@@ -1,5 +1,7 @@
 #!/bin/sh
-# Copyright 2017-2025 Adrian Johnston
+# SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+# SPDX-License-Identifier: MIT
+# This file is licensed under the terms of the LICENSE.md file.
 
 # POSIXLY_CORRECT=1 was breaking gcovr.
 # Using a subdirectory was breaking gcovr. See "--root .. ."

@@ -6,7 +6,9 @@
 // codebase relies on stdint.h for fixed width integers which is not in C++98.
 // Features from C++17 and a few compiler intrinsics are used when available.
 //
-// Copyright 2017-2025 Adrian Johnston
+// SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+// SPDX-License-Identifier: MIT
+// This file is licensed under the terms of the LICENSE.md file.
 // https://github.com/whatchamacallem/HatchlingPlatform
 
 #include <stdarg.h>

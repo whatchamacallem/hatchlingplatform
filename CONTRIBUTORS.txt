@@ -4,4 +4,4 @@ For copyright reasons, please add your name here in any PR.
 Contributors are:
 
 Adrian Johnston <adrian3@gmail.com>  First published July 19, 2017.
-  Ongoing maintenance and development (c) Adrian Johnston.
+  Ongoing maintenance and development ©  Adrian Johnston.

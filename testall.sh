@@ -1,5 +1,7 @@
 #!/bin/sh
-# Copyright 2017-2025 Adrian Johnston
+# SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+# SPDX-License-Identifier: MIT
+# This file is licensed under the terms of the LICENSE.md file.
 #
 # Run all the build and test scripts for all targets. If bin/hxtest fails then
 # the tests will stop at that point and it will be available to debug. Any

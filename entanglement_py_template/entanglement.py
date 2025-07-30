@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+# SPDX-License-Identifier: MIT
+# This file is licensed under the terms of the LICENSE.md file.
+
 """
 entanglement.py: Automatic Binding Generator for C++ Projects
 
@@ -8,8 +12,7 @@ Usage:
 		compiler_flags  - Flags to pass to clang. Can be in any order on command line.
 		lib_name		- C/C++ library/.so name to bind everything to.
 		header_files... - Path(s) to the C++ header file(s) to parse.
-		output_file	 - Path to write the generated Python binding code.
-"""
+		output_file	 - Path to write the generated Python binding code. """
 
 import enum, keyword, sys
 from clang.cindex import AccessSpecifier, Config, Cursor, CursorKind, Diagnostic
@@ -31,72 +34,72 @@ _arg_header_files: List[str] = []
 _arg_output_file: str = ''
 
 _clang_to_ctypes: Dict[TypeKind, str] = {
-	TypeKind.BOOL:	  '_Ctypes.c_bool',	   # type: ignore # bool
-	TypeKind.CHAR_S:	'_Ctypes.c_char',	   # type: ignore # char
-	TypeKind.CHAR_U:	'_Ctypes.c_ubyte',	  # type: ignore # unsigned char
-	TypeKind.DOUBLE:	'_Ctypes.c_double',	 # type: ignore # double
-	TypeKind.FLOAT:	 '_Ctypes.c_float',	  # type: ignore # float
-	TypeKind.INT:	   '_Ctypes.c_int',		# type: ignore # int
-	TypeKind.LONG:	  '_Ctypes.c_long',	   # type: ignore # long
-	TypeKind.LONGDOUBLE:'_Ctypes.c_longdouble', # type: ignore # long double
-	TypeKind.LONGLONG:  '_Ctypes.c_longlong',   # type: ignore # long long
-	TypeKind.SCHAR:	 '_Ctypes.c_byte',	   # type: ignore # signed char
-	TypeKind.SHORT:	 '_Ctypes.c_short',	  # type: ignore # short
-	TypeKind.UCHAR:	 '_Ctypes.c_ubyte',	  # type: ignore # unsigned char
-	TypeKind.UINT:	  '_Ctypes.c_uint',	   # type: ignore # unsigned int
-	TypeKind.ULONG:	 '_Ctypes.c_ulong',	  # type: ignore # unsigned long
-	TypeKind.ULONGLONG: '_Ctypes.c_ulonglong',  # type: ignore # unsigned long long
-	TypeKind.USHORT:	'_Ctypes.c_ushort',	 # type: ignore # unsigned short
-	TypeKind.VOID:	  'None',				 # type: ignore # void
-	TypeKind.WCHAR:	 '_Ctypes.c_wchar',	  # type: ignore # wchar_t
+	TypeKind.BOOL:      	'_Ctypes.c_bool',       # type: ignore # bool
+	TypeKind.CHAR_S:		'_Ctypes.c_char',       # type: ignore # char
+	TypeKind.CHAR_U:		'_Ctypes.c_ubyte',      # type: ignore # unsigned char
+	TypeKind.DOUBLE:		'_Ctypes.c_double',     # type: ignore # double
+	TypeKind.FLOAT:     	'_Ctypes.c_float',      # type: ignore # float
+	TypeKind.INT:       	'_Ctypes.c_int',		# type: ignore # int
+	TypeKind.LONG:      	'_Ctypes.c_long',       # type: ignore # long
+	TypeKind.LONGDOUBLE:	'_Ctypes.c_longdouble', # type: ignore # long double
+	TypeKind.LONGLONG:  	'_Ctypes.c_longlong',   # type: ignore # long long
+	TypeKind.SCHAR:     	'_Ctypes.c_byte',       # type: ignore # signed char
+	TypeKind.SHORT:     	'_Ctypes.c_short',      # type: ignore # short
+	TypeKind.UCHAR:     	'_Ctypes.c_ubyte',      # type: ignore # unsigned char
+	TypeKind.UINT:      	'_Ctypes.c_uint',       # type: ignore # unsigned int
+	TypeKind.ULONG:     	'_Ctypes.c_ulong',      # type: ignore # unsigned long
+	TypeKind.ULONGLONG: 	'_Ctypes.c_ulonglong',  # type: ignore # unsigned long long
+	TypeKind.USHORT:    	'_Ctypes.c_ushort',     # type: ignore # unsigned short
+	TypeKind.VOID:      	'None',                 # type: ignore # void
+	TypeKind.WCHAR:     	'_Ctypes.c_wchar',      # type: ignore # wchar_t
 }
 
 # ctypes has special type names for void*, char* wchar_t*.
 _clang_to_ctypes_ptr: Dict[TypeKind, str] = {
-	TypeKind.VOID:	  '_Ctypes.c_void_p',	 # type: ignore # void*
-	TypeKind.CHAR_S:	'_Ctypes.c_char_p',	 # type: ignore # char*
-	TypeKind.WCHAR:	 '_Ctypes.c_wchar_p',	# type: ignore # wchar_t*
+	TypeKind.VOID: 		'_Ctypes.c_void_p',		# type: ignore # void*
+	TypeKind.CHAR_S:	'_Ctypes.c_char_p',		# type: ignore # char*
+	TypeKind.WCHAR:		'_Ctypes.c_wchar_p',	# type: ignore # wchar_t*
 }
 
 # ctypes has special type conversions for void*, char* wchar_t* when they are
 # returned from a function. void* are returned as ints that have to be cast to
 # the right kind of pointer.
 _clang_to_ctypes_ptr_return: Dict[TypeKind, str] = {
-	TypeKind.VOID:	  'int',   # type: ignore # void*
-	TypeKind.CHAR_S:	'bytes', # type: ignore # char*
-	TypeKind.WCHAR:	 'str',   # type: ignore # wchar_t*
+	TypeKind.VOID:		'int',		# type: ignore # void*
+	TypeKind.CHAR_S:	'bytes',	# type: ignore # char*
+	TypeKind.WCHAR:		'str',		# type: ignore # wchar_t*
 }
 
 _clang_to_python: Dict[TypeKind, str] = {
-	TypeKind.BOOL:	   'bool',  # type: ignore
-	TypeKind.CHAR_S:	 'int',   # type: ignore
-	TypeKind.CHAR_U:	 'int',   # type: ignore
-	TypeKind.DOUBLE:	 'float', # type: ignore
-	TypeKind.FLOAT:	  'float', # type: ignore
-	TypeKind.INT:		'int',   # type: ignore
-	TypeKind.LONG:	   'int',   # type: ignore
-	TypeKind.LONGDOUBLE: 'float', # type: ignore
-	TypeKind.LONGLONG:   'int',   # type: ignore
-	TypeKind.SCHAR:	  'int',   # type: ignore
-	TypeKind.SHORT:	  'int',   # type: ignore
-	TypeKind.UCHAR:	  'int',   # type: ignore
-	TypeKind.UINT:	   'int',   # type: ignore
-	TypeKind.ULONG:	  'int',   # type: ignore
-	TypeKind.ULONGLONG:  'int',   # type: ignore
-	TypeKind.USHORT:	 'int',   # type: ignore
-	TypeKind.VOID:	   'None',  # type: ignore
-	TypeKind.WCHAR:	  'int',   # type: ignore
+	TypeKind.BOOL:			'bool',  # type: ignore
+	TypeKind.CHAR_S:		'int',   # type: ignore
+	TypeKind.CHAR_U:		'int',   # type: ignore
+	TypeKind.DOUBLE:		'float', # type: ignore
+	TypeKind.FLOAT:			'float', # type: ignore
+	TypeKind.INT:			'int',   # type: ignore
+	TypeKind.LONG:			'int',   # type: ignore
+	TypeKind.LONGDOUBLE:	'float', # type: ignore
+	TypeKind.LONGLONG:		'int',   # type: ignore
+	TypeKind.SCHAR:			'int',   # type: ignore
+	TypeKind.SHORT:			'int',   # type: ignore
+	TypeKind.UCHAR:			'int',   # type: ignore
+	TypeKind.UINT:			'int',   # type: ignore
+	TypeKind.ULONG:			'int',   # type: ignore
+	TypeKind.ULONGLONG:		'int',   # type: ignore
+	TypeKind.USHORT:		'int',   # type: ignore
+	TypeKind.VOID:			'None',  # type: ignore
+	TypeKind.WCHAR:			'int',   # type: ignore
 }
 
 # The order symbols are sorted within a particular namespace.
 _sort_order = [
-	CursorKind.ENUM_DECL, # type: ignore
+	CursorKind.ENUM_DECL,     # type: ignore
 	CursorKind.FUNCTION_DECL, # type: ignore
-	CursorKind.STRUCT_DECL, # type: ignore
-	CursorKind.CLASS_DECL, # type: ignore
-	CursorKind.CONSTRUCTOR, # type: ignore
-	CursorKind.DESTRUCTOR, # type: ignore
-	CursorKind.CXX_METHOD # type: ignore
+	CursorKind.STRUCT_DECL,   # type: ignore
+	CursorKind.CLASS_DECL,    # type: ignore
+	CursorKind.CONSTRUCTOR,   # type: ignore
+	CursorKind.DESTRUCTOR,    # type: ignore
+	CursorKind.CXX_METHOD     # type: ignore
 ]
 
 class type_string_kind(enum.Enum):

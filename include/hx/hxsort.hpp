@@ -1,11 +1,23 @@
 #pragma once
-// Copyright 2017-2025 Adrian Johnston
+// SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+// SPDX-License-Identifier: MIT
+// This file is licensed under the terms of the LICENSE.md file.
 //
 // hxsort.hpp - Sorting and searching utilities for hatchling platform. Provides
 // insertion sort, binary search, and a general purpose sort implementations for
-// pointers to arrays. Includes generic and specialized templates for sorting
-// with custom comparators. No exception safety is guaranteed; use noexcept
-// types or disable exceptions.
+// pointers to arrays. Includes support for template partial specialization or
+// functors when sorting with custom comparators. No exception safety is
+// guaranteed; use noexcept types or disable exceptions.
+//
+// If sorting is important to your application then the "cpp-sort" project is
+// recommended as a way to study your data and identify the best algorithms for
+// you: https://github.com/Morwenn/cpp-sort.
+//
+// That said, if you don't want to include 10,000 lines of template
+// meta-programming just to sort one array of pointers in a timely manner and
+// you need a specific algorithm that isn't here then take a look at
+// hxintro_sort_ as an example of how to compose a new sorting function built
+// from these routines.
 
 #include <hx/detail/hxsort_detail.hpp>
 

@@ -1,4 +1,6 @@
-// Copyright 2017-2025 Adrian Johnston
+// SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+// SPDX-License-Identifier: MIT
+// This file is licensed under the terms of the LICENSE.md file.
 
 #include <hx/detail/hxtest_detail.hpp>
 
@@ -76,7 +78,7 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 	hxinsertion_sort(m_test_cases_, m_test_cases_ + m_num_test_cases_, hxtest_case_sort_);
 
 	m_pass_count_ = m_fail_count_ = 0;
-	hxlogconsole("[==========] Running tests %s\n", (m_test_suite_filter_ ? m_test_suite_filter_ : "all"));
+	hxlogconsole("[==========] Running tests: %s\n", (m_test_suite_filter_ ? m_test_suite_filter_ : "All"));
 	for (hxtest_case_interface_** it_ = m_test_cases_; it_ != (m_test_cases_ + m_num_test_cases_); ++it_) {
 		if (!m_test_suite_filter_ || ::strcmp(m_test_suite_filter_, (*it_)->suite_()) == 0) {
 			hxlogconsole("[ RUN      ] %s.%s\n", (*it_)->suite_(), (*it_)->case_());
