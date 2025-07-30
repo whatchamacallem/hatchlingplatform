@@ -21,7 +21,7 @@ import traceback
 #
 
 class HxArrayPrinter:
-    """Pretty printer for hxarray<T, capacity>."""
+    """Pretty printer for hxarray structure"""
 
     def __init__(self, val):
         self.val = val
@@ -34,17 +34,24 @@ class HxArrayPrinter:
             if m_data.is_optimized_out or m_end.is_optimized_out:
                 return "<optimized out>"
 
-            # There are two different underlying implementations and this logic
-            # works for both of them.
-            elem_type = self.val.type.template_argument(0)
-            if self.val.type.template_argument(1) != 0:
-                m_data = m_data.address
-
-            size = (m_end - m_data) / elem_type.sizeof
             if self.val.type.template_argument(1) == 0:
                 capacity = int(self.val['m_capacity_'])
             else:
                 capacity = self.val.type.template_argument(1)
+            if capacity == 0:
+                return "<unallocated>"
+
+            # There are two different underlying implementations and this logic
+            # works for both of them. This is Python, so we have int instead of
+            # uintptr_t to calculate addresses with.
+            if self.val.type.template_argument(1) != 0:
+                m_data = int(m_data.address)
+            else:
+                m_data = int(m_data)
+            m_end = int(m_end)
+
+            elem_type = self.val.type.template_argument(0)
+            size = int((m_end - m_data) / elem_type.sizeof)
 
             return "[{}] /{} <{}>".format(size, capacity, elem_type)
         except Exception as e:
@@ -52,6 +59,7 @@ class HxArrayPrinter:
 
 def build_pretty_printer():
     pp = gdb.printing.RegexpCollectionPrettyPrinter("hxarray_printer")
+    # Match both hxarray<T_, 0> and hxarray<T_, N> patterns
     pp.add_printer('hxarray', '^hxarray<.*,.*>$', HxArrayPrinter)
     return pp
 
