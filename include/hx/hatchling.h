@@ -9,7 +9,6 @@
 // Copyright 2017-2025 Adrian Johnston
 // https://github.com/whatchamacallem/HatchlingPlatform
 
-// This is also C99, not just C++98.
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -53,8 +52,10 @@ enum hxloglevel_t {
 /// numeric constant `0`. This header is C. Use `nullptr` if you prefer it.
 #define hxnull 0
 
-/// `hxstatic_assert` - Compile-time assertion for `HX_RELEASE` range.
-hxstatic_assert((HX_RELEASE) >= 0 && (HX_RELEASE) <= 3, "HX_RELEASE must be [0..3]");
+/// Compile-time assertion for `HX_RELEASE` [0..3] range.
+#if (HX_RELEASE) < 0 || (HX_RELEASE) >= 4
+#error "HX_RELEASE must be [0..3]"
+#endif
 
 /// `hxinit()` - Initializes the platform.
 #define hxinit() (void)(g_hxisinit || (hxinit_internal(), 0))
@@ -187,12 +188,8 @@ const char* hxbasename(const char* path_);
 #if HX_CPLUSPLUS
 } // extern "C"
 
-#if HX_CPLUSPLUS >= 201103L
-/// Converts a `T&` to a `T&&`. Provides C++98 polyfill.
-template<typename T_> hxconstexpr_fn T_&& hxmove(T_& x_) { return static_cast<T_&&>(x_); }
-#else
-template<typename T_> inline T_& hxmove(T_& x_) { return x_; }
-#endif
+/// Converts a `T&` to a `T&&`.
+template<typename T_> constexpr T_&& hxmove(T_& x_) { return static_cast<T_&&>(x_); }
 
 // More portable versions of min, max, abs and clamp using only operator<.
 
@@ -201,18 +198,18 @@ template<typename T_> inline T_& hxmove(T_& x_) { return x_; }
 /// - `x` : The first value.
 /// - `y` : The second value.
 template<typename T_>
-hxconstexpr_fn const T_& hxmin(const T_& x_, const T_& y_) { return ((x_) < (y_)) ? (x_) : (y_); }
+constexpr const T_& hxmin(const T_& x_, const T_& y_) { return ((x_) < (y_)) ? (x_) : (y_); }
 
 /// `hxmax` - Returns the maximum value of `x` and `y` using a `<` comparison.
 /// - `x` : The first value.
 /// - `y` : The second value.
 template<typename T_>
-hxconstexpr_fn const T_& hxmax(const T_& x_, const T_& y_) { return ((y_) < (x_)) ? (x_) : (y_); }
+constexpr const T_& hxmax(const T_& x_, const T_& y_) { return ((y_) < (x_)) ? (x_) : (y_); }
 
 /// `hxabs` - Returns the absolute value of `x` using a `<` comparison.
 /// - `x` : The value to compute the absolute value for.
 template<typename T_>
-hxconstexpr_fn const T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - (x_)) : (x_); }
+constexpr const T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - (x_)) : (x_); }
 
 /// `hxclamp` - Returns `x` clamped between the `minimum` and `maximum` using `<`
 /// comparisons.
@@ -220,7 +217,7 @@ hxconstexpr_fn const T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - (
 /// - `minimum` : The minimum allowable value.
 /// - `maximum` : The maximum allowable value.
 template<typename T_>
-hxconstexpr_fn const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& maximum_) {
+constexpr const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& maximum_) {
 	hxassertmsg(!(maximum_ < minimum_), "minimum <= maximum");
 	return (x_ < minimum_) ? minimum_ : ((maximum_ < x_) ? maximum_ : x_);
 }
@@ -228,21 +225,32 @@ hxconstexpr_fn const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& max
 /// `hxswap` - Exchanges the contents of `x` and `y` using a temporary. If `T`
 /// has `T::T(T&&)` or `T::operator=(T&&)` then those will be used.
 template<typename T_>
-hxconstexpr_fn void hxswap(T_& x_, T_& y_) {
+constexpr void hxswap(T_& x_, T_& y_) {
 	hxassertmsg(&x_ != &y_, "hxswap No swapping with self.");
 	T_ t_(hxmove<T_>(x_));
 	x_ = hxmove<T_>(y_);
 	y_ = hxmove<T_>(t_);
 }
 
-/// `hxswap` - Exchanges the contents of `x` and `y` using `memcpy` and a stack temporary.
-/// This is intended for internal use where it is known to be safe to do so.
+/// `hxswap_memcpy` - Exchanges the contents of `x` and `y` using `memcpy` and a stack
+/// temporary. This is intended for internal use where it is known to be safe to
+/// do so.
 template<typename T_>
-hxconstexpr_fn void hxswap_mcpy(T_& x_, T_& y_) {
-	char t_[sizeof x_ == sizeof y_ ? (int)sizeof x_ : -1];
+constexpr void hxswap_memcpy(T_& x_, T_& y_) {
+	char t_[sizeof x_];
 	::memcpy(t_, &y_, sizeof x_);
 	::memcpy(&y_, &x_, sizeof x_);
 	::memcpy(&x_, t_, sizeof x_);
+}
+
+/// Returns the power of 2 of the largest bit in `n`.
+inline int hxlog2i(size_t i_) {
+	// Use the floating point hardware because this isn't important enough for
+	// intrinsics.
+	float f_ = i_;
+    uint32_t bits_;
+    ::memcpy(&bits_, &f_, sizeof(float));
+    return ((bits_ >> 23) & 0xffu) - 127u;
 }
 
 #else // !HX_CPLUSPLUS

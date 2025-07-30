@@ -100,14 +100,14 @@ private:
 	inline T_* get_local_() { return &m_default_value_; }
 #endif
 
-	static void destroy_local_(void* ptr_) hxnoexcept {
+	static void destroy_local_(void* ptr_) noexcept {
 		if (ptr_) {
 			delete static_cast<T_*>(ptr_);
 		}
 	}
 
-	explicit hxthread_local(const hxthread_local&) hxdelete_fn;
-	hxthread_local& operator=(const hxthread_local&) hxdelete_fn;
+	explicit hxthread_local(const hxthread_local&) = delete;
+	hxthread_local& operator=(const hxthread_local&) = delete;
 
 #if HX_USE_THREADS
 	pthread_key_t m_key_;
@@ -159,9 +159,9 @@ public:
 
 private:
 	// Deleted copy constructor.
-	hxmutex(const hxmutex&) hxdelete_fn;
+	hxmutex(const hxmutex&) = delete;
 	// Deleted copy assignment operator.
-	hxmutex& operator=(const hxmutex&) hxdelete_fn;
+	hxmutex& operator=(const hxmutex&) = delete;
 
 	pthread_mutex_t m_mutex_;
 };
@@ -206,9 +206,9 @@ public:
 
 private:
 	// Deleted copy constructor.
-	hxunique_lock(const hxunique_lock&) hxdelete_fn;
+	hxunique_lock(const hxunique_lock&) = delete;
 	// Deleted copy assignment operator.
-	hxunique_lock& operator=(const hxunique_lock&) hxdelete_fn;
+	hxunique_lock& operator=(const hxunique_lock&) = delete;
 	hxmutex& m_mutex_;
 	bool m_owns_;
 };
@@ -274,9 +274,9 @@ public:
 
 private:
 	// Deleted copy constructor.
-	hxcondition_variable(const hxcondition_variable&) hxdelete_fn;
+	hxcondition_variable(const hxcondition_variable&) = delete;
 	// Deleted copy assignment operator.
-	hxcondition_variable& operator=(const hxcondition_variable&) hxdelete_fn;
+	hxcondition_variable& operator=(const hxcondition_variable&) = delete;
 
 	pthread_cond_t m_cond_;
 };
@@ -320,7 +320,7 @@ public:
 		// between types. Instead the bit pattern of the pointer is preserved
 		// while it is passed through the pthread api. This requires the pointers
 		// to use the same number of bytes.
-		hxstatic_assert(sizeof(void*) == sizeof(parameter_t_*), "Incompatible pointer types");
+		static_assert(sizeof(void*) == sizeof(parameter_t_*), "Incompatible pointer types");
 
 		void* reinterpreted_parameter_=hxnull;
 		::memcpy(&reinterpreted_parameter_, &parameter_, sizeof(void*));
@@ -349,10 +349,10 @@ private:
 	typedef void* (*entry_point_function_t_)(void*);
 
 	// Deleted copy constructor.
-	hxthread(const hxthread&) hxdelete_fn;
+	hxthread(const hxthread&) = delete;
 
 	// Deleted copy assignment operator.
-	hxthread& operator=(const hxthread&) hxdelete_fn;
+	hxthread& operator=(const hxthread&) = delete;
 
 	pthread_t m_thread_;
 	bool m_started_;

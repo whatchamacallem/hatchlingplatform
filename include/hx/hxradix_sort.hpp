@@ -13,7 +13,7 @@
 class hxradix_sort_base {
 public:
 	// See hxkey_value_pair(float key, void* val).
-	hxstatic_assert((int32_t)0x80000000u >> 31 == ~(int32_t)0,
+	static_assert((int32_t)0x80000000u >> 31 == ~(int32_t)0,
 		"2's compliment arithmetic right shift expected");
 
 	explicit hxradix_sort_base(size_t size_=0u) : m_array_() { m_array_.reserve(size_); }
@@ -67,8 +67,8 @@ protected:
 	hxarray<hxkey_value_pair> m_array_; /// Internal array of key-value pairs.
 
 private:
-	hxradix_sort_base(const hxradix_sort_base&) hxdelete_fn;
-	void operator=(const hxradix_sort_base&) hxdelete_fn;
+	hxradix_sort_base(const hxradix_sort_base&) = delete;
+	void operator=(const hxradix_sort_base&) = delete;
 };
 
 /// hxradix_sort. Sorts an array of value* by keys. K is the key and V the value.
@@ -199,6 +199,6 @@ public:
 	}
 
 private:
-	hxradix_sort(const hxradix_sort&) hxdelete_fn;
-	void operator=(const hxradix_sort&) hxdelete_fn;
+	hxradix_sort(const hxradix_sort&) = delete;
+	void operator=(const hxradix_sort&) = delete;
 };

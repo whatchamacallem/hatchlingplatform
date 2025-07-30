@@ -21,7 +21,7 @@ HX_REGISTER_FILENAME_HASH
 // you require C++ conforming accuracy without the overhead of error checking.
 // You need the math library -lm. Causing.. or explicit checking for... floating
 // point exceptions is not recommended.
-#if (HX_CPLUSPLUS >= 201103L) && defined __GLIBC__ && !defined __FAST_MATH__
+#if defined __GLIBC__ && !defined __FAST_MATH__
 #include <fenv.h>
 #if !defined HX_FLOATING_POINT_TRAPS
 #define HX_FLOATING_POINT_TRAPS 1
@@ -32,7 +32,7 @@ HX_REGISTER_FILENAME_HASH
 #endif
 
 // New rule. Use -ffast-math in release. Or set -DHX_FLOATING_POINT_TRAPS=0.
-hxstatic_assert((HX_RELEASE) == 0 || !(HX_FLOATING_POINT_TRAPS),
+static_assert((HX_RELEASE) == 0 || !(HX_FLOATING_POINT_TRAPS),
 	"Floating point exceptions enabled in release. use -ffast-math.");
 
 // There are exception handling semantics in use in case they are on. However
@@ -42,7 +42,7 @@ hxstatic_assert((HX_RELEASE) == 0 || !(HX_FLOATING_POINT_TRAPS),
 // The creation of hxthread.h classes cannot fail. By design there are no
 // exceptions to handle.
 #if (HX_RELEASE) >= 1 && defined __cpp_exceptions && !defined __INTELLISENSE__
-hxstatic_assert(0, "C++ exceptions should not be enabled.");
+static_assert(0, "C++ exceptions should not be enabled.");
 #endif
 
 // No reason for this to be visible.

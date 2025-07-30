@@ -4,6 +4,7 @@
 #include <hx/hxsort.hpp>
 #include <hx/hxrandom.hpp>
 #include <hx/hxtest.hpp>
+#include <hx/hxarray.hpp>
 #include <limits.h>
 #include <stdio.h>
 
@@ -52,31 +53,62 @@ void do_sort_int_case(const sort_callback_t_& sort_callback_) {
 }
 
 TEST(hxsort_test, sort_int_case) {
+	// Instantiate and pass the sort templates as functors.
 	do_sort_int_case(hxinsertion_sort<int, bool (*)(int, int)>);
 	do_sort_int_case(hxheapsort<int, bool (*)(int, int)>);
 	do_sort_int_case(hxsort<int, bool (*)(int, int)>);
 }
 
+TEST(hxbinary_search_test, simple_case) {
+	int ints[5] = { 2, 5, 6, 88, 99 };
+	int* result = hxbinary_search(ints+0, ints+5, 88, sort_int);
+	EXPECT_TRUE(result != hxnull && *result == 88);
+
+	const int* cresult = hxbinary_search((const int*)ints+0, (const int*)ints+5, 2, sort_int);
+	EXPECT_TRUE(cresult != hxnull && *cresult == 2);
+
+	cresult = hxbinary_search((const int*)ints+0, (const int*)ints+5, 99);
+	EXPECT_TRUE(cresult != hxnull && *cresult == 99);
+
+	result = hxbinary_search(ints+0, ints+5, 0);
+	EXPECT_TRUE(result == hxnull);
+
+	result = hxbinary_search(ints+0, ints+5, 100);
+	EXPECT_TRUE(result == hxnull);
+
+	result = hxbinary_search(ints+0, ints+5, 7);
+	EXPECT_TRUE(result == hxnull);
+}
+
+// The sort_api_t tests check for correct use of references to temporaries.
+// This is not being tested aggressively in C++98.
+
 class sort_api_t {
 public:
 	// This is not used by the sort code.
-    explicit sort_api_t(int value_) hxnoexcept : value(value_) { }
+    explicit sort_api_t(int value_) noexcept : value(value_) { }
 
 	// This is what is being used.
 
-    sort_api_t(sort_api_t&& other) hxnoexcept : value(hxmove(other.value)) {
+    sort_api_t(sort_api_t&& other) noexcept : value(other.value) {
+		// Callee may leave itself in an unusable state or crash.
 		hxassert(this != &other);
 	}
 
-	~sort_api_t() { }
+	~sort_api_t() {
+		value = 0xafafafaf;
+	}
 
-    sort_api_t& operator=(sort_api_t&& other) hxnoexcept {
+    sort_api_t& operator=(sort_api_t&& other) noexcept {
+		// Callee may leave itself in an unusable state or crash.
 		hxassert(this != &other);
-		value = hxmove(other.value);
+		value = other.value;
         return *this;
     }
 
-    bool operator<(const sort_api_t& other) const hxnoexcept {
+	// Called by hxkey_less below.
+    bool operator<(const sort_api_t& other) const noexcept {
+		// Technically legal but indicates an optimization issue.
 		hxassert(this != &other);
         return value < other.value;
     }
@@ -84,40 +116,40 @@ public:
     int value;
 
 private:
-    // Keep track of what isn't being used.
+	// This is what is not being used.
 
-	sort_api_t() hxdelete_fn;
-    sort_api_t(const sort_api_t& other) hxdelete_fn;
-    sort_api_t& operator=(const sort_api_t& other) hxdelete_fn;
-    bool operator==(const sort_api_t& other) const hxdelete_fn;
-    bool operator!=(const sort_api_t& other) const hxdelete_fn;
-    bool operator>(const sort_api_t& other) const hxdelete_fn;
-    bool operator>=(const sort_api_t& other) const hxdelete_fn;
-    bool operator<=(const sort_api_t& other) const hxdelete_fn;
-    sort_api_t operator+(const sort_api_t& other) const hxdelete_fn;
-    sort_api_t operator-(const sort_api_t& other) const hxdelete_fn;
-    sort_api_t operator*(const sort_api_t& other) const hxdelete_fn;
-    sort_api_t operator/(const sort_api_t& other) const hxdelete_fn;
-    sort_api_t operator%(const sort_api_t& other) const hxdelete_fn;
-    sort_api_t& operator+=(const sort_api_t& other) hxdelete_fn;
-    sort_api_t& operator-=(const sort_api_t& other) hxdelete_fn;
-    sort_api_t& operator*=(const sort_api_t& other) hxdelete_fn;
-    sort_api_t& operator/=(const sort_api_t& other) hxdelete_fn;
-    sort_api_t& operator%=(const sort_api_t& other) hxdelete_fn;
-	bool operator&(const sort_api_t& other) const hxdelete_fn;
-	bool operator|(const sort_api_t& other) const hxdelete_fn;
-	bool operator^(const sort_api_t& other) const hxdelete_fn;
-	sort_api_t operator~(void) const hxdelete_fn;
-	sort_api_t operator<<(const sort_api_t& other) const hxdelete_fn;
-	sort_api_t operator>>(const sort_api_t& other) const hxdelete_fn;
-	sort_api_t& operator&=(const sort_api_t& other) hxdelete_fn;
-	sort_api_t& operator|=(const sort_api_t& other) hxdelete_fn;
-	sort_api_t& operator^=(const sort_api_t& other) hxdelete_fn;
-	sort_api_t& operator<<=(const sort_api_t& other) hxdelete_fn;
-	sort_api_t& operator>>=(const sort_api_t& other) hxdelete_fn;
-	bool operator&&(const sort_api_t& other) const hxdelete_fn;
-	bool operator||(const sort_api_t& other) const hxdelete_fn;
-	bool operator!(void) const hxdelete_fn;
+	sort_api_t() = delete;
+    sort_api_t(const sort_api_t& other) = delete;
+    sort_api_t& operator=(const sort_api_t& other) = delete;
+    bool operator==(const sort_api_t& other) const = delete;
+    bool operator!=(const sort_api_t& other) const = delete;
+    bool operator>(const sort_api_t& other) const = delete;
+    bool operator>=(const sort_api_t& other) const = delete;
+    bool operator<=(const sort_api_t& other) const = delete;
+    sort_api_t operator+(const sort_api_t& other) const = delete;
+    sort_api_t operator-(const sort_api_t& other) const = delete;
+    sort_api_t operator*(const sort_api_t& other) const = delete;
+    sort_api_t operator/(const sort_api_t& other) const = delete;
+    sort_api_t operator%(const sort_api_t& other) const = delete;
+    sort_api_t& operator+=(const sort_api_t& other) = delete;
+    sort_api_t& operator-=(const sort_api_t& other) = delete;
+    sort_api_t& operator*=(const sort_api_t& other) = delete;
+    sort_api_t& operator/=(const sort_api_t& other) = delete;
+    sort_api_t& operator%=(const sort_api_t& other) = delete;
+	bool operator&(const sort_api_t& other) const = delete;
+	bool operator|(const sort_api_t& other) const = delete;
+	bool operator^(const sort_api_t& other) const = delete;
+	sort_api_t operator~(void) const = delete;
+	sort_api_t operator<<(const sort_api_t& other) const = delete;
+	sort_api_t operator>>(const sort_api_t& other) const = delete;
+	sort_api_t& operator&=(const sort_api_t& other) = delete;
+	sort_api_t& operator|=(const sort_api_t& other) = delete;
+	sort_api_t& operator^=(const sort_api_t& other) = delete;
+	sort_api_t& operator<<=(const sort_api_t& other) = delete;
+	sort_api_t& operator>>=(const sort_api_t& other) = delete;
+	bool operator&&(const sort_api_t& other) const = delete;
+	bool operator||(const sort_api_t& other) const = delete;
+	bool operator!(void) const = delete;
 };
 
 TEST(hxsort_test, sort_grinder) {
@@ -137,8 +169,8 @@ TEST(hxsort_test, sort_grinder) {
 			generic_sorted.push_back(sort_api_t(0));
 		}
 
-		::memcpy(heap_sorted.data(), insertion_sorted.data(), insertion_sorted.size_bytes());
-		::memcpy(generic_sorted.data(), insertion_sorted.data(), insertion_sorted.size_bytes());
+		::memcpy((void*)heap_sorted.data(), insertion_sorted.data(), insertion_sorted.size_bytes());
+		::memcpy((void*)generic_sorted.data(), insertion_sorted.data(), insertion_sorted.size_bytes());
 
 		hxinsertion_sort(insertion_sorted.begin(), insertion_sorted.end());
 		hxheapsort(heap_sorted.begin(), heap_sorted.end());
@@ -188,27 +220,6 @@ TEST(hxsort_test, sort_grinder_generic) {
 		}
 		sorted.clear();
 	}
-}
-
-TEST(hxbinary_search_test, simple_case) {
-	int ints[5] = { 2, 5, 6, 88, 99 };
-	int* result = hxbinary_search(ints+0, ints+5, 88, sort_int);
-	EXPECT_TRUE(result != hxnull && *result == 88);
-
-	const int* cresult = hxbinary_search((const int*)ints+0, (const int*)ints+5, 2, sort_int);
-	EXPECT_TRUE(cresult != hxnull && *cresult == 2);
-
-	cresult = hxbinary_search((const int*)ints+0, (const int*)ints+5, 99);
-	EXPECT_TRUE(cresult != hxnull && *cresult == 99);
-
-	result = hxbinary_search(ints+0, ints+5, 0);
-	EXPECT_TRUE(result == hxnull);
-
-	result = hxbinary_search(ints+0, ints+5, 100);
-	EXPECT_TRUE(result == hxnull);
-
-	result = hxbinary_search(ints+0, ints+5, 7);
-	EXPECT_TRUE(result == hxnull);
 }
 
 TEST(hxbinary_search_test, binary_search_grinder) {

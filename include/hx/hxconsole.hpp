@@ -32,7 +32,7 @@ public:
 
 private:
 	// ERROR - Numbers are not pointers or references.
-	template<typename T_> operator T_*() const hxdelete_fn;
+	template<typename T_> operator T_*() const = delete;
 
 	double m_x_;
 };
@@ -53,7 +53,7 @@ public:
 	template<typename T_> operator T_() const;
 
 private:
-	hxstatic_assert(sizeof(uint64_t) >= sizeof(uintptr_t), "128-bit pointers?");
+	static_assert(sizeof(uint64_t) >= sizeof(uintptr_t), "128-bit pointers?");
 	uint64_t m_x_;
 };
 

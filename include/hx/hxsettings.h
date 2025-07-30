@@ -55,13 +55,7 @@
 #define hxnoreturn
 
 /// Unlike noexcept this is undefined when violated.
-#if HX_CPLUSPLUS >= 201103L
 #define hxnoexcept_intrinsic __declspec(nothrow) /// `hxnoexcept_intrinsic` - `_MSC_VER's` `nothrow` attribute.
-#define hxnoexcept noexcept /// `hxnoexcept` - Use `noexcept` for C++11+.
-#else
-#define hxnoexcept_intrinsic /// `hxnoexcept_intrinsic` - No-op for pre-C++11.
-#define hxnoexcept /// `hxnoexcept` - No-op for pre-C++11.
-#endif
 
 // ----------------------------------------------------------------------------
 #else // target settings (clang and gcc.)
@@ -99,16 +93,9 @@
 #define hxbreakpoint() (raise(SIGTRAP),false) /// `hxbreakpoint` - Use SIGTRAP if debugtrap is not available.
 #endif
 
-#if HX_CPLUSPLUS >= 201103L
 /// `hxnoexcept_intrinsic` - Use gcc/clang `nothrow` attribute. Unlike `noexcept` this
 /// is undefined when violated.
 #define hxnoexcept_intrinsic __attribute__((nothrow))
-/// `hxnoexcept` - Uses noexcept when available.
-#define hxnoexcept noexcept
-#else
-#define hxnoexcept_intrinsic
-#define hxnoexcept
-#endif
 
 #endif // target settings
 
@@ -125,28 +112,6 @@
 /// number to `x`.
 /// - `x` : A C identifier to be made unique.
 #define HX_APPEND_COUNTER_(x_) HX_APPEND_COUNTER1_(x_, __COUNTER__)
-
-#if HX_CPLUSPLUS >= 201103L
-/// `hxstatic_assert` - Use static_assert when available, polyfill otherwise.
-#define hxstatic_assert(x_,...) static_assert((bool)(x_), __VA_ARGS__)
-/// `hxoverride` - Use override when available.
-#define hxoverride override
- /// `hxdelete_fn` - Use delete when available.
-#define hxdelete_fn = delete
-#else // !HX_CPLUSPLUS
-/// `hxstatic_assert` - Fallback static assert for pre-C++11.
-#define hxstatic_assert(x_,...) typedef int HX_APPEND_COUNTER_(hxstatic_assert_fail_) [(bool)(x_) ? 1 : -1]
-#define hxoverride
-#define hxdelete_fn
-#endif
-
-#if HX_CPLUSPLUS >= 201402L
-/// `hxconstexpr_fn` - When available, indicates that a function is intended to
-/// be a C++14 `constexpr` function. Falls back to `inline` otherwise.
-#define hxconstexpr_fn constexpr
-#else
-#define hxconstexpr_fn inline
-#endif
 
 #if !defined HX_MAX_LINE
 /// `HX_MAX_LINE` - Set to 500 if not defined. Maximum length for formatted messages

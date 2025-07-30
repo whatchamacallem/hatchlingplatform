@@ -1,11 +1,10 @@
 #pragma once
 // Copyright 2017-2025 Adrian Johnston
 
-#include <hx/hatchling.h>
 #include <hx/hxfile.hpp>
 #include <hx/hxsort.hpp>
 
-hxstatic_assert(!HX_USE_GOOGLE_TEST, "Do not this file include directly");
+static_assert(!HX_USE_GOOGLE_TEST, "Do not this file include directly");
 
 namespace hxdetail_ {
 
@@ -59,8 +58,8 @@ private:
 	hxfile& file_null_(void);
 	hxfile& file_log_(void);
 
-	hxtest_(const hxtest_&) hxdelete_fn;
-	void operator=(const hxtest_&) hxdelete_fn;
+	hxtest_(const hxtest_&) = delete;
+	void operator=(const hxtest_&) = delete;
 
 	const char* m_test_suite_filter_;
 	hxtest_case_interface_* m_test_cases_[HX_TEST_MAX_CASES];

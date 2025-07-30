@@ -27,8 +27,8 @@ public:
 	void wait_for_all(void);
 
 private:
-	hxtask_queue(const hxtask_queue&) hxdelete_fn;
-	void operator=(const hxtask_queue&) hxdelete_fn;
+	hxtask_queue(const hxtask_queue&) = delete;
+	void operator=(const hxtask_queue&) = delete;
 
 	friend class hxtask_wait_for_tasks_;
 	friend class hxtask_wait_for_completion_;

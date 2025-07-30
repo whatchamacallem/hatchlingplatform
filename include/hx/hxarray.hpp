@@ -4,7 +4,7 @@
 #include <hx/hxallocator.hpp>
 #include <hx/hxkey.hpp>
 
-#if HX_CPLUSPLUS >= 201103L && HX_HOSTED
+#if HX_HOSTED
 #include <initializer_list>
 #endif
 
@@ -21,12 +21,12 @@ public:
 
 	/// Constructs an empty array with a capacity of Capacity. m_end_ will be 0
 	/// if Capacity is 0.
-	hxconstexpr_fn explicit hxarray(void)
+	constexpr explicit hxarray(void)
 		: hxallocator<T_, capacity_>(), m_end_(this->data()) { }
 
 	/// Constructs an array of a given size using T_'s default constructor.
 	/// - `size` : Sets array size as if resize(size) were called.
-	hxconstexpr_fn explicit hxarray(size_t size_)
+	constexpr explicit hxarray(size_t size_)
 			: hxallocator<T_, capacity_>(), m_end_(this->data()) {
 		this->resize(size_);
 	}
@@ -34,36 +34,34 @@ public:
 	/// Constructs an array of a given size by making copies of t.
 	/// - `size` : Sets array size as if resize(size, t) were called.
 	/// - `t` : The const T& to be duplicated.
-	hxconstexpr_fn explicit hxarray(size_t size_, const T_& t_)
+	constexpr explicit hxarray(size_t size_, const T_& t_)
 			: hxallocator<T_, capacity_>(), m_end_(this->data()) {
 		this->resize(size_, t_);
 	}
 
 	/// Copy constructs an array. Non-explicit to allow assignment constructor.
 	/// - `x` : A non-temporary Array<T>.
-	hxconstexpr_fn hxarray(const hxarray& x_) : hxallocator<T_, capacity_>() {
+	constexpr hxarray(const hxarray& x_) : hxallocator<T_, capacity_>() {
 		m_end_ = this->data();
 		this->assign(x_.cbegin(), x_.cend());
 	}
 
-#if HX_CPLUSPLUS >= 201103L
 	/// Copy construct from temporary using `swap`. Only works with
 	/// `hxallocator_dynamic_capacity`. Dynamically allocated arrays are swapped
 	/// with very little overhead.
 	/// - `x` : A temporary Array<T>.
-	hxconstexpr_fn hxarray(hxarray&& x_) : hxarray() {
+	constexpr hxarray(hxarray&& x_) : hxarray() {
 		this->swap(x_);
 	}
-#endif
 
-#if HX_CPLUSPLUS >= 201103L && HX_HOSTED
+#if HX_HOSTED
 	/// Pass values of std::initializer_list as initializers to an array of T.
 	/// WARNING: This constructor will override the other constructors when
 	/// uniform initialization is used.  E.g. hxarry<int>x{1,2} is an array
 	/// containing {1,2} and hxarry<int>x(1,2) is the array containing {2}.
 	/// - `x` : A std::initializer_list<x_t>.
 	template <typename x_t_>
-	hxconstexpr_fn hxarray(std::initializer_list<x_t_> list_) : hxarray() {
+	constexpr hxarray(std::initializer_list<x_t_> list_) : hxarray() {
 		this->assign(list_.begin(), list_.end());
 	}
 #endif
@@ -72,21 +70,19 @@ public:
 	/// access iterators. (Non-standard.)
 	/// - `x` : Any container implementing begin and end.
 	template <typename x_t_>
-	hxconstexpr_fn hxarray(const x_t_& x_) : hxallocator<T_, capacity_>() {
+	constexpr hxarray(const x_t_& x_) : hxallocator<T_, capacity_>() {
 		m_end_ = this->data();
 		this->assign(x_.begin(), x_.end());
 	}
 
-#if HX_CPLUSPLUS >= 201103L
 	/// Moves the elements from an array of a container with random access
 	/// iterators. Less efficient than `hxarray(hxarray&&)` (Non-standard.)
 	/// - `x` : Any container implementing begin and end.
 	template <typename x_t_>
-	hxconstexpr_fn hxarray(x_t_&& x_) : hxallocator<T_, capacity_>() {
+	constexpr hxarray(x_t_&& x_) : hxallocator<T_, capacity_>() {
 		m_end_ = this->data();
 		this->move(x_.begin(), x_.end());
 	}
-#endif
 
 	/// Destructs the array and destroys all elements.
 #if HX_CPLUSPLUS >= 202002L
@@ -99,82 +95,76 @@ public:
 	/// Appends an element.  (Non-standard.)
 	/// Vector math is not a goal so this should not end up overloaded.
 	/// - `x` : An object to append. Not a temporary.
-	hxconstexpr_fn void operator+=(const T_& x_) {
+	constexpr void operator+=(const T_& x_) {
 		::new(this->emplace_back_unconstructed()) T_(x_);
 	}
-#if HX_CPLUSPLUS >= 201103L
-	hxconstexpr_fn void operator+=(T_&& x_) {
+
+	constexpr void operator+=(T_&& x_) {
 		::new(this->emplace_back_unconstructed()) T_(hxmove(x_));
 	}
-#endif
 
 	/// Appends the contents of another array.  (Non-standard, from Python.)
 	/// Vector math is not a goal so this should not end up overloaded.
 	/// - `x` : Another array. Not a temporary.
-	hxconstexpr_fn void operator+=(const hxarray& x_) {
+	constexpr void operator+=(const hxarray& x_) {
 		for(const T_ *it_ = x_.begin(), *end_ = x_.end(); it_ != end_; ++it_) {
 			::new(this->emplace_back_unconstructed()) T_(*it_);
 		}
 	}
-#if HX_CPLUSPLUS >= 201103L
-	hxconstexpr_fn void operator+=(hxarray&& x_) {
+
+	constexpr void operator+=(hxarray&& x_) {
 		for(const T_ *it_ = x_.begin(), *end_ = x_.end(); it_ != end_; ++it_) {
 			::new(this->emplace_back_unconstructed()) T_(hxmove(*it_));
 		}
 	}
-#endif
 
 	/// Assigns the contents of another hxarray to this array.
 	/// Standard except reallocation is disallowed.
 	/// - `x` : A non-temporary Array<T>.
-	hxconstexpr_fn void operator=(const hxarray& x_) {
+	constexpr void operator=(const hxarray& x_) {
 		this->assign(x_.begin(), x_.end());
 	}
 
-#if HX_CPLUSPLUS >= 201103L
 	/// Swap contents with a temporary array using `swap`. Only works with
 	/// `hxallocator_dynamic_capacity`. Dynamically allocated arrays are swapped
 	/// with very little overhead.
 	/// - `x` : A temporary Array<T>.
-	hxconstexpr_fn void operator=(hxarray&& x_) {
+	constexpr void operator=(hxarray&& x_) {
 		this->swap(x_);
 	}
-#endif
 
 	/// Copies the elements of a container with random access iterators.
 	/// - `x` : Any container implementing begin and end.
 	template <typename x_t_>
-	hxconstexpr_fn void operator=(const x_t_& x_) {
+	constexpr void operator=(const x_t_& x_) {
 		this->assign(x_.begin(), x_.end());
 	}
 
-#if HX_CPLUSPLUS >= 201103L
 	/// Moves the elements from an array of a container with random access
 	/// iterators. Less efficient than `hxarray::operator=(hxarray&&)`
 	/// (Non-standard.)
 	/// - `x` : Any container implementing begin and end.
 	template <typename x_t_>
-	hxconstexpr_fn void operator=(x_t_&& x_) {
+	constexpr void operator=(x_t_&& x_) {
 		this->move(x_.begin(), x_.end());
 	}
-#endif
 
 	/// Returns a const reference to the element at the specified index.
 	/// - `index` : The index of the element.
-	hxconstexpr_fn const T_& operator[](size_t index_) const {
+	constexpr const T_& operator[](size_t index_) const {
 		hxassertmsg(index_ < this->size(), "invalid_index");
 		return this->data()[index_];
 	}
 
 	/// Returns a reference to the element at the specified index.
 	/// - `index` : The index of the element.
-	hxconstexpr_fn T_& operator[](size_t index_) {
+	constexpr T_& operator[](size_t index_) {
 		hxassertmsg(index_ < this->size(), "invalid_index");
 		return this->data()[index_];
 	}
 
 	/// Check if array is empty by casting it to bool. (Non-standard, from Python.)
-	hxconstexpr_fn operator bool(void) const {
+	constexpr operator bool(void) const {
 		return !this->empty();
 	}
 
@@ -182,7 +172,7 @@ public:
 	/// - `a` : The array.
 	/// - `Sz` : Its size.
 	template<typename U_, size_t size_>
-	hxconstexpr_fn void assign(const U_(&a_)[size_]) {
+	constexpr void assign(const U_(&a_)[size_]) {
 		this->assign(a_ + 0, a_ + size_);
 	}
 
@@ -190,7 +180,7 @@ public:
 	/// - `begin` : The beginning iterator.
 	/// - `end` : The end iterator.
 	template <typename iter_t_>
-	hxconstexpr_fn void assign(iter_t_ begin_, iter_t_ end_) {
+	constexpr void assign(iter_t_ begin_, iter_t_ end_) {
 		this->reserve((size_t)(end_ - begin_));
 		T_* it_ = this->data();
 		this->destruct_(it_, m_end_);
@@ -201,44 +191,44 @@ public:
 	}
 
 	/// Returns a const reference to the end element in the array.
-	hxconstexpr_fn const T_& back(void) const {
+	constexpr const T_& back(void) const {
 		hxassertmsg(!this->empty(), "invalid_reference");
 		return m_end_[-1];
 	}
 
 	/// Returns a reference to the end element in the array.
-	hxconstexpr_fn T_& back(void) {
+	constexpr T_& back(void) {
 		hxassertmsg(!this->empty(), "invalid_reference");
 		return m_end_[-1];
 	}
 
 	/// Returns a const_iterator to the beginning of the array.
-	hxconstexpr_fn const T_* begin(void) const { return this->data(); }
+	constexpr const T_* begin(void) const { return this->data(); }
 
 	/// Returns an iterator to the beginning of the array.
-	hxconstexpr_fn T_* begin(void) { return this->data(); }
+	constexpr T_* begin(void) { return this->data(); }
 
 	/// Returns a const_iterator to the beginning of the array (alias for begin()).
-	hxconstexpr_fn const T_* cbegin(void) const { return this->data(); }
+	constexpr const T_* cbegin(void) const { return this->data(); }
 
 	/// Returns a const_iterator to the beginning of the array (alias for begin()).
-	hxconstexpr_fn const T_* cbegin(void) { return this->data(); }
+	constexpr const T_* cbegin(void) { return this->data(); }
 
 	/// Returns a const_iterator to the end of the array.
-	hxconstexpr_fn const T_* cend(void) const { return m_end_; }
+	constexpr const T_* cend(void) const { return m_end_; }
 
 	/// Returns a const_iterator to the end of the array (alias for end()).
-	hxconstexpr_fn const T_* cend(void) { return m_end_; }
+	constexpr const T_* cend(void) { return m_end_; }
 
 	/// Clears the array, destroying all elements.
-	hxconstexpr_fn void clear(void) {
+	constexpr void clear(void) {
 		this->destruct_(this->data(), m_end_);
 		m_end_ = this->data();
 	}
 
 	/// Variant of emplace_back() that returns a pointer for use with placement new.
 	/// (Non-standard.)
-	hxconstexpr_fn void* emplace_back_unconstructed(void) {
+	constexpr void* emplace_back_unconstructed(void) {
 		hxassertmsg(!this->full(), "stack_overflow");
 		return (void*)m_end_++;
 	}
@@ -248,7 +238,7 @@ public:
 	/// - `x` : The other array.
 	/// - `equal` : A key comparison functor definining an equivalence relationship.
 	template<typename equal_t_>
-	hxconstexpr_fn bool equal(const hxarray& x_, const equal_t_& equal_) const {
+	constexpr bool equal(const hxarray& x_, const equal_t_& equal_) const {
 		if(this->size() != x_.size()) {
 			return false;
 		}
@@ -263,24 +253,24 @@ public:
 
 	/// Returns true if the arrays compare equivalent using hxkey_equal.
 	/// - `x` : The other array.
-	hxconstexpr_fn bool equal(const hxarray& x_) const {
+	constexpr bool equal(const hxarray& x_) const {
 		return x_.equal(x_, hxkey_equal_function<T_>());
 	}
 
 	/// Returns true if the array is empty.
-	hxconstexpr_fn bool empty(void) const {
+	constexpr bool empty(void) const {
 		return m_end_ == this->data();
 	}
 
 	/// Returns a const_iterator to the end of the array.
-	hxconstexpr_fn const T_* end(void) const { return m_end_; }
+	constexpr const T_* end(void) const { return m_end_; }
 
 	/// Returns an iterator to the end of the array.
-	hxconstexpr_fn T_* end(void) { return m_end_; }
+	constexpr T_* end(void) { return m_end_; }
 
 	/// Erases the element indicated.
 	/// - `pos` : Pointer to the element to erase.
-	hxconstexpr_fn void erase(T_* pos_) {
+	constexpr void erase(T_* pos_) {
 		hxassertmsg(pos_ >= this->data() && pos_ < m_end_, "invalid_iterator");
 		while((pos_ + 1) != m_end_) {
 			*pos_ = hxmove(*(pos_ + 1));
@@ -291,7 +281,7 @@ public:
 
 	/// Erases the element indicated.
 	/// - `index` : Index of the element to erase.
-	hxconstexpr_fn void erase(size_t index_) {
+	constexpr void erase(size_t index_) {
 		hxassertmsg(index_ < this->size(), "invalid_index");
 		this->erase(this->data() + index_);
 	}
@@ -299,7 +289,7 @@ public:
 	/// Variant of erase() that moves the end element down to replace the erased element.
 	/// (Non-standard.)
 	/// - `pos` : Pointer to the element to erase.
-	hxconstexpr_fn void erase_unordered(T_* pos_) {
+	constexpr void erase_unordered(T_* pos_) {
 		hxassertmsg(pos_ >= this->data() && pos_ < m_end_, "invalid_iterator");
 		if (pos_ != --m_end_) {
 			*pos_ = hxmove(*m_end_);
@@ -310,12 +300,11 @@ public:
 	/// Variant of erase() that moves the end element down to replace erased element.
 	/// (Non-standard.)
 	/// - `index` : The index of the element to erase.
-	hxconstexpr_fn void erase_unordered(size_t index_) {
+	constexpr void erase_unordered(size_t index_) {
 		hxassertmsg(index_ < this->size(), "invalid_index");
 		this->erase_unordered(this->data() + index_);
 	}
 
-#if HX_CPLUSPLUS >= 201103L
 	/// Calls a function, lambda or std::function on each element. (Non-standard.)
 	/// `fn` - A function like object.
 	template<typename functor_t_>
@@ -336,33 +325,32 @@ public:
 			hxmove(fn_)(*it_);
 		}
 	}
-#endif
 
 	/// Returns a const reference to the begin element in the array.
-	hxconstexpr_fn const T_& front(void) const {
+	constexpr const T_& front(void) const {
 		hxassertmsg(!this->empty(), "invalid_reference");
 		return *this->data();
 	}
 
 	/// Returns a reference to the begin element in the array.
-	hxconstexpr_fn T_& front(void) {
+	constexpr T_& front(void) {
 		hxassertmsg(!this->empty(), "invalid_reference");
 		return *this->data();
 	}
 
 	/// Returns true if the array is full.
-	hxconstexpr_fn bool full(void) const {
+	constexpr bool full(void) const {
 		return m_end_ == this->data() + this->capacity();
 	}
 
 	/// Returns true when the array is full (size equal capacity). (Non-standard.)
-	hxconstexpr_fn bool full(void) {
+	constexpr bool full(void) {
 		return this->size() == this->capacity();
 	}
 
 	/// Hash together all the elements and return the result. Uses hxkeyhash which
 	/// can be overloaded. Uses FNV-1a hash (modified).
-	hxconstexpr_fn hxhash_t hash() const {
+	constexpr hxhash_t hash() const {
 		hxhash_t x_ = (hxhash_t)0x9e3779b9;
 		for(T_ *it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
 			x_ ^= hxkey_hash(*it_);
@@ -376,7 +364,7 @@ public:
 	/// `T::T(T&&)` and `T::operator=(T&&)` will be used when available.
 	/// - `pos` : Pointer to the location to insert the new element at.
 	/// - `t` : The new element.
-	hxconstexpr_fn void insert(T_* pos_, const T_& t_) {
+	constexpr void insert(T_* pos_, const T_& t_) {
 		hxassertmsg(pos_ >= this->data() && pos_ < m_end_, "invalid_iterator");
 		T_* it_ = m_end_++;
 		if(it_ == this->data()) {
@@ -400,14 +388,13 @@ public:
 	/// `insert(end(), x)` will work as long as the array is allocated.
 	/// - `index` : Index of the location to insert the new element at.
 	/// - `x` : The new element.
-	hxconstexpr_fn void insert(size_t index_, const T_& t_) {
+	constexpr void insert(size_t index_, const T_& t_) {
 		hxassertmsg(index_ < this->size(), "invalid_index");
 		this->insert(this->data() + index_, t_);
 	}
 
-#if HX_CPLUSPLUS >= 201103L
 	/// Move version of `insert(T* pos, T& t)`.
-	hxconstexpr_fn void insert(T_* pos_, T_&& t_) {
+	constexpr void insert(T_* pos_, T_&& t_) {
 		hxassertmsg(pos_ >= this->data() && pos_ < m_end_, "invalid_iterator");
 		T_* it_ = m_end_++;
 		if(it_ == this->data()) {
@@ -428,11 +415,10 @@ public:
 	}
 
 	/// Move version of `insert(size_t index, T& t)`.
-	hxconstexpr_fn void insert(size_t index_, T_&& t_) {
+	constexpr void insert(size_t index_, T_&& t_) {
 		hxassertmsg(index_ < this->size(), "invalid_index");
 		this->insert(this->data() + index_, hxmove(t_));
 	}
-#endif
 
 	/// Returns true if this array compares as less than x. Sorts [1] before [1,2].
 	/// This version takes two functors for key comparison.
@@ -440,7 +426,7 @@ public:
 	/// - `less` : A key comparison functor definining a less-than ordering relationship.
 	/// - `equal` : A key comparison functor definining an equivalence relationship.
 	template<typename less_t_, typename equal_t_>
-	hxconstexpr_fn bool less(const hxarray& x_, const less_t_& less_, const equal_t_& equal_) const {
+	constexpr bool less(const hxarray& x_, const less_t_& less_, const equal_t_& equal_) const {
 		size_t sz_ = hxmin(this->size(), x_.size());
 		for(const T_ *it0_ = this->data(), *it1_ = x_.data(), *end_ = it0_ + sz_;
 				it0_ != end_; ++it0_, ++it1_) {
@@ -457,7 +443,7 @@ public:
 	/// and `hxkey_less`.
 	/// Sorts `[1]` before `[1,2]`.
 	/// - `x` : The other array.
-	hxconstexpr_fn bool less(const hxarray& x_) const {
+	constexpr bool less(const hxarray& x_) const {
 		return this->less(x_, hxkey_less_function<T_>(), hxkey_equal_function<T_>());
 	}
 
@@ -465,7 +451,7 @@ public:
 	/// - `begin` : The beginning iterator.
 	/// - `end` : The end iterator.
 	template <typename iter_t_>
-	hxconstexpr_fn void move(iter_t_ begin_, iter_t_ end_) {
+	constexpr void move(iter_t_ begin_, iter_t_ end_) {
 		this->reserve((size_t)(end_ - begin_));
 		T_* it_ = this->data();
 		this->destruct_(it_, m_end_);
@@ -476,32 +462,30 @@ public:
 	}
 
 	/// Removes the end element from the array.
-	hxconstexpr_fn void pop_back(void) {
+	constexpr void pop_back(void) {
 		hxassertmsg(!this->empty(), "stack_underflow");
 		(--m_end_)->~T_();
 	}
 
 	/// Adds a copy of the element to the end of the array.
 	/// - `t` : The element to add.
-	hxconstexpr_fn void push_back(const T_& t_) {
+	constexpr void push_back(const T_& t_) {
 		hxassertmsg(!this->full(), "stack_overflow");
 		::new (m_end_++) T_(t_);
 	}
 
-#if HX_CPLUSPLUS >= 201103L
 	/// Move the element to the end of the array.
 	/// - `t` : The element to move.
-	hxconstexpr_fn void push_back(T_&& t_) {
+	constexpr void push_back(T_&& t_) {
 		hxassertmsg(!this->full(), "stack_overflow");
 		::new (m_end_++) T_(hxmove(t_));
 	}
-#endif
 
 	/// Reserves storage for at least the specified number of elements.
 	/// - `size` : The number of elements to reserve storage for.
 	/// - `allocator` : The memory manager ID to use for allocation (default: hxsystem_allocator_current)
 	/// - `alignment` : The alignment to for the allocation. (default: HX_ALIGNMENT)
-	hxconstexpr_fn void reserve(size_t size_,
+	constexpr void reserve(size_t size_,
 			hxsystem_allocator_t allocator_=hxsystem_allocator_current,
 			uintptr_t alignment_=HX_ALIGNMENT) {
 		T_* prev = this->data();
@@ -516,7 +500,7 @@ public:
 	/// elements as needed. Requires a default constructor. Integers and floats
 	/// will be value-initialized to zero as per the standard.
 	/// - `size` : The new size of the array.
-	hxconstexpr_fn void resize(size_t size_) {
+	constexpr void resize(size_t size_) {
 		this->reserve(size_);
 		T_* end_ = this->data() + size_;
 		if (size_ >= this->size()) {
@@ -534,7 +518,7 @@ public:
 	/// the specified size, copy constructing or destroying elements as needed.
 	/// - `size` : The new size of the array.
 	/// - `t` : Initial value for new elements.
-	hxconstexpr_fn void resize(size_t size_, const T_& t_) {
+	constexpr void resize(size_t size_, const T_& t_) {
 		this->reserve(size_);
 		T_* end_ = this->data() + size_;
 		if (size_ >= this->size()) {
@@ -550,7 +534,7 @@ public:
 
 	/// Reverse the elements. Uses hxswap which may be overriden. (Non-standard.
 	/// Python.)
-	hxconstexpr_fn void reverse(void) {
+	constexpr void reverse(void) {
 		T_* b_ = this->data();
 		T_* e_ = m_end_ - 1;
 		while (b_ < e_) {
@@ -559,19 +543,19 @@ public:
 	}
 
 	/// Returns the number of elements in the array.
-	hxconstexpr_fn size_t size(void) const {
+	constexpr size_t size(void) const {
 		return (size_t)(m_end_ - this->data());
 	}
 
 	/// Returns the number of bytes in the array. (Non-standard.)
-	hxconstexpr_fn size_t size_bytes(void) const {
+	constexpr size_t size_bytes(void) const {
 		return sizeof(T_) * (size_t)(m_end_ - this->data());
 	}
 
 	/// Swap contents with a temporary array. Only works with `hxallocator_dynamic_capacity`.
 	/// Dynamically allocated arrays are swapped with very little overhead.
 	/// - `x` : The array to swap with.
-	hxconstexpr_fn void swap(hxarray& x_) {
+	constexpr void swap(hxarray& x_) {
 		// NOTA BENE Only hxallocator_dynamic_capacity works here.
 		hxallocator<T_, capacity_>::swap(x_);
 		hxswap(x_.m_end_, m_end_);
@@ -581,7 +565,7 @@ private:
 	// Destroys elements in the range [begin, end].
 	// - begin: Pointer to the beginning of the range.
 	// - end: Pointer to the end of the range.
-	hxconstexpr_fn void destruct_(T_* begin_, T_* end_) {
+	constexpr void destruct_(T_* begin_, T_* end_) {
 		while (begin_ != end_) {
 			begin_++->~T_();
 		}
@@ -592,20 +576,20 @@ private:
 /// `bool hxequal(hxarray<T>& x, hxarray<T>& y)` - Compares the contents of x
 /// and y for equivalence.
 template<typename T_>
-hxconstexpr_fn bool hxkey_equal(const hxarray<T_>& x_, const hxarray<T_>& y_) {
+constexpr bool hxkey_equal(const hxarray<T_>& x_, const hxarray<T_>& y_) {
 	return x_.equal(y_);
 }
 
 /// `hxhash_t hxhash(hxarray<T>& x)` - Hashes the contents of x.
 template<typename T_>
-hxconstexpr_fn hxhash_t hxhash(const hxarray<T_>& x_) {
+constexpr hxhash_t hxhash(const hxarray<T_>& x_) {
 	return x_.hash();
 }
 
 /// `bool hxkey_less(hxarray<T>& x, hxarray<T>& y)` - Compares the contents of
 // x and y using hxkey_equal and hxkey_less on each element.
 template<typename T_>
-hxconstexpr_fn bool hxkey_less(const hxarray<T_>& x_, const hxarray<T_>& y_) {
+constexpr bool hxkey_less(const hxarray<T_>& x_, const hxarray<T_>& y_) {
 	return x_.less(y_);
 }
 
@@ -613,6 +597,6 @@ hxconstexpr_fn bool hxkey_less(const hxarray<T_>& x_, const hxarray<T_>& y_) {
 /// and y. Only works with `hxallocator_dynamic_capacity`. Dynamically allocated
 /// arrays are swapped with very little overhead.
 template<typename T_>
-hxconstexpr_fn void hxswap(const hxarray<T_>& x_, const hxarray<T_>& y_) {
+constexpr void hxswap(const hxarray<T_>& x_, const hxarray<T_>& y_) {
 	x_.swap(y_);
 }

@@ -26,16 +26,16 @@ void* operator new[](size_t size) {
 	hxassertrelease(ptr, "malloc %zu", size);
 	return ptr;
 }
-void operator delete(void* ptr) hxnoexcept {
+void operator delete(void* ptr) noexcept {
 	::free(ptr);
 }
-void operator delete(void* ptr, size_t) hxnoexcept {
+void operator delete(void* ptr, size_t) noexcept {
 	::free(ptr);
 }
-void operator delete[](void* ptr) hxnoexcept {
+void operator delete[](void* ptr) noexcept {
 	::free(ptr);
 }
-void operator delete[](void* ptr, size_t) hxnoexcept {
+void operator delete[](void* ptr, size_t) noexcept {
 	::free(ptr);
 }
 #endif
@@ -43,7 +43,7 @@ void operator delete[](void* ptr, size_t) hxnoexcept {
 // hxmalloc_checked. Always check malloc and halt on failure. This is extremely
 // important with hardware where 0 is a valid address and can be written to with
 // disastrous results.
-static hxconstexpr_fn void* hxmalloc_checked(size_t size) {
+static constexpr void* hxmalloc_checked(size_t size) {
 	void* t = ::malloc(size);
 	hxassertrelease(t, "malloc %zu", size);
 #if (HX_RELEASE) >= 3
@@ -111,7 +111,7 @@ protected:
 	virtual void* on_alloc(size_t size, size_t alignment) = 0;
 	const char* m_label_;
 private:
-	void operator=(const hxsystem_allocator_base&) hxdelete_fn;
+	void operator=(const hxsystem_allocator_base&) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -130,20 +130,20 @@ public:
 	}
 
 	virtual void begin_allocation_scope(hxsystem_allocator_scope* scope,
-		hxsystem_allocator_t new_id) hxoverride { (void)scope; (void)new_id; }
+		hxsystem_allocator_t new_id) override { (void)scope; (void)new_id; }
 	virtual void end_allocation_scope(hxsystem_allocator_scope* scope,
-		hxsystem_allocator_t old_id) hxoverride { (void)scope; (void)old_id; }
-	virtual size_t get_allocation_count(hxsystem_allocator_t id) const hxoverride {
+		hxsystem_allocator_t old_id) override { (void)scope; (void)old_id; }
+	virtual size_t get_allocation_count(hxsystem_allocator_t id) const override {
 		(void)id; return m_allocation_count;
 	}
-	virtual size_t get_bytes_allocated(hxsystem_allocator_t id) const hxoverride {
+	virtual size_t get_bytes_allocated(hxsystem_allocator_t id) const override {
 		(void)id; return m_bytes_allocated;
 	}
-	virtual size_t get_high_water(hxsystem_allocator_t id) hxoverride {
+	virtual size_t get_high_water(hxsystem_allocator_t id) override {
 		(void)id; return m_high_water;
 	}
 
-	virtual void* on_alloc(size_t size, size_t alignment) hxoverride {
+	virtual void* on_alloc(size_t size, size_t alignment) override {
 #if HX_USE_STD_ALIGNED_ALLOC
 		++m_allocation_count;
 
@@ -227,19 +227,19 @@ public:
 	}
 
 	virtual void begin_allocation_scope(hxsystem_allocator_scope* scope,
-		hxsystem_allocator_t new_id) hxoverride { (void)scope; (void)new_id; }
+		hxsystem_allocator_t new_id) override { (void)scope; (void)new_id; }
 	virtual void end_allocation_scope(hxsystem_allocator_scope* scope,
-		hxsystem_allocator_t old_id) hxoverride { (void)scope; (void)old_id; }
+		hxsystem_allocator_t old_id) override { (void)scope; (void)old_id; }
 	bool contains(void* ptr) {
 		return (uintptr_t)ptr >= m_begin_ && (uintptr_t)ptr < m_end_;
 	}
-	virtual size_t get_allocation_count(hxsystem_allocator_t id) const hxoverride {
+	virtual size_t get_allocation_count(hxsystem_allocator_t id) const override {
 		(void)id; return m_allocation_count;
 	}
-	virtual size_t get_bytes_allocated(hxsystem_allocator_t id) const hxoverride {
+	virtual size_t get_bytes_allocated(hxsystem_allocator_t id) const override {
 		(void)id; return m_current - m_begin_;
 	}
-	virtual size_t get_high_water(hxsystem_allocator_t id) hxoverride {
+	virtual size_t get_high_water(hxsystem_allocator_t id) override {
 		(void)id; return m_current - m_begin_;
 	}
 
@@ -269,7 +269,7 @@ public:
 	}
 
 protected:
-	virtual void* on_alloc(size_t size, size_t alignment) hxoverride {
+	virtual void* on_alloc(size_t size, size_t alignment) override {
 		return allocate_non_virtual(size, alignment);
 	}
 
@@ -291,7 +291,7 @@ public:
 	}
 
 	virtual void end_allocation_scope(hxsystem_allocator_scope* scope,
-			hxsystem_allocator_t old_id) hxoverride {
+			hxsystem_allocator_t old_id) override {
 		(void)old_id;
 		hxassertmsg(m_allocation_count <= scope->get_previous_allocation_count(),
 			"memory_leak scope %s allocations %zu", m_label_,
@@ -306,7 +306,7 @@ public:
 		m_current = previous_current;
 	}
 
-	virtual size_t get_high_water(hxsystem_allocator_t id) hxoverride {
+	virtual size_t get_high_water(hxsystem_allocator_t id) override {
 		(void)id;
 		m_high_water = hxmax(m_high_water, m_current);
 		return m_high_water - m_begin_;

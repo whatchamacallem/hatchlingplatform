@@ -55,10 +55,10 @@ public:
 
 private:
 	// Copy constructor is deleted to prevent copying of tasks.
-	hxtask(const hxtask&) hxdelete_fn;
+	hxtask(const hxtask&) = delete;
 
 	// Assignment operator is deleted to prevent copying of tasks.
-	void operator=(const hxtask&) hxdelete_fn;
+	void operator=(const hxtask&) = delete;
 
 	// Pointer to the next task in the linked list.
 	hxtask* m_next_task_;

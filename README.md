@@ -7,7 +7,7 @@
 
 <div style="width: 90%; margin: 0 auto; text-align: justify; font-size: 120%;">
 
-Hatchling Platform is a lightweight C17/C++17 runtime library designed for desktop development with eventual cross-compilation to resource-constrained embedded targets. The implementation carefully avoids dynamic allocations except when initializing system allocators. It maintains compatibility with C99 libraries, requires only a C++98 compiler, and deliberately avoids dependencies on the C++ standard library. A C++ project using this platform should run equally well on your thermostat using a single megabyte of RAM as in your web-browser or plugged into your Python back end.
+Hatchling Platform is a lightweight C17/C++17 runtime library designed for desktop development with eventual cross-compilation to resource-constrained embedded targets. The implementation carefully avoids dynamic allocations except when initializing system allocators. It maintains compatibility with C99 libraries, requires only a C++11 compiler, and deliberately avoids dependencies on the C++ standard library. A C++ project using this platform should run equally well on your thermostat using a single megabyte of RAM as in your web-browser or plugged into your Python back end.
 
 This project serves as both a practical tool and a research platform for exploring C++ library design principles, particularly focusing on core runtime features that might inform future realtime systems standards. While recent C++ standards have addressed some concerns, significant opportunities remain for optimization.
 
@@ -16,7 +16,7 @@ style="float: right; padding-right: 20px; padding-left: 20px;">
 
 A key strength of this codebase is its integration with clang's Undefined Behavior Sanitizer (UBSan), which enables developers to write pointer-centric C++ code while enjoying runtime safety guarantees comparable to managed languages. This approach combines C++'s raw power with modern safety features. The implementation maintains strict compatibility with all major warning flags and sanitizers across gcc, clang, and MSVC, with rigorous type safety throughout.
 
-The `hx/hatchling.h` header requires C99 support. When compiled as C++98, it includes necessary C99 headers (which were formally added to C++11 but are universally supported by C++98 compilers). The codebase relies on `stdint.h` for fixed-width integers and selectively incorporates C++17 features and compiler intrinsics when available.
+The `hx/hatchling.h` header requires C99 support. The codebase relies on `stdint.h` for fixed-width integers and selectively incorporates C++17 features and compiler intrinsics when available.
 
 Build configurations are controlled via `HX_RELEASE`, which defines optimization levels while allowing separate compiler optimization settings for debugging purposes:
 
@@ -61,6 +61,6 @@ build got dropped because it wasn't being tested. It should be easy to resurrect
 - gcovr 7.0
 - cmake 3.28.3
 - python 3.12.3
-- c99 c17 c++98 c++11 c++14 c++17
+- c99 c17 c++11 c++14 c++17
 
 </div>

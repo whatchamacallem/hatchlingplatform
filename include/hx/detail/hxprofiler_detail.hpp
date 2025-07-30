@@ -34,7 +34,7 @@ inline hxcycles_t hxtime_sample_cycles(void) {
 #elif defined __powerpc__ || defined __ppc__
 	__asm__ volatile("mftb %0" : "=r"(cycles_));
 #else
-hxstatic_assert(0, "Implement hxtime_sample_cycles");
+static_assert(0, "Implement hxtime_sample_cycles");
 #endif
 	return (hxcycles_t)cycles_;
 }
@@ -109,9 +109,9 @@ public:
 	}
 
 private:
-	hxprofiler_scope_internal_(void) hxdelete_fn;
-	hxprofiler_scope_internal_(const hxprofiler_scope_internal_&) hxdelete_fn;
-	void operator=(const hxprofiler_scope_internal_&) hxdelete_fn;
+	hxprofiler_scope_internal_(void) = delete;
+	hxprofiler_scope_internal_(const hxprofiler_scope_internal_&) = delete;
+	void operator=(const hxprofiler_scope_internal_&) = delete;
 	const char* m_label_;
 	hxcycles_t m_t0_;
 };

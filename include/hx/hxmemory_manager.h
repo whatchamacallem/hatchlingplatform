@@ -74,10 +74,10 @@ char* hxstring_duplicate(const char* string_, enum hxsystem_allocator_t allocato
 
 #if !HX_HOSTED
 // Declare placement new.
-inline void* operator new(size_t, void* ptr_) hxnoexcept { return ptr_; }
-inline void* operator new[](size_t, void* ptr_) hxnoexcept { return ptr_; }
-inline void operator delete(void*, void*) hxnoexcept { }
-inline void operator delete[](void*, void*) hxnoexcept { }
+inline void* operator new(size_t, void* ptr_) noexcept { return ptr_; }
+inline void* operator new[](size_t, void* ptr_) noexcept { return ptr_; }
+inline void operator delete(void*, void*) noexcept { }
+inline void operator delete[](void*, void*) noexcept { }
 #endif
 
 /// `hxsystem_allocator_scope` - RAII class to set the current memory manager allocator
@@ -113,10 +113,10 @@ public:
 
 private:
 	// Deleted copy constructor to prevent copying.
-	hxsystem_allocator_scope(const hxsystem_allocator_scope&) hxdelete_fn;
+	hxsystem_allocator_scope(const hxsystem_allocator_scope&) = delete;
 
 	// Deleted assignment operator to prevent copying.
-	void operator=(const hxsystem_allocator_scope&) hxdelete_fn;
+	void operator=(const hxsystem_allocator_scope&) = delete;
 
 	hxsystem_allocator_t m_this_allocator_; // The memory manager ID for this scope.
 	hxsystem_allocator_t m_previous_allocator_; // The previous memory manager ID.
@@ -141,36 +141,16 @@ size_t hxmemory_manager_leak_count(void);
 /// newly constructed object. Will not return on failure.
 /// - `allocator` : The memory manager ID to use for allocation. Defaults to hxsystem_allocator_current.
 /// - `align` : A mask of low bits to be zero'd out when allocating new pointers. Defaults to HX_ALIGNMENT.
-#if HX_CPLUSPLUS >= 201103L // Argument forwarding requires c++11.
 template <typename T_, hxsystem_allocator_t allocator_=hxsystem_allocator_current, uintptr_t align_=HX_ALIGNMENT, typename... Args_>
-hxconstexpr_fn T_* hxnew(Args_&&... args_) noexcept {
+constexpr T_* hxnew(Args_&&... args_) noexcept {
 	return ::new(hxmalloc_ext(sizeof(T_), allocator_, align_)) T_(args_...);
 }
-#else
-/// `hxnew` - C++98 functor polyfill. All template args default except the first.
-/// Passing more than one arg requires C++11.
-template <typename T_, hxsystem_allocator_t allocator_=hxsystem_allocator_current, uintptr_t align_=HX_ALIGNMENT>
-class hxnew {
-public:
-	inline explicit hxnew(void ) {
-		m_tmp_ = ::new(hxmalloc(sizeof(T_)))T_();
-	}
-
-	template<typename Arg_>
-	inline explicit hxnew(const Arg_& arg_) {
-		m_tmp_ = ::new(hxmalloc(sizeof(T_)))T_(arg_);
-	}
-	operator T_*(void) { return m_tmp_; }
-private:
-	T_* m_tmp_;
-};
-#endif
 
 /// `hxdelete` - Deletes an object of type T and frees its memory using the memory
 /// manager.
 /// - `t` : Pointer to the object to delete.
 template <typename T_>
-hxconstexpr_fn void hxdelete(T_* t_) {
+constexpr void hxdelete(T_* t_) {
 	if (t_) {
 		t_->~T_();
 		if ((HX_RELEASE) < 1) {
@@ -187,10 +167,10 @@ class hxdeleter {
 public:
 	/// Deletes the object using hxdelete.
 	template <typename T_>
-	hxconstexpr_fn void operator()(T_* t_) const { hxdelete(t_); }
+	constexpr void operator()(T_* t_) const { hxdelete(t_); }
 
 	/// Always returns true, indicating the deleter is valid.
-	hxconstexpr_fn operator bool(void) const { return true; }
+	constexpr operator bool(void) const { return true; }
 };
 
 /// Implement hxdeleter with NOPs. Allows the compiler to remove the destructors
@@ -200,10 +180,10 @@ class hxdo_not_delete {
 public:
 	/// Deletes the object using hxdelete.
 	template <typename T_>
-	hxconstexpr_fn void operator()(T_*) const { }
+	constexpr void operator()(T_*) const { }
 
 	/// Always returns false, indicating the deleter should not be called.
-	hxconstexpr_fn operator bool(void) const { return false; }
+	constexpr operator bool(void) const { return false; }
 };
 
 /// `hxmalloc` - Add hxmalloc_ext args to hxmalloc C interface. Allocates memory with a

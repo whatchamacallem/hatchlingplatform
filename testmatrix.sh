@@ -2,7 +2,7 @@
 # Copyright 2017-2025 Adrian Johnston
 #
 # Tests Hatchling Platform with gcc and clang in a variety of configurations.
-# Tests C99, C17, C++98, C++11 and C++17.
+# Tests C99, C17, C++11 and C++17.
 #
 # The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:
 #   sudo apt-get install gcc-multilib g++-multilib
@@ -17,10 +17,10 @@ set -o errexit
 
 export POSIXLY_CORRECT=1
 
-# Fatal warning flags. preceded by -pedantic-errors except with c++98.
+# Fatal warning flags.
 HX_ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
-	-Wfatal-errors"
+	-Wfatal-errors -pedantic-errors"
 
 HX_FLAGS="-DENTANGLEMENT_PASS=0 -ffast-math -ggdb3"
 
@@ -31,26 +31,15 @@ HX_DIR=`pwd`
 # Build artifacts are not retained.
 rm -rf ./bin; mkdir ./bin && cd ./bin
 
-# Test gcc with both -std=c++98 and -std=c++14. Not using -pedantic-errors with
-# c++98 as "anonymous variadic macros were introduced in c++11."  (This code base
-# and gcc's defaults cheat slightly by pretending c99 was available in c++98.)
-# -Wno-unused-local-typedefs is only for the c++98 version of static_assert.
-
+# Test gcc with minimum specifications: -std=c99 and -std=c++11.
 gcc --version | grep gcc
 for I in 0 1 2 3; do
-echo gcc c++98 -O$I "$@"...
-# -std=c99
-gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
-	-std=c99 -m32 "$@" -c $HX_DIR/src/*.c $HX_DIR/test/*.c
-# -std=c++98
-gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -std=c++98 \
-	-fno-exceptions -fno-rtti -Wno-unused-local-typedefs "$@" $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp *.o \
-	-lstdc++ -m32 -o hxtest
-./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
-rm -f hxtest *.txt *.bin *.json
 echo gcc c++14 -O$I "$@"...
+# -std=c99
+gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS \
+	-std=c99 -m32 "$@" -c $HX_DIR/src/*.c $HX_DIR/test/*.c
 # -std=c++14
-gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
+gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS \
 	-pthread -std=c++14 -fno-exceptions -fno-rtti "$@" $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp *.o \
 	-lpthread -lstdc++ -m32 -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests

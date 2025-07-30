@@ -2,10 +2,10 @@
 // Copyright 2017-2025 Adrian Johnston
 //
 // hxsort.hpp - Sorting and searching utilities for hatchling platform. Provides
-// insertion sort, binary search, and radix sort implementations for arrays and
-// key-value pairs. Includes generic and specialized templates for sorting with
-// custom comparators. No exception safety is guaranteed; use noexcept types or
-// disable exceptions.
+// insertion sort, binary search, and a general purpose sort implementations for
+// pointers to arrays. Includes generic and specialized templates for sorting
+// with custom comparators. No exception safety is guaranteed; use noexcept
+// types or disable exceptions.
 
 #include <hx/detail/hxsort_detail.hpp>
 
@@ -47,21 +47,25 @@ void hxinsertion_sort(T_* begin_, T_* end_) {
 	hxinsertion_sort(begin_, end_, hxkey_less_function<T_>());
 }
 
-/// XXX docs.
+/// `hxheapsort` - Sorts the elements in the range `[begin, end)` in comparison order
+/// using the heapsort algorithm.
+/// - `begin` : Pointer to the beginning of the range to sort.
+/// - `end` : Pointer to one past the last element in the range to sort.
+/// - `less` : A key comparison functor definining a less-than ordering relationship.
 template<typename T_, typename less_t_>
 void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
-	size_t sz_ = end_ - begin_;
+	ptrdiff_t sz_ = end_ - begin_;
 	if (sz_ <= 1) {
 		// Sequence is already sorted and the following code assumes sz >= 2.
 		return;
 	}
 
 	// Find the index of the first parent node. It will be >= 0 because sz >= 2.
-	size_t first_parent_index_ = sz_ / 2u - 1u;
+	ptrdiff_t first_parent_index_ = sz_ / 2u - 1u;
 
 	// The first grandparent is just clamped to >= 0 because it avoids a special
 	// case when it does not exist.
-	size_t first_grandparent_index_ = hxmax<size_t>(sz_ / 4u - 1u, 0u);
+	ptrdiff_t first_grandparent_index_ = hxmax<ptrdiff_t>(sz_ / 4u - 1u, 0u);
 	T_* first_grandparent_ = begin_ + first_grandparent_index_;
 
 	// Do not visit leaf nodes at all. Then run an optimized version on half the
@@ -84,33 +88,44 @@ void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
     }
 }
 
+/// `hxheapsort (specialization)` - An overload of `hxheapsort` that uses `hxkey_less`.
+/// - `begin` : Pointer to the beginning of the range to sort.
+/// - `end` : Pointer to one past the last element in the range to sort.
 template<typename T_>
 void hxheapsort(T_* begin_, T_* end_) {
 	hxheapsort(begin_, end_, hxkey_less_function<T_>());
 }
 
-/// A general purpose sort routine using `T::T()`, `T::~T()`, `T::operator=(&&)`,
-/// the `hxswap` overloads and a `less` functor which defaults to `hxless`.
+/// `hxsort` - A general purpose sort routine using `T::T()`, `T::~T()`, `T::operator=(&&)`,
+/// the `hxswap` overloads and a `less` functor which defaults to `hxless`. This version
+/// is intended for sorting large numbers of small objects.
+/// - `begin` : Pointer to the beginning of the range to sort.
+/// - `end` : Pointer to one past the last element in the range to sort.
+/// - `less` : A key comparison functor definining a less-than ordering relationship.
 template<typename T_, typename less_t_>
 void hxsort(T_* begin_, T_* end_, const less_t_& less_) {
-	hxintro_sort_(begin_, end_, less_, 2u * hxlog2i( end_ - begin_));
+	hxintro_sort_(begin_, end_, less_, 2u * hxlog2i(end_ - begin_));
 }
 
+/// `hxsort (specialization)` - An overload of `hxsort` that uses `hxkey_less`.
+/// This version is intended for sorting large numbers of small objects.
+/// - `begin` : Pointer to the beginning of the range to sort.
+/// - `end` : Pointer to one past the last element in the range to sort.
 template<typename T_>
 void hxsort(T_* begin_, T_* end_) {
-	hxintro_sort_(begin_, end_, hxkey_less_function<T_>(), 2u * hxlog2i( end_ - begin_));
+	hxintro_sort_(begin_, end_, hxkey_less_function<T_>(), 2u * hxlog2i(end_ - begin_));
 }
 
 /// `hxbinary_search` - Performs a binary search in the range [first, last). Returns
 /// `null` if the value is not found. Unsorted data will lead to errors.
 /// Non-unique values will be selected from arbitrarily.
 ///
-/// The compare parameter is a function object that returns true if the first
+/// The compare parameter is a functor that returns true if the first
 /// argument is ordered before (i.e. is less than) the second. `See hxkey_less`.
 /// - `begin` : Pointer to the beginning of the range to search.
 /// - `end` : Pointer to one past the last element in the range to search.
 /// - `val` : The value to search for.
-/// - `less` : Comparison function object. (Optional)
+/// - `less` : A key comparison functor definining a less-than ordering relationship. (Optional.)
 template<typename T_, typename less_t_>
 const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_, const less_t_& less_) {
 	// don't operate on null pointer args. unallocated containers have this.
@@ -134,20 +149,30 @@ const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_, cons
 	return hxnull;
 }
 
-// Overload using hxkey_less.
+/// `hxbinary_search (specialization)` - An overload of `hxbinary_search` that uses `hxkey_less`.
+/// - `begin` : Pointer to the beginning of the range to search.
+/// - `end` : Pointer to one past the last element in the range to search.
+/// - `val` : The value to search for.
 template<typename T_>
 const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_) {
 	return hxbinary_search(begin_, end_, val_, hxkey_less_function<T_>());
 }
 
-// Non-const overload.
+/// `hxbinary_search` - Non-const overload of binary search.
+/// - `begin` : Pointer to the beginning of the range to search.
+/// - `end` : Pointer to one past the last element in the range to search.
+/// - `val` : The value to search for.
+/// - `less` : A key comparison functor definining a less-than ordering relationship. (Optional.)
 template<typename T_, typename less_t_>
 T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_, const less_t_& less_) {
 	return const_cast<T_*>(hxbinary_search(const_cast<const T_*>(begin_),
 		const_cast<const T_*>(end_), val_, less_));
 }
 
-// Non-const overload using hxkey_less.
+/// `hxbinary_search (specialization)` - Non-const overload using `hxkey_less`.
+/// - `begin` : Pointer to the beginning of the range to search.
+/// - `end` : Pointer to one past the last element in the range to search.
+/// - `val` : The value to search for.
 template<typename T_>
 T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_) {
 	return const_cast<T_*>(hxbinary_search(const_cast<const T_*>(begin_),

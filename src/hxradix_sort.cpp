@@ -1,12 +1,13 @@
 // Copyright 2017-2025 Adrian Johnston
 
 #include <hx/hxradix_sort.hpp>
+#include <hx/hxsort.hpp>
 
 HX_REGISTER_FILENAME_HASH
 
 // hxradix_sort_base
 
-hxstatic_assert(HX_RADIX_SORT_BITS == 8 || HX_RADIX_SORT_BITS == 11,
+static_assert(HX_RADIX_SORT_BITS == 8 || HX_RADIX_SORT_BITS == 11,
 	"Unsupported HX_RADIX_SORT_BITS");
 
 void hxradix_sort_base::sort(hxsystem_allocator_t temp_memory) {

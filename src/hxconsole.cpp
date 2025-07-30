@@ -4,6 +4,7 @@
 #include <hx/hxfile.hpp>
 #include <hx/hxhash_table.hpp>
 #include <hx/hxsort.hpp>
+#include <hx/hxarray.hpp>
 
 HX_REGISTER_FILENAME_HASH
 

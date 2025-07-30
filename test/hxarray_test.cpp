@@ -5,7 +5,7 @@
 
 #include <limits.h>
 
-#if HX_CPLUSPLUS >= 201103L && HX_HOSTED
+#if HX_HOSTED
 #include <utility>
 #endif
 
@@ -204,7 +204,6 @@ TEST_F(hxarray_test, modification) {
 	EXPECT_TRUE(Check_totals(11));
 }
 
-#if HX_CPLUSPLUS >= 201103L
 TEST_F(hxarray_test, for_each) {
 	static const unsigned char nums[5] = { 91, 92, 93, 94, 95 };
 	hxarray<int> objs;
@@ -226,7 +225,6 @@ TEST_F(hxarray_test, for_each) {
 	struct Y { void operator()(int&) const { hxassertmsg(0, "internal error"); } } y;
 	objs.for_each(y);
 }
-#endif
 
 TEST_F(hxarray_test, resizing) {
 	{
@@ -298,7 +296,7 @@ TEST_F(hxarray_test, assignment) {
 	EXPECT_TRUE(Check_totals(6));
 }
 
-#if HX_CPLUSPLUS >= 201103L && HX_HOSTED
+#if HX_HOSTED
 TEST_F(hxarray_test, initializer_list) {
 	hxarray<int, 2> x = { 2, 7 };
 	EXPECT_EQ(x[1], 7);

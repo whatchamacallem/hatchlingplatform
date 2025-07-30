@@ -9,9 +9,8 @@ namespace hxdetail_ {
 // hxtest_case_sort_ - Run tests in well defined alphanumeric order.
 bool hxtest_case_sort_(const hxtest_case_interface_* a_, const hxtest_case_interface_* b_) {
 	int compare_ = ::strcmp(a_->suite_(), b_->suite_());
-	if(compare_ < 0) { return true; }
 	if(compare_ == 0) { return ::strcmp(a_->case_(), b_->case_()) < 0; }
-	return false;
+	return compare_ < 0;
 }
 
 hxtest_& hxtest_::dispatcher_(void) {
@@ -74,7 +73,7 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 
 	m_test_suite_filter_ = test_suite_filter_;
 
-	hxsort(m_test_cases_, m_test_cases_ + m_num_test_cases_, hxtest_case_sort_);
+	hxinsertion_sort(m_test_cases_, m_test_cases_ + m_num_test_cases_, hxtest_case_sort_);
 
 	m_pass_count_ = m_fail_count_ = 0;
 	hxlogconsole("[==========] Running tests %s\n", (m_test_suite_filter_ ? m_test_suite_filter_ : "all"));

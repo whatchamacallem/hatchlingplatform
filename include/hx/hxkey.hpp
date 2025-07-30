@@ -14,12 +14,12 @@
 /// be overridden for your key type. Function overloads are evaluated when and where
 /// the derived container is instantiated and need to be consistently available.
 template<typename T_>
-hxconstexpr_fn bool hxkey_equal(const T_& a_, const T_& b_) {
+constexpr bool hxkey_equal(const T_& a_, const T_& b_) {
 	return a_ == b_;
 }
 
 /// `hxkey_equal(const char* a, const char* b)` - Uses a constexpr strcmp.
-hxconstexpr_fn bool hxkey_equal(const char* a_, const char* b_) {
+constexpr bool hxkey_equal(const char* a_, const char* b_) {
 	while(*a_ != '\0' && *a_ == *b_) { ++a_; ++b_; }
 	return *a_ == '\0' && *b_ == '\0';
 }
@@ -35,7 +35,7 @@ inline bool(*hxkey_equal_function(void))(const T_&, const T_&) {
 /// Invokes `operator<` by default. All the other comparison operators can be written using
 /// `operator<`. However hxkey_equal is also used for efficiency.
 template<typename T_>
-hxconstexpr_fn bool hxkey_less(const T_& a_, const T_& b_) {
+constexpr bool hxkey_less(const T_& a_, const T_& b_) {
 	return a_ < b_;
 }
 
@@ -44,12 +44,12 @@ hxconstexpr_fn bool hxkey_less(const T_& a_, const T_& b_) {
 /// because that is undefined behavior unless the pointers are from the same array. For
 /// example the compiler may silently ignore comparisons between function pointers.
 template<typename T_>
-hxconstexpr_fn bool hxkey_less(const T_* a_, const T_* b_) {
+constexpr bool hxkey_less(const T_* a_, const T_* b_) {
 	return hxkey_less(*a_, *b_);
 }
 
 /// `hxkey_less(const char*, const char*)` - Uses a constexpr "strcmp(a, b) < 0".
-hxconstexpr_fn bool hxkey_less(const char* a_, const char* b_) {
+constexpr bool hxkey_less(const char* a_, const char* b_) {
 	while(*a_ != '\0' && *a_ == *b_) { ++a_; ++b_; }
 	return *a_ < *b_;
 }
@@ -65,12 +65,12 @@ inline bool (*hxkey_less_function(void))(const T_&, const T_&) {
 /// for your key type. Overrides are evaluated when and where the hash table is
 /// instantiated. Uses the well studied hash multiplier taken from Linux's hash.h
 template<typename T_>
-hxconstexpr_fn hxhash_t hxkey_hash(T_ t_) {
+constexpr hxhash_t hxkey_hash(T_ t_) {
 	return (hxhash_t)t_ * (hxhash_t)0x61C88647u;
 };
 
 /// `hxkey_hash(const char*)` - Uses FNV-1a string hashing.
-hxconstexpr_fn hxhash_t hxkey_hash(const char* k_) {
+constexpr hxhash_t hxkey_hash(const char* k_) {
 	hxhash_t x_ = (hxhash_t)0x811c9dc5;
 	while (*k_ != '\0') {
 		x_ ^= (hxhash_t)*k_++;
