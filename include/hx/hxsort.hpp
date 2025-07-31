@@ -109,7 +109,7 @@ void hxheapsort(T_* begin_, T_* end_) {
 }
 
 /// `hxsort` - A general purpose sort routine using `T::T()`, `T::~T()`, `T::operator=(&&)`,
-/// the `hxswap` overloads and a `less` functor which defaults to `hxless`. This version
+/// the `hxswap` overloads and a `less` functor which defaults to `hxkey_less`. This version
 /// is intended for sorting large numbers of small objects.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.

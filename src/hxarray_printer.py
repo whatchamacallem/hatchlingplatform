@@ -34,16 +34,16 @@ class HxArrayPrinter:
 			end = self.val['m_end_']
 
 			if data.is_optimized_out or end.is_optimized_out:
-				return "<optimized out>"
+				return '<optimized out>'
 
 			if self.val.type.template_argument(1) == 0:
 				capacity = int(self.val['m_capacity_'])
 			else:
 				capacity = int(self.val.type.template_argument(1))
 			if capacity == 0:
-				return "<unallocated>"
+				return '<unallocated>'
 			if capacity < 0:
-				return "<negative capacity>"
+				return '<negative capacity>'
 
 			# There are two different underlying implementations and this logic
 			# works for both of them. This is Python, so we have int instead of
@@ -57,7 +57,7 @@ class HxArrayPrinter:
 			elem_type = self.val.type.template_argument(0)
 			size = int((end - data) / elem_type.sizeof)
 			if size < 0:
-				return "<negative size>"
+				return '<negative size>'
 
 			# Cache these for calculating children.
 			self._elem_type = elem_type
@@ -67,9 +67,9 @@ class HxArrayPrinter:
 			# Format single line description.
 
 			basename = f'{self._elem_type}'.split(':')[-1]
-			return "[{}/{}] {}".format(self._size, capacity, basename)
+			return '[{}/{}] {}'.format(self._size, capacity, basename)
 		except Exception as e:
-			error = f"{traceback.format_exc()}"
+			error = f'{traceback.format_exc()}'
 			return error.split('\n', 1)[1]
 
 	def raw_view(self):
@@ -83,7 +83,7 @@ class HxArrayPrinter:
 		for i in range(self._size):
 			int_ptr = self._data + i * self._elem_type.sizeof
 			elem_ptr = gdb.Value(int_ptr).cast(self._elem_type.pointer())
-			yield (f"[{i}] {hex(int_ptr)}", elem_ptr.dereference())
+			yield (f'[{i}] {hex(int_ptr)}', elem_ptr.dereference())
 
 	def children(self):
 		try:
@@ -104,10 +104,10 @@ class HxArrayPrinter:
 			return
 
 	def display_hint(self):
-		return "array"
+		return 'array'
 
 def build_pretty_printer():
-	pp = gdb.printing.RegexpCollectionPrettyPrinter("hxarray_printer")
+	pp = gdb.printing.RegexpCollectionPrettyPrinter('hxarray_printer')
 	# Match both hxarray<T_, 0> and hxarray<T_, N> patterns
 	pp.add_printer('hxarray', '^hxarray<.*,.*>$', HxArrayPrinter)
 	return pp

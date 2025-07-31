@@ -215,7 +215,7 @@ TEST(hxsort_test, sort_grinder_generic) {
 		--histogram[sorted[size - 1].value];
 		for(int j=size - 1; j--;) {
 			--histogram[sorted[j].value];
-			EXPECT_LE(sorted[j], sorted[j + 1]);
+			EXPECT_FALSE(hxkey_less(sorted[j + 1], sorted[j]));
 		}
 		for(int j=20000; j-- > 10000;) {
 			EXPECT_EQ(histogram[j], 0);

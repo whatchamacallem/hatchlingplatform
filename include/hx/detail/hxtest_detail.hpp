@@ -6,7 +6,7 @@
 #include <hx/hxfile.hpp>
 #include <hx/hxsort.hpp>
 
-static_assert(!HX_USE_GOOGLE_TEST, "Do not this file include directly");
+static_assert(!HX_USE_GOOGLE_TEST, "Do not include this file directly.");
 
 namespace hxdetail_ {
 
@@ -48,8 +48,8 @@ public:
 	// Called by global constructors.
 	void add_test_(hxtest_case_interface_* fn_);
 
-	// Assert callback used by macros. message is required to end with an \n.
-	// Returns equivalent of /dev/null on success and the system log otherwise.
+	// Assert callback used by macros. Returns equivalent of /dev/null on
+	// success and the system log otherwise.
 	hxfile& condition_check_(bool condition_, const char* file_, size_t line_,
 							 const char* message_, bool is_assert_);
 

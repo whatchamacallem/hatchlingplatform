@@ -22,25 +22,23 @@ public:
 	static_assert(fixed_capacity_ > 0u, "Fixed capacity must be > 0");
 
 	/// Initializes memory to 0xcd when HX_RELEASE < 1.
+	hxallocator() {
 #if (HX_RELEASE) < 1
-	hxallocator() : m_data_(data()) {
-		::memset(m_allocator_, 0xcd, sizeof m_allocator_);
-	}
-#else
-	constexpr hxallocator(void) { }
+		::memset(m_data_, 0xcd, sizeof m_data_);
 #endif
+	}
 
 	/// Returns the number of elements of T allocated.
 	constexpr size_t capacity(void) const { return fixed_capacity_; }
 
 	/// Returns a reference to a const and potentially uninitialized array of T.
 	const T_ (&data() const)[fixed_capacity_] {
-		return *reinterpret_cast<const T_(*)[fixed_capacity_]>(m_allocator_ + 0);
+		return *reinterpret_cast<const T_(*)[fixed_capacity_]>(m_data_ + 0);
 	}
 
 	/// Returns a reference to a potentially uninitialized array of T.
 	T_ (&data())[fixed_capacity_] {
-		return *reinterpret_cast<T_(*)[fixed_capacity_]>(m_allocator_ + 0);
+		return *reinterpret_cast<T_(*)[fixed_capacity_]>(m_data_ + 0);
 	}
 
 protected:
@@ -62,13 +60,10 @@ private:
 	// *** The static allocator does not support swapping allocations or
 	// assignments from temporaries. ***
 	void swap(hxallocator& rhs) = delete;
-	static const size_t m_capacity_ = fixed_capacity_;
+	hxallocator(const hxallocator&) = delete;
+	void operator=(const hxallocator&) = delete;
 
-	alignas(T_) char m_allocator_[fixed_capacity_ * sizeof(T_)];
-#if (HX_RELEASE) < 1
-	/// debug only reference to the allocator as a T[fixed_capacity];
-	T_ (&m_data_)[fixed_capacity_];
-#endif
+	alignas(T_) char m_data_[fixed_capacity_ * sizeof(T_)];
 };
 
 /// `hxallocator<0>` - Capacity is set by first call to reserve_storage() and may
@@ -103,7 +98,7 @@ public:
 	constexpr const T_* data(void) const { return m_data_; }
 
 	/// Returns an array of T.
-	constexpr T_* data(void) { return m_data_; }
+	inline T_* data(void) { return m_data_; }
 
 	/// Swap. Only works with fixed_capacity_ == hxallocator_dynamic_capacity
 	constexpr void swap(hxallocator& rhs) {

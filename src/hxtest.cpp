@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the terms of the LICENSE.md file.
 
-#include <hx/detail/hxtest_detail.hpp>
+#include <hx/hxtest.hpp>
 
 #if !HX_USE_GOOGLE_TEST
 
