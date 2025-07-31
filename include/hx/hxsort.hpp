@@ -4,20 +4,32 @@
 // This file is licensed under the terms of the LICENSE.md file.
 //
 // hxsort.hpp - Sorting and searching utilities for hatchling platform. Provides
-// insertion sort, binary search, and a general purpose sort implementations for
-// pointers to arrays. Includes support for template partial specialization or
-// functors when sorting with custom comparators. No exception safety is
-// guaranteed; use noexcept types or disable exceptions.
+// insertion sort, binary search, and a general purpose sort implementation.
+// Includes support for template partial specialization (overloads of
+// hxkey_equal, hxkey_less, hxswap) and functors when defining custom key
+// operations. Otherwise T(&&), ~T(), operator=(T&&), operator<(const T&), and
+// operator==(const T&) are used.
+//
+// hxradix_sort.hpp is recommended as an `Θ(n)` sorting strategy for any
+// primitive type that is 4-bytes or less. This implementation does not cause
+// code bloat and is the fastest sorting algorithm available for scalar keys.
+// Radix sort is best when you need real-time guarantees and have a massive
+// workload. This is not a toy. It was actually how IBM sorted punch cards.
+//
+// hxinsertion_sort is recommended when you have under a kilobyte of data to sort
+// you don't want to add 10k to your executable just to sort it. hxheap_sort may
+// also be useful for keeping code size down while providing `Θ(n log n)`.
+//
+// hxsort is meant to be competitive with smaller types and "resistant to attack."
+// It instantiates about 200 lines of template code.
 //
 // If sorting is important to your application then the "cpp-sort" project is
 // recommended as a way to study your data and identify the best algorithms for
 // you: https://github.com/Morwenn/cpp-sort.
 //
-// That said, if you don't want to include 10,000 lines of template
-// meta-programming just to sort one array of pointers in a timely manner and
-// you need a specific algorithm that isn't here then take a look at
-// hxintro_sort_ as an example of how to compose a new sorting function built
-// from these routines.
+// If you do find you need a specific algorithm that isn't here then take a look
+// at hxintro_sort_ as an example of how you might compose a new sorting
+// function built from these routines.
 
 #include <hx/detail/hxsort_detail.hpp>
 
@@ -133,7 +145,7 @@ void hxsort(T_* begin_, T_* end_) {
 /// Non-unique values will be selected from arbitrarily.
 ///
 /// The compare parameter is a functor that returns true if the first
-/// argument is ordered before (i.e. is less than) the second. `See hxkey_less`.
+/// argument is ordered before (i.e. is less than) the second. See `hxkey_less`.
 /// - `begin` : Pointer to the beginning of the range to search.
 /// - `end` : Pointer to one past the last element in the range to search.
 /// - `val` : The value to search for.
