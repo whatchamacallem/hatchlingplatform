@@ -72,21 +72,34 @@ class HxArrayPrinter:
 			error = f"{traceback.format_exc()}"
 			return error.split('\n', 1)[1]
 
+	def raw_view(self):
+		if self.val.type.template_argument(1) == 0:
+			yield ('m_data_', self.val['m_data_'])
+			yield ('m_capacity_', self.val['m_capacity_'])
+		yield ('m_end_', self.val['m_end_'])
+
+	def array_view(self):
+		# Use integer byte calculations.
+		for i in range(self._size):
+			int_ptr = self._data + i * self._elem_type.sizeof
+			elem_ptr = gdb.Value(int_ptr).cast(self._elem_type.pointer())
+			yield (f"[{i}] {hex(int_ptr)}", elem_ptr.dereference())
+
 	def children(self):
 		try:
 			# Check if the array was found in to_string.
-			if hasattr(self, '_data'):
-				# Use integer address calculations.
-				for i in range(self._size):
-					int_ptr = self._data + i * self._elem_type.sizeof
-					elem_ptr = gdb.Value(int_ptr).cast(self._elem_type.pointer())
-					yield (f"[{i}] {hex(int_ptr)}", elem_ptr.dereference())
+			if hasattr(self, '_size'):
+				if self._size > 10:
+					# Move the raw view to the top of arrays over length 10.
+					# This is to keep it from getting buried completely.
+					yield from self.raw_view()
+					yield from self.array_view()
+				else:
+					yield from self.array_view()
+					yield from self.raw_view()
+			else:
+				yield from self.raw_view()
 
-			# Provide a raw view after the elements.
-			yield ('m_data_', self.val['m_data_']);
-			yield ('m_end_', self.val['m_end_']);
-			if self.val.type.template_argument(1) == 0:
-				yield ('m_capacity_', self.val['m_capacity_']);
 		except Exception:
 			return
 
