@@ -2,42 +2,44 @@ import gdb # type: ignore
 import gdb.printing # type: ignore
 import traceback
 
-#
 # hxarray uses this allocation strategy:
 #
-# template<typename T_, size_t fixed_capacity_>
-# class hxallocator {
-# 	T_ m_data_[fixed_capacity_];
-# };
-# template<typename T_>
-# class hxallocator<T_, 0> {
-# 	m_capacity_;
-# 	T_* m_data_;
-# };
-# template<typename T_, size_t capacity_=0>
-# class hxarray : public hxallocator<T_, capacity_> {
-# 	T_* m_end_;
-# }
+#	template<typename T_, size_t fixed_capacity_>
+#	class hxallocator {
+#		T_ m_data_[fixed_capacity_];
+#	};
+#	template<typename T_>
+#	class hxallocator<T_, 0> {
+#		int m_capacity_;
+#		T_* m_data_;
+#	};
+#	template<typename T_, size_t capacity_=0>
+#	class hxarray : public hxallocator<T_, capacity_> {
+#		T_* m_end_;
+#	}
 #
 
 class HxArrayPrinter:
-    """Pretty printer for hxarray structure"""
+    """
+    Pretty printer for hxarray structure. There are two different underlying
+    implementations and this logic works for both of them.
+    """
 
     def __init__(self, val):
         self.val = val
 
     def to_string(self):
         try:
-            m_data = self.val['m_data_']
-            m_end = self.val['m_end_']
+            data = self.val['m_data_']
+            end = self.val['m_end_']
 
-            if m_data.is_optimized_out or m_end.is_optimized_out:
+            if data.is_optimized_out or end.is_optimized_out:
                 return "<optimized out>"
 
             if self.val.type.template_argument(1) == 0:
                 capacity = int(self.val['m_capacity_'])
             else:
-                capacity = self.val.type.template_argument(1)
+                capacity = int(self.val.type.template_argument(1))
             if capacity == 0:
                 return "<unallocated>"
 
@@ -45,17 +47,37 @@ class HxArrayPrinter:
             # works for both of them. This is Python, so we have int instead of
             # uintptr_t to calculate addresses with.
             if self.val.type.template_argument(1) != 0:
-                m_data = int(m_data.address)
+                data = int(data.address)
             else:
-                m_data = int(m_data)
-            m_end = int(m_end)
+                data = int(data)
+            end = int(end)
 
-            elem_type = self.val.type.template_argument(0)
-            size = int((m_end - m_data) / elem_type.sizeof)
+			# Cache these for calculating children.
+            self.elem_type = self.val.type.template_argument(0)
+            self.size = int((end - data) / self.elem_type.sizeof)
+            self.data = data
 
-            return "[{}] /{} <{}>".format(size, capacity, elem_type)
+			# Format single line description.
+            return "[{}] /{} <{}>".format(self.size, capacity, self.elem_type)
         except Exception as e:
             return f"{traceback.format_exc()}"
+
+    def children(self):
+        try:
+            # Check if the array was found in to_string.
+            if not hasattr(self, 'size'):
+                return
+
+			# Use integer address calculations.
+            for i in range(self.size):
+                int_ptr = self.data + i * self.elem_type.sizeof
+                elem_ptr = gdb.Value(int_ptr).cast(self.elem_type.pointer())
+                yield (f"[{i}]", elem_ptr.dereference())
+        except Exception:
+            return
+
+    def display_hint(self):
+        return "array"
 
 def build_pretty_printer():
     pp = gdb.printing.RegexpCollectionPrettyPrinter("hxarray_printer")
