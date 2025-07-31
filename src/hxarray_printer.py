@@ -21,7 +21,7 @@ import traceback
 
 class HxArrayPrinter:
     """
-    Pretty printer for hxarray structure. There are two different underlying
+    Pretty printer for hxarray<T, capacity>. There are two different underlying
     implementations and this logic works for both of them.
     """
 
@@ -42,6 +42,8 @@ class HxArrayPrinter:
                 capacity = int(self.val.type.template_argument(1))
             if capacity == 0:
                 return "<unallocated>"
+            if capacity < 0:
+                return "<negative capacity>"
 
             # There are two different underlying implementations and this logic
             # works for both of them. This is Python, so we have int instead of
@@ -52,26 +54,32 @@ class HxArrayPrinter:
                 data = int(data)
             end = int(end)
 
+            elem_type = self.val.type.template_argument(0)
+            size = int((end - data) / elem_type.sizeof)
+            if size < 0:
+                return "<negative size>"
+
 			# Cache these for calculating children.
-            self.elem_type = self.val.type.template_argument(0)
-            self.size = int((end - data) / self.elem_type.sizeof)
-            self.data = data
+            self._elem_type = elem_type
+            self._size = size
+            self._data = data
 
 			# Format single line description.
-            return "[{}] /{} <{}>".format(self.size, capacity, self.elem_type)
+            return "[{}] /{} <{}>".format(self._size, capacity, self._elem_type)
         except Exception as e:
-            return f"{traceback.format_exc()}"
+            error = f"{traceback.format_exc()}"
+            return error.split('\n', 1)[1]
 
     def children(self):
         try:
             # Check if the array was found in to_string.
-            if not hasattr(self, 'size'):
+            if not hasattr(self, '_data'):
                 return
 
 			# Use integer address calculations.
-            for i in range(self.size):
-                int_ptr = self.data + i * self.elem_type.sizeof
-                elem_ptr = gdb.Value(int_ptr).cast(self.elem_type.pointer())
+            for i in range(self._size):
+                int_ptr = self._data + i * self._elem_type.sizeof
+                elem_ptr = gdb.Value(int_ptr).cast(self._elem_type.pointer())
                 yield (f"[{i}]", elem_ptr.dereference())
         except Exception:
             return
