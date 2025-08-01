@@ -2,9 +2,9 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
-
-// hxsettings.h - Compiler detection and target specific C++11/C++14 polyfill.
-// Use #if(HX_...) instead of #ifdef(HX_...) for all HX_* macros.
+//
+// <hx/hxsettings.h> - Compiler detection and target specific C++11/C++14
+// polyfill. Use #if(HX_...) instead of #ifdef(HX_...) for all HX_* macros.
 
 #if !HATCHLING_VER
 #error #include <hx/hatchling.h> instead
@@ -56,8 +56,9 @@
 #define hxbreakpoint() (__debugbreak(),false)
 #define hxnoreturn
 
-/// Unlike noexcept this is undefined when violated.
-#define hxnoexcept_intrinsic __declspec(nothrow) /// `hxnoexcept_intrinsic` - `_MSC_VER's` `nothrow` attribute.
+/// Unlike noexcept this is undefined when violated. `hxnoexcept_unchecked` -
+/// `_MSC_VER's` `nothrow` attribute.
+#define hxnoexcept_unchecked __declspec(nothrow)
 
 // ----------------------------------------------------------------------------
 #else // target settings (clang and gcc.)
@@ -95,9 +96,9 @@
 #define hxbreakpoint() (raise(SIGTRAP),false) /// `hxbreakpoint` - Use SIGTRAP if debugtrap is not available.
 #endif
 
-/// `hxnoexcept_intrinsic` - Use gcc/clang `nothrow` attribute. Unlike `noexcept` this
+/// `hxnoexcept_unchecked` - Use gcc/clang `nothrow` attribute. Unlike `noexcept` this
 /// is undefined when violated.
-#define hxnoexcept_intrinsic __attribute__((nothrow))
+#define hxnoexcept_unchecked __attribute__((nothrow))
 
 #endif // target settings
 

@@ -1,15 +1,18 @@
 #pragma once
-
-// Hatchling Platform. <hx/hatchling.h> requires C99. If compiled as C++98 it
-// will include C99 headers. Those headers were only added to C++11. All the
-// C++98 compilers allow C99 headers without complaint. In particular this
-// codebase relies on stdint.h for fixed width integers which is not in C++98.
-// Features from C++17 and a few compiler intrinsics are used when available.
-//
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
-// https://github.com/whatchamacallem/HatchlingPlatform
+//
+// Hatchling Platform. <hx/hatchling.h> requires C99. C++11 is optional.
+//
+// Defines logging macros (hxlog, hxlogrelease, hxlogconsole, hxlogwarning)
+// which vary by HX_RELEASE level (0–3) and defines log verbosity (log, console,
+// warning, assert).
+//
+// Assertion macros (hxassert, hxassertmsg, hxassertrelease) are provided for
+// debugging, active when HX_RELEASE < 3. hxinit initializes platform;
+// hxshutdown releases resources (HX_RELEASE < 3). Utilities: hxmove, hxmin,
+// hxmax, hxabs, hxclamp, hxswap, hxhex_dump, hxfloat_dump.
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -93,13 +96,13 @@ enum hxloglevel_t {
 	|| hxbreakpoint())
 
 /// Assert handler. Do not call directly, signature changes and then is removed.
-hxnoexcept_intrinsic int hxasserthandler(const char* file_, size_t line_);
+hxnoexcept_unchecked int hxasserthandler(const char* file_, size_t line_);
 
 #else // HX_RELEASE >= 1
 #define hxlog(...) ((void)0)
 #define hxassertmsg(x_, ...) ((void)0)
 #define hxassert(x_) ((void)0)
-hxnoexcept_intrinsic hxnoreturn void hxasserthandler(hxhash_t file_, size_t line_);
+hxnoexcept_unchecked hxnoreturn void hxasserthandler(hxhash_t file_, size_t line_);
 #endif
 
 #if (HX_RELEASE) <= 1
@@ -158,14 +161,14 @@ void hxshutdown(void);
 /// - `level` : The log level (e.g., hxloglevel_log, hxloglevel_warning).
 /// - `format` : A printf-style format string.
 /// - `...` Additional arguments for the format string.
-hxnoexcept_intrinsic void hxloghandler(enum hxloglevel_t level_, const char* format_, ...) hxattr_format(2, 3);
+hxnoexcept_unchecked void hxloghandler(enum hxloglevel_t level_, const char* format_, ...) hxattr_format(2, 3);
 
 /// `hxloghandler_v` - A `va_list` version of `hxloghandler`. This is the only access to
 /// logging when `HX_RELEASE > 2`.
 /// - `level` : The log level (e.g., `hxloglevel_log`, `hxloglevel_warning`).
 /// - `format` : A `printf`-style format string.
 /// - `args` : A `va_list` containing the arguments for the format string.
-hxnoexcept_intrinsic void hxloghandler_v(enum hxloglevel_t level_, const char* format_, va_list args_);
+hxnoexcept_unchecked void hxloghandler_v(enum hxloglevel_t level_, const char* format_, va_list args_);
 
 /// `hxhex_dump` - Prints an array of bytes formatted in hexadecimal. Additional
 /// information provided when pretty is non-zero.

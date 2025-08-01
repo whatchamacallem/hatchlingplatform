@@ -2,18 +2,18 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
-
-#include <hx/hatchling.h>
-
-class hxfile;
-
-// hxconsole API - Implements a simple console for remote use or to implement
+//
+// <hx/hxconsole.hpp> - Implements a simple console for remote use or to implement
 // configuration files. Output is directed to the system log with
 // hxloglevel_console. A remote console will require forwarding commands to the
 // target and reporting the system log back. Configuration files only require
 // file I/O. C-style calls returning bool with up to 4 args using "const char*",
 // hxconsolenumber_t or hxconsolehex_t as parameter types are required for the
 // bindings to work. See the following commands for examples.
+
+#include <hx/hatchling.h>
+
+class hxfile;
 
 /// `hxconsolenumber_t` - A number. Uses double as an intermediate type. This
 /// reduces template bloat by limiting parameter types. This is the same type of

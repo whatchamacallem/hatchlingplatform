@@ -470,7 +470,7 @@ using namespace hxdetail_;
 // ----------------------------------------------------------------------------
 // hxsystem_allocator_scope
 
-hxsystem_allocator_scope::hxsystem_allocator_scope(hxsystem_allocator_t id)
+hxnoexcept_unchecked hxsystem_allocator_scope::hxsystem_allocator_scope(hxsystem_allocator_t id)
 {
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 
@@ -482,7 +482,7 @@ hxsystem_allocator_scope::hxsystem_allocator_scope(hxsystem_allocator_t id)
 	m_previous_bytes_allocated_ = al.get_bytes_allocated(id);
 }
 
-hxsystem_allocator_scope::~hxsystem_allocator_scope(void) {
+hxnoexcept_unchecked hxsystem_allocator_scope::~hxsystem_allocator_scope(void) {
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 	s_hxmemory_manager->end_allocation_scope(this, m_previous_allocator_);
 }
@@ -513,7 +513,7 @@ size_t hxsystem_allocator_scope::get_scope_bytes_allocated(void) const {
 // C API
 
 extern "C"
-void* hxmalloc(size_t size) {
+hxnoexcept_unchecked void* hxmalloc(size_t size) {
 	hxinit();
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 	void* ptr = s_hxmemory_manager->allocate(size, hxsystem_allocator_current, HX_ALIGNMENT);
@@ -524,7 +524,7 @@ void* hxmalloc(size_t size) {
 }
 
 extern "C"
-void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, size_t alignment) {
+hxnoexcept_unchecked void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, size_t alignment) {
 	hxinit();
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 	void* ptr = s_hxmemory_manager->allocate(size, (hxsystem_allocator_t)id, alignment);
@@ -535,7 +535,7 @@ void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, size_t alignment) {
 }
 
 extern "C"
-void hxfree(void *ptr) {
+hxnoexcept_unchecked void hxfree(void *ptr) {
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 
 	// Nothing allocated from the OS memory manager can be freed here.  Not unless

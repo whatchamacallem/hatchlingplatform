@@ -2,6 +2,9 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
+//
+// <hx/hxrandom.hpp> - A random number generator that automatically casts itself
+// in well defined ways. Useful for test data.
 
 #include <hx/hatchling.h>
 

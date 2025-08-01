@@ -5,7 +5,7 @@
 // hxconsole inline header and a lot of internals. See hxconsole.h.
 
 // This is a little old fashioned but a simple rewrite wouldn't make the
-// template bloat any better. Although this code is very efficient. In
+// template bloat any better. Although this code is still very efficient. In
 // theory a byte code interpreter that understood the target calling
 // convention could shave off 10k from a system with 100s of commands.
 

@@ -7,7 +7,19 @@
 
 #include "hxctest.h"
 
-// C utils
+// Make sure this all compiles and run in C99.
+bool hxctest_hatchling_h(void) {
+	hxinit();
+	hxlog("Smoke testing from C: hxlog, ");
+	hxlogrelease("hxlogrelease, ");
+	hxlogconsole("hxlogconsole");
+	hxlogwarning("hxlogwarning");
+	hxassertmsg(1, "hxassertmsg %d", 1);
+	hxassert(1);
+	hxassertrelease(1.0, "hxassertrelease %f", 1.0f);
+	hxwarnmsg("true", "not true");
+	return true; // Didn't crash.
+}
 
 bool hxctest_math(void) {
 	return hxmin(-3, 2) == -3
@@ -55,12 +67,13 @@ bool hxctest_memory(void) {
 	return result;
 }
 
-// A test harness in 2 lines of C.
+// A test harness in 2 lines of C. Note how safe the string ops are.
 #define HX_CTEST_PRINT(x) fwrite(x, (sizeof x) - 1, 1, stdout)
 #define HX_CTEST_EXEC(fn) (fn() || (HX_CTEST_PRINT(#fn ": test fail\n"), false))
 
 bool hxctest_all(void) {
-	return HX_CTEST_EXEC(hxctest_math)
+	return HX_CTEST_EXEC(hxctest_hatchling_h)
+	    && HX_CTEST_EXEC(hxctest_math)
 		&& HX_CTEST_EXEC(hxctest_clamp)
 		&& HX_CTEST_EXEC(hxctest_swap)
 		&& HX_CTEST_EXEC(hxctest_memory);

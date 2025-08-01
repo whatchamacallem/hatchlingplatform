@@ -2,14 +2,13 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
-
-#include <hx/hatchling.h>
-
-// hxkey.hpp - User overloadable key-equal, key-less and key-hash functions.
 //
+// <hx/hxkey.hpp> - User overloadable key-equal, key-less and key-hash functions.
 // This code will only use the == and < operators by default. That will work
 // with a default or custom <=> operator. Alternately these calls can be
 // overriden to resolve key operations without global operator overloads.
+
+#include <hx/hatchling.h>
 
 /// `hxkey_equal(const T& a, const T& b)` - Compares two objects for equivalence.
 /// If your key type doesn't support `operator==` then this function may need to

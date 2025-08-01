@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 //
-// hxsort.hpp - Sorting and searching utilities for hatchling platform. Provides
-// insertion sort, binary search, and a general purpose sort implementation.
-// Includes support for template partial specialization (overloads of
-// hxkey_equal, hxkey_less, hxswap) and functors when defining custom key
-// operations. Otherwise T::T(T&&), T::~T(), T::operator=(T&&),
+// <hx/hxsort.hpp> - Sorting and searching utilities for hatchling platform.
+// Provides insertion sort, binary search, and a general purpose sort
+// implementation. Includes support for template partial specialization
+// (overloads of hxkey_equal, hxkey_less, hxswap) and functors when defining
+// custom key operations. Otherwise T::T(T&&), T::~T(), T::operator=(T&&),
 // T::operator<(const T&) and T::operator==(const T&) are used.
 //
 // hxradix_sort.hpp is recommended as an `Θ(n)` sorting strategy for any
@@ -21,8 +21,8 @@
 // hxheap_sort may also be useful for keeping code size down while providing
 // `Θ(n log n)`.
 //
-// hxsort is meant to be competitive with smaller types and "resistant to attack."
-// It instantiates about 200 lines of template code.
+// hxsort is meant to be competitive with smaller types and "resistant to
+// attack." It instantiates about 200 lines of template code.
 //
 // If sorting is important to your application then the "cpp-sort" project is
 // recommended as a way to study your data and identify the best algorithms for
@@ -45,7 +45,8 @@
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
 template<typename T_, typename less_t_>
 void hxinsertion_sort(T_* begin_, T_* end_, const less_t_& less_) {
-	if(begin_ == end_) { return; } // Address sanitizer: Avoids adding 1 to null iterators.
+	// Address sanitizer: Avoids adding 1 to null iterators.
+	if(begin_ == end_) { return; }
 
 	for (T_ *i_ = begin_, *j_ = begin_ + 1; j_ < end_; i_ = j_++) {
 		if (!less_(*i_, *j_)) {
@@ -63,8 +64,8 @@ void hxinsertion_sort(T_* begin_, T_* end_, const less_t_& less_) {
 	}
 }
 
-/// `hxinsertion_sort (specialization)` - An overload of `hxinsertion_sort` that uses
-/// `hxkey_less`.
+/// `hxinsertion_sort (specialization)` - An overload of `hxinsertion_sort` that
+/// uses `hxkey_less`.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename T_>
@@ -72,8 +73,8 @@ void hxinsertion_sort(T_* begin_, T_* end_) {
 	hxinsertion_sort(begin_, end_, hxkey_less_function<T_>());
 }
 
-/// `hxheapsort` - Sorts the elements in the range `[begin, end)` in comparison order
-/// using the heapsort algorithm.
+/// `hxheapsort` - Sorts the elements in the range `[begin, end)` in comparison
+/// order using the heapsort algorithm.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
@@ -113,7 +114,8 @@ void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
     }
 }
 
-/// `hxheapsort (specialization)` - An overload of `hxheapsort` that uses `hxkey_less`.
+/// `hxheapsort (specialization)` - An overload of `hxheapsort` that uses
+/// `hxkey_less`.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename T_>
@@ -121,9 +123,10 @@ void hxheapsort(T_* begin_, T_* end_) {
 	hxheapsort(begin_, end_, hxkey_less_function<T_>());
 }
 
-/// `hxsort` - A general purpose sort routine using `T::T()`, `T::~T()`, `T::operator=(&&)`,
-/// the `hxswap` overloads and a `less` functor which defaults to `hxkey_less`. This version
-/// is intended for sorting large numbers of small objects.
+/// `hxsort` - A general purpose sort routine using `T::T()`, `T::~T()`,
+/// `T::operator=(&&)`, the `hxswap` overloads and a `less` functor which
+/// defaults to `hxkey_less`. This version is intended for sorting large numbers
+/// of small objects.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
@@ -141,12 +144,11 @@ void hxsort(T_* begin_, T_* end_) {
 	hxintro_sort_(begin_, end_, hxkey_less_function<T_>(), 2u * hxlog2i(end_ - begin_));
 }
 
-/// `hxbinary_search` - Performs a binary search in the range [first, last). Returns
-/// `null` if the value is not found. Unsorted data will lead to errors.
-/// Non-unique values will be selected from arbitrarily.
-///
-/// The compare parameter is a functor that returns true if the first
-/// argument is ordered before (i.e. is less than) the second. See `hxkey_less`.
+/// `hxbinary_search` - Performs a binary search in the range [first, last).
+/// Returns `null` if the value is not found. Unsorted data will lead to errors.
+/// Non-unique values will be selected from arbitrarily. The compare parameter
+/// is a functor that returns true if the first argument is ordered before (i.e.
+/// is less than) the second. See `hxkey_less`.
 /// - `begin` : Pointer to the beginning of the range to search.
 /// - `end` : Pointer to one past the last element in the range to search.
 /// - `val` : The value to search for.
@@ -174,7 +176,8 @@ const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_, cons
 	return hxnull;
 }
 
-/// `hxbinary_search (specialization)` - An overload of `hxbinary_search` that uses `hxkey_less`.
+/// `hxbinary_search (specialization)` - An overload of `hxbinary_search` that
+/// uses `hxkey_less`.
 /// - `begin` : Pointer to the beginning of the range to search.
 /// - `end` : Pointer to one past the last element in the range to search.
 /// - `val` : The value to search for.

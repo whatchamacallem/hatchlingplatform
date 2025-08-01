@@ -2,17 +2,10 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
-
-#include <hx/hatchling.h>
-
-#if HX_USE_THREADS
-#include <errno.h>
-#include <pthread.h>
-#endif
-
-// hxthread.hpp - Threading primitives that mostly adhere to the C++ standard.
-// This header provides lightweight C++ wrappers around POSIX pthreads for
-// thread synchronization and management. The following classes are defined:
+//
+// <hx/hxthread.hpp> - Threading primitives that mostly adhere to the C++
+// standard. This header provides lightweight C++ wrappers around POSIX pthreads
+// for thread synchronization and management. The following classes are defined:
 //
 // - hxthread_local<T> (Available single threaded as well.)
 //	 Provides a C++ template for thread-local storage, allowing each thread to
@@ -22,8 +15,7 @@
 // - hxmutex (HX_USE_THREADS only)
 //	 Mutex wrapper for pthreads. Provides lock/unlock functionality, error
 //	 tracking, and ensures proper initialization and destruction. Not copyable.
-//	 Asserts in debug and uses 2 bytes to track validity and last pthread error
-//	 code otherwise.
+//	 Asserts on incorrect configuration.
 //
 // - hxunique_lock (HX_USE_THREADS only)
 //	 RAII-style unique lock for hxmutex. Locks the mutex on construction and
@@ -33,13 +25,19 @@
 // - hxcondition_variable (HX_USE_THREADS only)
 //	 Condition variable wrapper for pthreads. Allows threads to wait for
 //	 notifications, supports predicate-based waiting, and provides notify_one
-//	 and notify_all methods. Not copyable. Asserts in debug and uses 2 bytes
-//	 to track validity and last pthread error code otherwise.
+//	 and notify_all methods. Not copyable. Asserts on errors.
 //
 // - hxthread (HX_USE_THREADS only)
 //	 Thread wrapper for pthreads. Provides thread creation, joining, and
 //	 detaching. Ensures threads are not left joinable on destruction. Not copyable.
 //	 Errors are threated as release mode asserts instead of being tracked.
+
+#include <hx/hatchling.h>
+
+#if HX_USE_THREADS
+#include <errno.h>
+#include <pthread.h>
+#endif
 
 /// Return the current thread id. Returns `0` when threads are disabled.
 inline size_t hxthread_id() {
@@ -143,7 +141,7 @@ public:
 	/// and returns false on failure.
 	inline bool lock(void) {
 		int code_ = ::pthread_mutex_lock(&m_mutex_);
-		hxassertmsg(code_ == 0 || code_ == EINVAL || code_ == EDEADLK, "pthread_mutex_lock %s", ::strerror(code_));
+		hxassertmsg(code_ == 0 || code_ == EBUSY || code_ == EAGAIN, "pthread_mutex_lock %s", ::strerror(code_));
 		return code_ == 0;
 	}
 

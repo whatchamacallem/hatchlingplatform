@@ -2,6 +2,15 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
+//
+// <hx/hxmemory_manager.h> - Memory Manager C API. Memory allocators are
+// selected using an id. These are the large system-wide allocators, not the
+// per-object hxallocator which allocates from here.
+//
+// Nota bene: The current allocator is a thread local attribute.
+//
+// Alignment is specified using a mask of those LSB bits that must be 0. Which
+// is a value 1 less than the actual power of two alignment.
 
 #if !HATCHLING_VER
 #error #include <hx/hatchling.h> instead
@@ -14,15 +23,6 @@
 
 extern "C" {
 #endif
-
-// hxmemory_manager.h - Memory Manager C API. Memory allocators are selected using
-// an id. These are the large system-wide allocators, not the per-object
-// hxallocator which allocates from here.
-//
-// Nota bene: The current allocator is a thread local attribute.
-//
-// Alignment is specified using a mask of those LSB bits that must be 0. Which
-// is a value 1 less than the actual power of two alignment.
 
 /// `HX_ALIGNMENT` - The default alignment allows for storing char pointers. This
 /// alignment should work for most types.
@@ -49,25 +49,25 @@ enum hxsystem_allocator_t {
 ///   hxsystem_allocator_current.)
 /// - `alignment`(C++ only): The alignment for the allocation. (Default
 ///   is HX_ALIGNMENT.)
-void* hxmalloc(size_t size_);
+void* hxnoexcept_unchecked hxmalloc(size_t size_);
 
 /// `hxmalloc_ext` - Allocates memory of the specified size with a specific memory
 /// manager and alignment. Will not return on failure.
 /// - `size` : The size of the memory to allocate.
 /// - `allocator` : The memory manager ID to use for allocation. (Default is hxsystem_allocator_current.)
 /// - `alignment` : The alignment for the allocation. (Default is HX_ALIGNMENT.)
-void* hxmalloc_ext(size_t size_, enum hxsystem_allocator_t allocator_, uintptr_t alignment_/*=HX_ALIGNMENT*/);
+void* hxnoexcept_unchecked hxmalloc_ext(size_t size_, enum hxsystem_allocator_t allocator_, uintptr_t alignment_/*=HX_ALIGNMENT*/);
 
 /// `hxfree` - Frees memory previously allocated with hxmalloc or hxmalloc_ext.
 /// - `ptr` : Pointer to the memory to free.
-void hxfree(void* ptr_);
+void hxnoexcept_unchecked hxfree(void* ptr_);
 
 /// `hxstring_duplicate` - Allocates a copy of a string using the specified memory
 /// manager. Returns a pointer to the duplicated string.
 /// - `string` : The string to duplicate.
 /// - `allocator` : The memory manager ID to use for allocation. Defaults to
 ///   hxsystem_allocator_current in C++.
-char* hxstring_duplicate(const char* string_, enum hxsystem_allocator_t allocator_ /*=hxsystem_allocator_current*/);
+char* hxnoexcept_unchecked hxstring_duplicate(const char* string_, enum hxsystem_allocator_t allocator_ /*=hxsystem_allocator_current*/);
 
 #if HX_CPLUSPLUS
 } // extern "C"
@@ -75,7 +75,7 @@ char* hxstring_duplicate(const char* string_, enum hxsystem_allocator_t allocato
 // Memory Manager C++ API
 
 #if !HX_HOSTED
-// Declare placement new.
+// Declare placement new. These versions return null instead of throwing an exception.
 inline void* operator new(size_t, void* ptr_) noexcept { return ptr_; }
 inline void* operator new[](size_t, void* ptr_) noexcept { return ptr_; }
 inline void operator delete(void*, void*) noexcept { }
@@ -90,10 +90,10 @@ class hxsystem_allocator_scope
 public:
 	/// `hxsystem_allocator_scope` - Constructor: Sets the current memory allocator to the specified ID.
 	/// - `allocator` : The memory manager ID to set for this scope.
-	hxsystem_allocator_scope(hxsystem_allocator_t allocator_);
+	hxnoexcept_unchecked hxsystem_allocator_scope(hxsystem_allocator_t allocator_);
 
 	/// Destructor restores the previous memory manager allocator ID.
-	~hxsystem_allocator_scope(void);
+	hxnoexcept_unchecked ~hxsystem_allocator_scope(void);
 
 	/// Gets the total number of allocations made by the memory allocator.
 	size_t get_total_allocation_count(void) const;
@@ -144,7 +144,7 @@ size_t hxmemory_manager_leak_count(void);
 /// - `allocator` : The memory manager ID to use for allocation. Defaults to hxsystem_allocator_current.
 /// - `align` : A mask of low bits to be zero'd out when allocating new pointers. Defaults to HX_ALIGNMENT.
 template <typename T_, hxsystem_allocator_t allocator_=hxsystem_allocator_current, uintptr_t align_=HX_ALIGNMENT, typename... Args_>
-constexpr T_* hxnew(Args_&&... args_) noexcept {
+T_* hxnew(Args_&&... args_) noexcept {
 	return ::new(hxmalloc_ext(sizeof(T_), allocator_, align_)) T_(args_...);
 }
 
@@ -152,7 +152,7 @@ constexpr T_* hxnew(Args_&&... args_) noexcept {
 /// manager.
 /// - `t` : Pointer to the object to delete.
 template <typename T_>
-constexpr void hxdelete(T_* t_) {
+void hxdelete(T_* t_) {
 	if (t_) {
 		t_->~T_();
 		if ((HX_RELEASE) < 1) {
@@ -169,10 +169,10 @@ class hxdeleter {
 public:
 	/// Deletes the object using hxdelete.
 	template <typename T_>
-	constexpr void operator()(T_* t_) const { hxdelete(t_); }
+	void operator()(T_* t_) const { hxdelete(t_); }
 
 	/// Always returns true, indicating the deleter is valid.
-	constexpr operator bool(void) const { return true; }
+	operator bool(void) const { return true; }
 };
 
 /// Implement hxdeleter with NOPs. Allows the compiler to remove the destructors
@@ -182,10 +182,10 @@ class hxdo_not_delete {
 public:
 	/// Deletes the object using hxdelete.
 	template <typename T_>
-	constexpr void operator()(T_*) const { }
+	void operator()(T_*) const { }
 
 	/// Always returns false, indicating the deleter should not be called.
-	constexpr operator bool(void) const { return false; }
+	operator bool(void) const { return false; }
 };
 
 /// `hxmalloc` - Add hxmalloc_ext args to hxmalloc C interface. Allocates memory with a

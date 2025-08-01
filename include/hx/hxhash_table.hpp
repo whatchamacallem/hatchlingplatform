@@ -1,15 +1,15 @@
 #pragma once
-
-#include <hx/detail/hxhash_table_detail.hpp>
-#include <hx/hxkey.hpp>
-
-// hxhash_table API - This header implements a hash table that operates without
-// reallocating memory or copying around data. Each bucket is implemented using
-// an embedded linked list. Hash tables can be used as either an unordered map or
-// an unordered set and have operations that allow for unique or duplicate keys.
-// While this interface is designed to be familiar, changes will be required to
-// switch over code using standard containers. In particular, all modification of
-// the table is non-standard.
+// SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+// SPDX-License-Identifier: MIT
+// This file is licensed under the MIT license found in the LICENSE.md file.
+//
+// <hx/hxhash_table.hpp> - This header implements a hash table that operates
+// without reallocating memory or copying around data. Each bucket is
+// implemented using an embedded linked list. Hash tables can be used as either
+// an unordered map or an unordered set and have operations that allow for
+// unique or duplicate keys. While this interface is designed to be familiar,
+// changes will be required to switch over code using standard containers. In
+// particular, all modification of the table is non-standard.
 //
 // Note that any node T using key K will work as long as it has the following
 // fields and K has an operator== or an hxkey_equal overload.
@@ -23,6 +23,9 @@
 //   hxhash_t hash() const;	// returns hash of key constructed with.
 // };
 //
+
+#include <hx/detail/hxhash_table_detail.hpp>
+#include <hx/hxkey.hpp>
 
 /// `hxhash_table_set_node` - Base class for unordered set entries. Caches the hash
 /// value. Copying and modification are disallowed to protect the integrity of the

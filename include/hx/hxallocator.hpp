@@ -2,11 +2,11 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
+//
+// <hx/hxallocator.hpp> - Similar to std::allocator. Allows for static or dynamic
+// allocation.
 
 #include <hx/hatchling.h>
-
-// hxallocator - Similar to std::allocator. Allows for static or dynamic
-// allocation.
 
 /// A capacity value that allows for dynamic allocation.
 #define hxallocator_dynamic_capacity 0u

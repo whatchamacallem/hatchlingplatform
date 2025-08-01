@@ -52,15 +52,19 @@ void hxsettings_construct();
 
 // ----------------------------------------------------------------------------
 // When not hosted, provide no locking around the initialization of function
-// scope static variables. The linker should optimize this away.
+// scope static variables. Provide a release mode assert to enforce that locking
+// is not required. Also provide a release mode assert to enforce that function
+// static constructors do not throw exceptions.
 #if !HX_HOSTED
 extern "C"
 int __cxa_guard_acquire(size_t *guard) {
 	// Return 0 if already constructed.
 	if(*guard == 1u) { return 0; }
 
-	// Check if the constructor is already in progress due to a race condition.
-	hxassertrelease(*guard != 2u, "function_scope_static race");
+	// Function scope statics must be initialized before calling worker threads.
+	// Check if the constructor is already in progress and flag any potential
+	// race condition.
+	hxassertrelease(*guard != 2u, "__cxa_guard_acquire no function scope static lock");
 
 	// Run the constructor.
 	*guard = 2u;
@@ -73,7 +77,7 @@ void __cxa_guard_release(size_t *guard) {
 }
 extern "C"
 void __cxa_guard_abort(uint64_t *guard) {
-	hxassertrelease(0, "function_scope_static exception constructing");
+	hxassertrelease(0, "__cxa_guard_abort exception while constructing");
 	*guard = 0u;
 }
 #endif
@@ -185,7 +189,7 @@ void hxinit_internal(void) {
 }
 
 extern "C"
-hxnoexcept_intrinsic void hxloghandler(hxloglevel_t level, const char* format, ...) {
+hxnoexcept_unchecked void hxloghandler(hxloglevel_t level, const char* format, ...) {
 	va_list args;
 	va_start(args, format);
 	hxloghandler_v(level, format, args);
@@ -195,7 +199,7 @@ hxnoexcept_intrinsic void hxloghandler(hxloglevel_t level, const char* format, .
 #define HX_STDOUT_STR_(x) ::fwrite(x, (sizeof x) - 1, 1, stdout)
 
 extern "C"
-hxnoexcept_intrinsic void hxloghandler_v(hxloglevel_t level, const char* format, va_list args) {
+hxnoexcept_unchecked void hxloghandler_v(hxloglevel_t level, const char* format, va_list args) {
 	if(g_hxisinit && g_hxsettings.log_level > level) {
 		return;
 	}
@@ -230,7 +234,7 @@ void hxshutdown(void) {
 
 #if (HX_RELEASE) == 0
 extern "C"
-hxnoexcept_intrinsic int hxasserthandler(const char* file, size_t line) {
+hxnoexcept_unchecked int hxasserthandler(const char* file, size_t line) {
 	const char* f = hxbasename(file);
 	if (g_hxisinit && g_hxsettings.asserts_to_be_skipped > 0) {
 		--g_hxsettings.asserts_to_be_skipped;
@@ -246,7 +250,7 @@ hxnoexcept_intrinsic int hxasserthandler(const char* file, size_t line) {
 }
 #else
 extern "C"
-hxnoexcept_intrinsic hxnoreturn void hxasserthandler(hxhash_t file, size_t line) {
+hxnoexcept_unchecked hxnoreturn void hxasserthandler(hxhash_t file, size_t line) {
 	hxloghandler(hxloglevel_assert, "exit file %08zx line %zu\n", (size_t)file, line);
 	_Exit(EXIT_FAILURE);
 }

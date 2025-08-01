@@ -2,16 +2,17 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
+//
+// <hx/hxhash_table_nodes.hpp> - These are usable implementations of the
+// hxhash_table Node template parameter. These are the keys for a set.
+// Subclasses will give you associated values which is a mapping.
 
 #include <hx/hxhash_table.hpp>
 
-// These are usable implementations of the hxhash_table Node template parameter.
-// These are the keys for a set. Subclasses will give you associated
-// values which is a mapping.
-
-/// `hxhash_table_node_integer` - Specialization of hxhash_table_node_base for integer
-/// types. See documentation of hxhash_table for interface documentation.
-/// This is a great example of a node that doesn't require a base class.
+/// `hxhash_table_node_integer` - Specialization of hxhash_table_node_base for
+/// integer types. See documentation of hxhash_table for interface
+/// documentation. This is a great example of a node that doesn't require a base
+/// class.
 template<typename key_t_>
 class hxhash_table_node_integer {
 public:
