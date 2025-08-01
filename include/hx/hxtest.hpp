@@ -4,9 +4,12 @@
 // This file is licensed under the MIT license found in the LICENSE.md file.
 //
 // hxtest - This is a Google Test-compatable framework for writing unit tests.
-// Only core features are provided. This framework only uses the '<' operator
-// and '==' operator in it's asserts. Compatibility with Google Test may
-// require additional relational operators.
+// It doesn't spam your system memory allocator with string operations right
+// after an assert fails. Actually, it makes no allocations ever. To disable
+// this header and switch to testing with <gtest/gtest.h> directly use
+// -DHX_USE_GOOGLE_TEST=1. Only core features are provided. This framework only
+// uses the '<' operator and '==' operator in it's asserts. Compatibility with
+// Google Test may require additional relational operators.
 //
 // - TEST(suite, name) - Defines a test case without a fixture.
 // - TEST_F(fixture, name) - Defines a test case using a fixture class.
