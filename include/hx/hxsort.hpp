@@ -1,14 +1,14 @@
 #pragma once
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
-// This file is licensed under the terms of the LICENSE.md file.
+// This file is licensed under the MIT license found in the LICENSE.md file.
 //
 // hxsort.hpp - Sorting and searching utilities for hatchling platform. Provides
 // insertion sort, binary search, and a general purpose sort implementation.
 // Includes support for template partial specialization (overloads of
 // hxkey_equal, hxkey_less, hxswap) and functors when defining custom key
-// operations. Otherwise T(&&), ~T(), operator=(T&&), operator<(const T&), and
-// operator==(const T&) are used.
+// operations. Otherwise T::T(T&&), T::~T(), T::operator=(T&&),
+// T::operator<(const T&) and T::operator==(const T&) are used.
 //
 // hxradix_sort.hpp is recommended as an `Θ(n)` sorting strategy for any
 // primitive type that is 4-bytes or less. This implementation does not cause
@@ -16,9 +16,10 @@
 // Radix sort is best when you need real-time guarantees and have a massive
 // workload. This is not a toy. It was actually how IBM sorted punch cards.
 //
-// hxinsertion_sort is recommended when you have under a kilobyte of data to sort
-// you don't want to add 10k to your executable just to sort it. hxheap_sort may
-// also be useful for keeping code size down while providing `Θ(n log n)`.
+// hxinsertion_sort is recommended when you have under a kilobyte of data to
+// sort and you don't want to add 10k to your executable just to sort it.
+// hxheap_sort may also be useful for keeping code size down while providing
+// `Θ(n log n)`.
 //
 // hxsort is meant to be competitive with smaller types and "resistant to attack."
 // It instantiates about 200 lines of template code.

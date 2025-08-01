@@ -1,7 +1,7 @@
 #pragma once
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
-// This file is licensed under the terms of the LICENSE.md file.
+// This file is licensed under the MIT license found in the LICENSE.md file.
 
 // hxsettings.h - Compiler detection and target specific C++11/C++14 polyfill.
 // Use #if(HX_...) instead of #ifdef(HX_...) for all HX_* macros.

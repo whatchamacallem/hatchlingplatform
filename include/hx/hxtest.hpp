@@ -1,9 +1,12 @@
 #pragma once
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
-// This file is licensed under the terms of the LICENSE.md file.
+// This file is licensed under the MIT license found in the LICENSE.md file.
 //
 // hxtest - This is a Google Test-compatable framework for writing unit tests.
+// Only core features are provided. This framework only uses the '<' operator
+// and '==' operator in it's asserts. Compatibility with Google Test may
+// require additional relational operators.
 //
 // - TEST(suite, name) - Defines a test case without a fixture.
 // - TEST_F(fixture, name) - Defines a test case using a fixture class.
