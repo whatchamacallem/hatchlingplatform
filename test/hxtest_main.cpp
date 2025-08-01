@@ -17,6 +17,15 @@ TEST(hxctest, all_tests) {
 	EXPECT_TRUE(hxctest_all());
 }
 
+// Make sure new and delete plausibly exist.
+TEST(hxnew, smoketest) {
+	int* t = new int(3);
+	ASSERT_TRUE(t);
+	hxassertrelease(t, "new"); // Should be impossible.
+	*t = 0xdeadbeef;
+	delete t;
+}
+
 // These two tests test the test framework by failing.
 #if HX_TEST_ERROR_HANDLING
 TEST(hxdeath_test, fail) {

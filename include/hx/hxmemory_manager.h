@@ -7,10 +7,35 @@
 // selected using an id. These are the large system-wide allocators, not the
 // per-object hxallocator which allocates from here.
 //
-// Nota bene: The current allocator is a thread local attribute.
+// General purpose memory allocators are inefficient and unsafe to use. The
+// problem is that long running code requires a lot of extra space to make sure
+// it doesn't fragment and unexpectedly fail to make a large allocation.
+// (Hardware support for virtual memory can be used to defrag a programs heap,
+// but that requires processor support and system call overhead.) For code that
+// uses a lot of small intermediate allocations 1/3 of your memory and 1/3 or
+// your processor time could get eaten by the system memory allocator. The
+// hxsystem_allocator_temporary_stack is provided as a replacement in that case.
 //
-// Alignment is specified using a mask of those LSB bits that must be 0. Which
-// is a value 1 less than the actual power of two alignment.
+// There is also a category of allocations that are expected to last for the
+// lifetime of the application. They can be allocated with 0 overhead using
+// hxsystem_allocator_permanent.
+//
+// NOTA BENE: The current allocator id is a thread local attribute that is
+// managed by the hxsystem_allocator_scope RAII class. This provides a non-
+// intrusive way to move swaths of code to different allocators.
+//
+// Alignment must be a power of two. (It always is.)
+//
+// Global new and delete are provided when HX_HOSTED==0. This is a requirement
+// for running as a stand alone C++ runtime. Otherwise they are not interfered
+// with. Those default versions do not use the memory manager's current
+// allocator id because it may not be safe to do so. hxnew and hxdelete are
+// available as substitutes. Or a version
+//
+// It should be possible to implement a triple buffered streaming strategy
+// for data processing by adding a two more temp stacks. An open world video
+// game would require even more temp stacks. This would require modifying the
+// existing code.
 
 #if !HATCHLING_VER
 #error #include <hx/hatchling.h> instead
@@ -75,7 +100,7 @@ char* hxnoexcept_unchecked hxstring_duplicate(const char* string_, enum hxsystem
 // Memory Manager C++ API
 
 #if !HX_HOSTED
-// Declare placement new. These versions return null instead of throwing an exception.
+// Declare placement new. These are not built into the compiler.
 inline void* operator new(size_t, void* ptr_) noexcept { return ptr_; }
 inline void* operator new[](size_t, void* ptr_) noexcept { return ptr_; }
 inline void operator delete(void*, void*) noexcept { }

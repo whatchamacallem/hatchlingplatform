@@ -265,11 +265,11 @@ TEST(hxthread, multiple_thread_start_join) {
 	hxthread* threads_[reps_];
 	int i_;
 	for (i_ = 0; i_ < reps_; ++i_) {
-		threads_[i_] = new hxthread(&hxthread_test_func_increment_, &argument_);
+		threads_[i_] = hxnew<hxthread>(&hxthread_test_func_increment_, &argument_);
 	}
 	for (i_ = 0; i_ < reps_; ++i_) {
 		threads_[i_]->join();
-		delete threads_[i_];
+		hxdelete(threads_[i_]);
 	}
 	EXPECT_EQ(shared_, reps_);
 }

@@ -96,6 +96,7 @@
         "setuptools",
         "situationship",
         "skipasserts",
+        "smoketest",
         "stdint",
         "testall",
         "testcmake",
