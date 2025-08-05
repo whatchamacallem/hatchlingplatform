@@ -148,6 +148,30 @@ class run_all_tests(unittest.TestCase):
 		self.assertEqual(buf_uint64.value, 66)
 		self.assertEqual(result_uint64.contents.value, 66)
 
+	def test_struct_fundamentals(self):
+		struct_fundamentals = system_under_test.StructFundamentals()
+		struct_fundamentals.m_bool = True
+		struct_fundamentals.m_char0 = 3
+		struct_fundamentals.m_char1 = 4
+		struct_fundamentals.m_char2 = 5
+		struct_fundamentals.m_int0 = 6
+		struct_fundamentals.m_int1 = 7
+		struct_fundamentals.m_uint2 = 8
+		struct_fundamentals.m_double = 9
+
+		result = system_under_test.function_struct_fundamentals_multiply(struct_fundamentals, 3)
+
+		self.assertEqual(struct_fundamentals.m_bool, True)
+		# Plain char is handled as a single byte in a byte array.
+		self.assertEqual(result.m_bool, False)
+		self.assertEqual(struct_fundamentals.m_char0, b'\x03')
+		self.assertEqual(result.m_char0, b'\x09')
+		self.assertEqual(struct_fundamentals.m_char2, 5)
+		self.assertEqual(result.m_char2, 15)
+		self.assertEqual(struct_fundamentals.m_double, 9)
+		self.assertEqual(result.m_double, 27)
+
+
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)
