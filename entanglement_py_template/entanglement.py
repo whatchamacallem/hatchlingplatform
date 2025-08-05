@@ -105,7 +105,8 @@ _sort_order = [
 class type_string_kind(enum.Enum):
 	arg_hint = 0,
 	return_hint = 1,
-	ctypes_bindings = 2
+	ctypes_parameters = 2,
+	ctypes_structure = 3
 
 def verbose(verbose_level: int, x: str) -> None:
 	if VERBOSE >= verbose_level:
@@ -198,7 +199,8 @@ def calculate_type_string(cursor: Cursor, cpp_type_ref: Type,
 
 	# Handle fundamental types.
 	if cpp_type_canonical.kind in _clang_to_ctypes:
-		if result_kind is type_string_kind.ctypes_bindings:
+		if result_kind in (type_string_kind.ctypes_parameters,
+					 		type_string_kind.ctypes_structure):
 			return _clang_to_ctypes[cpp_type_canonical.kind]
 		if result_kind is type_string_kind.arg_hint:
 			if cpp_type_canonical.kind is TypeKind.WCHAR: # type: ignore
@@ -270,15 +272,21 @@ def calculate_type_string(cursor: Cursor, cpp_type_ref: Type,
 		if definition_cursor.kind == CursorKind.ENUM_DECL: # type: ignore
 			if is_pointer:
 				throw_cursor(definition_cursor, f'Cannot pass enums by pointer or reference. Use int.')
-			if result_kind is type_string_kind.ctypes_bindings:
+			if result_kind in (type_string_kind.ctypes_parameters,
+					 			type_string_kind.ctypes_structure):
 				# Just tell ctypes to marshal enums to their underlying type.
 				return _clang_to_ctypes[definition_cursor.enum_type.kind]
 			return 'int' # Use plain int for enum arg and return hints.
 
 		# Classes and structs are usable directly by ctypes. These need to be
 		# full path.
-		if is_pointer and result_kind is type_string_kind.ctypes_bindings:
-			return f'_Ctypes.POINTER({py_name})'
+		if is_pointer:
+			if result_kind is type_string_kind.ctypes_parameters:
+				return f'_Ctypes.POINTER({py_name})'
+			if result_kind is type_string_kind.ctypes_structure:
+				# Using void here avoids a whole class definition dependency
+				# graph situation that is intractable going from C++ to Python.
+				return f'_Ctypes.void_p'
 		return py_name
 
 	throw_cursor(cursor, f'Unsupported definition kind {definition_cursor.kind}')
@@ -315,7 +323,7 @@ def emit_ctypes_function_args(cursor: Cursor, symbols: Dict[str, List[Cursor]], 
 			arg_name = arg.spelling if arg.spelling else f'_Arg{arg_index}'
 		if arg_type_kind == TypeKind.POINTER: # type: ignore
 			pointee_type = arg.type.get_pointee()
-			pointee_c_type = calculate_type_string(cursor, pointee_type, symbols, type_string_kind.ctypes_bindings)
+			pointee_c_type = calculate_type_string(cursor, pointee_type, symbols, type_string_kind.ctypes_parameters)
 			if pointee_c_type != 'None':
 				arg_list.append(f'_Pointer_shim({arg_name}, {pointee_c_type})')
 			else:
@@ -469,16 +477,7 @@ def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
 	return lines
 
 def emit_python_api_class(namespace_tabs: str, cursor: Cursor) -> List[str]:
-	base_class_name = '_Ctypes.Structure'
-
-# XXX Use of a class as a base class locks the _fields_ attribute. Meanwhile that attribute
-# may depend on symbols that have not been emitted yet. The plan is to rebase...
-#
-#	for child in cursor.get_children():
-#		if child.kind == CursorKind.CXX_BASE_SPECIFIER: # type: ignore
-#			base_class_name = calculate_python_package_path(child.referenced)
-
-	lines: List[str] = [f'{namespace_tabs}class {get_bare_name(cursor)}({base_class_name}):']
+	lines: List[str] = [f'{namespace_tabs}class {get_bare_name(cursor)}:']
 	lines += emit_python_api_doc(namespace_tabs + '\t', cursor)
 	return lines
 
@@ -539,21 +538,52 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
 			api += emit_python_api_class(namespace_tabs, cursor0)
 			current_namespace += [ cursor0.spelling ]
 
+def get_inheritance_depth(cursor : Cursor) -> int:
+	for child in cursor.get_children():
+		if child.kind == CursorKind.CXX_BASE_SPECIFIER: # type: ignore
+			return get_inheritance_depth(child.referenced) + 1
+	return 0
+
+def get_base_class(cursor : Cursor) -> str:
+	for child in cursor.get_children():
+		if child.kind == CursorKind.CXX_BASE_SPECIFIER: # type: ignore
+			return calculate_python_package_path(child.referenced)
+	return '_Ctypes.Structure'
+
 def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], structure_list: List[str]) -> None:
+	# Determine the inheritance depth of the symbols.
+	depth_sorted_symbols: Dict[int, List[List[Cursor]]] = { }
+
 	for cursor_list in sorted_symbols:
 		cursor0 = cursor_list[0]
 		if cursor0.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
-			assert len(cursor_list) == 1
+			depth = get_inheritance_depth(cursor0)
+			if depth not in depth_sorted_symbols:
+				depth_sorted_symbols[depth] = [ cursor_list ]
+			else:
+				depth_sorted_symbols[depth].append(cursor_list)
 
-			# XXX what happens when _fields_ contains _fields_. Does it break?
-			structure_list.append(f'{calculate_python_package_path(cursor0)}._fields_ = [')
+	# Visit by depth and then sort order.
+	counter = 0
+	for depth in sorted(depth_sorted_symbols.keys()):
+		symbols_at_depth = depth_sorted_symbols[depth]
+		for cursor_list in symbols_at_depth:
+			cursor0 = cursor_list[0]
+			if cursor0.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
+				assert len(cursor_list) == 1
 
-			for child in cursor0.get_children():
-				if child.kind == CursorKind.FIELD_DECL: # type: ignore
-					ctypes_type = calculate_type_string(child, child.type, symbols, type_string_kind.ctypes_bindings)
-					structure_list.append(f'\t("{child.spelling}", {ctypes_type}),')
+				name = get_bare_name(cursor0)
+				base = get_base_class(cursor0)
+				structure_list.append(f'class _T{counter}{name}({name}, {base}):')
+				structure_list.append(f'\t_fields_ = [')
 
-			structure_list.append("]")
+				for child in cursor0.get_children():
+					if child.kind == CursorKind.FIELD_DECL: # type: ignore
+						ctypes_type = calculate_type_string(child, child.type, symbols, type_string_kind.ctypes_structure)
+						structure_list.append(f"\t\t('{child.spelling}', {ctypes_type}),")
+
+				structure_list.append(f'\t]\n{name}=_T{counter}{name}')
+				counter = counter + 1
 
 def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], symbol_table: List[str]) -> None:
 	for cursor_list in sorted_symbols:
@@ -565,9 +595,9 @@ def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[Lis
 				# Get types
 				arg_types : List[str]= []
 				for arg in cursor.get_arguments():
-					ctypes_type = calculate_type_string(arg, arg.type, symbols, type_string_kind.ctypes_bindings)
+					ctypes_type = calculate_type_string(arg, arg.type, symbols, type_string_kind.ctypes_parameters)
 					arg_types.append(ctypes_type)
-				return_type = calculate_type_string(cursor, cursor.result_type, symbols, type_string_kind.ctypes_bindings)
+				return_type = calculate_type_string(cursor, cursor.result_type, symbols, type_string_kind.ctypes_parameters)
 
 				# format them
 				mangled_name = get_mangled_name(cursor)
