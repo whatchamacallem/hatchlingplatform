@@ -171,6 +171,26 @@ class run_all_tests(unittest.TestCase):
 		self.assertEqual(struct_fundamentals.m_double, 9)
 		self.assertEqual(result.m_double, 27)
 
+	# tests .vtable as well.
+	def test_pointer_fundamentals(self):
+		pointer_fundamentals = system_under_test.StructPointerFundamentals()
+		void_array = (ctypes.c_int * 1)(2)
+		pointer_fundamentals.m_pvoid = ctypes.cast(void_array, ctypes.c_void_p)
+		bool_array = (ctypes.c_bool * 1)(True)
+		pointer_fundamentals.m_pbool = ctypes.cast(bool_array, ctypes.POINTER(ctypes.c_bool))
+		float_array = (ctypes.c_float * 1)(3.0)
+		pointer_fundamentals.m_pfloat = ctypes.cast(float_array, ctypes.POINTER(ctypes.c_float))
+
+		result = system_under_test.function_struct_pointer_fundamentals_multiply(pointer_fundamentals, 5)
+
+		self.assertEqual(ctypes.cast(pointer_fundamentals.m_pvoid, ctypes.POINTER(ctypes.c_int))[0], 10)
+		self.assertEqual(pointer_fundamentals.m_pbool[0], False)
+		self.assertEqual(pointer_fundamentals.m_pfloat[0], 15)
+
+		self.assertEqual(ctypes.cast(result.contents.m_pvoid, ctypes.POINTER(ctypes.c_int))[0], 10)
+		self.assertEqual(result.contents.m_pbool[0], False)
+		self.assertEqual(result.contents.m_pfloat[0], 15)
+
 
 
 if __name__ == '__main__':

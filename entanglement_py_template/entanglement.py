@@ -286,7 +286,7 @@ def calculate_type_string(cursor: Cursor, cpp_type_ref: Type,
 			if result_kind is type_string_kind.ctypes_structure:
 				# Using void here avoids a whole class definition dependency
 				# graph situation that is intractable going from C++ to Python.
-				return f'_Ctypes.void_p'
+				return f'_Ctypes.c_void_p'
 		return py_name
 
 	throw_cursor(cursor, f'Unsupported definition kind {definition_cursor.kind}')
@@ -337,6 +337,10 @@ def emit_ctypes_function_args(cursor: Cursor, symbols: Dict[str, List[Cursor]], 
 
 def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[str, List[Cursor]], overloaded: bool) -> List[str]:
 	lines: List[str] = []
+
+	if cursor.is_pure_virtual_method():
+		# Ignore pure virtual methods. Python doesn't work that way.
+		return lines
 
 	# Decorators.
 	static_method = is_staticmethod(cursor)
@@ -411,6 +415,10 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
 	# Group overloads by argument count.
 	arg_count_map: Dict[int, List[Cursor]] = {}
 	for cursor in overloads:
+		if cursor.is_pure_virtual_method():
+			# Ignore pure virtual methods. Python doesn't work that way.
+			continue
+
 		arg_count = len(list(cursor.get_arguments()))
 		if arg_count not in arg_count_map:
 			arg_count_map[arg_count] = [cursor]
@@ -545,10 +553,32 @@ def get_inheritance_depth(cursor : Cursor) -> int:
 	return 0
 
 def get_base_class(cursor : Cursor) -> str:
+	if sum(c.kind == CursorKind.CXX_BASE_SPECIFIER for c in cursor.get_children()) > 1: # type: ignore
+		throw_cursor(cursor, 'Multiple inheritance unsupported by Python\'s ctypes module.')
+
 	for child in cursor.get_children():
 		if child.kind == CursorKind.CXX_BASE_SPECIFIER: # type: ignore
 			return calculate_python_package_path(child.referenced)
 	return '_Ctypes.Structure'
+
+def has_vtable(cursor : Cursor):
+	has_virtual = False
+	for c in cursor.get_children():
+		if c.kind in (	CursorKind.CONSTRUCTOR, # type: ignore
+						CursorKind.DESTRUCTOR,  # type: ignore
+						CursorKind.CXX_METHOD): # type: ignore
+
+			if c.is_virtual_method():
+				has_virtual = True
+				break
+
+	if has_virtual:
+		for c in cursor.get_children():
+			if c.kind == CursorKind.CXX_BASE_SPECIFIER: # type: ignore
+				if has_vtable(c.referenced):
+					return False # Not first virtual class
+
+	return has_virtual
 
 def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], structure_list: List[str]) -> None:
 	# Determine the inheritance depth of the symbols.
@@ -577,6 +607,9 @@ def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[L
 				structure_list.append(f'class _T{counter}{name}({name}, {base}):')
 				structure_list.append(f'\t_fields_ = [')
 
+				if has_vtable(cursor0):
+					structure_list.append(f"\t\t('_Vtable', _Ctypes.c_void_p),")
+
 				for child in cursor0.get_children():
 					if child.kind == CursorKind.FIELD_DECL: # type: ignore
 						ctypes_type = calculate_type_string(child, child.type, symbols, type_string_kind.ctypes_structure)
@@ -584,6 +617,8 @@ def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[L
 
 				structure_list.append(f'\t]\n{name}=_T{counter}{name}')
 				counter = counter + 1
+
+				structure_list.append(f'assert _Ctypes.sizeof({name})=={cursor0.type.get_size()}')
 
 def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], symbol_table: List[str]) -> None:
 	for cursor_list in sorted_symbols:
@@ -810,7 +845,7 @@ Arguments:
 	# requires figuring out all of the function overloads in advance.
 	symbols: Dict[str, List[Cursor]] = { }
 	for header_file in _arg_header_files:
-		verbose(1, f'load_translation_unit {header_file}')
+		verbose(1, 'load_translation_unit ' + header_file)
 		translation_unit = load_translation_unit(header_file)
 		symbols_gather_interesting(translation_unit.cursor, symbols)
 

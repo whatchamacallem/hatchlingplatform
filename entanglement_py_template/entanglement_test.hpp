@@ -35,8 +35,8 @@ ENTANGLEMENT void function_overload();
 ENTANGLEMENT int function_overload(int a, int b);
 ENTANGLEMENT float function_overload(int, int, int, int);
 
-/// Pointers and arrays. Writes a series of numbers starting at a value.
-/// E.g. size=3 and value=3 results in [3,4,5].
+/// Pointers and arrays. Writes a series of numbers starting at a value. E.g.
+/// size=3 and value=3 results in [3,4,5].
 ENTANGLEMENT int8_t* function_pointer_int8(int8_t* x, size_t size, int8_t value);
 ENTANGLEMENT uint16_t* function_pointer_uint16(uint16_t* x, size_t size, int16_t value);
 ENTANGLEMENT int32_t* function_pointer_int32(int32_t* x, size_t size, int32_t value);
@@ -51,7 +51,8 @@ ENTANGLEMENT uint16_t& function_ref_uint16(uint16_t& x, uint16_t value);
 ENTANGLEMENT void function_ref_wchar(wchar_t& x, wchar_t value);
 ENTANGLEMENT uint64_t& function_ref_uint64(uint64_t& x, uint64_t value);
 
-/// Pack a C structure tight with fundamental types and pass it by value.
+/// Pack a C structure tight with fundamental types and pass it by value. This
+/// is packed assuming bool is 1 byte and int is not 16-bit.
 /// XXX Size check.
 struct ENTANGLEMENT_T StructFundamentals {
 	bool m_bool;
@@ -74,12 +75,9 @@ struct ENTANGLEMENT_T StructPointerFundamentals : public StructFundamentals {
 	StructPointerFundamentals();
 	virtual ~StructPointerFundamentals();
 	virtual void null_it_all(void);
-	void* m_void;
-	char* m_char;
-	wchar_t* m_wchar_t;
-	bool* m_bool;
-	float* m_float;
-	double* m_double;
+	void* m_pvoid;
+	bool* m_pbool;
+	float* m_pfloat;
 };
 
 ENTANGLEMENT StructPointerFundamentals& function_struct_pointer_fundamentals_multiply(

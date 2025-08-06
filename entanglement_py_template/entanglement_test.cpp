@@ -79,17 +79,15 @@ StructFundamentals function_struct_fundamentals_multiply(StructFundamentals stru
 }
 
 StructPointerFundamentals& function_struct_pointer_fundamentals_multiply(StructPointerFundamentals& struct_fundamentals, int multiplier) {
+
 	// Nuke the base without nuking the .vtable.
 	StructFundamentals& base = struct_fundamentals;
 	::memset(&base, 0xaf, sizeof(StructFundamentals));
 
 	// Proof of life for pointers.
-	*(int*)struct_fundamentals.m_void *= multiplier;
-	*struct_fundamentals.m_char *= multiplier;
-	*struct_fundamentals.m_wchar_t *= multiplier;
-	*struct_fundamentals.m_bool = !*struct_fundamentals.m_bool;
-	*struct_fundamentals.m_float *= multiplier;
-	*struct_fundamentals.m_double *= multiplier;
+	*(int*)struct_fundamentals.m_pvoid *= multiplier;
+	*struct_fundamentals.m_pbool = !*struct_fundamentals.m_pbool;
+	*struct_fundamentals.m_pfloat *= multiplier;
 	return struct_fundamentals;
 }
 
@@ -101,10 +99,7 @@ StructPointerFundamentals::~StructPointerFundamentals() {
 	::memset((void*)this, 0x00, sizeof *this);
 }
 void StructPointerFundamentals::null_it_all(void) {
-	m_void = 0;
-	m_char = 0;
-	m_wchar_t = 0;
-	m_bool = 0;
-	m_float = 0;
-	m_double = 0;
+	m_pvoid = 0;
+	m_pbool = 0;
+	m_pfloat = 0;
 }

@@ -69,9 +69,6 @@ symbols into your .so regardless of whether they were used.
 
 - test multiple headers
 
-- is_abstract_record(self):
-- is_pure_virtual_method(self): # throw in constructor?
-
 - C++ operators and default params.  E.g. hxrandom.
 - Plain C linkage.
 - dll loading for real.

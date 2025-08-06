@@ -111,6 +111,7 @@
         "unconstructed",
         "valgrind",
         "venv",
+        "vtable",
         "vtables",
         "WASD",
         "Wcast",
