@@ -76,7 +76,7 @@ StructFundamentals function_struct_fundamentals_multiply(StructFundamentals stru
 	struct_fundamentals.m_int0 *= multiplier;
 	struct_fundamentals.m_int1 *= multiplier;
 	struct_fundamentals.m_uint2 *= multiplier;
-	struct_fundamentals.m_double *= multiplier;
+	struct_fundamentals.m_double[0] *= multiplier;
 	return struct_fundamentals;
 }
 

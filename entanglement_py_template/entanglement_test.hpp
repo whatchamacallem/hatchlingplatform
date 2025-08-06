@@ -65,7 +65,8 @@ struct ENTANGLEMENT_T StructFundamentals {
 	int m_int0;
 	int32_t m_int1;
 	uint64_t m_uint2;
-	double m_double;
+	double m_double[1];
+	uint8_t m_three_dim[2][3][4];
 };
 
 ENTANGLEMENT StructFundamentals function_struct_fundamentals_multiply(

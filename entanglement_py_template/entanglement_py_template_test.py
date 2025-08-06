@@ -157,7 +157,7 @@ class run_all_tests(unittest.TestCase):
 		struct_fundamentals.m_int0 = 6
 		struct_fundamentals.m_int1 = 7
 		struct_fundamentals.m_uint2 = 8
-		struct_fundamentals.m_double = 9
+		struct_fundamentals.m_double[0] = 9
 
 		result = system_under_test.function_struct_fundamentals_multiply(struct_fundamentals, 3)
 
@@ -168,8 +168,8 @@ class run_all_tests(unittest.TestCase):
 		self.assertEqual(result.m_char0, b'\x09')
 		self.assertEqual(struct_fundamentals.m_char2, 5)
 		self.assertEqual(result.m_char2, 15)
-		self.assertEqual(struct_fundamentals.m_double, 9)
-		self.assertEqual(result.m_double, 27)
+		self.assertEqual(struct_fundamentals.m_double[0], 9)
+		self.assertEqual(result.m_double[0], 27)
 
 	# tests .vtable as well.
 	def test_pointer_fundamentals(self):
