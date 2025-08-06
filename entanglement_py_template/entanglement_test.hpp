@@ -7,7 +7,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
+
 // Enums.
+extern "C" {
 enum ENTANGLEMENT_T {
 	ANONYMOUS_ENUM_0
 };
@@ -15,6 +17,7 @@ enum ENTANGLEMENT_T EnumCStyleTwoConstants {
 	ENUM_C_STYLE_TWO_CONSTANTS_1 = 1,
 	ENUM_C_STYLE_TWO_CONSTANTS_2
 };
+} // extern "C"
 enum ENTANGLEMENT_T EnumInt16ThreeConstants : int16_t {
 	ENUM_INT16_THREE_CONSTANTS_0 = -32768,
 	ENUM_INT16_THREE_CONSTANTS_1 = -1,
@@ -53,7 +56,7 @@ ENTANGLEMENT uint64_t& function_ref_uint64(uint64_t& x, uint64_t value);
 
 /// Pack a C structure tight with fundamental types and pass it by value. This
 /// is packed assuming bool is 1 byte and int is not 16-bit.
-/// XXX Size check.
+extern "C" {
 struct ENTANGLEMENT_T StructFundamentals {
 	bool m_bool;
 	char m_char0;
@@ -67,10 +70,10 @@ struct ENTANGLEMENT_T StructFundamentals {
 
 ENTANGLEMENT StructFundamentals function_struct_fundamentals_multiply(
 	StructFundamentals struct_fundamentals, int multiplier);
+} // extern "C" {
 
 /// Fill a virtual structure with fundamental pointer types. Inherit it from previous test
 /// and pass by reference.
-/// XXX Size check.
 struct ENTANGLEMENT_T StructPointerFundamentals : public StructFundamentals {
 	StructPointerFundamentals();
 	virtual ~StructPointerFundamentals();

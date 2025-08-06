@@ -177,6 +177,9 @@ def calculate_namespace(cursor: Cursor) -> List[str]:
 	namespaces: List[str] = []
 	current: Optional[Cursor] = cursor.semantic_parent
 	while current and current.kind is not CursorKind.TRANSLATION_UNIT: # type: ignore
+		if current.kind == CursorKind.LINKAGE_SPEC: # type: ignore
+			return [] # Code declared extern "C" has no namespace.
+
 		if not current.is_anonymous():
 			namespaces.append(current.spelling)
 		current = current.semantic_parent
@@ -190,6 +193,40 @@ def calculate_python_package_path(cursor: Cursor) -> str:
 	namespaces: List[str] = calculate_namespace(cursor)
 	namespaces.append(get_bare_name(cursor))
 	return '.'.join(namespaces)
+
+def get_inheritance_depth(cursor : Cursor) -> int:
+	for child in cursor.get_children():
+		if child.kind == CursorKind.CXX_BASE_SPECIFIER: # type: ignore
+			return get_inheritance_depth(child.referenced) + 1
+	return 0
+
+def get_base_class(cursor : Cursor) -> str:
+	if sum(c.kind == CursorKind.CXX_BASE_SPECIFIER for c in cursor.get_children()) > 1: # type: ignore
+		throw_cursor(cursor, 'Multiple inheritance unsupported by Python\'s ctypes module.')
+
+	for child in cursor.get_children():
+		if child.kind == CursorKind.CXX_BASE_SPECIFIER: # type: ignore
+			return calculate_python_package_path(child.referenced)
+	return '_Ctypes.Structure'
+
+def has_vtable(cursor : Cursor):
+	has_virtual = False
+	for c in cursor.get_children():
+		if c.kind in (	CursorKind.CONSTRUCTOR, # type: ignore
+						CursorKind.DESTRUCTOR,  # type: ignore
+						CursorKind.CXX_METHOD): # type: ignore
+
+			if c.is_virtual_method():
+				has_virtual = True
+				break
+
+	if has_virtual:
+		for c in cursor.get_children():
+			if c.kind == CursorKind.CXX_BASE_SPECIFIER: # type: ignore
+				if has_vtable(c.referenced):
+					return False # Not first virtual class
+
+	return has_virtual
 
 def calculate_type_string(cursor: Cursor, cpp_type_ref: Type,
 			symbols: Dict[str, List[Cursor]], result_kind: type_string_kind) -> str:
@@ -546,40 +583,6 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
 			api += emit_python_api_class(namespace_tabs, cursor0)
 			current_namespace += [ cursor0.spelling ]
 
-def get_inheritance_depth(cursor : Cursor) -> int:
-	for child in cursor.get_children():
-		if child.kind == CursorKind.CXX_BASE_SPECIFIER: # type: ignore
-			return get_inheritance_depth(child.referenced) + 1
-	return 0
-
-def get_base_class(cursor : Cursor) -> str:
-	if sum(c.kind == CursorKind.CXX_BASE_SPECIFIER for c in cursor.get_children()) > 1: # type: ignore
-		throw_cursor(cursor, 'Multiple inheritance unsupported by Python\'s ctypes module.')
-
-	for child in cursor.get_children():
-		if child.kind == CursorKind.CXX_BASE_SPECIFIER: # type: ignore
-			return calculate_python_package_path(child.referenced)
-	return '_Ctypes.Structure'
-
-def has_vtable(cursor : Cursor):
-	has_virtual = False
-	for c in cursor.get_children():
-		if c.kind in (	CursorKind.CONSTRUCTOR, # type: ignore
-						CursorKind.DESTRUCTOR,  # type: ignore
-						CursorKind.CXX_METHOD): # type: ignore
-
-			if c.is_virtual_method():
-				has_virtual = True
-				break
-
-	if has_virtual:
-		for c in cursor.get_children():
-			if c.kind == CursorKind.CXX_BASE_SPECIFIER: # type: ignore
-				if has_vtable(c.referenced):
-					return False # Not first virtual class
-
-	return has_virtual
-
 def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], structure_list: List[str]) -> None:
 	# Determine the inheritance depth of the symbols.
 	depth_sorted_symbols: Dict[int, List[List[Cursor]]] = { }
@@ -694,7 +697,9 @@ def symbols_sort(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cur
 def symbols_gather_interesting(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
 	verbose(3, f'ast_traversal {cursor.kind.name} {cursor.displayname}')
 
-	if cursor.kind in (CursorKind.TRANSLATION_UNIT, CursorKind.NAMESPACE): # type: ignore
+	if cursor.kind in (	CursorKind.TRANSLATION_UNIT, # type: ignore
+						CursorKind.NAMESPACE, # type: ignore
+						CursorKind.LINKAGE_SPEC): # type: ignore
 		pass # fallthrough
 
 	elif not is_annotated_entanglement(cursor):
