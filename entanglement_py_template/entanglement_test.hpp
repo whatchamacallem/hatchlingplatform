@@ -63,6 +63,9 @@ struct ENTANGLEMENT_T StructFundamentals {
 	int8_t m_char1;
 	uint8_t m_char2;
 	int m_int0;
+	int m_int_a : 16;
+	int m_int_b : 8;
+	int m_int_c : 8;
 	int32_t m_int1;
 	uint64_t m_uint2;
 	double m_double[1];

@@ -735,7 +735,8 @@ def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[L
 				for field in cursor0.get_children():
 					if field.kind == CursorKind.FIELD_DECL: # type: ignore
 						ctypes_type = calculate_type_string(field, field.type, symbols, type_string_kind.ctypes_structure)
-						structure_list.append(f"\t\t('{field.spelling}', {ctypes_type}),")
+						bits = f', {field.get_bitfield_width()}' if field.is_bitfield() else ''
+						structure_list.append(f"\t\t('{field.spelling}', {ctypes_type}{bits}),")
 
 				structure_list.append(f'\t]\n{name}=_T{counter}{name}')
 				counter = counter + 1

@@ -73,12 +73,6 @@ symbols into your .so regardless of whether they were used.
 - Plain C linkage.
 - dll loading for real.
 
-- get_array_element_type(self):
-- get_array_size(self):
-
-- get_size(self): # assert(sizeof == get_size())
-- is_bitfield(self):
-- get_bitfield_width(self):
 
 - config file?
 
