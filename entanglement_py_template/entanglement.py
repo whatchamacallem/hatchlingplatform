@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 # This file is licensed under the terms of the LICENSE.md file.
 
-"""
+'''
 entanglement.py: Automatic Binding Generator for C++ Projects
 
 version: 0.0.1-pre-alpha
@@ -12,7 +12,7 @@ Usage:
 		compiler_flags  - Flags to pass to clang. Can be in any order on command line.
 		lib_name		- C/C++ library/.so name to bind everything to.
 		header_files... - Path(s) to the C++ header file(s) to parse.
-		output_file	 - Path to write the generated Python binding code. """
+		output_file	 - Path to write the generated Python binding code. '''
 
 import enum, keyword, sys
 from clang.cindex import AccessSpecifier, Config, Cursor, CursorKind, Diagnostic
@@ -109,10 +109,18 @@ class type_string_kind(enum.Enum):
 	ctypes_structure = 3
 
 def verbose(verbose_level: int, x: str) -> None:
+	'''
+	Prints `x` if `verbose_level >= VERBOSE`.
+	- `verbose_level` : [0..3] Ranges from "no news" to debug diagnostics.
+	- `x` : The message to be printed (or not).'''
 	if VERBOSE >= verbose_level:
 		print(f' {'?*+-'[verbose_level]} {x}', file=sys.stderr)
 
 def parse_argv(argv: List[str]) -> bool:
+	'''
+	Parses the command-line arguments into global constants. Returns `True` if
+	parsing succeeds, `False` if insufficient non-switch arguments.
+	- `argv`: List of command-line arguments as strings.'''
 	global _arg_compiler_flags
 	global _arg_lib_name
 	global _arg_header_files
@@ -140,8 +148,11 @@ def parse_argv(argv: List[str]) -> bool:
 
 	return True
 
-# cindex may have extra exception data.
 def object_debugger(obj) -> None:
+	'''
+	Prints all accessible attributes of an object to stderr for debugging.
+	cindex may have extra exception data.
+	- `obj`: Any object to inspect and print attributes for.'''
 	for attribute_name in dir(obj):
 		try:
 			attribute_value = getattr(obj, attribute_name)
@@ -149,17 +160,30 @@ def object_debugger(obj) -> None:
 		except:
 			pass
 
-# Format the source code location and leave the message to the caller.
 def throw_cursor(c: Cursor, message: str) -> NoReturn:
+	'''
+	Formats the source code location and leaves the message to the caller.
+	Raises a ValueError.
+	- `c`: Clang cursor indicating the source location of the error.
+	- `message`: Error message to include in the raised exception.'''
 	raise ValueError(f'{c.location.file}:{c.location.line}:{c.location.column} Error: {message}\n')
 
 def get_bare_name(cursor: Cursor) -> str:
+	'''
+	Returns the cursor's name or a unique ID for anonymous cursors.
+	- `cursor`: Clang cursor to extract the name from.'''
 	return cursor.spelling if not cursor.is_anonymous() else '_ID' + str(hex(hash(cursor.get_usr())))[3:]
 
 def get_mangled_name(cursor: Cursor) -> str:
+	'''
+	Returns the mangled name of the cursor or its bare name if not mangled.
+	- `cursor`: Clang cursor to extract the mangled name from.'''
 	return cursor.mangled_name or get_bare_name(cursor)
 
 def is_annotated_entanglement(cursor: Cursor) -> bool:
+	'''
+	Checks if a cursor has the 'entanglement' annotation.
+	- `cursor`: Clang cursor to check for annotations.'''
 	for c in cursor.get_children():
 		if c.kind == CursorKind.ANNOTATE_ATTR: # type: ignore
 			if 'entanglement' == c.spelling:
@@ -167,13 +191,22 @@ def is_annotated_entanglement(cursor: Cursor) -> bool:
 	return False
 
 def is_arg_va_list(cursor: Cursor) -> bool:
+	'''
+	Checks if a cursor's arguments include a va_list.
+	- `cursor`: Clang cursor representing a function to check.'''
 	return any("va_list" in a.type.spelling for a in cursor.get_arguments())
 
 def is_staticmethod(cursor: Cursor) -> bool:
+	'''
+	Determines if a cursor represents a static method or free function.
+	- `cursor`: Clang cursor to check.'''
 	return cursor.kind is CursorKind.FUNCTION_DECL or ( # type: ignore
 		cursor.kind is CursorKind.CXX_METHOD and cursor.storage_class == StorageClass.STATIC) # type: ignore
 
 def calculate_namespace(cursor: Cursor) -> List[str]:
+	'''
+	Returns a list of namespace names in order from outermost to innermost.
+	- `cursor`: Clang cursor to analyze.'''
 	namespaces: List[str] = []
 	current: Optional[Cursor] = cursor.semantic_parent
 	while current and current.kind is not CursorKind.TRANSLATION_UNIT: # type: ignore
@@ -190,17 +223,26 @@ def calculate_namespace(cursor: Cursor) -> List[str]:
 # like base class layouts that are needed by the bindings code. Anonymous enums
 # and structs are given globally unique ids.
 def calculate_python_package_path(cursor: Cursor) -> str:
+	'''
+	Returns a dot-separated string representing the Python package path.
+	- `cursor`: Clang cursor to compute the path for.'''
 	namespaces: List[str] = calculate_namespace(cursor)
 	namespaces.append(get_bare_name(cursor))
 	return '.'.join(namespaces)
 
-def get_inheritance_depth(cursor : Cursor) -> int:
+def get_inheritance_depth(cursor: Cursor) -> int:
+	'''
+	Returns the number of inheritance levels (0 for no base class).
+	- `cursor`: Clang cursor representing a class or struct.'''
 	for child in cursor.get_children():
 		if child.kind == CursorKind.CXX_BASE_SPECIFIER: # type: ignore
 			return get_inheritance_depth(child.referenced) + 1
 	return 0
 
-def get_base_class(cursor : Cursor) -> str:
+def get_base_class(cursor: Cursor) -> str:
+	'''
+	Returns the Python package path of the base class or '_Ctypes.Structure' if none.
+	- `cursor`: Clang cursor representing a class or struct.'''
 	if sum(c.kind == CursorKind.CXX_BASE_SPECIFIER for c in cursor.get_children()) > 1: # type: ignore
 		throw_cursor(cursor, 'Multiple inheritance unsupported by Python\'s ctypes module.')
 
@@ -209,7 +251,10 @@ def get_base_class(cursor : Cursor) -> str:
 			return calculate_python_package_path(child.referenced)
 	return '_Ctypes.Structure'
 
-def has_vtable(cursor : Cursor):
+def has_vtable(cursor: Cursor):
+	'''
+	Returns `True` if the class has virtual methods and is the first virtual class, `False` otherwise.
+	- `cursor`: Clang cursor representing a class or struct.'''
 	has_virtual = False
 	for c in cursor.get_children():
 		if c.kind in (	CursorKind.CONSTRUCTOR, # type: ignore
@@ -228,9 +273,13 @@ def has_vtable(cursor : Cursor):
 
 	return has_virtual
 
-def calculate_type_string(cursor: Cursor, cpp_type_ref: Type,
-			symbols: Dict[str, List[Cursor]], result_kind: type_string_kind) -> str:
-
+def calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str, List[Cursor]], result_kind: type_string_kind) -> str:
+	'''
+	Returns a string representing the type as a Python or ctypes type.
+	- `cursor`: Clang cursor for error reporting.
+	- `cpp_type_ref`: Clang type to convert.
+	- `symbols`: Dictionary of known symbols for type resolution.
+	- `result_kind`: Specifies the context (arg_hint, return_hint, ctypes_parameters, ctypes_structure).'''
 	# Handle typedefs by resolving to the canonical type.
 	cpp_type_canonical = cpp_type_ref.get_canonical()
 
@@ -329,6 +378,11 @@ def calculate_type_string(cursor: Cursor, cpp_type_ref: Type,
 	throw_cursor(cursor, f'Unsupported definition kind {definition_cursor.kind}')
 
 def emit_python_api_doc(tabs: str, cursor: Cursor) -> List[str]:
+	'''
+	Generates Python docstrings list from a cursor's raw comments. Returns an
+	empty list if none.
+	- `tabs`: String of tab characters for indentation.
+	- `cursor`: Clang cursor containing comments to process.'''
 	comment = cursor.raw_comment
 	if comment:
 		lines: List[str] = comment.splitlines()
@@ -339,17 +393,21 @@ def emit_python_api_doc(tabs: str, cursor: Cursor) -> List[str]:
 				line = line[3:].strip()
 			elif line.startswith('//'):
 				line = line[2:].strip()
-			line = line.replace('\\', '\\\\').replace('"', '\\"')
+			line = line.replace('\\', '\\\\').replace("'", "\\'")
 			cleaned.append(line)
 		doc = f'\n{tabs}'.join(cleaned)
 		if not doc or doc.isspace():
 			return [ ]
-		return [f'{tabs}"""\n{tabs}{doc} """']
+		return [f"{tabs}'''\n{tabs}{doc} '''"]
 	return [ ]
 
 def emit_ctypes_function_args(cursor: Cursor, symbols: Dict[str, List[Cursor]], overloaded: bool) -> str:
-	# Function body calls ctypes function. Assemble ctypes function call
-	# args. Inject shims for pointers and references.
+	'''
+	Returns a comma-separated string of ctypes function call arguments with
+	shims for pointers and references.
+	- `cursor`: Clang cursor representing the function.
+	- `symbols`: Dictionary of known symbols for type resolution.
+	- `overloaded`: Boolean indicating if the function is overloaded.'''
 	arg_list = []
 	arg_index = 0
 	for arg in cursor.get_arguments():
@@ -373,6 +431,12 @@ def emit_ctypes_function_args(cursor: Cursor, symbols: Dict[str, List[Cursor]], 
 	return ','.join(arg_list)
 
 def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[str, List[Cursor]], overloaded: bool) -> List[str]:
+	'''
+	Returns a list of strings forming a Python API function definition.
+	- `namespace_tabs`: String of tab characters for indentation.
+	- `cursor`: Clang cursor representing the function.
+	- `symbols`: Dictionary of known symbols for type resolution.
+	- `overloaded`: Boolean indicating if the function is overloaded.'''
 	lines: List[str] = []
 
 	if cursor.is_pure_virtual_method():
@@ -427,6 +491,11 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
 	return lines
 
 def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Cursor], symbols: Dict[str, List[Cursor]]) -> List[str]:
+	'''
+	Returns a list of strings forming the Python API overload selector function.
+	- `namespace_tabs`: String of tab characters for indentation.
+	- `overloads`: List of Clang cursors for overloaded functions.
+	- `symbols`: Dictionary of known symbols for type resolution.'''
 	lines: List[str] = []
 	static_method = False
 	if any(is_staticmethod(cursor) for cursor in overloads):
@@ -487,6 +556,10 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
 	return lines
 
 def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
+	'''
+	Returns a list of strings forming Python API enum definition.
+	- `namespace_tabs`: String of tab characters for indentation.
+	- `cursor`: Clang cursor representing an enum.'''
 	enum_name = get_bare_name(cursor)
 
 	lines: List[str] = []
@@ -522,12 +595,20 @@ def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
 	return lines
 
 def emit_python_api_class(namespace_tabs: str, cursor: Cursor) -> List[str]:
+	'''
+	Returns a list of strings forming Python API class definition.
+	- `namespace_tabs`: String of tab characters for indentation.
+	- `cursor`: Clang cursor representing a class or struct.'''
 	lines: List[str] = [f'{namespace_tabs}class {get_bare_name(cursor)}:']
 	lines += emit_python_api_doc(namespace_tabs + '\t', cursor)
 	return lines
 
 def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], api: List[str]) -> None:
-
+	'''
+	Generates the Python API section of the output script.
+	- `symbols`: Dictionary of known symbols mapped to their cursors.
+	- `sorted_symbols`: List of cursor lists sorted by namespace and kind.
+	- `api`: List to append generated Python API lines to.'''
 	current_namespace : List[str] = []
 
 	# The cursors have been sorted according to their python identifier. This
@@ -584,6 +665,11 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
 			current_namespace += [ cursor0.spelling ]
 
 def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], structure_list: List[str]) -> None:
+	'''
+	Generates the structure list section of the output script.
+	- `symbols`: Dictionary of known symbols mapped to their cursors.
+	- `sorted_symbols`: List of cursor lists sorted by namespace and kind.
+	- `structure_list`: List to append generated structure definition lines to.'''
 	# Determine the inheritance depth of the symbols.
 	depth_sorted_symbols: Dict[int, List[List[Cursor]]] = { }
 
@@ -624,6 +710,11 @@ def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[L
 				structure_list.append(f'assert _Ctypes.sizeof({name})=={cursor0.type.get_size()}')
 
 def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], symbol_table: List[str]) -> None:
+	'''
+	Generates the symbol table section of the output script.
+	- `symbols`: Dictionary of known symbols mapped to their cursors.
+	- `sorted_symbols`: List of cursor lists sorted by namespace and kind.
+	- `symbol_table`: List to append generated symbol table lines to.'''
 	for cursor_list in sorted_symbols:
 		if cursor_list[0].kind in ( CursorKind.FUNCTION_DECL, # type: ignore
 									CursorKind.CONSTRUCTOR,   # type: ignore
@@ -648,10 +739,13 @@ def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[Lis
 					f"{mangled_name}.restype={return_type}"
 				]
 
-# Add symbols by their python path. The symbols for each path will have to
-# all be the same type. This is where symbols get dropped because they have
-# already been seen in another translation unit.
 def symbols_add(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
+	'''
+	Adds a cursor to the symbols dictionary by its Python path. The symbols for
+	each path will have to all be the same type. This is where symbols get
+	dropped because they have already been seen in another translation unit.
+	- `cursor`: Clang cursor to add.
+	- `symbols`: Dictionary to store the cursor, mapped by Python path.'''
 	if not cursor.is_anonymous():
 		if cursor.spelling.startswith('__'):
 			throw_cursor(cursor, '2 leading underscores reserved by Python.')
@@ -670,11 +764,14 @@ def symbols_add(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
 	elif not any(c.get_usr() == cursor.get_usr() for c in symbols[sym]):
 		symbols[sym].append(cursor)
 
-# This is the final output order for the python api. Symbols are sorted first by
-# namespace, then by cursor kind and then by name, if any. The symbols object is
-# built up using the Python path instead of exposing the sort key. This keeps
-# the details of the sort local to this function.
 def symbols_sort(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]]) -> None:
+	'''
+	This is the final output order for the python api. Symbols are sorted first
+	by namespace, then by cursor kind and then by name, if any. The symbols
+	object is built up using the Python path instead of exposing the sort key.
+	This keeps the details of the sort local to this function.
+	- `symbols`: Dictionary of known symbols mapped to their cursors.
+	- `sorted_symbols`: List to append sorted cursor lists to.'''
 	symbols_by_sort_key: Dict[str, List[Cursor]] = { }
 
 	for cursor_list in symbols.values():
@@ -694,7 +791,11 @@ def symbols_sort(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cur
 	for key in sorted(symbols_by_sort_key.keys()):
 		sorted_symbols.append(symbols_by_sort_key[key])
 
-def symbols_gather_interesting(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
+def symbols_gather_required(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
+	'''
+	Collects annotated symbols required for binding.
+	- `cursor`: Clang cursor to analyze.
+	- `symbols`: Dictionary to store collected cursors, mapped by Python path.'''
 	verbose(3, f'ast_traversal {cursor.kind.name} {cursor.displayname}')
 
 	if cursor.kind in (	CursorKind.TRANSLATION_UNIT, # type: ignore
@@ -751,9 +852,13 @@ def symbols_gather_interesting(cursor: Cursor, symbols: Dict[str, List[Cursor]])
 
 	# fallthrough to children.
 	for c in cursor.get_children():
-		symbols_gather_interesting(c, symbols)
+		symbols_gather_required(c, symbols)
 
 def load_translation_unit(header_file: str) -> TranslationUnit:
+	'''
+	Loads and parses a C++ header file into a Clang translation unit. Returns
+	the parsed translation unit or raises an error if parsing fails.
+	- `header_file`: Path to the C++ header file to parse.'''
 	index = Index.create()
 	translation_unit: Optional[TranslationUnit] = None
 	try:
@@ -774,13 +879,19 @@ def load_translation_unit(header_file: str) -> TranslationUnit:
 	return translation_unit
 
 def assemble_output_file(python_api: List[str], structure_list: List[str], symbol_table: List[str]) -> List[str]:
-	# Assemble the script sections. ctypes.POINTER and ctypes.Array do not
-	# require special handling in _Pointer_shim.
+	'''
+	Returns a list of strings forming the complete script assembled from the
+	API, structure, and symbol table sections.
+	- `python_api`: List of strings for the Python API section.
+	- `structure_list`: List of strings for the structure definitions.
+	- `symbol_table`: List of strings for the symbol table.'''
+	# ctypes.POINTER and ctypes.Array do not require special handling in
+	# _Pointer_shim.
 	return [
-		f'""" entanglement.py {datetime.now()}',
+		f"''' entanglement.py {datetime.now()}",
 		f'\tbindings for {_arg_lib_name}',
-		f'\t{' '.join(sys.argv)} """',
-"""
+		f"\t{' '.join(sys.argv)} '''",
+'''
 import ctypes as _Ctypes
 import enum as _Enum
 import numpy as _Numpy
@@ -800,11 +911,11 @@ def _Pointer_shim(_Obj: _Any, _CType):
 	elif isinstance(_Obj, _Numpy.ndarray):
 		return _Numpy.ctypeslib.as_ctypes(_Obj)
 	return _Obj
-"""
+'''
 	] + python_api + [
-"""
+'''
 # STRUCTURE LIST ------------------------------------------------------
-"""
+'''
 	] + structure_list + [
 f"""
 # SYMBOL TABLE --------------------------------------------------------
@@ -817,24 +928,27 @@ except Exception as e:
 	_Sys.exit(1)
 """
 	] + symbol_table + [
-"""
+'''
 # 🐉🐉🐉
-"""
+'''
 	]
 
 def main(argv: List[str]) -> None:
+	'''See usage message in function body.'''
 	if not parse_argv(argv):
-		raise ValueError("""\
+		raise ValueError('''\
 Usage: python3 entanglement.py <compiler_flags> <lib_name> <header_files>... <output_file>
 
-This tool parses a C++ header file using libclang and generates binding code.
+Generates Python bindings for a C++ .so using a libclang command line, a C++
+header and <entanglement.h>. Raises ValueError if arguments are invalid or
+processing fails.
 
 Arguments:
 	compiler_flags  - Flags to pass to clang. Can be in any order on command line.
 	lib_name		- C/C++ library/.so name to bind everything to.
 	header_files... - Path(s) to the C++ header file(s) to parse.
 	output_file	 - Path to write the generated Python binding code.
-""")
+''')
 
 	verbose(1, 'compiler_flags ' + ' '.join(_arg_compiler_flags))
 	verbose(1, 'lib_name ' + _arg_lib_name)
@@ -852,7 +966,7 @@ Arguments:
 	for header_file in _arg_header_files:
 		verbose(1, 'load_translation_unit ' + header_file)
 		translation_unit = load_translation_unit(header_file)
-		symbols_gather_interesting(translation_unit.cursor, symbols)
+		symbols_gather_required(translation_unit.cursor, symbols)
 
 	if not symbols:
 		raise ValueError('Error: No symbols found. Use -DENTANGLEMENT_PASS=1, ENTANGLEMENT_T and ENTANGLEMENT.')
