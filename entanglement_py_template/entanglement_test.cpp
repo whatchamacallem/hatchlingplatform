@@ -107,3 +107,194 @@ void StructPointerFundamentals::null_it_all(void) {
 	m_pbool = 0;
 	m_pfloat = 0;
 }
+
+OperatorTest::OperatorTest() : value(0) {}
+
+OperatorTest::OperatorTest(const OperatorTest& x) : value(x.value) {}
+
+OperatorTest::OperatorTest(OperatorTest&& x) noexcept : value(x.value) {
+}
+
+OperatorTest::~OperatorTest() {
+    value = 0xafafafaf;
+}
+
+OperatorTest& OperatorTest::operator=(const OperatorTest& x) {
+    if (this != &x) {
+        value = x.value;
+    }
+    return *this;
+}
+
+OperatorTest& OperatorTest::operator=(OperatorTest&& x) noexcept {
+    value = x.value;
+    return *this;
+}
+
+bool OperatorTest::operator<(const OperatorTest& x) const noexcept {
+    return value < x.value;
+}
+
+bool OperatorTest::operator==(const OperatorTest& x) const {
+    return value == x.value;
+}
+
+bool OperatorTest::operator!=(const OperatorTest& x) const {
+    return value != x.value;
+}
+
+bool OperatorTest::operator>(const OperatorTest& x) const {
+    return value > x.value;
+}
+
+bool OperatorTest::operator>=(const OperatorTest& x) const {
+    return value >= x.value;
+}
+
+bool OperatorTest::operator<=(const OperatorTest& x) const {
+    return value <= x.value;
+}
+
+OperatorTest OperatorTest::operator+() const {
+    return OperatorTest(+value);
+}
+
+OperatorTest OperatorTest::operator-() const {
+    return OperatorTest(-value);
+}
+
+OperatorTest OperatorTest::operator+(const OperatorTest& x) const {
+    return OperatorTest(value + x.value);
+}
+
+OperatorTest OperatorTest::operator-(const OperatorTest& x) const {
+    return OperatorTest(value - x.value);
+}
+
+OperatorTest OperatorTest::operator*(const OperatorTest& x) const {
+    return OperatorTest(value * x.value);
+}
+
+OperatorTest OperatorTest::operator/(const OperatorTest& x) const {
+    return OperatorTest(value / x.value);
+}
+
+OperatorTest OperatorTest::operator%(const OperatorTest& x) const {
+    return OperatorTest(value % x.value);
+}
+
+OperatorTest& OperatorTest::operator+=(const OperatorTest& x) {
+    value += x.value;
+    return *this;
+}
+
+OperatorTest& OperatorTest::operator-=(const OperatorTest& x) {
+    value -= x.value;
+    return *this;
+}
+
+OperatorTest& OperatorTest::operator*=(const OperatorTest& x) {
+    value *= x.value;
+    return *this;
+}
+
+OperatorTest& OperatorTest::operator/=(const OperatorTest& x) {
+    value /= x.value;
+    return *this;
+}
+
+OperatorTest& OperatorTest::operator%=(const OperatorTest& x) {
+    value %= x.value;
+    return *this;
+}
+
+bool OperatorTest::operator&(const OperatorTest& x) const {
+    return (value & x.value) != 0;
+}
+
+bool OperatorTest::operator|(const OperatorTest& x) const {
+    return (value | x.value) != 0;
+}
+
+bool OperatorTest::operator^(const OperatorTest& x) const {
+    return (value ^ x.value) != 0;
+}
+
+OperatorTest OperatorTest::operator~() const {
+    return OperatorTest(~value);
+}
+
+OperatorTest OperatorTest::operator<<(const OperatorTest& x) const {
+    return OperatorTest(value << x.value);
+}
+
+OperatorTest OperatorTest::operator>>(const OperatorTest& x) const {
+    return OperatorTest(value >> x.value);
+}
+
+OperatorTest& OperatorTest::operator&=(const OperatorTest& x) {
+    value &= x.value;
+    return *this;
+}
+
+OperatorTest& OperatorTest::operator|=(const OperatorTest& x) {
+    value |= x.value;
+    return *this;
+}
+
+OperatorTest& OperatorTest::operator^=(const OperatorTest& x) {
+    value ^= x.value;
+    return *this;
+}
+
+OperatorTest& OperatorTest::operator<<=(const OperatorTest& x) {
+    value <<= x.value;
+    return *this;
+}
+
+OperatorTest& OperatorTest::operator>>=(const OperatorTest& x) {
+    value >>= x.value;
+    return *this;
+}
+
+bool OperatorTest::operator&&(const OperatorTest& x) const {
+    return value && x.value;
+}
+
+bool OperatorTest::operator||(const OperatorTest& x) const {
+    return value || x.value;
+}
+
+bool OperatorTest::operator!() const {
+    return !value;
+}
+
+OperatorTest& OperatorTest::operator++() {
+    ++value;
+    return *this;
+}
+
+OperatorTest OperatorTest::operator++(int) {
+    OperatorTest tmp(*this);
+    ++value;
+    return tmp;
+}
+
+OperatorTest& OperatorTest::operator--() {
+    --value;
+    return *this;
+}
+
+OperatorTest OperatorTest::operator--(int) {
+    OperatorTest tmp(*this);
+    --value;
+    return tmp;
+}
+
+int OperatorTest::operator()(int add) const {
+    return value + add;
+}
+
+int OperatorTest::operator[](int index) const {
+    return value + index;
+}

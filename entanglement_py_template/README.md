@@ -2,8 +2,8 @@
 
 The goal here is to demonstrate an automatic transpilation of a C/C++17 API into
 a Python wrapper using implementation-defined behavior to allow Python to call
-C++ directly. This is enabled by using a scripted clang API transpiler that is able
-to configure Python's C marshalling package to publish the C++ symbol table
+C++ directly. This is enabled by using a scripted clang API transpiler that is
+able to configure Python's C marshalling package to publish the C++ symbol table
 directly into Python. clang is only needed to build the bindings and is not used
 at runtime.
 
@@ -20,10 +20,11 @@ Python. It should be as efficient as possible while still asking Python to speak
 a foreign language.
 
 No C/C++ or Python code should need to be written. No C/C++ code is generated.
-Any old .so (that actually includes all the required C/C++ symbols) should work without adding the kind of bloat that template based
-solutions add. C++ is the interface definition language. C++ code is not being
-translated into Python at all. Instead the wrapper just calls your .so as
-quickly as possible and leaves ctypes to throw exceptions or not.
+Any old .so (that actually includes all the required C/C++ symbols) should work
+without adding the kind of bloat that template based solutions add. C++ is the
+interface definition language. C++ code is not being translated into Python at
+all. Instead the wrapper just calls your .so as quickly as possible and leaves
+ctypes to throw exceptions or not.
 
 Python code written using the wrapper should look Pythonian while remaining
 functionally identical to C++ code written using the C++ API.
@@ -52,33 +53,30 @@ inline a function it will end up bloating your .so symbol table.
 Then explicitly mark your C++ API with decorators that publishes your inline
 symbols into your .so regardless of whether they were used.
 
-```cpp
-
-// Include the entanglement link attribute and the api type attribute.
-#include <entanglement.h>
-
-// Attribute registers enums, functions, classes.
-#define ENTANGLEMENT_T
-
-// Attribute registers functions, constructors, destructors and method calls.
-#define ENTANGLEMENT
-
-```
-
 ## TODO
 
-- test multiple headers
+- All C++ operators. E.g. hxrandom.
+- Nested classes.
+- Nested class fields.
+- Pointers and references to classes, all kinds.
+- Enum return value.
+- Reopening a namespace and sub-namespace to inherit from them in another file.
+- Reopening a namespace and sub-namespace to overload them in another file.
+- Pure virtual method with a non-virtual wrapper calling 2 base classes.
+- Test multiple headers.
+- Add default function parameters. Note arg count based dispatch is affected.
 
-- C++ operators and default params.  E.g. hxrandom.
-- Plain C linkage.
-- dll loading for real.
+- Pylance wrapper generation.
+- Make hatchling.py wrapper.
+- dll loading for real? how to separate.
+  - lib clang path resolution.
+  - Wrapped .so resolution (make user responsible?).
 
+## Long Term
 
-- config file?
+These would be nice to have but are not implemented and are not a priority.
 
-```cpp
-
-x = MyAPI.NestedStruct(MyAPI.VirtualBaseClass())
-print(f"Size of DerivedStruct: {ctypes.sizeof(x)} bytes")
-
-```
+- Overloaded function dispatch by first arg type when dispatch by arg count is
+  ambiguous. Need to match subclasses first.
+- Write C++ examples that trigger every error possible and have tests that check
+  they are all reported correctly.

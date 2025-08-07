@@ -89,3 +89,54 @@ struct ENTANGLEMENT_T StructPointerFundamentals : public StructFundamentals {
 
 ENTANGLEMENT StructPointerFundamentals& function_struct_pointer_fundamentals_multiply(
 	StructPointerFundamentals& struct_fundamentals, int multiplier);
+
+class ENTANGLEMENT_T OperatorTest {
+public:
+	ENTANGLEMENT explicit OperatorTest(int value_) noexcept : value(value_) { }
+	ENTANGLEMENT OperatorTest(OperatorTest&& x) noexcept;
+	ENTANGLEMENT OperatorTest();
+	ENTANGLEMENT OperatorTest(const OperatorTest& x);
+	ENTANGLEMENT ~OperatorTest();
+	ENTANGLEMENT OperatorTest& operator=(const OperatorTest& x);
+	ENTANGLEMENT OperatorTest& operator=(OperatorTest&& x) noexcept;
+	ENTANGLEMENT bool operator<(const OperatorTest& x) const noexcept;
+	ENTANGLEMENT bool operator==(const OperatorTest& x) const;
+	ENTANGLEMENT bool operator!=(const OperatorTest& x) const;
+	ENTANGLEMENT bool operator>(const OperatorTest& x) const;
+	ENTANGLEMENT bool operator>=(const OperatorTest& x) const;
+	ENTANGLEMENT bool operator<=(const OperatorTest& x) const;
+	ENTANGLEMENT OperatorTest operator+() const;
+	ENTANGLEMENT OperatorTest operator-() const;
+	ENTANGLEMENT OperatorTest operator+(const OperatorTest& x) const;
+	ENTANGLEMENT OperatorTest operator-(const OperatorTest& x) const;
+	ENTANGLEMENT OperatorTest operator*(const OperatorTest& x) const;
+	ENTANGLEMENT OperatorTest operator/(const OperatorTest& x) const;
+	ENTANGLEMENT OperatorTest operator%(const OperatorTest& x) const;
+	ENTANGLEMENT OperatorTest& operator+=(const OperatorTest& x);
+	ENTANGLEMENT OperatorTest& operator-=(const OperatorTest& x);
+	ENTANGLEMENT OperatorTest& operator*=(const OperatorTest& x);
+	ENTANGLEMENT OperatorTest& operator/=(const OperatorTest& x);
+	ENTANGLEMENT OperatorTest& operator%=(const OperatorTest& x);
+	ENTANGLEMENT bool operator&(const OperatorTest& x) const;
+	ENTANGLEMENT bool operator|(const OperatorTest& x) const;
+	ENTANGLEMENT bool operator^(const OperatorTest& x) const;
+	ENTANGLEMENT OperatorTest operator~() const;
+	ENTANGLEMENT OperatorTest operator<<(const OperatorTest& x) const;
+	ENTANGLEMENT OperatorTest operator>>(const OperatorTest& x) const;
+	ENTANGLEMENT OperatorTest& operator&=(const OperatorTest& x);
+	ENTANGLEMENT OperatorTest& operator|=(const OperatorTest& x);
+	ENTANGLEMENT OperatorTest& operator^=(const OperatorTest& x);
+	ENTANGLEMENT OperatorTest& operator<<=(const OperatorTest& x);
+	ENTANGLEMENT OperatorTest& operator>>=(const OperatorTest& x);
+	ENTANGLEMENT bool operator&&(const OperatorTest& x) const;
+	ENTANGLEMENT bool operator||(const OperatorTest& x) const;
+	ENTANGLEMENT bool operator!() const;
+	ENTANGLEMENT OperatorTest& operator++();	ENTANGLEMENT // Prefix increment
+	ENTANGLEMENT OperatorTest operator++(int);  // Postfix increment
+	ENTANGLEMENT OperatorTest& operator--();	ENTANGLEMENT // Prefix decrement
+	ENTANGLEMENT OperatorTest operator--(int);  // Postfix decrement
+	ENTANGLEMENT int operator()(int add) const;
+	ENTANGLEMENT int operator[](int index) const;
+private:
+	int value;
+};

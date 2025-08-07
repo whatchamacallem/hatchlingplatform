@@ -25,6 +25,7 @@
         "displayname",
         "docstrings",
         "DTEST",
+        "dunder",
         "emcc",
         "Emscripten",
         "emsdk",

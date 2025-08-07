@@ -116,6 +116,44 @@ _sort_order = [
 	CursorKind.CXX_METHOD     # type: ignore
 ]
 
+_operator_name_map = {
+    "operator==":  "__eq__",
+    "operator!=":  "__ne__",
+    "operator<":   "__lt__",
+    "operator>":   "__gt__",
+    "operator<=":  "__le__",
+    "operator>=":  "__ge__",
+    "operator+":   "__add__",
+    "operator-":   "__sub__",
+    "operator*":   "__mul__",
+    "operator/":   "__truediv__",
+    "operator%":   "__mod__",
+    "operator+=":  "__iadd__",
+    "operator-=":  "__isub__",
+    "operator*=":  "__imul__",
+    "operator/=":  "__itruediv__",
+    "operator%=":  "__imod__",
+    "operator&":   "__and__",
+    "operator|":   "__or__",
+    "operator^":   "__xor__",
+    "operator~":   "__invert__",
+    "operator<<":  "__lshift__",
+    "operator>>":  "__rshift__",
+    "operator&=":  "__iand__",
+    "operator|=":  "__ior__",
+    "operator^=":  "__ixor__",
+    "operator<<=": "__ilshift__",
+    "operator>>=": "__irshift__",
+    "operator&&":  "__bool_and__",
+    "operator||":  "__bool_or__",
+    "operator!":   "__not__",
+    "operator()":  "__call__",
+    "operator[]":  "__getitem__",
+    "operator.":   "__getattr__",
+    "operator++":  "__increment__", # non-standard
+    "operator--":  "__decrement__"  # non-standard
+}
+
 class type_string_kind(enum.Enum):
 	'''
 	Enum defining different contexts for type string generation. Used to specify
@@ -184,23 +222,40 @@ def object_debugger(obj) -> None:
 
 def throw_cursor(c: Cursor, message: str) -> NoReturn:
 	'''
-	Formats the source code location and leaves the message to the caller.
-	Raises an Error.
+	Raises an Error. Formats the source code location and leaves the message to
+	the caller.
 	- `c` : Clang cursor indicating the source location of the error.
 	- `message` : Error message to include in the raised exception. '''
-	raise Error(f'{c.location.file}:{c.location.line}:{c.location.column} Error: {message}\n')
+	raise Error(f'{c.location.file}:{c.location.line}:{c.location.column}: {message}\n')
 
 def get_bare_name(cursor: Cursor) -> str:
 	'''
 	Returns the cursor's name or a unique ID for anonymous cursors.
 	- `cursor` : Clang cursor to extract the name from. '''
-	return cursor.spelling if not cursor.is_anonymous() else '_ID' + str(hex(hash(cursor.get_usr())))[3:]
+	return cursor.spelling if hasattr(cursor, 'spelling') and not cursor.is_anonymous() else '_ID' + str(hex(hash(cursor.get_usr())))[3:]
 
-def get_mangled_name(cursor: Cursor) -> str:
+def get_cxx_mangled_name(cursor: Cursor) -> str:
 	'''
 	Returns the mangled name of the cursor or its bare name if not mangled.
 	- `cursor` : Clang cursor to extract the mangled name from. '''
-	return cursor.mangled_name or get_bare_name(cursor)
+	return cursor.mangled_name if hasattr(cursor, 'mangled_name') else get_bare_name(cursor)
+
+def get_python_function_name(cursor: Cursor) -> str:
+	function_name = get_bare_name(cursor)
+	if cursor.kind is CursorKind.CONSTRUCTOR: # type: ignore
+		function_name = '__init__'
+	elif cursor.kind is CursorKind.DESTRUCTOR: # type: ignore
+		function_name = '__del__'
+	elif function_name.startswith('operator'):
+		if not function_name in _operator_name_map:
+			throw_cursor(cursor, 'Unsupported operator.')
+		dunder_name = _operator_name_map[function_name]
+#		XXX
+#		"operator- (unary)": "__neg__",
+#		"operator+ (unary)": "__pos__",
+		return dunder_name
+
+	return function_name
 
 def is_annotated_entanglement(cursor: Cursor) -> bool:
 	'''
@@ -235,7 +290,7 @@ def calculate_namespace(cursor: Cursor) -> List[str]:
 		if current.kind == CursorKind.LINKAGE_SPEC: # type: ignore
 			return [] # Code declared extern "C" has no namespace.
 
-		if not current.is_anonymous():
+		if hasattr(current, 'spelling') and not current.is_anonymous():
 			namespaces.append(current.spelling)
 		current = current.semantic_parent
 	namespaces.reverse()
@@ -263,7 +318,8 @@ def get_inheritance_depth(cursor: Cursor) -> int:
 
 def get_base_class(cursor: Cursor) -> str:
 	'''
-	Returns the Python package path of the base class or '_Ctypes.Structure' if none.
+	Returns the Python package path of the base class or '_Ctypes.Structure' if
+	none.
 	- `cursor` : Clang cursor representing a class or struct. '''
 	if sum(c.kind == CursorKind.CXX_BASE_SPECIFIER for c in cursor.get_children()) > 1: # type: ignore
 		throw_cursor(cursor, 'Multiple inheritance unsupported by Python\'s ctypes module.')
@@ -275,7 +331,8 @@ def get_base_class(cursor: Cursor) -> str:
 
 def has_vtable(cursor: Cursor):
 	'''
-	Returns `True` if the class has virtual methods and is the first virtual class, `False` otherwise.
+	Returns `True` if the class has virtual methods and is the first virtual
+	class, `False` otherwise.
 	- `cursor` : Clang cursor representing a class or struct. '''
 	has_virtual = False
 	for c in cursor.get_children():
@@ -301,7 +358,8 @@ def calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str,
 	- `cursor` : Clang cursor for error reporting.
 	- `cpp_type_ref` : Clang type to convert.
 	- `symbols` : Dictionary of known symbols for type resolution.
-	- `result_kind` : Specifies the context (arg_hint, return_hint, ctypes_parameters, ctypes_structure). '''
+	- `result_kind` : Specifies the context (arg_hint, return_hint,
+	  ctypes_parameters, ctypes_structure). '''
 	# Handle typedefs by resolving to the canonical type.
 	cpp_type_canonical = cpp_type_ref.get_canonical()
 
@@ -482,12 +540,7 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
 	if overloaded:
 		lines.append(namespace_tabs + '@_Overload')
 
-	# XXX operator names??
-	function_name = get_bare_name(cursor)
-	if cursor.kind is CursorKind.CONSTRUCTOR: # type: ignore
-		function_name = '__init__'
-	elif cursor.kind is CursorKind.DESTRUCTOR: # type: ignore
-		function_name = '__del__'
+	function_name = get_python_function_name(cursor)
 
 	# Arg type hints.
 	arg_types : List[Tuple[str, str]] = []
@@ -516,7 +569,7 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
 		arg_str = emit_ctypes_function_args(cursor, symbols, overloaded)
 
 		# Assemble return statement.
-		mangled_name = get_mangled_name(cursor)
+		mangled_name = get_cxx_mangled_name(cursor)
 		self_parameter = '_Ctypes.byref(self),' if not static_method else ''
 		lines.append(f"{namespace_tabs}\treturn {mangled_name}({self_parameter}{arg_str}) # {cursor.displayname}")
 
@@ -537,12 +590,7 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
 	# All cursors are the same type. Use the first one to identify them.
 	cursor0 = overloads[0]
 
-	# XXX operator names??
-	function_name = cursor0.spelling
-	if cursor0.kind is CursorKind.CONSTRUCTOR: # type: ignore
-		function_name = '__init__'
-	elif cursor0.kind is CursorKind.DESTRUCTOR: # type: ignore
-		function_name = '__del__'
+	function_name = get_python_function_name(cursor0)
 
 	# Boilerplate.
 	self_parameter = 'self,' if not static_method else ''
@@ -566,14 +614,13 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
 	# Handle each group for each argument count.
 	for arg_count, overload_group in sorted(arg_count_map.items()):
 		if len(overload_group) > 1:
-			# XXX Dispatch by argument count first and then by parameter type(s) second.
 			for item in overload_group:
 				print('Error: ' + item.displayname, file=sys.stderr)
 			throw_cursor(overload_group[0],
 				f"Multiple overloads of {overload_group[0].spelling} with {arg_count} args.")
 
 		cursor = overload_group[0]
-		mangled_name = get_mangled_name(cursor)
+		mangled_name = get_cxx_mangled_name(cursor)
 		self_parameter = '_Ctypes.byref(self), ' if not static_method else ''
 		arg_str = emit_ctypes_function_args(cursor, symbols, True)
 
@@ -694,7 +741,7 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
 		elif cursor0.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
 			assert len(cursor_list) == 1
 			api += emit_python_api_class(namespace_tabs, cursor0)
-			current_namespace += [ cursor0.spelling ]
+			current_namespace.append(cursor0.spelling)
 
 def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], structure_list: List[str]) -> None:
 	'''
@@ -763,7 +810,7 @@ def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[Lis
 				return_type = calculate_type_string(cursor, cursor.result_type, symbols, type_string_kind.ctypes_parameters)
 
 				# format them
-				mangled_name = get_mangled_name(cursor)
+				mangled_name = get_cxx_mangled_name(cursor)
 				comment = f' # {cursor.displayname}'
 				self_ptr = '_Ctypes.c_void_p,' if cursor.kind != CursorKind.FUNCTION_DECL else '' # type: ignore
 
@@ -908,7 +955,7 @@ def load_translation_unit(header_file: str) -> TranslationUnit:
 
 	if not translation_unit or any(
 			d.severity >= Diagnostic.Error for d in translation_unit.diagnostics):
-		raise Error(f'Error: Translation unit would not compile: {header_file}')
+		raise Error(f'Translation unit would not compile: {header_file}')
 
 	return translation_unit
 
@@ -991,7 +1038,7 @@ def main(argv: List[str]) -> None:
 		symbols_gather_required(translation_unit.cursor, symbols)
 
 	if not symbols:
-		raise Error('Error: No symbols found. Use -DENTANGLEMENT_PASS=1, ENTANGLEMENT_T and ENTANGLEMENT.')
+		raise Error('No symbols found. Use -DENTANGLEMENT_PASS=1, ENTANGLEMENT_T and ENTANGLEMENT.')
 
 	# Sort the symbols into their final order.
 	sorted_symbols: List[List[Cursor]] = []
@@ -1014,7 +1061,7 @@ def main(argv: List[str]) -> None:
 		verbose(1, f'status_message Wrote {len(output_lines)} lines to {_arg_output_file}.')
 		return # success
 
-	raise Error(f'Error: File not written: {_arg_output_file}')
+	raise Error(f'File not written: {_arg_output_file}')
 
 # Allow exceptions to go uncaught. This provides stack traces for unexpected
 # failures.
