@@ -97,8 +97,6 @@ public:
 	ENTANGLEMENT OperatorTest();
 	ENTANGLEMENT OperatorTest(const OperatorTest& x);
 	ENTANGLEMENT ~OperatorTest();
-	ENTANGLEMENT OperatorTest& operator=(const OperatorTest& x);
-	ENTANGLEMENT OperatorTest& operator=(OperatorTest&& x) noexcept;
 	ENTANGLEMENT bool operator<(const OperatorTest& x) const noexcept;
 	ENTANGLEMENT bool operator==(const OperatorTest& x) const;
 	ENTANGLEMENT bool operator!=(const OperatorTest& x) const;

@@ -7,8 +7,11 @@
 #include <hx/hxtask.hpp>
 #include <hx/hxthread.hpp>
 
-/// `hxtask_queue` - Execute supplied tasks in arbitrary order without cancellation
-/// using an optional thread pool. See `<hx/hxtask.hpp>`.
+/// `hxtask_queue` - Provides a simple task queue with a worker thread pool.
+/// Implements single threaded task queuing when HX_USE_THREADS=0. Executes
+/// supplied tasks in arbitrary order without cancellation using an optional
+/// thread pool. Use a separate task graph manager to generate tasks if that is
+/// needed. See `<hx/hxtask.hpp>`.
 class hxtask_queue {
 public:
 	/// Create a new task queue. `thread_pool_size` determines the size of the worker

@@ -55,6 +55,8 @@ symbols into your .so regardless of whether they were used.
 
 ## TODO
 
+- _C6symbol
+- _C5table
 - All C++ operators. E.g. hxrandom.
 - Nested classes.
 - Nested class fields.

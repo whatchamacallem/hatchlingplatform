@@ -119,18 +119,6 @@ OperatorTest::~OperatorTest() {
     value = 0xafafafaf;
 }
 
-OperatorTest& OperatorTest::operator=(const OperatorTest& x) {
-    if (this != &x) {
-        value = x.value;
-    }
-    return *this;
-}
-
-OperatorTest& OperatorTest::operator=(OperatorTest&& x) noexcept {
-    value = x.value;
-    return *this;
-}
-
 bool OperatorTest::operator<(const OperatorTest& x) const noexcept {
     return value < x.value;
 }

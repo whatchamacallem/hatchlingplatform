@@ -2,14 +2,14 @@
 # SPDX-License-Identifier: MIT
 # This file is licensed under the terms of the LICENSE.md file.
 
-_version = '0.0.1-pre-alpha'
-_usage = f'''
-Usage: python3 entanglement.py <compiler_flags> <lib_name> <header_files>... <output_file>
+_version = '0.0.3-dev'
+_usage = f'''\
+python3 entanglement.py <compiler_flags> <lib_name> <header_files>... <output_file>
 version: {_version}
 
-Generates Python bindings for a C++ .so using a libclang command line, a C++
-header and <entanglement.h>. Raises ValueError if arguments are invalid or
-processing fails.
+Generates Python bindings for a C++ .so using a clang command line and one or
+more C++ headers which were annotated with <entanglement.h>. Raises Usage/Error
+if arguments are invalid or processing fails.
 
 Arguments:
 	compiler_flags  - Flags to pass to clang. Can be in any order on command line.
@@ -116,57 +116,61 @@ _sort_order = [
 	CursorKind.CXX_METHOD     # type: ignore
 ]
 
+# It turns out operator= is not actually Pythonian. This language would have you
+# assign an object reference instead of making a copy. Use the copy constructor
+# T(T&) to make a duplicate of an object in Python. Also operator-> has no unique
+# equivalent.
 _operator_name_map = {
-    "operator==":  "__eq__",
-    "operator!=":  "__ne__",
-    "operator<":   "__lt__",
-    "operator>":   "__gt__",
-    "operator<=":  "__le__",
-    "operator>=":  "__ge__",
-    "operator+":   "__add__",
-    "operator-":   "__sub__",
-    "operator*":   "__mul__",
-    "operator/":   "__truediv__",
-    "operator%":   "__mod__",
-    "operator+=":  "__iadd__",
-    "operator-=":  "__isub__",
-    "operator*=":  "__imul__",
-    "operator/=":  "__itruediv__",
-    "operator%=":  "__imod__",
-    "operator&":   "__and__",
-    "operator|":   "__or__",
-    "operator^":   "__xor__",
-    "operator~":   "__invert__",
-    "operator<<":  "__lshift__",
-    "operator>>":  "__rshift__",
-    "operator&=":  "__iand__",
-    "operator|=":  "__ior__",
-    "operator^=":  "__ixor__",
-    "operator<<=": "__ilshift__",
-    "operator>>=": "__irshift__",
-    "operator&&":  "__bool_and__",
-    "operator||":  "__bool_or__",
-    "operator!":   "__not__",
-    "operator()":  "__call__",
-    "operator[]":  "__getitem__",
-    "operator.":   "__getattr__",
-    "operator++":  "__increment__", # non-standard
-    "operator--":  "__decrement__"  # non-standard
+	'operator==':  '__eq__',
+	'operator!=':  '__ne__',
+	'operator<':   '__lt__',
+	'operator>':   '__gt__',
+	'operator<=':  '__le__',
+	'operator>=':  '__ge__',
+	'operator+':   '__add__',
+	'operator-':   '__sub__',
+	'operator*':   '__mul__',
+	'operator/':   '__truediv__',
+	'operator%':   '__mod__',
+	'operator+=':  '__iadd__',
+	'operator-=':  '__isub__',
+	'operator*=':  '__imul__',
+	'operator/=':  '__itruediv__',
+	'operator%=':  '__imod__',
+	'operator&':   '__and__',
+	'operator|':   '__or__',
+	'operator^':   '__xor__',
+	'operator~':   '__invert__',
+	'operator<<':  '__lshift__',
+	'operator>>':  '__rshift__',
+	'operator&=':  '__iand__',
+	'operator|=':  '__ior__',
+	'operator^=':  '__ixor__',
+	'operator<<=': '__ilshift__',
+	'operator>>=': '__irshift__',
+	'operator&&':  '__bool_and__',
+	'operator||':  '__bool_or__',
+	'operator!':   '__not__',
+	'operator()':  '__call__',
+	'operator[]':  '__getitem__',
+	'operator.':   '__getattr__',
+	'operator++':  '__increment__', # non-standard
+	'operator--':  '__decrement__'  # non-standard
 }
+
+# Exception names appropriate for a command line tool.
+class Error(ValueError): ...
+class Usage(ValueError): ...
 
 class type_string_kind(enum.Enum):
 	'''
 	Enum defining different contexts for type string generation. Used to specify
 	the purpose of type strings (e.g., argument hints, return types, ctypes
-	parameters, or structure definitions). '''
+	args, or structure definitions). '''
 	arg_hint = 0,
 	return_hint = 1,
-	ctypes_parameters = 2,
-	ctypes_structure = 3
-
-class Error(ValueError):
-    def __str__(self):
-        return self.args[0]
+	ctypes_args = 2,
+	ctypes_struct = 3
 
 def verbose(verbose_level: int, x: str) -> None:
 	'''
@@ -218,7 +222,7 @@ def object_debugger(obj) -> None:
 			attribute_value = getattr(obj, attribute_name)
 			print(f'  {attribute_name}: {attribute_value}', file=sys.stderr)
 		except:
-			pass
+			...
 
 def throw_cursor(c: Cursor, message: str) -> NoReturn:
 	'''
@@ -248,7 +252,7 @@ def get_python_function_name(cursor: Cursor) -> str:
 		function_name = '__del__'
 	elif function_name.startswith('operator'):
 		if not function_name in _operator_name_map:
-			throw_cursor(cursor, 'Unsupported operator.')
+			throw_cursor(cursor, f'{function_name} unsupported.')
 		dunder_name = _operator_name_map[function_name]
 #		XXX
 #		"operator- (unary)": "__neg__",
@@ -296,29 +300,33 @@ def calculate_namespace(cursor: Cursor) -> List[str]:
 	namespaces.reverse()
 	return namespaces
 
-# Anonymous namespaces are traversed as they may contain implementation details
-# like base class layouts that are needed by the bindings code. Anonymous enums
-# and structs are given globally unique ids.
 def calculate_python_package_path(cursor: Cursor) -> str:
 	'''
 	Returns a dot-separated string representing the Python package path.
+	Anonymous namespaces are traversed as they may contain implementation details
+	like base class layouts that are needed by the bindings code. Anonymous enums
+	and structs are given globally unique ids.
 	- `cursor` : Clang cursor to compute the path for. '''
 	namespaces: List[str] = calculate_namespace(cursor)
 	namespaces.append(get_bare_name(cursor))
 	return '.'.join(namespaces)
 
-def get_inheritance_depth(cursor: Cursor) -> int:
+def get_inheritance_generation(cursor: Cursor) -> int:
 	'''
-	Returns the number of inheritance levels (0 for no base class).
-	- `cursor` : Clang cursor representing a class or struct. '''
-	for child in cursor.get_children():
-		if child.kind == CursorKind.CXX_BASE_SPECIFIER: # type: ignore
-			return get_inheritance_depth(child.referenced) + 1
-	return 0
+	Returns `1` for a class/struct with no parent and `1+N` for a class/struct
+	with `N` parents. Returns `0` to signal all other kinds.
+	- `cursor` : Clang cursor. '''
+
+	if cursor.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
+		for child in cursor.get_children():
+			if child.kind == CursorKind.CXX_BASE_SPECIFIER: # type: ignore
+				return get_inheritance_generation(child.referenced) + 1
+		return 1 # Base class.
+	return 0 # Fundamental or other type.
 
 def get_base_class(cursor: Cursor) -> str:
 	'''
-	Returns the Python package path of the base class or '_Ctypes.Structure' if
+	Returns the Python package path of the base class or `_Ctypes.Structure` if
 	none.
 	- `cursor` : Clang cursor representing a class or struct. '''
 	if sum(c.kind == CursorKind.CXX_BASE_SPECIFIER for c in cursor.get_children()) > 1: # type: ignore
@@ -359,14 +367,14 @@ def calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str,
 	- `cpp_type_ref` : Clang type to convert.
 	- `symbols` : Dictionary of known symbols for type resolution.
 	- `result_kind` : Specifies the context (arg_hint, return_hint,
-	  ctypes_parameters, ctypes_structure). '''
+	  ctypes_args, ctypes_struct). '''
 	# Handle typedefs by resolving to the canonical type.
 	cpp_type_canonical = cpp_type_ref.get_canonical()
 
 	# Handle fundamental types.
 	if cpp_type_canonical.kind in _clang_to_ctypes:
-		if result_kind in (type_string_kind.ctypes_parameters,
-					 		type_string_kind.ctypes_structure):
+		if result_kind in (type_string_kind.ctypes_args,
+					 		type_string_kind.ctypes_struct):
 			return _clang_to_ctypes[cpp_type_canonical.kind]
 		if result_kind is type_string_kind.arg_hint:
 			if cpp_type_canonical.kind is TypeKind.WCHAR: # type: ignore
@@ -377,7 +385,7 @@ def calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str,
 	# pass arrays as pointers, ctypes.Array or numpy's ndarray. entanglement.py
 	# does not provide additional Python interfaces to manipulate C++ arrays.
 	if cpp_type_canonical.kind is TypeKind.CONSTANTARRAY:		  # type: ignore
-		if not result_kind is type_string_kind.ctypes_structure:
+		if not result_kind is type_string_kind.ctypes_struct:
 			throw_cursor(cursor, 'Constant arrays supported in class and struct layouts only.')
 
 		array_element_string = calculate_type_string(cursor, cpp_type_canonical.get_array_element_type(), symbols, result_kind)
@@ -448,8 +456,8 @@ def calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str,
 		if definition_cursor.kind == CursorKind.ENUM_DECL: # type: ignore
 			if is_pointer:
 				throw_cursor(definition_cursor, f'Cannot pass enums by pointer or reference. Use int.')
-			if result_kind in (type_string_kind.ctypes_parameters,
-					 			type_string_kind.ctypes_structure):
+			if result_kind in (type_string_kind.ctypes_args,
+					 			type_string_kind.ctypes_struct):
 				# Just tell ctypes to marshal enums to their underlying type.
 				return _clang_to_ctypes[definition_cursor.enum_type.kind]
 			return 'int' # Use plain int for enum arg and return hints.
@@ -457,9 +465,9 @@ def calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str,
 		# Classes and structs are usable directly by ctypes. These need to be
 		# full path.
 		if is_pointer:
-			if result_kind is type_string_kind.ctypes_parameters:
+			if result_kind is type_string_kind.ctypes_args:
 				return f'_Ctypes.POINTER({py_name})'
-			if result_kind is type_string_kind.ctypes_structure:
+			if result_kind is type_string_kind.ctypes_struct:
 				# Using void here avoids a whole class definition dependency
 				# graph situation that is intractable going from C++ to Python.
 				return f'_Ctypes.c_void_p'
@@ -487,9 +495,9 @@ def emit_python_api_doc(tabs: str, cursor: Cursor) -> List[str]:
 			cleaned.append(line)
 		doc = f'\n{tabs}'.join(cleaned)
 		if not doc or doc.isspace():
-			return [ ]
+			return []
 		return [f"{tabs}'''\n{tabs}{doc} '''"]
-	return [ ]
+	return []
 
 def emit_ctypes_function_args(cursor: Cursor, symbols: Dict[str, List[Cursor]], overloaded: bool) -> str:
 	'''
@@ -508,7 +516,7 @@ def emit_ctypes_function_args(cursor: Cursor, symbols: Dict[str, List[Cursor]], 
 			arg_name = arg.spelling if arg.spelling else f'_Arg{arg_index}'
 		if arg_type_kind == TypeKind.POINTER: # type: ignore
 			pointee_type = arg.type.get_pointee()
-			pointee_c_type = calculate_type_string(cursor, pointee_type, symbols, type_string_kind.ctypes_parameters)
+			pointee_c_type = calculate_type_string(cursor, pointee_type, symbols, type_string_kind.ctypes_args)
 			if pointee_c_type != 'None':
 				arg_list.append(f'_Pointer_shim({arg_name}, {pointee_c_type})')
 			else:
@@ -519,6 +527,39 @@ def emit_ctypes_function_args(cursor: Cursor, symbols: Dict[str, List[Cursor]], 
 			arg_list.append(arg_name)
 		arg_index += 1
 	return ','.join(arg_list)
+
+def emit_python_api_overload_arg0_isinstance(cursor: Cursor, symbols: Dict[str, List[Cursor]], overloaded: bool) -> str:
+	'''
+	This check is used to distinguish between overloaded functions with the same
+	number of args by comparing the class or struct used by the first arg. The
+	intention is to be able to support the normal C++ constructor overloads. It
+	should also be possible to correctly specialize overloads for subclasses.
+	However, this is only intended to work when a class or struct is being
+	passed and may fail to disambiguate the cases normally handled just fine by
+	_Pointer_shim. There is also no attempt made to try to disambiguate more
+	than one fundamental type. Returns a boolean expression determining if the
+	arg is an instance of the expected ctype. Does not support ctypes.Array,
+	ctypes.POINTER or numpy.ndarray.
+	- `cursor` : Clang cursor representing the function.
+	- `symbols` : Dictionary of known symbols for type resolution.
+	- `overloaded` : Boolean indicating if the function is overloaded. '''
+
+	assert cursor.get_arguments(), 'Impossible to overload 0 args'
+
+	arg = next(cursor.get_arguments())
+	if overloaded:
+		arg_name = '_Args[0]'
+	else:
+		arg_name = arg.spelling if arg.spelling else '_Arg0'
+
+	arg_type_kind = arg.type.kind
+	if arg_type_kind in (TypeKind.POINTER, TypeKind.LVALUEREFERENCE, TypeKind.RVALUEREFERENCE): # type: ignore
+		pointee_type = arg.type.get_pointee()
+		pointee_c_type = calculate_type_string(cursor, pointee_type, symbols, type_string_kind.ctypes_args)
+		return f'isinstance({arg_name}, {pointee_c_type})'
+
+	c_type = calculate_type_string(cursor, arg.type, symbols, type_string_kind.ctypes_args)
+	return f'isinstance({arg_name}, {c_type})'
 
 def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[str, List[Cursor]], overloaded: bool) -> List[str]:
 	'''
@@ -553,10 +594,10 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
 	return_py_type = calculate_type_string(cursor, cursor.result_type, symbols, type_string_kind.return_hint)
 
 	# Assemble type hints.
-	self_parameter = 'self,' if not static_method else ''
+	self_arg = 'self,' if not static_method else ''
 	arg_hints = ','.join(f"{arg_name}:'{py_type}'" for arg_name, py_type in arg_types)
 	return_hint = f"->'{return_py_type}'"
-	lines.append(f'{namespace_tabs}def {function_name}({self_parameter}{arg_hints}){return_hint}:')
+	lines.append(f'{namespace_tabs}def {function_name}({self_arg}{arg_hints}){return_hint}:')
 
 	# Function body.
 	function_tabs : str = namespace_tabs + '\t'
@@ -570,8 +611,8 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
 
 		# Assemble return statement.
 		mangled_name = get_cxx_mangled_name(cursor)
-		self_parameter = '_Ctypes.byref(self),' if not static_method else ''
-		lines.append(f"{namespace_tabs}\treturn {mangled_name}({self_parameter}{arg_str}) # {cursor.displayname}")
+		self_arg = '_Ctypes.byref(self),' if not static_method else ''
+		lines.append(f'{namespace_tabs}\treturn {mangled_name}({self_arg}{arg_str}) # {cursor.displayname}')
 
 	return lines
 
@@ -584,17 +625,14 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
 	lines: List[str] = []
 	static_method = False
 	if any(is_staticmethod(cursor) for cursor in overloads):
-		lines.append(namespace_tabs + "@_Staticmethod")
+		lines.append(namespace_tabs + '@_Staticmethod')
 		static_method = True
 
-	# All cursors are the same type. Use the first one to identify them.
-	cursor0 = overloads[0]
-
-	function_name = get_python_function_name(cursor0)
+	function_name = get_python_function_name(overloads[0])
 
 	# Boilerplate.
-	self_parameter = 'self,' if not static_method else ''
-	lines += [  f'{namespace_tabs}def {function_name}({self_parameter}*_Args,**_Kwargs):',
+	self_arg = 'self,' if not static_method else ''
+	lines += [  f'{namespace_tabs}def {function_name}({self_arg}*_Args,**_Kwargs):',
 				f"{namespace_tabs}\tassert not _Kwargs, 'keyword_arguments'",
 				f'{namespace_tabs}\tmatch _Len(_Args):' ]
 
@@ -612,26 +650,51 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
 			arg_count_map[arg_count].append(cursor)
 
 	# Handle each group for each argument count.
+	self_arg = '_Ctypes.byref(self), ' if not static_method else ''
 	for arg_count, overload_group in sorted(arg_count_map.items()):
-		if len(overload_group) > 1:
-			for item in overload_group:
-				print('Error: ' + item.displayname, file=sys.stderr)
-			throw_cursor(overload_group[0],
-				f"Multiple overloads of {overload_group[0].spelling} with {arg_count} args.")
+		lines.append(f'{namespace_tabs}\t\tcase {arg_count}:')
 
-		cursor = overload_group[0]
-		mangled_name = get_cxx_mangled_name(cursor)
-		self_parameter = '_Ctypes.byref(self), ' if not static_method else ''
-		arg_str = emit_ctypes_function_args(cursor, symbols, True)
+		inheritance_generation_map: Dict[int, List[Cursor]] = {0:[]}
+		for cursor in overload_group:
+			generation = 0
+			if arg_count:
+				# This should all work with code that managed to compile.
+				arg0_type = next(cursor.get_arguments()).type.get_canonical()
+				if arg0_type.kind in (TypeKind.POINTER, TypeKind.LVALUEREFERENCE, TypeKind.RVALUEREFERENCE): # type: ignore
+					arg0_type = arg0_type.get_pointee().get_canonical()
 
-		lines += [
-			f"{namespace_tabs}\t\tcase {arg_count}:",
-			f"{namespace_tabs}\t\t\treturn {mangled_name}({self_parameter}{arg_str})"
-		]
+				generation = get_inheritance_generation(arg0_type.get_declaration())
+			if generation not in inheritance_generation_map:
+				inheritance_generation_map[generation] = [cursor]
+			else:
+				inheritance_generation_map[generation].append(cursor)
 
-	lines += [  f"{namespace_tabs}\t\tcase _:",
+		if len(inheritance_generation_map[0]) > 1:
+			throw_cursor(inheritance_generation_map[0][0],
+				'Unable to disambiguate overloaded functions by arg count and class of the first arg.')
+
+		counter = len(overload_group)
+		for generation, generation_group in sorted(inheritance_generation_map.items(), reverse=True):
+			for cursor in generation_group:
+				mangled_name = get_cxx_mangled_name(cursor)
+				arg_str = emit_ctypes_function_args(cursor, symbols, True)
+
+				# Try using isinstance to select between overloads. This can be
+				# allowed to fail without further overhead because ctypes will
+				# safely throw an exception. Fundamental types are left for
+				# last. See emit_python_api_overload_arg0_isinstance for docs.
+				if counter > 1:
+					counter -= 1
+					assert generation > 0, 'isinstance checks are only for classes and structs'
+					arg0_selector = emit_python_api_overload_arg0_isinstance(cursor, symbols, True)
+					lines.append(f'{namespace_tabs}\t\t\tif {arg0_selector}:')
+					lines.append(f'{namespace_tabs}\t\t\t\treturn {mangled_name}({self_arg}{arg_str})')
+				else:
+					lines.append(f'{namespace_tabs}\t\t\treturn {mangled_name}({self_arg}{arg_str})')
+
+	lines += [  f'{namespace_tabs}\t\tcase _:',
 				f"{namespace_tabs}\t\t\tassert False, f'overload_resolution len {{_Len(_Args)}}'",
-				f"{namespace_tabs}\t\t\tpass" ]
+				f'{namespace_tabs}\t\t\tpass' ]
 	return lines
 
 def emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
@@ -705,12 +768,12 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
 
 		# Find the prefix of the current namespace needed by the next symbol.
 		# This is Python so there is nothing to do but drop indentation.
-		# They keyword "pass" is being used to prevent errors.
+		# They keyword ... is being used to prevent errors with empty classes.
 		while (len(cursor_namespace) < len(current_namespace)
 				or current_namespace != cursor_namespace[:len(current_namespace)]):
-			api.append(f"{'\t' * len(current_namespace)}pass")
+			api.append(f"{'\t' * len(current_namespace)}...")
 			leaving_namespace = current_namespace.pop()
-			verbose(2, f'leaving_namespace {leaving_namespace}...')
+			verbose(2, f'leaving_namespace {leaving_namespace}')
 
 		# Cursors for namespaces are not being selected. Instead missing
 		# namespace declarations are only being added as needed.
@@ -719,7 +782,7 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
 			next_namespace : str = cursor_namespace[namespace_depth]
 			api.append(f"{'\t' * namespace_depth}class {next_namespace}:")
 			current_namespace.append(next_namespace)
-			verbose(2, f'entering_namespace {next_namespace}...')
+			verbose(2, f'entering_namespace {next_namespace}')
 
 		namespace_depth = len(current_namespace)
 		namespace_tabs = '\t' * namespace_depth
@@ -756,7 +819,7 @@ def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[L
 	for cursor_list in sorted_symbols:
 		cursor0 = cursor_list[0]
 		if cursor0.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
-			depth = get_inheritance_depth(cursor0)
+			depth = get_inheritance_generation(cursor0)
 			if depth not in depth_sorted_symbols:
 				depth_sorted_symbols[depth] = [ cursor_list ]
 			else:
@@ -781,7 +844,7 @@ def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[L
 
 				for field in cursor0.get_children():
 					if field.kind == CursorKind.FIELD_DECL: # type: ignore
-						ctypes_type = calculate_type_string(field, field.type, symbols, type_string_kind.ctypes_structure)
+						ctypes_type = calculate_type_string(field, field.type, symbols, type_string_kind.ctypes_struct)
 						bits = f', {field.get_bitfield_width()}' if field.is_bitfield() else ''
 						structure_list.append(f"\t\t('{field.spelling}', {ctypes_type}{bits}),")
 
@@ -805,9 +868,9 @@ def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[Lis
 				# Get types
 				arg_types : List[str]= []
 				for arg in cursor.get_arguments():
-					ctypes_type = calculate_type_string(arg, arg.type, symbols, type_string_kind.ctypes_parameters)
+					ctypes_type = calculate_type_string(arg, arg.type, symbols, type_string_kind.ctypes_args)
 					arg_types.append(ctypes_type)
-				return_type = calculate_type_string(cursor, cursor.result_type, symbols, type_string_kind.ctypes_parameters)
+				return_type = calculate_type_string(cursor, cursor.result_type, symbols, type_string_kind.ctypes_args)
 
 				# format them
 				mangled_name = get_cxx_mangled_name(cursor)
@@ -882,7 +945,7 @@ def symbols_gather_required(cursor: Cursor, symbols: Dict[str, List[Cursor]]) ->
 	if cursor.kind in (	CursorKind.TRANSLATION_UNIT, # type: ignore
 						CursorKind.NAMESPACE, # type: ignore
 						CursorKind.LINKAGE_SPEC): # type: ignore
-		pass # fallthrough
+		... # fallthrough
 
 	elif not is_annotated_entanglement(cursor):
 		# Ignore everything but ENTANGLEMENT_T/ENTANGLEMENT.
@@ -1016,7 +1079,7 @@ except Exception as e:
 def main(argv: List[str]) -> None:
 	'''See usage message at top of file. '''
 	if not parse_argv(argv):
-		raise Error(_usage)
+		raise Usage(_usage)
 
 	verbose(1, 'entanglement.py version ' + _version)
 	verbose(1, 'compiler_flags ' + ' '.join(_arg_compiler_flags))

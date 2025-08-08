@@ -5,14 +5,16 @@
 //
 // Hatchling Platform. <hx/hatchling.h> requires C99. C++11 is optional.
 //
-// Defines logging macros (hxlog, hxlogrelease, hxlogconsole, hxlogwarning)
-// which vary by HX_RELEASE level (0–3) and defines log verbosity (log, console,
-// warning, assert).
+// Defines logging macros hxlog, hxlogrelease, hxlogconsole, hxlogwarning which
+// vary by HX_RELEASE level (0–3) and defines log verbosity {log, console,
+// warning, assert}.
 //
-// Assertion macros (hxassert, hxassertmsg, hxassertrelease) are provided for
-// debugging, active when HX_RELEASE < 3. hxinit initializes platform;
-// hxshutdown releases resources (HX_RELEASE < 3). Utilities: hxmove, hxmin,
-// hxmax, hxabs, hxclamp, hxswap, hxhex_dump, hxfloat_dump.
+// Assertion macros hxassert, hxassertmsg, hxassertrelease are provided for
+// debugging, active when HX_RELEASE < 3. hxinit initializes the platform and
+// hxshutdown releases resources when HX_RELEASE < 3.
+//
+// Available utilities are: hxnull, hxnullptr, hxmove, hxmin, hxmax, hxabs,
+// hxclamp, hxswap, hxhex_dump, hxfloat_dump.
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -25,10 +27,12 @@
 #include <stdbool.h>
 #endif
 
-/// `HATCHLING_VER` - Major, minor and patch versions.
-#define HATCHLING_VER 0x030103u
-/// `HATCHLING_TAG` - Major, minor and patch version tag.
-#define HATCHLING_TAG "v3.1.3"
+/// `HATCHLING_VER` - Major, minor and patch versions. Odd versions are
+/// development branches.
+#define HATCHLING_VER 0x030105u
+/// `HATCHLING_TAG` - Major, minor and patch version tag. Odd versions are
+/// development branches and end in `-dev`.
+#define HATCHLING_TAG "v3.1.5-dev"
 
 #include <hx/hxsettings.h>
 #include <hx/hxmemory_manager.h>
@@ -53,8 +57,13 @@ enum hxloglevel_t {
 	hxloglevel_assert
 };
 
-/// `hxnull` - The null pointer value for a given pointer type represented by the
-/// numeric constant `0`. This header is C. Use `nullptr` if you prefer it.
+/// `hxnull` - The null pointer value for a given pointer type represented by
+/// the numeric constant `0`. The C/C++ language standards explicitly define the
+/// meaning of `0` in pointer context as a null pointer of the expected type.
+/// However they do not define whether `NULL` is `0` or `((void*)0)`. `hxnull`
+/// fills that gap by having an unambiguous type. See hxnullptr/hxnullptr_t if
+/// you need a std::nullptr_t replacement. They are provided for completeness
+/// but are not required.
 #define hxnull 0
 
 /// Compile-time assertion for `HX_RELEASE` [0..3] range.
@@ -193,6 +202,22 @@ const char* hxbasename(const char* path_);
 #if HX_CPLUSPLUS
 } // extern "C"
 
+/// `hxnullptr_t` - A class that will only convert to a null pointer. Useful
+/// when an integer constant arg would be ambiguous or otherwise break template
+/// code. `hxnullptr` is a `hxnullptr_t`. Use plain `hxnull` for comparisons.
+class hxnullptr_t {
+public:
+	template<typename T_> constexpr operator T_*() const { return 0; }
+	template<typename T_, typename M_> constexpr operator M_ T_::*() const { return 0; }
+	void operator&() const = delete; // No address-of operator.
+};
+
+/// `hxnullptr` - An instance of a class that will only convert to a null
+/// pointer. Useful when an integer constant arg would be ambiguous or otherwise
+/// break template code. `hxnullptr` is a `hxnullptr_t`. Use plain `hxnull` for
+/// comparisons.
+#define hxnullptr hxnullptr_t()
+
 /// Converts a `T&` to a `T&&`.
 template<typename T_> constexpr T_&& hxmove(T_& x_) { return static_cast<T_&&>(x_); }
 
@@ -237,9 +262,11 @@ constexpr void hxswap(T_& x_, T_& y_) {
 	y_ = hxmove<T_>(t_);
 }
 
-/// `hxswap_memcpy` - Exchanges the contents of `x` and `y` using `memcpy` and a stack
-/// temporary. This is intended for internal use where it is known to be safe to
-/// do so.
+/// `hxswap_memcpy` - Exchanges the contents of `x` and `y` using `memcpy` and a
+/// stack temporary. This is intended for internal use where it is known to be
+/// safe to do so.
+/// - `x` : First `T&`.
+/// - `y` : Second `T&`.
 template<typename T_>
 constexpr void hxswap_memcpy(T_& x_, T_& y_) {
 	char t_[sizeof x_];
@@ -248,7 +275,9 @@ constexpr void hxswap_memcpy(T_& x_, T_& y_) {
 	::memcpy(&x_, t_, sizeof x_);
 }
 
-/// Returns the power of 2 of the largest bit in `n`.
+/// Returns `log2(n)` as an integer which is the power of 2 of the largest bit
+/// in `n`. Nota Bene: `hxlog2i(0)` is currently -127 and is undefined.
+/// - `i` : A `size_t`.
 inline int hxlog2i(size_t i_) {
 	// Use the floating point hardware because this isn't important enough for
 	// intrinsics.
