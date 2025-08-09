@@ -121,7 +121,7 @@ hxregister_string_literal_hash::hxregister_string_literal_hash(const char* str_)
 }
 
 // The hash table code expects to be able to hash a key_t and compare it equal
-// to the Node::hash value. That results in double hashing here. It is just
+// to the node_t's hash value. That results in double hashing here. It is just
 // another multiply.
 hxhash_t hxregister_string_literal_hash::hash(void) const {
 	return hxkey_hash(m_hash_);

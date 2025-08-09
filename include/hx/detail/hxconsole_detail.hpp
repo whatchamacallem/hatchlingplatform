@@ -14,7 +14,6 @@ template<typename T_>
 hxconsolenumber_t::operator T_(void) const {
 	// Reimplement std::numeric_limits for 2's compliment. The << operator
 	// promotes its operands to int and so that requires more casting.
-	// Manipulating the sign bit is not supported by the standard. Sorry.
 	const bool is_signed_ = static_cast<T_>(-1) < T_(0u);
 	const T_ min_value_ = is_signed_ ? T_(T_(1u) << (sizeof(T_) * 8 - 1)) : T_(0u);
 	const T_ max_value_ = ~min_value_;
@@ -22,8 +21,7 @@ hxconsolenumber_t::operator T_(void) const {
 	double clamped_ = hxclamp(m_x_, (double)min_value_, (double)max_value_);
 	hxassertmsg(m_x_ == clamped_, "parameter_overflow %lf -> %lf", m_x_, clamped_);
 
-	// Asserts may be skipped. Avoid the undefined behavior sanitizer by
-	// clamping value.
+	// Avoid the undefined behavior sanitizer by clamping value.
 	T_ t = (T_)clamped_;
 	return t;
 }

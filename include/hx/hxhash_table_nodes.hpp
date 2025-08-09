@@ -3,9 +3,8 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 //
-// <hx/hxhash_table_nodes.hpp> - These are usable implementations of the
-// hxhash_table Node template parameter. These are the keys for a set.
-// Subclasses will give you associated values which is a mapping.
+// <hx/hxhash_table_nodes.hpp> - These are specializations of the hxhash_table
+// node_t template parameter for integers and strings.
 
 #include <hx/hxhash_table.hpp>
 
@@ -25,7 +24,7 @@ public:
 	void* hash_next(void) const { return m_hash_next_; }
 	void*& hash_next(void) { return m_hash_next_; }
 
-	/// The key and hash identify the Node and should not change once added.
+	/// The key and hash identify the node_t and should not change once added.
 	constexpr const key_t_& key(void) const { return m_key_; }
 	constexpr hxhash_t hash(void) const { return hxkey_hash(m_key_); };
 

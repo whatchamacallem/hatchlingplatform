@@ -108,18 +108,17 @@ void StructPointerFundamentals::null_it_all(void) {
 	m_pfloat = 0;
 }
 
+OperatorTest::OperatorTest(int value_) : value(value_) { }
+
 OperatorTest::OperatorTest() : value(0) {}
 
 OperatorTest::OperatorTest(const OperatorTest& x) : value(x.value) {}
-
-OperatorTest::OperatorTest(OperatorTest&& x) noexcept : value(x.value) {
-}
 
 OperatorTest::~OperatorTest() {
     value = 0xafafafaf;
 }
 
-bool OperatorTest::operator<(const OperatorTest& x) const noexcept {
+bool OperatorTest::operator<(const OperatorTest& x) const {
     return value < x.value;
 }
 

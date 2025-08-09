@@ -92,12 +92,11 @@ ENTANGLEMENT StructPointerFundamentals& function_struct_pointer_fundamentals_mul
 
 class ENTANGLEMENT_T OperatorTest {
 public:
-	ENTANGLEMENT explicit OperatorTest(int value_) noexcept : value(value_) { }
-	ENTANGLEMENT OperatorTest(OperatorTest&& x) noexcept;
+	ENTANGLEMENT explicit OperatorTest(int value_);
 	ENTANGLEMENT OperatorTest();
 	ENTANGLEMENT OperatorTest(const OperatorTest& x);
 	ENTANGLEMENT ~OperatorTest();
-	ENTANGLEMENT bool operator<(const OperatorTest& x) const noexcept;
+	ENTANGLEMENT bool operator<(const OperatorTest& x) const;
 	ENTANGLEMENT bool operator==(const OperatorTest& x) const;
 	ENTANGLEMENT bool operator!=(const OperatorTest& x) const;
 	ENTANGLEMENT bool operator>(const OperatorTest& x) const;
@@ -129,9 +128,9 @@ public:
 	ENTANGLEMENT bool operator&&(const OperatorTest& x) const;
 	ENTANGLEMENT bool operator||(const OperatorTest& x) const;
 	ENTANGLEMENT bool operator!() const;
-	ENTANGLEMENT OperatorTest& operator++();	ENTANGLEMENT // Prefix increment
+	ENTANGLEMENT OperatorTest& operator++();	// Prefix increment
 	ENTANGLEMENT OperatorTest operator++(int);  // Postfix increment
-	ENTANGLEMENT OperatorTest& operator--();	ENTANGLEMENT // Prefix decrement
+	ENTANGLEMENT OperatorTest& operator--();	// Prefix decrement
 	ENTANGLEMENT OperatorTest operator--(int);  // Postfix decrement
 	ENTANGLEMENT int operator()(int add) const;
 	ENTANGLEMENT int operator[](int index) const;

@@ -15,14 +15,30 @@
 // fields and K has an operator== or an hxkey_equal overload.
 //
 // class T {
-//   typedef K key_t;		  // tell the hash table what key to use.
-//   T(key_t);				 // construct from key. e.g. for operator[].
-//   void*& hash_next();	   // used by hxhash_table for embedded linked list.
-//   void* hash_next() const;  // const version of hash_next.
-//   const key_t& key() const; // returns key constructed with.
-//   hxhash_t hash() const;	// returns hash of key constructed with.
+//   typedef K key_t;			// Tell the hash table what key to use.
+//   T(key_t);					// Construct from key. e.g. for operator[].
+//   void*& hash_next();		// Used by hxhash_table for embedded linked list.
+//   void* hash_next() const;	// Constant version of hash_next.
+//   const key_t& key() const;	// Returns key constructed with.
+//   hxhash_t hash() const;		// Returns hash of key constructed with.
 // };
 //
+// hxhash_table_set_node and hxhash_table_map_node are provided and recommended
+// for replacements for std::unordered_set and std::unordered_map. Custom key
+// types will require either an operator== or an hxkey_equal overload and will
+// require an hxkey_hash overload.
+//
+// They might be used as follows:
+//
+//		// An unordered set of allowed or blocked internet address.
+// 		typedef hxhash_table<hxhash_table_set_node<ipv6_address_t>> ipv6_set_t;
+//
+//      // A fixed size unordered map of material identifiers to material
+//		// properties. Allows missing materials to be safely resolved.
+// 		typedef hxhash_table<hxhash_table_map_node<material_id_t, material_t>, 1024> material_db_t;
+//
+// <hx/hxhash_table_nodes.hpp> - Also provides specializations of the
+// hxhash_table node_t template parameter for integers and strings.
 
 #include <hx/detail/hxhash_table_detail.hpp>
 #include <hx/hxkey.hpp>
@@ -53,7 +69,7 @@ public:
 	void* hash_next(void) const { return m_hash_next_; }
 	void*& hash_next(void) { return m_hash_next_; }
 
-	/// The key and hash identify the Node and should not change once added.
+	/// The key and hash identify the node_t and should not change once added.
 	constexpr const key_t_& key(void) const { return m_key_; }
 
 	/// Hash is not required to be unique
@@ -96,7 +112,7 @@ protected:
 
 /// `hxhash_table` - See top of this file for description.
 ///
-/// Node must be a subclass of hxhash_table_node with the interface described above.
+/// node_t must be a subclass of hxhash_table_node with the interface described above.
 /// If non-zero Table_size_bits configures the size of the hash table to be Table_size_bits^2.
 /// Otherwise use set_table_size_bits() to configure hash bits dynamically.
 /// See hxdo_not_delete for situations where the table does not own the nodes.
@@ -105,11 +121,11 @@ template<typename node_t_,
 	typename deleter_t_=hxdeleter>
 class hxhash_table {
 public:
-	typedef node_t_ Node;
+	typedef node_t_ node_t;
 	typedef typename node_t_::key_t key_t;
 
 	/// A forward iterator. Iteration is Θ(n + (1 << Table_size_bits)).
-	/// Iterators are only invalidated by the removal of the Node referenced.
+	/// Iterators are only invalidated by the removal of the node_t referenced.
 	class const_iterator
 	{
 	public:
@@ -138,10 +154,10 @@ public:
 		/// Compares two iterators for inequality.
 		constexpr bool operator!=(const const_iterator& rhs_) const { return m_current_node_ != rhs_.m_current_node_; }
 
-		/// Dereferences the iterator to access the current Node.
+		/// Dereferences the iterator to access the current node_t.
 		constexpr const node_t_& operator*(void) const { return *m_current_node_; }
 
-		/// Dereferences the iterator to access the current Node's pointer.
+		/// Dereferences the iterator to access the current node_t's pointer.
 		constexpr const node_t_* operator->(void) const { return m_current_node_; }
 
 	protected:
@@ -177,10 +193,10 @@ public:
 		/// Advances the iterator to the next element (post-increment).
 		constexpr iterator operator++(int) { iterator cit_(*this); const_iterator::operator++(); return cit_; }
 
-		/// Dereferences the iterator to access the current Node.
+		/// Dereferences the iterator to access the current node_t.
 		constexpr node_t_& operator*(void) const { return *this->m_current_node_; }
 
-		/// Dereferences the iterator to access the current Node's pointer.
+		/// Dereferences the iterator to access the current node_t's pointer.
 		constexpr node_t_* operator->(void) const { return this->m_current_node_; }
 	};
 
@@ -250,10 +266,10 @@ public:
 		return *n_;
 	}
 
-	/// Inserts a Node into the hash table, allowing duplicate keys. Nodes that
+	/// Inserts a node_t into the hash table, allowing duplicate keys. Nodes that
 	/// have non-null hash pointers are allowed because they may have been released
 	/// from a table that way.
-	/// - `node` : The Node to insert into the hash table.
+	/// - `node` : The node_t to insert into the hash table.
 	constexpr void insert_node(node_t_* ptr_) {
 		hxassertmsg(m_size_ < ~(size_t)0, "integer_overflow");
 		hxassertmsg(this->find(ptr_->key()) != ptr_, "container_reinsert");
@@ -264,12 +280,12 @@ public:
 		++m_size_;
 	}
 
-	/// Returns a Node matching key if any. If previous is non-null it must be
+	/// Returns a node_t matching key if any. If previous is non-null it must be
 	/// a node previously returned from find() with the same key and that has not
 	/// been removed. Then find() will return a subsequent node if any.
 	/// The previous object is non-const as it may be modified.
 	/// - `key` : The key to search for in the hash table.
-	/// - `previous` : A previously found Node with the same key, or nullptr.
+	/// - `previous` : A previously found node_t with the same key, or nullptr.
 	constexpr node_t_* find(const typename node_t_::key_t& key_, const node_t_* previous_=hxnull) {
 		if (!previous_) {
 			for (node_t_* n_ = *this->get_bucket_head_(hxkey_hash(key_)); n_; n_ = (node_t_*)n_->hash_next()) {
@@ -309,7 +325,7 @@ public:
 		return total_;
 	}
 
-	/// Removes and returns the first Node with the given key.
+	/// Removes and returns the first node_t with the given key.
 	/// - `key` : The key to search for and remove from the hash table.
 	constexpr node_t_* extract(const typename node_t_::key_t& key_) {
 		hxhash_t hash_ = hxkey_hash(key_);
@@ -328,10 +344,10 @@ public:
 
 	/// Releases all Nodes matching key and calls deleter() on every node. Returns
 	/// the number of nodes released. Deleter can be functions with signature "void
-	/// deleter(Node*)" and functors supporting "operator()(Node*)" and with an
+	/// deleter(node_t*)" and functors supporting "operator()(node_t*)" and with an
 	/// "operator bool" returning true. E.g. a free list or a null pointer.
 	/// - `key` : The key to search for and remove from the hash table.
-	/// - `deleter` : A function or functor to call on each removed Node.
+	/// - `deleter` : A function or functor to call on each removed node_t.
 	template<typename Deleter_actual_>
 	constexpr size_t erase(const typename node_t_::key_t& key_, const Deleter_actual_& deleter_) {
 		size_t count_ = 0u;
@@ -365,10 +381,10 @@ public:
 	}
 
 	/// Removes all nodes and calls deleter() on every node. Deleter can be
-	/// function pointers with signature "void deleter(Node*)" or functors
-	/// supporting "operator()(Node*) and operator (bool)." deleter could be
+	/// function pointers with signature "void deleter(node_t*)" or functors
+	/// supporting "operator()(node_t*) and operator (bool)." deleter could be
 	/// a free list or a null function pointer.
-	/// - `deleter` : A function or functor to call on each removed Node.
+	/// - `deleter` : A function or functor to call on each removed node_t.
 	template<typename Deleter_actual_>
 	constexpr void clear(const Deleter_actual_& deleter_) {
 		if (m_size_ != 0u) {
@@ -397,7 +413,7 @@ public:
 	/// Clears the hash table without deleting any Nodes.
 	constexpr void release_all(void) {
 		if (m_size_ != 0u) {
-			::memset(m_table_.data(), 0x00, sizeof(Node*) * m_table_.capacity());
+			::memset(m_table_.data(), 0x00, sizeof(node_t*) * m_table_.capacity());
 			m_size_ = 0u;
 		}
 	}
