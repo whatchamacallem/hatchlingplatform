@@ -55,11 +55,10 @@ symbols into your .so regardless of whether they were used.
 
 ## TODO
 
-- _C6symbol
-- _C5table
+- Nested class fields. Oh shit dependency order.
+- structs are allowed to have any kind of pointer they want. no errors.
 - All C++ operators. E.g. hxrandom.
 - Nested classes.
-- Nested class fields.
 - Pointers and references to classes, all kinds.
 - Enum return value.
 - Reopening a namespace and sub-namespace to inherit from them in another file.

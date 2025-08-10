@@ -156,9 +156,7 @@ _operator_name_map = {
 	'operator!':   '__not__',
 	'operator()':  '__call__',
 	'operator[]':  '__getitem__',
-	'operator.':   '__getattr__',
-	'operator++':  '__increment__', # non-standard
-	'operator--':  '__decrement__'  # non-standard
+	'operator.':   '__getattr__'
 }
 
 # Exception names appropriate for a command line tool.
@@ -255,22 +253,29 @@ def get_cxx_symbol_name(cursor: Cursor) -> str:
 	- `cursor` : Clang cursor to determine the symbol name for. '''
 	return cursor.mangled_name
 
-def get_python_function_name(cursor: Cursor) -> str:
-	function_name = get_name(cursor)
+def get_dunder_name(cursor: Cursor) -> str:
+	'''
+	In Python a dunder name is one that starts with double underscores. '''
+	name = get_name(cursor)
 	if cursor.kind is CursorKind.CONSTRUCTOR: # type: ignore
-		function_name = '__init__'
+		name = '__init__'
 	elif cursor.kind is CursorKind.DESTRUCTOR: # type: ignore
-		function_name = '__del__'
-	elif function_name.startswith('operator'):
-		if not function_name in _operator_name_map:
-			raise_error(cursor, f'{function_name} unsupported.')
-		dunder_name = _operator_name_map[function_name]
-#		XXX
-#		"operator- (unary)": "__neg__",
-#		"operator+ (unary)": "__pos__",
-		return dunder_name
+		name = '__del__'
+	elif (cursor.kind is CursorKind.CXX_METHOD # type: ignore
+			and name.startswith('operator')
+			and len(name) > 8
+			and not name[8].isidentifier()):
 
-	return function_name
+		if not name in _operator_name_map:
+			raise_error(cursor, f'{name} unsupported.')
+		dunder_name = _operator_name_map[name]
+		if not any(True for _ in cursor.get_arguments()):
+			if dunder_name is '__add__':
+				return '__pos__'
+			elif dunder_name is '__sub__':
+				return '__neg__'
+		return dunder_name
+	return name
 
 def is_annotated_entanglement(cursor: Cursor) -> bool:
 	'''
@@ -319,7 +324,7 @@ def calculate_python_package_path(cursor: Cursor) -> str:
 	and structs are given globally unique ids.
 	- `cursor` : Clang cursor to compute the path for. '''
 	namespaces: List[str] = calculate_namespace(cursor)
-	namespaces.append(get_name(cursor))
+	namespaces.append(get_dunder_name(cursor))
 	return '.'.join(namespaces)
 
 def get_inheritance_generation(cursor: Cursor) -> int:
@@ -493,6 +498,13 @@ def emit_python_api_doc(tabs: str, cursor: Cursor) -> List[str]:
 	empty list if none.
 	- `tabs` : String of tab characters for indentation.
 	- `cursor` : Clang cursor containing comments to process. '''
+	name = get_name(cursor)
+	if cursor.kind in (	CursorKind.FUNCTION_DECL, # type: ignore
+						CursorKind.CONSTRUCTOR, # type: ignore
+						CursorKind.DESTRUCTOR, # type: ignore
+						CursorKind.CXX_METHOD): # type: ignore
+		name = f'{cursor.result_type.spelling} {cursor.displayname}'
+
 	comment = cursor.raw_comment
 	if comment:
 		lines: List[str] = comment.splitlines()
@@ -506,10 +518,10 @@ def emit_python_api_doc(tabs: str, cursor: Cursor) -> List[str]:
 			line = line.replace('\\', '\\\\').replace("'", "\\'")
 			cleaned.append(line)
 		doc = f'\n{tabs}'.join(cleaned)
-		if not doc or doc.isspace():
-			return []
-		return [f"{tabs}'''\n{tabs}{doc} '''"]
-	return []
+		if doc and not doc.isspace():
+			return [f"{tabs}'''\n{tabs}### `{name}`\n{tabs}{doc} '''"]
+
+	return [f"{tabs}''' ### `{name}` '''"]
 
 def emit_ctypes_function_args(cursor: Cursor, symbols: Dict[str, List[Cursor]], overloaded: bool) -> str:
 	'''
@@ -556,7 +568,7 @@ def emit_python_api_overload_arg0_isinstance(cursor: Cursor, symbols: Dict[str, 
 	- `symbols` : Dictionary of known symbols for type resolution.
 	- `overloaded` : Boolean indicating if the function is overloaded. '''
 
-	assert cursor.get_arguments(), 'Impossible to overload 0 args'
+	assert cursor.get_arguments(), 'Impossible to overload 0 args.'
 
 	arg = next(cursor.get_arguments())
 	if overloaded:
@@ -593,7 +605,7 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
 	if overloaded:
 		lines.append(namespace_tabs + '@_Overload')
 
-	function_name = get_python_function_name(cursor)
+	function_name = get_dunder_name(cursor)
 
 	# Arg type hints.
 	arg_types : List[Tuple[str, str]] = []
@@ -625,7 +637,7 @@ def emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[
 		# Assemble return statement.
 		internal_name = get_internal_name(cursor)
 		self_arg = '_Ctypes.byref(self),' if not static_method else ''
-		lines.append(f'{namespace_tabs}\treturn {internal_name}({self_arg}{arg_str}) # {cursor.displayname}')
+		lines.append(f'{namespace_tabs}\treturn {internal_name}({self_arg}{arg_str}) # type: ignore')
 
 	return lines
 
@@ -641,12 +653,12 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
 		lines.append(namespace_tabs + '@_Staticmethod')
 		static_method = True
 
-	function_name = get_python_function_name(overloads[0])
+	function_name = get_dunder_name(overloads[0])
 
 	# Boilerplate.
 	self_arg = 'self,' if not static_method else ''
 	lines += [  f'{namespace_tabs}def {function_name}({self_arg}*_Args,**_Kwargs):',
-				f"{namespace_tabs}\tassert not _Kwargs, 'keyword_arguments'",
+				f"{namespace_tabs}\tassert not _Kwargs, 'Keyword arguments.'",
 				f'{namespace_tabs}\tmatch _Len(_Args):' ]
 
 	# Group overloads by argument count.
@@ -698,15 +710,15 @@ def emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curso
 				# last. See emit_python_api_overload_arg0_isinstance for docs.
 				if counter > 1:
 					counter -= 1
-					assert generation > 0, 'isinstance checks are only for classes and structs'
+					assert generation > 0, 'isinstance checks are only for classes and structs.'
 					arg0_selector = emit_python_api_overload_arg0_isinstance(cursor, symbols, True)
 					lines.append(f'{namespace_tabs}\t\t\tif {arg0_selector}:')
-					lines.append(f'{namespace_tabs}\t\t\t\treturn {internal_name}({self_arg}{arg_str})')
+					lines.append(f'{namespace_tabs}\t\t\t\treturn {internal_name}({self_arg}{arg_str}) # type: ignore')
 				else:
-					lines.append(f'{namespace_tabs}\t\t\treturn {internal_name}({self_arg}{arg_str})')
+					lines.append(f'{namespace_tabs}\t\t\treturn {internal_name}({self_arg}{arg_str}) # type: ignore')
 
 	lines += [  f'{namespace_tabs}\t\tcase _:',
-				f"{namespace_tabs}\t\t\tassert False, f'overload_resolution len {{_Len(_Args)}}'",
+				f"{namespace_tabs}\t\t\tassert False, f'Arg count: {{_Len(_Args)}}'",
 				f'{namespace_tabs}\t\t\t...' ]
 	return lines
 
@@ -927,7 +939,8 @@ def symbols_sort(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cur
 	This is the final output order for the python api. Symbols are sorted first
 	by namespace, then by cursor kind and then by name, if any. The symbols
 	object is built up using the Python path instead of exposing the sort key.
-	This keeps the details of the sort local to this function.
+	This keeps the details of the sort local to this function. Sorting by
+	dunder name is required to build overload lists correctly.
 	- `symbols` : Dictionary of known symbols mapped to their cursors.
 	- `sorted_symbols` : List to append sorted cursor lists to. '''
 	symbols_by_sort_key: Dict[str, List[Cursor]] = { }
@@ -941,7 +954,7 @@ def symbols_sort(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cur
 				index = i + 1
 				break
 		sort_key.append(str(index))
-		sort_key.append(get_name(cursor0))
+		sort_key.append(get_dunder_name(cursor0))
 		sort_key_str = '.'.join(sort_key)
 		assert not sort_key_str in symbols_by_sort_key
 		symbols_by_sort_key[sort_key_str] = cursor_list
@@ -1057,6 +1070,7 @@ import os as _OS
 import sys as _Sys
 from typing import Any as _Any
 from typing import overload as _Overload
+_Exception = Exception
 _Len = len
 _Staticmethod = staticmethod
 
@@ -1080,8 +1094,8 @@ f"""
 _Path = _OS.path.join(_OS.path.dirname(_OS.path.abspath(__file__)), '{_arg_lib_name}')
 try:
 	_Cdll = _Ctypes.CDLL(_Path)
-except Exception as e:
-	__builtins__.print(f'missing_library {{e}}', file=_Sys.stderr)
+except _Exception as _E:
+	__builtins__.print(f'missing_library {{_E}}', file=_Sys.stderr)
 	_Sys.exit(1)
 """
 	] + symbol_table + [
@@ -1095,13 +1109,13 @@ def main(argv: List[str]) -> None:
 	if not parse_argv(argv):
 		raise usage(_usage)
 
-	verbose(1, 'entanglement.py version ' + _version)
-	verbose(1, 'compiler_flags ' + ' '.join(_arg_compiler_flags))
-	verbose(1, 'lib_name ' + _arg_lib_name)
-	verbose(1, 'header_files ' + ' '.join(_arg_header_files))
-	verbose(1, 'output_file ' + _arg_output_file)
+	verbose(1, 'version:        ' + _version)
+	verbose(1, 'compiler_flags: ' + ' '.join(_arg_compiler_flags))
+	verbose(1, 'lib_name:       ' + _arg_lib_name)
+	verbose(1, 'header_files:   ' + ' '.join(_arg_header_files))
+	verbose(1, 'output_file:    ' + _arg_output_file)
+	verbose(1, 'library_file:   ' + _libclang_path)
 
-	verbose(1, 'set_library_file ' +_libclang_path)
 	Config.set_library_file(_libclang_path)
 
 	# Merge and sort all the cursors of interest from all the translation units.

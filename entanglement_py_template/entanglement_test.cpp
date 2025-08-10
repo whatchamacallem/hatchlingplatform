@@ -256,28 +256,6 @@ bool OperatorTest::operator!() const {
     return !value;
 }
 
-OperatorTest& OperatorTest::operator++() {
-    ++value;
-    return *this;
-}
-
-OperatorTest OperatorTest::operator++(int) {
-    OperatorTest tmp(*this);
-    ++value;
-    return tmp;
-}
-
-OperatorTest& OperatorTest::operator--() {
-    --value;
-    return *this;
-}
-
-OperatorTest OperatorTest::operator--(int) {
-    OperatorTest tmp(*this);
-    --value;
-    return tmp;
-}
-
 int OperatorTest::operator()(int add) const {
     return value + add;
 }

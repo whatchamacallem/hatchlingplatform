@@ -128,10 +128,6 @@ public:
 	ENTANGLEMENT bool operator&&(const OperatorTest& x) const;
 	ENTANGLEMENT bool operator||(const OperatorTest& x) const;
 	ENTANGLEMENT bool operator!() const;
-	ENTANGLEMENT OperatorTest& operator++();	// Prefix increment
-	ENTANGLEMENT OperatorTest operator++(int);  // Postfix increment
-	ENTANGLEMENT OperatorTest& operator--();	// Prefix decrement
-	ENTANGLEMENT OperatorTest operator--(int);  // Postfix decrement
 	ENTANGLEMENT int operator()(int add) const;
 	ENTANGLEMENT int operator[](int index) const;
 private:

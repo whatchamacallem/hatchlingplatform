@@ -13,9 +13,10 @@ auto;"><br/>
 Hatchling Platform is a lightweight C17/C++17 runtime library designed for
 desktop development with simultaneous cross-compilation to resource-constrained
 targets. The developer experience is also better than with the C++ standard
-library. For example the template compile errors are easy to read and
-hxassertmsg will even format your assert messages before setting a breakpoint
-for you. The implementation carefully avoids dynamic allocations except when
+library. For example the template compile errors are easier to read and
+hxassertmsg will format your assert messages before setting a breakpoint for
+you. There is no unnecessary template library boilerplate to step through in the
+debugger. The implementation carefully avoids dynamic allocations except when
 initializing system allocators. It maintains compatibility with C99 libraries
 and requires only a C++11 compiler, and deliberately avoids dependencies on the
 C++ standard library. A C++ project using this platform should run equally well
@@ -23,21 +24,18 @@ on your thermostat using a single megabyte of RAM as in your web-browser or
 plugged into your Python back end.
 
 This project serves as both a practical tool and a research platform for
-exploring C++ library design principles, particularly focusing on core runtime
-features that might inform future realtime systems standards. While recent C++
-standards have addressed some concerns, significant opportunities remain for
-optimization.
+exploring C++ standard library design principles, particularly focusing on core
+runtime features. While recent C++ standards have addressed some concerns,
+significant opportunities remain for optimization.
 
 <img src="hatchling_banner.jpg" alt="banner" width="400" height="400"
 style="float: right; padding-right: 20px; padding-left: 20px;">
 
-A key strength of this codebase is its integration with clang's Undefined
-Behavior Sanitizer (UBSan), which enables developers to write pointer-centric
-C++ code while enjoying runtime safety guarantees comparable to managed
-languages. This approach combines C++'s raw power with modern safety features.
-The implementation maintains strict compatibility with all major warning flags
-and sanitizers across gcc, clang, and MSVC, with rigorous type safety
-throughout.
+A key strength of this codebase is its reliance on clang's Undefined Behavior
+Sanitizer (UBSan), which enables developers to write pointer-centric C++ code
+while enjoying runtime safety guarantees comparable to managed languages. The
+implementation maintains compatibility with all possible warning flags and
+sanitizers for both gcc and clang.
 
 The `hx/hatchling.h` header requires C99 support. The codebase relies on
 `stdint.h` for fixed-width integers and selectively incorporates C++17 features
@@ -61,9 +59,17 @@ purposes:
 
 ## Key Features
 
+- **Portability**: Hatchling could easily be made to run on top of any old
+  embedded c99 library. musl libc is recommended for embedded linux and is
+  widely available: https://musl.libc.org/ No other C++ runtime or C++ code is
+  required. pthreads is used for threading which is a widely implemented
+  standard. The assert framework can work with only string hashes in release in
+  order to provide basic debug facilities in environments too limited to debug
+  in normally.
+
 - **Profiling System**: Uses processor cycle sampling to create a hierarchical
   timeline capture compatible with Chrome's `about://tracing` viewer (navigation
-  uses WASD keys.)
+  uses WASD keys.) One line of assembly might be needed for exotic hardware.
 
 - **Memory Management**: RAII-based abstraction layer supporting various
   allocation strategies, particularly valuable for applications where crashing

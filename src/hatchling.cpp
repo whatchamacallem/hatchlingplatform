@@ -15,15 +15,16 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// HX_FLOATING_POINT_TRAPS traps (FE_DIVBYZERO|FE_INVALID|FE_OVERFLOW) in debug
-// so you can safely run without checks for them in release. Use -ffast-math in
-// release or -DHX_FLOATING_POINT_TRAPS=0 to disable this debug facility. There
-// is no C++ standard conforming way to disable floating point error checking.
-// It is a gcc/clang extension. -fno-math-errno -fno-trapping-math will work if
-// you require C++ conforming accuracy without the overhead of error checking.
-// You need the math library -lm. Causing.. or explicit checking for... floating
-// point exceptions is not recommended.
-#if defined __GLIBC__ && !defined __FAST_MATH__
+// HX_FLOATING_POINT_TRAPS - Traps (FE_DIVBYZERO|FE_INVALID|FE_OVERFLOW) in
+// debug so you can safely run without checks for them in release. Use
+// -DHX_FLOATING_POINT_TRAPS=0 to disable this debug facility. There is no C++
+// standard conforming way to disable floating point error checking. That
+// requires a gcc/clang extension. Using -fno-math-errno and -fno-trapping-math
+// will work if you require C++ conforming accuracy without the overhead of
+// error checking. -ffast-math includes both those switches. You need the math
+// library -lm. Causing.. or explicit checking for... floating point exceptions
+// is not recommended.
+#if (HX_RELEASE) == 0 && defined __GLIBC__ && !defined __FAST_MATH__
 #include <fenv.h>
 #if !defined HX_FLOATING_POINT_TRAPS
 #define HX_FLOATING_POINT_TRAPS 1
@@ -33,18 +34,14 @@ HX_REGISTER_FILENAME_HASH
 #define HX_FLOATING_POINT_TRAPS 0
 #endif
 
-// New rule. Use -ffast-math in release. Or set -DHX_FLOATING_POINT_TRAPS=0.
-static_assert((HX_RELEASE) == 0 || !(HX_FLOATING_POINT_TRAPS),
-	"Floating point exceptions enabled in release. use -ffast-math.");
-
 // There are exception handling semantics in use in case they are on. However
-// you are advised to use -fno-exceptions. Exceptions add overhead to c++ and
-// add untested pathways. In this codebase memory allocation cannot fail. It
-// is designed to force you to allocate enough memory for everything in advance.
-// The creation of hxthread.h classes cannot fail. By design there are no
-// exceptions to handle.
+// you are advised to use -fno-exceptions. Exceptions add overhead to C++ and
+// add untested pathways. In this codebase memory allocation cannot fail. And it
+// tries to get you to allocate enough memory for everything in advance. The
+// creation of hxthread.h classes cannot fail. By design there are no exceptions
+// to handle... Although there are lots of asserts.
 #if (HX_RELEASE) >= 1 && defined __cpp_exceptions && !defined __INTELLISENSE__
-static_assert(0, "C++ exceptions should not be enabled.");
+static_assert(0, "warning: C++ exceptions are not recommended for embedded use.");
 #endif
 
 // No reason for this to be visible.
@@ -62,7 +59,7 @@ int __cxa_guard_acquire(size_t *guard) {
 	if(*guard == 1u) { return 0; }
 
 	// Function scope statics must be initialized before calling worker threads.
-	// Check if the constructor is already in progress and flag any potential
+	// Checks if the constructor is already in progress and flag any potential
 	// race condition.
 	hxassertrelease(*guard != 2u, "__cxa_guard_acquire no function scope static lock");
 
@@ -95,8 +92,10 @@ void __sanitizer_report_error_summary(const char *error_summary) {
 
 // ----------------------------------------------------------------------------
 #if (HX_RELEASE) < 1
+
 // Implements HX_REGISTER_FILENAME_HASH in debug. See hxstring_literal_hash.h.
 namespace hxdetail_ {
+
 class hxhash_string_literal_
 		: public hxhash_table<hxregister_string_literal_hash, 5, hxdo_not_delete> { };
 
