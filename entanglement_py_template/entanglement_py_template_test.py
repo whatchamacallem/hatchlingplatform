@@ -191,7 +191,102 @@ class run_all_tests(unittest.TestCase):
 		self.assertEqual(result.contents.m_pbool[0], False)
 		self.assertEqual(result.contents.m_pfloat[0], 15)
 
+	def test_operators(self):
+		a = system_under_test.OperatorTest()
+		b = system_under_test.OperatorTest()
+		c = system_under_test.OperatorTest()
 
+		# self.assertTrue(a < b)
+		# self.assertFalse(b < a)
+		# self.assertTrue(a == c)
+		# self.assertFalse(b == a)
+		# self.assertTrue(b != c)
+		# self.assertFalse(a != a)
+		# self.assertTrue(b > a)
+		# self.assertFalse(a > b)
+		# self.assertTrue(b >= a)
+		# self.assertFalse(a >= b)
+		# self.assertTrue(a <= b)
+		# self.assertFalse(b <= a)
+
+#		self.assertEqual(+a, a)
+#		self.assertEqual(-a, system_under_test.OperatorTest(-7))
+#		self.assertEqual(a + b, system_under_test.OperatorTest(18))
+#		self.assertEqual(a + c, system_under_test.OperatorTest(14))
+#		self.assertEqual(b - a, system_under_test.OperatorTest(4))
+#		self.assertEqual(a - c, system_under_test.OperatorTest(0))
+		a * b
+		return
+
+		self.assertEqual(a * b, system_under_test.OperatorTest(77))
+		self.assertEqual(a * c, system_under_test.OperatorTest(49))
+		self.assertEqual(b / a, system_under_test.OperatorTest(1))  # integer division
+		self.assertEqual(a / c, system_under_test.OperatorTest(1))
+		self.assertEqual(b % a, system_under_test.OperatorTest(4))
+		self.assertEqual(a % c, system_under_test.OperatorTest(0))
+
+		a_copy = system_under_test.OperatorTest(a)
+		a_copy += b
+		self.assertEqual(a_copy, system_under_test.OperatorTest(18))
+
+		a_copy = system_under_test.OperatorTest(a)
+		a_copy -= b
+		self.assertEqual(a_copy, system_under_test.OperatorTest(-4))
+
+		a_copy = system_under_test.OperatorTest(a)
+		a_copy *= b
+		self.assertEqual(a_copy, system_under_test.OperatorTest(77))
+
+		a_copy = system_under_test.OperatorTest(a)
+		a_copy /= b
+		self.assertEqual(a_copy, system_under_test.OperatorTest(0))  # integer division
+
+		a_copy = system_under_test.OperatorTest(a)
+		a_copy %= b
+		self.assertEqual(a_copy, system_under_test.OperatorTest(7))
+
+		x = system_under_test.OperatorTest(0b1010)
+		y = system_under_test.OperatorTest(0b1100)
+
+		self.assertEqual(x & y, system_under_test.OperatorTest(0b1000))
+		self.assertEqual(x | y, system_under_test.OperatorTest(0b1110))
+		self.assertEqual(x ^ y, system_under_test.OperatorTest(0b0110))
+		self.assertEqual(~x, system_under_test.OperatorTest(0xfffffff6))
+		self.assertEqual(x << 1, system_under_test.OperatorTest(0b10100))
+		self.assertEqual(y >> 1, system_under_test.OperatorTest(0b0110))
+
+		x_copy = system_under_test.OperatorTest(x)
+		x_copy &= y
+		self.assertEqual(x_copy, system_under_test.OperatorTest(0b1000))
+
+		x_copy = system_under_test.OperatorTest(x)
+		x_copy |= y
+		self.assertEqual(x_copy, system_under_test.OperatorTest(0b1110))
+
+		x_copy = system_under_test.OperatorTest(x)
+		x_copy ^= y
+		self.assertEqual(x_copy, system_under_test.OperatorTest(0b0110))
+
+		x_copy = system_under_test.OperatorTest(x)
+		x_copy <<= 1
+		self.assertEqual(x_copy, system_under_test.OperatorTest(0b10100))
+
+		x_copy = system_under_test.OperatorTest(y)
+		x_copy >>= 1
+		self.assertEqual(x_copy, system_under_test.OperatorTest(0b0110))
+
+		true_val = system_under_test.OperatorTest(1)
+		false_val = system_under_test.OperatorTest(0)
+
+		self.assertTrue(true_val and true_val)
+		self.assertFalse(true_val and false_val)
+		self.assertTrue(true_val or false_val)
+		self.assertFalse(false_val or false_val)
+		self.assertTrue(not false_val)
+		self.assertFalse(not true_val)
+
+		self.assertEqual(a(5), 12)  # Adds the value.
+		self.assertEqual(a[3], 10)  # Adds the index to the value.
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

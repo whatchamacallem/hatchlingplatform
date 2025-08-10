@@ -92,10 +92,11 @@ ENTANGLEMENT StructPointerFundamentals& function_struct_pointer_fundamentals_mul
 
 class ENTANGLEMENT_T OperatorTest {
 public:
-	ENTANGLEMENT explicit OperatorTest(int value_);
-	ENTANGLEMENT OperatorTest();
+//	ENTANGLEMENT explicit OperatorTest(uint32_t value_);
+//	ENTANGLEMENT OperatorTest();
 	ENTANGLEMENT OperatorTest(const OperatorTest& x);
-	ENTANGLEMENT ~OperatorTest();
+//	ENTANGLEMENT ~OperatorTest();
+/*
 	ENTANGLEMENT bool operator<(const OperatorTest& x) const;
 	ENTANGLEMENT bool operator==(const OperatorTest& x) const;
 	ENTANGLEMENT bool operator!=(const OperatorTest& x) const;
@@ -106,7 +107,9 @@ public:
 	ENTANGLEMENT OperatorTest operator-() const;
 	ENTANGLEMENT OperatorTest operator+(const OperatorTest& x) const;
 	ENTANGLEMENT OperatorTest operator-(const OperatorTest& x) const;
+*/
 	ENTANGLEMENT OperatorTest operator*(const OperatorTest& x) const;
+	/*
 	ENTANGLEMENT OperatorTest operator/(const OperatorTest& x) const;
 	ENTANGLEMENT OperatorTest operator%(const OperatorTest& x) const;
 	ENTANGLEMENT OperatorTest& operator+=(const OperatorTest& x);
@@ -128,8 +131,9 @@ public:
 	ENTANGLEMENT bool operator&&(const OperatorTest& x) const;
 	ENTANGLEMENT bool operator||(const OperatorTest& x) const;
 	ENTANGLEMENT bool operator!() const;
-	ENTANGLEMENT int operator()(int add) const;
-	ENTANGLEMENT int operator[](int index) const;
+	ENTANGLEMENT uint32_t operator()(uint32_t add) const;
+	ENTANGLEMENT uint32_t operator[](uint32_t index) const;
+	*/
 private:
-	int value;
+	uint32_t value;
 };

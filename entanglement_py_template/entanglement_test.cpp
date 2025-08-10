@@ -107,159 +107,192 @@ void StructPointerFundamentals::null_it_all(void) {
 	m_pbool = 0;
 	m_pfloat = 0;
 }
-
-OperatorTest::OperatorTest(int value_) : value(value_) { }
-
-OperatorTest::OperatorTest() : value(0) {}
-
-OperatorTest::OperatorTest(const OperatorTest& x) : value(x.value) {}
-
-OperatorTest::~OperatorTest() {
-    value = 0xafafafaf;
+/*
+OperatorTest::OperatorTest(uint32_t value_) : value(value_) {
+    printf("%d (%d)\n", value, __LINE__);
 }
-
+*/
+OperatorTest::OperatorTest(const OperatorTest& x) : value(x.value) {
+    printf("%d (%d)\n", value, __LINE__);
+}
+/*
 bool OperatorTest::operator<(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return value < x.value;
 }
 
 bool OperatorTest::operator==(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return value == x.value;
 }
 
 bool OperatorTest::operator!=(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return value != x.value;
 }
 
 bool OperatorTest::operator>(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return value > x.value;
 }
 
 bool OperatorTest::operator>=(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return value >= x.value;
 }
 
 bool OperatorTest::operator<=(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return value <= x.value;
 }
 
 OperatorTest OperatorTest::operator+() const {
+    printf("%d (%d)\n", value, __LINE__);
     return OperatorTest(+value);
 }
 
 OperatorTest OperatorTest::operator-() const {
+    printf("%d (%d)\n", value, __LINE__);
     return OperatorTest(-value);
 }
 
 OperatorTest OperatorTest::operator+(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return OperatorTest(value + x.value);
 }
 
 OperatorTest OperatorTest::operator-(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return OperatorTest(value - x.value);
 }
-
+*/
 OperatorTest OperatorTest::operator*(const OperatorTest& x) const {
-    return OperatorTest(value * x.value);
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
+    return x;//OperatorTest{value * x.value};
 }
-
+/*
 OperatorTest OperatorTest::operator/(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return OperatorTest(value / x.value);
 }
 
 OperatorTest OperatorTest::operator%(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return OperatorTest(value % x.value);
 }
 
 OperatorTest& OperatorTest::operator+=(const OperatorTest& x) {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     value += x.value;
     return *this;
 }
 
 OperatorTest& OperatorTest::operator-=(const OperatorTest& x) {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     value -= x.value;
     return *this;
 }
 
 OperatorTest& OperatorTest::operator*=(const OperatorTest& x) {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     value *= x.value;
     return *this;
 }
 
 OperatorTest& OperatorTest::operator/=(const OperatorTest& x) {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     value /= x.value;
     return *this;
 }
 
 OperatorTest& OperatorTest::operator%=(const OperatorTest& x) {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     value %= x.value;
     return *this;
 }
 
 bool OperatorTest::operator&(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return (value & x.value) != 0;
 }
 
 bool OperatorTest::operator|(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return (value | x.value) != 0;
 }
 
 bool OperatorTest::operator^(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return (value ^ x.value) != 0;
 }
 
 OperatorTest OperatorTest::operator~() const {
+    printf("%d (%d)\n", value, __LINE__);
     return OperatorTest(~value);
 }
 
 OperatorTest OperatorTest::operator<<(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return OperatorTest(value << x.value);
 }
 
 OperatorTest OperatorTest::operator>>(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return OperatorTest(value >> x.value);
 }
 
 OperatorTest& OperatorTest::operator&=(const OperatorTest& x) {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     value &= x.value;
     return *this;
 }
 
 OperatorTest& OperatorTest::operator|=(const OperatorTest& x) {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     value |= x.value;
     return *this;
 }
 
 OperatorTest& OperatorTest::operator^=(const OperatorTest& x) {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     value ^= x.value;
     return *this;
 }
 
 OperatorTest& OperatorTest::operator<<=(const OperatorTest& x) {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     value <<= x.value;
     return *this;
 }
 
 OperatorTest& OperatorTest::operator>>=(const OperatorTest& x) {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     value >>= x.value;
     return *this;
 }
 
 bool OperatorTest::operator&&(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return value && x.value;
 }
 
 bool OperatorTest::operator||(const OperatorTest& x) const {
+    printf("%d %d (%d)\n", value, x.value, __LINE__);
     return value || x.value;
 }
 
 bool OperatorTest::operator!() const {
+    printf("%d (%d)\n", value, __LINE__);
     return !value;
 }
 
-int OperatorTest::operator()(int add) const {
+uint32_t OperatorTest::operator()(uint32_t add) const {
+    printf("%d (%d)\n", value, __LINE__);
     return value + add;
 }
 
-int OperatorTest::operator[](int index) const {
+uint32_t OperatorTest::operator[](uint32_t index) const {
+    printf("%d (%d)\n", value, __LINE__);
     return value + index;
 }
+*/

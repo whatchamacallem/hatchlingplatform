@@ -159,6 +159,14 @@ _operator_name_map = {
 	'operator.':   '__getattr__'
 }
 
+# Nota Bene. ctypes.Structure uses these. So they are off limits.
+ctypes_reserved = {	"_alignment_", "_anonymous_", "_argtypes_", "_array_",
+					"_as_parameter_", "_bases_", "_buffer_", "_checker_",
+					"_class_", "_fields_", "_from_param_", "_func_ptr_",
+					"_handle_", "_length_", "_name_", "_objects_", "_offset_",
+					"_pack_", "_pointer_", "_restype_", "_size_", "_subclasses_",
+					"_type_", "_values_" }
+
 # Exception names appropriate for a command line tool.
 class error(ValueError): ...
 class usage(ValueError): ...
@@ -861,6 +869,8 @@ def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[L
 
 				name = get_name(cursor0)
 				base = get_base_class(cursor0)
+				# Place the API lookup before the ctypes.Structure lookup for
+				# speed. That shouldn't hurt the perf of parameter passing.
 				structure_list.append(f'class _T{counter}{name}({name}, {base}):')
 				structure_list.append(f'\t_fields_ = [')
 
@@ -900,7 +910,7 @@ def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[Lis
 				# format them
 				internal_name = get_internal_name(cursor)
 				symbol_name = get_cxx_symbol_name(cursor)
-				comment = f' # {cursor.displayname}'
+				comment = f' # {cursor.result_type.spelling} {cursor.displayname}'
 				self_ptr = '_Ctypes.c_void_p,' if cursor.kind != CursorKind.FUNCTION_DECL else '' # type: ignore
 
 				symbol_table += [
@@ -927,6 +937,8 @@ def symbols_add(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
 			raise_error(cursor, '1 leading underscore followed by a capital letter reserved by entanglement.py.')
 		if cursor.spelling in keyword.kwlist or cursor.spelling in keyword.softkwlist:
 			raise_error(cursor, cursor.spelling + ' is a keyword in Python.')
+		if cursor.spelling in ctypes_reserved:
+			raise_error(cursor, cursor.spelling + ' is reserved by ctypes.Structure.')
 
 	sym : str = calculate_python_package_path(cursor)
 	if sym not in symbols:
