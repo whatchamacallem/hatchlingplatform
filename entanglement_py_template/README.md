@@ -55,6 +55,7 @@ symbols into your .so regardless of whether they were used.
 
 ## TODO
 
+- Oh shit constructors.
 - Nested class fields. Oh shit dependency order.
 - structs are allowed to have any kind of pointer they want. no errors.
 - All C++ operators. E.g. hxrandom.

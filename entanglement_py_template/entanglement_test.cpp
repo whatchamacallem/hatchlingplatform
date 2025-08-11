@@ -116,7 +116,7 @@ static wchar_t* OperatorTest_to_unicode(const char* narrow_str) {
     return s_buf;
 }
 
-// These are in alphabetical order by python dunder name. see _operator_name_map.
+bool OperatorTest::__bool__(void) const{ return true; }
 wchar_t* OperatorTest::operator+(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
 wchar_t* OperatorTest::operator&(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
 wchar_t* OperatorTest::operator()(size_t) const{ return OperatorTest_to_unicode(__func__); }

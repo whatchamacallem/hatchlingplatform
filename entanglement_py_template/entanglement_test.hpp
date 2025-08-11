@@ -97,7 +97,9 @@ ENTANGLEMENT StructPointerFundamentals& function_struct_pointer_fundamentals_mul
 // expected.
 class ENTANGLEMENT_T OperatorTest {
 public:
-	// XXX Add __bool__/operator bool for logical operators.
+	//__bool__ is used to implement the logical operators.
+	ENTANGLEMENT bool __bool__(void) const;
+	// These are in alphabetical order by python dunder name. see _operator_name_map.
 	ENTANGLEMENT wchar_t* operator+(const OperatorTest&) const;
 	ENTANGLEMENT wchar_t* operator&(const OperatorTest&) const;
 	ENTANGLEMENT wchar_t* operator()(size_t) const;

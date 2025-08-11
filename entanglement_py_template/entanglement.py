@@ -923,8 +923,6 @@ def symbols_add(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
 	- `cursor` : Clang cursor to add.
 	- `symbols` : Dictionary to store the cursor, mapped by Python path. '''
 	if not cursor.is_anonymous():
-		if cursor.spelling.startswith('__'):
-			raise_error(cursor, '2 leading underscores reserved by Python.')
 		if (cursor.spelling.startswith('_')
 				and len(cursor.spelling) > 1 and cursor.spelling[1].isupper()):
 			# The C/C++ standards also reserve the _[A-Z] prefix and the __
