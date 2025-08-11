@@ -119,48 +119,44 @@ _sort_order = [
 	CursorKind.CXX_METHOD     # type: ignore
 ]
 
-# It turns out operator= is not actually Pythonian. This language would have you
-# assign an object reference instead of making a copy. Use the copy constructor
-# T(T&) to make a duplicate of an object in Python. Also operator-> has no unique
-# equivalent.
-_operator_name_map = {
-	'operator==':  '__eq__',
-	'operator!=':  '__ne__',
-	'operator<':   '__lt__',
-	'operator>':   '__gt__',
-	'operator<=':  '__le__',
-	'operator>=':  '__ge__',
+# _operator_name_map - A number of operators are missing. These are just the
+# ones that have literal translations between languages. E.g. Python uses a cast
+# to bool to implement && and ||. There is no assignment operator because it
+# wouldn't be what was expected. '__pos__' and '__neg__' are handled elsewhere.
+_operator_name_map: Dict[str, str] = {
 	'operator+':   '__add__',
-	'operator-':   '__sub__',
-	'operator*':   '__mul__',
-	'operator/':   '__truediv__',
-	'operator%':   '__mod__',
-	'operator+=':  '__iadd__',
-	'operator-=':  '__isub__',
-	'operator*=':  '__imul__',
-	'operator/=':  '__itruediv__',
-	'operator%=':  '__imod__',
 	'operator&':   '__and__',
-	'operator|':   '__or__',
-	'operator^':   '__xor__',
-	'operator~':   '__invert__',
-	'operator<<':  '__lshift__',
-	'operator>>':  '__rshift__',
-	'operator&=':  '__iand__',
-	'operator|=':  '__ior__',
-	'operator^=':  '__ixor__',
-	'operator<<=': '__ilshift__',
-	'operator>>=': '__irshift__',
-	'operator&&':  '__bool_and__',
-	'operator||':  '__bool_or__',
-	'operator!':   '__not__',
 	'operator()':  '__call__',
+	'operator==':  '__eq__',
+	'operator>=':  '__ge__',
+	'operator>':   '__gt__',
 	'operator[]':  '__getitem__',
-	'operator.':   '__getattr__'
+	'operator&=':  '__iand__',
+	'operator+=':  '__iadd__',
+	'operator<<=': '__ilshift__',
+	'operator*=':  '__imul__',
+	'operator|=':  '__ior__',
+	'operator%=':  '__imod__',
+	'operator~':   '__invert__',
+	'operator^=':  '__ixor__',
+	'operator-=':  '__isub__',
+	'operator/=':  '__itruediv__',
+	'operator>>=': '__irshift__',
+	'operator<=':  '__le__',
+	'operator<<':  '__lshift__',
+	'operator<':   '__lt__',
+	'operator%':   '__mod__',
+	'operator*':   '__mul__',
+	'operator!=':  '__ne__',
+	'operator|':   '__or__',
+	'operator>>':  '__rshift__',
+	'operator-':   '__sub__',
+	'operator/':   '__truediv__',
+	'operator^':   '__xor__'
 }
 
 # Nota Bene. ctypes.Structure uses these. So they are off limits.
-ctypes_reserved = {	"_alignment_", "_anonymous_", "_argtypes_", "_array_",
+ctypes_reserved: set[str] = {	"_alignment_", "_anonymous_", "_argtypes_", "_array_",
 					"_as_parameter_", "_bases_", "_buffer_", "_checker_",
 					"_class_", "_fields_", "_from_param_", "_func_ptr_",
 					"_handle_", "_length_", "_name_", "_objects_", "_offset_",
@@ -278,9 +274,9 @@ def get_dunder_name(cursor: Cursor) -> str:
 			raise_error(cursor, f'{name} unsupported.')
 		dunder_name = _operator_name_map[name]
 		if not any(True for _ in cursor.get_arguments()):
-			if dunder_name is '__add__':
+			if dunder_name == '__add__':
 				return '__pos__'
-			elif dunder_name is '__sub__':
+			elif dunder_name == '__sub__':
 				return '__neg__'
 		return dunder_name
 	return name

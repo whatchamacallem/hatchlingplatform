@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <wchar.h>
+#include <stdlib.h>
 
 int8_t function_roundtrip_int8(int8_t x) { return x; }
 
@@ -107,192 +108,43 @@ void StructPointerFundamentals::null_it_all(void) {
 	m_pbool = 0;
 	m_pfloat = 0;
 }
-/*
-OperatorTest::OperatorTest(uint32_t value_) : value(value_) {
-    printf("%d (%d)\n", value, __LINE__);
-}
-*/
-OperatorTest::OperatorTest(const OperatorTest& x) : value(x.value) {
-    printf("%d (%d)\n", value, __LINE__);
-}
-/*
-bool OperatorTest::operator<(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return value < x.value;
+
+// Returns only '<=' not 'operator<='.
+static wchar_t* OperatorTest_to_unicode(const char* narrow_str) {
+    static wchar_t s_buf[4];
+    ::mbstowcs(s_buf, narrow_str + (sizeof "operator") - 1, 4);
+    return s_buf;
 }
 
-bool OperatorTest::operator==(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return value == x.value;
-}
-
-bool OperatorTest::operator!=(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return value != x.value;
-}
-
-bool OperatorTest::operator>(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return value > x.value;
-}
-
-bool OperatorTest::operator>=(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return value >= x.value;
-}
-
-bool OperatorTest::operator<=(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return value <= x.value;
-}
-
-OperatorTest OperatorTest::operator+() const {
-    printf("%d (%d)\n", value, __LINE__);
-    return OperatorTest(+value);
-}
-
-OperatorTest OperatorTest::operator-() const {
-    printf("%d (%d)\n", value, __LINE__);
-    return OperatorTest(-value);
-}
-
-OperatorTest OperatorTest::operator+(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return OperatorTest(value + x.value);
-}
-
-OperatorTest OperatorTest::operator-(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return OperatorTest(value - x.value);
-}
-*/
-OperatorTest OperatorTest::operator*(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return x;//OperatorTest{value * x.value};
-}
-/*
-OperatorTest OperatorTest::operator/(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return OperatorTest(value / x.value);
-}
-
-OperatorTest OperatorTest::operator%(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return OperatorTest(value % x.value);
-}
-
-OperatorTest& OperatorTest::operator+=(const OperatorTest& x) {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    value += x.value;
-    return *this;
-}
-
-OperatorTest& OperatorTest::operator-=(const OperatorTest& x) {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    value -= x.value;
-    return *this;
-}
-
-OperatorTest& OperatorTest::operator*=(const OperatorTest& x) {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    value *= x.value;
-    return *this;
-}
-
-OperatorTest& OperatorTest::operator/=(const OperatorTest& x) {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    value /= x.value;
-    return *this;
-}
-
-OperatorTest& OperatorTest::operator%=(const OperatorTest& x) {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    value %= x.value;
-    return *this;
-}
-
-bool OperatorTest::operator&(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return (value & x.value) != 0;
-}
-
-bool OperatorTest::operator|(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return (value | x.value) != 0;
-}
-
-bool OperatorTest::operator^(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return (value ^ x.value) != 0;
-}
-
-OperatorTest OperatorTest::operator~() const {
-    printf("%d (%d)\n", value, __LINE__);
-    return OperatorTest(~value);
-}
-
-OperatorTest OperatorTest::operator<<(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return OperatorTest(value << x.value);
-}
-
-OperatorTest OperatorTest::operator>>(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return OperatorTest(value >> x.value);
-}
-
-OperatorTest& OperatorTest::operator&=(const OperatorTest& x) {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    value &= x.value;
-    return *this;
-}
-
-OperatorTest& OperatorTest::operator|=(const OperatorTest& x) {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    value |= x.value;
-    return *this;
-}
-
-OperatorTest& OperatorTest::operator^=(const OperatorTest& x) {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    value ^= x.value;
-    return *this;
-}
-
-OperatorTest& OperatorTest::operator<<=(const OperatorTest& x) {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    value <<= x.value;
-    return *this;
-}
-
-OperatorTest& OperatorTest::operator>>=(const OperatorTest& x) {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    value >>= x.value;
-    return *this;
-}
-
-bool OperatorTest::operator&&(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return value && x.value;
-}
-
-bool OperatorTest::operator||(const OperatorTest& x) const {
-    printf("%d %d (%d)\n", value, x.value, __LINE__);
-    return value || x.value;
-}
-
-bool OperatorTest::operator!() const {
-    printf("%d (%d)\n", value, __LINE__);
-    return !value;
-}
-
-uint32_t OperatorTest::operator()(uint32_t add) const {
-    printf("%d (%d)\n", value, __LINE__);
-    return value + add;
-}
-
-uint32_t OperatorTest::operator[](uint32_t index) const {
-    printf("%d (%d)\n", value, __LINE__);
-    return value + index;
-}
-*/
+// These are in alphabetical order by python dunder name. see _operator_name_map.
+wchar_t* OperatorTest::operator+(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator&(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator()(size_t) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator==(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator>=(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator>(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator[](size_t) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator&=(const OperatorTest&){ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator+=(const OperatorTest&){ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator<<=(const OperatorTest&){ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator*=(const OperatorTest&){ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator|=(const OperatorTest&){ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator%=(const OperatorTest&){ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator~() const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator^=(const OperatorTest&){ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator-=(const OperatorTest&){ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator/=(const OperatorTest&){ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator>>=(const OperatorTest&){ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator<=(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator<<(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator<(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator%(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator*(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator!=(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator|(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator>>(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator-(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator+() const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator-() const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator/(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
+wchar_t* OperatorTest::operator^(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }

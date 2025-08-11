@@ -90,50 +90,44 @@ struct ENTANGLEMENT_T StructPointerFundamentals : public StructFundamentals {
 ENTANGLEMENT StructPointerFundamentals& function_struct_pointer_fundamentals_multiply(
 	StructPointerFundamentals& struct_fundamentals, int multiplier);
 
+// All operations return the symbolic name of the operator. A number of operators are
+// missing. These are just the ones that have literal translations
+// between languages. E.g. Python uses a cast to bool to implement && and
+// ||. There is no assignment operator because it wouldn't be what was
+// expected.
 class ENTANGLEMENT_T OperatorTest {
 public:
-//	ENTANGLEMENT explicit OperatorTest(uint32_t value_);
-//	ENTANGLEMENT OperatorTest();
-	ENTANGLEMENT OperatorTest(const OperatorTest& x);
-//	ENTANGLEMENT ~OperatorTest();
-/*
-	ENTANGLEMENT bool operator<(const OperatorTest& x) const;
-	ENTANGLEMENT bool operator==(const OperatorTest& x) const;
-	ENTANGLEMENT bool operator!=(const OperatorTest& x) const;
-	ENTANGLEMENT bool operator>(const OperatorTest& x) const;
-	ENTANGLEMENT bool operator>=(const OperatorTest& x) const;
-	ENTANGLEMENT bool operator<=(const OperatorTest& x) const;
-	ENTANGLEMENT OperatorTest operator+() const;
-	ENTANGLEMENT OperatorTest operator-() const;
-	ENTANGLEMENT OperatorTest operator+(const OperatorTest& x) const;
-	ENTANGLEMENT OperatorTest operator-(const OperatorTest& x) const;
-*/
-	ENTANGLEMENT OperatorTest operator*(const OperatorTest& x) const;
-	/*
-	ENTANGLEMENT OperatorTest operator/(const OperatorTest& x) const;
-	ENTANGLEMENT OperatorTest operator%(const OperatorTest& x) const;
-	ENTANGLEMENT OperatorTest& operator+=(const OperatorTest& x);
-	ENTANGLEMENT OperatorTest& operator-=(const OperatorTest& x);
-	ENTANGLEMENT OperatorTest& operator*=(const OperatorTest& x);
-	ENTANGLEMENT OperatorTest& operator/=(const OperatorTest& x);
-	ENTANGLEMENT OperatorTest& operator%=(const OperatorTest& x);
-	ENTANGLEMENT bool operator&(const OperatorTest& x) const;
-	ENTANGLEMENT bool operator|(const OperatorTest& x) const;
-	ENTANGLEMENT bool operator^(const OperatorTest& x) const;
-	ENTANGLEMENT OperatorTest operator~() const;
-	ENTANGLEMENT OperatorTest operator<<(const OperatorTest& x) const;
-	ENTANGLEMENT OperatorTest operator>>(const OperatorTest& x) const;
-	ENTANGLEMENT OperatorTest& operator&=(const OperatorTest& x);
-	ENTANGLEMENT OperatorTest& operator|=(const OperatorTest& x);
-	ENTANGLEMENT OperatorTest& operator^=(const OperatorTest& x);
-	ENTANGLEMENT OperatorTest& operator<<=(const OperatorTest& x);
-	ENTANGLEMENT OperatorTest& operator>>=(const OperatorTest& x);
-	ENTANGLEMENT bool operator&&(const OperatorTest& x) const;
-	ENTANGLEMENT bool operator||(const OperatorTest& x) const;
-	ENTANGLEMENT bool operator!() const;
-	ENTANGLEMENT uint32_t operator()(uint32_t add) const;
-	ENTANGLEMENT uint32_t operator[](uint32_t index) const;
-	*/
-private:
-	uint32_t value;
+	// XXX Add __bool__/operator bool for logical operators.
+	ENTANGLEMENT wchar_t* operator+(const OperatorTest&) const;
+	ENTANGLEMENT wchar_t* operator&(const OperatorTest&) const;
+	ENTANGLEMENT wchar_t* operator()(size_t) const;
+	ENTANGLEMENT wchar_t* operator==(const OperatorTest&) const;
+	ENTANGLEMENT wchar_t* operator>=(const OperatorTest&) const;
+	ENTANGLEMENT wchar_t* operator>(const OperatorTest&) const;
+	ENTANGLEMENT wchar_t* operator[](size_t) const;
+	ENTANGLEMENT wchar_t* operator&=(const OperatorTest&);
+	ENTANGLEMENT wchar_t* operator+=(const OperatorTest&);
+	ENTANGLEMENT wchar_t* operator<<=(const OperatorTest&);
+	ENTANGLEMENT wchar_t* operator*=(const OperatorTest&);
+	ENTANGLEMENT wchar_t* operator|=(const OperatorTest&);
+	ENTANGLEMENT wchar_t* operator%=(const OperatorTest&);
+	ENTANGLEMENT wchar_t* operator~() const;
+	ENTANGLEMENT wchar_t* operator^=(const OperatorTest&);
+	ENTANGLEMENT wchar_t* operator-=(const OperatorTest&);
+	ENTANGLEMENT wchar_t* operator/=(const OperatorTest&);
+	ENTANGLEMENT wchar_t* operator>>=(const OperatorTest&);
+	ENTANGLEMENT wchar_t* operator<=(const OperatorTest&) const;
+	ENTANGLEMENT wchar_t* operator<<(const OperatorTest&) const;
+	ENTANGLEMENT wchar_t* operator<(const OperatorTest&) const;
+	ENTANGLEMENT wchar_t* operator%(const OperatorTest&) const;
+	ENTANGLEMENT wchar_t* operator*(const OperatorTest&) const;
+	ENTANGLEMENT wchar_t* operator!=(const OperatorTest&) const;
+	ENTANGLEMENT wchar_t* operator|(const OperatorTest&) const;
+	ENTANGLEMENT wchar_t* operator>>(const OperatorTest&) const;
+	ENTANGLEMENT wchar_t* operator-(const OperatorTest&) const;
+	ENTANGLEMENT wchar_t* operator+() const;
+	ENTANGLEMENT wchar_t* operator-() const;
+	ENTANGLEMENT wchar_t* operator/(const OperatorTest&) const;
+	ENTANGLEMENT wchar_t* operator^(const OperatorTest&) const;
+	bool pad;
 };
