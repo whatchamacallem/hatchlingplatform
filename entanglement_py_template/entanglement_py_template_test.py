@@ -245,12 +245,20 @@ class run_all_tests(unittest.TestCase):
 		self.assertEqual(a ^ b, '^')
 
 	def test_operators_logical(self):
-		# Tests "bool OperatorTest::__bool__".
+		# Tests OperatorTest.__bool__ which returns true.
 		a = system_under_test.OperatorTest()
 		b = system_under_test.OperatorTest()
-		self.assertTrue((a and b)[1] == '[]')
-		self.assertTrue((a or b)(1) == '()')
+
+		# The logical operators return objects based on __bool__. Show they can
+		# be used.
+		self.assertEqual((a and b) == a, '==')
+		self.assertEqual((a or b) == a, '==')
 		self.assertTrue((not a) == False)
+
+		if_a = False
+		if a:
+			if_a = True
+		self.assertTrue(if_a)
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)
