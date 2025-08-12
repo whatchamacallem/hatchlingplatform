@@ -5,9 +5,16 @@
 ## Table of Contents
 
 - [Overview of entanglement.py](#overview-of-entanglementpy)
-- [Project Goals and Comparison with Other Projects](#9-output-structure)
-- [Command Line Arguments](#2-command-line-arguments)
-
+- [Project Goals and Comparison with Other
+  Projects](#project-goals-and-comparison-with-other-projects)
+- [Design Philosophy](#design-philosophy)
+- [Command Line Arguments](#command-line-arguments)
+- [Class and Struct Handling](#class-and-struct-handling)
+- [Generated Document Structure](#generated-document-structure)
+- [Exception Handling](#exception-handling)
+- [Building](#building)
+- [Tasks](#tasks)
+- [Long Term](#long-term)
 
 ## Overview of entanglement.py
 
@@ -28,11 +35,11 @@ the C++ symbol table directly into Python. `clang` is only needed to build the
 bindings and is not used at runtime.
 
 There are a few other very interesting projects that bind Python to C++ and
-there are different tradeoffs involved.
+there are different tradeoffs involved:
 
 - Automatically generated binding code for an API that does not accept Python
-  objects natively cannot reasonably be expected compete with hand written code
-  that does use the Python C API.
+  objects natively cannot reasonably be expected to compete with hand-written
+  code that does use the Python C API.
 - Tools using C++ templates for C++ introspection are encountering the
   limitations of what compilers can do during compile time optimization.
 
@@ -44,14 +51,12 @@ language.
 
 Key characteristics:
 
-- No C/C++ or Python code should need to be written.
+- C/C++ is the interface definition language.
+- No C/C++ or Python code needs to be written.
 - No C/C++ code is generated.
-- Any old `.so` (that actually includes all the required C/C++ symbols) should.
-  work without adding the kind of bloat that template based solutions add.
-- C++ is the interface definition language.
-- C++ code is not being translated into Python at all.
-- The wrapper just calls your `.so` as quickly as possible and leaves `ctypes`
-  to throw exceptions or not.
+- No C/C++ code is translated into Python.
+- Any `.so` (that does include all the C/C++ symbols) should work without
+  adding a single additional byte of overhead to the `.so`.
 
 ## Design Philosophy
 
@@ -80,40 +85,17 @@ The compiler flags can be provided in any order as long as they follow standard
 flag conventions (starting with hyphens). The tool validates all arguments and
 provides clear usage messages if they are incorrect.
 
-## Core Functionality
-
-At its core, `entanglement.py` performs C++ code analysis using `libclang` to
-understand the library's interface. It handles fundamental C/C++ types by
-mapping them to appropriate `ctypes` equivalents - for example, converting C++
-`int` to `ctypes.c_int`. The generator includes special handling for pointers
-and references, creating conversion shims that allow Python code to work
-naturally with these constructs while maintaining proper memory access.
-
-## Type Handling
+## Class and Struct Handling
 
 For classes and structs, the tool:
 
 - Generates Python classes that inherit from `ctypes.Structure`
-- Automatically defines the `_fields_` attribute to match the C++ memory layout
-- Properly handles inheritance hierarchies and virtual method tables
+- Automatically defines the `_fields_` attribute to match the C++ memory layout.
+- Properly handles single inheritance hierarchies and virtual method tables.
 
 Enums become Python `IntEnum` classes to preserve their integer nature while
 providing named constants. The generator preserves documentation by extracting
 C++ comments and converting them into Python docstrings.
-
-## Class and Struct Handling
-
-The tool enforces Python naming conventions and rejects invalid symbols that
-would cause problems, such as:
-
-- Names starting with underscores followed by uppercase letters
-- Python keywords
-- Names reserved by `ctypes`
-
-The generated code includes runtime checks to:
-
-- Verify library loading succeeds
-- Confirm structure sizes match expectations
 
 ## Generated Document Structure
 
@@ -144,40 +126,38 @@ Critical considerations:
 
 ## Building
 
-The following strategy is recommended.
+The following strategy is recommended:
 
-Compile all of your C++ code with `-fvisibility=hidden` in order to make all
-function calls candidates for dead code elimination by default. Otherwise C++
-generates code with external linkage and so every time the compiler declines to
-inline a function it will end up bloating your .so symbol table.
+- Compile all of your C++ code with `-fvisibility=hidden` in order to make all
+  function calls candidates for dead code elimination by default. Otherwise C++
+  generates code with external linkage and so every time the compiler declines
+  to inline a function it will end up bloating your .so symbol table.
+- Then explicitly mark your C++ API with decorators that publishes your inline
+  symbols into your .so regardless of whether they were used.
 
-Then explicitly mark your C++ API with decorators that publishes your inline
-symbols into your .so regardless of whether they were used.
-
-## TODO
+## Tasks
 
 - Oh shit constructors.
 - Nested class fields. Oh shit dependency order.
-- structs are allowed to have any kind of pointer they want. no errors.
-- All C++ operators. E.g. hxrandom.
-- Nested classes.
-- Pointers and references to classes, all kinds.
-- Enum return value.
-- Reopening a namespace and sub-namespace to inherit from them in another file.
-- Reopening a namespace and sub-namespace to overload them in another file.
-- Pure virtual method with a non-virtual wrapper calling 2 base classes.
-- Test multiple headers.
-- Add default function parameters. Note arg count based dispatch is affected.
-
-- Pylance wrapper generation.
-- Make hatchling.py wrapper.
-- dll loading for real? how to separate.
-  - lib clang path resolution.
-  - Wrapped .so resolution (make user responsible?).
+- Structs are allowed to have any kind of pointer they want.
+- All C++ operators (e.g. hxrandom)
+- Nested classes
+- Pointers and references to classes
+- Enum return values
+- Reopening namespaces and sub-namespaces for inheritance in another file
+- Reopening namespaces and sub-namespaces for overloading in another file
+- Pure virtual methods with non-virtual wrappers calling 2 base classes
+- Test multiple headers
+- Add default function parameters (note arg count based dispatch is affected)
+- Pylance wrapper generation
+- Make hatchling.py wrapper
+- DLL loading implementation
+  - libclang path resolution
+  - Wrapped .so resolution (make user responsible?)
 
 ## Long Term
 
-These would be nice to have but are not implemented and are not a priority.
+These would be nice to have but are not implemented and are not a priority:
 
 - Overloaded function dispatch by first arg type when dispatch by arg count is
   ambiguous. Need to match subclasses first.

@@ -53,6 +53,7 @@
         "Iinclude",
         "LDFLAGS",
         "libc",
+        "libclang",
         "libentanglement",
         "listsymbols",
         "lpthread",
