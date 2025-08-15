@@ -76,12 +76,11 @@ ENTANGLEMENT StructFundamentals function_struct_fundamentals_multiply(
 	StructFundamentals struct_fundamentals, int multiplier);
 } // extern "C" {
 
-/// Fill a virtual structure with fundamental pointer types. Inherit it from previous test
-/// and pass by reference.
+// Fill a virtual structure with fundamental pointer types. Inherit it from
+// previous test and pass by reference.
 struct ENTANGLEMENT_T StructPointerFundamentals : public StructFundamentals {
-	StructPointerFundamentals();
-	virtual ~StructPointerFundamentals();
-	virtual void null_it_all(void);
+	ENTANGLEMENT StructPointerFundamentals(void);
+	ENTANGLEMENT virtual ~StructPointerFundamentals(void);
 	void* m_pvoid;
 	bool* m_pbool;
 	float* m_pfloat;
@@ -90,16 +89,21 @@ struct ENTANGLEMENT_T StructPointerFundamentals : public StructFundamentals {
 ENTANGLEMENT StructPointerFundamentals& function_struct_pointer_fundamentals_multiply(
 	StructPointerFundamentals& struct_fundamentals, int multiplier);
 
-// All operations return the symbolic name of the operator. A number of operators are
-// missing. These are just the ones that have literal translations
-// between languages. E.g. Python uses a cast to bool to implement && and
-// ||. There is no assignment operator because it wouldn't be what was
-// expected.
+// All operations return the symbolic name of the operator. A number of
+// operators are missing. These are just the ones that have literal translations
+// between languages. E.g. Python uses a cast to bool to implement && and ||.
+// There is no assignment operator because it wouldn't be what was expected.
 class ENTANGLEMENT_T OperatorTest {
 public:
-	//__bool__ is used to implement the logical operators.
+	ENTANGLEMENT OperatorTest(void);
+	ENTANGLEMENT OperatorTest(int);
+	ENTANGLEMENT ~OperatorTest();
+
+	//__bool__ is used to implement the logical operators: && || !
 	ENTANGLEMENT bool __bool__(void) const;
-	// These are in alphabetical order by python dunder name. see _operator_name_map.
+
+	// These are in alphabetical order by python dunder name. see
+	// _operator_name_map.
 	ENTANGLEMENT wchar_t* operator+(const OperatorTest&) const;
 	ENTANGLEMENT wchar_t* operator&(const OperatorTest&) const;
 	ENTANGLEMENT wchar_t* operator()(size_t) const;
@@ -132,4 +136,39 @@ public:
 	ENTANGLEMENT wchar_t* operator/(const OperatorTest&) const;
 	ENTANGLEMENT wchar_t* operator^(const OperatorTest&) const;
 	bool pad;
+};
+
+namespace NameSpaceOne {
+	class ENTANGLEMENT_T NameSpaceOneClassOne {
+	public:
+		int class_one_one(int);
+		int pad0;
+	};
+	class ENTANGLEMENT_T NameSpaceOneClassTwo {
+	public:
+		int class_one_two(int);
+		int pad1;
+	};
+	int namespace_one(int);
+};
+
+namespace NameSpaceTwo {
+	class ENTANGLEMENT_T NameSpaceTwoClassOne : public NameSpaceOne::NameSpaceOneClassOne {
+	public:
+		int namespace_two_one(int);
+		NameSpaceOne::NameSpaceOneClassTwo pad2;
+	};
+	int namespace_two(int);
+};
+
+// Creates an inheritance cycle between two namespaces. one -> two -> one.
+namespace NameSpaceOne {
+	// Add subclass of a different namespace to a re-opened namespace.
+	class ENTANGLEMENT_T NameSpaceOneClassThree : NameSpaceTwo::NameSpaceTwoClassOne {
+	public:
+		int namespace_one_three(int);
+		int pad3;
+	};
+	// Add overload to re-opened namespace. Important for template programming.
+	int namespace_one(int,int);
 };

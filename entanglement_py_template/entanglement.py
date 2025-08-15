@@ -106,19 +106,6 @@ _clang_to_python: Dict[TypeKind, str] = {
 	TypeKind.WCHAR:			'int',   # type: ignore
 }
 
-# List defining the order in which symbols are sorted within a namespace.
-# Ensures consistent ordering of declarations (e.g., enums before functions,
-# functions before structs).
-_sort_order = [
-	CursorKind.ENUM_DECL,     # type: ignore
-	CursorKind.FUNCTION_DECL, # type: ignore
-	CursorKind.STRUCT_DECL,   # type: ignore
-	CursorKind.CLASS_DECL,    # type: ignore
-	CursorKind.CONSTRUCTOR,   # type: ignore
-	CursorKind.DESTRUCTOR,    # type: ignore
-	CursorKind.CXX_METHOD     # type: ignore
-]
-
 # _operator_name_map - A number of operators are missing. These are just the
 # ones that have literal translations between languages. E.g. Python uses a cast
 # to bool to implement && and ||. There is no assignment operator because it
@@ -864,25 +851,33 @@ def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[L
 				assert len(cursor_list) == 1
 
 				name = get_name(cursor0)
+				path = calculate_python_package_path(cursor0)
 				base = get_base_class(cursor0)
 				# Place the API lookup before the ctypes.Structure lookup for
 				# speed. That shouldn't hurt the perf of parameter passing.
-				structure_list.append(f'class _T{counter}{name}({name}, {base}):')
+				structure_list.append(f'class _T{counter}{name}({path}, {base}):')
 				structure_list.append(f'\t_fields_ = [')
 
 				if has_vtable(cursor0):
 					structure_list.append(f"\t\t('_Vtable', _Ctypes.c_void_p),")
 
+				field_count = 0
 				for field in cursor0.get_children():
 					if field.kind == CursorKind.FIELD_DECL: # type: ignore
 						ctypes_type = calculate_type_string(field, field.type, symbols, type_string_kind.ctypes_struct)
 						bits = f', {field.get_bitfield_width()}' if field.is_bitfield() else ''
 						structure_list.append(f"\t\t('{field.spelling}', {ctypes_type}{bits}),")
+						field_count += 1
 
-				structure_list.append(f'\t]\n{name}=_T{counter}{name}')
-				counter = counter + 1
+				if not field_count:
+					# Use a 1 byte pad variable. ctypes was not matching empty
+					# classes.
+					raise_error(cursor0, 'Empty class/struct unsupported due to ctypes.')
 
-				structure_list.append(f'assert _Ctypes.sizeof({name})=={cursor0.type.get_size()}')
+				structure_list.append(f'\t]\n{path}=_T{counter}{name}')
+				counter += 1
+
+				structure_list.append(f'assert _Ctypes.sizeof({path})=={cursor0.type.get_size()}')
 
 def emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], symbol_table: List[str]) -> None:
 	'''
@@ -951,15 +946,10 @@ def symbols_sort(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cur
 	- `sorted_symbols` : List to append sorted cursor lists to. '''
 	symbols_by_sort_key: Dict[str, List[Cursor]] = { }
 
+	# Expects class methods to follow the class declaration.
 	for cursor_list in symbols.values():
 		cursor0 = cursor_list[0]
 		sort_key = calculate_namespace(cursor0)
-		index : int = 0
-		for i in range(len(_sort_order)):
-			if _sort_order[i] == cursor0.kind:
-				index = i + 1
-				break
-		sort_key.append(str(index))
 		sort_key.append(get_dunder_name(cursor0))
 		sort_key_str = '.'.join(sort_key)
 		assert not sort_key_str in symbols_by_sort_key
@@ -996,6 +986,7 @@ def symbols_gather_required(cursor: Cursor, symbols: Dict[str, List[Cursor]]) ->
 				AccessSpecifier.PUBLIC, # type: ignore
 				AccessSpecifier.INVALID): # type: ignore # Top-level enums
 			symbols_add(cursor, symbols)
+			return
 		else:
 			raise_error(cursor, f'{get_name(cursor)} Enum is incomplete or private.')
 
@@ -1004,6 +995,7 @@ def symbols_gather_required(cursor: Cursor, symbols: Dict[str, List[Cursor]]) ->
 				and not cursor.type.is_function_variadic()
 				and not is_arg_va_list(cursor)):
 			symbols_add(cursor, symbols)
+			return
 		else:
 			raise_error(cursor, f'{cursor.displayname} Functions must be extern and not variadic.')
 
@@ -1021,6 +1013,7 @@ def symbols_gather_required(cursor: Cursor, symbols: Dict[str, List[Cursor]]) ->
 				and not cursor.type.is_function_variadic()
 				and not is_arg_va_list(cursor)):
 			symbols_add(cursor, symbols)
+			return
 		else:
 			raise_error(cursor, f'{cursor.displayname} Methods must be public, extern and not variadic.')
 

@@ -5,8 +5,7 @@
 ## Table of Contents
 
 - [Overview of entanglement.py](#overview-of-entanglementpy)
-- [Project Goals and Comparison with Other
-  Projects](#project-goals-and-comparison-with-other-projects)
+- [Project Goals and Comparison with Other Projects](#project-goals-and-comparison-with-other-projects)
 - [Design Philosophy](#design-philosophy)
 - [Command Line Arguments](#command-line-arguments)
 - [Class and Struct Handling](#class-and-struct-handling)
@@ -14,7 +13,7 @@
 - [Exception Handling](#exception-handling)
 - [Building](#building)
 - [Tasks](#tasks)
-- [Long Term](#long-term)
+- [Roadmap](#roadmap)
 
 ## Overview of entanglement.py
 
@@ -24,6 +23,16 @@ parse C++ header files annotated with `<entanglement.h>` macros and generates
 corresponding Python code that interacts with the native library through
 `ctypes`. The generated bindings provide a Pythonian way to call C++ functions
 and work with C++ data structures while maintaining type safety.
+
+There are a few limitations to this approach. Python isn't a great language to
+use for manipulating data structures made out of C/C++ pointers. Object oriented
+interfaces should be a lot easier to use. Also, Python uses memcpy to return
+classes by value from a method or function. This is because it is a foreign
+language that does not support the C++ lifecycle natively and will result in
+missing C++ constructor calls.
+
+There are a few other things that are weird when mapping C++ directly onto
+Python.
 
 ## Project Goals and Comparison with Other Projects
 
@@ -137,7 +146,6 @@ The following strategy is recommended:
 
 ## Tasks
 
-- Oh shit constructors.
 - Nested class fields. Oh shit dependency order.
 - Structs are allowed to have any kind of pointer they want.
 - All C++ operators (e.g. hxrandom)
@@ -155,7 +163,7 @@ The following strategy is recommended:
   - libclang path resolution
   - Wrapped .so resolution (make user responsible?)
 
-## Long Term
+## Roadmap
 
 These would be nice to have but are not implemented and are not a priority:
 

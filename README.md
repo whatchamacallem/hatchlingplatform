@@ -16,12 +16,20 @@ targets. The developer experience is also better than with the C++ standard
 library. For example the template compile errors are easier to read and
 hxassertmsg will format your assert messages before setting a breakpoint for
 you. There is no unnecessary template library boilerplate to step through in the
-debugger. The implementation carefully avoids dynamic allocations except when
-initializing system allocators. It maintains compatibility with C99 libraries
-and requires only a C++11 compiler, and deliberately avoids dependencies on the
-C++ standard library. A C++ project using this platform should run equally well
-on your thermostat using a single megabyte of RAM as in your web-browser or
-plugged into your Python back end.
+debugger. The compilers budget for optimization isn't blown out by boilerplate
+layers you don't normally need. The implementation carefully avoids dynamic
+allocations except when initializing system allocators. It maintains
+compatibility with C99 libraries, requires only a C++11 compile and deliberately
+avoids dependencies on the C++ standard library. A C++ project using this
+platform should run equally well on your thermostat using a single megabyte of
+RAM as in your web-browser or plugged into your Python back end.
+
+If this all seems un-relatable I understand. However, I have seem professionally
+written C++ codebases where the profiler showed we were spending 3% of our time
+executing vector::operator[] with all optimizations turned on. And this was in a
+setting where it made sense to spend weeks working on an optimization that would
+shave 1% off. *I'm sorry to destroy everyone's ideals, but even the authors of
+libclang wrote their own custom C++ container library.*
 
 This project serves as both a practical tool and a research platform for
 exploring C++ standard library design principles, particularly focusing on core

@@ -182,14 +182,16 @@ class run_all_tests(unittest.TestCase):
 		pointer_fundamentals.m_pfloat = ctypes.cast(float_array, ctypes.POINTER(ctypes.c_float))
 
 		result = system_under_test.function_struct_pointer_fundamentals_multiply(pointer_fundamentals, 5)
+		# dereference pointer only once, uses memcpy to construct class.
+		result = result.contents
 
 		self.assertEqual(ctypes.cast(pointer_fundamentals.m_pvoid, ctypes.POINTER(ctypes.c_int))[0], 10)
 		self.assertEqual(pointer_fundamentals.m_pbool[0], False)
 		self.assertEqual(pointer_fundamentals.m_pfloat[0], 15)
 
-		self.assertEqual(ctypes.cast(result.contents.m_pvoid, ctypes.POINTER(ctypes.c_int))[0], 10)
-		self.assertEqual(result.contents.m_pbool[0], False)
-		self.assertEqual(result.contents.m_pfloat[0], 15)
+		self.assertEqual(ctypes.cast(result.m_pvoid, ctypes.POINTER(ctypes.c_int))[0], 10)
+		self.assertEqual(result.m_pbool[0], False)
+		self.assertEqual(result.m_pfloat[0], 15)
 
 	def test_operators_one_to_one(self):
 		# All operations return a matching string. A number of operators are

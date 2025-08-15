@@ -96,17 +96,13 @@ StructPointerFundamentals& function_struct_pointer_fundamentals_multiply(StructP
 	return struct_fundamentals;
 }
 
-StructPointerFundamentals::StructPointerFundamentals() {
-	null_it_all();
-}
-StructPointerFundamentals::~StructPointerFundamentals() {
-	// nuke .vtable to force a crash if ownership is incorrect.
-	::memset((void*)this, 0x00, sizeof *this);
-}
-void StructPointerFundamentals::null_it_all(void) {
+StructPointerFundamentals::StructPointerFundamentals(void) {
 	m_pvoid = 0;
 	m_pbool = 0;
 	m_pfloat = 0;
+}
+
+StructPointerFundamentals::~StructPointerFundamentals(void) {
 }
 
 // Returns only '<=' not 'operator<='.
@@ -116,6 +112,9 @@ static wchar_t* OperatorTest_to_unicode(const char* narrow_str) {
     return s_buf;
 }
 
+OperatorTest::OperatorTest(void) : pad(0) {}
+OperatorTest::OperatorTest(int) : pad(1) {}
+OperatorTest::~OperatorTest() {}
 bool OperatorTest::__bool__(void) const{ return true; }
 wchar_t* OperatorTest::operator+(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
 wchar_t* OperatorTest::operator&(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
@@ -148,3 +147,11 @@ wchar_t* OperatorTest::operator+() const{ return OperatorTest_to_unicode(__func_
 wchar_t* OperatorTest::operator-() const{ return OperatorTest_to_unicode(__func__); }
 wchar_t* OperatorTest::operator/(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
 wchar_t* OperatorTest::operator^(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
+
+int NameSpaceOne::NameSpaceOneClassOne::class_one_one(int) { return 0; }
+int NameSpaceOne::NameSpaceOneClassTwo::class_one_two(int) { return 0; }
+int NameSpaceOne::namespace_one(int) { return 0; }
+int NameSpaceTwo::NameSpaceTwoClassOne::namespace_two_one(int) { return 0; }
+int NameSpaceTwo::namespace_two(int) { return 0; }
+int NameSpaceOne::NameSpaceOneClassThree::namespace_one_three(int) { return 0; }
+int NameSpaceOne::namespace_one(int,int) { return 0; }
