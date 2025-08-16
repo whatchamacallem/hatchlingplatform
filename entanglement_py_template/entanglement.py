@@ -824,7 +824,7 @@ def emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[
 
 def emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], structure_list: List[str]) -> None:
 	'''
-	Generates the structure list section of the output script.
+	Generates the structure list section of the output script in dependency order.
 	- `symbols` : Dictionary of known symbols mapped to their cursors.
 	- `sorted_symbols` : List of cursor lists sorted by namespace and kind.
 	- `structure_list` : List to append generated structure definition lines to. '''

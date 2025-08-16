@@ -262,5 +262,16 @@ class run_all_tests(unittest.TestCase):
 			if_a = True
 		self.assertTrue(if_a)
 
+	def test_namespaces(self):
+		x = system_under_test.NameSpaceOne.NameSpaceOneClassThree()
+		self.assertEqual(x.class_one_one(0), 10)
+		self.assertEqual(x.class_one_two(0), 20)
+		self.assertEqual(x.class_two_one(0), 40)
+		self.assertEqual(x.class_one_three(0), 60)
+
+		self.assertEqual(system_under_test.NameSpaceOne.namespace_one(0), 30)
+		self.assertEqual(system_under_test.NameSpaceOne.namespace_one(0,0), 70)
+		self.assertEqual(system_under_test.NameSpaceTwo.namespace_two(0), 50)
+
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

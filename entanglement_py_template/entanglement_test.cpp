@@ -148,10 +148,10 @@ wchar_t* OperatorTest::operator-() const{ return OperatorTest_to_unicode(__func_
 wchar_t* OperatorTest::operator/(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
 wchar_t* OperatorTest::operator^(const OperatorTest&) const{ return OperatorTest_to_unicode(__func__); }
 
-int NameSpaceOne::NameSpaceOneClassOne::class_one_one(int) { return 0; }
-int NameSpaceOne::NameSpaceOneClassTwo::class_one_two(int) { return 0; }
-int NameSpaceOne::namespace_one(int) { return 0; }
-int NameSpaceTwo::NameSpaceTwoClassOne::namespace_two_one(int) { return 0; }
-int NameSpaceTwo::namespace_two(int) { return 0; }
-int NameSpaceOne::NameSpaceOneClassThree::namespace_one_three(int) { return 0; }
-int NameSpaceOne::namespace_one(int,int) { return 0; }
+int NameSpaceOne::NameSpaceOneClassOne::class_one_one(int) { return 10; }
+int NameSpaceOne::NameSpaceOneClassTwo::class_one_two(int) { return 20; }
+int NameSpaceOne::namespace_one(int) { return 30; }
+int NameSpaceTwo::NameSpaceTwoClassOne::class_two_one(int) { return 40; }
+int NameSpaceTwo::namespace_two(int) { return 50; }
+int NameSpaceOne::NameSpaceOneClassThree::class_one_three(int) { return 60; }
+int NameSpaceOne::namespace_one(int,int) { return 70; }

@@ -141,24 +141,24 @@ public:
 namespace NameSpaceOne {
 	class ENTANGLEMENT_T NameSpaceOneClassOne {
 	public:
-		int class_one_one(int);
+		ENTANGLEMENT int class_one_one(int);
 		int pad0;
 	};
-	class ENTANGLEMENT_T NameSpaceOneClassTwo {
+	class ENTANGLEMENT_T NameSpaceOneClassTwo : public NameSpaceOneClassOne {
 	public:
-		int class_one_two(int);
+		ENTANGLEMENT int class_one_two(int);
 		int pad1;
 	};
-	int namespace_one(int);
+	ENTANGLEMENT int namespace_one(int);
 };
 
 namespace NameSpaceTwo {
-	class ENTANGLEMENT_T NameSpaceTwoClassOne : public NameSpaceOne::NameSpaceOneClassOne {
+	class ENTANGLEMENT_T NameSpaceTwoClassOne : public NameSpaceOne::NameSpaceOneClassTwo {
 	public:
-		int namespace_two_one(int);
+		ENTANGLEMENT int class_two_one(int);
 		NameSpaceOne::NameSpaceOneClassTwo pad2;
 	};
-	int namespace_two(int);
+	ENTANGLEMENT int namespace_two(int);
 };
 
 // Creates an inheritance cycle between two namespaces. one -> two -> one.
@@ -166,9 +166,9 @@ namespace NameSpaceOne {
 	// Add subclass of a different namespace to a re-opened namespace.
 	class ENTANGLEMENT_T NameSpaceOneClassThree : NameSpaceTwo::NameSpaceTwoClassOne {
 	public:
-		int namespace_one_three(int);
+		ENTANGLEMENT int class_one_three(int);
 		int pad3;
 	};
 	// Add overload to re-opened namespace. Important for template programming.
-	int namespace_one(int,int);
+	ENTANGLEMENT int namespace_one(int,int);
 };
