@@ -146,7 +146,6 @@ The following strategy is recommended:
 
 ## Tasks
 
-- Pointers and references to classes
 - Enum return values
 - Reopening namespaces and sub-namespaces for inheritance in another file
 - Reopening namespaces and sub-namespaces for overloading in another file

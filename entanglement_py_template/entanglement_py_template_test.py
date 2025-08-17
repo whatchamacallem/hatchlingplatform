@@ -6,8 +6,7 @@
 #
 #   python3 -m entanglement_py_template.entanglement_py_template_test
 
-import ctypes, unittest
-import numpy as np
+import ctypes, numpy, unittest
 from . import entanglement_py_template as system_under_test
 
 class run_all_tests(unittest.TestCase):
@@ -71,8 +70,8 @@ class run_all_tests(unittest.TestCase):
 		expected2 = [i + value * 2 for i in range(size)]
 		self.assertEqual([input_array_cast[i] for i in range(size)], expected2)
 
-		# np.array.
-		np_array_input = np.array([i for i in range(size)], dtype=d_type)
+		# numpy.array.
+		np_array_input = numpy.array([i for i in range(size)], dtype=d_type)
 		np_array_output = test_function(np_array_input, size, value)
 
 		# Confirm modification of array.
@@ -81,18 +80,18 @@ class run_all_tests(unittest.TestCase):
 		self.assertEqual([np_array_output[i] for i in range(size)], expected)
 
 	def test_function_pointer_int8(self):
-		self.do_test_function_pointer(system_under_test.function_pointer_int8, ctypes.c_int8, np.int8, 0, 0)
-		self.do_test_function_pointer(system_under_test.function_pointer_int8, ctypes.c_int8, np.int8, 1, -7)
-		self.do_test_function_pointer(system_under_test.function_pointer_int8, ctypes.c_int8, np.int8, 33, -10)
+		self.do_test_function_pointer(system_under_test.function_pointer_int8, ctypes.c_int8, numpy.int8, 0, 0)
+		self.do_test_function_pointer(system_under_test.function_pointer_int8, ctypes.c_int8, numpy.int8, 1, -7)
+		self.do_test_function_pointer(system_under_test.function_pointer_int8, ctypes.c_int8, numpy.int8, 33, -10)
 
 	def test_function_pointer_uint16(self):
-		self.do_test_function_pointer(system_under_test.function_pointer_uint16, ctypes.c_uint16, np.uint16, 33, 10)
+		self.do_test_function_pointer(system_under_test.function_pointer_uint16, ctypes.c_uint16, numpy.uint16, 33, 10)
 
 	def test_function_pointer_int32(self):
-		self.do_test_function_pointer(system_under_test.function_pointer_int32, ctypes.c_int32, np.int32, 22, -20)
+		self.do_test_function_pointer(system_under_test.function_pointer_int32, ctypes.c_int32, numpy.int32, 22, -20)
 
 	def test_function_pointer_uint64(self):
-		self.do_test_function_pointer(system_under_test.function_pointer_uint64, ctypes.c_uint64, np.uint64, 11, 30)
+		self.do_test_function_pointer(system_under_test.function_pointer_uint64, ctypes.c_uint64, numpy.uint64, 11, 30)
 
 	def test_function_pointer_char(self):
 		one_hundred_characters = (ctypes.c_char * 100)()
@@ -192,6 +191,9 @@ class run_all_tests(unittest.TestCase):
 		self.assertEqual(ctypes.cast(result.m_pvoid, ctypes.POINTER(ctypes.c_int))[0], 10)
 		self.assertEqual(result.m_pbool[0], False)
 		self.assertEqual(result.m_pfloat[0], 15)
+
+		system_under_test.function_struct_pointer_fundamentals_multiply2(pointer_fundamentals, 2)
+		self.assertEqual(pointer_fundamentals.m_pfloat[0], 30)
 
 	def test_operators_one_to_one(self):
 		# All operations return a matching string. A number of operators are

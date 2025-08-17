@@ -31,7 +31,7 @@ class usage(ValueError): ...
 
 # Verbose - 0: No news is good news. 1 : Status messages. 2: Processing steps.
 # 3: AST traversal. All messages go to stderr.
-VERBOSE = 2
+VERBOSE = 0
 
 # XXX Path to the libclang shared library. Needs to be configurable.
 _libclang_path = '/usr/lib/llvm-18/lib/libclang.so.1'

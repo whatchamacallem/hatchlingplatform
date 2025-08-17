@@ -96,6 +96,10 @@ StructPointerFundamentals& function_struct_pointer_fundamentals_multiply(StructP
 	return struct_fundamentals;
 }
 
+ENTANGLEMENT void function_struct_pointer_fundamentals_multiply2(StructPointerFundamentals* struct_fundamentals, int multiplier) {
+	function_struct_pointer_fundamentals_multiply(*struct_fundamentals, multiplier);
+}
+
 StructPointerFundamentals::StructPointerFundamentals(void) {
 	m_pvoid = 0;
 	m_pbool = 0;

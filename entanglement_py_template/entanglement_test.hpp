@@ -89,6 +89,9 @@ struct ENTANGLEMENT_T StructPointerFundamentals : public StructFundamentals {
 ENTANGLEMENT StructPointerFundamentals& function_struct_pointer_fundamentals_multiply(
 	StructPointerFundamentals& struct_fundamentals, int multiplier);
 
+ENTANGLEMENT void function_struct_pointer_fundamentals_multiply2(
+	StructPointerFundamentals* struct_fundamentals, int multiplier);
+
 // All operations return the symbolic name of the operator. A number of
 // operators are missing. These are just the ones that have literal translations
 // between languages. E.g. Python uses a cast to bool to implement && and ||.
