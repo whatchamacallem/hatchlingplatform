@@ -9,14 +9,16 @@ rm -rf ./bin; mkdir ./bin && cd ./bin
 python3 -m venv --system-site-packages python_venv
 . python_venv/bin/activate
 
+# Use the system clang wrapper because clang needs to be installed anyhow.
+python3 -c "import clang.cindex; print('clang.cindex is ok...')"
+
 set -o xtrace -o errexit
 
 # Executes ./setup.py and then installs a Python package.
-pip install ../entanglement_py_template
+python3 -m pip install ../entanglement_py_template
 
 # Run Python tests for the package.
 python -c "import entanglement_py_template; entanglement_py_template.run_all_tests();"
 
-# Shut down the virtual environment and clean up.
+# Shut down the virtual environment.
 deactivate
-rm -rf python_venv __pycache__ build entanglement_py_template.egg-info

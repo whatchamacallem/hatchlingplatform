@@ -26,13 +26,12 @@ and work with C++ data structures while maintaining type safety.
 
 There are a few limitations to this approach. Python isn't a great language to
 use for manipulating data structures made out of C/C++ pointers. Object oriented
-interfaces should be a lot easier to use. Also, Python uses memcpy to return
-classes by value from a method or function. This is because it is a foreign
-language that does not support the C++ lifecycle natively and will result in
-missing C++ constructor calls.
+interfaces should be a lot easier to use with entanglement.py. Also, Python uses
+memcpy to return classes by value from a method or function. This is because it
+is a foreign language that does not support the C++ lifecycle natively and will
+result in missing C++ constructor calls.
 
-There are a few other things that are weird when mapping C++ directly onto
-Python.
+*This is an alpha release.*
 
 ## Project Goals and Comparison with Other Projects
 
@@ -146,9 +145,9 @@ The following strategy is recommended:
 
 ## Roadmap
 
+- Hatchling wrapper.
 - Default function parameters.
 - .pyi stub file generation.
-- Hatchling wrapper.
 - Portable libclang path resolution?
 - Portable .so resolution?
 

@@ -7,6 +7,8 @@
 #   python3 -m entanglement_py_template.entanglement_py_template_test
 
 import ctypes, numpy, unittest
+
+# Do not require the package to be installed when testing.
 from . import entanglement_py_template as system_under_test
 
 class run_all_tests(unittest.TestCase):
