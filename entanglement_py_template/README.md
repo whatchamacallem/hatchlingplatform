@@ -144,23 +144,16 @@ The following strategy is recommended:
 - Then explicitly mark your C++ API with decorators that publishes your inline
   symbols into your .so regardless of whether they were used.
 
-## Tasks
+## Unwritten Tests
 
-- Pure virtual methods with non-virtual wrappers calling 2 subclasses
-- Add default function parameters (note arg count based dispatch *may* be affected)
-- Pylance wrapper generation
-- Make hatchling.py wrapper
-- DLL loading implementation
-  - libclang path resolution
-  - Wrapped .so resolution (make user responsible?)
+- Test dispatch by first arg.
 
 ## Roadmap
 
-These would be nice to have but are not implemented and are not a priority:
-
-- Overloaded function dispatch by first arg type when dispatch by arg count is
-  ambiguous. Need to match subclasses first.
-- Write C++ examples that trigger every error possible and have tests that check
-  they are all reported correctly.
+- Default function parameters.
+- .pyi stub file generation.
+- Hatchling wrapper.
+- Portable libclang path resolution?
+- Portable .so resolution?
 
 </div>
