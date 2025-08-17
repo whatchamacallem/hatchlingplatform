@@ -8,9 +8,6 @@
 requires = ["setuptools>=61.0", "clang==18.1.8"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.packages.find]
-exclude = ["entanglement"]
-
 [project]
 name = "entanglement_py_template"
 version = "0.0.1"

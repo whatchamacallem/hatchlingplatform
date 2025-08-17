@@ -50,6 +50,12 @@ _run_argv(ENTANGLEMENT_COMMAND)
 # Package everything. The manifest is now the .toml file. This is just a legacy
 # hook. Takes command line args when run directly.
 # Usage: python3 ./setup.py --help
-setuptools.setup(python_requires='>=3.7')
+setuptools.setup(
+	python_requires='>=3.7',
+	packages=[
+        "entanglement",
+        "entanglement_py_template",
+        "entanglement_py_template_test"
+    ])
 
 print("🐉🐉🐉")

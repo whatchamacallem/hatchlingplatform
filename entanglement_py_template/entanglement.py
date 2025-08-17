@@ -74,18 +74,18 @@ _clang_to_ctypes: Dict[TypeKind, str] = {
 # Mapping of Clang TypeKind to ctypes types for pointer types.
 # Used for special handling of pointer types like void*, char*, and wchar_t*.
 _clang_to_ctypes_ptr: Dict[TypeKind, str] = {
-	TypeKind.VOID: 		'_Ctypes.c_void_p',		# type: ignore # void*
-	TypeKind.CHAR_S:	'_Ctypes.c_char_p',		# type: ignore # char*
-	TypeKind.WCHAR:		'_Ctypes.c_wchar_p',	# type: ignore # wchar_t*
+	TypeKind.VOID: 			'_Ctypes.c_void_p',		# type: ignore # void*
+	TypeKind.CHAR_S:		'_Ctypes.c_char_p',		# type: ignore # char*
+	TypeKind.WCHAR:			'_Ctypes.c_wchar_p',	# type: ignore # wchar_t*
 }
 
 # Mapping of Clang TypeKind to Python types for function return values. Special
 # handling for pointer types returned from functions, converting void* to int,
 # char* to bytes, and wchar_t* to str.
 _clang_to_ctypes_ptr_return: Dict[TypeKind, str] = {
-	TypeKind.VOID:		'int',		# type: ignore # void*
-	TypeKind.CHAR_S:	'bytes',	# type: ignore # char*
-	TypeKind.WCHAR:		'str',		# type: ignore # wchar_t*
+	TypeKind.VOID:			'int',		# type: ignore # void*
+	TypeKind.CHAR_S:		'bytes',	# type: ignore # char*
+	TypeKind.WCHAR:			'str',		# type: ignore # wchar_t*
 }
 
 # Mapping of Clang TypeKind to Python types for type hints. Used to map C types
@@ -114,7 +114,9 @@ _clang_to_python: Dict[TypeKind, str] = {
 # _operator_name_map - A number of operators are missing. These are just the
 # ones that have literal translations between languages. E.g. Python uses a cast
 # to bool to implement && and ||. There is no assignment operator because it
-# wouldn't be what was expected. '__pos__' and '__neg__' are handled elsewhere.
+# wouldn't always be what was expected. '__pos__' and '__neg__' are handled
+# elsewhere. This is for convenience only as additional operations can be
+# written in C++ like this: bool T::__bool__(void) const;
 _operator_name_map: Dict[str, str] = {
 	'operator+':   '__add__',
 	'operator&':   '__and__',
