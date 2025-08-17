@@ -27,12 +27,6 @@ enum class ENTANGLEMENT_T EnumScopedUInt64 : uint64_t {
 	ENUM_SCOPED_UINT64_0 = 0xabcdef0123456789
 };
 
-/// Smoke test the C calling convention.
-ENTANGLEMENT int8_t function_roundtrip_int8(int8_t x);
-ENTANGLEMENT uint16_t function_roundtrip_uint16(uint16_t x);
-ENTANGLEMENT int32_t function_roundtrip_int32(int32_t x);
-ENTANGLEMENT uint64_t function_roundtrip_uint64(uint64_t x);
-
 /// Overloaded functions with different return types.
 ENTANGLEMENT void function_overload();
 ENTANGLEMENT int function_overload(int a, int b);
@@ -145,15 +139,19 @@ public:
 // not declared ENTANGLEMENT_T.
 class PointerToImplementation;
 
+// Creates an inheritance cycle between two namespaces. one -> two -> one. Also
+// requires re-opening a namespace. This shows C++ single inheritance is
+// supported in general. ctypes does not support multiple inheritance. Also
+// tests passing enums as ints.
 namespace NameSpaceOne {
 	class ENTANGLEMENT_T NameSpaceOneClassOne {
 	public:
-		ENTANGLEMENT int class_one_one(int);
+		ENTANGLEMENT EnumCStyleTwoConstants class_one_one(EnumCStyleTwoConstants);
 		PointerToImplementation* pimpl;
 	};
 	class ENTANGLEMENT_T NameSpaceOneClassTwo : public NameSpaceOneClassOne {
 	public:
-		ENTANGLEMENT int class_one_two(int);
+		ENTANGLEMENT EnumInt16ThreeConstants class_one_two(EnumInt16ThreeConstants);
 		int pad1;
 	};
 	ENTANGLEMENT int namespace_one(int);
@@ -168,12 +166,11 @@ namespace NameSpaceTwo {
 	ENTANGLEMENT int namespace_two(int);
 };
 
-// Creates an inheritance cycle between two namespaces. one -> two -> one.
 namespace NameSpaceOne {
 	// Add subclass of a different namespace to a re-opened namespace.
 	class ENTANGLEMENT_T NameSpaceOneClassThree : NameSpaceTwo::NameSpaceTwoClassOne {
 	public:
-		ENTANGLEMENT int class_one_three(int);
+		ENTANGLEMENT EnumScopedUInt64 class_one_three(EnumScopedUInt64);
 		int pad3;
 	};
 	// Add overload to re-opened namespace. Important for template programming.

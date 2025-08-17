@@ -480,7 +480,7 @@ def _calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str
 			if result_kind in (_type_string_kind.ctypes_args,
 					 			_type_string_kind.ctypes_struct):
 				# Just tell ctypes to marshal enums to their underlying type.
-				return _clang_to_ctypes[definition_cursor.enum_type.kind]
+				return _clang_to_ctypes[definition_cursor.enum_type.get_canonical().kind]
 			return 'int' # Use plain int for enum arg and return hints.
 
 		# Classes and structs are usable directly by ctypes. These need to be
