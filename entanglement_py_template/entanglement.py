@@ -879,14 +879,14 @@ def _emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[
 				structure_list.append(f'\t_fields_ = [')
 
 				if _has_vtable(cursor0):
-					structure_list.append(f"\t\t('_Vtable', _Ctypes.c_void_p),")
+					structure_list.append(f"\t\t('_Vtable',_Ctypes.c_void_p),")
 
 				field_count = 0
 				for field in cursor0.get_children():
 					if field.kind == CursorKind.FIELD_DECL: # type: ignore
 						ctypes_type = _calculate_type_string(field, field.type, symbols, _type_string_kind.ctypes_struct)
 						bits = f', {field.get_bitfield_width()}' if field.is_bitfield() else ''
-						structure_list.append(f"\t\t('{field.spelling}', {ctypes_type}{bits}),")
+						structure_list.append(f"\t\t('{field.spelling}',{ctypes_type}{bits}),")
 						field_count += 1
 
 				if not field_count:
@@ -925,9 +925,10 @@ def _emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[Li
 				self_ptr = '_Ctypes.c_void_p,' if cursor.kind != CursorKind.FUNCTION_DECL else '' # type: ignore
 
 				symbol_table += [
-					f"{internal_name}=_Cdll.{symbol_name}{comment}",
-					f"{internal_name}.argtypes=[{self_ptr}{','.join(arg_types)}]",
-					f"{internal_name}.restype={return_type}"
+					f'_X=_Cdll.{symbol_name}{comment}',
+					f'_X.argtypes=[{self_ptr}{','.join(arg_types)}]',
+					f'_X.restype={return_type}',
+					f'{internal_name}=_X'
 				]
 
 def _symbols_add(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
@@ -1089,16 +1090,16 @@ import os as _OS
 import sys as _Sys
 from typing import Any as _Any
 from typing import overload as _Overload
-_Exception = Exception
-_Len = len
-_Staticmethod = staticmethod
+_Exception=Exception
+_Len=len
+_Staticmethod=staticmethod
 
 # PYTHON API ----------------------------------------------------------
 
-def _Pointer_shim(_Obj: _Any, _CType):
-	if isinstance(_Obj, _CType):
+def _Pointer_shim(_Obj:_Any,_CType):
+	if isinstance(_Obj,_CType):
 		return _Ctypes.byref(_Obj)
-	elif isinstance(_Obj, _Numpy.ndarray):
+	elif isinstance(_Obj,_Numpy.ndarray):
 		return _Numpy.ctypeslib.as_ctypes(_Obj)
 	return _Obj
 '''
@@ -1110,11 +1111,11 @@ def _Pointer_shim(_Obj: _Any, _CType):
 f"""
 # SYMBOL TABLE --------------------------------------------------------
 
-_Path = _OS.path.join(_OS.path.dirname(_OS.path.abspath(__file__)), '{_arg_lib_name}')
+_Path=_OS.path.join(_OS.path.dirname(_OS.path.abspath(__file__)),'{_arg_lib_name}')
 try:
-	_Cdll = _Ctypes.CDLL(_Path)
+	_Cdll=_Ctypes.CDLL(_Path)
 except _Exception as _E:
-	__builtins__.print(f'missing_library {{_E}}', file=_Sys.stderr)
+	__builtins__.print(f'missing_library {{_E}}',file=_Sys.stderr)
 	_Sys.exit(1)
 """
 	] + symbol_table + [

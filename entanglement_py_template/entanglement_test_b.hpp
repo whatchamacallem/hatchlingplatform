@@ -22,5 +22,5 @@ namespace NameSpaceOne {
 		int pad3;
 	};
 	// Add overload to re-opened namespace. Important for template programming.
-	ENTANGLEMENT int namespace_one(int,int);
+	ENTANGLEMENT int namespace_one(NameSpaceOneClassTwo&);
 };

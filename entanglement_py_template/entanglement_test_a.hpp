@@ -154,5 +154,5 @@ namespace NameSpaceOne {
 		ENTANGLEMENT EnumInt16ThreeConstants class_one_two(EnumInt16ThreeConstants);
 		int pad1;
 	};
-	ENTANGLEMENT int namespace_one(int);
+	ENTANGLEMENT int namespace_one(NameSpaceOneClassOne&);
 };

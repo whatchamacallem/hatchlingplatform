@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-#include "entanglement_test.hpp"
+#include "entanglement_test_b.hpp"
 
 #include <stdio.h>
 #include <string.h>
@@ -146,8 +146,8 @@ wchar_t* OperatorTest::operator^(const OperatorTest&) const{ return OperatorTest
 
 EnumCStyleTwoConstants NameSpaceOne::NameSpaceOneClassOne::class_one_one(EnumCStyleTwoConstants) { return (EnumCStyleTwoConstants)10; }
 EnumInt16ThreeConstants NameSpaceOne::NameSpaceOneClassTwo::class_one_two(EnumInt16ThreeConstants) { return (EnumInt16ThreeConstants)20; }
-int NameSpaceOne::namespace_one(int) { return 30; }
+int NameSpaceOne::namespace_one(NameSpaceOneClassOne&) { return 30; }
 int NameSpaceTwo::NameSpaceTwoClassOne::class_two_one(int) { return 40; }
 int NameSpaceTwo::namespace_two(int) { return 50; }
 EnumScopedUInt64 NameSpaceOne::NameSpaceOneClassThree::class_one_three(EnumScopedUInt64) { return (EnumScopedUInt64)60; }
-int NameSpaceOne::namespace_one(int,int) { return 70; }
+int NameSpaceOne::namespace_one(NameSpaceOneClassTwo&) { return 70; }

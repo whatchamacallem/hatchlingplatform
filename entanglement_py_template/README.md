@@ -144,10 +144,6 @@ The following strategy is recommended:
 - Then explicitly mark your C++ API with decorators that publishes your inline
   symbols into your .so regardless of whether they were used.
 
-## Unwritten Tests
-
-- Test dispatch by first arg.
-
 ## Roadmap
 
 - Default function parameters.

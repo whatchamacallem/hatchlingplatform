@@ -258,14 +258,18 @@ class run_all_tests(unittest.TestCase):
 		self.assertTrue(if_a)
 
 	def test_namespaces(self):
+		# See the C++ for test description.
 		x = system_under_test.NameSpaceOne.NameSpaceOneClassThree()
 		self.assertEqual(x.one_two.class_one_one(0), 10)
 		self.assertEqual(x.one_two.class_one_two(0), 20)
 		self.assertEqual(x.class_two_one(0), 40)
 		self.assertEqual(x.class_one_three(0), 60)
 
-		self.assertEqual(system_under_test.NameSpaceOne.namespace_one(0), 30)
-		self.assertEqual(system_under_test.NameSpaceOne.namespace_one(0,0), 70)
+		# Select between a class and a subclass as a first arg.
+		one = system_under_test.NameSpaceOne.NameSpaceOneClassOne()
+		two = system_under_test.NameSpaceOne.NameSpaceOneClassTwo()
+		self.assertEqual(system_under_test.NameSpaceOne.namespace_one(one), 30)
+		self.assertEqual(system_under_test.NameSpaceOne.namespace_one(two), 70)
 		self.assertEqual(system_under_test.NameSpaceTwo.namespace_two(0), 50)
 
 if __name__ == '__main__':
