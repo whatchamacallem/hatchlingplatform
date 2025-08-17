@@ -146,8 +146,6 @@ The following strategy is recommended:
 
 ## Tasks
 
-- Reopening namespaces and sub-namespaces for inheritance in another file
-- Reopening namespaces and sub-namespaces for overloading in another file
 - Pure virtual methods with non-virtual wrappers calling 2 subclasses
 - Add default function parameters (note arg count based dispatch *may* be affected)
 - Pylance wrapper generation
