@@ -15,10 +15,10 @@ python3 -c "import clang.cindex; print('clang.cindex is ok...')"
 set -o xtrace -o errexit
 
 # Executes ./setup.py and then installs a Python package.
-python3 -m pip install ../entanglement_py_template
+python3 -m pip install ../entanglement_example
 
 # Run Python tests for the package.
-python -c "import entanglement_py_template; entanglement_py_template.run_all_tests();"
+python -c "import entanglement_example; entanglement_example.run_all_tests();"
 
 # Shut down the virtual environment.
 deactivate

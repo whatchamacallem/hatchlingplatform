@@ -13,7 +13,7 @@ SETUP_CPP_COMMAND = ['./setup_cpp.sh']
 # Python wrapper build command.
 LIBRARY='libentanglement_py_template.so.1'
 HEADER_FILES=['entanglement_test_a.hpp', 'entanglement_test_b.hpp']
-OUTPUT_FILE='entanglement_py_template.py'
+OUTPUT_FILE='entanglement_example.py'
 
 ENTANGLEMENT_COMMAND=['python3', 'entanglement.py', '-std=c++17', '-DENTANGLEMENT_PASS=1',
 	'-I../include', '-DHX_RELEASE=0', '-fdiagnostics-absolute-paths',
@@ -54,8 +54,8 @@ setuptools.setup(
 	python_requires='>=3.7',
 	packages=[
         "entanglement",
-        "entanglement_py_template",
-        "entanglement_py_template_test"
+        "entanglement_example",
+        "entanglement_test"
     ])
 
 print("🐉🐉🐉")

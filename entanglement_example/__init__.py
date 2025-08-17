@@ -6,4 +6,4 @@
 __all__ = ['main', 'run_all_tests']
 
 from .entanglement import main
-from .entanglement_py_template_test import run_all_tests
+from .entanglement_test import run_all_tests
