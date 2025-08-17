@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: MIT
 # This file is licensed under the terms of the LICENSE.md file.
 
-# This is just an example pyproject.toml.
-
 [build-system]
 requires = ["setuptools>=61.0", "clang==18.1.8"]
 build-backend = "setuptools.build_meta"
@@ -24,3 +22,10 @@ classifiers = [
   'Operating System :: POSIX :: Linux',
   'Topic :: Software Development :: Libraries :: Python Modules',
 ]
+
+[tool.setuptools]
+package-dir = {"entanglement_example" = "src"}
+packages = ["entanglement_example"]
+
+package-data = {"entanglement_example" = ["libentanglement_py_template.so.1"]}
+include-package-data = true

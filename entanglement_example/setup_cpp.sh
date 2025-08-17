@@ -19,15 +19,15 @@ HX_LDFLAGS="$PY_LDFLAGS -shared -Wl,-s"
 set -o xtrace
 
 # {src,test}/*.c -> bin/*.o
-clang $HX_CFLAGS -std=c17 -fvisibility=hidden -c $HX_DIR/src/*.c $HX_DIR/test/*.c
+#clang $HX_CFLAGS -std=c17 -fvisibility=hidden -c $HX_DIR/src/*.c $HX_DIR/test/*.c
 
 # {src,test}/*.cpp -> bin/hxtest
-clang++ $HX_CFLAGS -std=c++17 -fvisibility=hidden \
-	-c $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp
+#clang++ $HX_CFLAGS -std=c++17 -fvisibility=hidden \
+#	-c $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp
 
 # entanglement_example/*.cpp bin/*.o -> bin/hxtest
 clang++ $HX_CFLAGS $HX_LDFLAGS -std=c++17 -lstdc++ -lpthread \
-	$HX_DIR/entanglement_example/*.cpp *.o -o libentanglement_py_template.so.1
+	$HX_DIR/entanglement_example/src/*.cpp -o libentanglement_py_template.so.1
 
 { set +o xtrace; } 2> /dev/null
 rm -f *.o

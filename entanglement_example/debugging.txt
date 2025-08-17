@@ -1,0 +1,18 @@
+
+# Here is how to check that the package was installed correctly.
+
+# Create a virtual environment and install the package into it.
+./testpythonbindings.sh
+
+# Activate the virtual environment so you can debug in it.
+. bin/python_venv/bin/activate
+
+# Check that your files were actually copied.
+pip show -f entanglement_example
+
+# At this point you can muck around running code on the Python command line.
+# Or even go hack on the installed package.
+python -c 'import entanglement_example; print(entanglement_example.__file__)'
+
+# Exit the virtual environment before running ./testpythonbindings.sh again.
+deactivate

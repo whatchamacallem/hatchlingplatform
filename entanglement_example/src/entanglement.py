@@ -1084,7 +1084,7 @@ def _assemble_output_file(python_api: List[str], structure_list: List[str], symb
 		f"''' entanglement.py {_version} {datetime.now()}",
 		f'\tbindings for {_arg_lib_name}',
 		f"\t{' '.join(sys.argv)} '''",
-'''
+f"""
 import ctypes as _Ctypes
 import enum as _Enum
 import numpy as _Numpy
@@ -1096,6 +1096,13 @@ _Exception=Exception
 _Len=len
 _Staticmethod=staticmethod
 
+_Path=_OS.path.join(_OS.path.dirname(_OS.path.abspath(__file__)),'{_arg_lib_name}')
+try:
+	_Cdll=_Ctypes.CDLL(_Path)
+except _Exception as _E:
+	print(f'missing_library {{_E}}',file=_Sys.stderr)
+	_Sys.exit(1)
+
 # PYTHON API ----------------------------------------------------------
 
 def _Pointer_shim(_Obj:_Any,_CType):
@@ -1104,22 +1111,15 @@ def _Pointer_shim(_Obj:_Any,_CType):
 	elif isinstance(_Obj,_Numpy.ndarray):
 		return _Numpy.ctypeslib.as_ctypes(_Obj)
 	return _Obj
-'''
+"""
 	] + python_api + [
 '''
 # STRUCTURE LIST ------------------------------------------------------
 '''
 	] + structure_list + [
-f"""
+'''
 # SYMBOL TABLE --------------------------------------------------------
-
-_Path=_OS.path.join(_OS.path.dirname(_OS.path.abspath(__file__)),'{_arg_lib_name}')
-try:
-	_Cdll=_Ctypes.CDLL(_Path)
-except _Exception as _E:
-	__builtins__.print(f'missing_library {{_E}}',file=_Sys.stderr)
-	_Sys.exit(1)
-"""
+'''
 	] + symbol_table + [
 '''
 # 🐉🐉🐉

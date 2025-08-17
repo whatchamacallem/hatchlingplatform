@@ -8,3 +8,12 @@ entanglement_example/entanglement_example.egg-info/dependency_links.txt
 entanglement_example/entanglement_example.egg-info/PKG-INFO
 entanglement_example/entanglement_example.egg-info/SOURCES.txt
 entanglement_example/entanglement_example.egg-info/top_level.txt
+entanglement_example/src/entanglement_example.egg-info/dependency_links.txt
+entanglement_example/src/entanglement_example.egg-info/PKG-INFO
+entanglement_example/src/entanglement_example.egg-info/SOURCES.txt
+entanglement_example/src/entanglement_example.egg-info/top_level.txt
+entanglement_example/build/lib/src/__init__.py
+entanglement_example/build/lib/src/entanglement_example.py
+entanglement_example/build/lib/src/entanglement_test.py
+entanglement_example/build/lib/src/entanglement.py
+entanglement_example/src/entanglement_example.py
