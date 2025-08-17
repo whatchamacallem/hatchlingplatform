@@ -17,3 +17,7 @@ entanglement_example/build/lib/src/entanglement_example.py
 entanglement_example/build/lib/src/entanglement_test.py
 entanglement_example/build/lib/src/entanglement.py
 entanglement_example/src/entanglement_example.py
+entanglement_example/build/lib/entanglement_example/__init__.py
+entanglement_example/build/lib/entanglement_example/entanglement_example.py
+entanglement_example/build/lib/entanglement_example/entanglement_test.py
+entanglement_example/build/lib/entanglement_example/entanglement.py

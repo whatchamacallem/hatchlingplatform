@@ -27,5 +27,5 @@ classifiers = [
 package-dir = {"entanglement_example" = "src"}
 packages = ["entanglement_example"]
 
-package-data = {"entanglement_example" = ["libentanglement_py_template.so.1"]}
-include-package-data = true
+[tool.setuptools.package-data]
+entanglement_example = ["libentanglement_py_template.so.1"]
