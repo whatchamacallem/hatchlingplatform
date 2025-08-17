@@ -138,11 +138,15 @@ public:
 	bool pad;
 };
 
+// Pointers to unregistered types are a requirement. This is never defined and
+// not declared ENTANGLEMENT_T.
+class PointerToImplementation;
+
 namespace NameSpaceOne {
 	class ENTANGLEMENT_T NameSpaceOneClassOne {
 	public:
 		ENTANGLEMENT int class_one_one(int);
-		int pad0;
+		PointerToImplementation* pimpl;
 	};
 	class ENTANGLEMENT_T NameSpaceOneClassTwo : public NameSpaceOneClassOne {
 	public:

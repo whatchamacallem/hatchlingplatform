@@ -463,7 +463,11 @@ def _calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str
 	# available.
 	definition_cursor = cpp_type_canonical.get_declaration()
 	if not definition_cursor or not definition_cursor.is_definition():
-		_raise_error(cursor, f'Incomplete type: {cpp_type_ref.displayname}')
+		# Make an exception for unknown pointer fields.  They are required.
+		if is_pointer and result_kind is _type_string_kind.ctypes_struct:
+			return '_Ctypes.c_void_p'
+
+		_raise_error(cursor, f'Declaration with ENTANGLEMENT_T required: {cpp_type_ref}')
 
 	if definition_cursor.kind in (CursorKind.ENUM_DECL, CursorKind.STRUCT_DECL, CursorKind.CLASS_DECL): # type: ignore
 		py_name = _calculate_python_package_path(definition_cursor)
@@ -487,7 +491,7 @@ def _calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str
 			if result_kind is _type_string_kind.ctypes_struct:
 				# Using void here avoids a whole class definition dependency
 				# graph situation that is intractable going from C++ to Python.
-				return f'_Ctypes.c_void_p'
+				return '_Ctypes.c_void_p'
 		return py_name
 
 	_raise_error(cursor, f'Unsupported definition kind {definition_cursor.kind}')

@@ -146,7 +146,6 @@ The following strategy is recommended:
 
 ## Tasks
 
-- Structs are allowed to have any kind of pointer they want.
 - Pointers and references to classes
 - Enum return values
 - Reopening namespaces and sub-namespaces for inheritance in another file
