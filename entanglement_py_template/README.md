@@ -146,17 +146,13 @@ The following strategy is recommended:
 
 ## Tasks
 
-- Nested class fields. Oh shit dependency order.
 - Structs are allowed to have any kind of pointer they want.
-- All C++ operators (e.g. hxrandom)
-- Nested classes
 - Pointers and references to classes
 - Enum return values
 - Reopening namespaces and sub-namespaces for inheritance in another file
 - Reopening namespaces and sub-namespaces for overloading in another file
-- Pure virtual methods with non-virtual wrappers calling 2 base classes
-- Test multiple headers
-- Add default function parameters (note arg count based dispatch is affected)
+- Pure virtual methods with non-virtual wrappers calling 2 subclasses
+- Add default function parameters (note arg count based dispatch *may* be affected)
 - Pylance wrapper generation
 - Make hatchling.py wrapper
 - DLL loading implementation

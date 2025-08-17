@@ -153,10 +153,10 @@ namespace NameSpaceOne {
 };
 
 namespace NameSpaceTwo {
-	class ENTANGLEMENT_T NameSpaceTwoClassOne : public NameSpaceOne::NameSpaceOneClassTwo {
+	class ENTANGLEMENT_T NameSpaceTwoClassOne {
 	public:
 		ENTANGLEMENT int class_two_one(int);
-		NameSpaceOne::NameSpaceOneClassTwo pad2;
+		NameSpaceOne::NameSpaceOneClassTwo one_two;
 	};
 	ENTANGLEMENT int namespace_two(int);
 };

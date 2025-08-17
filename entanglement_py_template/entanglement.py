@@ -24,6 +24,11 @@ from clang.cindex import Index, LinkageKind, StorageClass, TranslationUnit, Type
 from datetime import datetime
 from typing import Dict, List, NoReturn, Optional, Tuple
 
+# Exception names appropriate for a command line tool. These should be the only
+# ones raised.
+class error(ValueError): ...
+class usage(ValueError): ...
+
 # Verbose - 0: No news is good news. 1 : Status messages. 2: Processing steps.
 # 3: AST traversal. All messages go to stderr.
 VERBOSE = 2
@@ -151,11 +156,7 @@ ctypes_reserved: set[str] = {
 	"_pack_", "_pointer_", "_restype_", "_size_", "_subclasses_",
 	"_type_", "_values_" }
 
-# Exception names appropriate for a command line tool.
-class error(ValueError): ...
-class usage(ValueError): ...
-
-class type_string_kind(enum.Enum):
+class _type_string_kind(enum.Enum):
 	'''
 	Enum defining different contexts for type string generation. Used to specify
 	the purpose of type strings (e.g., argument hints, return types, ctypes
@@ -319,20 +320,27 @@ def _calculate_python_package_path(cursor: Cursor) -> str:
 	namespaces.append(_get_dunder_name(cursor))
 	return '.'.join(namespaces)
 
-def _get_inheritance_generation(cursor: Cursor) -> int:
+def _get_inheritance_distance(cursor: Cursor) -> int:
 	'''
-	Returns `1` for a class/struct with no parent and `1+N` for a class/struct
-	with `N` parents. Returns `0` to signal all other kinds.
+	Distance is measured by the maximum value found for the inheritance depth of
+	the class/struct itself and of its class/struct fields. No class should have
+	a depth less than one of its dependencies for its definition.
 	- `cursor` : Clang cursor. '''
 
+	x = 0 # Fundamental or other type.
 	if cursor.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
+		x = 1 # Base class.
 		for child in cursor.get_children():
 			if child.kind == CursorKind.CXX_BASE_SPECIFIER: # type: ignore
-				return _get_inheritance_generation(child.referenced) + 1
-		return 1 # Base class.
-	return 0 # Fundamental or other type.
+				x = max(_get_inheritance_distance(child.referenced) + 1, x)
+			elif child.kind == CursorKind.FIELD_DECL: # type: ignore
+				# Should be valid as a condition of having compiled.
+				declaration = child.type.get_canonical().get_declaration()
+				x = max(_get_inheritance_distance(declaration) + 1, x)
 
-def _get_base_class(cursor: Cursor) -> str:
+	return x
+
+def _get_python_base_class(cursor: Cursor) -> str:
 	'''
 	Returns the Python package path of the base class or `_Ctypes.Structure` if
 	none.
@@ -368,7 +376,7 @@ def _has_vtable(cursor: Cursor):
 
 	return has_virtual
 
-def _calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str, List[Cursor]], result_kind: type_string_kind) -> str:
+def _calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str, List[Cursor]], result_kind: _type_string_kind) -> str:
 	'''
 	Returns a string representing the type as a Python or ctypes type.
 	- `cursor` : Clang cursor for error reporting.
@@ -382,10 +390,10 @@ def _calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str
 
 	# Handle fundamental types.
 	if cpp_type_canonical.kind in _clang_to_ctypes:
-		if result_kind in (type_string_kind.ctypes_args,
-					 		type_string_kind.ctypes_struct):
+		if result_kind in (_type_string_kind.ctypes_args,
+					 		_type_string_kind.ctypes_struct):
 			return _clang_to_ctypes[cpp_type_canonical.kind]
-		if result_kind is type_string_kind.arg_hint:
+		if result_kind is _type_string_kind.arg_hint:
 			if cpp_type_canonical.kind is TypeKind.WCHAR: # type: ignore
 				return 'str' # Single characters are passed as strings in Python.
 		return _clang_to_python[cpp_type_canonical.kind]
@@ -394,7 +402,7 @@ def _calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str
 	# pass arrays as pointers, ctypes.Array or numpy's ndarray. entanglement.py
 	# does not provide additional Python interfaces to manipulate C++ arrays.
 	if cpp_type_canonical.kind is TypeKind.CONSTANTARRAY:		  # type: ignore
-		if not result_kind is type_string_kind.ctypes_struct:
+		if not result_kind is _type_string_kind.ctypes_struct:
 			_raise_error(cursor, 'Constant arrays supported in class and struct layouts only.')
 
 		array_element_string = _calculate_type_string(cursor, cpp_type_canonical.get_array_element_type(), symbols, result_kind)
@@ -420,7 +428,7 @@ def _calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str
 
 		# Special case handling for pointers and references to fundamental types.
 		if pointee_type_canonical.kind in _clang_to_ctypes:
-			if result_kind is type_string_kind.arg_hint:
+			if result_kind is _type_string_kind.arg_hint:
 				if cpp_type_canonical.kind is TypeKind.POINTER:  # type: ignore
 					# Pointer args of fundamental type may be any kind of array.
 					return '_Any'
@@ -428,7 +436,7 @@ def _calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str
 				# ctypes.byref().
 				return _clang_to_ctypes[pointee_type_canonical.kind]
 
-			if result_kind is type_string_kind.return_hint:
+			if result_kind is _type_string_kind.return_hint:
 				if pointee_type_canonical.kind in _clang_to_ctypes_ptr_return:
 					if cpp_type_canonical.kind in ( TypeKind.LVALUEREFERENCE,  # type: ignore
 													TypeKind.RVALUEREFERENCE): # type: ignore
@@ -465,8 +473,8 @@ def _calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str
 		if definition_cursor.kind == CursorKind.ENUM_DECL: # type: ignore
 			if is_pointer:
 				_raise_error(definition_cursor, f'Cannot pass enums by pointer or reference. Use int.')
-			if result_kind in (type_string_kind.ctypes_args,
-					 			type_string_kind.ctypes_struct):
+			if result_kind in (_type_string_kind.ctypes_args,
+					 			_type_string_kind.ctypes_struct):
 				# Just tell ctypes to marshal enums to their underlying type.
 				return _clang_to_ctypes[definition_cursor.enum_type.kind]
 			return 'int' # Use plain int for enum arg and return hints.
@@ -474,9 +482,9 @@ def _calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str
 		# Classes and structs are usable directly by ctypes. These need to be
 		# full path.
 		if is_pointer:
-			if result_kind is type_string_kind.ctypes_args:
+			if result_kind is _type_string_kind.ctypes_args:
 				return f'_Ctypes.POINTER({py_name})'
-			if result_kind is type_string_kind.ctypes_struct:
+			if result_kind is _type_string_kind.ctypes_struct:
 				# Using void here avoids a whole class definition dependency
 				# graph situation that is intractable going from C++ to Python.
 				return f'_Ctypes.c_void_p'
@@ -532,7 +540,7 @@ def _emit_ctypes_function_args(cursor: Cursor, symbols: Dict[str, List[Cursor]],
 			arg_name = arg.spelling if arg.spelling else f'_Arg{arg_index}'
 		if arg_type_kind == TypeKind.POINTER: # type: ignore
 			pointee_type = arg.type.get_pointee()
-			pointee_c_type = _calculate_type_string(cursor, pointee_type, symbols, type_string_kind.ctypes_args)
+			pointee_c_type = _calculate_type_string(cursor, pointee_type, symbols, _type_string_kind.ctypes_args)
 			if pointee_c_type != 'None':
 				arg_list.append(f'_Pointer_shim({arg_name}, {pointee_c_type})')
 			else:
@@ -571,10 +579,10 @@ def _emit_python_api_overload_arg0_isinstance(cursor: Cursor, symbols: Dict[str,
 	arg_type_kind = arg.type.kind
 	if arg_type_kind in (TypeKind.POINTER, TypeKind.LVALUEREFERENCE, TypeKind.RVALUEREFERENCE): # type: ignore
 		pointee_type = arg.type.get_pointee()
-		pointee_c_type = _calculate_type_string(cursor, pointee_type, symbols, type_string_kind.ctypes_args)
+		pointee_c_type = _calculate_type_string(cursor, pointee_type, symbols, _type_string_kind.ctypes_args)
 		return f'isinstance({arg_name}, {pointee_c_type})'
 
-	c_type = _calculate_type_string(cursor, arg.type, symbols, type_string_kind.ctypes_args)
+	c_type = _calculate_type_string(cursor, arg.type, symbols, _type_string_kind.ctypes_args)
 	return f'isinstance({arg_name}, {c_type})'
 
 def _emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict[str, List[Cursor]], overloaded: bool) -> List[str]:
@@ -603,11 +611,11 @@ def _emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict
 	arg_types : List[Tuple[str, str]] = []
 	arg_index = 0
 	for arg in cursor.get_arguments():
-		py_type = _calculate_type_string(cursor, arg.type, symbols, type_string_kind.arg_hint)
+		py_type = _calculate_type_string(cursor, arg.type, symbols, _type_string_kind.arg_hint)
 		arg_name = arg.spelling if arg.spelling else f'_Arg{arg_index}'
 		arg_types.append((arg_name, py_type))
 		arg_index = arg_index + 1
-	return_py_type = _calculate_type_string(cursor, cursor.result_type, symbols, type_string_kind.return_hint)
+	return_py_type = _calculate_type_string(cursor, cursor.result_type, symbols, _type_string_kind.return_hint)
 
 	# Assemble type hints.
 	self_arg = 'self,' if not static_method else ''
@@ -671,6 +679,7 @@ def _emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curs
 	for arg_count, overload_group in sorted(arg_count_map.items()):
 		lines.append(f'{namespace_tabs}\t\tcase {arg_count}:')
 
+		# Place subclasses before base classes in the isinstance checks.
 		inheritance_generation_map: Dict[int, List[Cursor]] = {0:[]}
 		for cursor in overload_group:
 			generation = 0
@@ -680,7 +689,7 @@ def _emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curs
 				if arg0_type.kind in (TypeKind.POINTER, TypeKind.LVALUEREFERENCE, TypeKind.RVALUEREFERENCE): # type: ignore
 					arg0_type = arg0_type.get_pointee().get_canonical()
 
-				generation = _get_inheritance_generation(arg0_type.get_declaration())
+				generation = _get_inheritance_distance(arg0_type.get_declaration())
 			if generation not in inheritance_generation_map:
 				inheritance_generation_map[generation] = [cursor]
 			else:
@@ -825,7 +834,13 @@ def _emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List
 
 def _emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], structure_list: List[str]) -> None:
 	'''
-	Generates the structure list section of the output script in dependency order.
+	Generates the class/struct list section of the output script in dependency
+	order. Values are sorted by their distance from ctypes.Struct. Distance is
+	measured by the maximum value found for the inheritance depth of the
+	class/struct itself and of its class/struct fields. No class should have a
+	depth less than one of its dependencies for its definition. This is a
+	topological sort using the maximum distance from a vertex. It is the
+	simplest if not the fastest.
 	- `symbols` : Dictionary of known symbols mapped to their cursors.
 	- `sorted_symbols` : List of cursor lists sorted by namespace and kind.
 	- `structure_list` : List to append generated structure definition lines to. '''
@@ -836,7 +851,7 @@ def _emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[
 	for cursor_list in sorted_symbols:
 		cursor0 = cursor_list[0]
 		if cursor0.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
-			depth = _get_inheritance_generation(cursor0)
+			depth = _get_inheritance_distance(cursor0)
 			if depth not in depth_sorted_symbols:
 				depth_sorted_symbols[depth] = [ cursor_list ]
 			else:
@@ -853,7 +868,7 @@ def _emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[
 
 				name = _get_name(cursor0)
 				path = _calculate_python_package_path(cursor0)
-				base = _get_base_class(cursor0)
+				base = _get_python_base_class(cursor0)
 				# Place the API lookup before the ctypes.Structure lookup for
 				# speed. That shouldn't hurt the perf of parameter passing.
 				structure_list.append(f'class _T{counter}{name}({path}, {base}):')
@@ -865,7 +880,7 @@ def _emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[
 				field_count = 0
 				for field in cursor0.get_children():
 					if field.kind == CursorKind.FIELD_DECL: # type: ignore
-						ctypes_type = _calculate_type_string(field, field.type, symbols, type_string_kind.ctypes_struct)
+						ctypes_type = _calculate_type_string(field, field.type, symbols, _type_string_kind.ctypes_struct)
 						bits = f', {field.get_bitfield_width()}' if field.is_bitfield() else ''
 						structure_list.append(f"\t\t('{field.spelling}', {ctypes_type}{bits}),")
 						field_count += 1
@@ -895,9 +910,9 @@ def _emit_symbol_table(symbols: Dict[str, List[Cursor]], sorted_symbols: List[Li
 				# Get types
 				arg_types : List[str]= []
 				for arg in cursor.get_arguments():
-					ctypes_type = _calculate_type_string(arg, arg.type, symbols, type_string_kind.ctypes_args)
+					ctypes_type = _calculate_type_string(arg, arg.type, symbols, _type_string_kind.ctypes_args)
 					arg_types.append(ctypes_type)
-				return_type = _calculate_type_string(cursor, cursor.result_type, symbols, type_string_kind.ctypes_args)
+				return_type = _calculate_type_string(cursor, cursor.result_type, symbols, _type_string_kind.ctypes_args)
 
 				# format them
 				internal_name = _get_internal_name(cursor)
@@ -1076,7 +1091,7 @@ _Staticmethod = staticmethod
 
 # PYTHON API ----------------------------------------------------------
 
-def __Pointer_shim(_Obj: _Any, _CType):
+def _Pointer_shim(_Obj: _Any, _CType):
 	if isinstance(_Obj, _CType):
 		return _Ctypes.byref(_Obj)
 	elif isinstance(_Obj, _Numpy.ndarray):

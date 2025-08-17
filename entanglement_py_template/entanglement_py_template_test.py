@@ -264,8 +264,8 @@ class run_all_tests(unittest.TestCase):
 
 	def test_namespaces(self):
 		x = system_under_test.NameSpaceOne.NameSpaceOneClassThree()
-		self.assertEqual(x.class_one_one(0), 10)
-		self.assertEqual(x.class_one_two(0), 20)
+		self.assertEqual(x.one_two.class_one_one(0), 10)
+		self.assertEqual(x.one_two.class_one_two(0), 20)
 		self.assertEqual(x.class_two_one(0), 40)
 		self.assertEqual(x.class_one_three(0), 60)
 
