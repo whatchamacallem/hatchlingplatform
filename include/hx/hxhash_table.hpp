@@ -23,10 +23,10 @@
 //   hxhash_t hash() const;		// Returns hash of key constructed with.
 // };
 //
-// hxhash_table_set_node and hxhash_table_map_node are provided and recommended
-// for replacements for std::unordered_set and std::unordered_map. Custom key
-// types will require either an operator== or an hxkey_equal overload and will
-// require an hxkey_hash overload.
+// hxhash_table_set_node and hxhash_table_map_node are provided as and
+// recommended for replacements for std::unordered_set and std::unordered_map.
+// Custom key types will require either an operator== or an hxkey_equal overload
+// and will require an hxkey_hash overload.
 //
 // They might be used as follows:
 //
@@ -43,9 +43,11 @@
 #include <hx/detail/hxhash_table_detail.hpp>
 #include <hx/hxkey.hpp>
 
-/// `hxhash_table_set_node` - Base class for unordered set entries. Caches the hash
-/// value. Copying and modification are disallowed to protect the integrity of the
-/// hash table. See hxhash_table_map_node if you need a mutable node.
+/// `hxhash_table_set_node` - Optional base class for unordered set entries.
+/// Caches the hash value. Copying and modification are disallowed to protect
+/// the integrity of the hash table. See hxhash_table_map_node if you need a
+/// mutable node. The hash table uses duck typing so only the interface is
+/// required.
 template<typename key_t_>
 class hxhash_table_set_node {
 public:

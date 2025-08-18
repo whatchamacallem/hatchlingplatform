@@ -3,15 +3,14 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 //
-// <hx/hxhash_table_nodes.hpp> - These are specializations of the hxhash_table
-// node_t template parameter for integers and strings.
+// <hx/hxhash_table_nodes.hpp> - These are versions of the hxhash_table node_t
+// template parameter for integers and strings.
 
 #include <hx/hxhash_table.hpp>
 
-/// `hxhash_table_node_integer` - Specialization of hxhash_table_node_base for
-/// integer types. See documentation of hxhash_table for interface
-/// documentation. This is a great example of a node that doesn't require a base
-/// class.
+/// `hxhash_table_node_integer` - node_t for use with hxhash_table for integer
+/// types. See documentation of hxhash_table for interface. This is a great
+/// example of a node_t that doesn't use a base class.
 template<typename key_t_>
 class hxhash_table_node_integer {
 public:

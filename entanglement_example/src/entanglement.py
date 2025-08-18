@@ -777,12 +777,12 @@ def _emit_python_api_class(namespace_tabs: str, cursor: Cursor) -> List[str]:
 	lines += _emit_python_api_doc(namespace_tabs + '\t', cursor)
 	return lines
 
-def _emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], api: List[str]) -> None:
+def _emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], interface: List[str]) -> None:
 	'''
 	Generates the Python API section of the output script.
 	- `symbols` : Dictionary of known symbols mapped to their cursors.
 	- `sorted_symbols` : List of cursor lists sorted by namespace and kind.
-	- `api` : List to append generated Python API lines to. '''
+	- `interface` : List to append generated Python API lines to. '''
 	current_namespace : List[str] = []
 
 	# The cursors have been sorted according to their python identifier. This
@@ -803,7 +803,7 @@ def _emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List
 		# They keyword ... is being used to prevent errors with empty classes.
 		while (len(cursor_namespace) < len(current_namespace)
 				or current_namespace != cursor_namespace[:len(current_namespace)]):
-			api.append(f"{'\t' * len(current_namespace)}...")
+			interface.append(f"{'\t' * len(current_namespace)}...")
 			leaving_namespace = current_namespace.pop()
 			_verbose(2, f'leaving_namespace {leaving_namespace}')
 
@@ -812,7 +812,7 @@ def _emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List
 		while len(cursor_namespace) > len(current_namespace):
 			namespace_depth = len(current_namespace)
 			next_namespace : str = cursor_namespace[namespace_depth]
-			api.append(f"{'\t' * namespace_depth}class {next_namespace}:")
+			interface.append(f"{'\t' * namespace_depth}class {next_namespace}:")
 			current_namespace.append(next_namespace)
 			_verbose(2, f'entering_namespace {next_namespace}')
 
@@ -823,19 +823,19 @@ def _emit_python_api(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List
 
 		if cursor0.kind is CursorKind.ENUM_DECL: # type: ignore
 			assert len(cursor_list) == 1
-			api += _emit_python_api_enum(namespace_tabs, cursor0)
+			interface += _emit_python_api_enum(namespace_tabs, cursor0)
 
 		elif cursor0.kind in (CursorKind.FUNCTION_DECL, CursorKind.CONSTRUCTOR, CursorKind.DESTRUCTOR, CursorKind.CXX_METHOD): # type: ignore
 			if len(cursor_list) > 1:
 				for cursor in cursor_list:
-					api += _emit_python_api_function(namespace_tabs, cursor, symbols, True)
-				api += _emit_python_api_overload_selector(namespace_tabs, cursor_list, symbols)
+					interface += _emit_python_api_function(namespace_tabs, cursor, symbols, True)
+				interface += _emit_python_api_overload_selector(namespace_tabs, cursor_list, symbols)
 			else:
-				api += _emit_python_api_function(namespace_tabs, cursor0, symbols, False)
+				interface += _emit_python_api_function(namespace_tabs, cursor0, symbols, False)
 
 		elif cursor0.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
 			assert len(cursor_list) == 1
-			api += _emit_python_api_class(namespace_tabs, cursor0)
+			interface += _emit_python_api_class(namespace_tabs, cursor0)
 			current_namespace.append(cursor0.spelling)
 
 def _emit_structure_list(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]], structure_list: List[str]) -> None:
@@ -960,11 +960,11 @@ def _symbols_add(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
 
 def _symbols_sort(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cursor]]) -> None:
 	'''
-	This is the final output order for the python api. Symbols are sorted first
-	by namespace, then by cursor kind and then by name, if any. The symbols
-	object is built up using the Python path instead of exposing the sort key.
-	This keeps the details of the sort local to this function. Sorting by
-	dunder name is required to build overload lists correctly.
+	This is the final output order for the python interface. Symbols are sorted
+	first by namespace, then by cursor kind and then by name, if any. The
+	symbols object is built up using the Python path instead of exposing the
+	sort key. This keeps the details of the sort local to this function. Sorting
+	by dunder name is required to build overload lists correctly.
 	- `symbols` : Dictionary of known symbols mapped to their cursors.
 	- `sorted_symbols` : List to append sorted cursor lists to. '''
 	symbols_by_sort_key: Dict[str, List[Cursor]] = { }

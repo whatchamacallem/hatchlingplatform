@@ -119,9 +119,9 @@ private:
 // pthreads is a little too nutty because it has a range of valid implementations.
 #if HX_USE_THREADS
 
-/// `hxmutex` - `std::mutex` style wrapper for pthreads. Asserts on unexpected failure
-/// by the posix api. Currently default pthread behavior. That means non-recursive,
-/// no error-checking and no translation layer.
+/// `hxmutex` - `std::mutex` style wrapper for pthreads. Asserts on unexpected
+/// failure by the posix API. Currently default pthread behavior. That means
+/// non-recursive, no error-checking and no translation layer.
 class hxmutex {
 public:
 	/// Constructs a mutex and initializes it. May not return if the mutex cant
@@ -318,7 +318,7 @@ public:
 		// Stay on the right side of the C++ standard by avoiding assumptions
 		// about pointer representations. The parameter pointer is never cast
 		// between types. Instead the bit pattern of the pointer is preserved
-		// while it is passed through the pthread api. This requires the pointers
+		// while it is passed through the pthread API. This requires the pointers
 		// to use the same number of bytes.
 		static_assert(sizeof(void*) == sizeof(parameter_t_*), "Incompatible pointer types");
 
