@@ -10,13 +10,15 @@
 
 #include <hx/hatchling.h>
 
-/// `hxkey_equal(const T& a, const T& b)` - Compares two objects for equivalence.
-/// If your key type doesn't support `operator==` then this function may need to
-/// be overridden for your key type. Function overloads are evaluated when and where
-/// the derived container is instantiated and need to be consistently available.
-template<typename T_>
-constexpr bool hxkey_equal(const T_& a_, const T_& b_) {
-	return a_ == b_;
+/// `hxkey_equal(const A& a, const B& b)` - Compares two objects for
+/// equivalence. If your key type doesn't support `operator==` then this
+/// function may need to be overridden for your key type(s). Function overloads
+/// are evaluated when and where the derived container is instantiated and need
+/// to be consistently available.
+template<typename A_, typename B_>
+requires requires(A_ a_, B_ b_) { a_ == b_; }
+constexpr bool hxkey_equal(const A_& a_, const B_& b_) {
+    return a_ == b_;
 }
 
 /// `hxkey_equal(const char* a, const char* b)` is `strcmp(a, b) == 0`.
@@ -24,27 +26,32 @@ inline bool hxkey_equal(const char* a_, const char* b_) {
 	return ::strcmp(a_, b_) == 0;
 }
 
-/// Utility for making function pointers to `hxkey_equal` from a partially specialized
-/// set of overloaded functions. E.g. `hxkey_equal_function<int>()(1, 7)`
-template<typename T_>
-inline bool(*hxkey_equal_function(void))(const T_&, const T_&) {
-	return static_cast<bool(*)(const T_&, const T_&)>(hxkey_equal<T_>);
+/// Utility for making function pointers to `hxkey_equal` from a partially
+/// specialized set of overloaded functions. E.g.
+/// `hxkey_equal_function<int>()(1, 7)`
+template<typename A_, typename B_>
+inline bool(*hxkey_equal_functiontion(void))(const A_&, const B_&) {
+	return static_cast<bool(*)(const A_&, const A_&)>(hxkey_equal<A_, B_>);
 }
 
-/// `hxkey_less(const T&, const T&)` - User overloadable function for performing comparisons.
-/// Invokes `operator<` by default. All the other comparison operators can be written using
-/// `operator<`. However hxkey_equal is also used for efficiency.
-template<typename T_>
-constexpr bool hxkey_less(const T_& a_, const T_& b_) {
+/// `hxkey_less(const T&, const T&)` - User overloadable function for performing
+/// comparisons. Invokes `operator<` by default. All the other comparison
+/// operators can be written using `operator<`. However hxkey_equal is also used
+/// for efficiency.
+template<typename A_, typename B_>
+requires requires(A_ a_, B_ b_) { a_ < b_; }
+constexpr bool hxkey_less(const A_& a_, const B_& b_) {
 	return a_ < b_;
 }
 
-/// `hxkey_less(const T*, const T*)` - User overloadable function for performing comparisons.
-/// Invokes `T::operator<` by default. Pointer `<` comparisons are not available by default
-/// because that is undefined behavior unless the pointers are from the same array. For
-/// example the compiler may silently ignore comparisons between function pointers.
-template<typename T_>
-constexpr bool hxkey_less(const T_* a_, const T_* b_) {
+/// `hxkey_less(const T*, const T*)` - User overloadable function for performing
+/// comparisons. Invokes `T::operator<` by default. Pointer `<` comparisons are
+/// not available by default because that is undefined behavior unless the
+/// pointers are from the same array. For example the compiler may silently
+/// ignore comparisons between function pointers.
+template<typename A_, typename B_>
+requires requires(A_ a_, B_ b_) { a_ < b_; }
+constexpr bool hxkey_less(const A_* a_, const B_* b_) {
 	return hxkey_less(*a_, *b_);
 }
 
@@ -53,18 +60,19 @@ inline bool hxkey_less(const char* a_, const char* b_) {
 	return ::strcmp(a_, b_) < 0;
 }
 
-/// Utility for making function pointers to `hxkey_less` from a partially specialized
-/// set of overloaded functions. E.g. `hxkey_less_function<int>()(78, 77)`
-template<typename T_>
-inline bool (*hxkey_less_function(void))(const T_&, const T_&) {
-	return static_cast<bool(*)(const T_&, const T_&)>(hxkey_less<T_>);
+/// Utility for making function pointers to `hxkey_less` from a partially
+/// specialized set of overloaded functions. E.g.
+/// `hxkey_less_function<int>()(78, 77)`.
+template<typename A_, typename B_>
+inline bool (*hxkey_less_function(void))(const A_&, const B_&) {
+	return static_cast<bool(*)(const A_&, const B_&)>(hxkey_less<A_, B_>);
 }
 
-/// `hxkey_hash(T)` - Used by the base class hash table node. It needs to be overridden
-/// for your key type. Overrides are evaluated when and where the hash table is
-/// instantiated. Uses the well studied hash multiplier taken from Linux's hash.h
-template<typename T_>
-constexpr hxhash_t hxkey_hash(T_ t_) {
+/// `hxkey_hash(T)` - Used by the base class hash table node. It needs to be
+/// overridden for your key type. Overrides are evaluated when and where the
+/// hash table is instantiated. Uses the well studied hash multiplier taken from
+/// Linux's hash.h
+constexpr hxhash_t hxkey_hash(hxhash_t t_) {
 	return (hxhash_t)t_ * (hxhash_t)0x61C88647u;
 };
 

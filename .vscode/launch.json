@@ -15,6 +15,11 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
+//            "logging": {
+//                "engineLogging": true,
+//                "trace": true,
+//                "programOutput": true
+//            },
             "setupCommands": [
                 {
                     "description": "Enable pretty printing",

@@ -70,7 +70,7 @@ void hxinsertion_sort(T_* begin_, T_* end_, const less_t_& less_) {
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename T_>
 void hxinsertion_sort(T_* begin_, T_* end_) {
-	hxinsertion_sort(begin_, end_, hxkey_less_function<T_>());
+	hxinsertion_sort(begin_, end_, hxkey_less_function<T_, T_>());
 }
 
 /// `hxheapsort` - Sorts the elements in the range `[begin, end)` in comparison
@@ -120,7 +120,7 @@ void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename T_>
 void hxheapsort(T_* begin_, T_* end_) {
-	hxheapsort(begin_, end_, hxkey_less_function<T_>());
+	hxheapsort(begin_, end_, hxkey_less_function<T_, T_>());
 }
 
 /// `hxsort` - A general purpose sort routine using `T::T()`, `T::~T()`,
@@ -141,7 +141,7 @@ void hxsort(T_* begin_, T_* end_, const less_t_& less_) {
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename T_>
 void hxsort(T_* begin_, T_* end_) {
-	hxintro_sort_(begin_, end_, hxkey_less_function<T_>(), 2u * hxlog2i(end_ - begin_));
+	hxintro_sort_(begin_, end_, hxkey_less_function<T_, T_>(), 2u * hxlog2i(end_ - begin_));
 }
 
 /// `hxbinary_search` - Performs a binary search in the range [first, last).
@@ -183,7 +183,7 @@ const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_, cons
 /// - `val` : The value to search for.
 template<typename T_>
 const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_) {
-	return hxbinary_search(begin_, end_, val_, hxkey_less_function<T_>());
+	return hxbinary_search(begin_, end_, val_, hxkey_less_function<T_, T_>());
 }
 
 /// `hxbinary_search` - Non-const overload of binary search.
@@ -204,5 +204,5 @@ T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_, const less_t_& less_) 
 template<typename T_>
 T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_) {
 	return const_cast<T_*>(hxbinary_search(const_cast<const T_*>(begin_),
-		const_cast<const T_*>(end_), val_, hxkey_less_function<T_>()));
+		const_cast<const T_*>(end_), val_, hxkey_less_function<T_, T_>()));
 }

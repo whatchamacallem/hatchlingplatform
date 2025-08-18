@@ -45,6 +45,8 @@ public:
 
 		void operator=(const test_object& rhs) { id = rhs.id; }
 		bool operator==(int32_t x) const { return id == x; }
+		bool operator==(const test_object& rhs) const { return id == rhs.id; }
+		bool operator<(const test_object& rhs) const { return id < rhs.id; }
 
 		int32_t id;
 		int32_t constructor;
@@ -69,16 +71,6 @@ public:
 	size_t m_destructed;
 	int32_t m_next_id;
 };
-
-TEST_F(hxarray_test, null) {
-	{
-		test_object to0;
-		test_object to1;
-		EXPECT_EQ(to0.id, -1);
-		EXPECT_EQ(to1.id, -2);
-	}
-	EXPECT_TRUE(Check_totals(2));
-}
 
 TEST_F(hxarray_test, empty_full) {
 	hxarray<test_object, hxallocator_dynamic_capacity> a;
@@ -161,9 +153,8 @@ TEST_F(hxarray_test, modification) {
 		static const int32_t nums[5] = { 91, 92, 93, 94, 95 };
 
 		hxarray<test_object> objs;
-		EXPECT_FALSE(objs);
 		objs.assign(nums, nums + (sizeof nums / sizeof *nums));
-		EXPECT_TRUE(objs);
+		EXPECT_TRUE(objs.empty());
 
 		EXPECT_EQ(objs.capacity(), 5u);
 		EXPECT_EQ(objs.size(), 5u);
@@ -232,7 +223,7 @@ TEST_F(hxarray_test, resizing) {
 	{
 		static const int32_t nums[5] = { 51, 52, 53, 54, 55 };
 
-		hxarray<test_object> objs;
+		hxarray<test_object> objs(12);
 		objs.reserve(10);
 		objs.assign(nums);
 
@@ -262,7 +253,7 @@ TEST_F(hxarray_test, resizing) {
 		EXPECT_EQ(objs.capacity(), 10u);
 	}
 
-	EXPECT_TRUE(Check_totals(12));
+	EXPECT_TRUE(Check_totals(14));
 }
 
 TEST_F(hxarray_test, assignment) {
@@ -281,6 +272,7 @@ TEST_F(hxarray_test, assignment) {
 		objs3 = objs; // Assign to different type
 
 		hxarray<test_object> objs4(objs); // Construct from same type
+			hxbreakpoint();
 
 		hxarray<test_object, 1> objs5(objs); // Construct from different type
 
@@ -296,6 +288,22 @@ TEST_F(hxarray_test, assignment) {
 	}
 
 	EXPECT_TRUE(Check_totals(6));
+}
+
+TEST_F(hxarray_test, ops) {
+	{
+		hxarray<test_object> objs;
+		objs.reserve(10);
+
+		objs += hxarray<test_object>{ 1, 7, 11 };
+
+		hxarray<test_object> objs2 { 10, 70, 110 };
+		objs += objs2;
+
+		hxarray<test_object> objs3 { 1, 7, 11, 10, 70, 110 };
+
+		EXPECT_TRUE(hxkey_equal(objs, objs3));
+	}
 }
 
 #if HX_HOSTED

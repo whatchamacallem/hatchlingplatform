@@ -17,7 +17,7 @@ HX_ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
 	-pedantic-errors -Wfatal-errors"
 
-HX_FLAGS="-m32 -ffast-math -ggdb3 -fdiagnostics-absolute-paths"
+HX_FLAGS="-m32 -ggdb3 -fdiagnostics-absolute-paths"
 
 # Build artifacts are not retained.
 rm -rf ./bin; mkdir ./bin && cd ./bin
@@ -29,11 +29,11 @@ clang $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
 
 # Make a pch just in case it helps.
 clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
-	-std=c++17 -pthread -fno-exceptions -fno-rtti ../include/hx/hatchling_pch.hpp \
+	-std=c++20 -pthread -fno-exceptions -fno-rtti ../include/hx/hatchling_pch.hpp \
 	-o hatchling_pch.hpp.pch
 
 clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
-	-std=c++17 -pthread -fno-exceptions -fno-rtti -include-pch hatchling_pch.hpp.pch \
+	-std=c++20 -pthread -fno-exceptions -fno-rtti -include-pch hatchling_pch.hpp.pch \
 	../*/*.cpp *.o -lpthread -lstdc++ -lm -o hxtest
 
 # turn off tracing silently and make sure the command returns 0.

@@ -17,9 +17,12 @@
 template<typename T_, size_t capacity_=hxallocator_dynamic_capacity>
 class hxarray : public hxallocator<T_, capacity_> {
 public:
+	/// Publishes the value type.
 	typedef T_ value_t;
-	typedef T_* iterator; /// Random access iterator.
-	typedef const T_* const_iterator; /// Const random access iterator.
+	/// Random access iterator.
+	typedef T_* iterator;
+	/// Const random access iterator.
+	typedef const T_* const_iterator;
 
 	/// Constructs an empty array with a capacity of Capacity. m_end_ will be 0
 	/// if Capacity is 0.
@@ -45,15 +48,24 @@ public:
 	/// - `x` : A non-temporary Array<T>.
 	hxarray(const hxarray& x_) : hxallocator<T_, capacity_>() {
 		m_end_ = this->data();
-		this->assign(x_.cbegin(), x_.cend());
+		this->assign(x_.begin(), x_.end());
 	}
 
-	/// Copy construct from temporary using `swap`. Only works with
+	/// Copy constructs an array. Non-explicit to allow assignment constructor.
+	/// - `x` : A non-temporary Array<T>.
+	template <size_t capacity2_>
+	hxarray(const hxarray<T_, capacity2_>& x_) : hxallocator<T_, capacity_>() {
+		m_end_ = this->data();
+		this->assign(x_.begin(), x_.end());
+	}
+
+	/// Copy construct from a temporary using `swap`. Refuses to copy construct
+	/// from a statically allocated temporary for efficiency. Only works with
 	/// `hxallocator_dynamic_capacity`. Dynamically allocated arrays are swapped
 	/// with very little overhead.
 	/// - `x` : A temporary Array<T>.
 	hxarray(hxarray&& x_) : hxarray() {
-		this->swap(x_);
+		this->swap(x_); // N.B. Requires capacity 0 to compile.
 	}
 
 #if HX_HOSTED
@@ -68,39 +80,21 @@ public:
 	}
 #endif
 
-	/// Copy constructs an array from the elements of a container with random
-	/// access iterators. (Non-standard.)
-	/// - `x` : Any container implementing begin and end.
-	template <typename x_t_>
-	hxarray(const x_t_& x_) : hxallocator<T_, capacity_>() {
-		m_end_ = this->data();
-		this->assign(x_.begin(), x_.end());
-	}
-
-	/// Moves the elements from an array of a container with random access
-	/// iterators. Less efficient than `hxarray(hxarray&&)` (Non-standard.)
-	/// - `x` : Any container implementing begin and end.
-	template <typename x_t_>
-	hxarray(x_t_&& x_) : hxallocator<T_, capacity_>() {
-		m_end_ = this->data();
-		this->move(x_.begin(), x_.end());
-	}
-
 	/// Destructs the array and destroys all elements.
-#if HX_CPLUSPLUS >= 202002L
-	constexpr
-#endif
 	~hxarray(void) {
 		this->destruct_(this->data(), m_end_);
 	}
 
-	/// Appends an element.  (Non-standard.)
-	/// Vector math is not a goal so this should not end up overloaded.
+	/// Appends an element.  (Non-standard.) Vector math is not a goal so this
+	/// should not end up overloaded.
 	/// - `x` : An object to append. Not a temporary.
 	void operator+=(const T_& x_) {
 		::new(this->emplace_back_unconstructed()) T_(x_);
 	}
 
+	/// Appends an element.  (Non-standard.) Vector math is not a goal so this
+	/// should not end up overloaded.
+	/// - `x` : An object to append. Passed as a temporary.
 	void operator+=(T_&& x_) {
 		::new(this->emplace_back_unconstructed()) T_(hxmove(x_));
 	}
@@ -114,14 +108,17 @@ public:
 		}
 	}
 
+	/// Appends the contents of another array.  (Non-standard, from Python.)
+	/// Vector math is not a goal so this should not end up overloaded.
+	/// - `x` : Another array passed as a temporary.
 	void operator+=(hxarray&& x_) {
 		for(const T_ *it_ = x_.begin(), *end_ = x_.end(); it_ != end_; ++it_) {
 			::new(this->emplace_back_unconstructed()) T_(hxmove(*it_));
 		}
 	}
 
-	/// Assigns the contents of another hxarray to this array.
-	/// Standard except reallocation is disallowed.
+	/// Assigns the contents of another hxarray to this array. Standard except
+	/// reallocation is disallowed.
 	/// - `x` : A non-temporary Array<T>.
 	void operator=(const hxarray& x_) {
 		this->assign(x_.begin(), x_.end());
@@ -165,11 +162,6 @@ public:
 		return this->data()[index_];
 	}
 
-	/// Check if array is empty by casting it to bool. (Non-standard, from Python.)
-	operator bool(void) const {
-		return !this->empty();
-	}
-
 	/// Constructs an array of T from an array of U. (Non-standard.)
 	/// - `a` : The array.
 	/// - `Sz` : Its size.
@@ -210,7 +202,8 @@ public:
 	/// Returns an iterator to the beginning of the array.
 	T_* begin(void) { return this->data(); }
 
-	/// Returns a const_iterator to the beginning of the array (alias for begin()).
+	/// Returns a const_iterator to the beginning of the array (alias for
+	/// begin()).
 	const T_* cbegin(void) const { return this->data(); }
 
 	/// Returns a const_iterator to the end of the array.
@@ -222,19 +215,19 @@ public:
 		m_end_ = this->data();
 	}
 
-	/// Variant of emplace_back() that returns a pointer for use with placement new.
-	/// (Non-standard.)
+	/// Variant of emplace_back() that returns a pointer for use with placement
+	/// new. (Non-standard.)
 	void* emplace_back_unconstructed(void) {
 		hxassertmsg(!this->full(), "stack_overflow");
 		return (void*)m_end_++;
 	}
 
-	/// Returns true if the arrays compare as equivalent. This version takes a functor for
-	/// key comparison.
+	/// Returns true if the arrays compare as equivalent. This version takes a
+	/// functor for key comparison.
 	/// - `x` : The other array.
 	/// - `equal` : A key comparison functor definining an equivalence relationship.
-	template<typename equal_t_>
-	bool equal(const hxarray& x_, const equal_t_& equal_) const {
+	template<typename equal_t_, size_t capacity_x_>
+	bool equal(const hxarray<T_, capacity_x_>& x_, const equal_t_& equal_) const {
 		if(this->size() != x_.size()) {
 			return false;
 		}
@@ -249,8 +242,9 @@ public:
 
 	/// Returns true if the arrays compare equivalent using hxkey_equal.
 	/// - `x` : The other array.
-	bool equal(const hxarray& x_) const {
-		return x_.equal(x_, hxkey_equal_function<T_>());
+	template<size_t capacity_x_>
+	bool equal(const hxarray<T_, capacity_x_>& x_) const {
+		return x_.equal(x_, hxkey_equal_functiontion<T_, T_>());
 	}
 
 	/// Returns true if the array is empty.
@@ -282,8 +276,8 @@ public:
 		this->erase(this->data() + index_);
 	}
 
-	/// Variant of erase() that moves the end element down to replace the erased element.
-	/// (Non-standard.)
+	/// Variant of erase() that moves the end element down to replace the erased
+	/// element. (Non-standard.)
 	/// - `pos` : Pointer to the element to erase.
 	void erase_unordered(T_* pos_) {
 		hxassertmsg(pos_ >= this->data() && pos_ < m_end_, "invalid_iterator");
@@ -293,8 +287,8 @@ public:
 		m_end_->~T_();
 	}
 
-	/// Variant of erase() that moves the end element down to replace erased element.
-	/// (Non-standard.)
+	/// Variant of erase() that moves the end element down to replace erased
+	/// element. (Non-standard.)
 	/// - `index` : The index of the element to erase.
 	void erase_unordered(size_t index_) {
 		hxassertmsg(index_ < this->size(), "invalid_index");
@@ -339,20 +333,10 @@ public:
 		return m_end_ == this->data() + this->capacity();
 	}
 
-	/// Returns true when the array is full (size equal capacity). (Non-standard.)
+	/// Returns true when the array is full (size equal capacity).
+	/// (Non-standard.)
 	bool full(void) {
 		return this->size() == this->capacity();
-	}
-
-	/// Hash together all the elements and return the result. Uses hxkeyhash which
-	/// can be overloaded. Uses FNV-1a hash (modified).
-	hxhash_t hash() const {
-		hxhash_t x_ = (hxhash_t)0x9e3779b9;
-		for(T_ *it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
-			x_ ^= hxkey_hash(*it_);
-			x_ *= (hxhash_t)0x01000193;
-		}
-		return x_;
 	}
 
 	/// Inserts the element at the offset indicated. `insert(begin(), x)` and
@@ -416,13 +400,13 @@ public:
 		this->insert(this->data() + index_, hxmove(t_));
 	}
 
-	/// Returns true if this array compares as less than x. Sorts [1] before [1,2].
-	/// This version takes two functors for key comparison.
+	/// Returns true if this array compares as less than x. Sorts [1] before
+	/// [1,2]. This version takes two functors for key comparison.
 	/// - `x` : The other array.
 	/// - `less` : A key comparison functor definining a less-than ordering relationship.
 	/// - `equal` : A key comparison functor definining an equivalence relationship.
-	template<typename less_t_, typename equal_t_>
-	bool less(const hxarray& x_, const less_t_& less_, const equal_t_& equal_) const {
+	template<typename less_t_, typename equal_t_, size_t capacity_x_>
+	bool less(const hxarray<T_, capacity_x_>& x_, const less_t_& less_, const equal_t_& equal_) const {
 		size_t sz_ = hxmin(this->size(), x_.size());
 		for(const T_ *it0_ = this->data(), *it1_ = x_.data(), *end_ = it0_ + sz_;
 				it0_ != end_; ++it0_, ++it1_) {
@@ -439,8 +423,9 @@ public:
 	/// and `hxkey_less`.
 	/// Sorts `[1]` before `[1,2]`.
 	/// - `x` : The other array.
-	bool less(const hxarray& x_) const {
-		return this->less(x_, hxkey_less_function<T_>(), hxkey_equal_function<T_>());
+	template<size_t capacity_x_>
+	bool less(const hxarray<T_, capacity_x_>& x_) const {
+		return this->less(x_, hxkey_less_function<T_>(), hxkey_equal_function<T_, T_>());
 	}
 
 	/// Move elements from a range defined by iterators.
@@ -548,8 +533,9 @@ public:
 		return sizeof(T_) * (size_t)(m_end_ - this->data());
 	}
 
-	/// Swap contents with a temporary array. Only works with `hxallocator_dynamic_capacity`.
-	/// Dynamically allocated arrays are swapped with very little overhead.
+	/// Swap contents with a temporary array. Only works with
+	/// `hxallocator_dynamic_capacity`. Dynamically allocated arrays are swapped
+	/// with very little overhead.
 	/// - `x` : The array to swap with.
 	void swap(hxarray& x_) {
 		// NOTA BENE Only hxallocator_dynamic_capacity works here.
@@ -558,9 +544,7 @@ public:
 	}
 
 private:
-	// Destroys elements in the range [begin, end].
-	// - begin: Pointer to the beginning of the range.
-	// - end: Pointer to the end of the range.
+	// Destroys elements in the range [begin, end).
 	void destruct_(T_* begin_, T_* end_) {
 		while (begin_ != end_) {
 			begin_++->~T_();
@@ -571,21 +555,15 @@ private:
 
 /// `bool hxequal(hxarray<T>& x, hxarray<T>& y)` - Compares the contents of x
 /// and y for equivalence.
-template<typename T_>
-bool hxkey_equal(const hxarray<T_>& x_, const hxarray<T_>& y_) {
-	return x_.equal(y_);
-}
-
-/// `hxhash_t hxhash(hxarray<T>& x)` - Hashes the contents of x.
-template<typename T_>
-hxhash_t hxhash(const hxarray<T_>& x_) {
-	return x_.hash();
+template<typename T_, size_t capacity_x_, size_t capacity_y_>
+bool hxkey_equal(const hxarray<T_, capacity_x_>& x_, const hxarray<T_, capacity_y_>& y_) {
+    return x_.equal(y_);
 }
 
 /// `bool hxkey_less(hxarray<T>& x, hxarray<T>& y)` - Compares the contents of
 // x and y using hxkey_equal and hxkey_less on each element.
-template<typename T_>
-bool hxkey_less(const hxarray<T_>& x_, const hxarray<T_>& y_) {
+template<typename T_, size_t capacity_x_, size_t capacity_y_>
+bool hxkey_less(const hxarray<T_, capacity_x_>& x_, const hxarray<T_, capacity_y_>& y_) {
 	return x_.less(y_);
 }
 
