@@ -16,10 +16,10 @@ rm -rf ./bin; mkdir ./bin && cd ./bin
 set -o xtrace
 
 gcc -I$HX_DIR/include --coverage -O0 -g -DHX_RELEASE=0 -std=c99 \
-	-c $HX_DIR/src/*.c $HX_DIR/test/*.c
+	-Wfatal-errors -c $HX_DIR/src/*.c $HX_DIR/test/*.c
 
 g++ -I$HX_DIR/include --coverage -O0 -g -DHX_RELEASE=0 -DHX_TEST_ERROR_HANDLING=1 \
-	-fno-exceptions -pthread -lpthread -std=c++11 -lstdc++ \
+	-Wfatal-errors -fno-exceptions -pthread -lpthread -std=c++11 -lstdc++ \
 	$HX_DIR/src/*.cpp $HX_DIR/test/*.cpp *.o -o hxtest
 
 echo runtests | ./hxtest help printhashes "checkhash 0" execstdin

@@ -45,7 +45,7 @@ void operator delete[](void* ptr, size_t) noexcept {
 // hxmalloc_checked. Always check malloc and halt on failure. This is extremely
 // important with hardware where 0 is a valid address and can be written to with
 // disastrous results.
-static constexpr void* hxmalloc_checked(size_t size) {
+hxnoexcept_unchecked static void* hxmalloc_checked(size_t size) {
 	void* t = ::malloc(size);
 	hxassertrelease(t, "malloc %zu", size);
 #if (HX_RELEASE) >= 3
@@ -575,19 +575,19 @@ size_t hxmemory_manager_leak_count(void) {
 #else // HX_MEMORY_MANAGER_DISABLE
 
 extern "C"
-void* hxmalloc(size_t size) {
+hxnoexcept_unchecked void* hxmalloc(size_t size) {
 	return hxmalloc_checked(size);
 }
 
-// No support for alignment when disabled. This makes sense for WASM.
+// No support for alignment when disabled. This might make sense for WASM.
 extern "C"
-void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, size_t alignment) {
+hxnoexcept_unchecked void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, size_t alignment) {
 	(void)id; (void)alignment;
 	return hxmalloc_checked(size);
 }
 
 extern "C"
-void hxfree(void *ptr) {
+hxnoexcept_unchecked void hxfree(void *ptr) {
 	::free(ptr);
 }
 
@@ -597,14 +597,14 @@ void hxmemory_manager_shut_down(void) { }
 
 size_t hxmemory_manager_leak_count(void) { return 0; }
 
-hxsystem_allocator_scope::hxsystem_allocator_scope(hxsystem_allocator_t id)
+hxnoexcept_unchecked hxsystem_allocator_scope::hxsystem_allocator_scope(hxsystem_allocator_t id)
 {
 	(void)id;
 	m_previous_allocation_count_ = 0;
 	m_previous_bytes_allocated_ = 0;
 }
 
-hxsystem_allocator_scope::~hxsystem_allocator_scope(void) { }
+hxnoexcept_unchecked hxsystem_allocator_scope::~hxsystem_allocator_scope(void) { }
 
 size_t hxsystem_allocator_scope::get_total_allocation_count(void) const { return 0; }
 

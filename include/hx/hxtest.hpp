@@ -93,11 +93,11 @@ private:
 
 /// `InitGoogleTest` - Initializes Google Test with command-line arguments. No-op in
 /// this implementation.
-constexpr void InitGoogleTest(int *argc_, char **argv_) { (void)argc_; (void)argv_; }
+inline void InitGoogleTest(int *argc_, char **argv_) { (void)argc_; (void)argv_; }
 
 /// `InitGoogleTest` - Overloaded version of `InitGoogleTest` with no arguments. No-op
 /// in this implementation.
-constexpr void InitGoogleTest(void) { }
+inline void InitGoogleTest(void) { }
 
 } // namespace testing
 

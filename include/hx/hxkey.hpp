@@ -19,10 +19,9 @@ constexpr bool hxkey_equal(const T_& a_, const T_& b_) {
 	return a_ == b_;
 }
 
-/// `hxkey_equal(const char* a, const char* b)` - Uses a constexpr strcmp.
-constexpr bool hxkey_equal(const char* a_, const char* b_) {
-	while(*a_ != '\0' && *a_ == *b_) { ++a_; ++b_; }
-	return *a_ == '\0' && *b_ == '\0';
+/// `hxkey_equal(const char* a, const char* b)` is `strcmp(a, b) == 0`.
+inline bool hxkey_equal(const char* a_, const char* b_) {
+	return ::strcmp(a_, b_) == 0;
 }
 
 /// Utility for making function pointers to `hxkey_equal` from a partially specialized
@@ -49,10 +48,9 @@ constexpr bool hxkey_less(const T_* a_, const T_* b_) {
 	return hxkey_less(*a_, *b_);
 }
 
-/// `hxkey_less(const char*, const char*)` - Uses a constexpr "strcmp(a, b) < 0".
-constexpr bool hxkey_less(const char* a_, const char* b_) {
-	while(*a_ != '\0' && *a_ == *b_) { ++a_; ++b_; }
-	return *a_ < *b_;
+/// `hxkey_less(const char*, const char*)` is `strcmp(a, b) < 0`.
+inline bool hxkey_less(const char* a_, const char* b_) {
+	return ::strcmp(a_, b_) < 0;
 }
 
 /// Utility for making function pointers to `hxkey_less` from a partially specialized
@@ -71,7 +69,7 @@ constexpr hxhash_t hxkey_hash(T_ t_) {
 };
 
 /// `hxkey_hash(const char*)` - Uses FNV-1a string hashing.
-constexpr hxhash_t hxkey_hash(const char* k_) {
+inline hxhash_t hxkey_hash(const char* k_) {
 	hxhash_t x_ = (hxhash_t)0x811c9dc5;
 	while (*k_ != '\0') {
 		x_ ^= (hxhash_t)*k_++;

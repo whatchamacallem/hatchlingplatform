@@ -17,7 +17,7 @@ class hxhash_table_node_integer {
 public:
 	typedef key_t_ key_t;
 
-	constexpr hxhash_table_node_integer(const key_t_& key_) :
+	hxhash_table_node_integer(const key_t_& key_) :
 		m_hash_next_(hxnull), m_key_(key_) { }
 
 	/// Boilerplate for hxhash_table.
@@ -25,8 +25,8 @@ public:
 	void*& hash_next(void) { return m_hash_next_; }
 
 	/// The key and hash identify the node_t and should not change once added.
-	constexpr const key_t_& key(void) const { return m_key_; }
-	constexpr hxhash_t hash(void) const { return hxkey_hash(m_key_); };
+	const key_t_& key(void) const { return m_key_; }
+	hxhash_t hash(void) const { return hxkey_hash(m_key_); };
 
 private:
 	hxhash_table_node_integer(void) = delete;
@@ -44,7 +44,7 @@ class hxhash_table_node_string_literal : public hxhash_table_set_node<const char
 public:
 	/// Constructor initializes the node with a string key and computes its hash.
 	/// - `k` : The string key to initialize the node with.
-	constexpr hxhash_table_node_string_literal(const char* k_)
+	hxhash_table_node_string_literal(const char* k_)
 		: hxhash_table_set_node<const char*>(k_) { }
 };
 
@@ -57,7 +57,7 @@ public:
 	/// Constructor allocates and duplicates the string key, then initializes the
 	/// node.
 	/// - `k` : The string key to allocate, duplicate, and initialize the node with.
-	constexpr hxhash_table_node_string(const char* k_)
+	hxhash_table_node_string(const char* k_)
 		: hxhash_table_set_node(hxstring_duplicate(k_, allocator_)) { }
 
 	/// Destructor frees the allocated string key.

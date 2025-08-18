@@ -42,22 +42,22 @@ public:
 	void close(void);
 
 	/// Checks if the file is open.
-	constexpr bool is_open(void) const { return m_file_pimpl_ != hxnull; }
+	bool is_open(void) const { return m_file_pimpl_ != hxnull; }
 
 	/// Checks if the file stream is in a good state.
-	constexpr bool good(void) const { return m_good_; }
+	bool good(void) const { return m_good_; }
 
 	/// Checks if the end of the file has been reached.
-	constexpr bool eof(void) const { return m_eof_; }
+	bool eof(void) const { return m_eof_; }
 
 	/// Clears the state of the file stream.
-	constexpr void clear(void) {
+	void clear(void) {
 		m_good_ = m_file_pimpl_ != hxnull;
 		m_eof_ = false;
 	}
 
 	/// Returns the current open mode of the file.
-	constexpr uint16_t mode(void) const { return m_open_mode_; }
+	uint16_t mode(void) const { return m_open_mode_; }
 
 	/// Reads a specified number of bytes from the file into the provided buffer.
 	/// - `bytes` : Pointer to the buffer where the read bytes will be stored.
@@ -74,7 +74,7 @@ public:
 	/// the size of the provided char array.
 	/// - `buffer` : Reference to a char array where the line will be stored.
 	template<size_t Buffer_size_>
-	constexpr bool get_line(char(&buffer_)[Buffer_size_]) { return get_line(buffer_, Buffer_size_); }
+	bool get_line(char(&buffer_)[Buffer_size_]) { return get_line(buffer_, Buffer_size_); }
 
 	/// Reads an \n or EOF terminated character sequence. Allowed to fail on EOF
 	/// without needing to be hxfile::failable.
@@ -90,18 +90,18 @@ public:
 	/// Reads a single unformatted native endian object from the file.
 	/// - `t` : Reference to the object where the data will be stored.
 	template<typename T_>
-	constexpr bool read1(T_& t_) { return read(&t_, sizeof t_) == sizeof t_; }
+	bool read1(T_& t_) { return read(&t_, sizeof t_) == sizeof t_; }
 
 	/// Writes a single unformatted native endian object to the file.
 	/// - `t` : Reference to the object containing the data to write.
 	template<typename T_>
-	constexpr bool write1(const T_& t_) { return write(&t_, sizeof t_) == sizeof t_; }
+	bool write1(const T_& t_) { return write(&t_, sizeof t_) == sizeof t_; }
 
 	/// Read a single unformatted native endian object from a stream. The operator
 	/// >= is being used instead of >> to indicate there is no formatting.
 	/// - `t` : Reference to the object where the data will be stored.
 	template<typename T_>
-	constexpr hxfile& operator>=(T_& t_) {
+	hxfile& operator>=(T_& t_) {
 		read(&t_, sizeof t_);
 		return *this;
 	}
@@ -110,7 +110,7 @@ public:
 	/// <= is being used instead of << to indicate there is no formatting.
 	/// - `t` : Reference to the object containing the data to write.
 	template<typename T_>
-	constexpr hxfile& operator<=(const T_& t_) {
+	hxfile& operator<=(const T_& t_) {
 		write(&t_, sizeof t_);
 		return *this;
 	}
@@ -118,7 +118,7 @@ public:
 	/// Writes a string literal to the file. Supports Google Test style diagnostic messages.
 	/// - `str` : Reference to a string literal to write to the file.
 	template<size_t string_length_>
-	constexpr hxfile& operator<<(const char(&str_)[string_length_]) {
+	hxfile& operator<<(const char(&str_)[string_length_]) {
 		hxassertmsg(::strlen(str_) == (string_length_-1), "bad_string");
 		write(str_, string_length_-1);
 		return *this;
@@ -127,7 +127,7 @@ public:
 private:
 	hxfile(const hxfile&) = delete;
 	void operator=(const hxfile&) = delete;
-	template<typename T_> constexpr hxfile& operator>>(const T_* t_) = delete;
+	template<typename T_> hxfile& operator>>(const T_* t_) = delete;
 
 	// Internal function to open a file with a formatted filename and variable arguments.
 	bool openv_(uint16_t mode_, const char* format_, va_list args_);

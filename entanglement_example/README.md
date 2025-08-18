@@ -17,6 +17,8 @@
 
 ## Overview of entanglement.py
 
+*This is an alpha release.*
+
 `entanglement.py` is a Python binding generator that automatically creates
 Python interfaces for C++ shared libraries. This command-line tool uses Clang to
 parse C++ header files annotated with `<entanglement.h>` macros and generates
@@ -30,8 +32,6 @@ interfaces should be a lot easier to use with entanglement.py. Also, Python uses
 memcpy to return classes by value from a method or function. This is because it
 is a foreign language that does not support the C++ lifecycle natively and will
 result in missing C++ constructor calls.
-
-*This is an alpha release.*
 
 ## Project Goals and Comparison with Other Projects
 

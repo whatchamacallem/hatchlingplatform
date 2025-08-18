@@ -39,10 +39,10 @@ namespace hxdetail_ {
 // Console tokens are delimited by any whitespace and non-printing low-ASCII
 // characters. `NUL` is considered a delimiter and must be checked for separately.
 // This happens to be UTF-8 compatable because it ignores characters `>= U+0100`.
-constexpr static bool hxconsole_is_delimiter_(char ch_) { return ch_ <= 32; }
+inline bool hxconsole_is_delimiter_(char ch_) { return ch_ <= 32; }
 
 // Checks for printing characters.
-constexpr static bool hxconsole_is_end_of_line_(const char* str_) {
+inline bool hxconsole_is_end_of_line_(const char* str_) {
 	while (*str_ != '\0' && hxconsole_is_delimiter_(*str_)) {
 		++str_;
 	}
@@ -60,21 +60,21 @@ private:
 };
 template<> class hxconsole_arg_<hxconsolenumber_t> {
 public:
-	inline hxconsole_arg_(const char* str_, char** next_) : value_(::strtod(str_, next_)) { }
-	constexpr static const char* get_label_(void) { return "f64"; }
+	hxconsole_arg_(const char* str_, char** next_) : value_(::strtod(str_, next_)) { }
+	static const char* get_label_(void) { return "f64"; }
 	hxconsolenumber_t value_;
 };
 template<> class hxconsole_arg_<hxconsolehex_t> {
 public:
-	inline hxconsole_arg_(const char* str_, char** next_) : value_(::strtoull(str_, next_, 16)) { }
-	constexpr static const char* get_label_(void) { return "hex"; }
+	hxconsole_arg_(const char* str_, char** next_) : value_(::strtoull(str_, next_, 16)) { }
+	static const char* get_label_(void) { return "hex"; }
 	hxconsolehex_t value_;
 };
 // const char* args capture remainder of line including comments starting with #'s.
 // Leading whitespace is discarded and string may be empty.
 template<> class hxconsole_arg_<const char*> {
 public:
-	inline hxconsole_arg_(const char* str_, char** next_) {
+	hxconsole_arg_(const char* str_, char** next_) {
 		while (*str_ != '\0' && hxconsole_is_delimiter_(*str_)) {
 			++str_;
 		}
@@ -84,7 +84,7 @@ public:
 		while(*str_ != '\0') { ++str_; }
 		*next_ = const_cast<char*>(str_);
 	}
-	constexpr static const char* get_label_(void) { return "char*"; }
+	static const char* get_label_(void) { return "char*"; }
 	const char* value_;
 };
 
@@ -116,7 +116,7 @@ public:
 
 class hxconsole_command0_ : public hxconsole_command_ {
 public:
-	inline hxconsole_command0_(bool(*fn_)()) : m_fn_(fn_) { }
+	hxconsole_command0_(bool(*fn_)()) : m_fn_(fn_) { }
 
 	virtual bool execute_(const char* str_) override {
 		if(hxconsole_is_end_of_line_(str_)) {
@@ -136,7 +136,7 @@ private:
 template<typename A_>
 class hxconsole_command1_ : public hxconsole_command_ {
 public:
-	inline hxconsole_command1_(bool(*fn_)(A_)) : m_fn_(fn_) { }
+	hxconsole_command1_(bool(*fn_)(A_)) : m_fn_(fn_) { }
 	virtual bool execute_(const char* str_) override {
 		char* ptr_ = const_cast<char*>(str_);
 		hxconsole_arg_<A_> arg1_(str_, &ptr_);
@@ -156,7 +156,7 @@ private:
 template<typename arg1_t_, typename arg2_t_>
 class hxconsole_command2_ : public hxconsole_command_ {
 public:
-	inline hxconsole_command2_(bool(*fn_)(arg1_t_, arg2_t_)) : m_fn_(fn_) { }
+	hxconsole_command2_(bool(*fn_)(arg1_t_, arg2_t_)) : m_fn_(fn_) { }
 	virtual bool execute_(const char* str_) override {
 		char* p_a_ = const_cast<char*>(str_);
 		char* p_b_ = const_cast<char*>(str_);
@@ -180,7 +180,7 @@ private:
 template<typename arg1_t_, typename arg2_t_, typename arg3_t_>
 class hxconsole_command3_ : public hxconsole_command_ {
 public:
-	inline hxconsole_command3_(bool(*fn_)(arg1_t_, arg2_t_, arg3_t_)) : m_fn_(fn_) { }
+	hxconsole_command3_(bool(*fn_)(arg1_t_, arg2_t_, arg3_t_)) : m_fn_(fn_) { }
 	virtual bool execute_(const char* str_) override {
 		char* p_a_ = const_cast<char*>(str_);
 		char* p_b_ = const_cast<char*>(str_);
@@ -208,7 +208,7 @@ private:
 template<typename arg1_t_, typename arg2_t_, typename arg3_t_, typename arg4_t_>
 class hxconsole_command4_ : public hxconsole_command_ {
 public:
-	inline hxconsole_command4_(bool(*fn_)(arg1_t_, arg2_t_, arg3_t_, arg4_t_)) : m_fn_(fn_) { }
+	hxconsole_command4_(bool(*fn_)(arg1_t_, arg2_t_, arg3_t_, arg4_t_)) : m_fn_(fn_) { }
 	virtual bool execute_(const char* str_) override {
 		char* p_a_ = const_cast<char*>(str_);
 		char* p_b_ = const_cast<char*>(str_);
@@ -239,7 +239,7 @@ private:
 template<typename T_>
 class hxconsole_variable_ : public hxconsole_command_ {
 public:
-	inline hxconsole_variable_(volatile T_* var_) : m_var_(var_) { }
+	hxconsole_variable_(volatile T_* var_) : m_var_(var_) { }
 
 	// Use execute_number_ to avoid template bloat.
 	virtual bool execute_(const char* str_) override {
@@ -332,7 +332,7 @@ class hxconsole_hash_table_node_ {
 public:
 	typedef hxconsole_hash_table_key_ key_t;
 
-	inline hxconsole_hash_table_node_(hxconsole_hash_table_key_ key_)
+	hxconsole_hash_table_node_(hxconsole_hash_table_key_ key_)
 			: m_hash_next_(hxnull), m_key_(key_), m_hash_(hxkey_hash(key_)), m_command_(hxnull) {
 		if ((HX_RELEASE) < 1) {
 			const char* k_ = key_.str_;
@@ -366,7 +366,7 @@ void hxconsole_register_(hxconsole_hash_table_node_* node);
 class hxconsole_constructor_ {
 public:
 	template<typename Command_>
-	inline hxconsole_constructor_(Command_ fn_, const char* id_)
+	hxconsole_constructor_(Command_ fn_, const char* id_)
 			: m_node_(hxconsole_hash_table_key_(id_)) {
 		::new(m_storage_ + 0) Command_(fn_);
 		m_node_.set_command_((Command_*)(m_storage_ + 0));

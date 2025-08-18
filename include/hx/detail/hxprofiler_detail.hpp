@@ -57,13 +57,13 @@ public:
 	void write_to_chrome_tracing_(const char* filename);
 
 	// For testing
-	inline size_t records_size_(void) { return m_records.size(); }
-	inline void records_clear_(void) { m_records.clear(); }
+	size_t records_size_(void) { return m_records.size(); }
+	void records_clear_(void) { m_records.clear(); }
 
 private:
 	class hxprofiler_record_ {
 	public:
-		inline explicit hxprofiler_record_(size_t begin_, size_t end_, const char* label_, uint32_t thread_id_)
+		explicit hxprofiler_record_(size_t begin_, size_t end_, const char* label_, uint32_t thread_id_)
 			: m_label_(label_), m_begin_(begin_), m_end_(end_), m_thread_id_(thread_id_) {
 		}
 		const char* m_label_;
@@ -86,7 +86,7 @@ template<hxcycles_t min_cycles_=0u>
 class hxprofiler_scope_internal_ {
 public:
 	// See hxprofile_scope() below.
-	inline hxprofiler_scope_internal_(const char* label_string_literal_)
+	hxprofiler_scope_internal_(const char* label_string_literal_)
 		: m_label_(label_string_literal_)
 	{
 		// fastest not to check if the profiler is running.

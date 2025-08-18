@@ -15,11 +15,11 @@ namespace hxdetail_ {
 template<typename node_t_, hxhash_t table_size_bits_>
 class hxhash_table_internal_allocator_ : public hxallocator<node_t_*, 1u << table_size_bits_> {
 public:
-	constexpr hxhash_table_internal_allocator_(void) {
+	hxhash_table_internal_allocator_(void) {
 		::memset(this->data(), 0x00, sizeof(node_t_*) * this->capacity());
 	}
-	constexpr hxhash_t get_table_size_bits(void) const { return table_size_bits_; }
-	constexpr void set_table_size_bits(hxhash_t bits) {
+	hxhash_t get_table_size_bits(void) const { return table_size_bits_; }
+	void set_table_size_bits(hxhash_t bits) {
 		hxassertmsg(bits == table_size_bits_, "fixed_capacity"); (void)bits;
 	}
 };
@@ -28,14 +28,14 @@ template<typename node_t_>
 class hxhash_table_internal_allocator_<node_t_, hxallocator_dynamic_capacity>
 	: public hxallocator<node_t_*, hxallocator_dynamic_capacity> {
 public:
-	constexpr hxhash_table_internal_allocator_() : m_table_size_bits_(0u) { }
+	hxhash_table_internal_allocator_() : m_table_size_bits_(0u) { }
 
-	constexpr hxhash_t get_table_size_bits(void) const {
+	hxhash_t get_table_size_bits(void) const {
 		hxassertmsg(m_table_size_bits_ != 0u, "container_unallocated");
 		return m_table_size_bits_;
 	}
 
-	constexpr void set_table_size_bits(hxhash_t bits_) {
+	void set_table_size_bits(hxhash_t bits_) {
 		hxassertmsg(m_table_size_bits_ == 0u || bits_ == m_table_size_bits_, "reallocation_disallowed");
 		if (m_table_size_bits_ == 0u) {
 			hxassertmsg(bits_ > 0u && bits_ <= 31u, "bad_hash_bits %d", (int)bits_);

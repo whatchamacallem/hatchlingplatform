@@ -27,12 +27,12 @@
 #include <stdbool.h>
 #endif
 
-/// `HATCHLING_VER` - Major, minor and patch versions. Odd versions are
-/// development branches.
-#define HATCHLING_VER 0x030105u
-/// `HATCHLING_TAG` - Major, minor and patch version tag. Odd versions are
-/// development branches and end in `-dev`.
-#define HATCHLING_TAG "v3.1.5-dev"
+/// `HATCHLING_VER` - Major, minor and patch versions. Odd numbered minor
+/// versions are development branches.
+#define HATCHLING_VER 0x030200u
+/// `HATCHLING_TAG` - Major, minor and patch version tag. Odd numbered minor
+/// versions are development branches and end in `-dev`.
+#define HATCHLING_TAG "v3.2.0"
 
 #include <hx/hxsettings.h>
 #include <hx/hxmemory_manager.h>

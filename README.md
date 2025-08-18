@@ -128,6 +128,11 @@ to resurrect.
 - python 3.12.3
 - c99 c17 c++11 c++14 c++17
 
+## Remaining Tasks
+
+- constexpr compatible asserts.
+- Find and test realistic compile-time use cases for constexpr.
+
 ## License
 
 © 2017-2025 Adrian Johnston. This project is licensed under the terms of the LICENSE.md file.

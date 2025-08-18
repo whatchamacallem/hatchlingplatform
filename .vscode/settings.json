@@ -15,6 +15,7 @@
         "clib",
         "cntvct",
         "CONSTANTARRAY",
+        "constexpr",
         "constness",
         "ctypes",
         "ctypeslib",

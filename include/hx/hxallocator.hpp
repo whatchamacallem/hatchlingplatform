@@ -74,15 +74,12 @@ public:
 	typedef T_ value_t;
 
 	/// Does not allocate until reserve_storage() is called.
-	constexpr hxallocator(void) {
+	hxallocator(void) {
 		m_data_ = hxnull;
 		m_capacity_ = 0u;
 	}
 
 	/// Calls hxfree() with any allocated memory.
-#if HX_CPLUSPLUS >= 202002L
-	constexpr
-#endif
 	~hxallocator(void) {
 		if (m_data_) {
 			m_capacity_ = 0u;
@@ -92,16 +89,16 @@ public:
 	}
 
 	/// Returns the number of elements of T allocated.
-	constexpr size_t capacity(void) const { return m_capacity_; }
+	size_t capacity(void) const { return m_capacity_; }
 
 	/// Returns a const array of T.
-	constexpr const T_* data(void) const { return m_data_; }
+	const T_* data(void) const { return m_data_; }
 
 	/// Returns an array of T.
-	inline T_* data(void) { return m_data_; }
+	T_* data(void) { return m_data_; }
 
 	/// Swap. Only works with fixed_capacity_ == hxallocator_dynamic_capacity
-	constexpr void swap(hxallocator& rhs) {
+	void swap(hxallocator& rhs) {
 		hxswap(m_capacity_, rhs.m_capacity_);
 		hxswap(m_data_, rhs.m_data_);
 	}
@@ -111,7 +108,7 @@ protected:
 	/// - `size` : The number of elements of type T to allocate space for.
 	/// - `allocator` : The memory manager ID to use for allocation (default: hxsystem_allocator_current)
 	/// - `alignment` : The alignment to for the allocation. (default: HX_ALIGNMENT)
-	constexpr void reserve_storage(size_t size_,
+	void reserve_storage(size_t size_,
 			hxsystem_allocator_t allocator_=hxsystem_allocator_current,
 			uintptr_t alignment_=HX_ALIGNMENT) {
 		if (size_ <= m_capacity_) { return; }
