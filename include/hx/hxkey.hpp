@@ -10,13 +10,25 @@
 
 #include <hx/hatchling.h>
 
+#if HX_CPLUSPLUS >= 202002L
+/// A concept that requires one type to be convertible to another. See usage
+/// below. There are strange rules for how the compiler uses this.
+template<typename from_t_, typename to_t_>
+concept hxconvertible_to = requires(from_t_ (&from_)()) {
+	// from_ is an unexecuted function pointer used to provide a from_t_.
+    requires requires { static_cast<to_t_>(from_()); };
+};
+#endif
+
 /// `hxkey_equal(const A& a, const B& b)` - Compares two objects for
 /// equivalence. If your key type doesn't support `operator==` then this
 /// function may need to be overridden for your key type(s). Function overloads
 /// are evaluated when and where the derived container is instantiated and need
 /// to be consistently available.
 template<typename A_, typename B_>
-requires requires(A_ a_, B_ b_) { a_ == b_; }
+#if HX_CPLUSPLUS >= 202002L
+requires requires(A_ a_, B_ b_) { { a_ == b_ } -> hxconvertible_to<bool>; }
+#endif
 constexpr bool hxkey_equal(const A_& a_, const B_& b_) {
     return a_ == b_;
 }
@@ -30,8 +42,8 @@ inline bool hxkey_equal(const char* a_, const char* b_) {
 /// specialized set of overloaded functions. E.g.
 /// `hxkey_equal_function<int>()(1, 7)`
 template<typename A_, typename B_>
-inline bool(*hxkey_equal_functiontion(void))(const A_&, const B_&) {
-	return static_cast<bool(*)(const A_&, const A_&)>(hxkey_equal<A_, B_>);
+inline bool(*hxkey_equal_function(void))(const A_&, const B_&) {
+	return static_cast<bool(*)(const A_&, const B_&)>(hxkey_equal<A_, B_>);
 }
 
 /// `hxkey_less(const T&, const T&)` - User overloadable function for performing
@@ -39,7 +51,9 @@ inline bool(*hxkey_equal_functiontion(void))(const A_&, const B_&) {
 /// operators can be written using `operator<`. However hxkey_equal is also used
 /// for efficiency.
 template<typename A_, typename B_>
-requires requires(A_ a_, B_ b_) { a_ < b_; }
+#if HX_CPLUSPLUS >= 202002L
+requires requires(A_ a_, B_ b_) { { a_ < b_ } -> hxconvertible_to<bool>; }
+#endif
 constexpr bool hxkey_less(const A_& a_, const B_& b_) {
 	return a_ < b_;
 }
@@ -50,7 +64,9 @@ constexpr bool hxkey_less(const A_& a_, const B_& b_) {
 /// pointers are from the same array. For example the compiler may silently
 /// ignore comparisons between function pointers.
 template<typename A_, typename B_>
-requires requires(A_ a_, B_ b_) { a_ < b_; }
+#if HX_CPLUSPLUS >= 202002L
+requires requires(A_ a_, B_ b_) { { a_ < b_ } -> hxconvertible_to<bool>; }
+#endif
 constexpr bool hxkey_less(const A_* a_, const B_* b_) {
 	return hxkey_less(*a_, *b_);
 }

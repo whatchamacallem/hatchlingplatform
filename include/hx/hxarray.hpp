@@ -139,15 +139,6 @@ public:
 		this->assign(x_.begin(), x_.end());
 	}
 
-	/// Moves the elements from an array of a container with random access
-	/// iterators. Less efficient than `hxarray::operator=(hxarray&&)`
-	/// (Non-standard.)
-	/// - `x` : Any container implementing begin and end.
-	template <typename x_t_>
-	void operator=(x_t_&& x_) {
-		this->move(x_.begin(), x_.end());
-	}
-
 	/// Returns a const reference to the element at the specified index.
 	/// - `index` : The index of the element.
 	const T_& operator[](size_t index_) const {
@@ -244,7 +235,7 @@ public:
 	/// - `x` : The other array.
 	template<size_t capacity_x_>
 	bool equal(const hxarray<T_, capacity_x_>& x_) const {
-		return x_.equal(x_, hxkey_equal_functiontion<T_, T_>());
+		return this->equal(x_, hxkey_equal_function<T_, T_>());
 	}
 
 	/// Returns true if the array is empty.
@@ -308,7 +299,8 @@ public:
 	/// Lambdas and `std::function` can be provided as temporaries and that has
 	/// to be allowed. The `&&` variant of `functor_t::operator()` is being
 	/// selected using `hxmove`. This is a traditional way to signal to the
-	/// functor that it is a temporary. `fn` - A function like object.
+	/// functor that it is a temporary.
+	/// `fn` - A function like object.
 	template<typename functor_t_>
 	void for_each(functor_t_&& fn_) {
 		for(T_ *it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
@@ -341,19 +333,20 @@ public:
 
 	/// Inserts the element at the offset indicated. `insert(begin(), x)` and
 	/// `insert(end(), x)` will work as long as the array is allocated.
-	/// `T::T(T&&)` and `T::operator=(T&&)` will be used when available.
+	/// `T::T(T&&)` and `T::operator=(T&&)` will be used when available. Values
+	/// are shifted with hxmove even though the new element is just copied.
 	/// - `pos` : Pointer to the location to insert the new element at.
 	/// - `t` : The new element.
 	void insert(T_* pos_, const T_& t_) {
-		hxassertmsg(pos_ >= this->data() && pos_ < m_end_, "invalid_iterator");
+		hxassertmsg(pos_ >= this->data() && pos_ < m_end_ && !this->full(), "invalid_insert");
 		T_* it_ = m_end_++;
 		if(it_ == this->data()) {
 			// Single constructor call for first element.
 			::new (it_) T_(t_);
 		}
 		else {
-			// A constructor for a new element followed by a series of
-			// assignments.
+			// A move constructor for a new end element followed by a series of
+			// move operations ending with a constructor for the copy.
 			::new(it_) T_(hxmove<T_>(it_[-1]));
 			--it_;
 			while(pos_ < it_) {
@@ -369,35 +362,8 @@ public:
 	/// - `index` : Index of the location to insert the new element at.
 	/// - `x` : The new element.
 	void insert(size_t index_, const T_& t_) {
-		hxassertmsg(index_ < this->size(), "invalid_index");
+		hxassertmsg(index_ <= this->size(), "invalid_index");
 		this->insert(this->data() + index_, t_);
-	}
-
-	/// Move version of `insert(T* pos, T& t)`.
-	void insert(T_* pos_, T_&& t_) {
-		hxassertmsg(pos_ >= this->data() && pos_ < m_end_, "invalid_iterator");
-		T_* it_ = m_end_++;
-		if(it_ == this->data()) {
-			// Single constructor call for first element.
-			::new (it_) T_(hxmove<T_>(t_));
-		}
-		else {
-			// A constructor for a new element followed by a series of
-			// assignments.
-			::new(it_) T_(hxmove<T_>(it_[-1]));
-			--it_;
-			while(pos_ < it_) {
-				*it_ = hxmove<T_>(it_[-1]);
-				--it_;
-			}
-			*it_ = hxmove<T_>(t_);
-		}
-	}
-
-	/// Move version of `insert(size_t index, T& t)`.
-	void insert(size_t index_, T_&& t_) {
-		hxassertmsg(index_ < this->size(), "invalid_index");
-		this->insert(this->data() + index_, hxmove(t_));
 	}
 
 	/// Returns true if this array compares as less than x. Sorts [1] before
@@ -425,7 +391,7 @@ public:
 	/// - `x` : The other array.
 	template<size_t capacity_x_>
 	bool less(const hxarray<T_, capacity_x_>& x_) const {
-		return this->less(x_, hxkey_less_function<T_>(), hxkey_equal_function<T_, T_>());
+		return this->less(x_, hxkey_less_function<T_, T_>(), hxkey_equal_function<T_, T_>());
 	}
 
 	/// Move elements from a range defined by iterators.
@@ -553,6 +519,11 @@ private:
 	T_* m_end_;
 };
 
+// The array overloads of hxkey_equal, hxkey_less and hxswap are C++20 only.
+// Without the "requires" keyword these end up being ambiguous. Use T::equal,
+// T::less and T::swap. Use C++20 if you want to use arrays as generic keys.
+#if HX_CPLUSPLUS >= 202002L
+
 /// `bool hxequal(hxarray<T>& x, hxarray<T>& y)` - Compares the contents of x
 /// and y for equivalence.
 template<typename T_, size_t capacity_x_, size_t capacity_y_>
@@ -574,3 +545,5 @@ template<typename T_>
 void hxswap(const hxarray<T_>& x_, const hxarray<T_>& y_) {
 	x_.swap(y_);
 }
+
+#endif // HX_CPLUSPLUS >= 202002L

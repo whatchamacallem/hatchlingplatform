@@ -10,24 +10,24 @@
 #error #include <hx/hatchling.h> instead
 #endif
 
-/// `HX_RELEASE` - C/C++ optimization level. See the README.md for levels 0..3.
 #if !defined HX_RELEASE
 #if defined NDEBUG
 #define HX_RELEASE 1
 #else
+/// `HX_RELEASE` - C/C++ optimization level. See the README.md for levels 0..3.
 #define HX_RELEASE 0
 #endif
 #endif
 
-/// `HX_HATCHLING_PCH_USED` - Allows checking if `hatchling_pch.h` was used as expected.
 #if !defined HX_HATCHLING_PCH_USED
+/// `HX_HATCHLING_PCH_USED` - Allows checking if `hatchling_pch.h` was used as expected.
 #define HX_HATCHLING_PCH_USED 0
 #endif
 
-/// `HX_CPLUSPLUS` - A version of `__cplusplus` that is defined to `0` when `__cplusplus`
-/// is undefined. Allows use in logical operations in preprocessor statements without
-/// warnings when the compiler is configured to warn about undefined parameters.
 #if defined __cplusplus
+/// `HX_CPLUSPLUS` - A version of `__cplusplus` that is defined to `0` when
+/// `__cplusplus` is undefined. Allows use in C preprocessor statements without
+/// warnings when the compiler is configured to warn about undefined macros.
 #define HX_CPLUSPLUS __cplusplus
 #else
 #define HX_CPLUSPLUS 0

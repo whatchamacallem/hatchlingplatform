@@ -24,19 +24,16 @@ public:
 		test_object(void) {
 			++s_hxtest_current->m_constructed;
 			id = (INT_MIN < s_hxtest_current->m_next_id) ? s_hxtest_current->m_next_id-- : 0;
-			constructor = 0;
 		}
 
 		test_object(const test_object& rhs) {
 			++s_hxtest_current->m_constructed;
 			id = rhs.id;
-			constructor = rhs.constructor;
 		}
 		explicit test_object(int32_t x) {
 			hxassert(x >= 0); // User supplied IDs are positive
 			++s_hxtest_current->m_constructed;
 			id = x;
-			constructor = 0;
 		}
 		~test_object(void) {
 			++s_hxtest_current->m_destructed;
@@ -49,7 +46,6 @@ public:
 		bool operator<(const test_object& rhs) const { return id < rhs.id; }
 
 		int32_t id;
-		int32_t constructor;
 	};
 
 	hxarray_test(void) {
@@ -154,7 +150,7 @@ TEST_F(hxarray_test, modification) {
 
 		hxarray<test_object> objs;
 		objs.assign(nums, nums + (sizeof nums / sizeof *nums));
-		EXPECT_TRUE(objs.empty());
+		EXPECT_FALSE(objs.empty());
 
 		EXPECT_EQ(objs.capacity(), 5u);
 		EXPECT_EQ(objs.size(), 5u);
@@ -202,16 +198,23 @@ TEST_F(hxarray_test, for_each) {
 	hxarray<int> objs;
 	objs.assign(nums, nums + (sizeof nums / sizeof *nums));
 
-	// 91, 92, 93, 94, 95
+	// 91, 92, 93, 94, 95. Lambdas are typically temporaries.
 	objs.for_each([](int& x) { x -= 90; });
 
+	hxarray<int>& objs_ref = objs;
+
 	// 1, 2, 3, 4, 5
-	EXPECT_EQ(objs.size(), 5);
-	EXPECT_EQ(objs[0], 1);
-	EXPECT_EQ(objs[1], 2);
-	EXPECT_EQ(objs[2], 3);
-	EXPECT_EQ(objs[3], 4);
-	EXPECT_EQ(objs[4], 5);
+	EXPECT_EQ(objs_ref.size(), 5);
+	EXPECT_EQ(objs_ref[0], 1);
+	EXPECT_EQ(objs_ref[1], 2);
+	EXPECT_EQ(objs_ref[2], 3);
+	EXPECT_EQ(objs_ref[3], 4);
+	EXPECT_EQ(objs_ref[4], 5);
+
+	// Count the objects with a non-temporary functor.
+	struct X { int n; X() : n(0) { }; void operator()(int&) { ++n; } } x;
+	objs.for_each(x);
+	EXPECT_EQ(x.n, 5);
 
 	// Run it empty for correctness
 	objs.clear();
@@ -224,7 +227,7 @@ TEST_F(hxarray_test, resizing) {
 		static const int32_t nums[5] = { 51, 52, 53, 54, 55 };
 
 		hxarray<test_object> objs(12);
-		objs.reserve(10);
+		objs.reserve(10); // reserve less than is being used.
 		objs.assign(nums);
 
 		objs.resize(3);
@@ -238,22 +241,22 @@ TEST_F(hxarray_test, resizing) {
 		EXPECT_EQ(objs.size(), 4u);
 		EXPECT_EQ(objs[0].id, 51);
 		EXPECT_EQ(objs[2].id, 53);
-		EXPECT_EQ(objs[3].id, -1);
-		EXPECT_EQ(objs.capacity(), 10u);
+		EXPECT_EQ(objs[3].id, -13);
+		EXPECT_EQ(objs.capacity(), 12u);
 
 		objs.resize(10u);
 		EXPECT_EQ(objs.size(), 10u);
-		EXPECT_EQ(objs[9].id, -7);
+		EXPECT_EQ(objs[9].id, -19);
 
 		EXPECT_FALSE(objs.empty());
 		objs.clear();
 		EXPECT_EQ(objs.size(), 0u);
 		EXPECT_TRUE(objs.empty());
 
-		EXPECT_EQ(objs.capacity(), 10u);
+		EXPECT_EQ(objs.capacity(), 12u);
 	}
 
-	EXPECT_TRUE(Check_totals(14));
+	EXPECT_TRUE(Check_totals(24));
 }
 
 TEST_F(hxarray_test, assignment) {
@@ -272,8 +275,6 @@ TEST_F(hxarray_test, assignment) {
 		objs3 = objs; // Assign to different type
 
 		hxarray<test_object> objs4(objs); // Construct from same type
-			hxbreakpoint();
-
 		hxarray<test_object, 1> objs5(objs); // Construct from different type
 
 		EXPECT_EQ(objs2.size(), 1u);
@@ -290,7 +291,7 @@ TEST_F(hxarray_test, assignment) {
 	EXPECT_TRUE(Check_totals(6));
 }
 
-TEST_F(hxarray_test, ops) {
+TEST_F(hxarray_test, plus_equals) {
 	{
 		hxarray<test_object> objs;
 		objs.reserve(10);
@@ -303,7 +304,63 @@ TEST_F(hxarray_test, ops) {
 		hxarray<test_object> objs3 { 1, 7, 11, 10, 70, 110 };
 
 		EXPECT_TRUE(hxkey_equal(objs, objs3));
+		EXPECT_FALSE(hxkey_less(objs, objs3));
+
+		// Compare inequal length and a temp.
+		test_object t(440);
+		objs += t;
+		EXPECT_FALSE(hxkey_equal(objs, objs3));
+		EXPECT_TRUE(hxkey_less(objs3, objs));
+
+		// Compare equal length and a non-temp.
+		objs.resize(5);
+		objs += test_object(220);
+		EXPECT_FALSE(hxkey_equal(objs, objs3));
+		EXPECT_TRUE(hxkey_less(objs3, objs));
 	}
+
+	EXPECT_TRUE(Check_totals(22));
+}
+
+TEST_F(hxarray_test, erase) {
+	{
+		hxarray<test_object> objs { 1, 2, 3, 4, 5 };
+		objs.erase(1);
+		objs.erase(objs.begin() + 2);
+
+		hxarray<test_object> expected { 1, 3, 5 };
+		EXPECT_TRUE(hxkey_equal(objs, expected));
+
+		objs.erase(objs.begin());
+		objs.erase(objs.end() - 1);
+
+		hxarray<test_object> final_expected { 3 };
+		EXPECT_TRUE(hxkey_equal(objs, final_expected));
+	}
+
+	EXPECT_TRUE(Check_totals(9));
+}
+
+TEST_F(hxarray_test, insert) {
+	{
+		// The numeric constant zero is also a pointer. It seems more convenient
+		// to allow both indicies and pointers than to worry about it.
+		hxarray<test_object> objs; objs.reserve(5);
+		objs.push_back(test_object(3));
+		objs.insert(objs.begin(), test_object(1)); // Inserting at beginning.
+		objs.insert(2, test_object(5)); // Inserting past the end.
+
+		hxarray<test_object> expected { 1, 3, 5 };
+		EXPECT_TRUE(hxkey_equal(objs, expected));
+
+		objs.insert(1, test_object(2));
+		objs.insert(3, test_object(4));
+
+		hxarray<test_object> final_expected { 1, 2, 3, 4, 5 };
+		EXPECT_TRUE(hxkey_equal(objs, final_expected));
+	}
+
+	EXPECT_TRUE(Check_totals(9));
 }
 
 #if HX_HOSTED
