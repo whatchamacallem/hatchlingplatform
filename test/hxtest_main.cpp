@@ -28,7 +28,7 @@ TEST(hxnew, smoketest) {
 
 // These two tests test the test framework by failing.
 #if HX_TEST_ERROR_HANDLING
-TEST(hxdeath_test, fail) {
+TEST(death_test, fail) {
 	hxlog("EXPECTING_TEST_FAILURE\n");
 	SUCCEED();
 	for (int i = 10; i--;) {
@@ -36,7 +36,7 @@ TEST(hxdeath_test, fail) {
 	}
 	SUCCEED();
 }
-TEST(hxdeath_test, nothing_asserted) {
+TEST(death_test, nothing_asserted) {
 	hxlog("EXPECTING_TEST_FAILURE\n");
 }
 #endif
@@ -59,7 +59,7 @@ static bool hxrun_all_tests(void) {
 	// there are no asserts at level 3.
 	if(tests_failing == s_hxexpected_failures) {
 		hxloghandler(hxloglevel_warning,
-			"expected_failures expected exactly %d tests to fail", s_hxexpected_failures);
+			"expected_failures Expected exactly %d tests to fail...", s_hxexpected_failures);
 	}
 	return tests_failing == s_hxexpected_failures;
 #else

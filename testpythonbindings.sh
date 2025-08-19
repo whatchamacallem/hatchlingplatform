@@ -5,10 +5,6 @@
 
 set -o errexit
 
-# Nuke the build artifacts for testing.
-rm -f 	entanglement_example/src/entanglement_example.py \
-		entanglement_example/libentanglement_py_template.so.1
-
 rm -rf ./bin; mkdir ./bin && cd ./bin
 
 # Create and activate a Python virtual environment.
@@ -26,8 +22,13 @@ python3 -m pip install ../entanglement_example
 # Run Python tests for the package.
 python -c "import entanglement_example; entanglement_example.run_all_tests();"
 
+{ set +o xtrace; } 2> /dev/null
+
 # Shut down the virtual environment.
 deactivate
 
-# Leave the generated script so it can be examined.
-rm -f entanglement_example/libentanglement_py_template.so.1
+# Clean up after Python package build. This is how Python likes it.
+rm -r	../entanglement_example/build \
+		../entanglement_example/entanglement_example.egg-info \
+		../entanglement_example/src/entanglement_example.py \
+		../entanglement_example/src/libentanglement_py_template.so.1

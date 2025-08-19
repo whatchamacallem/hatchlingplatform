@@ -292,6 +292,7 @@ TEST_F(hxarray_test, assignment) {
 	EXPECT_TRUE(Check_totals(6));
 }
 
+#if HX_CPLUSPLUS >= 202002L
 TEST_F(hxarray_test, plus_equals) {
 	{
 		hxarray<test_object> objs;
@@ -363,6 +364,7 @@ TEST_F(hxarray_test, insert) {
 
 	EXPECT_TRUE(Check_totals(18)); // <-- This is why we don't use insert.
 }
+#endif
 
 #if HX_HOSTED
 TEST_F(hxarray_test, initializer_list) {
