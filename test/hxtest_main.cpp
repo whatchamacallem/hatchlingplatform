@@ -17,13 +17,15 @@ TEST(hxctest, all_tests) {
 	EXPECT_TRUE(hxctest_all());
 }
 
-// Make sure new and delete plausibly exist.
+// Make sure new and delete plausibly exist. Make sure hxnullptr compiles.
 TEST(hxnew, smoketest) {
 	int* t = new int(3);
 	ASSERT_TRUE(t);
 	hxassertrelease(t, "new"); // Should be impossible.
 	*t = 0xdeadbeef;
 	delete t;
+	t = hxnullptr;
+	ASSERT_FALSE(t);
 }
 
 // These two tests test the test framework by failing.

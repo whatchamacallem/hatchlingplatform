@@ -20,7 +20,8 @@
 #endif
 
 #if !defined HX_HATCHLING_PCH_USED
-/// `HX_HATCHLING_PCH_USED` - Allows checking if `hatchling_pch.h` was used as expected.
+/// `HX_HATCHLING_PCH_USED` - Allows checking if `hatchling_pch.h` was used as
+/// expected.
 #define HX_HATCHLING_PCH_USED 0
 #endif
 
@@ -36,7 +37,7 @@
 // ----------------------------------------------------------------------------
 // MSVC doesn't support C++ feature test macros very well.
 #if defined _MSC_VER
-
+#error "The MSVC build is currently unmaintained. It should be easy to fix."
 /// `_HAS_EXCEPTIONS` - _MSC_VER only. Disables exception handling. Must be
 /// included before standard headers.
 #if !defined __cpp_exceptions && !defined _HAS_EXCEPTIONS
@@ -49,7 +50,8 @@
 #endif
 
 /// A hosted environment has an OS and C++ standard library.
-#define HX_HOSTED 1 /// `HX_HOSTED` - `1` : _MSC_VER indicates a hosted environment.
+/// `HX_HOSTED` - `1` : _MSC_VER indicates a hosted environment.
+#define HX_HOSTED 1
 
 #define hxrestrict __restrict
 #define hxattr_format(pos_, start_)
@@ -189,13 +191,13 @@ extern "C" {
 #endif
 
 /// hxsettings. Constructed by first call to hxinit() which happens when or
-/// before the memory allocator constructs.
+/// before the system memory allocators construct.
 struct hxsettings {
 	/// Logging level for the application (e.g., verbosity of logs).
 	uint8_t log_level;
 
 	/// Allows deallocation of permanent resources at system shut down.
-	uint8_t deallocate_permanent;
+	bool deallocate_permanent;
 
 #if (HX_RELEASE) < 1
 	/// Number of asserts to skip, useful for testing assert behavior.

@@ -1,7 +1,7 @@
 
 ###
 ### Here is how to build and test in-place without building a package.
-### This requires the clang package to be installed on your system path.
+### This requires the clang package to be installed on your python path.
 ###
 
 # To build the C++ .so in the entanglement_example directory only as needed:
@@ -14,12 +14,12 @@
 # testable as such, if you are isolating failures.
 python3 ./setup.py
 
-# It will look something like this.
+# It will look something like this:
 python3 src/entanglement.py -std=c++17 [...] src/entanglement_example.py
 
 # Once the wrapper is generated then it can be tested. (Python thinks the name
 # of the module is "src" when it is working with raw files.) This will run
-# unittest.main.
+# unittest.main:
 python3 -m src.entanglement_test
 
 
