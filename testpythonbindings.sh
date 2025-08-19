@@ -20,15 +20,9 @@ set -o xtrace
 python3 -m pip install ../entanglement_example
 
 # Run Python tests for the package.
-python -c "import entanglement_example; entanglement_example.run_all_tests();"
+python -m entanglement_example.entanglement_test
 
 { set +o xtrace; } 2> /dev/null
 
 # Shut down the virtual environment.
 deactivate
-
-# Clean up after Python package build. This is how Python likes it.
-rm -r	../entanglement_example/build \
-		../entanglement_example/entanglement_example.egg-info \
-		../entanglement_example/src/entanglement_example.py \
-		../entanglement_example/src/libentanglement_py_template.so.1

@@ -24,7 +24,7 @@ g++ -I$HX_DIR/include --coverage -O0 -g -DHX_RELEASE=0 -DHX_TEST_ERROR_HANDLING=
 
 echo runtests | ./hxtest help printhashes "checkhash 0" execstdin
 
-gcovr --html-details coverage.html --root .. .
+gcovr --exclude-lines-by-pattern '.*hxassert.*' --html-details coverage.html --root .. .
 
 { set +o xtrace; } 2> /dev/null
 

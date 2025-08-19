@@ -2,8 +2,9 @@
 # SPDX-License-Identifier: MIT
 # This file is licensed under the terms of the LICENSE.md file.
 
-__all__ = ['main', 'run_all_tests']  # implements: from entanglement_test import *
+__all__ = ['main']  # implements: from entanglement_test import *
 
-# Expose package interface.
+# Expose transpiler interface.
 from .entanglement import main
-from .entanglement_test import run_all_tests
+
+# For testing use: python -m entanglement_example.entanglement_test
