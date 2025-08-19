@@ -1,25 +1,26 @@
+// SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+// SPDX-License-Identifier: MIT
+// This file is licensed under the MIT license found in the LICENSE.md file.
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
             "name": "(gdb) Launch",
-            "type": "cppdbg",
-            "request": "launch",
+			"type": "cppdbg",
+			"request": "launch",
             "program": "${workspaceFolder}/bin/hxtest",
             "args": ["help", "printhashes", "runtests"],
-            "stopAtEntry": false,
+			"stopAtEntry": false,
             "cwd": "${workspaceFolder}/bin",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-//            "logging": {
-//                "engineLogging": true,
-//                "trace": true,
-//                "programOutput": true
-//            },
+			"environment": [],
+			"externalConsole": false,
+			"MIMode": "gdb",
+            "logging": {
+//				"engineLogging": true,
+//				"moduleLoad": true,
+//				"trace": true,
+//				"programOutput": true
+            },
             "setupCommands": [
                 {
                     "description": "Enable pretty printing",
@@ -37,6 +38,5 @@
                 }
             ]
         }
-
     ]
 }

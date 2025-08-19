@@ -71,12 +71,13 @@ bool hxfile::openv_(uint16_t mode, const char* filename, va_list args) {
 	}
 
 	// Avoid a file handle leak.
-	hxassertmsg((mode & hxfile::stdio) == 0, "invalid_parameter stdio in+out");
+	hxassertmsg((mode & hxfile::stdio) == 0, "invalid_parameter stdio+in+out");
 	mode &= ~hxfile::stdio;
 	m_open_mode_ = mode;
 
 	char buf[HX_MAX_LINE] = "";
-	::vsnprintf(buf, HX_MAX_LINE, filename, args);
+	int len = ::vsnprintf(buf, HX_MAX_LINE, filename, args);
+	hxassertmsg(len >= 0 && len < HX_MAX_LINE, "vsnprintf"); (void)len;
 
 	const char* m = hxnull;
 	switch (mode & (hxfile::in | hxfile::out)) {

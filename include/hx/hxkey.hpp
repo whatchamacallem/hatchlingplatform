@@ -3,10 +3,14 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 //
-// <hx/hxkey.hpp> - User overloadable key-equal, key-less and key-hash functions.
-// This code will only use the == and < operators by default. That will work
-// with a default or custom <=> operator. Alternately these calls can be
-// overriden to resolve key operations without global operator overloads.
+// <hx/hxkey.hpp> - User overloadable key-equal, key-less and key-hash
+// functions. This code will only use the == and < operators by default. That
+// will work with a default or custom <=> operator. Alternately these calls can
+// be overloaded to resolve key operations without global operator overloads.
+// This code uses C++20 concepts when available and provides no fallbacks for
+// SFINAE otherwise. Functors are recommended and supported for complex use
+// cases as they are relatively easy to debug. See hxkey_equal_function and
+// hxkey_less_function for generating default functors.
 
 #include <hx/hatchling.h>
 
@@ -16,8 +20,9 @@
 /// - `from_t` : The source type.
 /// - `to_t` : The target type.
 template<typename from_t_, typename to_t_>
-concept hxconvertible_to = requires(from_t_ (&from_)()) {
-	// from_ is an unexecuted function pointer used to provide a from_t_.
+concept hxconvertible_to = requires(from_t_ (&&from_)()) {
+	// from_ is an unexecuted function pointer used to provide a from_t_&&. This
+	// is what the standard does and avoids requiring other operators.
     requires requires { static_cast<to_t_>(from_()); };
 };
 #endif
@@ -75,7 +80,7 @@ constexpr bool hxkey_less(const A_& a_, const B_& b_) {
 /// - `b` : Pointer to the second object.
 template<typename A_, typename B_>
 #if HX_CPLUSPLUS >= 202002L
-requires requires(A_ a_, B_ b_) { { a_ < b_ } -> hxconvertible_to<bool>; }
+requires requires(A_ a_, B_ b_) { { hxkey_less(a_, b_) } -> hxconvertible_to<bool>; }
 #endif
 constexpr bool hxkey_less(const A_* a_, const B_* b_) {
     return hxkey_less(*a_, *b_);

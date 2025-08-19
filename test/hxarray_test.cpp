@@ -360,7 +360,7 @@ TEST_F(hxarray_test, insert) {
 		EXPECT_TRUE(hxkey_equal(objs, final_expected));
 	}
 
-	EXPECT_TRUE(Check_totals(9));
+	EXPECT_TRUE(Check_totals(18)); // <-- This is why we don't use insert.
 }
 
 #if HX_HOSTED

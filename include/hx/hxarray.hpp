@@ -12,8 +12,9 @@
 
 /// `hxarray` - Another vector class. Uses raw pointers as an iterator type so
 /// that you get compile errors and a debug experience that is in plain C++
-/// instead of the std. There are asserts. Please run a memory sanitizer and
-/// an undefined behavior sanitizer too. Use a C array if you need constexpr.
+/// instead of the std. There are asserts. Please run a memory sanitizer and an
+/// undefined behavior sanitizer too. Use a C array if you need constexpr. The
+/// excessive number of operators is due to the rules about default operators.
 template<typename T_, size_t capacity_=hxallocator_dynamic_capacity>
 class hxarray : public hxallocator<T_, capacity_> {
 public:
@@ -48,7 +49,7 @@ public:
 	/// - `x` : A non-temporary Array<T>.
 	hxarray(const hxarray& x_) : hxallocator<T_, capacity_>() {
 		m_end_ = this->data();
-		this->assign(x_.begin(), x_.end());
+		this->assign<const T_*>(x_.data(), x_.m_end_);
 	}
 
 	/// Copy constructs an array. Non-explicit to allow assignment constructor.
@@ -56,7 +57,7 @@ public:
 	template <size_t capacity2_>
 	hxarray(const hxarray<T_, capacity2_>& x_) : hxallocator<T_, capacity_>() {
 		m_end_ = this->data();
-		this->assign(x_.begin(), x_.end());
+		this->assign<const T_*>(x_.data(), x_.end());
 	}
 
 	/// Copy construct from a temporary using `swap`. Refuses to copy construct
@@ -103,7 +104,7 @@ public:
 	/// Vector math is not a goal so this should not end up overloaded.
 	/// - `x` : Another array. Not a temporary.
 	void operator+=(const hxarray& x_) {
-		for(const T_ *it_ = x_.begin(), *end_ = x_.end(); it_ != end_; ++it_) {
+		for(const T_ *it_ = x_.data(), *end_ = x_.m_end_; it_ != end_; ++it_) {
 			::new(this->emplace_back_unconstructed()) T_(*it_);
 		}
 	}
@@ -112,7 +113,7 @@ public:
 	/// Vector math is not a goal so this should not end up overloaded.
 	/// - `x` : Another array passed as a temporary.
 	void operator+=(hxarray&& x_) {
-		for(const T_ *it_ = x_.begin(), *end_ = x_.end(); it_ != end_; ++it_) {
+		for(const T_ *it_ = x_.data(), *end_ = x_.m_end_; it_ != end_; ++it_) {
 			::new(this->emplace_back_unconstructed()) T_(hxmove(*it_));
 		}
 	}
@@ -121,7 +122,7 @@ public:
 	/// reallocation is disallowed.
 	/// - `x` : A non-temporary Array<T>.
 	void operator=(const hxarray& x_) {
-		this->assign(x_.begin(), x_.end());
+		this->assign<const T_*>(x_.data(), x_.m_end_);
 	}
 
 	/// Swap contents with a temporary array using `swap`. Only works with
@@ -142,18 +143,18 @@ public:
 	/// Returns a const reference to the element at the specified index.
 	/// - `index` : The index of the element.
 	const T_& operator[](size_t index_) const {
-		hxassertmsg(index_ < this->size(), "invalid_index");
+		hxassertmsg(index_ < this->size(), "invalid_index %zu", index_);
 		return this->data()[index_];
 	}
 
 	/// Returns a reference to the element at the specified index.
 	/// - `index` : The index of the element.
 	T_& operator[](size_t index_) {
-		hxassertmsg(index_ < this->size(), "invalid_index");
+		hxassertmsg(index_ < this->size(), "invalid_index %zu", index_);
 		return this->data()[index_];
 	}
 
-	/// Constructs an array of T from an array of U. (Non-standard.)
+	/// Constructs an array of T from a C-style array of U. (Non-standard.)
 	/// - `a` : The array.
 	/// - `Sz` : Its size.
 	template<typename U_, size_t size_>
@@ -263,7 +264,7 @@ public:
 	/// Erases the element indicated.
 	/// - `index` : Index of the element to erase.
 	void erase(size_t index_) {
-		hxassertmsg(index_ < this->size(), "invalid_index");
+		hxassertmsg(index_ < this->size(), "invalid_index %zu", index_);
 		this->erase(this->data() + index_);
 	}
 
@@ -282,11 +283,12 @@ public:
 	/// element. (Non-standard.)
 	/// - `index` : The index of the element to erase.
 	void erase_unordered(size_t index_) {
-		hxassertmsg(index_ < this->size(), "invalid_index");
+		hxassertmsg(index_ < this->size(), "invalid_index %zu", index_);
 		this->erase_unordered(this->data() + index_);
 	}
 
-	/// Calls a function, lambda or std::function on each element. (Non-standard.)
+	/// Calls a function, lambda or std::function on each element.
+	/// (Non-standard.)
 	/// `fn` - A function like object.
 	template<typename functor_t_>
 	void for_each(functor_t_& fn_) {
@@ -295,11 +297,11 @@ public:
 		}
 	}
 
-	/// Calls a function, lambda or `std::function` on each element. (Non-standard.)
-	/// Lambdas and `std::function` can be provided as temporaries and that has
-	/// to be allowed. The `&&` variant of `functor_t::operator()` is being
-	/// selected using `hxmove`. This is a traditional way to signal to the
-	/// functor that it is a temporary.
+	/// Calls a function, lambda or `std::function` on each element.
+	/// (Non-standard.) Lambdas and `std::function` can be provided as
+	/// temporaries and that has to be allowed. The `&&` variant of
+	/// `functor_t::operator()` is being selected using `hxmove`. This is a
+	/// traditional way to signal to the functor that it is a temporary.
 	/// `fn` - A function like object.
 	template<typename functor_t_>
 	void for_each(functor_t_&& fn_) {
@@ -332,26 +334,24 @@ public:
 	}
 
 	/// Inserts the element at the offset indicated. `insert(begin(), x)` and
-	/// `insert(end(), x)` will work as long as the array is allocated.
-	/// `T::T(T&&)` and `T::operator=(T&&)` will be used when available. Values
-	/// are shifted with hxmove even though the new element is just copied.
+	/// `insert(end(), x)` will work as long as the array is allocated. Not
+	/// intended for objects that are expensive to move. Consider using
+	/// emplace_back_unconstructed for storing large objects.
 	/// - `pos` : Pointer to the location to insert the new element at.
 	/// - `t` : The new element.
 	void insert(T_* pos_, const T_& t_) {
-		hxassertmsg(pos_ >= this->data() && pos_ < m_end_ && !this->full(), "invalid_insert");
-		T_* it_ = m_end_++;
-		if(it_ == this->data()) {
-			// Single constructor call for first element.
-			::new (it_) T_(t_);
+		hxassertmsg(pos_ >= this->data() && pos_ <= m_end_ && !this->full(), "invalid_insert");
+		if(pos_ == m_end_) {
+			// Single constructor call for last element.
+			::new (m_end_++) T_(t_);
 		}
 		else {
-			// A move constructor for a new end element followed by a series of
-			// move operations ending with a constructor for the copy.
-			::new(it_) T_(hxmove<T_>(it_[-1]));
-			--it_;
-			while(pos_ < it_) {
-				*it_ = hxmove<T_>(it_[-1]);
-				--it_;
+			// A copy constructor for a new end element followed by a series of
+			// assignment operations.
+			T_* it_ = m_end_++;
+			::new(it_) T_(it_[-1]);
+			while(pos_ < --it_) {
+				*it_ = it_[-1];
 			}
 			*it_ = t_;
 		}
@@ -362,7 +362,7 @@ public:
 	/// - `index` : Index of the location to insert the new element at.
 	/// - `x` : The new element.
 	void insert(size_t index_, const T_& t_) {
-		hxassertmsg(index_ <= this->size(), "invalid_index");
+		hxassertmsg(index_ <= this->size(), "invalid_index %zu", index_);
 		this->insert(this->data() + index_, t_);
 	}
 
@@ -452,6 +452,7 @@ public:
 		T_* end_ = this->data() + size_;
 		if (size_ >= this->size()) {
 			while (m_end_ != end_) {
+				// This version uses a default constructor.
 				::new (m_end_++) T_();
 			}
 		}
@@ -470,6 +471,7 @@ public:
 		T_* end_ = this->data() + size_;
 		if (size_ >= this->size()) {
 			while (m_end_ != end_) {
+				// This version uses a copy constructor.
 				::new (m_end_++) T_(t_);
 			}
 		}

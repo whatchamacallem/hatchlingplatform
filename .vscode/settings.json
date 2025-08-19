@@ -1,6 +1,9 @@
+// SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+// SPDX-License-Identifier: MIT
+// This file is licensed under the MIT license found in the LICENSE.md file.
 {
     "cSpell.ignoreRegExpList": [
-        "hx[a-zA-Z0-9_]*"
+        "hx[a-zA-Z0-9]*"
     ],
 
     "cSpell.words": [
@@ -67,6 +70,7 @@
         "MMIX",
         "Morwenn",
         "msvc",
+        "multiarch",
         "multilib",
         "multiset",
         "Musser",

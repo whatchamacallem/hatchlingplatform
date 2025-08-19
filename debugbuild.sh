@@ -1,8 +1,12 @@
 #!/bin/sh
 # SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+# SPDX-License-Identifier: MIT
+# This file is licensed under the terms of the LICENSE.md file.
+#
+# This build uses 32-bit pointers because they are easier to read.
 #
 # The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:
-#   sudo apt-get install gcc-multilib g++-multilib
+#   sudo apt-get install gcc-multilib g++-multilib gdb-multiarch
 
 set -o errexit
 
@@ -17,7 +21,7 @@ HX_ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
 	-pedantic-errors -Wfatal-errors"
 
-HX_FLAGS="-m32 -ggdb3 -fdiagnostics-absolute-paths"
+HX_FLAGS="-m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always"
 
 # Build artifacts are not retained.
 rm -rf ./bin; mkdir ./bin && cd ./bin
