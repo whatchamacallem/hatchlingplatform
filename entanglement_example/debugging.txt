@@ -1,5 +1,31 @@
 
-# Here is how to check that the package was installed correctly.
+###
+### Here is how to build and test in-place without building a package.
+### This requires the clang package to be installed on your system path.
+###
+
+# To build the C++ .so in the entanglement_example directory only as needed:
+./setup_cpp.sh
+
+# To build the Python wrapper in the entanglement_example directory only as
+# needed, just run setup.py to generate the entanglement.py command line. Ignore
+# the usage error and copy and paste the command from before it. This should be
+# the same command arguments needed by clang to build a .pch and should be
+# testable as such, if you are isolating failures.
+python3 ./setup.py
+
+# It will look something like this.
+python3 src/entanglement.py -std=c++17 [...] src/entanglement_example.py
+
+# Once the wrapper is generated then it can be tested. (Python thinks the name
+# of the module is "src" when it is working with raw files.) This will run
+# unittest.main.
+python3 -m src.entanglement_test
+
+
+###
+### Here is how to check that the package was installed correctly.
+###
 
 # Create a virtual environment and install the package into it.
 ./testpythonbindings.sh

@@ -9,4 +9,4 @@ rm -rf ./bin
 rm -rf	entanglement_example/build \
 		entanglement_example/entanglement_example.egg-info \
 		entanglement_example/src/entanglement_example.py \
-		entanglement_example/src/libentanglement_py_template.so.1
+		entanglement_example/src/libentanglement_example.so.1

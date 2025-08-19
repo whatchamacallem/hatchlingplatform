@@ -10,6 +10,9 @@ auto;"><br/>
 
 <div style="width: 90%; margin: 0 auto; text-align: justify; font-size: 120%;">
 
+> "People say that you should not micro-optimize. But if what you love is
+> micro-optimization... that's what you should do." — Linus Torvalds
+
 Hatchling Platform is a lightweight C17/C++17 runtime library designed for
 desktop development with simultaneous cross-compilation to resource-constrained
 targets. The developer experience is also better than with the C++ standard
@@ -19,7 +22,7 @@ you. There is no unnecessary template library boilerplate to step through in the
 debugger. The compilers budget for optimization isn't blown out by boilerplate
 layers you don't normally need. The implementation carefully avoids dynamic
 allocations except when initializing system allocators. It maintains
-compatibility with C99 libraries, requires only a C++11 compile and deliberately
+compatibility with C99 libraries, requires only a C++11 compiler and deliberately
 avoids dependencies on the C++ standard library. A C++ project using this
 platform should run equally well on your thermostat using a single megabyte of
 RAM as in your web-browser or plugged into your Python back end.

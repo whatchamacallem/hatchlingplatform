@@ -1127,7 +1127,7 @@ def _Pointer_shim(_Obj:_Any,_CType):
 	]
 
 def main(argv: List[str]) -> None:
-	'''See usage message at top of file. '''
+	''' See usage message at top of file. '''
 	if not _parse_argv(argv):
 		raise usage(_usage)
 

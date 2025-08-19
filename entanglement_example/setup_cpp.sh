@@ -27,7 +27,7 @@ clang++ $HX_CFLAGS -std=c++17 -fvisibility=hidden \
 
 # The .toml requires the .so to be in the src directory.
 clang++ $HX_CFLAGS $HX_LDFLAGS -std=c++17 -lstdc++ -lpthread \
-	$HX_DIR/entanglement_example/src/*.cpp -o src/libentanglement_py_template.so.1
+	$HX_DIR/entanglement_example/src/*.cpp -o src/libentanglement_example.so.1
 
 { set +o xtrace; } 2> /dev/null
 rm -f *.o

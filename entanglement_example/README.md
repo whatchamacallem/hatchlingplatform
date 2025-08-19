@@ -145,7 +145,6 @@ The following strategy is recommended:
 
 ## Roadmap
 
-- Halt test script on test failures.
 - Hatchling wrapper.
 - Default function parameters.
 - .pyi stub file generation.

@@ -11,7 +11,7 @@ from typing import List
 SETUP_CPP_COMMAND = ['./setup_cpp.sh']
 
 # Python wrapper build command.
-LIBRARY='libentanglement_py_template.so.1'
+LIBRARY='libentanglement_example.so.1'
 HEADER_FILES=['src/entanglement_test_a.hpp', 'src/entanglement_test_b.hpp']
 OUTPUT_FILE='src/entanglement_example.py'
 
