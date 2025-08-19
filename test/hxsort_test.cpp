@@ -215,7 +215,8 @@ TEST(hxsort_test, sort_grinder_generic) {
 		--histogram[sorted[size - 1].value];
 		for(int j=size - 1; j--;) {
 			--histogram[sorted[j].value];
-			EXPECT_FALSE(hxkey_less(sorted[j + 1], sorted[j]));
+			// Use pointers just to show that they are dereferenced by hxkey_less.
+			EXPECT_FALSE(hxkey_less(&sorted[j + 1], &sorted[j]));
 		}
 		for(int j=20000; j-- > 10000;) {
 			EXPECT_EQ(histogram[j], 0);

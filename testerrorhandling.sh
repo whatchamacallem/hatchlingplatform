@@ -7,5 +7,8 @@ set -o errexit
 
 # test configuration options in ways that are not varied by the release level
 # during normal testing.
-echo "testing optional feature settings. these tests will spew errors and still return successfully."
-./testmatrix.sh '-DHX_MEMORY_MANAGER_DISABLE=(HX_RELEASE==2)' -DHX_TEST_ERROR_HANDLING=1
+echo "NOTA BENE: These tests will spew errors and still return successfully."
+./testmatrix.sh \
+	'-DHX_MEMORY_MANAGER_DISABLE=(HX_RELEASE==2)' \
+	'-DHX_TEST_ERROR_HANDLING=1' \
+	'-DHX_RADIX_SORT_BITS=11'

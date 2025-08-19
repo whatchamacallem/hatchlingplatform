@@ -3,13 +3,18 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 //
+//
 // <hx/hxhash_table.hpp> - This header implements a hash table that operates
-// without reallocating memory or copying around data. Each bucket is
-// implemented using an embedded linked list. Hash tables can be used as either
-// an unordered map or an unordered set and have operations that allow for
-// unique or duplicate keys. While this interface is designed to be familiar,
-// changes will be required to switch over code using standard containers. In
-// particular, all modification of the table is non-standard.
+// without reallocating memory or copying around data. Ever watched a graphical
+// visualization of a memory allocator that is being used to allocate hash
+// tables? A series of allocations that double in size each time is about the
+// best possible way to fragment memory. This code expects you to allocate the
+// largest table you may require in advance. Each bucket is implemented using an
+// embedded linked list. Hash tables can be used as either an unordered map or
+// an unordered set and have operations that allow for unique or duplicate keys.
+// While this interface is designed to be familiar, changes will be required to
+// switch over code using standard containers. In particular, all modification
+// of the table is non-standard.
 //
 // Note that any node T using key K will work as long as it has the following
 // fields and K has an operator== or an hxkey_equal overload.

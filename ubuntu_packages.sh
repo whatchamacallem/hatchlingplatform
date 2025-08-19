@@ -12,6 +12,7 @@
 # is available but is not required or installed here.
 #
 # Please open a PR if anything is missing or has changed.
+set -o errexit
 
 sudo apt install -y \
 	clang           \
@@ -28,3 +29,21 @@ sudo apt install -y \
 	musl            \
 	musl-dev        \
 	musl-tools
+
+DIV='║▌║█║▌│║▌║▌█║▌║█║▌│║▌║▌█║▌║█║▌│║▌║▌█║▌║█║▌│║▌║▌█║▌║█║▌│║▌║▌█║▌║█║▌│║▌║▌█'
+
+echo $DIV
+gcc --version
+echo $DIV
+musl-gcc --version
+echo $DIV
+clang  --version
+echo $DIV
+emcc --version
+echo $DIV
+gcovr --version
+echo $DIV
+cmake --version
+echo $DIV
+python3  --version
+echo $DIV

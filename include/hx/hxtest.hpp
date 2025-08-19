@@ -121,8 +121,9 @@ inline void InitGoogleTest(void) { }
 	} static HX_TEST_NAME_(s_hxtest_, suite_name_, case_name_); \
 	void HX_TEST_NAME_(hxtest_, suite_name_, case_name_)::run_(void)
 
-/// `TEST_F(suite_name, case_name)` - Google Test reimplementation for fixture-based tests.
-/// Defines a test case where the `suite_name` is a subclass of `testing::Test`.
+/// `TEST_F(suite_name, case_name)` - Google Test reimplementation for
+/// fixture-based tests. Defines a test case where the `suite_name` is a
+/// subclass of `testing::Test`.
 /// - `suite_name` : A C valid identifier for the test suite.
 /// - `case_name` : A C valid identifier for the test case.
 #define TEST_F(suite_name_, case_name_) \

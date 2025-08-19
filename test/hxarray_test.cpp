@@ -23,7 +23,7 @@ public:
 	public:
 		test_object(void) {
 			++s_hxtest_current->m_constructed;
-			id = (INT_MIN < s_hxtest_current->m_next_id) ? s_hxtest_current->m_next_id-- : 0;
+			id = s_hxtest_current->m_next_id--;
 		}
 
 		test_object(const test_object& rhs) {
@@ -230,7 +230,8 @@ TEST_F(hxarray_test, resizing) {
 		objs.reserve(10); // reserve less than is being used.
 		objs.assign(nums);
 
-		objs.resize(3);
+		// Use the 2 arg version to delete it.
+		objs.resize(3, test_object());
 
 		EXPECT_EQ(objs.size(), 3u);
 		EXPECT_EQ(objs[0].id, 51);
@@ -241,12 +242,12 @@ TEST_F(hxarray_test, resizing) {
 		EXPECT_EQ(objs.size(), 4u);
 		EXPECT_EQ(objs[0].id, 51);
 		EXPECT_EQ(objs[2].id, 53);
-		EXPECT_EQ(objs[3].id, -13);
+		EXPECT_EQ(objs[3].id, -14);
 		EXPECT_EQ(objs.capacity(), 12u);
 
 		objs.resize(10u);
 		EXPECT_EQ(objs.size(), 10u);
-		EXPECT_EQ(objs[9].id, -19);
+		EXPECT_EQ(objs[9].id, -20);
 
 		EXPECT_FALSE(objs.empty());
 		objs.clear();
@@ -256,7 +257,7 @@ TEST_F(hxarray_test, resizing) {
 		EXPECT_EQ(objs.capacity(), 12u);
 	}
 
-	EXPECT_TRUE(Check_totals(24));
+	EXPECT_TRUE(Check_totals(25));
 }
 
 TEST_F(hxarray_test, assignment) {

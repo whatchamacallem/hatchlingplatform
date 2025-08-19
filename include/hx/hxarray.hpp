@@ -394,20 +394,6 @@ public:
 		return this->less(x_, hxkey_less_function<T_, T_>(), hxkey_equal_function<T_, T_>());
 	}
 
-	/// Move elements from a range defined by iterators.
-	/// - `begin` : The beginning iterator.
-	/// - `end` : The end iterator.
-	template <typename iter_t_>
-	void move(iter_t_ begin_, iter_t_ end_) {
-		this->reserve((size_t)(end_ - begin_));
-		T_* it_ = this->data();
-		this->destruct_(it_, m_end_);
-		while (begin_ != end_) {
-			::new (it_++) T_(hxmove(*begin_++));
-		}
-		m_end_ = it_;
-	}
-
 	/// Removes the end element from the array.
 	void pop_back(void) {
 		hxassertmsg(!this->empty(), "stack_underflow");
@@ -479,16 +465,6 @@ public:
 			this->destruct_(end_, m_end_);
 		}
 		m_end_ = end_;
-	}
-
-	/// Reverse the elements. Uses hxswap which may be overriden. (Non-standard.
-	/// Python.)
-	void reverse(void) {
-		T_* b_ = this->data();
-		T_* e_ = m_end_ - 1;
-		while (b_ < e_) {
-			hxswap(*b_++, *e_--);
-		}
 	}
 
 	/// Returns the number of elements in the array.

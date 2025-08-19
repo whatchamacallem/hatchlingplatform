@@ -130,8 +130,9 @@ to resurrect.
 
 ## Remaining Tasks
 
+- Add test coverage for hash table nodes.
 - constexpr compatible asserts.
-- Find and test realistic compile-time use cases for constexpr.
+- Find and test realistic compile-time use cases for constexpr with this code.
 
 ## License
 
