@@ -5,10 +5,7 @@ badge](https://img.shields.io/badge/hatchling-platform-blue.svg)](https://github
 [![GitHub
 version](https://badge.fury.io/gh/whatchamacallem%2Fhatchlingplatform.svg)](http://badge.fury.io/gh/whatchamacallem%2Fhatchlingplatform)
 
-<br/><img src="hatchling_logo.png" alt="logo" style="display: block; margin:
-auto;"><br/>
-
-<div style="width: 90%; margin: 0 auto; text-align: justify; font-size: 120%;">
+<img src="hatchling_logo.png" alt="logo">
 
 > "People say that you should not micro-optimize. But if what you love is
 > micro-optimization... that's what you should do." — Linus Torvalds
@@ -67,9 +64,6 @@ purposes:
 - **3**: Maximum optimization with no runtime checks (production releases only
   after thorough testing)
 
-</div><br/>
-<div style="width: 80%; margin: 0 auto; text-align: justify; font-size: 120%;">
-
 ## Key Features
 
 - **Portability**: Hatchling could easily be made to run on top of any old
@@ -119,6 +113,12 @@ purposes:
 
 - **64-bit Ready**: Designed for both 32-bit and 64-bit targets.
 
+## Documentation
+
+Running the command `doxygen` with no args will generate `docs/html/index.html`.
+All the documentation is in `include/hx/*.h` and `include/hx/*.hpp`. A modern
+editor like vscode will also show you the docs in a mouseover box.
+
 ## Tested Environments
 
 Every compiler warning flag should be safe to enable. This is Ubuntu 24.04 LTS.
@@ -127,11 +127,12 @@ to resurrect.
 
 - gcc, musl-gcc 13.3.0
 - clang 18.1.3 (including sanitizers)
+- doxygen 1.9.8
 - emcc 4.0.5
 - gcovr 7.0
 - cmake 3.28.3
 - python 3.12.3
-- c99 c17 c++11 c++14 c++17
+- c99 c17 c++11 c++14 c++17 c++20
 
 ## Remaining Tasks
 
@@ -144,5 +145,3 @@ to resurrect.
 © 2017-2025 Adrian Johnston. This project is licensed under the terms of the LICENSE.md file.
 
 🐉🐉🐉
-
-</div>

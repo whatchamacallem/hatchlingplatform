@@ -1,7 +1,5 @@
 # entanglement.py
 
-<div style="text-align: justify; font-size: 120%;">
-
 ## Table of Contents
 
 - [Overview of entanglement.py](#overview-of-entanglementpy)
@@ -16,7 +14,7 @@
 
 ## Overview of entanglement.py
 
-> **_NOTE:_** *This is an alpha release.*
+> **_NOTE:_** _This is an alpha release._
 
 `entanglement.py` is a Python binding generator that automatically creates
 Python interfaces for C++ shared libraries. This command-line tool uses `clang`

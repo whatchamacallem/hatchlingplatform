@@ -17,8 +17,6 @@
 /// Available utilities are: `hxnull`, `hxnullptr`, `hxmove`, `hxmin`, `hxmax`,
 /// `hxabs`, `hxclamp`, `hxswap`, `hxhex_dump`, `hxfloat_dump`.
 
-/// \mainpage See the README.md for an overview. See the file list for details.
-
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -31,11 +29,11 @@
 #endif
 
 /// `HATCHLING_VER` - Two digit major, minor and patch versions. Odd numbered
-/// minor versions are development branches.
-#define HATCHLING_VER 30601l
+/// minor versions are development branches. Yes, this is actually that old.
+#define HATCHLING_VER 30602l
 /// `HATCHLING_TAG` - Major, minor and patch version tag name. Odd numbered
 /// minor versions are development branches and their tags end in `-dev`.
-#define HATCHLING_TAG "v3.6.1"
+#define HATCHLING_TAG "v3.6.2"
 
 #include <hx/hxsettings.h>
 #include <hx/hxmemory_manager.h>

@@ -142,7 +142,8 @@
     "python.analysis.typeCheckingMode": "standard",
     "markdownlint.config": {
         "MD033": {
-            "allowed_elements": ["div", "img", "br"]
+            // Doxygen renders images with the alt text after them.
+            "allowed_elements": ["img"]
         }
     }
 }
