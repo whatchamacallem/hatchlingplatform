@@ -2,10 +2,10 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
-//
-// <hx/hxstring_literal_hash.h> - This code is used to hash filenames so that
-// they are not added to the release build. This provides asserts in a low RAM
-// or limited download size scenario.
+
+/// \file hx/hxstring_literal_hash.h This code is used to hash filenames so that
+/// they are not added to the release build. This provides asserts in a low RAM
+/// or limited download size scenario.
 
 #if !HATCHLING_VER
 #error #include <hx/hatchling.h> instead

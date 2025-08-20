@@ -1,5 +1,5 @@
 bin/
-cache/
+docs/
 entanglement_example/build
 entanglement_example/entanglement_example.egg-info
 entanglement_example/src/entanglement_example.py

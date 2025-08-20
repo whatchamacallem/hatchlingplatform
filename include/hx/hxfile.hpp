@@ -6,10 +6,10 @@
 #include <hx/hatchling.h>
 
 /// `hxfile` - RAII wrapper for file I/O. A mixture of unformatted
-/// std::basic_fstream operations and formatted C-style text printing. This code
+/// `std::basic_fstream` operations and formatted C-style text printing. This code
 /// will do all your error handling for you if you let it. From an optimization
-/// perspective, printf/scanf turn out to be bytecode interpreters and those are
-/// hard to compete with for code size. gcc is recommended for validating their
+/// perspective, `printf`/`scanf` turn out to be bytecode interpreters and those are
+/// hard to compete with for code size. `gcc` is recommended for validating their
 /// arguments when used in untested error handling. However, memory imaged data
 /// structres are still recommended because they have predictable memory
 /// allocation requirements and can be loaded by a dma controller. Finally, this
@@ -18,9 +18,9 @@
 /// kind of codebase by writing an alternate .cpp file for your target.
 class hxfile {
 public:
-	/// open_mode::in/out are from std::ios_base::openmode and indicate I/O
-	/// mode. open_mode::stdio provides access to stdio. open_mode::failable
-	/// skips asserts and is similar to setting std::basic_ios::exceptions(0).
+	/// `open_mode::in/out` are from `std::ios_base::openmode` and indicate I/O
+	/// mode. `open_mode::stdio` provides access to stdio. `open_mode::failable`
+	/// skips asserts and is similar to setting `std::basic_ios::exceptions(0)`.
 	enum open_mode {
 		/// Open for binary reading.
 		in = 1u,
@@ -33,7 +33,7 @@ public:
 	};
 
 	/// Constructor to initialize the file object with a specific mode. For an
-	/// unopened file use 0. For stdio use (stdio|in), (stdio|out). stdio may be
+	/// unopened file use `0`. For stdio use `(stdio|in)`, `(stdio|out)`. stdio may be
 	/// failble.
 	hxfile(uint16_t mode_=0u);
 
@@ -81,19 +81,19 @@ public:
 	size_t write(const void* bytes_, size_t count_);
 
 	/// Reads an \n or EOF terminated character sequence. Allowed to fail on
-	/// EOF without needing to be hxfile::failable. Automatically determines
+	/// `EOF` without needing to be `hxfile::failable`. Automatically determines
 	/// the size of the provided char array.
 	/// - `buffer` : Reference to a char array where the line will be stored.
 	template<size_t buffer_size_>
 	bool get_line(char(&buffer_)[buffer_size_]) { return get_line(buffer_, buffer_size_); }
 
-	/// Reads an \n or EOF terminated character sequence. Allowed to fail on EOF
-	/// without needing to be hxfile::failable.
+	/// Reads an `\n` or `EOF` terminated character sequence. Allowed to fail on `EOF`
+	/// without needing to be `hxfile::failable`.
 	/// - `buffer` : Pointer to a char array where the line will be stored.
 	/// - `buffer_size` : Size of the buffer array.
 	bool get_line(char* buffer_, size_t buffer_size_);
 
-	/// Writes a formatted string to the file. Must be less than HX_MAX_LINE
+	/// Writes a formatted string to the file. Must be less than `HX_MAX_LINE`
 	/// characters.
 	/// - `format` : Format string, similar to printf.
 	/// - `...` Additional arguments for the format string.
@@ -110,7 +110,7 @@ public:
 	bool write1(const T_& t_) { return write(&t_, sizeof t_) == sizeof t_; }
 
 	/// Read a single unformatted native endian object from a stream. The
-	/// operator >= is being used instead of >> to indicate there is no
+	/// operator `>=` is being used instead of `>>` to indicate there is no
 	/// formatting.
 	/// - `t` : Reference to the object where the data will be stored.
 	template<typename T_>
@@ -120,7 +120,7 @@ public:
 	}
 
 	/// Write a single unformatted native endian object to a stream. The
-	/// operator <= is being used instead of << to indicate there is no
+	/// operator `<=` is being used instead of `<<` to indicate there is no
 	/// formatting.
 	/// - `t` : Reference to the object containing the data to write.
 	template<typename T_>

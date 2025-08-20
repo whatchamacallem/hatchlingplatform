@@ -2,9 +2,9 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
-//
-// <hx/hxrandom.hpp> - A random number generator that automatically casts itself
-// in well defined ways. Useful for test data.
+
+/// \file hx/hxrandom.hpp A random number generator that automatically casts itself
+/// in well defined ways. Useful for test data.
 
 #include <hx/hatchling.h>
 
@@ -13,6 +13,7 @@
 /// a new value every time. Usable as a functor or by simply calling the
 /// provided cast operator to your type. Has a period of 2^64 and passes routine
 /// numerical tests with only 8 bytes of state and using simple arithmetic.
+/// Intended for test data or games and not mathematical applications.
 class hxrandom {
 public:
 	/// Constructor to initialize the random number generator.

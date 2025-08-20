@@ -2,27 +2,27 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
-//
-// <entanglement.h> - The ENTANGLEMENT_T and ENTANGLEMENT attributes define a
-// .so library interface. The usage of these C++ attributes is as follows:
-//
-// example.hpp:
-//
-//	 enum ENTANGLEMENT_T example_enum { };
-//
-//	 ENTANGLEMENT float example_function(float x) noexcept;
-//
-//	 class ENTANGLEMENT_T example_class {
-//	 public:
-//		 ENTANGLEMENT int example_method(void) noexcept;
-//	 };
-//
-// example.cpp:
-//
-//	 float example_function(float x) noexcept { return 1.0f; };
-//
-//	 int example_class::example_method(void) noexcept { return 2; }
-//
+
+/// \file entanglement.h The `ENTANGLEMENT_T` and `ENTANGLEMENT` attributes define a
+/// .so library interface. The usage of these C++ attributes is as follows:
+///
+/// example.hpp:
+/// ```
+///	 enum ENTANGLEMENT_T example_enum { };
+///
+///	 ENTANGLEMENT float example_function(float x) noexcept;
+///
+///	 class ENTANGLEMENT_T example_class {
+///	 public:
+///		 ENTANGLEMENT int example_method(void) noexcept;
+///	 };
+/// ```
+/// example.cpp:
+/// ```
+///	 float example_function(float x) noexcept { return 1.0f; };
+///
+///	 int example_class::example_method(void) noexcept { return 2; }
+/// ```
 
 #ifndef ENTANGLEMENT_PASS
 /// `ENTANGLEMENT_PASS` - Indicates that an entanglement.py binding pass might

@@ -2,13 +2,13 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
-//
-// <hx/hxradix_sort.hpp> - hxradix_sort is recommended as an `Θ(n)` sorting
-// strategy for any primitive type that is 4-bytes or less. This implementation
-// does not cause code bloat and is the fastest sorting algorithm available for
-// scalar keys. Radix sort is best when you need real-time guarantees and have a
-// massive workload. This is not a toy. It was actually how IBM sorted punch
-// cards.
+
+/// \file hx/hxradix_sort.hpp hxradix_sort is recommended as an Θ(n) sorting
+/// strategy for any primitive type that is 4-bytes or less. This implementation
+/// does not cause code bloat and is the fastest sorting algorithm available for
+/// scalar keys. Radix sort is best when you need real-time guarantees and have a
+/// massive workload. This is not a toy. It was actually how IBM sorted punch
+/// cards.
 
 #include <hx/hatchling.h>
 #include <hx/hxarray.hpp>

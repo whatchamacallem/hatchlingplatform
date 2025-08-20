@@ -2,15 +2,15 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
-//
-// <hx/hxkey.hpp> - User overloadable key-equal, key-less and key-hash
-// functions. This code will only use the == and < operators by default. That
-// will work with a default or custom <=> operator. Alternately these calls can
-// be overloaded to resolve key operations without global operator overloads.
-// This code uses C++20 concepts when available and provides no fallbacks for
-// SFINAE otherwise. Functors are recommended and supported for complex use
-// cases as they are relatively easy to debug. See hxkey_equal_function and
-// hxkey_less_function for generating default functors.
+
+/// \file hx/hxkey.hpp User overloadable key-equal, key-less and key-hash
+/// functions. This code will only use the `==` and `<` operators by default. That
+/// will work with a default or custom `<=>` operator. Alternately these calls can
+/// be overloaded to resolve key operations without global operator overloads.
+/// This code uses C++20 concepts when available and provides no fallbacks for
+/// SFINAE otherwise. Functors are recommended and supported for complex use
+/// cases as they are relatively easy to debug. See `hxkey_equal_function` and
+/// `hxkey_less_function` for generating default functors.
 
 #include <hx/hatchling.h>
 
@@ -58,7 +58,7 @@ inline bool(*hxkey_equal_function(void))(const A_&, const B_&) {
 
 /// `hxkey_less(const T&, const T&)` - User overloadable function for performing
 /// comparisons. Invokes `operator<` by default. All the other comparison
-/// operators can be written using `operator<`. However hxkey_equal is also used
+/// operators can be written using `operator<`. However `hxkey_equal` is also used
 /// for efficiency. Returns true if the first object is less than the second.
 /// Override for custom ordering.
 /// - `a` : The first object.
@@ -87,8 +87,8 @@ constexpr bool hxkey_less(const A_* a_, const B_* b_) {
 }
 
 /// `hxkey_less(const char*, const char*)` - Returns true if the first C string
-/// is lexicographically less than the second by ASCII. UTF-8 is allowed. Uses
-/// (`strcmp(a, b) < 0`).
+/// is lexicographically less than the second by ASCII. UTF-8 is assigned a
+/// stable ordering without looking up a locale. Uses (`strcmp(a, b) < 0`).
 /// - `a` : The first C string.
 /// - `b` : The second C string.
 inline bool hxkey_less(const char* a_, const char* b_) {

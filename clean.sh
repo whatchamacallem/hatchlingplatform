@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 # This file is licensed under the terms of the LICENSE.md file.
 
-rm -rf ./bin
+rm -rf ./bin ./docs
 
 # Clean up after Python package build. This is how Python likes it.
 rm -rf	entanglement_example/build \

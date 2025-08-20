@@ -2,19 +2,22 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
-//
-// Hatchling Platform. <hx/hatchling.h> requires C99. C++11 is optional.
-//
-// Defines logging macros hxlog, hxlogrelease, hxlogconsole, hxlogwarning which
-// vary by HX_RELEASE level (0–3) and defines log verbosity {log, console,
-// warning, assert}.
-//
-// Assertion macros hxassert, hxassertmsg, hxassertrelease are provided for
-// debugging, active when HX_RELEASE < 3. hxinit initializes the platform and
-// hxshutdown releases resources when HX_RELEASE < 3.
-//
-// Available utilities are: hxnull, hxnullptr, hxmove, hxmin, hxmax, hxabs,
-// hxclamp, hxswap, hxhex_dump, hxfloat_dump.
+
+/// \file hx/hatchling.h
+/// Hatchling Platform. Requires C99. C++11 is optional.
+///
+/// Defines logging macros `hxlog`, `hxlogrelease`, `hxlogconsole`,
+/// `hxlogwarning` which vary by `HX_RELEASE` level (0–3) and defines log
+/// verbosity {`log`, `console`, `warning`, `assert`}.
+///
+/// Assertion macros `hxassert`, `hxassertmsg`, `hxassertrelease` are provided
+/// for debugging, active when `HX_RELEASE < 3`. `hxinit` initializes the
+/// platform and `hxshutdown` releases resources when `HX_RELEASE < 3`.
+///
+/// Available utilities are: `hxnull`, `hxnullptr`, `hxmove`, `hxmin`, `hxmax`,
+/// `hxabs`, `hxclamp`, `hxswap`, `hxhex_dump`, `hxfloat_dump`.
+
+/// \mainpage See the README.md for an overview. See the file list for details.
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -29,10 +32,10 @@
 
 /// `HATCHLING_VER` - Two digit major, minor and patch versions. Odd numbered
 /// minor versions are development branches.
-#define HATCHLING_VER 30600l
+#define HATCHLING_VER 30601l
 /// `HATCHLING_TAG` - Major, minor and patch version tag name. Odd numbered
 /// minor versions are development branches and their tags end in `-dev`.
-#define HATCHLING_TAG "v3.6.0"
+#define HATCHLING_TAG "v3.6.1"
 
 #include <hx/hxsettings.h>
 #include <hx/hxmemory_manager.h>

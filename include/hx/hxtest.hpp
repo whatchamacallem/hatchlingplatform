@@ -2,66 +2,66 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
-//
-// <hx/hxtest.hpp> - This is a Google Test-compatable framework for writing unit
-// tests. It doesn't spam your system memory allocator with string operations
-// right after an assert fails. Actually, it makes no allocations ever. To
-// disable this header and switch to testing with <gtest/gtest.h> directly use
-// -DHX_USE_GOOGLE_TEST=1. Only core features are provided. This framework only
-// uses the '<' operator and '==' operator in it's asserts. Compatibility with
-// Google Test may require additional relational operators.
-//
-// - TEST(suite, name) - Defines a test case without a fixture.
-// - TEST_F(fixture, name) - Defines a test case using a fixture class.
-// - Use ASSERT_* for fatal assertions, EXPECT_* for non-fatal.
-// - See RUN_ALL_TESTS() in test/hxtest_main.cpp for example.
-//
-// - Simple Test Case (no fixture):
-//
-//   TEST(Math, Addition) {
-//	   int a = 2, b = 3;
-//	   EXPECT_EQ(a + b, 5);
-//	   EXPECT_TRUE(a < b + 2);
-//	   EXPECT_NEAR(3.14, 3.141, 0.01);
-//	   SUCCEED();
-//   }
-//
-// - Fixture-Based Test Case (using TEST_F):
-//
-//   class MyFixture : public testing::Test {
-//   public:
-//	   void SetUp() override { value = 42; }
-//	   void TearDown() override { /* cleanup */ }
-//	   void set_value(int x) { value = x; }
-//	   int value;
-//   };
-//
-//   TEST_F(MyFixture, ValueIsSet) {
-//	   EXPECT_EQ(value, 42);
-//	   set_value(100);
-//	   EXPECT_NE(value, 42);
-//   }
-//
-// - Condition Check Macros: (a and b only require operator< and operator==.)
-//
-//   EXPECT_TRUE(expr);	     // Checks expr is true
-//   EXPECT_FALSE(expr);	 // Checks expr is false
-//   EXPECT_EQ(a, b);		 // Checks a == b
-//   EXPECT_NE(a, b);		 // Checks a != b
-//   EXPECT_LT(a, b);		 // Checks a < b
-//   EXPECT_GT(a, b);		 // Checks a > b
-//   EXPECT_LE(a, b);		 // Checks a <= b
-//   EXPECT_GE(a, b);		 // Checks a >= b
-//   EXPECT_NEAR(a, b, tol); // Checks |a-b| <= tol
-//   SUCCEED();			     // Marks test as successful
-//   FAIL();				 // Marks test as failed
-//
-// - ASSERT_* macros are equivalent to EXPECT_*
 
-// Used to resolve HX_USE_GOOGLE_TEST.
+/// \file hx/hxtest.hpp This is a Google Test-compatable framework for writing unit
+/// tests. It doesn't spam your system memory allocator with string operations
+/// right after an assert fails. Actually, it makes no allocations ever. To
+/// disable this header and switch to testing with `<gtest/gtest.h>` directly use
+/// `-DHX_USE_GOOGLE_TEST=1`. Only core features are provided. This framework only
+/// uses the < operator and == operator in it's asserts. Compatibility with
+/// Google Test may require additional relational operators.
+///
+/// - `TEST(suite, name)` - Defines a test case without a fixture.
+/// - `TEST_F(fixture, name)` - Defines a test case using a fixture class.
+/// - Use `ASSERT_`* for fatal assertions, EXPECT_* for non-fatal.
+/// - See `RUN_ALL_TESTS()` in test/hxtest_main.cpp for example.
+///
+/// - Simple Test Case (no fixture):
+/// ```
+///   TEST(Math, Addition) {
+///	   int a = 2, b = 3;
+///	   EXPECT_EQ(a + b, 5);
+///	   EXPECT_TRUE(a < b + 2);
+///	   EXPECT_NEAR(3.14, 3.141, 0.01);
+///	   SUCCEED();
+///   }
+/// ```
+/// - Fixture-Based Test Case (using `TEST_F`):
+/// ```
+///   class MyFixture : public testing::Test {
+///   public:
+///	   void SetUp() override { value = 42; }
+///	   void TearDown() override { EXPECT_EQ(value, 0) }
+///	   void set_value(int x) { value = x; }
+///	   int value;
+///   };
+///
+///   TEST_F(MyFixture, ValueIsSet) {
+///	   EXPECT_EQ(value, 42);
+///	   set_value(100);
+///	   EXPECT_NE(value, 42);
+///   }
+/// ```
+/// - Condition Check Macros: (`a` and `b` only require `operator<` and `operator==`.)
+/// ```
+///   EXPECT_TRUE(expr);	  // Checks expr is true
+///   EXPECT_FALSE(expr);	  // Checks expr is false
+///   EXPECT_EQ(a, b);		  // Checks a == b
+///   EXPECT_NE(a, b);		  // Checks a != b
+///   EXPECT_LT(a, b);		  // Checks a < b
+///   EXPECT_GT(a, b);		  // Checks a > b
+///   EXPECT_LE(a, b);		  // Checks a <= b
+///   EXPECT_GE(a, b);		  // Checks a >= b
+///   EXPECT_NEAR(a, b, tol); // Checks |a-b| <= tol
+///   SUCCEED();			  // Marks test as successful
+///   FAIL();				  // Marks test as failed
+/// ```
+/// - `ASSERT_`* macros are equivalent to `EXPECT_`*
+
+// Used to resolve `HX_USE_GOOGLE_TEST`.
 #include <hx/hatchling.h>
 
-// HX_USE_GOOGLE_TEST - Enable this to use Google Test instead of hxtest.
+// `HX_USE_GOOGLE_TEST` - Enable this to use Google Test instead of `hxtest`.
 #if HX_USE_GOOGLE_TEST
 #include <gtest/gtest.h>
 #else // !HX_USE_GOOGLE_TEST

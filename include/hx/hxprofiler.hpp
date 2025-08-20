@@ -2,11 +2,12 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
-//
-// <hx/hxprofiler.hpp> - Provides macros for RAII-style profiling
-// (hxprofile_scope, hxprofile_scope_min with optional cycle cutoffs.) Allows
-// exporting to Chrome's tracing format (hxprofiler_write_to_chrome_tracing).
-// Profiling is enabled only if HX_PROFILE is defined.
+
+/// \file hx/hxprofiler.hpp Provides macros for RAII-style profiling
+/// (`hxprofile_scope`, `hxprofile_scope_min` with optional cycle cutoffs.)
+/// Allows exporting to Chrome's tracing format
+/// (`hxprofiler_write_to_chrome_tracing`). Profiling is enabled only if
+/// `HX_PROFILE` is defined.
 
 #include <hx/hatchling.h>
 

@@ -2,12 +2,12 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
-//
-// <hx/hatchling_pch.hpp> - Includes all the Hatchling headers for use building
-// a C++ precompiled header. Use hx/hatchling.h for building a C precompiled
-// header. See testmatrix.sh.
 
-/// HX_HATCHLING_PCH_USED - Non-zero if this header is correctly included before
+/// \file hx/hatchling_pch.hpp Includes all the Hatchling headers for use building
+/// a C++ precompiled header. Use `hx/hatchling.h` for building a C precompiled
+/// header. See `testmatrix.sh`.
+
+/// `HX_HATCHLING_PCH_USED` - Non-zero if this header is correctly included before
 /// the other hx headers.
 #define HX_HATCHLING_PCH_USED 1
 

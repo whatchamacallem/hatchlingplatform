@@ -2,35 +2,34 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
-//
-// <hx/hxthread.hpp> - Threading primitives that mostly adhere to the C++
-// standard. This header provides lightweight C++ wrappers around POSIX pthreads
-// for thread synchronization and management. The following classes are defined:
-//
-// - hxthread_local<T> (Available single threaded as well.)
-//	 Provides a C++ template for thread-local storage, allowing each thread to
-//	 maintain its own instance of a specified type T. This class is available
-//	 for compatibility when threading is off.
-//
-// - hxmutex (HX_USE_THREADS only)
-//	 Mutex wrapper for pthreads. Provides lock/unlock functionality, error
-//	 tracking, and ensures proper initialization and destruction. Not copyable.
-//	 Asserts on incorrect configuration.
-//
-// - hxunique_lock (HX_USE_THREADS only)
-//	 RAII-style unique lock for hxmutex. Locks the mutex on construction and
-//	 unlocks on destruction. Supports deferred locking and ownership checks.
-//	 Not copyable.
-//
-// - hxcondition_variable (HX_USE_THREADS only)
-//	 Condition variable wrapper for pthreads. Allows threads to wait for
-//	 notifications, supports predicate-based waiting, and provides notify_one
-//	 and notify_all methods. Not copyable. Asserts on errors.
-//
-// - hxthread (HX_USE_THREADS only)
-//	 Thread wrapper for pthreads. Provides thread creation, joining, and
-//	 detaching. Ensures threads are not left joinable on destruction. Not copyable.
-//	 Errors are threated as release mode asserts instead of being tracked.
+
+/// \file hx/hxthread.hpp Threading primitives that mostly adhere to the C++
+/// standard. This header provides lightweight C++ wrappers around POSIX
+/// pthreads for thread synchronization and management. The following classes
+/// are defined:
+///
+/// - `hxthread_local<T>` (Available single threaded as well.) Provides a C++
+///	  template for thread-local storage, allowing each thread to maintain its own
+///	  instance of a specified type T. This class is available for compatibility
+///	  when threading is off.
+///
+/// - `hxmutex` (`HX_USE_THREADS` only) Mutex wrapper for pthreads. Provides
+///	  lock/unlock functionality, error tracking, and ensures proper initialization
+///	  and destruction. Not copyable. Asserts on incorrect configuration.
+///
+/// - `hxunique_lock` (`HX_USE_THREADS` only) RAII-style unique lock for
+///	  `hxmutex`. Locks the mutex on construction and unlocks on destruction.
+///	  Supports deferred locking and ownership checks. Not copyable.
+///
+/// - hxcondition_variable (HX_USE_THREADS only) Condition variable wrapper for
+///	  pthreads. Allows threads to wait for notifications, supports predicate-based
+///	  waiting, and provides `notify_one` and `notify_all` methods. Not copyable.
+///	  Asserts on errors.
+///
+/// - `hxthread` (`HX_USE_THREADS` only) Thread wrapper for pthreads. Provides
+///	  thread creation, joining, and detaching. Ensures threads are not left
+///	  joinable on destruction. Not copyable. Errors are threated as release mode
+///	  asserts instead of being tracked.
 
 #include <hx/hatchling.h>
 

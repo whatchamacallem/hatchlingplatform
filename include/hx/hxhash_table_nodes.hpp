@@ -2,9 +2,9 @@
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
-//
-// <hx/hxhash_table_nodes.hpp> - These are versions of the hxhash_table node_t
-// template parameter for integers and strings.
+
+/// \file hx/hxhash_table_nodes.hpp These are versions of the hxhash_table
+/// node_t template parameter for integers and strings.
 
 #include <hx/hxhash_table.hpp>
 
