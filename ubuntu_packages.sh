@@ -17,6 +17,7 @@ set -o errexit
 sudo apt install -y \
 	clang           \
 	cmake           \
+	doxygen         \
 	g++             \
 	g++-multilib    \
 	gcc-multilib    \
@@ -46,4 +47,6 @@ echo $DIV
 cmake --version
 echo $DIV
 python3  --version
+echo $DIV
+doxygen  --version
 echo $DIV

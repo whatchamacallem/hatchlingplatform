@@ -38,6 +38,7 @@ time ./testmatrix.sh
 time ./testpythonbindings.sh
 time ./teststrip.sh
 time ./testwasm.sh --headless
+time doxygen
 ./clean.sh
 
 { set +o xtrace; } 2> /dev/null

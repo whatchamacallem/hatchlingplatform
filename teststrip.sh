@@ -41,6 +41,9 @@ strip -o hxtest-strip --strip-unneeded hxtest
 
 cd ..
 
+# Prints [  PASSED  ]
+./bin/hxtest-strip
+
 echo ==========================================================================
 echo = Largest elf symbols...
 echo ==========================================================================

@@ -116,8 +116,9 @@ purposes:
 ## Documentation
 
 Running the command `doxygen` with no args will generate `docs/html/index.html`.
-All the documentation is in `include/hx/*.h` and `include/hx/*.hpp`. A modern
-editor like vscode will also show you the docs in a mouseover box.
+The markdown source for the documentation is in the header files at
+`include/hx/` and is readable as is. A modern editor like vscode will also show
+you the docs in a mouseover box.
 
 ## Tested Environments
 
