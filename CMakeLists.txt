@@ -1,11 +1,18 @@
 # SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+# SPDX-License-Identifier: MIT
+# This file is licensed under the terms of the LICENSE.md file.
 #
-# A CMake build that uses Google Test instead of the hxTest.h reimplementation.
-# This file is not intended for building a library.
+# This is a CMake build that uses Google Test instead of the hxTest.h
+# reimplementation. It is significantly slower than the test scripts when doing
+# a clean build.
+#
+# This file is for testing and is not intended for building a library for your
+# application. There is no expected configuration for use with Hatchling Platform
+# as it is expected to work everywhere with all warnings and errors enabled.
+# You should be able to add this code to your existing build with no problems.
 
 cmake_minimum_required(VERSION 3.10)
 project(Hatchling)
-
 
 file(GLOB SOURCES "src/*.c" "src/*.cpp")
 file(GLOB TEST_SOURCES "test/*.c" "test/*.cpp")

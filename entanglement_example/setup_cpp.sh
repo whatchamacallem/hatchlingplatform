@@ -12,18 +12,12 @@ HX_DIR=$(dirname "$(pwd)")
 PY_CFLAGS="$(python3-config --cflags)"
 PY_LDFLAGS="$(python3-config --ldflags --embed)"
 
-HX_CFLAGS="$PY_CFLAGS -fPIC -pthread -I$HX_DIR/include -DHX_RELEASE=0 \
+HX_CFLAGS="$PY_CFLAGS -DHX_RELEASE=0 -I$HX_DIR/include -fPIC -pthread \
 	-fdiagnostics-absolute-paths -Wfatal-errors"
+
 HX_LDFLAGS="$PY_LDFLAGS -shared -Wl,-s"
 
 set -o xtrace
-
-# {src,test}/*.c -> bin/*.o
-clang $HX_CFLAGS -std=c17 -fvisibility=hidden -c $HX_DIR/src/*.c $HX_DIR/test/*.c
-
-# {src,test}/*.cpp -> bin/hxtest
-clang++ $HX_CFLAGS -std=c++17 -fvisibility=hidden \
-	-c $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp
 
 # The .toml requires the .so to be in the src directory.
 clang++ $HX_CFLAGS $HX_LDFLAGS -std=c++17 -lstdc++ -lpthread \

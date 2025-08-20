@@ -8,5 +8,6 @@ rm -rf ./bin
 # Clean up after Python package build. This is how Python likes it.
 rm -rf	entanglement_example/build \
 		entanglement_example/entanglement_example.egg-info \
+		entanglement_example/src/__pycache__ \
 		entanglement_example/src/entanglement_example.py \
 		entanglement_example/src/libentanglement_example.so.1

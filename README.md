@@ -32,7 +32,9 @@ written C++ codebases where the profiler showed we were spending 3% of our time
 executing vector::operator[] with all optimizations turned on. And this was in a
 setting where it made sense to spend weeks working on an optimization that would
 shave 1% off. *I'm sorry to destroy everyone's ideals, but even the authors of
-libclang wrote their own custom C++ container library.*
+libclang wrote their own custom C++ container library.* The C++ language standard
+also has special provisions for "freestanding" development without the standard
+library and this is intended for that purpose.
 
 This project serves as both a practical tool and a research platform for
 exploring C++ standard library design principles, particularly focusing on core

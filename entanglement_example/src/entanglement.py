@@ -4,7 +4,7 @@
 
 _version = '0.0.3-dev'
 _usage = f'''\
-python3 entanglement.py <compiler_flags> <lib_name> <header_files>... <output_file>
+python3 entanglement.py [compiler_flags] [lib_name] [header_files]... [output_file]
 version: {_version}
 
 Generates Python bindings for a C++ .so using a clang command line and one or
@@ -31,10 +31,10 @@ class usage(ValueError): ...
 
 # Verbose - 0: No news is good news. 1 : Status messages. 2: Processing steps.
 # 3: AST traversal. All messages go to stderr.
-VERBOSE = 0
+VERBOSE = 1
 
 # XXX Path to the libclang shared library. Needs to be configurable.
-_libclang_path = '/usr/lib/llvm-18/lib/libclang.so.1'
+LIBCLANG_PATH = '/usr/lib/llvm-18/lib/libclang.so.1'
 
 # List of compiler flags for the build process.
 _arg_compiler_flags: List[str]
@@ -1136,9 +1136,9 @@ def main(argv: List[str]) -> None:
 	_verbose(1, 'lib_name:       ' + _arg_lib_name)
 	_verbose(1, 'header_files:   ' + ' '.join(_arg_header_files))
 	_verbose(1, 'output_file:    ' + _arg_output_file)
-	_verbose(1, 'library_file:   ' + _libclang_path)
+	_verbose(1, 'library_file:   ' + LIBCLANG_PATH)
 
-	Config.set_library_file(_libclang_path)
+	Config.set_library_file(LIBCLANG_PATH)
 
 	# Merge and sort all the cursors of interest from all the translation units.
 	# Using a Python class to implement namespaces requires merging the
