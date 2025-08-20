@@ -29,7 +29,7 @@ RAM as in your web-browser or plugged into your Python back end.
 
 If this all seems un-relatable I understand. However, I have seem professionally
 written C++ codebases where the profiler showed we were spending 3% of our time
-executing vector::operator[] with all optimizations turned on. And this was in a
+executing `vector::operator[]` with all optimizations turned on. And this was in a
 setting where it made sense to spend weeks working on an optimization that would
 shave 1% off. *I'm sorry to destroy everyone's ideals, but even the authors of
 libclang wrote their own custom C++ container library.* The C++ language standard
@@ -74,7 +74,7 @@ purposes:
 
 - **Portability**: Hatchling could easily be made to run on top of any old
   embedded c99 library. musl libc is recommended for embedded linux and is
-  widely available: https://musl.libc.org/ No other C++ runtime or C++ code is
+  widely available: <https://musl.libc.org/> No other C++ runtime or C++ code is
   required. pthreads is used for threading which is a widely implemented
   standard. The assert framework can work with only string hashes in release in
   order to provide basic debug facilities in environments too limited to debug
