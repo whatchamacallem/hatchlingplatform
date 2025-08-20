@@ -39,10 +39,10 @@ strip -o hxtest-strip --strip-unneeded hxtest
 # turn off tracing silently and make sure the command returns 0.
 { set +o xtrace; } 2> /dev/null
 
-cd ..
-
 # Prints [  PASSED  ]
-./bin/hxtest-strip
+./hxtest-strip
+
+cd ..
 
 echo ==========================================================================
 echo = Largest elf symbols...
