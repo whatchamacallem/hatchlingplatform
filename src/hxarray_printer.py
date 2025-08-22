@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+# SPDX-License-Identifier: MIT
+# This file is licensed under the terms of the LICENSE.md file.
+
 import gdb # type: ignore
 import gdb.printing # type: ignore
 import traceback
@@ -6,15 +10,18 @@ import traceback
 #
 #	template<typename T_, size_t fixed_capacity_>
 #	class hxallocator {
+#		// ...
 #		T_ m_data_[fixed_capacity_];
 #	};
 #	template<typename T_>
 #	class hxallocator<T_, 0> {
+#		// ...
 #		int m_capacity_;
 #		T_* m_data_;
 #	};
 #	template<typename T_, size_t capacity_=0>
 #	class hxarray : public hxallocator<T_, capacity_> {
+#		// ...
 #		T_* m_end_;
 #	}
 #

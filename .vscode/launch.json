@@ -2,41 +2,35 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "(gdb) Launch",
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "(gdb) Launch",
 			"type": "cppdbg",
 			"request": "launch",
-            "program": "${workspaceFolder}/bin/hxtest",
-            "args": ["help", "printhashes", "runtests"],
+			"program": "${workspaceFolder}/bin/hxtest",
+			"args": ["help", "printhashes", "runtests"],
 			"stopAtEntry": false,
-            "cwd": "${workspaceFolder}/bin",
+			"cwd": "${workspaceFolder}/bin",
 			"environment": [],
 			"externalConsole": false,
 			"MIMode": "gdb",
-            "logging": {
-//				"engineLogging": true,
-//				"moduleLoad": true,
-//				"trace": true,
-//				"programOutput": true
-            },
-            "setupCommands": [
-                {
-                    "description": "Enable pretty printing",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": false
-                },
-                {
-                    "description": "Load custom printers",
-                    "text": "source ${workspaceFolder}/src/hxarray_printer.py"
-                },
-                {
-                    "description": "Set Disassembly Flavor to Intel",
-                    "text": "-gdb-set disassembly-flavor intel",
-                    "ignoreFailures": true
-                }
-            ]
-        }
-    ]
+			"setupCommands": [
+				{
+					"description": "Enable pretty printing",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": false
+				},
+				{
+					"description": "Load custom printers",
+					"text": "source ${workspaceFolder}/src/hxarray_printer.py"
+				},
+				{
+					"description": "Set Disassembly Flavor to Intel",
+					"text": "-gdb-set disassembly-flavor intel",
+					"ignoreFailures": true
+				}
+			]
+		}
+	]
 }

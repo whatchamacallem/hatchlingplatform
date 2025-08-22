@@ -6,5 +6,3 @@ __all__ = ['main']  # implements: from entanglement_test import *
 
 # Expose transpiler interface.
 from .entanglement import main
-
-# For testing use: python -m entanglement_example.entanglement_test

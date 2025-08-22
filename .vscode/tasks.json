@@ -2,24 +2,24 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 {
-    "tasks": [
-        {
-            "type": "cppbuild",
-            "label": "clang build",
-            "command": "./debugbuild.sh",
-            "args": [
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        }
-    ],
-    "version": "2.0.0"
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "clang build",
+			"command": "./debugbuild.sh",
+			"args": [
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		}
+	],
+	"version": "2.0.0"
 }

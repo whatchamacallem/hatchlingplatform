@@ -1,7 +1,10 @@
+SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+SPDX-License-Identifier: MIT
+This file is licensed under the terms of the LICENSE.md file.
 
 ###
-### Here is how to build and test in-place without building a package.
-### This requires the clang package to be installed on your python path.
+### How to build and test in-place without building a package. This requires
+### the clang package to be installed on your python path.
 ###
 
 # To build the C++ .so in the entanglement_example directory only as needed:
@@ -22,9 +25,8 @@ python3 src/entanglement.py -std=c++17 [...] src/entanglement_example.py
 # unittest.main:
 python3 -m src.entanglement_test
 
-
 ###
-### Here is how to check that the package was installed correctly.
+### How to check that the package was installed correctly.
 ###
 
 # Create a virtual environment and install the package into it.
