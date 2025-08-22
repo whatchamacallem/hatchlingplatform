@@ -116,11 +116,11 @@ protected:
 	value_t_ m_value_;
 };
 
-/// `hxhash_table` - See top of this file for description.
+/// `hxhash_table` - See the top of this file for description.
 ///
-/// node_t must be a subclass of `hxhash_table_node` with the interface
-/// described above. If non-zero Table_size_bits configures the size of the hash
-/// table to be `table_size_bits^2`. Otherwise use set_table_size_bits() to
+/// `node_t` must be a subclass of `hxhash_table_node` with the interface
+/// described above. If non-zero `table_size_bits` configures the size of the hash
+/// table to be `table_size_bits^2`. Otherwise use `set_table_size_bits` to
 /// configure hash bits dynamically. See `hxdo_not_delete` for situations where
 /// the table does not own the nodes.
 template<typename node_t_,
@@ -132,7 +132,8 @@ public:
 	typedef typename node_t_::key_t key_t;
 
 	/// A forward iterator. Iteration is Θ(`n + (1 << table_size_bits)`).
-	/// Iterators are only invalidated by the removal of the node_t referenced.
+	/// Iterators are only invalidated by the removal of the `node_t`
+	/// referenced.
 	class const_iterator
 	{
 	public:
@@ -273,10 +274,10 @@ public:
 		return *n_;
 	}
 
-	/// Inserts a node_t into the hash table, allowing duplicate keys. Nodes that
+	/// Inserts a `node_t` into the hash table, allowing duplicate keys. Nodes that
 	/// have non-null hash pointers are allowed because they may have been released
 	/// from a table that way.
-	/// - `node` : The node_t to insert into the hash table.
+	/// - `node` : The `node_t` to insert into the hash table.
 	void insert_node(node_t_* ptr_) {
 		hxassertmsg(m_size_ < ~(size_t)0, "integer_overflow");
 		hxassertmsg(this->find(ptr_->key()) != ptr_, "container_reinsert");
@@ -288,11 +289,11 @@ public:
 	}
 
 	/// Returns a `node_t` matching key if any. If previous is non-null it must be
-	/// a node previously returned from find() with the same key and that has not
-	/// been removed. Then find() will return a subsequent node if any.
+	/// a node previously returned from `find()` with the same key and that has not
+	/// been removed. Then `find()` will return a subsequent node if any.
 	/// The previous object is non-const as it may be modified.
 	/// - `key` : The key to search for in the hash table.
-	/// - `previous` : A previously found node_t with the same key, or nullptr.
+	/// - `previous` : A previously found `node_t` with the same key, or nullptr.
 	node_t_* find(const typename node_t_::key_t& key_, const node_t_* previous_=hxnull) {
 		if (!previous_) {
 			for (node_t_* n_ = *this->get_bucket_head_(hxkey_hash(key_)); n_; n_ = (node_t_*)n_->hash_next()) {
@@ -354,7 +355,7 @@ public:
 	/// deleter(node_t*)` and functors supporting `operator()(node_t*)` and with an
 	/// `operator bool`. E.g. a free list or a null pointer.
 	/// - `key` : The key to search for and remove from the hash table.
-	/// - `deleter` : A function or functor to call on each removed node_t.
+	/// - `deleter` : A function or functor to call on each removed `node_t`.
 	template<typename deleter_override_t_>
 	size_t erase(const typename node_t_::key_t& key_, const deleter_override_t_& deleter_) {
 		size_t count_ = 0u;

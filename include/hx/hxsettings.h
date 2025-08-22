@@ -190,7 +190,7 @@
 extern "C" {
 #endif
 
-/// hxsettings. Constructed by first call to hxinit() which happens when or
+/// `hxsettings` - Constructed by first call to `hxinit` which happens when or
 /// before the system memory allocators construct.
 struct hxsettings {
 	/// Logging level for the application (e.g., verbosity of logs).
@@ -205,7 +205,7 @@ struct hxsettings {
 #endif
 };
 
-/// `g_hxsettings` - Global class constructed by hxinit().
+/// `g_hxsettings` - Global class constructed by `hxinit`.
 extern struct hxsettings g_hxsettings;
 
 #if HX_CPLUSPLUS

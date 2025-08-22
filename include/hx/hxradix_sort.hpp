@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-/// \file hx/hxradix_sort.hpp hxradix_sort is recommended as an Θ(n) sorting
+/// \file hx/hxradix_sort.hpp `hxradix_sort` is recommended as an Θ(`n`) sorting
 /// strategy for any primitive type that is 4-bytes or less. This implementation
 /// does not cause code bloat and is the fastest sorting algorithm available for
 /// scalar keys. Radix sort is best when you need real-time guarantees and have a
@@ -17,15 +17,15 @@
 /// See `hxradix_sort<K, V>` below.
 class hxradix_sort_base {
 public:
-	/// Reserves memory for the internal array to hold at least `size` elements.
-	/// - `size` : The number of elements to reserve memory for.
+	/// Reserves memory for the internal array to hold at least `size` `value_t`.
+	/// - `size` : The number of `value_t` to reserve memory for.
 	explicit hxradix_sort_base(size_t size_=0u) : m_array_() { m_array_.reserve(size_); }
 
-	/// Reserves memory for the internal array to hold at least `size` elements.
-	/// - `size` : The number of elements to reserve memory for.
+	/// Reserves memory for the internal array to hold at least `size` `value_t`.
+	/// - `size` : The number of `value_t` to reserve memory for.
 	void reserve(size_t size_) { m_array_.reserve(size_); }
 
-	/// Clears the internal array, removing all elements.
+	/// Clears the internal array, removing all `value_t`.
 	void clear(void) { m_array_.clear(); }
 
 	/// Sorts the internal array using the provided temporary memory allocator
@@ -59,7 +59,7 @@ protected:
 			m_key_ = t_ ^ (uint32_t)(((int32_t)t_ >> 31) | 0x80000000);
 		}
 
-		/// Comparison operator for sorting hxkey_value_pair_ objects by key.
+		/// Comparison operator for sorting `hxkey_value_pair_` objects by key.
 		bool operator<(const hxkey_value_pair_& rhs_) const { return m_key_ < rhs_.m_key_; }
 
 		uint32_t m_key_; // The key used for sorting.
@@ -72,12 +72,13 @@ protected:
 	void operator=(const hxradix_sort_base&) = delete;
 };
 
-/// hxradix_sort. Sorts an array of value* by keys. K is the key and V the
-/// value. Keys of double, int64_t and uint64_t are not supported. To sort an
-/// array of doubles with the radix sort it would make sense to sort first by a
-/// float key and then run an `hxinsertion_sort` over the nearly sorted data.
-/// `hxradix_sort` scales linearly with the byte length of the key whereas
-/// `hxinsertion_sort` is Θ(n) on mostly sorted data.
+/// hxradix_sort - Sorts an array of `value_t*` by `key_t`. `key_t` is the sort
+/// key and `value_t` the value being sorted. Keys of `double`, `int64_t` and
+/// `uint64_t` are not supported. To sort an array of doubles with the radix
+/// sort it would make sense to sort first by a float key and then run an
+/// `hxinsertion_sort` over the nearly sorted data. `hxradix_sort` scales
+/// linearly with the byte length of the key whereas `hxinsertion_sort` is
+/// Θ(`n`) on mostly sorted data.
 template<typename key_t_, class value_t_>
 class hxradix_sort : public hxradix_sort_base {
 public:
@@ -86,7 +87,7 @@ public:
 	/// Type of the value associated with the key.
 	typedef value_t_ value_t;
 
-	/// `forward_iterator` over Values. Not currently bound to
+	/// `forward_iterator` over `value_t`. Not currently bound to
 	/// `std::iterator_traits` or `std::forward_iterator_tag`.
 	class const_iterator {
 	public:
@@ -111,11 +112,11 @@ public:
 		bool operator!=(const const_iterator& rhs_) const { return m_ptr_ != rhs_.m_ptr_; }
 
 		/// Dereference operator. Returns a reference to the value pointed to by
-		/// the iterator.
+		/// the `iterator`.
 		const value_t_& operator*(void) const { return *(const value_t_*)m_ptr_->m_val_; }
 
 		/// Arrow operator. Returns a pointer to the value pointed to by the
-		/// iterator.
+		/// `iterator`.
 		const value_t_* operator->(void) const { return (const value_t_*)m_ptr_->m_val_; }
 
 	protected:
@@ -125,34 +126,35 @@ public:
 	/// Iterator that can be cast to a `const_iterator`.
 	class iterator : public const_iterator {
 	public:
-		// Internal. Constructs an iterator from an `hxkey_value_pair_*`.
+		// Internal. Constructs an `iterator` from an `hxkey_value_pair_*`.
 		iterator(hxkey_value_pair_* it_) : const_iterator(it_) { }
 
-		/// Constructs an invalid iterator.
+		/// Constructs an invalid `iterator`.
 		iterator(void) { }
 
-		/// Pre-increment operator. Moves the iterator to the next element.
+		/// Pre-increment operator. Moves the `iterator` to the next element.
 		iterator& operator++(void) { const_iterator::operator++(); return *this; }
 
-		/// Post-increment operator. Moves the iterator to the next element and
+		/// Post-increment operator. Moves the `iterator` to the next element and
 		/// returns the previous state.
 		iterator operator++(int) { iterator t_(*this); const_iterator::operator++(); return t_; }
 
 		/// Dereference operator. Returns a reference to the value pointed to by
-		/// the iterator.
+		/// the `iterator`.
 		value_t_& operator*(void) const { return *(value_t_*)this->m_ptr_->m_val_; }
 
 		/// Arrow operator. Returns a pointer to the value pointed to by the
-		/// iterator.
+		/// `iterator`.
 		value_t_* operator->(void) const { return (value_t_*)this->m_ptr_->m_val_; }
 	};
 
+	/// Constructor. Allocates storage for `size` `value_t`.
 	explicit hxradix_sort(size_t size_=0u) : hxradix_sort_base(size_) { }
 
-	/// Accesses the value at the specified index (const version).
+	/// Accesses the value at the specified index (`const` version).
 	const value_t_& operator[](size_t index_) const { return *(value_t_*)m_array_[index_].m_val_; }
 
-	/// Accesses the value at the specified index (non-const version).
+	/// Accesses the value at the specified index (non-`const` version).
 	value_t_& operator[](size_t index_) { return *(value_t_*)m_array_[index_].m_val_; }
 
 	/// Adds a key and value pair to the array. Ownership is not taken.
@@ -167,24 +169,24 @@ public:
 			hxkey_value_pair_(key_, const_cast<void*>((const void*)val_));
 	}
 
-	/// Returns a pointer to the value at the specified index (const version).
+	/// Returns a pointer to the value at the specified index (`const` version).
 	const value_t_* get(size_t index_) const { return (value_t_*)m_array_[index_].m_val_; }
 
-	/// Returns a pointer to the value at the specified index (non-const
+	/// Returns a pointer to the value at the specified index (non-`const`
 	/// version).
 	value_t_* get(size_t index_) { return (value_t_*)m_array_[index_].m_val_; }
 
 	/// Returns a `const_iterator` to the beginning of the array.
 	const_iterator begin(void) const { return const_iterator(m_array_.cbegin()); }
 
-	/// Returns an `iterator` to the beginning of the array.
+	/// Returns an ``iterator`` to the beginning of the array.
 	iterator begin(void) { return iterator(m_array_.begin()); }
 
-	/// Returns a `const_iterator` to the beginning of the array (const
+	/// Returns a `const_iterator` to the beginning of the array (`const`
 	/// version).
 	const_iterator cbegin(void) const { return const_iterator(m_array_.cbegin()); }
 
-	/// Returns a `const_iterator` to the beginning of the array (non-const
+	/// Returns a `const_iterator` to the beginning of the array (non-`const`
 	/// version).
 	const_iterator cbegin(void) { return const_iterator(m_array_.cbegin()); }
 
@@ -194,13 +196,13 @@ public:
 	/// Returns an `iterator` to the end of the array.
 	iterator end(void) { return iterator(m_array_.end()); }
 
-	/// Returns a `const_iterator` to the end of the array (const version).
+	/// Returns a `const_iterator` to the end of the array (`const` version).
 	const_iterator cend(void) const { return const_iterator(m_array_.cend()); }
 
-	/// Returns a `const_iterator` to the end of the array (non-const version).
+	/// Returns a `const_iterator` to the end of the array (non-`const` version).
 	const_iterator cend(void) { return const_iterator(m_array_.cend()); }
 
-	/// Returns the number of elements in the array.
+	/// Returns the number of `value_t` in the array.
 	size_t size(void) const { return m_array_.size(); }
 
 	/// Returns true if the array is empty, false otherwise.

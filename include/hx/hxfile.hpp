@@ -19,7 +19,7 @@
 class hxfile {
 public:
 	/// `open_mode::in/out` are from `std::ios_base::openmode` and indicate I/O
-	/// mode. `open_mode::stdio` provides access to stdio. `open_mode::failable`
+	/// mode. `open_mode::stdio` provides access to `stdio`. `open_mode::failable`
 	/// skips asserts and is similar to setting `std::basic_ios::exceptions(0)`.
 	enum open_mode {
 		/// Open for binary reading.

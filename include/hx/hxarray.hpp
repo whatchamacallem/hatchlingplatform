@@ -13,7 +13,7 @@
 /// `hxarray` - Another vector class. Uses raw pointers as an iterator type so
 /// that you get compile errors and a debug experience that is in plain C++
 /// instead of the std. There are asserts. Please run a memory sanitizer and an
-/// undefined behavior sanitizer too. Use a C array if you need constexpr. The
+/// undefined behavior sanitizer too. Use a C array if you need `constexpr`. The
 /// excessive number of operators is due to the rules about default operators.
 template<typename T_, size_t capacity_=hxallocator_dynamic_capacity>
 class hxarray : public hxallocator<T_, capacity_> {

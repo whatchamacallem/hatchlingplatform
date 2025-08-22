@@ -7,31 +7,34 @@ version](https://badge.fury.io/gh/whatchamacallem%2Fhatchlingplatform.svg)](http
 
 <img src="hatchling_logo.png" alt="logo">
 
-> "People say that you should not micro-optimize. But if what you love is
-> micro-optimization... that's what you should do." — Linus Torvalds
+## Overview
 
-Hatchling Platform is a lightweight C17/C++17 runtime library designed for
-desktop development with simultaneous cross-compilation to resource-constrained
-targets. The developer experience is also better than with the C++ standard
-library. For example the template compile errors are easier to read and
-hxassertmsg will format your assert messages before setting a breakpoint for
-you. There is no unnecessary template library boilerplate to step through in the
-debugger. The compilers budget for optimization isn't blown out by boilerplate
-layers you don't normally need. The implementation carefully avoids dynamic
-allocations except when initializing system allocators. It maintains
-compatibility with C99 libraries, requires only a C++11 compiler and deliberately
-avoids dependencies on the C++ standard library. A C++ project using this
-platform should run equally well on your thermostat using a single megabyte of
-RAM as in your web-browser or plugged into your Python back end.
+> People say that you should not micro-optimize. But if what you love is
+> micro-optimization... that's what you should do. — Linus Torvalds
 
-If this all seems un-relatable I understand. However, I have seem professionally
+Hatchling Platform is a lightweight C17/C++20 runtime library designed for
+cross-compilation to resource-constrained targets. It maintains compatibility
+with C99 libraries, requires only a C++11 compiler and deliberately avoids
+dependencies on the C++ standard library. The developer experience is also
+better than with the C++ standard library. For example the template compile
+errors are easier to read and `hxassertmsg` will format your assert messages
+before setting a breakpoint for you. There is nothing unnecessary to step
+through in the debugger. The compilers budget for optimization isn't blown out
+by layers you don't normally need.
+
+The C++ language standard has special provisions for "freestanding" environments
+without the standard library and this platform fills that niche. The
+implementation carefully avoids dynamic allocations except when initializing
+system allocators. A C++ project using this platform should run equally well on
+your thermostat using a single megabyte of RAM as in your web-browser or plugged
+into your Python back end.
+
+If this all seems un-relatable I understand. However, I have seen professionally
 written C++ codebases where the profiler showed we were spending 3% of our time
 executing `vector::operator[]` with all optimizations turned on. And this was in a
 setting where it made sense to spend weeks working on an optimization that would
 shave 1% off. *I'm sorry to destroy everyone's ideals, but even the authors of
-libclang wrote their own custom C++ container library.* The C++ language standard
-also has special provisions for "freestanding" development without the standard
-library and this is intended for that purpose.
+libclang wrote their own custom C++ container library.*
 
 This project serves as both a practical tool and a research platform for
 exploring C++ standard library design principles, particularly focusing on core
@@ -58,7 +61,7 @@ purposes:
 - **0**: Debug build with comprehensive diagnostics, asserts, and verbose
   strings (may exceed target constraints)
 - **1**: Release build with critical asserts and warnings (suitable for internal
-  "RelWithDebInfo" builds)
+  `RelWithDebInfo` builds)
 - **2**: Optimized release build with minimal strings and critical asserts only
   (for profiling and field diagnostics)
 - **3**: Maximum optimization with no runtime checks (production releases only
@@ -66,13 +69,13 @@ purposes:
 
 ## Key Features
 
-- **Portability**: Hatchling could easily be made to run on top of any old
+- **Portability**: Hatchling can easily be made to run on top of any old
   embedded c99 library. musl libc is recommended for embedded linux and is
-  widely available: <https://musl.libc.org/> No other C++ runtime or C++ code is
+  widely packaged: <https://musl.libc.org/> No other C++ runtime or C++ code is
   required. pthreads is used for threading which is a widely implemented
-  standard. The assert framework can work with only string hashes in release in
-  order to provide basic debug facilities in environments too limited to debug
-  in normally.
+  standard. The asserts can work with only string hashes in release in order to
+  provide basic debug facilities in environments too limited to debug in
+  normally.
 
 - **Profiling System**: Uses processor cycle sampling to create a hierarchical
   timeline capture compatible with Chrome's `about://tracing` viewer (navigation
@@ -100,7 +103,7 @@ purposes:
   coherent and pre-allocated nature of this kind of programming there isn't much
   need for more than an array class.
 
-- **Algorithms**: `hxradix_sort` is provided for Θ(n) sorting. See `<hx/hxsort.h>`
+- **Algorithms**: `hxradix_sort` is provided for Θ(`n`) sorting. See `<hx/hxsort.h>`
   for comparison based sorting and lookup.
 
 - **Performance Focus**: This is systems code. Everything has to be well
@@ -117,8 +120,8 @@ purposes:
 
 Running the command `doxygen` with no args will generate `docs/html/index.html`.
 The markdown source for the documentation is in the header files at
-`include/hx/` and is readable as is. A modern editor like vscode will also show
-you the docs in a mouseover box.
+`include/hx/` and is readable as is. A modern editor should also show the docs
+in a mouseover box.
 
 ## Tested Environments
 
@@ -135,14 +138,8 @@ to resurrect.
 - python 3.12.3
 - c99 c17 c++11 c++14 c++17 c++20
 
-## Remaining Tasks
-
-- Add test coverage for hash table nodes.
-- constexpr compatible asserts.
-- Find and test realistic compile-time use cases for constexpr with this code.
-
 ## License
 
-© 2017-2025 Adrian Johnston. This project is licensed under the terms of the LICENSE.md file.
+© 2017-2025 Adrian Johnston. This project is licensed under the terms of the `LICENSE.md` file.
 
 🐉🐉🐉

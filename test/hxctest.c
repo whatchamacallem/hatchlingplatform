@@ -7,17 +7,17 @@
 
 #include "hxctest.h"
 
-// Make sure this all compiles and run in C99.
+// Make sure this all compiles and runs in C99.
 bool hxctest_hatchling_h(void) {
 	hxinit();
-	hxlog("Smoke testing from C: hxlog, ");
-	hxlogrelease("hxlogrelease, ");
-	hxlogconsole("hxlogconsole");
-	hxlogwarning("hxlogwarning");
-	hxassertmsg(1, "hxassertmsg %d", 1);
-	hxassert(1);
+	hxlog("Smoke testing from C: hxlog %d, ", 1);
+	hxlogrelease("hxlogrelease %d", 2);
+	hxlogconsole("hxlogconsole %d", 3);
+	hxlogwarning("hxlogwarning %d", 4);
+	hxassertmsg(1, "hxassertmsg %d", 5);
+	hxassert(1 == 1); // Shouldn't warn as those may be errors.
 	hxassertrelease(1.0, "hxassertrelease %f", 1.0f);
-	hxwarnmsg("true", "not true");
+	hxwarnmsg("true", "not true"); // Cast ptr.
 	return true; // Didn't crash.
 }
 
@@ -48,7 +48,7 @@ bool hxctest_swap(void) {
 }
 
 bool hxctest_memory(void) {
-	// try triggering a memory sanitizer
+	// Try triggering a memory sanitizer.
 	void* b33 = hxmalloc_ext(33, hxsystem_allocator_temporary_stack, 16);
 
 	char* t = hxstring_duplicate("_est", hxsystem_allocator_temporary_stack);

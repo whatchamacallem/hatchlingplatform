@@ -10,7 +10,7 @@
 ///
 /// - `hxthread_local<T>` (Available single threaded as well.) Provides a C++
 ///	  template for thread-local storage, allowing each thread to maintain its own
-///	  instance of a specified type T. This class is available for compatibility
+///	  instance of a specified type `T`. This class is available for compatibility
 ///	  when threading is off.
 ///
 /// - `hxmutex` (`HX_USE_THREADS` only) Mutex wrapper for pthreads. Provides
@@ -21,10 +21,10 @@
 ///	  `hxmutex`. Locks the mutex on construction and unlocks on destruction.
 ///	  Supports deferred locking and ownership checks. Not copyable.
 ///
-/// - hxcondition_variable (HX_USE_THREADS only) Condition variable wrapper for
-///	  pthreads. Allows threads to wait for notifications, supports predicate-based
-///	  waiting, and provides `notify_one` and `notify_all` methods. Not copyable.
-///	  Asserts on errors.
+/// - `hxcondition_variable` (`HX_USE_THREADS` only) Condition variable wrapper
+///	  for pthreads. Allows threads to wait for notifications, supports
+///	  predicate-based waiting, and provides `notify_one` and `notify_all` methods.
+///	  Not copyable. Asserts on errors.
 ///
 /// - `hxthread` (`HX_USE_THREADS` only) Thread wrapper for pthreads. Provides
 ///	  thread creation, joining, and detaching. Ensures threads are not left

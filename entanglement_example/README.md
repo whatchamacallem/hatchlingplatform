@@ -164,8 +164,10 @@ The following strategy is recommended when building a .so:
 
 ## Roadmap
 
+It would be nice to have customers before going further. There are findings here that also need to be shared.
+
 - .pyi stub file generation. Needed for pylance checking of inheritance and
-  member variables.
+  member variables. Needs explicit fixed width support: ctypes.c_uint16.
 - Default function parameters.
 - Portable libclang path resolution?
 - Portable .so resolution?

@@ -8,13 +8,13 @@
 /// right after an assert fails. Actually, it makes no allocations ever. To
 /// disable this header and switch to testing with `<gtest/gtest.h>` directly use
 /// `-DHX_USE_GOOGLE_TEST=1`. Only core features are provided. This framework only
-/// uses the < operator and == operator in it's asserts. Compatibility with
+/// uses the `operator<` and `operator==` in it's asserts. Compatibility with
 /// Google Test may require additional relational operators.
 ///
 /// - `TEST(suite, name)` - Defines a test case without a fixture.
 /// - `TEST_F(fixture, name)` - Defines a test case using a fixture class.
-/// - Use `ASSERT_`* for fatal assertions, EXPECT_* for non-fatal.
-/// - See `RUN_ALL_TESTS()` in test/hxtest_main.cpp for example.
+/// - Use `ASSERT_`* for fatal assertions and `EXPECT_`* for non-fatal.
+/// - See `RUN_ALL_TESTS()` in `test/hxtest_main.cpp` for example.
 ///
 /// - Simple Test Case (no fixture):
 /// ```
@@ -74,17 +74,21 @@ namespace testing {
 /// `Test` - Base class for tests required by Google Test's `TEST_F`.
 class Test {
 public:
-	/// User overrides for fixtures.
+	/// User override for tests using `TEST_F`.
 	virtual void SetUp(void) { }
+	/// User override for tests using `TEST_F`.
 	virtual void TearDown(void) { }
+	/// User override for tests using `TEST_F`.
 	virtual ~Test(void) { };
 
-	/// Google Test standard invocation protocol.
+	// Not for direct use. This is the Google Test invocation protocol.
+	/// \cond HIDDEN
 	void run_(void) {
 		SetUp();
 		run_code_();
 		TearDown();
 	}
+	/// \endcond
 
 private:
 	// Provided and used by the `TEST_F` macro.
@@ -93,7 +97,7 @@ private:
 
 /// `InitGoogleTest` - Initializes Google Test with command-line arguments. No-op in
 /// this implementation.
-inline void InitGoogleTest(int *argc_, char **argv_) { (void)argc_; (void)argv_; }
+inline void InitGoogleTest(int *, char **) { }
 
 /// `InitGoogleTest` - Overloaded version of `InitGoogleTest` with no arguments. No-op
 /// in this implementation.

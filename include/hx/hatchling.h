@@ -4,7 +4,7 @@
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
 /// \file hx/hatchling.h
-/// Hatchling Platform. Requires C99. C++11 is optional.
+/// Hatchling Platform. Requires C99. C++11 is minimum. Supports up to C++20.
 ///
 /// Defines logging macros `hxlog`, `hxlogrelease`, `hxlogconsole`,
 /// `hxlogwarning` which vary by `HX_RELEASE` level (0–3) and defines log
@@ -30,10 +30,10 @@
 
 /// `HATCHLING_VER` - Two digit major, minor and patch versions. Odd numbered
 /// minor versions are development branches. Yes, this is actually that old.
-#define HATCHLING_VER 30603l
+#define HATCHLING_VER 30604l
 /// `HATCHLING_TAG` - Major, minor and patch version tag name. Odd numbered
 /// minor versions are development branches and their tags end in `-dev`.
-#define HATCHLING_TAG "v3.6.3"
+#define HATCHLING_TAG "v3.6.4"
 
 #include <hx/hxsettings.h>
 #include <hx/hxmemory_manager.h>
@@ -197,8 +197,8 @@ void hxfloat_dump(const float* address_, size_t floats_);
 /// - `path` : The file path as a null-terminated string.
 const char* hxbasename(const char* path_);
 
-/// ----------------------------------------------------------------------------
-/// C++ utility template API
+// ----------------------------------------------------------------------------
+// C++ Template Utility API
 
 #if HX_CPLUSPLUS
 } // extern "C"
