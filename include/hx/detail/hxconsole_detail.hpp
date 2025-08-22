@@ -30,7 +30,6 @@ hxconsolenumber_t::operator T_(void) const {
 template<typename T_>
 hxconsolehex_t::operator T_(void) const {
 	T_ t = (T_)m_x_;
-	hxwarnmsg((uint64_t)t == m_x_, "parameter_overflow %llx", (unsigned long long)m_x_);
 	return t;
 }
 

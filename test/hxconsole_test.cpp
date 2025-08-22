@@ -96,6 +96,7 @@ namespace {
 } // namespace
 
 TEST(hxconsole_test, command_factory) {
+	hxlogconsole("EXPECTING_TEST_WARNINGS\n");
 	c_hxconsole_test_call_flags = 0;
 
 	EXPECT_TRUE(hxconsole_command_factory_(hxconsole_test_fn0).execute_(""));
@@ -124,6 +125,7 @@ TEST(hxconsole_test, command_factory) {
 // bad commands were submitted.
 #if HX_TEST_ERROR_HANDLING
 TEST(hxconsole_test, overflow) {
+	hxlogconsole("EXPECTING_TEST_FAILURE\n");
 #if (HX_RELEASE) < 1
 	// Test that asserts are triggered by overflow.
 	hxconsole_exec_line("skipasserts 2");

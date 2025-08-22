@@ -16,12 +16,12 @@
 /// Radix sort is best when you need real-time guarantees and have a massive
 /// workload. This is not a toy. It was actually how IBM sorted punch cards.
 ///
-/// hxinsertion_sort is recommended when you have under a kilobyte of data to
+/// `hxinsertion_sort` is recommended when you have under a kilobyte of data to
 /// sort and you don't want to add 10k to your executable just to sort it.
-/// hxheap_sort may also be useful for keeping code size down while providing
+/// `hxheap_sort` may also be useful for keeping code size down while providing
 /// `Θ(n log n)`.
 ///
-/// hxsort is meant to be competitive with smaller types and "resistant to
+/// `hxsort` is meant to be competitive with smaller types and "resistant to
 /// attack." It instantiates about 200 lines of template code.
 ///
 /// If sorting is important to your application then the "cpp-sort" project is

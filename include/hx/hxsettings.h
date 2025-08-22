@@ -35,7 +35,8 @@
 #endif
 
 // ----------------------------------------------------------------------------
-// MSVC doesn't support C++ feature test macros very well.
+// Target settings for MSVC. Further compilers will require customization. MSVC
+// doesn't support C++'s feature test macros very well.
 #if defined _MSC_VER
 #error "The MSVC build is currently unmaintained. It should be easy to fix."
 /// `_HAS_EXCEPTIONS` - _MSC_VER only. Disables exception handling. Must be
@@ -62,9 +63,10 @@
 /// `_MSC_VER's` `nothrow` attribute.
 #define hxnoexcept_unchecked __declspec(nothrow)
 
+#else
 // ----------------------------------------------------------------------------
-#else // target settings (clang and gcc.)
-// Other compilers will require customization.
+// Target settings for clang and gcc. Further compilers will require
+// customization.
 
 // hxthreads.hpp should work in C++11 with pthread.h. WASM still needs to be
 // hooked up. _POSIX_THREADS is the correct way to observe the -pthread compiler
@@ -107,16 +109,18 @@
 // ----------------------------------------------------------------------------
 // Target independent C++11/C++14 polyfill.
 
+/// \cond HIDDEN
 // HX_APPEND_COUNTER2_ - Used to generate unique identifiers. This is weird
 // because the ## operator happens before macro arg evaluation and both
 // happen before general macro evaluation.
 #define HX_APPEND_COUNTER2_(x_, y_) x_ ## y_
 // This version does evaluates its macro args.
 #define HX_APPEND_COUNTER1_(x_, y_) HX_APPEND_COUNTER2_(x_, y_)
+/// \endcond
 /// `HX_APPEND_COUNTER` - Generates a unique identifier by appending a unique
 /// number to `x`.
 /// - `x` : A C identifier to be made unique.
-#define HX_APPEND_COUNTER_(x_) HX_APPEND_COUNTER1_(x_, __COUNTER__)
+#define HX_APPEND_COUNTER(x_) HX_APPEND_COUNTER1_(x_, __COUNTER__)
 
 #if !defined HX_MAX_LINE
 /// `HX_MAX_LINE` - Set to 500 if not defined. Maximum length for formatted messages
@@ -157,13 +161,13 @@
 #endif
 
 #if !defined HX_PROFILER_MAX_RECORDS
-/// `HX_PROFILER_MAX_RECORDS` - Set to 4096 if not defined. The profiler doesn't
+/// `HX_PROFILER_MAX_RECORDS` - Set to `4096` if not defined. The profiler doesn't
 /// reallocate. This is the maximum.
 #define HX_PROFILER_MAX_RECORDS 4096
 #endif
 
 #if !defined HX_USE_GOOGLE_TEST
-/// `HX_USE_GOOGLE_TEST` - In case you need to use Google Test. Defaults to 0.
+/// `HX_USE_GOOGLE_TEST` - In case you need to use Google Test. Defaults to `0`.
 #define HX_USE_GOOGLE_TEST 0
 #endif
 
@@ -176,13 +180,14 @@
 #if !defined HX_RADIX_SORT_BITS
 /// `HX_RADIX_SORT_BITS`. Radix sort algorithm configuration parameter. The 8-
 /// bit version tries to be memory efficient, the 11-bit version might make
-/// sense for large data sets. Set to 8 if not defined (either 8 or 11).
+/// sense for large data sets. Set to `8` if not defined (must be either `8`
+/// or `11`).
 #define HX_RADIX_SORT_BITS 8
 #endif
 
 #if !defined HX_RADIX_SORT_MIN_SIZE
 /// `HX_RADIX_SORT_MIN_SIZE` - Radix sort uses `hxinsertion_sort` below this size.
-/// Set to 8 if not defined.
+/// Set to `8` if not defined.
 #define HX_RADIX_SORT_MIN_SIZE 8u
 #endif
 

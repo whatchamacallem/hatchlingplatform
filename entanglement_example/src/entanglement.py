@@ -48,7 +48,7 @@ _arg_header_files: List[str]
 # Name of the output file to be generated.
 _arg_output_file: str
 
-# Mapping of Clang TypeKind to ctypes types for basic C types. Used to convert C
+# Mapping of clang TypeKind to ctypes types for basic C types. Used to convert C
 # types to their corresponding Python ctypes representations.
 _clang_to_ctypes: Dict[TypeKind, str] = {
 	TypeKind.BOOL:      	'_Ctypes.c_bool',       # type: ignore # bool
@@ -71,7 +71,7 @@ _clang_to_ctypes: Dict[TypeKind, str] = {
 	TypeKind.WCHAR:     	'_Ctypes.c_wchar',      # type: ignore # wchar_t
 }
 
-# Mapping of Clang TypeKind to ctypes types for pointer types.
+# Mapping of clang TypeKind to ctypes types for pointer types.
 # Used for special handling of pointer types like void*, char*, and wchar_t*.
 _clang_to_ctypes_ptr: Dict[TypeKind, str] = {
 	TypeKind.VOID: 			'_Ctypes.c_void_p',		# type: ignore # void*
@@ -79,7 +79,7 @@ _clang_to_ctypes_ptr: Dict[TypeKind, str] = {
 	TypeKind.WCHAR:			'_Ctypes.c_wchar_p',	# type: ignore # wchar_t*
 }
 
-# Mapping of Clang TypeKind to Python types for function return values. Special
+# Mapping of clang TypeKind to Python types for function return values. Special
 # handling for pointer types returned from functions, converting void* to int,
 # char* to bytes, and wchar_t* to str.
 _clang_to_ctypes_ptr_return: Dict[TypeKind, str] = {
@@ -88,7 +88,7 @@ _clang_to_ctypes_ptr_return: Dict[TypeKind, str] = {
 	TypeKind.WCHAR:			'str',		# type: ignore # wchar_t*
 }
 
-# Mapping of Clang TypeKind to Python types for type hints. Used to map C types
+# Mapping of clang TypeKind to Python types for type hints. Used to map C types
 # to their equivalent Python types for type hinting purposes.
 _clang_to_python: Dict[TypeKind, str] = {
 	TypeKind.BOOL:			'bool',  # type: ignore
@@ -149,7 +149,7 @@ _operator_name_map: Dict[str, str] = {
 	'operator^':   '__xor__'
 }
 
-# Nota Bene. ctypes.Structure uses these. So they are off limits.
+# NOTA BENE: ctypes.Structure uses these. So they are off limits.
 ctypes_reserved: set[str] = {
 	"_alignment_", "_anonymous_", "_argtypes_", "_array_",
 	"_as_parameter_", "_bases_", "_buffer_", "_checker_",
@@ -224,20 +224,20 @@ def _raise_error(c: Cursor, message: str) -> NoReturn:
 	'''
 	Raises an Error. Formats the source code location and leaves the message to
 	the caller.
-	- `c` : Clang cursor indicating the source location of the error.
+	- `c` : clang cursor indicating the source location of the error.
 	- `message` : Error message to include in the raised exception. '''
 	raise error(f'{c.location.file}:{c.location.line}:{c.location.column}: {message}\n')
 
 def _get_name(cursor: Cursor) -> str:
 	'''
 	Returns the cursor's name or a unique ID for anonymous cursors.
-	- `cursor` : Clang cursor to extract the name from. '''
+	- `cursor` : clang cursor to extract the name from. '''
 	return cursor.spelling if hasattr(cursor, 'spelling') and not cursor.is_anonymous() else '_ID' + str(hex(hash(cursor.get_usr())))[3:]
 
 def _get_internal_name(cursor: Cursor) -> str:
 	'''
 	Returns the mangled name of the function. C names are mangled as `_C0name`.
-	- `cursor` : Clang cursor to extract the mangled name from. '''
+	- `cursor` : clang cursor to extract the mangled name from. '''
 	if cursor.mangled_name.startswith('_Z'):
 		return cursor.mangled_name
 	return f'_C0{cursor.spelling}'
@@ -245,7 +245,7 @@ def _get_internal_name(cursor: Cursor) -> str:
 def _get_cxx_symbol_name(cursor: Cursor) -> str:
 	'''
 	Returns the name expected in the .so. Must be a function and C names are unchanged.
-	- `cursor` : Clang cursor to determine the symbol name for. '''
+	- `cursor` : clang cursor to determine the symbol name for. '''
 	return cursor.mangled_name
 
 def _get_dunder_name(cursor: Cursor) -> str:
@@ -275,7 +275,7 @@ def _get_dunder_name(cursor: Cursor) -> str:
 def _is_annotated_entanglement(cursor: Cursor) -> bool:
 	'''
 	Checks if a cursor has the 'entanglement' annotation.
-	- `cursor` : Clang cursor to check for annotations. '''
+	- `cursor` : clang cursor to check for annotations. '''
 	for c in cursor.get_children():
 		if c.kind == CursorKind.ANNOTATE_ATTR: # type: ignore
 			if 'entanglement' == c.spelling:
@@ -285,20 +285,20 @@ def _is_annotated_entanglement(cursor: Cursor) -> bool:
 def _is_arg_va_list(cursor: Cursor) -> bool:
 	'''
 	Checks if a cursor's arguments include a va_list.
-	- `cursor` : Clang cursor representing a function to check. '''
+	- `cursor` : clang cursor representing a function to check. '''
 	return any("va_list" in a.type.spelling for a in cursor.get_arguments())
 
 def _is_staticmethod(cursor: Cursor) -> bool:
 	'''
 	Determines if a cursor represents a static method or free function.
-	- `cursor` : Clang cursor to check. '''
+	- `cursor` : clang cursor to check. '''
 	return cursor.kind is CursorKind.FUNCTION_DECL or ( # type: ignore
 		cursor.kind is CursorKind.CXX_METHOD and cursor.storage_class == StorageClass.STATIC) # type: ignore
 
 def _calculate_namespace(cursor: Cursor) -> List[str]:
 	'''
 	Returns a list of namespace names in order from outermost to innermost.
-	- `cursor` : Clang cursor to analyze. '''
+	- `cursor` : clang cursor to analyze. '''
 	namespaces: List[str] = []
 	current: Optional[Cursor] = cursor.semantic_parent
 	while current and current.kind is not CursorKind.TRANSLATION_UNIT: # type: ignore
@@ -317,7 +317,7 @@ def _calculate_python_package_path(cursor: Cursor) -> str:
 	Anonymous namespaces are traversed as they may contain implementation details
 	like base class layouts that are needed by the bindings code. Anonymous enums
 	and structs are given globally unique ids.
-	- `cursor` : Clang cursor to compute the path for. '''
+	- `cursor` : clang cursor to compute the path for. '''
 	namespaces: List[str] = _calculate_namespace(cursor)
 	namespaces.append(_get_dunder_name(cursor))
 	return '.'.join(namespaces)
@@ -327,7 +327,7 @@ def _get_inheritance_distance(cursor: Cursor) -> int:
 	Distance is measured by the maximum value found for the inheritance depth of
 	the class/struct itself and of its class/struct fields. No class should have
 	a depth less than one of its dependencies for its definition.
-	- `cursor` : Clang cursor. '''
+	- `cursor` : clang cursor. '''
 
 	x = 0 # Fundamental or other type.
 	if cursor.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL): # type: ignore
@@ -346,7 +346,7 @@ def _get_python_base_class(cursor: Cursor) -> str:
 	'''
 	Returns the Python package path of the base class or `_Ctypes.Structure` if
 	none.
-	- `cursor` : Clang cursor representing a class or struct. '''
+	- `cursor` : clang cursor representing a class or struct. '''
 	if sum(c.kind == CursorKind.CXX_BASE_SPECIFIER for c in cursor.get_children()) > 1: # type: ignore
 		_raise_error(cursor, 'Multiple inheritance unsupported by Python\'s ctypes module.')
 
@@ -359,7 +359,7 @@ def _has_vtable(cursor: Cursor):
 	'''
 	Returns `True` if the class has virtual methods and is the first virtual
 	class, `False` otherwise.
-	- `cursor` : Clang cursor representing a class or struct. '''
+	- `cursor` : clang cursor representing a class or struct. '''
 	has_virtual = False
 	for c in cursor.get_children():
 		if c.kind in (	CursorKind.CONSTRUCTOR, # type: ignore
@@ -381,8 +381,8 @@ def _has_vtable(cursor: Cursor):
 def _calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str, List[Cursor]], result_kind: _type_string_kind) -> str:
 	'''
 	Returns a string representing the type as a Python or ctypes type.
-	- `cursor` : Clang cursor for error reporting.
-	- `cpp_type_ref` : Clang type to convert.
+	- `cursor` : clang cursor for error reporting.
+	- `cpp_type_ref` : clang type to convert.
 	- `symbols` : Dictionary of known symbols for type resolution.
 	- `result_kind` : Specifies the context (arg_hint, return_hint,
 	  ctypes_args, ctypes_struct). '''
@@ -503,7 +503,7 @@ def _emit_python_api_doc(tabs: str, cursor: Cursor) -> List[str]:
 	Generates Python docstrings list from a cursor's raw comments. Returns an
 	empty list if none.
 	- `tabs` : String of tab characters for indentation.
-	- `cursor` : Clang cursor containing comments to process. '''
+	- `cursor` : clang cursor containing comments to process. '''
 	name = _get_name(cursor)
 	if cursor.kind in (	CursorKind.FUNCTION_DECL, # type: ignore
 						CursorKind.CONSTRUCTOR, # type: ignore
@@ -533,7 +533,7 @@ def _emit_ctypes_function_args(cursor: Cursor, symbols: Dict[str, List[Cursor]],
 	'''
 	Returns a comma-separated string of ctypes function call arguments with
 	shims for pointers and references.
-	- `cursor` : Clang cursor representing the function.
+	- `cursor` : clang cursor representing the function.
 	- `symbols` : Dictionary of known symbols for type resolution.
 	- `overloaded` : Boolean indicating if the function is overloaded. '''
 	arg_list = []
@@ -570,7 +570,7 @@ def _emit_python_api_overload_arg0_isinstance(cursor: Cursor, symbols: Dict[str,
 	than one fundamental type. Returns a boolean expression determining if the
 	arg is an instance of the expected ctype. Does not support ctypes.Array,
 	ctypes.POINTER or numpy.ndarray.
-	- `cursor` : Clang cursor representing the function.
+	- `cursor` : clang cursor representing the function.
 	- `symbols` : Dictionary of known symbols for type resolution.
 	- `overloaded` : Boolean indicating if the function is overloaded. '''
 
@@ -595,7 +595,7 @@ def _emit_python_api_function(namespace_tabs: str, cursor: Cursor, symbols: Dict
 	'''
 	Returns a list of strings forming a Python API function definition.
 	- `namespace_tabs` : String of tab characters for indentation.
-	- `cursor` : Clang cursor representing the function.
+	- `cursor` : clang cursor representing the function.
 	- `symbols` : Dictionary of known symbols for type resolution.
 	- `overloaded` : Boolean indicating if the function is overloaded. '''
 	lines: List[str] = []
@@ -651,7 +651,7 @@ def _emit_python_api_overload_selector(namespace_tabs: str, overloads: List[Curs
 	'''
 	Returns a list of strings forming the Python API overload selector function.
 	- `namespace_tabs` : String of tab characters for indentation.
-	- `overloads` : List of Clang cursors for overloaded functions.
+	- `overloads` : List of clang cursors for overloaded functions.
 	- `symbols` : Dictionary of known symbols for type resolution. '''
 	lines: List[str] = []
 	static_method = False
@@ -733,7 +733,7 @@ def _emit_python_api_enum(namespace_tabs: str, cursor: Cursor) -> List[str]:
 	'''
 	Returns a list of strings forming Python API enum definition.
 	- `namespace_tabs` : String of tab characters for indentation.
-	- `cursor` : Clang cursor representing an enum. '''
+	- `cursor` : clang cursor representing an enum. '''
 	enum_name = _get_name(cursor)
 
 	lines: List[str] = []
@@ -772,7 +772,7 @@ def _emit_python_api_class(namespace_tabs: str, cursor: Cursor) -> List[str]:
 	'''
 	Returns a list of strings forming Python API class definition.
 	- `namespace_tabs` : String of tab characters for indentation.
-	- `cursor` : Clang cursor representing a class or struct. '''
+	- `cursor` : clang cursor representing a class or struct. '''
 	lines: List[str] = [f'{namespace_tabs}class {_get_name(cursor)}:']
 	lines += _emit_python_api_doc(namespace_tabs + '\t', cursor)
 	return lines
@@ -938,7 +938,7 @@ def _symbols_add(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
 	Adds a cursor to the symbols dictionary by its Python path. The symbols for
 	each path will have to all be the same type. This is where symbols get
 	dropped because they have already been seen in another translation unit.
-	- `cursor` : Clang cursor to add.
+	- `cursor` : clang cursor to add.
 	- `symbols` : Dictionary to store the cursor, mapped by Python path. '''
 	if not cursor.is_anonymous():
 		if (cursor.spelling.startswith('_')
@@ -984,7 +984,7 @@ def _symbols_sort(symbols: Dict[str, List[Cursor]], sorted_symbols: List[List[Cu
 def _symbols_gather_required(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -> None:
 	'''
 	Collects annotated symbols required for binding.
-	- `cursor` : Clang cursor to analyze.
+	- `cursor` : clang cursor to analyze.
 	- `symbols` : Dictionary to store collected cursors, mapped by Python path. '''
 	_verbose(3, f'ast_traversal {cursor.kind.name} {cursor.displayname}')
 
@@ -1049,7 +1049,7 @@ def _symbols_gather_required(cursor: Cursor, symbols: Dict[str, List[Cursor]]) -
 
 def _load_translation_unit(header_file: str) -> TranslationUnit:
 	'''
-	Loads and parses a C++ header file into a Clang translation unit. Returns
+	Loads and parses a C++ header file into a clang translation unit. Returns
 	the parsed translation unit or raises an error if parsing fails.
 	- `header_file` : Path to the C++ header file to parse. '''
 	index = Index.create()

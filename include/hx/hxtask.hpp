@@ -8,7 +8,7 @@
 class hxtask_queue;
 
 /// `hxtask` - Base class for operations to be performed on a different thread or
-/// at a later time. Nota bene: While the current allocator is a thread local
+/// at a later time. NOTA BENE: While the current allocator is a thread local
 /// attribute, the memory manager does not support concurrent access to the
 /// same allocator. Either preallocate working buffers or arrange for locking
 /// around shared allocators.

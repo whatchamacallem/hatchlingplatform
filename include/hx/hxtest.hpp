@@ -61,7 +61,7 @@
 // Used to resolve `HX_USE_GOOGLE_TEST`.
 #include <hx/hatchling.h>
 
-// `HX_USE_GOOGLE_TEST` - Enable this to use Google Test instead of `hxtest`.
+// HX_USE_GOOGLE_TEST - Enable this to use Google Test instead of hxtest.
 #if HX_USE_GOOGLE_TEST
 #include <gtest/gtest.h>
 #else // !HX_USE_GOOGLE_TEST

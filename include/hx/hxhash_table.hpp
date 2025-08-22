@@ -137,14 +137,14 @@ public:
 	class const_iterator
 	{
 	public:
-		// Constructs an iterator pointing to the beginning of the hash table.
+		/// Constructs an iterator pointing to the beginning of the hash table.
 		const_iterator(const hxhash_table* table_)
 			: m_hash_table_(const_cast<hxhash_table*>(table_)), m_next_index_(0u), m_current_node_(hxnull) { next_bucket(); }
 
-		// Constructs an iterator pointing to the end of the hash table.
+		/// Constructs an iterator pointing to the end of the hash table.
 		const_iterator() : m_hash_table_(hxnull), m_next_index_(0u), m_current_node_(hxnull) { } // end
 
-		// Advances the iterator to the next element.
+		/// Advances the iterator to the next element.
 		const_iterator& operator++(void) {
 			hxassertmsg(m_current_node_, "invalid_iterator"); // !end
 			if (!(m_current_node_ = (node_t_*)m_current_node_->hash_next())) {

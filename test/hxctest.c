@@ -11,8 +11,8 @@
 bool hxctest_hatchling_h(void) {
 	hxinit();
 	hxlog("Smoke testing from C: hxlog %d, ", 1);
-	hxlogrelease("hxlogrelease %d", 2);
-	hxlogconsole("hxlogconsole %d", 3);
+	hxlogrelease("hxlogrelease %d, ", 2);
+	hxlogconsole("hxlogconsole %d, ", 3);
 	hxlogwarning("hxlogwarning %d", 4);
 	hxassertmsg(1, "hxassertmsg %d", 5);
 	hxassert(1 == 1); // Shouldn't warn as those may be errors.

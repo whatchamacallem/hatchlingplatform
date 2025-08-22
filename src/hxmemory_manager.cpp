@@ -343,7 +343,7 @@ public:
 private:
 	friend class hxsystem_allocator_scope;
 
-	// Nota bene:  The current allocator is a thread local attribute.
+	// NOTA BENE:  The current allocator is a thread local attribute.
 	static hxthread_local<hxsystem_allocator_t> s_hxcurrent_memory_allocator;
 
 	hxsystem_allocator_base* m_memory_allocators[hxsystem_allocator_current];

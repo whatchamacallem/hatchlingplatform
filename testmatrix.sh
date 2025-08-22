@@ -42,7 +42,7 @@ gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS \
 	-std=c99 -m32 "$@" -c $HX_DIR/src/*.c $HX_DIR/test/*.c
 # -std=c++14
 gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS \
-	-pthread -std=c++14 -fno-exceptions -fno-rtti "$@" $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp *.o \
+	-pthread -std=c++11 -fno-exceptions -fno-rtti "$@" $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp *.o \
 	-lpthread -lstdc++ -m32 -o hxtest
 ./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
 rm -f hxtest *.o *.txt *.bin *.json

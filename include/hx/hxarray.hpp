@@ -66,7 +66,7 @@ public:
 	/// with very little overhead.
 	/// - `x` : A temporary Array<T>.
 	hxarray(hxarray&& x_) : hxarray() {
-		this->swap(x_); // N.B. Requires capacity 0 to compile.
+		this->swap(x_); // NOTA BENE: Requires capacity 0 to compile.
 	}
 
 #if HX_HOSTED
@@ -482,7 +482,7 @@ public:
 	/// with very little overhead.
 	/// - `x` : The array to swap with.
 	void swap(hxarray& x_) {
-		// NOTA BENE Only hxallocator_dynamic_capacity works here.
+		// NOTA BENE: Only hxallocator_dynamic_capacity works here.
 		hxallocator<T_, capacity_>::swap(x_);
 		hxswap(x_.m_end_, m_end_);
 	}

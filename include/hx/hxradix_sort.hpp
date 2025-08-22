@@ -34,6 +34,7 @@ public:
 	void sort(hxsystem_allocator_t temp_memory);
 
 protected:
+	/// \cond HIDDEN
 	// Represents a key-value pair used in radix sorting.
 	class hxkey_value_pair_ {
 	public:
@@ -70,6 +71,7 @@ protected:
 
 	hxradix_sort_base(const hxradix_sort_base&) = delete;
 	void operator=(const hxradix_sort_base&) = delete;
+	/// \endcond
 };
 
 /// hxradix_sort - Sorts an array of `value_t*` by `key_t`. `key_t` is the sort

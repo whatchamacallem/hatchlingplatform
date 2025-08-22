@@ -47,8 +47,6 @@ public:
 		test_object value;
 	};
 
-	// XXX Test all the other hashtable node template base classes.
-
 	hxhash_table_test(void) {
 		hxassert(s_hxtest_current == hxnull);
 		m_constructed = 0;

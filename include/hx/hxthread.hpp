@@ -358,4 +358,4 @@ private:
 	bool m_joined_;
 };
 
-#endif //HX_USE_THREADS
+#endif // HX_USE_THREADS

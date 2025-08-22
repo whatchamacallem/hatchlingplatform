@@ -8,7 +8,7 @@
 ///
 /// Defines logging macros `hxlog`, `hxlogrelease`, `hxlogconsole`,
 /// `hxlogwarning` which vary by `HX_RELEASE` level (0–3) and defines log
-/// verbosity {`log`, `console`, `warning`, `assert`}.
+/// verbosity { log, console, warning, assert }.
 ///
 /// Assertion macros `hxassert`, `hxassertmsg`, `hxassertrelease` are provided
 /// for debugging, active when `HX_RELEASE < 3`. `hxinit` initializes the
@@ -45,8 +45,9 @@ extern "C" {
 
 // Hatchling Platform C and C++ API. Above headers are C and C++ too.
 
-/// `hxloglevel_t` - Runtime setting for verbosity of log messages. Independently
-/// controls what messages are compiled in. See `g_hxsettings.log_level`.
+/// `hxloglevel_t` - Runtime setting for verbosity of log messages.
+/// Independently controls what messages are compiled in. See
+/// `g_hxsettings.log_level`.
 enum hxloglevel_t {
 	/// Verbose informative messages. No automatic newline.
 	hxloglevel_log,
@@ -62,9 +63,8 @@ enum hxloglevel_t {
 /// the numeric constant `0`. The C/C++ language standards explicitly define the
 /// meaning of `0` in pointer context as a null pointer of the expected type.
 /// However they do not define whether `NULL` is `0` or `((void*)0)`. `hxnull`
-/// fills that gap by having an unambiguous type. See hxnullptr/hxnullptr_t if
-/// you need a std::nullptr_t replacement. They are provided for completeness
-/// but are not required.
+/// fills that gap by having an unambiguous type. See `hxnullptr`/`hxnullptr_t` if
+/// you need a `std::nullptr_t` replacement.
 #define hxnull 0
 
 /// Compile-time assertion for `HX_RELEASE` [0..3] range.
@@ -77,28 +77,29 @@ enum hxloglevel_t {
 
 #if (HX_RELEASE) == 0 // debug facilities
 
-/// `hxlog(...)` - Enters formatted messages in the system log. Does not add a newline.
-/// This is only evaluated when `HX_RELEASE == 0`.
+/// `hxlog(...)` - Enters formatted messages in the system log. Does not add a
+/// newline. This is only evaluated when `HX_RELEASE == 0`.
 /// - `...` Variadic arguments for the formatted log message.
 #define hxlog(...) hxloghandler(hxloglevel_log, __VA_ARGS__)
 
-/// `hxassertmsg(bool x, ...)` - Does not evaluate message args unless condition fails. This is
-/// only evaluated when `HX_RELEASE == 0`.
+/// `hxassertmsg(bool x, ...)` - Does not evaluate message args unless condition
+/// fails. This is only evaluated when `HX_RELEASE == 0`.
 /// - `x` : The condition to evaluate.
 /// - `...` Variadic arguments for the formatted log message.
 #define hxassertmsg(x_, ...) (void)((bool)(x_) \
 	|| (hxloghandler(hxloglevel_assert, __VA_ARGS__), hxasserthandler(__FILE__, __LINE__)) \
 	|| hxbreakpoint())
 
-/// `hxassert(bool x)` - Logs an error and terminates execution if `x` is false. This is only
-/// evaluated when `HX_RELEASE == 0`.
+/// `hxassert(bool x)` - Logs an error and terminates execution if `x` is false.
+/// This is only evaluated when `HX_RELEASE == 0`.
 /// - `x` : The condition to evaluate.
 #define hxassert(x_) (void)((bool)(x_) \
 	|| (hxloghandler(hxloglevel_assert, #x_), hxasserthandler(__FILE__, __LINE__)) \
 	|| hxbreakpoint())
 
-/// `hxassertrelease(bool x, ...)` - Logs an error and terminates execution if `x` is false
-/// up to release level 2. This is only evaluated when `HX_RELEASE < 3`.
+/// `hxassertrelease(bool x, ...)` - Logs an error and terminates execution if
+/// `x` is false up to release level 2. This is only evaluated when `HX_RELEASE
+/// < 3`.
 /// - `x` : The condition to evaluate.
 /// - `...` Variadic arguments for the formatted log message.
 #define hxassertrelease(x_, ...) (void)((bool)(x_) \
@@ -116,18 +117,19 @@ hxnoexcept_unchecked hxnoreturn void hxasserthandler(hxhash_t file_, size_t line
 #endif
 
 #if (HX_RELEASE) <= 1
-/// `hxlogrelease(...)` - Enters formatted messages in the system log up to release
-/// level 1. No automatic newline. This is only evaluated when `HX_RELEASE <= 1`.
+/// `hxlogrelease(...)` - Enters formatted messages in the system log up to
+/// release level 1. No automatic newline. This is only evaluated when
+/// `HX_RELEASE <= 1`.
 /// - `...` Variadic arguments for the formatted log message.
 #define hxlogrelease(...) hxloghandler(hxloglevel_log, __VA_ARGS__)
 
-/// `hxlogconsole(...)` - Enters formatted messages in the console system log. This is
-/// only evaluated when `HX_RELEASE <= 1`.
+/// `hxlogconsole(...)` - Enters formatted messages in the console system log.
+/// This is only evaluated when `HX_RELEASE <= 1`.
 /// - `...` Variadic arguments for the formatted console log message.
 #define hxlogconsole(...) hxloghandler(hxloglevel_console, __VA_ARGS__)
 
-/// `hxlogwarning(...)` - Enters formatted warnings in the system log. This is only
-/// evaluated when `HX_RELEASE <= 1`.
+/// `hxlogwarning(...)` - Enters formatted warnings in the system log. This is
+/// only evaluated when `HX_RELEASE <= 1`.
 /// - `...` Variadic arguments for the formatted warning message.
 #define hxlogwarning(...) hxloghandler(hxloglevel_warning, __VA_ARGS__)
 
@@ -144,7 +146,8 @@ hxnoexcept_unchecked hxnoreturn void hxasserthandler(hxhash_t file_, size_t line
 #define hxwarnmsg(x_, ...) ((void)0)
 #endif
 
-// hxassertrelease has 4 variations. See above. It is only evaluated when HX_RELEASE < 3.
+// hxassertrelease has 4 variations. See above. It is only evaluated when
+// HX_RELEASE < 3.
 #if (HX_RELEASE) == 1
 #define hxassertrelease(x_, ...) (void)((bool)(x_) || (hxloghandler(hxloglevel_assert, __VA_ARGS__), \
 	hxasserthandler(hxstring_literal_hash(__FILE__), __LINE__), 0))
@@ -162,19 +165,20 @@ void hxinit_internal(void);
 extern bool g_hxisinit;
 
 /// `hxshutdown` - Terminates service. Releases all resources acquired by the
-/// platform and confirms all memory allocations have been released. `HX_RELEASE < 3`.
-/// Does not clear `g_hxisinit`, shutdown is final. Logging and asserts are unaffected.
+/// platform and confirms all memory allocations have been released. `HX_RELEASE
+/// < 3`. Does not clear `g_hxisinit`, shutdown is final. Logging and asserts
+/// are unaffected.
 void hxshutdown(void);
 
-/// `hxloghandler` - Enters formatted messages in the system log. This is the only
-/// access to logging when `HX_RELEASE > 2`.
-/// - `level` : The log level (e.g., hxloglevel_log, hxloglevel_warning).
-/// - `format` : A printf-style format string.
+/// `hxloghandler` - Enters formatted messages in the system log. This is the
+/// only access to logging when `HX_RELEASE > 2`.
+/// - `level` : The log level (e.g., `hxloglevel_log`, `hxloglevel_warning`).
+/// - `format` : A `printf`-style format string.
 /// - `...` Additional arguments for the format string.
 hxnoexcept_unchecked void hxloghandler(enum hxloglevel_t level_, const char* format_, ...) hxattr_format(2, 3);
 
-/// `hxloghandler_v` - A `va_list` version of `hxloghandler`. This is the only access to
-/// logging when `HX_RELEASE > 2`.
+/// `hxloghandler_v` - A `va_list` version of `hxloghandler`. This is the only
+/// access to logging when `HX_RELEASE > 2`.
 /// - `level` : The log level (e.g., `hxloglevel_log`, `hxloglevel_warning`).
 /// - `format` : A `printf`-style format string.
 /// - `args` : A `va_list` containing the arguments for the format string.
@@ -192,8 +196,8 @@ void hxhex_dump(const void* address_, size_t bytes_, int pretty_);
 /// - `floats` : The number of floats to print.
 void hxfloat_dump(const float* address_, size_t floats_);
 
-/// `hxbasename` - Returns a pointer to those characters following the last '\' or
-/// '/' character or path if those are not present.
+/// `hxbasename` - Returns a pointer to those characters following the last `\` or
+/// `/` character or path if those are not present.
 /// - `path` : The file path as a null-terminated string.
 const char* hxbasename(const char* path_);
 
@@ -277,7 +281,7 @@ constexpr void hxswap_memcpy(T_& x_, T_& y_) {
 }
 
 /// Returns `log2(n)` as an integer which is the power of 2 of the largest bit
-/// in `n`. Nota Bene: `hxlog2i(0)` is currently -127 and is undefined.
+/// in `n`. NOTA BENE: `hxlog2i(0)` is currently -127 and is undefined.
 /// - `i` : A `size_t`.
 inline int hxlog2i(size_t i_) {
 	// Use the floating point hardware because this isn't important enough for
@@ -292,8 +296,7 @@ inline int hxlog2i(size_t i_) {
 // ----------------------------------------------------------------------------
 // C utility macro API - Does it all backwards in heels.
 
-/// `hxmin` - More portable versions of min(), max(), abs() and clamp() using the <
-/// operator. Returns the minimum value of x and y using a < comparison.
+/// `hxmin` - Returns the minimum value of `x` and `y` using a < comparison.
 /// - `x` : The first value.
 /// - `y` : The second value.
 #define hxmin(x_, y_) ((x_) < (y_) ? (x_) : (y_))
