@@ -129,17 +129,17 @@ Every compiler warning flag should be safe to enable. This is Ubuntu 24.04 LTS.
 The Windows build got dropped because it wasn't being tested. It should be easy
 to resurrect.
 
-- gcc, musl-gcc 13.3.0
-- clang 18.1.3 (including sanitizers)
-- doxygen 1.9.8
-- emcc 4.0.5
-- gcovr 7.0
-- cmake 3.28.3
-- python 3.12.3
-- c99 c17 c++11 c++14 c++17 c++20
+c99 c17 c++11 c++14 c++17 c++20
+clang 18.1.3 (including sanitizers)
+cmake 3.28.3
+doxygen 1.9.8
+emcc 4.0.5
+gcc, musl-gcc 13.3.0
+gcovr 7.0
+python 3.12.3
 
 ## License
 
-© 2017-2025 Adrian Johnston. This project is licensed under the terms of the `LICENSE.md` file.
+© 2017-2025 Adrian Johnston. This project is licensed under the terms of the MIT license found in the `LICENSE.md` file.
 
 🐉🐉🐉
