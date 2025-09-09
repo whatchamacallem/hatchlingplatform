@@ -55,7 +55,8 @@
 #define HX_FREESTANDING 0
 
 #define hxrestrict __restrict
-#define hxattr_format(pos_, start_)
+#define hxattr_format_printf(pos_, start_)
+#define hxattr_format_scanf(pos_, start_)
 #define hxbreakpoint() (__debugbreak(),true)
 #define hxnoreturn
 
@@ -88,7 +89,8 @@
 #endif
 
 #define hxrestrict __restrict
-#define hxattr_format(pos_, start_) __attribute__((format(printf, pos_, start_)))
+#define hxattr_format_printf(pos_, start_) __attribute__((format(printf, pos_, start_)))
+#define hxattr_format_scanf(pos_, start_) __attribute__((format(scanf, pos_, start_)))
 #define hxnoreturn __attribute__((noreturn))
 
 #if defined __has_builtin && __has_builtin(__builtin_debugtrap)

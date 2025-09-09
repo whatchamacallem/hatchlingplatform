@@ -60,7 +60,7 @@ public:
 
 	/// Constructor to initialize and open a file with a formatted filename.
 	/// Opens a stream using a formatted filename. Non-standard arg order.
-	hxfile(uint8_t mode_, const char* filename_, ...) hxattr_format(3, 4);
+	hxfile(uint8_t mode_, const char* filename_, ...) hxattr_format_printf(3, 4);
 
 	/// The constructor to initialize the file object with an unowned
 	/// implementation object and a specific mode. No checks. Use `hxin`,
@@ -72,7 +72,7 @@ public:
 	~hxfile();
 
 	/// Opens a file with the specified mode and formatted filename.
-	bool open(uint8_t mode_, const char* filename_, ...) hxattr_format(3, 4);
+	bool open(uint8_t mode_, const char* filename_, ...) hxattr_format_printf(3, 4);
 
 	/// Closes the currently open file.
 	void close(void);
@@ -125,12 +125,12 @@ public:
 	/// Formatting and writing will be skipped when using hxdev_null.
 	/// - `format` : Format string, similar to printf.
 	/// - `...` Additional arguments for the format string.
-	bool print(const char* format_, ...) hxattr_format(2, 3);
+	bool print(const char* format_, ...) hxattr_format_printf(2, 3);
 
 	/// Reads a formatted string from the file. Uses scanf conventions.
 	/// - `format` : Format string, similar to scanf.
 	/// - `...` Additional arguments for the format string.
-	bool scan(const char* format_, ...) hxattr_format(2, 3);
+	bool scan(const char* format_, ...) hxattr_format_scanf(2, 3);
 
 	/// Reads a single unformatted native endian object from the file.
 	/// - `t` : Reference to the object where the data will be stored.

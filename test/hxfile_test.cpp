@@ -61,29 +61,41 @@ TEST_F(hxfile_test, not_exist) {
 	hxdev_null << "dev/null should not exist";
 }
 
-TEST_F(hxfile_test, operators) {
+TEST_F(hxfile_test, operations) {
+	// write a test file
+
 	hxfile f(hxfile::out | hxfile::skip_asserts, "hxfile_test_operators.bin");
-	test_t_ x;
+	test_t_ x { 77777u, -555, 77u, -55 };
 	int a = -3;
-	x.a = 77777u;
-	x.b = -555;
-	x.c = 77u;
-	x.d = -55;
+
 	f <= x <= a;
+	f.print("(%d,%d)", 30, 70);
+
 	EXPECT_TRUE(f.good());
 	EXPECT_FALSE(f.eof());
 	f.close();
 
+	// read the test file and verify
+
 	f.open(hxfile::in | hxfile::skip_asserts, "hxfile_test_operators.bin");
-	test_t_ y;
-	int b;
 	EXPECT_TRUE(f.good());
+
+	test_t_ y; ::memset(&y, 0x00, sizeof y);
+	int b = 0;
+	int thirty = 0;
+	int seventy = 0;
+
 	f >= y >= b;
+	f.scan("(%d,%d)", &thirty, &seventy);
+
 	EXPECT_EQ(y.a, 77777u);
 	EXPECT_EQ(y.b, -555);
 	EXPECT_EQ(y.c, 77u);
 	EXPECT_EQ(y.d, -55);
 	EXPECT_EQ(b, -3);
+
+	EXPECT_EQ(thirty, 30);
+	EXPECT_EQ(seventy, 70);
 
 	EXPECT_TRUE(f.good());
 	EXPECT_FALSE(f.eof());
