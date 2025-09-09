@@ -34,7 +34,6 @@
         "Emscripten",
         "emsdk",
         "execstdin",
-        "failable",
         "fdata",
         "fdiagnostics",
         "feenableexcept",

@@ -27,7 +27,7 @@ public:
 #endif
 
 TEST_F(hxfile_test, empty_name) {
-	hxfile f(hxfile::in | hxfile::failable, "");
+	hxfile f(hxfile::in | hxfile::skip_asserts, "");
 	EXPECT_EQ(f.good(), false);
 	EXPECT_EQ(f.is_open(), false);
 }
@@ -37,22 +37,32 @@ TEST_F(hxfile_test, empty_name) {
 #endif
 
 TEST_F(hxfile_test, read_write) {
-	hxfile f(hxfile::in | hxfile::out | hxfile::failable, "hxfile_test_read_write.txt");
+	hxfile f(hxfile::in | hxfile::out | hxfile::skip_asserts, "hxfile_test_read_write.txt");
 	f << "hxfile_test_read_write.txt";
 
 	EXPECT_EQ(f.good(), true);
 	EXPECT_EQ(f.is_open(), true);
+
+	hxout << "smoke test hxout" << ".";
+	hxout.print("..\n");
+	hxerr << "smoke test hxerr" << ".";
+	hxerr.print("..\n");
 }
 
 TEST_F(hxfile_test, not_exist) {
-	hxfile f(hxfile::in | hxfile::failable, "test_file_does_not_exist_%d", 123);
+	hxfile f(hxfile::in | hxfile::skip_asserts, "test_file_does_not_exist_%d", 123);
 	EXPECT_EQ(f.good(), false);
 	EXPECT_EQ(f.is_open(), false);
-	EXPECT_EQ((bool)(f.mode() & hxfile::failable), true);
+
+	// EXPECT_EQ should return hxdev_null.
+	EXPECT_EQ((bool)(f.mode() & hxfile::skip_asserts), true)
+		<< "dev/null should not exist";
+
+	hxdev_null << "dev/null should not exist";
 }
 
 TEST_F(hxfile_test, operators) {
-	hxfile f(hxfile::out | hxfile::failable, "hxfile_test_operators.bin");
+	hxfile f(hxfile::out | hxfile::skip_asserts, "hxfile_test_operators.bin");
 	test_t_ x;
 	int a = -3;
 	x.a = 77777u;
@@ -64,7 +74,7 @@ TEST_F(hxfile_test, operators) {
 	EXPECT_FALSE(f.eof());
 	f.close();
 
-	f.open(hxfile::in | hxfile::failable, "hxfile_test_operators.bin");
+	f.open(hxfile::in | hxfile::skip_asserts, "hxfile_test_operators.bin");
 	test_t_ y;
 	int b;
 	EXPECT_TRUE(f.good());

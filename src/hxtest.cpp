@@ -35,8 +35,8 @@ void hxtest_::add_test_(hxtest_case_interface_* fn_) {
 	}
 }
 
-// message is required to end with an \n. Returns equivalent of /dev/null on
-// success and the system log otherwise.
+// message is required to end with an \n. Returns hxdev_null on success and
+// hxerr otherwise.
 hxfile& hxtest_::condition_check_(bool condition_, const char* file_, size_t line_, const char* message_, bool is_assert_) {
 	hxassertrelease(m_current_test_, "test_not_started");
 	m_test_state_ = (condition_ && m_test_state_ != test_state_fail_) ? test_state_pass_ : test_state_fail_;
@@ -45,7 +45,7 @@ hxfile& hxtest_::condition_check_(bool condition_, const char* file_, size_t lin
 			if (m_assert_fail_count_ == max_fail_messages_) {
 				hxlogconsole("remaining asserts will fail silently...\n");
 			}
-			return this->file_null_();
+			return hxdev_null;
 		}
 
 		// prints full path error messages that can be clicked on in an ide.
@@ -65,9 +65,9 @@ hxfile& hxtest_::condition_check_(bool condition_, const char* file_, size_t lin
 			hxbreakpoint();
 #endif
 		}
-		return this->file_log_();
+		return hxerr;
 	}
-	return this->file_null_();
+	return hxdev_null;
 }
 
 size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
@@ -132,13 +132,6 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 		m_fail_count_ = hxmax(m_fail_count_, (size_t)1u);
 	}
 	return m_fail_count_;
-}
-
-hxfile& hxtest_::file_null_(void) {
-	static hxfile f_(hxfile::out | hxfile::failable); return f_;
-}
-hxfile& hxtest_::file_log_(void) {
-	static hxfile f_(hxfile::out | hxfile::stdio); return f_;
 }
 
 } // hxdetail_

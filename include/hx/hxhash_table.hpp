@@ -21,7 +21,7 @@
 /// class T {
 ///   typedef K key_t;			// Tell the hash table what key to use.
 ///   T(key_t);					// Construct from key. e.g. for operator[].
-///   void*& hash_next();		// Used by hxhash_table for embedded linked list.
+///   void*& hash_next();		// Used by hxhash_table for an embedded linked list.
 ///   void* hash_next() const;	// Constant version of hash_next.
 ///   const key_t& key() const;	// Returns key constructed with.
 ///   hxhash_t hash() const;	// Returns hash of key constructed with.

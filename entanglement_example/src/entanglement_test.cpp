@@ -4,7 +4,6 @@
 
 #include "entanglement_test_b.hpp"
 
-#include <stdio.h>
 #include <string.h>
 #include <wchar.h>
 #include <stdlib.h>

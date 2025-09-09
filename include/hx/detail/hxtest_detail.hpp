@@ -57,9 +57,6 @@ public:
 	size_t run_all_tests_(const char* test_suite_filter_=hxnull);
 
 private:
-	hxfile& file_null_(void);
-	hxfile& file_log_(void);
-
 	hxtest_(const hxtest_&) = delete;
 	void operator=(const hxtest_&) = delete;
 

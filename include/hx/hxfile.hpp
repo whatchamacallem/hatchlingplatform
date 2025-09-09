@@ -5,11 +5,25 @@
 
 #include <hx/hatchling.h>
 
-/// `hxfile` - RAII wrapper for file I/O. A mixture of unformatted
-/// `std::basic_fstream` operations and formatted C-style text printing. This code
-/// will do all your error handling for you if you let it. From an optimization
-/// perspective, `printf`/`scanf` turn out to be bytecode interpreters and those are
-/// hard to compete with for code size. `gcc` is recommended for validating their
+class hxfile;
+
+/// Global reference to stdin or equivalent.
+extern hxfile hxin;
+
+/// Global reference to stdout or equivalent.
+extern hxfile hxout;
+
+/// Global reference to stderr or equivalent.
+extern hxfile hxerr;
+
+/// Global equivalent to /dev/null.
+extern hxfile hxdev_null;
+
+/// `hxfile` - RAII wrapper for file I/O. A mixture of unformatted binary stream
+/// operations and formatted C-style text printing. This code will do all your
+/// error handling for you if you let it. From an optimization perspective,
+/// `printf`/`scanf` turn out to be bytecode interpreters and those are hard to
+/// compete with for code size. `gcc` is recommended for validating their
 /// arguments when used in untested error handling. However, memory imaged data
 /// structres are still recommended because they have predictable memory
 /// allocation requirements and can be loaded by a dma controller. Finally, this
@@ -19,34 +33,36 @@
 class hxfile {
 public:
 	/// `open_mode::in/out` are from `std::ios_base::openmode` and indicate I/O
-	/// mode. `open_mode::stdio` provides access to `stdio`. `open_mode::failable`
-	/// skips asserts and is similar to setting `std::basic_ios::exceptions(0)`.
-	enum open_mode {
+	/// mode. `open_mode::skip_asserts` skips asserts and is similar to setting
+	/// `std::basic_ios::exceptions(0)`.
+	enum open_mode : uint8_t {
+		none = 0u,
 		/// Open for binary reading.
 		in = 1u,
 		/// Open for binary writing.
 		out = 2u,
-		/// Access stdio as in or out but not both.
-		stdio = 4u,
-		/// Skip asserts.
-		failable = 8u
+		/// Skip asserts. Allows failure.
+		skip_asserts = 4u
 	};
 
-	/// Constructor to initialize the file object with a specific mode. For an
-	/// unopened file use `0`. For stdio use `(stdio|in)`, `(stdio|out)`. stdio may be
-	/// failble.
-	hxfile(uint16_t mode_=0u);
+	/// Default construct an empty file.
+	hxfile(void);
+
+	/// The constructor to initialize the file object with an unowned
+	/// implementation object and a specific mode. No checks. Use `hxin`,
+	/// `hxout`, `hxerr` and `hxdev_null` instead.
+	hxfile(void* file_, uint8_t mode_);
 
 	/// Constructor to initialize and open a file with a formatted filename.
 	/// Opens a stream using a formatted filename. Non-standard arg order.
-	hxfile(uint16_t mode_, const char* filename_, ...) hxattr_format(3, 4);
+	hxfile(uint8_t mode_, const char* filename_, ...) hxattr_format(3, 4);
 
 	/// Destructor to ensure the file is closed when the object goes out of
 	/// scope.
 	~hxfile(void);
 
 	/// Opens a file with the specified mode and formatted filename.
-	bool open(uint16_t mode_, const char* filename_, ...) hxattr_format(3, 4);
+	bool open(uint8_t mode_, const char* filename_, ...) hxattr_format(3, 4);
 
 	/// Closes the currently open file.
 	void close(void);
@@ -67,7 +83,7 @@ public:
 	}
 
 	/// Returns the current open mode of the file.
-	uint16_t mode(void) const { return m_open_mode_; }
+	uint8_t mode(void) const { return m_open_mode_; }
 
 	/// Reads a specified number of bytes from the file into the provided
 	/// buffer.
@@ -81,14 +97,14 @@ public:
 	size_t write(const void* bytes_, size_t count_);
 
 	/// Reads an \n or EOF terminated character sequence. Allowed to fail on
-	/// `EOF` without needing to be `hxfile::failable`. Automatically determines
-	/// the size of the provided char array.
+	/// `EOF` without needing to be `hxfile::skip_asserts`. Automatically
+	/// determines the size of the provided char array.
 	/// - `buffer` : Reference to a char array where the line will be stored.
 	template<size_t buffer_size_>
 	bool get_line(char(&buffer_)[buffer_size_]) { return get_line(buffer_, buffer_size_); }
 
-	/// Reads an `\n` or `EOF` terminated character sequence. Allowed to fail on `EOF`
-	/// without needing to be `hxfile::failable`.
+	/// Reads an `\n` or `EOF` terminated character sequence. Allowed to fail on
+	/// `EOF` without needing to be `hxfile::skip_asserts`.
 	/// - `buffer` : Pointer to a char array where the line will be stored.
 	/// - `buffer_size` : Size of the buffer array.
 	bool get_line(char* buffer_, size_t buffer_size_);
@@ -134,7 +150,7 @@ public:
 	/// - `str` : Reference to a string literal to write to the file.
 	template<size_t string_length_>
 	hxfile& operator<<(const char(&str_)[string_length_]) {
-		hxassertmsg(::strlen(str_) == (string_length_-1), "bad_string");
+		hxassertmsg(::strlen(str_) == (string_length_-1), "bad_string_literal");
 		write(str_, string_length_-1);
 		return *this;
 	}
@@ -146,10 +162,11 @@ private:
 
 	// Internal function to open a file with a formatted filename and variable
 	// arguments.
-	bool openv_(uint16_t mode_, const char* format_, va_list args_);
+	bool openv_(uint8_t mode_, const char* format_, va_list args_);
 
-	char* m_file_pimpl_;   // Pointer to the file implementation.
-	uint16_t m_open_mode_; // Current open mode of the file.
+	void* m_file_pimpl_;   // Pointer to the file implementation.
+	uint8_t m_open_mode_;  // Current open mode of the file.
+	bool m_owns_;  		   // Indicates if the FILE* is owned.
 	bool m_good_; 		   // Indicates if the file stream is in a good state.
 	bool m_eof_;  		   // Indicates if the end of the file has been reached.
 };

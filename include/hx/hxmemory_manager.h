@@ -26,7 +26,7 @@
 ///
 /// Alignment must be a power of two. (It always is.)
 ///
-/// Global new and delete are provided when `HX_HOSTED==0`. This is a requirement
+/// Global new and delete are provided when `HX_FREESTANDING==1`. This is a requirement
 /// for running as a stand alone C++ runtime. Otherwise they are not interfered
 /// with. Those default versions do not use the memory manager's current
 /// allocator id because it may not be safe to do so. `hxnew` and `hxdelete` are
@@ -42,7 +42,7 @@
 #endif
 
 #if HX_CPLUSPLUS
-#if HX_HOSTED
+#if !HX_FREESTANDING
 #include <new>
 #endif
 
@@ -99,7 +99,7 @@ char* hxnoexcept_unchecked hxstring_duplicate(const char* string_, enum hxsystem
 
 // Memory Manager C++ API
 
-#if !HX_HOSTED
+#if HX_FREESTANDING
 // Declare placement new. These are not built into the compiler.
 inline void* operator new(size_t, void* ptr_) noexcept { return ptr_; }
 inline void* operator new[](size_t, void* ptr_) noexcept { return ptr_; }
@@ -205,7 +205,7 @@ public:
 /// another reason.
 class hxdo_not_delete {
 public:
-	/// Deletes the object using hxdelete.
+	/// Does not delete the object.
 	template <typename T_>
 	void operator()(T_*) const { }
 

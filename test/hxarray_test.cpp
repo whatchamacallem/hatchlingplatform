@@ -7,7 +7,7 @@
 
 #include <limits.h>
 
-#if HX_HOSTED
+#if !HX_FREESTANDING
 #include <utility>
 #endif
 
@@ -366,7 +366,7 @@ TEST_F(hxarray_test, insert) {
 }
 #endif
 
-#if HX_HOSTED
+#if !HX_FREESTANDING
 TEST_F(hxarray_test, initializer_list) {
 	hxarray<int, 2> x = { 2, 7 };
 	EXPECT_EQ(x[1], 7);

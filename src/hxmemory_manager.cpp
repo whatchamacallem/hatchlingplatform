@@ -17,7 +17,7 @@ HX_REGISTER_FILENAME_HASH
 
 #define HX_USE_STD_ALIGNED_ALLOC (HX_CPLUSPLUS >= 201703L && (HX_RELEASE) >= 1)
 
-#if !HX_HOSTED
+#if HX_FREESTANDING
 void* operator new(size_t size) {
 	void* ptr = ::malloc(size);
 	hxassertrelease(ptr, "malloc %zu", size);

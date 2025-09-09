@@ -70,8 +70,7 @@ static bool hxrun_all_tests(void) {
 }
 
 static bool hxexecute_stdin(void) {
-	hxfile f(hxfile::in | hxfile::stdio);
-	return hxconsole_exec_file(f);
+	return hxconsole_exec_file(hxin);
 }
 
 // Comand line parameter to run all tests.

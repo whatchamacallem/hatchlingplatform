@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-/// \file hx/hxradix_sort.hpp `hxradix_sort` is recommended as an Θ(`n`) sorting
+/// \file hx/hxradix_sort.hpp `hxradix_sort` is recommended as an Θ(n) sorting
 /// strategy for any primitive type that is 4-bytes or less. This implementation
 /// does not cause code bloat and is the fastest sorting algorithm available for
 /// scalar keys. Radix sort is best when you need real-time guarantees and have a
@@ -80,7 +80,7 @@ protected:
 /// sort it would make sense to sort first by a float key and then run an
 /// `hxinsertion_sort` over the nearly sorted data. `hxradix_sort` scales
 /// linearly with the byte length of the key whereas `hxinsertion_sort` is
-/// Θ(`n`) on mostly sorted data.
+/// Θ(n) on mostly sorted data.
 template<typename key_t_, class value_t_>
 class hxradix_sort : public hxradix_sort_base {
 public:

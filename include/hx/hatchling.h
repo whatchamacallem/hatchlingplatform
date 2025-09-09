@@ -49,13 +49,15 @@ extern "C" {
 /// Independently controls what messages are compiled in. See
 /// `g_hxsettings.log_level`.
 enum hxloglevel_t {
-	/// Verbose informative messages. No automatic newline.
+	/// Written to stdout. Structured output. No automatic newline.
 	hxloglevel_log,
-	/// Responses to console commands. No automatic newline.
+	/// Written to stderr. Unstructured informative output including error
+	/// messages regarding console commands and hxtest results. No automatic
+	/// newline. No news is good news.
 	hxloglevel_console,
-	/// Warnings about serious problems.
+	/// Written to stderr. Warnings about serious problems.
 	hxloglevel_warning,
-	/// Reason for abnormal termination or test failure.
+	/// Written to stderr. Reason for abnormal termination or test failure.
 	hxloglevel_assert
 };
 
@@ -107,7 +109,7 @@ enum hxloglevel_t {
 	|| hxbreakpoint())
 
 /// Assert handler. Do not call directly, signature changes and then is removed.
-hxnoexcept_unchecked int hxasserthandler(const char* file_, size_t line_);
+hxnoexcept_unchecked bool hxasserthandler(const char* file_, size_t line_);
 
 #else // HX_RELEASE >= 1
 #define hxlog(...) ((void)0)

@@ -22,37 +22,15 @@ before setting a breakpoint for you. There is nothing unnecessary to step
 through in the debugger. The compilers budget for optimization isn't blown out
 by layers you don't normally need.
 
-The C++ language standard has special provisions for "freestanding" environments
-without the standard library and this platform fills that niche. The
-implementation carefully avoids dynamic allocations except when initializing
-system allocators. A C++ project using this platform should run equally well on
-your thermostat using a single megabyte of RAM as in your web-browser or plugged
-into your Python back end.
-
-If this all seems un-relatable I understand. However, I have seen professionally
-written C++ codebases where the profiler showed we were spending 3% of our time
-executing `vector::operator[]` with all optimizations turned on. And this was in a
-setting where it made sense to spend weeks working on an optimization that would
-shave 1% off. *I'm sorry to destroy everyone's ideals, but even the authors of
-libclang wrote their own custom C++ container library.*
-
-This project serves as both a practical tool and a research platform for
-exploring C++ standard library design principles, particularly focusing on core
-runtime features. While recent C++ standards have addressed some concerns,
-significant opportunities remain for optimization.
+A key strength of this codebase is its embrace of clang's Undefined Behavior
+Sanitizer (UBSan), which enables developers to write pointer-centric C++ code
+while enjoying runtime safety guarantees comparable to managed languages. The
+implementation maintains compatibility with all warning flags and sanitizers for
+both gcc and clang. Of course asserts are also widely used. The implementation
+also avoids dynamic allocations except when initializing system allocators.
 
 <img src="hatchling_banner.jpg" alt="banner" width="400" height="400"
 style="float: right; padding-right: 20px; padding-left: 20px;">
-
-A key strength of this codebase is its reliance on clang's Undefined Behavior
-Sanitizer (UBSan), which enables developers to write pointer-centric C++ code
-while enjoying runtime safety guarantees comparable to managed languages. The
-implementation maintains compatibility with all possible warning flags and
-sanitizers for both gcc and clang.
-
-The `hx/hatchling.h` header requires C99 support. The codebase relies on
-`stdint.h` for fixed-width integers and selectively incorporates C++17 features
-and compiler intrinsics when available.
 
 Build configurations are controlled via `HX_RELEASE`, which defines optimization
 levels while allowing separate compiler optimization settings for debugging
@@ -70,7 +48,7 @@ purposes:
 ## Key Features
 
 - **Portability**: Hatchling can easily be made to run on top of any old
-  embedded c99 library. musl libc is recommended for embedded linux and is
+  embedded c99 library. musl libc is recommended for embedded Linux and is
   widely packaged: <https://musl.libc.org/> No other C++ runtime or C++ code is
   required. pthreads is used for threading which is a widely implemented
   standard. The asserts can work with only string hashes in release in order to
@@ -103,13 +81,13 @@ purposes:
   coherent and pre-allocated nature of this kind of programming there isn't much
   need for more than an array class.
 
-- **Algorithms**: `hxradix_sort` is provided for Θ(`n`) sorting. See `<hx/hxsort.h>`
+- **Algorithms**: `hxradix_sort` is provided for Θ(n) sorting. See `<hx/hxsort.h>`
   for comparison based sorting and lookup.
 
 - **Performance Focus**: This is systems code. Everything has to be well
   optimized and cache coherent without causing code bloat. This code base avoids
-  exceptions and RTTI for efficiency. Of course exceptions will be caught by the
-  test driver and the console if they are enabled.
+  exceptions and RTTI for efficiency. Exceptions will be caught by the test
+  driver and the console if they are enabled.
 
 - **C99 Compatibility**: Logging, asserts and memory management available in
   plain C99 via `<hx/hatchling.h>`

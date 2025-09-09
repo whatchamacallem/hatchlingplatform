@@ -11,6 +11,8 @@
 #include <hx/hxsort.hpp>
 #include <hx/hxsort.hpp>
 
+// Uses stdout directly in hxloghandler_v only. Could easily be made to use
+// hxfile.
 #include <stdio.h>
 
 HX_REGISTER_FILENAME_HASH
@@ -52,31 +54,41 @@ void hxsettings_construct();
 // scope static variables. Provide a release mode assert to enforce that locking
 // is not required. Also provide a release mode assert to enforce that function
 // static constructors do not throw exceptions.
-#if !HX_HOSTED
-extern "C"
+
+extern "C" {
+
+#if HX_FREESTANDING
+
 int __cxa_guard_acquire(size_t *guard) {
 	// Return 0 if already constructed.
 	if(*guard == 1u) { return 0; }
 
 	// Function scope statics must be initialized before calling worker threads.
-	// Checks if the constructor is already in progress and flag any potential
-	// race condition.
+	// Checks if the constructor is already in progress and flags any potential
+	// race condition or reentrance.
 	hxassertrelease(*guard != 2u, "__cxa_guard_acquire no function scope static lock");
-
-	// Run the constructor.
 	*guard = 2u;
-	return 1;
+	return 1; // Signal construction required.
 }
-extern "C"
+
 void __cxa_guard_release(size_t *guard) {
 	// Flag constructor as done. Clear in progress flag.
 	*guard = 1u;
 }
-extern "C"
+
 void __cxa_guard_abort(uint64_t *guard) {
-	hxassertrelease(0, "__cxa_guard_abort exception while constructing");
+	hxassertrelease(0, "__cxa_guard_abort");
 	*guard = 0u;
 }
+
+void __cxa_deleted_virtual(void) {
+	hxassertrelease(0, "__cxa_deleted_virtual");
+}
+
+void __cxa_pure_virtual(void) {
+	hxassertrelease(0, "__cxa_pure_virtual");
+}
+
 #endif
 
 // ----------------------------------------------------------------------------
@@ -84,11 +96,12 @@ void __cxa_guard_abort(uint64_t *guard) {
 // in the sanitizer support library. This provides clickable error messages
 // in vscode. Unused otherwise.
 
-extern "C"
 void __sanitizer_report_error_summary(const char *error_summary) {
 	// A clickable message has already been printed to standard out.
 	hxbreakpoint(); (void)error_summary;
 }
+
+} // extern "C"
 
 // ----------------------------------------------------------------------------
 #if (HX_RELEASE) < 1
@@ -195,29 +208,29 @@ hxnoexcept_unchecked void hxloghandler(hxloglevel_t level, const char* format, .
 	va_end(args);
 }
 
-#define HX_STDOUT_STR_(x) ::fwrite(x, (sizeof x) - 1, 1, stdout)
-
 extern "C"
 hxnoexcept_unchecked void hxloghandler_v(hxloglevel_t level, const char* format, va_list args) {
 	if(g_hxisinit && g_hxsettings.log_level > level) {
 		return;
 	}
 
-	char buf[HX_MAX_LINE+1];
-	int sz = format ? vsnprintf(buf, HX_MAX_LINE, format, args) : -1;
-	hxassertrelease(sz >= 0, "format_error %s", format ? format : "(null)");
-	if (sz <= 0) {
-		return;
-	}
+	char buf[HX_MAX_LINE];
+	int len = ::vsnprintf(buf, HX_MAX_LINE, format, args);
+
+	// These are potential data corruption issues, not skippable asserts.
+	// Don't try and print the format string as it may be bad.
+	hxassertrelease(len >= 0 && len < (int)HX_MAX_LINE, "vsnprintf");
+
+	FILE* f = level == hxloglevel_log ? stdout : stderr;
 	if (level == hxloglevel_warning) {
-		HX_STDOUT_STR_("WARNING ");
-		buf[sz++] = '\n';
+		::fwrite("WARNING ", (sizeof "WARNING ") - 1u, 1u, f);
+		buf[len++] = '\n';
 	}
 	else if (level == hxloglevel_assert) {
-		HX_STDOUT_STR_("ASSERT_FAIL ");
-		buf[sz++] = '\n';
+		::fwrite("ASSERT_FAIL ", (sizeof "ASSERT_FAIL ") - 1u, 1u, f);
+		buf[len++] = '\n';
 	}
-	::fwrite(buf, 1, sz, stdout);
+	::fwrite(buf, 1u, len, f);
 }
 
 // HX_RELEASE < 3 facilities for testing tear down. Just call _Exit() otherwise.
@@ -233,7 +246,7 @@ void hxshutdown(void) {
 
 #if (HX_RELEASE) == 0
 extern "C"
-hxnoexcept_unchecked int hxasserthandler(const char* file, size_t line) {
+hxnoexcept_unchecked bool hxasserthandler(const char* file, size_t line) {
 	const char* f = hxbasename(file);
 	if (g_hxisinit && g_hxsettings.asserts_to_be_skipped > 0) {
 		--g_hxsettings.asserts_to_be_skipped;

@@ -30,13 +30,23 @@ HX_SANITIZE="-fsanitize=undefined,address -fsanitize-recover=undefined,address"
 
 HX_DIR=`pwd`
 
+run_hxtest() {
+	if ./hxtest runtests > console_output.txt 2>&1; then
+		grep -e '\[  PASSED  \]' -e '\[  FAILED  \]' -e 'FAILED TESTS' \
+			console_output.txt || cat console_output.txt
+	else
+		cat console_output.txt
+		exit 1
+	fi
+}
+
 # Build artifacts are not retained.
 rm -rf ./bin; mkdir ./bin && cd ./bin
 
 # Test gcc with minimum specifications: -std=c99 and -std=c++11.
 gcc --version | grep gcc
 for I in 0 1 2 3; do
-echo gcc c++14 -O$I "$@"...
+echo gcc c++11 -O$I "$@"...
 # -std=c99
 gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS \
 	-std=c99 -m32 "$@" -c $HX_DIR/src/*.c $HX_DIR/test/*.c
@@ -44,7 +54,9 @@ gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS \
 gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS \
 	-pthread -std=c++11 -fno-exceptions -fno-rtti "$@" $HX_DIR/src/*.cpp $HX_DIR/test/*.cpp *.o \
 	-lpthread -lstdc++ -m32 -o hxtest
-./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
+
+run_hxtest
+
 rm -f hxtest *.o *.txt *.bin *.json
 done
 
@@ -65,8 +77,10 @@ clang++ -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors 
 	-DHX_USE_THREADS=$I -pthread -std=c++17 -fno-exceptions -fdiagnostics-absolute-paths \
 	$HX_SANITIZE "$@" -include-pch hatchling_pch.hpp.pch ../*/*.cpp *.o \
 	-lpthread -lstdc++ -o hxtest
-./hxtest runtests | grep '\[  PASSED  \]' || ./hxtest runtests
-rm -f hxtest *.o *.txt *.bin *.json
+
+run_hxtest
+
+rm -f hxtest *.o *.txt *.bin *.json *.pch
 done
 
 # Make sure the script returns 0.

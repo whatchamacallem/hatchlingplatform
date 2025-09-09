@@ -6,7 +6,8 @@
 #include <hx/hxallocator.hpp>
 #include <hx/hxkey.hpp>
 
-#if HX_HOSTED
+// No hxinitializer_list yet.
+#if !HX_FREESTANDING
 #include <initializer_list>
 #endif
 
@@ -69,7 +70,7 @@ public:
 		this->swap(x_); // NOTA BENE: Requires capacity 0 to compile.
 	}
 
-#if HX_HOSTED
+#if !HX_FREESTANDING
 	/// Pass values of std::initializer_list as initializers to an array of T.
 	/// WARNING: This constructor will override the other constructors when
 	/// uniform initialization is used.  E.g. hxarry<int>x{1,2} is an array

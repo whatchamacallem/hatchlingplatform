@@ -50,13 +50,13 @@
 #define HX_USE_THREADS 1
 #endif
 
-/// A hosted environment has an OS and C++ standard library.
-/// `HX_HOSTED` - `1` : _MSC_VER indicates a hosted environment.
-#define HX_HOSTED 1
+/// A freestanding implementation does not have the standard C++11 library.
+/// `HX_FREESTANDING` - `0` : _MSC_VER indicates a hosted environment.
+#define HX_FREESTANDING 0
 
 #define hxrestrict __restrict
 #define hxattr_format(pos_, start_)
-#define hxbreakpoint() (__debugbreak(),false)
+#define hxbreakpoint() (__debugbreak(),true)
 #define hxnoreturn
 
 /// Unlike noexcept this is undefined when violated. `hxnoexcept_unchecked` -
@@ -80,12 +80,11 @@
 #endif
 
 #ifdef __GLIBC__
-/// `HX_HOSTED` - Assume standard C++ headers and library are only available when
-/// on windows or when glibc is. This is a "hosted" environment.
-#define HX_HOSTED 1
+/// `HX_FREESTANDING`: 0 - glibc is present. This is a hosted environment.
+#define HX_FREESTANDING 0
 #else
-/// `HX_HOSTED` - Set to 0 when compiling with gcc/clang as glibc is not present.
-#define HX_HOSTED 0
+/// `HX_FREESTANDING`: 1 - Set to 0 when glibc is not present.
+#define HX_FREESTANDING 1
 #endif
 
 #define hxrestrict __restrict
@@ -95,9 +94,9 @@
 #if defined __has_builtin && __has_builtin(__builtin_debugtrap)
 /// `hxbreakpoint` - Can be conditionally evaluated with the `&&` and `||` operators.
 /// Uses intrinsics when available. (E.g. clang.)
-#define hxbreakpoint() (__builtin_debugtrap(),false)
+#define hxbreakpoint() (__builtin_debugtrap(),true)
 #else
-#define hxbreakpoint() (raise(SIGTRAP),false) /// `hxbreakpoint` - Use SIGTRAP if debugtrap is not available.
+#define hxbreakpoint() (raise(SIGTRAP),true) /// `hxbreakpoint` - Use SIGTRAP if debugtrap is not available.
 #endif
 
 /// `hxnoexcept_unchecked` - Use gcc/clang `nothrow` attribute. Unlike `noexcept` this
