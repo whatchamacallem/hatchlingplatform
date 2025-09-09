@@ -67,9 +67,9 @@ bool hxctest_memory(void) {
 	return result;
 }
 
-// A test harness in 2 lines of C. Note how safe the string ops are.
-#define HX_CTEST_PRINT(x) fwrite(x, (sizeof x) - 1, 1, stdout)
-#define HX_CTEST_EXEC(fn) (fn() || (HX_CTEST_PRINT(#fn ": test fail\n"), false))
+// C Test dispatcher. Uses preprocessor string concatenation and sizeof for strlen.
+#define HX_CTEST_PRINT(x) fwrite(x, (sizeof x) - 1, 1, stderr)
+#define HX_CTEST_EXEC(fn) (fn() || (HX_CTEST_PRINT("ASSERT_FAIL test_fail " #fn "\n"), false))
 
 bool hxctest_all(void) {
 	return HX_CTEST_EXEC(hxctest_hatchling_h)

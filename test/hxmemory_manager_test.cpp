@@ -12,7 +12,7 @@ HX_REGISTER_FILENAME_HASH
 // are designed to fail and use EXPECT_ for those specific tests.
 
 TEST(hxmemory_manager_test_f, bytes) {
-	for(size_t i=0u; i<10u; ++i) {
+	for(size_t i=10u; i--;) {
 		void* p = hxmalloc(i);
 		ASSERT_TRUE(p != hxnull);
 		::memset(p, 0x66, i);

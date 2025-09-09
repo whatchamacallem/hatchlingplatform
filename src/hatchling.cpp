@@ -9,11 +9,8 @@
 #include <hx/hxhash_table_nodes.hpp>
 #include <hx/hxprofiler.hpp>
 #include <hx/hxsort.hpp>
-#include <hx/hxsort.hpp>
 
-// Uses stdout directly in hxloghandler_v only. Could easily be made to use
-// hxfile.
-#include <stdio.h>
+#include <stdio.h> // vsnprintf only.
 
 HX_REGISTER_FILENAME_HASH
 
@@ -24,8 +21,8 @@ HX_REGISTER_FILENAME_HASH
 // requires a gcc/clang extension. Using -fno-math-errno and -fno-trapping-math
 // will work if you require C++ conforming accuracy without the overhead of
 // error checking. -ffast-math includes both those switches. You need the math
-// library -lm. Causing.. or explicit checking for... floating point exceptions
-// is not recommended.
+// library -lm. Causing or explicit checking for floating point exceptions is
+// not recommended.
 #if (HX_RELEASE) == 0 && defined __GLIBC__ && !defined __FAST_MATH__
 #include <fenv.h>
 #if !defined HX_FLOATING_POINT_TRAPS
@@ -37,11 +34,12 @@ HX_REGISTER_FILENAME_HASH
 #endif
 
 // There are exception handling semantics in use in case they are on. However
-// you are advised to use -fno-exceptions. Exceptions add overhead to C++ and
-// add untested pathways. In this codebase memory allocation cannot fail. And it
-// tries to get you to allocate enough memory for everything in advance. The
-// creation of hxthread.h classes cannot fail. By design there are no exceptions
-// to handle... Although there are lots of asserts.
+// you are advised to use -fno-exceptions. This library does not provide the
+// exception handling functions expected by the C++ ABI. In this codebase memory
+// allocation cannot fail. And it tries to get you to allocate enough memory for
+// everything in advance. The creation of hxthread.h classes cannot fail. By
+// design there are no exceptions to handle... Although there are lots of
+// asserts.
 #if (HX_RELEASE) >= 1 && defined __cpp_exceptions && !defined __INTELLISENSE__
 static_assert(0, "warning: C++ exceptions are not recommended for embedded use.");
 #endif
@@ -53,7 +51,8 @@ void hxsettings_construct();
 // When not hosted, provide no locking around the initialization of function
 // scope static variables. Provide a release mode assert to enforce that locking
 // is not required. Also provide a release mode assert to enforce that function
-// static constructors do not throw exceptions.
+// static constructors do not throw exceptions. Also provides error handling for
+// virtual tables.
 
 extern "C" {
 
@@ -146,19 +145,16 @@ bool hxprint_hashes(void) {
 	hxlogconsole("string literals in hash order:\n");
 	hxsystem_allocator_scope temporary_stack(hxsystem_allocator_temporary_stack);
 
-	typedef hxarray<const char*> Filenames;
-	Filenames filenames; filenames.reserve(hxstring_literal_hashes_().size());
+	hxarray<const char*> filenames; filenames.reserve(hxstring_literal_hashes_().size());
 
-	hxhash_string_literal_::const_iterator it = hxstring_literal_hashes_().cbegin();
-	hxhash_string_literal_::const_iterator end = hxstring_literal_hashes_().cend();
-	for (; it != end; ++it) {
-		filenames.push_back(it->str());
+	for (const auto& it : hxstring_literal_hashes_()) {
+		filenames.push_back(it.str());
 	}
 
 	hxinsertion_sort(filenames.begin(), filenames.end(), hxfilename_less());
 
-	for (Filenames::iterator f = filenames.begin(); f != filenames.end(); ++f) {
-		hxlog("  %08zx %s\n", (size_t)hxstring_literal_hash_debug(*f), *f);
+	for (const char* str : filenames) {
+		hxlog("  %08zx %s\n", (size_t)hxstring_literal_hash_debug(str), str);
 	}
 	return true;
 }
@@ -221,16 +217,16 @@ hxnoexcept_unchecked void hxloghandler_v(hxloglevel_t level, const char* format,
 	// Don't try and print the format string as it may be bad.
 	hxassertrelease(len >= 0 && len < (int)HX_MAX_LINE, "vsnprintf");
 
-	FILE* f = level == hxloglevel_log ? stdout : stderr;
+	hxfile& f = level == hxloglevel_log ? hxout : hxerr;
 	if (level == hxloglevel_warning) {
-		::fwrite("WARNING ", (sizeof "WARNING ") - 1u, 1u, f);
+		f << "WARNING ";
 		buf[len++] = '\n';
 	}
 	else if (level == hxloglevel_assert) {
-		::fwrite("ASSERT_FAIL ", (sizeof "ASSERT_FAIL ") - 1u, 1u, f);
+		f.write("ASSERT_FAIL ", (sizeof "ASSERT_FAIL ") - 1u);
 		buf[len++] = '\n';
 	}
-	::fwrite(buf, 1u, len, f);
+	f.write(buf, len);
 }
 
 // HX_RELEASE < 3 facilities for testing tear down. Just call _Exit() otherwise.
