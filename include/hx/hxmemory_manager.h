@@ -5,18 +5,19 @@
 
 /// \file hx/hxmemory_manager.h Memory Manager C API. Memory allocators are
 /// selected using an id. These are the large system-wide allocators, not the
-/// per-object hxallocator which allocates from here.
+/// per-container hxallocator which allocates from here.
 ///
 /// General purpose memory allocators are inefficient and unsafe to use. The
 /// problem is that long running code requires a lot of extra space to make sure
 /// it doesn't fragment and unexpectedly fail to make a large allocation.
-/// (Hardware support for virtual memory can be used to defrag a programs heap,
+/// (Hardware support for virtual memory can be used to defrag the program heap,
 /// but that requires processor support and system call overhead.) For code that
 /// uses a lot of small intermediate allocations 1/3 of your memory and 1/3 or
-/// your processor time could get eaten by the system memory allocator. The
-/// hxsystem_allocator_temporary_stack is provided as a replacement in that case.
+/// your processor time could get eaten by the program heap allocator. The
+/// hxsystem_allocator_temporary_stack is provided as a replacement in that
+/// case.
 ///
-/// There is also a category of allocations that are expected to last for the
+/// There are also a category of allocations that are expected to last for the
 /// lifetime of the application. They can be allocated with 0 overhead using
 /// hxsystem_allocator_permanent.
 ///
@@ -25,6 +26,14 @@
 /// intrusive way to move swaths of code to different allocators.
 ///
 /// Alignment must be a power of two. (It always is.)
+///
+/// `HX_RELEASE < 1` default memory markings:
+///
+/// - `0xab` - Allocated to client code.
+/// - `0xbc` - Allocated to hxallocator dynamic allocation.
+/// - `0xcd` - Belongs to system allocator.
+/// - `0xde` - Returned to heap allocator.
+/// - `0xef` - Reserved for client poisoned data.
 ///
 /// Global new and delete are provided when `HX_FREESTANDING==1`. This is a requirement
 /// for running as a stand alone C++ runtime. Otherwise they are not interfered
@@ -38,7 +47,7 @@
 /// existing code.
 
 #if !HATCHLING_VER
-#error #include <hx/hatchling.h> instead
+#error #include <hx/hatchling.h> instead.
 #endif
 
 #if HX_CPLUSPLUS
@@ -49,9 +58,12 @@
 extern "C" {
 #endif
 
-/// `HX_ALIGNMENT` - The default alignment allows for storing char pointers. This
-/// alignment should work for most types.
-#define HX_ALIGNMENT sizeof(char*)
+/// `hxalignment_t` - A positive integer power of 2 for aligning allocations.
+typedef unsigned int hxalignment_t;
+
+/// `HX_ALIGNMENT` - The default alignment allows for storing things like
+/// pointers. This alignment should work for most types.
+#define HX_ALIGNMENT (hxalignment_t)sizeof(size_t)
 
 /// hxsystem_allocator_t. (See hxmemory_manager.cpp)
 enum hxsystem_allocator_t {
@@ -81,7 +93,7 @@ void* hxnoexcept_unchecked hxmalloc(size_t size_);
 /// - `size` : The size of the memory to allocate.
 /// - `allocator` : The memory manager ID to use for allocation. (Default is hxsystem_allocator_current.)
 /// - `alignment` : The alignment for the allocation. (Default is HX_ALIGNMENT.)
-void* hxnoexcept_unchecked hxmalloc_ext(size_t size_, enum hxsystem_allocator_t allocator_, uintptr_t alignment_/*=HX_ALIGNMENT*/);
+void* hxnoexcept_unchecked hxmalloc_ext(size_t size_, enum hxsystem_allocator_t allocator_, hxalignment_t alignment_/*=HX_ALIGNMENT*/);
 
 /// `hxfree` - Frees memory previously allocated with hxmalloc or hxmalloc_ext.
 /// - `ptr` : Pointer to the memory to free.
@@ -103,8 +115,6 @@ char* hxnoexcept_unchecked hxstring_duplicate(const char* string_, enum hxsystem
 // Declare placement new. These are not built into the compiler.
 inline void* operator new(size_t, void* ptr_) noexcept { return ptr_; }
 inline void* operator new[](size_t, void* ptr_) noexcept { return ptr_; }
-inline void operator delete(void*, void*) noexcept { }
-inline void operator delete[](void*, void*) noexcept { }
 #endif
 
 /// `hxsystem_allocator_scope` - RAII class to set the current memory manager allocator
@@ -168,7 +178,7 @@ size_t hxmemory_manager_leak_count(void);
 /// newly constructed object. Will not return on failure.
 /// - `allocator` : The memory manager ID to use for allocation. Defaults to hxsystem_allocator_current.
 /// - `align` : A mask of low bits to be zero'd out when allocating new pointers. Defaults to HX_ALIGNMENT.
-template <typename T_, hxsystem_allocator_t allocator_=hxsystem_allocator_current, uintptr_t align_=HX_ALIGNMENT, typename... Args_>
+template <typename T_, hxsystem_allocator_t allocator_=hxsystem_allocator_current, hxalignment_t align_=HX_ALIGNMENT, typename... Args_>
 T_* hxnew(Args_&&... args_) noexcept {
 	return ::new(hxmalloc_ext(sizeof(T_), allocator_, align_)) T_(args_...);
 }
@@ -182,7 +192,7 @@ void hxdelete(T_* t_) {
 		t_->~T_();
 		if ((HX_RELEASE) < 1) {
 			// Mark as released to memory manager.
-			::memset((void*)t_, 0xdd, sizeof *t_);
+			::memset((void*)t_, 0xcd, sizeof *t_);
 		}
 		hxfree(t_);
 	}
@@ -215,7 +225,7 @@ public:
 
 /// `hxmalloc` - Add hxmalloc_ext args to hxmalloc C interface. Allocates memory with a
 /// specific memory manager and alignment.
-inline void* hxmalloc( size_t size_, enum hxsystem_allocator_t allocator_, uintptr_t alignment_=HX_ALIGNMENT) {
+inline void* hxmalloc( size_t size_, enum hxsystem_allocator_t allocator_, hxalignment_t alignment_=HX_ALIGNMENT) {
 	return hxmalloc_ext(size_, allocator_, alignment_);
 }
 

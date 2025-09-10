@@ -11,7 +11,7 @@ class hxtask_queue_test :
 	public testing::Test
 {
 public:
-	enum {
+	enum : uint8_t {
 		max_pool_ = 8,
 		max_tasks_ = 20
 	};

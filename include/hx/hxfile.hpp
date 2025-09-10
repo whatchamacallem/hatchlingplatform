@@ -7,7 +7,7 @@
 // implementations. Allows for hxerr to be a serial port and file I/O to use
 // a DMA controller.
 
-#include <hx/hatchling.h>
+#include "hatchling.h"
 
 class hxfile;
 
@@ -55,7 +55,7 @@ public:
 
 	/// Default constructs as a closed file.
 	hxfile(void) {
-		::memset(this, 0x00, sizeof *this);
+		::memset((void*)this, 0x00, sizeof *this);
 	}
 
 	/// Constructor to initialize and open a file with a formatted filename.
@@ -67,9 +67,22 @@ public:
 	/// `hxout`, `hxerr` and `hxdev_null` instead.
 	hxfile(void* file_, uint8_t mode_);
 
+	// Move constructor. No copy constructor is provided.
+	hxfile(hxfile&& file_) {
+		this->close();
+		::memcpy((void*)this, &file_, sizeof file_);
+		::memset((void*)&file_, 0x00, sizeof file_);
+	}
+
 	/// Destructor to ensure the file is closed when the object goes out of
 	/// scope.
 	~hxfile();
+
+	// Move operator=.
+	void operator=(hxfile&& file_) {
+		::memcpy((void*)this, &file_, sizeof file_);
+		::memset((void*)&file_, 0x00, sizeof file_);
+	}
 
 	/// Opens a file with the specified mode and formatted filename.
 	bool open(uint8_t mode_, const char* filename_, ...) hxattr_format_printf(3, 4);
@@ -113,7 +126,9 @@ public:
 	/// determines the size of the provided char array.
 	/// - `buffer` : Reference to a char array where the line will be stored.
 	template<size_t buffer_size_>
-	bool get_line(char(&buffer_)[buffer_size_]) { return get_line(buffer_, buffer_size_); }
+	bool get_line(char(&buffer_)[buffer_size_]) {
+		return this->get_line(buffer_, buffer_size_);
+	}
 
 	/// Reads an `\n` or `EOF` terminated character sequence. Allowed to fail on
 	/// `EOF` without needing to be `hxfile::skip_asserts`.
@@ -135,12 +150,12 @@ public:
 	/// Reads a single unformatted native endian object from the file.
 	/// - `t` : Reference to the object where the data will be stored.
 	template<typename T_>
-	bool read1(T_& t_) { return read(&t_, sizeof t_) == sizeof t_; }
+	bool read1(T_& t_) { return this->read(&t_, sizeof t_) == sizeof t_; }
 
 	/// Writes a single unformatted native endian object to the file.
 	/// - `t` : Reference to the object containing the data to write.
 	template<typename T_>
-	bool write1(const T_& t_) { return write(&t_, sizeof t_) == sizeof t_; }
+	bool write1(const T_& t_) { return this->write(&t_, sizeof t_) == sizeof t_; }
 
 	/// Read a single unformatted native endian object from a stream. The
 	/// operator `>=` is being used instead of `>>` to indicate there is no
@@ -148,7 +163,7 @@ public:
 	/// - `t` : Reference to the object where the data will be stored.
 	template<typename T_>
 	hxfile& operator>=(T_& t_) {
-		read(&t_, sizeof t_);
+		this->read(&t_, sizeof t_);
 		return *this;
 	}
 
@@ -158,7 +173,7 @@ public:
 	/// - `t` : Reference to the object containing the data to write.
 	template<typename T_>
 	hxfile& operator<=(const T_& t_) {
-		write(&t_, sizeof t_);
+		this->write(&t_, sizeof t_);
 		return *this;
 	}
 
@@ -168,7 +183,7 @@ public:
 	template<size_t string_length_>
 	hxfile& operator<<(const char(&str_)[string_length_]) {
 		hxassertmsg(::strlen(str_) == (string_length_-1), "bad_string_literal");
-		write(str_, string_length_-1);
+		this->write(str_, string_length_-1);
 		return *this;
 	}
 

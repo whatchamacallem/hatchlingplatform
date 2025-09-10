@@ -56,8 +56,8 @@ bool hxctest_memory(void) {
 
 	void* b32 = hxmalloc(32);
 
-	memset(b33, 0xee, 33);
-	memset(b32, 0xee, 32);
+	memset(b33, 0xde, 33);
+	memset(b32, 0xde, 32);
 
 	hxfree(b33);
 	hxfree(b32);

@@ -10,8 +10,8 @@
 /// massive workload. This is not a toy. It was actually how IBM sorted punch
 /// cards.
 
-#include <hx/hatchling.h>
-#include <hx/hxarray.hpp>
+#include "hatchling.h"
+#include "hxarray.hpp"
 
 /// `hxradix_sort_base`. Operations that are independent of `hxradix_sort` type.
 /// See `hxradix_sort<K, V>` below.

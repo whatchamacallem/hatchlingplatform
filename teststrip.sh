@@ -17,7 +17,7 @@ HX_ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
 	-pedantic-errors -Wfatal-errors"
 
-HX_FLAGS="-DHX_USE_THREADS=1 -DENTANGLEMENT_PASS=0 -g -ffunction-sections -fdata-sections -ffast-math"
+HX_FLAGS="-DHX_USE_THREADS=1 -g -ffunction-sections -fdata-sections -ffast-math"
 
 HX_DIR=`pwd`
 

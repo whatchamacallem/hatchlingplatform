@@ -6,11 +6,11 @@
 // hxprofiler_internal_ internals. See hxprofiler.h instead
 
 #if !defined HX_PROFILE
-#error #include <hx/hxprofiler.h> instead
+#error #include <hx/hxprofiler.h> instead.
 #endif
 
-#include <hx/hxarray.hpp>
-#include <hx/hxthread.hpp>
+#include "../hxarray.hpp"
+#include "../hxthread.hpp"
 
 #if HX_USE_THREADS
 #define HX_PROFILER_LOCK_() hxunique_lock hxprofiler_mutex_lock_(g_hxprofiler_.m_mutex_)

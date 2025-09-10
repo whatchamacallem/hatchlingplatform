@@ -98,7 +98,7 @@ public:
 	}
 
 	~sort_api_t() {
-		value = 0xafafafaf;
+		value = 0xefefefef;
 	}
 
     sort_api_t& operator=(sort_api_t&& other) noexcept {

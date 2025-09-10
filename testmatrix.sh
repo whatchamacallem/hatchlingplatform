@@ -24,7 +24,7 @@ HX_ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
 	-Wfatal-errors -pedantic-errors"
 
-HX_FLAGS="-DENTANGLEMENT_PASS=0 -ffast-math -ggdb3"
+HX_FLAGS="-ffast-math -ggdb3"
 
 HX_SANITIZE="-fsanitize=undefined,address -fsanitize-recover=undefined,address"
 
@@ -36,6 +36,7 @@ run_hxtest() {
 			console_output.txt || cat console_output.txt
 	else
 		cat console_output.txt
+		echo error: hxtest non-zero exit.
 		exit 1
 	fi
 }

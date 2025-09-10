@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-#include <hx/hatchling.h>
+#include "hatchling.h"
 
 class hxtask_queue;
 

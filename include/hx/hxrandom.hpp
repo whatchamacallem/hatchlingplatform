@@ -6,7 +6,7 @@
 /// \file hx/hxrandom.hpp A random number generator that automatically casts itself
 /// in well defined ways. Useful for test data.
 
-#include <hx/hatchling.h>
+#include "hatchling.h"
 
 /// `hxrandom` - 64-bit MMIX LCG. Knuth, D. 2002 (Modified to perturb return.)
 /// Performs an automatic cast to any integer or floating point value. Generates

@@ -6,7 +6,7 @@
 /// \file hx/hxallocator.hpp Similar to std::allocator. Allows for static or
 /// dynamic allocation.
 
-#include <hx/hatchling.h>
+#include "hatchling.h"
 
 /// A capacity value that allows for dynamic allocation.
 #define hxallocator_dynamic_capacity 0u
@@ -21,10 +21,10 @@ public:
 	/// Template specialization below should have been selected.
 	static_assert(fixed_capacity_ > 0u, "Fixed capacity must be > 0");
 
-	/// Initializes memory to 0xcd when HX_RELEASE < 1.
+	/// Initializes memory to 0xbc when HX_RELEASE < 1.
 	hxallocator() {
 #if (HX_RELEASE) < 1
-		::memset(m_data_, 0xcd, sizeof m_data_);
+		::memset(m_data_, 0xbc, sizeof m_data_);
 #endif
 	}
 
@@ -49,7 +49,7 @@ protected:
 	/// - `alignment` : The alignment of the allocator is checked against this.
 	constexpr void reserve_storage(size_t size_,
 			hxsystem_allocator_t allocator_=hxsystem_allocator_current,
-			uintptr_t alignment_=HX_ALIGNMENT) {
+			hxalignment_t alignment_=HX_ALIGNMENT) {
 				(void)size_; (void)allocator_; (void)alignment_;
 				hxassertmsg(size_ <= fixed_capacity_, "overflowing_fixed_capacity");
 				hxassertmsg(((alignment_ - 1u) & (uintptr_t)this) == 0u,
@@ -110,7 +110,7 @@ protected:
 	/// - `alignment` : The alignment to for the allocation. (default: HX_ALIGNMENT)
 	void reserve_storage(size_t size_,
 			hxsystem_allocator_t allocator_=hxsystem_allocator_current,
-			uintptr_t alignment_=HX_ALIGNMENT) {
+			hxalignment_t alignment_=HX_ALIGNMENT) {
 		if (size_ <= m_capacity_) { return; }
 		hxassertrelease(m_capacity_ == 0, "reallocation_disallowed");
 		m_data_ = (T_*)hxmalloc_ext(sizeof(T_) * size_, allocator_, alignment_);

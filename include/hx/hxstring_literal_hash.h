@@ -8,7 +8,7 @@
 /// or limited download size scenario.
 
 #if !HATCHLING_VER
-#error #include <hx/hatchling.h> instead
+#error #include <hx/hatchling.h> instead.
 #endif
 
 /// `hxhash_t` - Unsigned 32-bit hash value. Expect collisions.

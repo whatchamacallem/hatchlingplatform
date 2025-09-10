@@ -8,23 +8,20 @@
 
 namespace hxdetail_ {
 
-// hxtest_case_sort_ - Run tests in well defined alphanumeric order.
-bool hxtest_case_sort_(const hxtest_case_interface_* a_, const hxtest_case_interface_* b_) {
+// Run tests in well defined alphanumeric order.
+static bool hxtest_case_sort_(const hxtest_case_interface_* a_, const hxtest_case_interface_* b_) {
 	int compare_ = ::strcmp(a_->suite_(), b_->suite_());
 	if(compare_ == 0) { return ::strcmp(a_->case_(), b_->case_()) < 0; }
 	return compare_ < 0;
 }
 
+hxtest_::hxtest_(void) {
+	::memset((void*)this, 0x00, sizeof *this);
+}
+
 hxtest_& hxtest_::dispatcher_(void) {
 	static hxtest_ s_hxtest_runner;
 	return s_hxtest_runner;
-}
-
-hxtest_::hxtest_(void) {
-	m_test_suite_filter_ = hxnull;
-	m_num_test_cases_ = 0;
-	m_current_test_ = hxnull;
-	::memset(m_test_cases_ + 0, 0x00, sizeof m_test_cases_);
 }
 
 void hxtest_::add_test_(hxtest_case_interface_* fn_) {

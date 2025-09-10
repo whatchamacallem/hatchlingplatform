@@ -12,7 +12,7 @@
 /// cases as they are relatively easy to debug. See `hxkey_equal_function` and
 /// `hxkey_less_function` for generating default functors.
 
-#include <hx/hatchling.h>
+#include "hatchling.h"
 
 #if HX_CPLUSPLUS >= 202002L
 /// A concept that requires one type to be convertible to another. See usage

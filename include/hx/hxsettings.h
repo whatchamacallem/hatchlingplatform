@@ -7,7 +7,7 @@
 /// polyfill. Use `#if(HX_...)` instead of `#ifdef(HX_...)` for all `HX_`* macros.
 
 #if !HATCHLING_VER
-#error #include <hx/hatchling.h> instead
+#error #include <hx/hatchling.h> instead.
 #endif
 
 #if !defined HX_RELEASE

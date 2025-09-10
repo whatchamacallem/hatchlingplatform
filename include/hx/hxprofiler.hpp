@@ -9,7 +9,7 @@
 /// (`hxprofiler_write_to_chrome_tracing`). Profiling is enabled only if
 /// `HX_PROFILE` is defined.
 
-#include <hx/hatchling.h>
+#include "hatchling.h"
 
 #if defined __EMSCRIPTEN__
 // from "emscripten/emscripten.h"
@@ -28,7 +28,7 @@ extern "C" double emscripten_get_now(void);
 typedef size_t hxcycles_t;
 
 #if HX_PROFILE
-#include <hx/detail/hxprofiler_detail.hpp>
+#include "detail/hxprofiler_detail.hpp"
 #define HX_PROFILE_ONLY_(x_) x_
 #else
 #define HX_PROFILE_ONLY_(x_) ((void)0)

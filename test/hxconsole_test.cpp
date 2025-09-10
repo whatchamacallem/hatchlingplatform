@@ -12,7 +12,7 @@ HX_REGISTER_FILENAME_HASH
 // hxconsole_test::Command_factory
 
 namespace {
-	enum hxconsole_test_type_id {
+	enum hxconsole_test_type_id : uint8_t {
 		hxconsole_test_type_id_Void,
 		hxconsole_test_type_id_Char,
 		hxconsole_test_type_id_Short,

@@ -32,7 +32,7 @@
 /// at `hxintro_sort_` as an example of how you might compose a new sorting
 /// function built from these routines.
 
-#include <hx/detail/hxsort_detail.hpp>
+#include "detail/hxsort_detail.hpp"
 
 /// `hxinsertion_sort` - Sorts the elements in the range `[begin, end)` in
 /// comparison order using the insertion sort algorithm. The `end` parameter

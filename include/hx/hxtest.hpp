@@ -59,13 +59,13 @@
 /// - `ASSERT_`* macros are equivalent to `EXPECT_`*
 
 // Used to resolve `HX_USE_GOOGLE_TEST`.
-#include <hx/hatchling.h>
+#include "hatchling.h"
 
 // HX_USE_GOOGLE_TEST - Enable this to use Google Test instead of hxtest.
 #if HX_USE_GOOGLE_TEST
 #include <gtest/gtest.h>
 #else // !HX_USE_GOOGLE_TEST
-#include <hx/detail/hxtest_detail.hpp>
+#include "detail/hxtest_detail.hpp"
 
 /// `testing` - A partial Google Test reimplementation. Use `-DHX_TEST_MAX_CASES`
 /// to provide enough room for all tests.

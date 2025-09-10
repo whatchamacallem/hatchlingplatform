@@ -31,7 +31,7 @@
 ///	  joinable on destruction. Not copyable. Errors are threated as release mode
 ///	  asserts instead of being tracked.
 
-#include <hx/hatchling.h>
+#include "hatchling.h"
 
 #if HX_USE_THREADS
 #include <errno.h>

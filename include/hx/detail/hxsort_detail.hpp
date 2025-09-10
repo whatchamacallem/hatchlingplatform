@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-#include <hx/hxkey.hpp>
+#include "../hxkey.hpp"
 
 template<typename T_, typename less_t_>
 void hxinsertion_sort(T_* begin_, T_* end_, const less_t_& less_);
@@ -13,7 +13,7 @@ void hxheapsort(T_* begin_, T_* end_, const less_t_& less_);
 
 namespace hxdetail_ {
 
-enum { hxpartition_sort_cutoff_ = 32 };
+enum : ptrdiff_t { hxpartition_sort_cutoff_ = 32 };
 
 /// Restores the heap property by pushing a value down until it is not greater
 /// than its children.

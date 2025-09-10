@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-#include <hx/hxallocator.hpp>
+#include "../hxallocator.hpp"
 
 // hxhash_table internals. See hxhash_table.h instead
 

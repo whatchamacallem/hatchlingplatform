@@ -44,8 +44,8 @@
 /// `hx/hxhash_table_nodes.hpp` also provides specializations of the `hxhash_table`
 /// `node_t` template parameter for integers and strings.
 
-#include <hx/detail/hxhash_table_detail.hpp>
-#include <hx/hxkey.hpp>
+#include "detail/hxhash_table_detail.hpp"
+#include "hxkey.hpp"
 
 /// `hxhash_table_set_node` - Optional base class for unordered set entries.
 /// Caches the hash value. Copying and modification are disallowed to protect
@@ -212,9 +212,6 @@ public:
 	explicit hxhash_table(void) { m_size_ = 0u; }
 
 	/// Destructs the hash table and releases all resources.
-#if HX_CPLUSPLUS >= 202002L
-	constexpr
-#endif
 	~hxhash_table(void) { clear(); }
 
 	/// Returns a const iterator pointing to the beginning of the hash table.
@@ -259,7 +256,7 @@ public:
 	/// - `alignment` : The alignment for allocation. Defaults to `HX_ALIGNMENT`.
 	node_t_& insert_unique(const typename node_t_::key_t& key_,
 										hxsystem_allocator_t allocator_=hxsystem_allocator_current,
-										uintptr_t alignment_=HX_ALIGNMENT) {
+										hxalignment_t alignment_=HX_ALIGNMENT) {
 		node_t_** pos_ = this->get_bucket_head_(hxkey_hash(key_));
 		for (node_t_* n_ = *pos_; n_; n_ = (node_t_*)n_->hash_next()) {
 			if (hxkey_equal(n_->key(), key_)) {

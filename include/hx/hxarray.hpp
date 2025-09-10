@@ -3,11 +3,10 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-#include <hx/hxallocator.hpp>
-#include <hx/hxkey.hpp>
+#include "hxallocator.hpp"
+#include "hxkey.hpp"
 
-// No hxinitializer_list yet.
-#if !HX_FREESTANDING
+#if !HX_FREESTANDING // No hxinitializer_list freestanding.
 #include <initializer_list>
 #endif
 
@@ -421,7 +420,7 @@ public:
 	/// - `alignment` : The alignment to for the allocation. (default: HX_ALIGNMENT)
 	void reserve(size_t size_,
 			hxsystem_allocator_t allocator_=hxsystem_allocator_current,
-			uintptr_t alignment_=HX_ALIGNMENT) {
+			hxalignment_t alignment_=HX_ALIGNMENT) {
 		T_* prev = this->data();
 		this->reserve_storage(size_, allocator_, alignment_);
 		hxassertmsg(!prev || prev == this->data(), "reallocation_disallowed"); (void)prev;

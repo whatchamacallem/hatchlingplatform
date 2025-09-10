@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-#include <hx/hxfile.hpp>
-#include <hx/hxsort.hpp>
+#include "../hxfile.hpp"
+#include "../hxsort.hpp"
 
 static_assert(!HX_USE_GOOGLE_TEST, "Do not include this file directly.");
 
@@ -20,9 +20,6 @@ public:
 	virtual size_t line_() const = 0;
 };
 
-// hxtest_case_sort_ - Run tests in well defined alphanumeric order.
-bool hxtest_case_sort_(const hxtest_case_interface_* a_, const hxtest_case_interface_* b_);
-
 // hxtest_ - Internal. The test tracking and dispatching singleton.
 class hxtest_ {
 public:
@@ -34,7 +31,7 @@ public:
 		max_fail_messages_ = 5
 	};
 
-	enum test_state_t_ {
+	enum test_state_t_ : uint8_t {
 		test_state_nothing_asserted_,
 		test_state_pass_,
 		test_state_fail_

@@ -11,7 +11,7 @@
 /// char*`, `hxconsolenumber_t` or `hxconsolehex_t` as parameter types are
 /// required for the bindings to work. See the following commands for examples.
 
-#include <hx/hatchling.h>
+#include "hatchling.h"
 
 class hxfile;
 
@@ -115,4 +115,4 @@ bool hxconsole_exec_filename(const char* filename_);
 bool hxconsole_help(void);
 
 // Include internals after hxconsolehex_t
-#include <hx/detail/hxconsole_detail.hpp>
+#include "detail/hxconsole_detail.hpp"

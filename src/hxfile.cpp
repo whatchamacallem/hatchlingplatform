@@ -91,7 +91,7 @@ void hxfile::close(void) {
 	if (m_owns_) {
 		::fclose((FILE*)m_file_pimpl_);
 	}
-	::memset(this, 0x00, sizeof *this);
+	::memset((void*)this, 0x00, sizeof *this);
 }
 
 size_t hxfile::read(void* bytes, size_t byte_count) {

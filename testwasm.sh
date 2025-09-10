@@ -49,7 +49,7 @@ if [ "$1" != "--headless" ]; then
 	fi
 
 	# Bring the webserver to the foreground so it can be killed.
-	fg %$(jobs | grep 'python3' | sed -E 's/^\[([0-9]+)\].*/\1/')
+	fg %$(jobs | grep 'http.server' | sed -E 's/^\[([0-9]+)\].*/\1/')
 fi
 
 # Say goodbye. Make sure the script returns 0.

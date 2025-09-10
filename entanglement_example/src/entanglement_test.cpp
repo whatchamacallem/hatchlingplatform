@@ -78,7 +78,7 @@ StructPointerFundamentals& function_struct_pointer_fundamentals_multiply(StructP
 
 	// Nuke the base without nuking the .vtable.
 	StructFundamentals& base = struct_fundamentals;
-	::memset(&base, 0xaf, sizeof(StructFundamentals));
+	::memset(&base, 0xef, sizeof(StructFundamentals));
 
 	// Proof of life for pointers.
 	*(int*)struct_fundamentals.m_pvoid *= multiplier;

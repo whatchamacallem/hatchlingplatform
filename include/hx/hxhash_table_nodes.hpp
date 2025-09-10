@@ -6,7 +6,7 @@
 /// \file hx/hxhash_table_nodes.hpp These are versions of the `hxhash_table`
 /// `node_t` template parameter for integers and strings.
 
-#include <hx/hxhash_table.hpp>
+#include "hxhash_table.hpp"
 
 /// `hxhash_table_node_integer` - `node_t` for use with hxhash_table for integer
 /// types. See documentation of `hxhash_table` for interface. This is a great
@@ -62,8 +62,5 @@ public:
 		: hxhash_table_set_node(hxstring_duplicate(k_, allocator_)) { }
 
 	/// Destructor frees the allocated string key.
-#if HX_CPLUSPLUS >= 202002L
-	constexpr
-#endif
 	~hxhash_table_node_string(void) { hxfree(const_cast<char *>(this->key())); }
 };

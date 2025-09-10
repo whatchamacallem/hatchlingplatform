@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-#include <hx/hatchling.h>
-#include <hx/hxtask.hpp>
-#include <hx/hxthread.hpp>
+#include "hatchling.h"
+#include "hxtask.hpp"
+#include "hxthread.hpp"
 
 /// `hxtask_queue` - Provides a simple task queue with a worker thread pool.
 /// Implements single threaded task queuing when `HX_USE_THREADS=0`. Executes
 /// supplied tasks in arbitrary order without cancellation using an optional
 /// thread pool. Use a separate task graph manager to generate tasks if that is
-/// needed. See `<hx/hxtask.hpp>`.
+/// needed. See `"hxtask.hpp"`.
 class hxtask_queue {
 public:
 	/// Create a new task queue. `thread_pool_size` determines the size of the worker
@@ -41,12 +41,12 @@ private:
 	hxtask* m_next_task_;
 
 #if HX_USE_THREADS
-	enum thread_mode_t_ {
+	enum thread_mode_t_ : uint8_t {
 		thread_mode_pool_,
 		thread_mode_waiting_,
 		thread_mode_stopping_
 	};
-	enum run_level_t_ {
+	enum run_level_t_ : uint32_t {
 		run_level_running_ = (uint32_t)0x00c0ffee,
 		run_level_stopped_ = (uint32_t)0xdeadbeef
 	};
