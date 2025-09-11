@@ -38,7 +38,7 @@
 // Target settings for MSVC. Further compilers will require customization. MSVC
 // doesn't support C++'s feature test macros very well.
 #if defined _MSC_VER
-#error "The MSVC build is currently unmaintained. It should be easy to fix."
+#error The MSVC build is currently unmaintained. It should be easy to fix.
 /// `_HAS_EXCEPTIONS` - _MSC_VER only. Disables exception handling. Must be
 /// included before standard headers.
 #if !defined __cpp_exceptions && !defined _HAS_EXCEPTIONS

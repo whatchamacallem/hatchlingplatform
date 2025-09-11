@@ -5,8 +5,8 @@
 
 /// \file hx/hatchling.h
 /// Hatchling Platform. Requires C99. C++11 is minimum. Supports up to C++20.
-/// Inclusion on the compiler search path is not required. Headers are designed
-/// to be included as follows: `#include <hx/hatchling.h>`
+/// Inclusion on the compiler search path is not required. However, the
+/// headers are intended to be included as follows: `#include <hx/hatchling.h>`
 ///
 /// Defines logging macros `hxlog`, `hxlogrelease`, `hxlogconsole`,
 /// `hxlogwarning` which vary by `HX_RELEASE` level (0–3) and defines log
@@ -19,6 +19,8 @@
 /// Available utilities are: `hxnull`, `hxnullptr`, `hxmove`, `hxmin`, `hxmax`,
 /// `hxabs`, `hxclamp`, `hxswap`, `hxhex_dump`, `hxfloat_dump`.
 
+// Use minimal C style headers. The std:: namespace may not exist. "You can't
+// get there from here."
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -73,7 +75,7 @@ enum hxloglevel_t {
 
 /// Compile-time assertion for `HX_RELEASE` [0..3] range.
 #if (HX_RELEASE) < 0 || (HX_RELEASE) >= 4
-#error "HX_RELEASE must be [0..3]."
+#error HX_RELEASE must be [0..3].
 #endif
 
 /// `hxinit()` - Initializes the platform.

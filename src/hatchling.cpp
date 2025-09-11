@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-#include <hx/hatchling.h>
-#include <hx/hxarray.hpp>
-#include <hx/hxconsole.hpp>
-#include <hx/hxfile.hpp>
-#include <hx/hxhash_table_nodes.hpp>
-#include <hx/hxprofiler.hpp>
-#include <hx/hxsort.hpp>
+#include "../include/hx/hatchling.h"
+#include "../include/hx/hxarray.hpp"
+#include "../include/hx/hxconsole.hpp"
+#include "../include/hx/hxfile.hpp"
+#include "../include/hx/hxhash_table_nodes.hpp"
+#include "../include/hx/hxprofiler.hpp"
+#include "../include/hx/hxsort.hpp"
 
 #include <stdio.h> // vsnprintf only.
 

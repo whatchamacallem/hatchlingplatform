@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-#include <hx/hxradix_sort.hpp>
-#include <hx/hxsort.hpp>
+#include "../include/hx/hxradix_sort.hpp"
+#include "../include/hx/hxsort.hpp"
 
 HX_REGISTER_FILENAME_HASH
 

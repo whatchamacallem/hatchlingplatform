@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-#include <hx/hxprofiler.hpp>
-#include <hx/hxconsole.hpp>
-#include <hx/hxfile.hpp>
+#include "../include/hx/hxprofiler.hpp"
+#include "../include/hx/hxconsole.hpp"
+#include "../include/hx/hxfile.hpp"
 
 HX_REGISTER_FILENAME_HASH
 

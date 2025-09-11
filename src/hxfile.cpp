@@ -5,7 +5,7 @@
 // This is the C <stdio.h> version using FILE*. Use an alternate .cpp file for
 // alternate implementations.
 
-#include <hx/hxfile.hpp>
+#include "../include/hx/hxfile.hpp"
 
 #include <stdio.h>
 #include <errno.h>
