@@ -62,9 +62,13 @@ TEST_F(hxfile_test, not_exist) {
 }
 
 TEST_F(hxfile_test, operations) {
-	// write a test file
+	// Write a test file. Take the copy operators for a spin.
 
-	hxfile f(hxfile::out | hxfile::skip_asserts, "hxfile_test_operators.bin");
+	// C++17 Uses "guaranteed copy elision" requiring hxmove here to invoke
+	// the constructor from a temporary correctly.
+	hxfile ft(hxfile::out | hxfile::skip_asserts, "hxfile_test_operators.bin");
+	hxfile f(hxmove(ft));
+	EXPECT_FALSE(ft.good());
 	test_t_ x { 77777u, -555, 77u, -55 };
 	int a = -3;
 
@@ -75,10 +79,12 @@ TEST_F(hxfile_test, operations) {
 	EXPECT_FALSE(f.eof());
 	f.close();
 
-	// read the test file and verify
+	// Read the test file and verify.
 
-	f.open(hxfile::in | hxfile::skip_asserts, "hxfile_test_operators.bin");
+	ft.open(hxfile::in | hxfile::skip_asserts, "hxfile_test_operators.bin");
+	f = hxmove(ft);
 	EXPECT_TRUE(f.good());
+	EXPECT_FALSE(ft.good());
 
 	test_t_ y; ::memset(&y, 0x00, sizeof y);
 	int b = 0;

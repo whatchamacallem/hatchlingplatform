@@ -69,7 +69,6 @@ public:
 
 	// Move constructor. No copy constructor is provided.
 	hxfile(hxfile&& file_) {
-		this->close();
 		::memcpy((void*)this, &file_, sizeof file_);
 		::memset((void*)&file_, 0x00, sizeof file_);
 	}
@@ -80,6 +79,7 @@ public:
 
 	// Move operator=.
 	void operator=(hxfile&& file_) {
+		this->close();
 		::memcpy((void*)this, &file_, sizeof file_);
 		::memset((void*)&file_, 0x00, sizeof file_);
 	}
