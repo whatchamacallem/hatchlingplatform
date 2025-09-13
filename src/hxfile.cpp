@@ -67,12 +67,10 @@ bool hxfile::openv_(uint8_t mode, const char* filename, va_list args) {
 		return false;
 	}
 
-	char buf[HX_MAX_LINE];
-	int len = ::vsnprintf(buf, HX_MAX_LINE, filename, args);
-	hxassertmsg(len >= 0 && len < HX_MAX_LINE, "vsnprintf"); (void)len;
-
 	const char* m = hxnull;
 	switch (mode & (hxfile::in | hxfile::out)) {
+	case hxfile::none:
+		return false; // Will assert if used.
 	case hxfile::in:
 		m = "rb";
 		break;
@@ -82,6 +80,10 @@ bool hxfile::openv_(uint8_t mode, const char* filename, va_list args) {
 	default:
 		m = "w+b";
 	}
+
+	char buf[HX_MAX_LINE];
+	int len = ::vsnprintf(buf, HX_MAX_LINE, filename, args);
+	hxassertmsg(len >= 0 && len < HX_MAX_LINE, "vsnprintf"); (void)len;
 
 	m_file_pimpl_ = ::fopen(buf, m);
 	hxassertrelease(m_file_pimpl_ || (mode & hxfile::skip_asserts), \
@@ -97,6 +99,20 @@ void hxfile::close(void) {
 		::fclose((FILE*)m_file_pimpl_);
 	}
 	::memset((void*)this, 0x00, sizeof *this);
+}
+
+size_t hxfile::get_pos(void) {
+	hxassertmsg(m_file_pimpl_, "invalid_parameter");
+	// Requires a 64-bit long to support 64-bit files.
+	return (size_t)::ftell((FILE*)m_file_pimpl_);
+}
+
+bool hxfile::set_pos(size_t position_) {
+	hxassertmsg(m_file_pimpl_, "invalid_parameter");
+	// Requires a 64-bit long to support 64-bit files.
+	m_good_ = ::fseek((FILE*)m_file_pimpl_, (long)position_, 0) == 0;
+	m_eof_ = !m_good_;
+	return m_good_;
 }
 
 size_t hxfile::read(void* bytes, size_t byte_count) {
@@ -130,10 +146,10 @@ size_t hxfile::write(const void* bytes, size_t byte_count) {
 	return bytes_written;
 }
 
-bool hxfile::get_line(char* buffer, size_t buffer_size) {
+bool hxfile::get_line(char* buffer, int buffer_size) {
 	hxassertmsg((m_open_mode_ & hxfile::in) && m_file_pimpl_ && buffer, "invalid_parameter");
 
-	char* result = ::fgets(buffer, (int)buffer_size, (FILE*)m_file_pimpl_);
+	char* result = ::fgets(buffer, buffer_size, (FILE*)m_file_pimpl_);
 
 	hxassertmsg(!::ferror((FILE*)m_file_pimpl_), "fgets %s", ::strerror(errno));
 

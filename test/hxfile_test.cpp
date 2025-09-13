@@ -61,6 +61,29 @@ TEST_F(hxfile_test, not_exist) {
 	hxdev_null << "dev/null should not exist";
 }
 
+TEST_F(hxfile_test, offset) {
+	// Write a test file. Test get/set_position and read1/write1.
+
+	struct { uint32_t x; } a { 0xefefefefu }, b { 0x01020304u }, c { 0x0u };
+
+	// Write expected value surrounded by poison.
+	hxfile f(hxfile::in | hxfile::out, "hxfile_test_offset.bin");
+	f.write1(a);
+	f.write1(b);
+	f.write1(a);
+
+	EXPECT_EQ(f.get_pos(), 12u);
+	f.set_pos(4);
+	EXPECT_TRUE(f.good());
+	EXPECT_FALSE(f.eof());
+	f.read1(c);
+	EXPECT_TRUE(f.good());
+	EXPECT_FALSE(f.eof());
+
+	EXPECT_EQ(b.x, c.x);
+	EXPECT_EQ(f.get_pos(), 8u);
+}
+
 TEST_F(hxfile_test, operations) {
 	// Write a test file. Take the copy operators for a spin.
 

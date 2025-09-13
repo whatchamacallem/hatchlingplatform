@@ -213,14 +213,17 @@ const char* hxbasename(const char* path_);
 #if HX_CPLUSPLUS
 } // extern "C"
 
-/// `hxnullptr_t` - A class that will only convert to a null pointer. Useful
+/// `hxnullptr_t` - A class that will only convert to a null T pointer. Useful
 /// when an integer constant arg would be ambiguous or otherwise break template
 /// code. `hxnullptr` is a `hxnullptr_t`. Use plain `hxnull` for comparisons.
 class hxnullptr_t {
 public:
+	/// null T pointer.
 	template<typename T_> constexpr operator T_*() const { return 0; }
+	/// null T member function pointer.
 	template<typename T_, typename M_> constexpr operator M_ T_::*() const { return 0; }
-	void operator&() const = delete; // No address-of operator.
+	/// No address-of operator.
+	void operator&() const = delete;
 };
 
 /// `hxnullptr` - An instance of a class that will only convert to a null

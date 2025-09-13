@@ -6,6 +6,9 @@
 // C++ RAII abstraction for FILE*. Use an alternate .cpp file for alternate
 // implementations. Allows for hxerr to be a serial port and file I/O to use
 // a DMA controller.
+//
+// NOTA BENE: get_position/set_position over 2 GiB is not supported on Windows.
+// As well, size_t is limited to 32-bits on 32 bit platforms.
 
 #include "hatchling.h"
 
@@ -109,6 +112,14 @@ public:
 	/// Returns the current open mode of the file.
 	uint8_t mode(void) const { return m_open_mode_; }
 
+	/// Returns current position in file if open, 0 otherwise. FILE*
+	/// implementation requires a 64-bit long to support 64-bit files.
+	size_t get_pos(void);
+
+	/// Sets current position in file. Returns true on success. FILE*
+	/// implementation requires a 64-bit long to support 64-bit files.
+	bool set_pos(size_t position_);
+
 	/// Reads a specified number of bytes from the file into the provided
 	/// buffer.
 	/// - `bytes` : Pointer to the buffer where the read bytes will be stored.
@@ -134,7 +145,7 @@ public:
 	/// `EOF` without needing to be `hxfile::skip_asserts`.
 	/// - `buffer` : Pointer to a char array where the line will be stored.
 	/// - `buffer_size` : Size of the buffer array.
-	bool get_line(char* buffer_, size_t buffer_size_);
+	bool get_line(char* buffer_, int buffer_size_);
 
 	/// Writes a formatted string to the file. Uses printf conventions.
 	/// Formatting and writing will be skipped when using hxdev_null.
