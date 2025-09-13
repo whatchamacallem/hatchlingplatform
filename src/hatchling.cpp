@@ -210,10 +210,11 @@ hxnoexcept_unchecked void hxloghandler_v(hxloglevel_t level, const char* format,
 		return;
 	}
 
+	// vsnprintf leaves a trailing NUL which may be overwritten below.
 	char buf[HX_MAX_LINE];
 	int len = ::vsnprintf(buf, HX_MAX_LINE, format, args);
 
-	// These are potential data corruption issues, not skippable asserts.
+
 	// Don't try and print the format string as it may be bad.
 	hxassertrelease(len >= 0 && len < (int)HX_MAX_LINE, "vsnprintf");
 

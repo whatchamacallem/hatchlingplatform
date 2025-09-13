@@ -377,7 +377,7 @@ TEST(hxconsole_test, file_fail) {
 	EXPECT_FALSE(hxconsole_exec_filename("hxconsole_test_file_test.txt"));
 }
 
-#if (HX_RELEASE) < 2 && !defined __EMSCRIPTEN__
+#if (HX_RELEASE) < 2 && !defined __wasm__
 TEST(hxconsole_test, file_peek_poke) {
 	uint32_t target[] = { 111, 777, 333 };
 	{

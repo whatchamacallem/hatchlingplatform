@@ -11,7 +11,7 @@
 
 #include "hatchling.h"
 
-#if defined __EMSCRIPTEN__
+#if defined __wasm__
 // from "emscripten/emscripten.h"
 extern "C" double emscripten_get_now(void);
 #elif defined __x86_64__ || defined __i386__

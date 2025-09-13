@@ -80,11 +80,15 @@
 #endif
 #endif
 
-#ifdef __GLIBC__
-/// `HX_FREESTANDING`: 0 - glibc is present. This is a hosted environment.
+#if defined(__GLIBCXX__) || defined(_LIBCPP_VERSION)
+/// `HX_FREESTANDING`: 0 - libstdc++/libc++ are present. This is a hosted
+/// environment. A "freestanding" implementation does not have the standard C++
+/// library and may not have a complete C library.
 #define HX_FREESTANDING 0
 #else
-/// `HX_FREESTANDING`: 1 - Set to 0 when glibc is not present.
+/// `HX_FREESTANDING`: 1 - Set to 1 when glibc is not present. A "freestanding"
+/// implementation does not have the standard C++ library and may not have a
+/// complete C library.
 #define HX_FREESTANDING 1
 #endif
 

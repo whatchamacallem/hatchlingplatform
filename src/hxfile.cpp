@@ -21,7 +21,12 @@ HX_REGISTER_FILENAME_HASH
 
 hxfile hxin(stdin, hxfile::in);
 hxfile hxout(stdout, hxfile::out);
+#ifndef __wasm__
 hxfile hxerr(stderr, hxfile::out);
+#else
+// Don't use stdout with the default index.js provided by the emsdk.
+hxfile hxerr(stdout, hxfile::out);
+#endif
 hxfile hxdev_null(hxnull, hxfile::out);
 
 // In this version the file is a FILE*.

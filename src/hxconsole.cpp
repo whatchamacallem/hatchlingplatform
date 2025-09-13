@@ -144,7 +144,7 @@ bool hxconsole_help(void) {
 	return true;
 }
 
-#if (HX_RELEASE) < 2 && !defined __EMSCRIPTEN__
+#if (HX_RELEASE) < 2 && !defined __wasm__
 
 static bool hxconsole_peek(hxconsolehex_t address, hxconsolenumber_t bytes) {
 	hxhex_dump((const void*)address, bytes, 0);
