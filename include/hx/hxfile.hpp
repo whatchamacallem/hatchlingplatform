@@ -114,7 +114,7 @@ public:
 
 	/// Returns current position in file if open, 0 otherwise. FILE*
 	/// implementation requires a 64-bit long to support 64-bit files.
-	size_t get_pos(void);
+	size_t get_pos(void) const;
 
 	/// Sets current position in file. Returns true on success. FILE*
 	/// implementation requires a 64-bit long to support 64-bit files.

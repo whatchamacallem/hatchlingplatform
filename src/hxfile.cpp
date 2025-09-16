@@ -101,7 +101,7 @@ void hxfile::close(void) {
 	::memset((void*)this, 0x00, sizeof *this);
 }
 
-size_t hxfile::get_pos(void) {
+size_t hxfile::get_pos(void) const {
 	hxassertmsg(m_file_pimpl_, "invalid_parameter");
 	// Requires a 64-bit long to support 64-bit files.
 	return (size_t)::ftell((FILE*)m_file_pimpl_);
