@@ -10,7 +10,7 @@ AGENTS.md contains context intended to be useful to AI coding agents.
 
 ## Repository layout
 
-- `include/hx`: Public headers (doxygen annotated); `hatchling_pch.hpp` includes everything.
+- `include/hx`: Public headers (doxygen annotated); `hatchling_pch.hpp` includes some of it.
 - `src`: Library sources shared across targets.
 - `test`: Unit and integration tests driven by the in-tree `hxtest` harness.
 - `bin`: Throwaway build directory created by scripts; safe to delete.
@@ -43,7 +43,6 @@ AGENTS.md contains context intended to be useful to AI coding agents.
 - Update header comments/Doxygen blocks when you change APIs; doc generation happens from `include/hx`.
 - Maintain deterministic behavior; profiling and hash utilities rely on stable ordering and fixed seeds.
 
-
 ## Language Dialect and Compilation Model
 
 - **Target dialect:** Write `.cpp` files and headers in C++20 that remain compatible with C99 and C++11. Do not rely on the C++ standard library. Identical functionality must already exist inside Hatchling Platform.
@@ -54,14 +53,14 @@ AGENTS.md contains context intended to be useful to AI coding agents.
 - **Header guard:** Use `#pragma once` at the top of every header. Do not use traditional include guards.
 - **Top-of-file order:**
   1. `#pragma once` (headers only).
-  2. SPDX and license comment (if present in neighboring files).
+  2. SPDX and license comment (as found in other files).
   3. Minimal includes (first project headers, then system C headers if needed).
   4. Forward declarations.
 - **Translation units:** Put non-template implementations inside `src/` `.cpp` files. Keep headers self-contained and compilable on their own.
 
 ## Naming Conventions
 
-- **Classes, structs, enums, concepts:** `hxlower_snake_case`. (Hatchling intentionally keeps type names lower-case.)
+- **Classes, structs, enums, concepts:** `hxlower_snake_case`. (Hatchling intentionally keeps type names lower-case snake case starting with hx.)
 - **Functions and methods:** `hxlower_snake_case`.
 - **Variables:** `hxlower_snake_case`. Parameters and member variables use a trailing underscore (e.g., `size_`).
 - **Macros:** `HX_UPPER_SNAKE_CASE`. Avoid new macros unless necessary.
@@ -75,15 +74,9 @@ AGENTS.md contains context intended to be useful to AI coding agents.
 - **Spacing:**
   - Space after keywords (`if (condition)`).
   - Single blank line between function definitions.
-- **Initializer lists:** Place `:` on the same line as the constructor. Wrap subsequent initializers on new lines aligned by two spaces.
+- **Initializer lists:** Place `:` on the same line as the constructor. Wrap subsequent initializers on new lines aligned by tabs.
 
-```cpp
-widget::widget(i32 width, i32 height)
-  : width_(width),
-    height_(height) { }
-```
-
-- **Pointer/reference declarators:** Attach to the type (`allocator* arena` not `allocator *arena`).
+- **Pointer/reference declarators:** Attach to the type (`T* t` not `T *t`).
 - **Trailing comments:** Prefer standalone doxygen /// comments above the code they describe.
 
 ## Comments and Documentation
@@ -92,11 +85,24 @@ widget::widget(i32 width, i32 height)
 - **Implementation comments:** Use them to explain intent, invariants, or complex algorithms. Keep them concise and actionable.
 - **TODOs:** Tag as `// TODO: message`. Provide enough context for future resolution.
 
+Here is an example header:
+
 ```cpp
-/// Returns true if work has been scheduled onto an executor.
-/// - `work` :  The task to run. Ownership transfers to the scheduler.
-bool submit(task_t work);
+#pragma once
+// SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+// SPDX-License-Identifier: MIT
+// This file is licensed under the MIT license found in the LICENSE.md file.
+
+/// \file hx/hxexample.hpp These are example versions.
+
+#include "hxhash_table.hpp"
+
+/// Returns true if work has been submitted.
+/// - `work` :  The work to perform.
+bool hxsubmit(hxsome_class_t& work_);
 ```
+
+See `include/hx/hxrandom.hpp` for correct examples of code and docs.
 
 ## Testing Requirements
 
