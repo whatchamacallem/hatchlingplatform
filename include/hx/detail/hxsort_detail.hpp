@@ -23,31 +23,31 @@ enum : ptrdiff_t { hxpartition_sort_cutoff_ = 32 };
 /// - `less` : Comparison functor.
 template<typename T_, typename less_t_>
 void hxheapsort_heapify_(T_* begin_, const T_* end_, T_* current_, const less_t_& less_) {
-	for (;;) {
+	for(;;) {
 		hxassertmsg(begin_ <= current_ && current_ < end_, "invalid_iterator");
 
 		T_* left_  = begin_ + 2 * (current_ - begin_) + 1;
 		T_* right_ = left_ + 1;
 		T_* next_  = 0;
 
-		if (right_ < end_) {
+		if(right_ < end_) {
 			// Deal with the case where there are two children first.
-			if (less_(*left_, *right_)) {
+			if(less_(*left_, *right_)) {
 				next_ = right_;
 			}
 			else {
 				next_ = left_;
 			}
-			if (less_(*next_, *current_)) {
+			if(less_(*next_, *current_)) {
 				// Neither child greater.
 				return;
 			}
 		}
-		else if (right_ == end_) {
+		else if(right_ == end_) {
 			// Special case for a single child. It will have no child itself.
 			// Hopefully this uses the processor status flags from the last
 			// compare.
-			if (less_(*current_, *left_)) {
+			if(less_(*current_, *left_)) {
 				hxswap(*current_, *left_);
 			}
 			return;
@@ -74,15 +74,15 @@ void hxheapsort_heapify_bottom_(T_* begin_, const T_* end_, T_* current_, const 
 	// NB The very last parent may be missing a right child.
 	hxassertmsg(begin_ <= left_ && left_ < end_, "invalid_iterator");
 
-	if (right_ < end_ && less_(*current_, *right_)) {
-		if (less_(*left_, *right_)) {
+	if(right_ < end_ && less_(*current_, *right_)) {
+		if(less_(*left_, *right_)) {
 			hxswap(*current_, *right_);
 		}
 		else {
 			hxswap(*current_, *left_);
 		}
 	}
-	else if (less_(*current_, *left_)) {
+	else if(less_(*current_, *left_)) {
 		hxswap(*current_, *left_);
 	}
 }
@@ -115,15 +115,15 @@ void hxpartition_sort_(	T_* begin_, T_* end_, const less_t_& less_,
 
 	// This is a Bose-Nelson sorting network for 5 elements. It should work well
 	// with a processor that has branch prediction.
-	if (less_(*p3_, *p0_)) { hxswap(p3_, p0_); }
-	if (less_(*p4_, *p1_)) { hxswap(p4_, p1_); }
-	if (less_(*p2_, *p0_)) { hxswap(p2_, p0_); }
-	if (less_(*p3_, *p1_)) { hxswap(p3_, p1_); }
-	if (less_(*p1_, *p0_)) { hxswap(p1_, p0_); }
-	if (less_(*p4_, *p2_)) { hxswap(p4_, p2_); }
-	if (less_(*p2_, *p1_)) { hxswap(p2_, p1_); }
-	if (less_(*p4_, *p3_)) { hxswap(p4_, p3_); }
-	if (less_(*p3_, *p2_)) { hxswap(p3_, p2_); }
+	if(less_(*p3_, *p0_)) { hxswap(p3_, p0_); }
+	if(less_(*p4_, *p1_)) { hxswap(p4_, p1_); }
+	if(less_(*p2_, *p0_)) { hxswap(p2_, p0_); }
+	if(less_(*p3_, *p1_)) { hxswap(p3_, p1_); }
+	if(less_(*p1_, *p0_)) { hxswap(p1_, p0_); }
+	if(less_(*p4_, *p2_)) { hxswap(p4_, p2_); }
+	if(less_(*p2_, *p1_)) { hxswap(p2_, p1_); }
+	if(less_(*p4_, *p3_)) { hxswap(p4_, p3_); }
+	if(less_(*p3_, *p2_)) { hxswap(p3_, p2_); }
 
     T_* back_ = end_ - 1; // Pointer to the last value.
 
@@ -141,8 +141,8 @@ void hxpartition_sort_(	T_* begin_, T_* end_, const less_t_& less_,
 	// last pivot. This is an end iterator that goes left.
 	T_* gt_ = back_ - 1;
 
-	for (T_* i_ = lt_; i_ <= gt_; ) {
-		if (less_(*i_, *begin_)) {
+	for(T_* i_ = lt_; i_ <= gt_; ) {
+		if(less_(*i_, *begin_)) {
 			// Swap into less-than range and extend it.
 			if(lt_ != i_) {
 				hxswap(*i_, *lt_);
@@ -152,7 +152,7 @@ void hxpartition_sort_(	T_* begin_, T_* end_, const less_t_& less_,
 			}
 			++lt_;
 		}
-		else if (less_(*back_, *i_)) {
+		else if(less_(*back_, *i_)) {
 			// Swap into greater-than range and extend it. If gt == i then the
 			// loop is about to terminate due to --gt.
 			if(gt_ != i_) {
@@ -195,9 +195,9 @@ template<typename T_, typename less_t_>
 void hxintro_sort_(T_* begin_, T_* end_, const less_t_& less_, int depth_) {
 	hxassertmsg(begin_ != hxnull && begin_ <= end_, "range_error hxsort");
 
-	if ((end_ - begin_) <= hxpartition_sort_cutoff_) {
+	if((end_ - begin_) <= hxpartition_sort_cutoff_) {
 		hxinsertion_sort(begin_, end_, less_);
-	} else if (depth_ == 0u) {
+	} else if(depth_ == 0u) {
 		hxheapsort(begin_, end_, less_);
 	} else {
 		// Have the partition sort call back to hxsort for each sub-partition.

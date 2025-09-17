@@ -77,7 +77,7 @@ public:
 			g_hxsettings.deallocate_permanent = false;
 
 			// Special case for heaps that do not track free.
-			if (allocator_scope.get_scope_bytes_allocated() != 0) {
+			if(allocator_scope.get_scope_bytes_allocated() != 0) {
 				// Google Test spams new/delete with std::string operations:
 				hxsystem_allocator_scope spam_guard(hxsystem_allocator_heap);
 
@@ -91,7 +91,7 @@ public:
 		}
 
 		// hxsystem_allocator_permanent does not free.
-		if (id != hxsystem_allocator_permanent) {
+		if(id != hxsystem_allocator_permanent) {
 			hxsystem_allocator_scope allocator_scope(id);
 
 			// Google Test spams new/delete with std::string operations:
@@ -153,7 +153,7 @@ public:
 
 TEST_F(hxmemory_manager_test, execute) {
 	// The API should still work while stubbed out.
-	for (size_t i = 0; i < hxsystem_allocator_current; ++i) {
+	for(size_t i = 0; i < hxsystem_allocator_current; ++i) {
 		test_memory_allocator_normal((hxsystem_allocator_t)i);
 	}
 

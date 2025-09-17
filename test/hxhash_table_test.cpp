@@ -151,7 +151,7 @@ TEST_F(hxhash_table_test, multiple) {
 		table.set_table_size_bits(5);
 
 		// Insert N elements
-		for (int i = 0; i < N; ++i) {
+		for(int i = 0; i < N; ++i) {
 			EXPECT_EQ(table[i].value.id, i);
 			EXPECT_EQ(table[i].key(), i);
 		}
@@ -161,7 +161,7 @@ TEST_F(hxhash_table_test, multiple) {
 		EXPECT_EQ(table.size(), N);
 		Table::iterator it = table.begin();
 		Table::iterator cit = table.begin();
-		for (int i = 0; i < N; ++i) {
+		for(int i = 0; i < N; ++i) {
 			hxtest_integer* ti = table.find(i);
 			EXPECT_EQ(ti->value, i);
 			EXPECT_TRUE(table.find(i, ti) == hxnull);
@@ -179,12 +179,12 @@ TEST_F(hxhash_table_test, multiple) {
 		}
 		EXPECT_TRUE(table.end() == it);
 		EXPECT_TRUE(table.cend() == cit);
-		for (int i = 0; i < N; ++i) {
+		for(int i = 0; i < N; ++i) {
 			EXPECT_EQ(id_histogram[i], 2);
 		}
 
 		// insert second N elements
-		for (int i = 0; i < N; ++i) {
+		for(int i = 0; i < N; ++i) {
 			hxtest_integer* ti = hxnew<hxtest_integer>(i);
 			EXPECT_EQ(ti->value.id, i+N);
 			table.insert_node(ti);
@@ -195,7 +195,7 @@ TEST_F(hxhash_table_test, multiple) {
 		EXPECT_EQ(table.size(), N * 2);
 		it = table.begin();
 		cit = table.begin();
-		for (int i = 0; i < N; ++i) {
+		for(int i = 0; i < N; ++i) {
 			hxtest_integer* ti = table.find(i);
 			EXPECT_EQ(ti->key(), i);
 			const hxtest_integer* ti2 = ((const hxhash_table<hxtest_integer>&)table).find(i, ti); // test const version
@@ -219,7 +219,7 @@ TEST_F(hxhash_table_test, multiple) {
 		}
 		EXPECT_TRUE(table.end() == it);
 		EXPECT_TRUE(table.cend() == cit);
-		for (int i = 0; i < N; ++i) {
+		for(int i = 0; i < N; ++i) {
 			EXPECT_EQ(key_histogram[i], 4);
 		}
 
@@ -227,21 +227,21 @@ TEST_F(hxhash_table_test, multiple) {
 		EXPECT_TRUE((table.load_factor() * 2.0f) > (float)table.load_max());
 
 		// Erase keys [0..N/2), remove 1 of 2 of keys [N/2..N)
-		for (int i = 0; i < (N/2); ++i) {
+		for(int i = 0; i < (N/2); ++i) {
 			EXPECT_EQ(table.erase(i), 2);
 		}
-		for (int i = (N/2); i < N; ++i) {
+		for(int i = (N/2); i < N; ++i) {
 			hxtest_integer* ti = table.extract(i);
 			EXPECT_TRUE(ti->key() == i);
 			hxdelete(ti);
 		}
 
 		// Check properties of N/2 remaining keys.
-		for (int i = 0; i < (N/2); ++i) {
+		for(int i = 0; i < (N/2); ++i) {
 			EXPECT_EQ(table.release_key(i), 0);
 			EXPECT_TRUE(table.find(i) == hxnull);
 		}
-		for (int i = (N/2); i < N; ++i) {
+		for(int i = (N/2); i < N; ++i) {
 			hxtest_integer* ti = table.find(i);
 			EXPECT_EQ(ti->key(), i);
 			EXPECT_TRUE(table.find(i, ti) == hxnull);
@@ -250,7 +250,7 @@ TEST_F(hxhash_table_test, multiple) {
 
 		it = table.begin();
 		cit = table.begin();
-		for (int i = 0; i < (N/2); ++i) {
+		for(int i = 0; i < (N/2); ++i) {
 			++it;
 			cit++;
 		}
@@ -272,7 +272,7 @@ TEST_F(hxhash_table_test, strings) {
 		typedef hxhash_table<hxtest_string, 4> Table;
 		Table table;
 
-		for (int i = sz; i--;) {
+		for(int i = sz; i--;) {
 			EXPECT_TRUE(::strcmp(table[colors[i]].key(), colors[i]) == 0);
 		}
 		EXPECT_TRUE(table.find("Cyan") != hxnull);

@@ -72,7 +72,7 @@ AGENTS.md contains context intended to be useful to AI coding agents.
 - **Indentation:** Use tabs set to 4 spaces per-tab.
 - **Braces:** K&R style. Opening brace on the same line for functions, classes, enums, and control blocks. Empty bodies use `{ }`.
 - **Spacing:**
-  - Space after keywords (`if (condition)`).
+  - No space after `for`, `if` and `while` keywords (`if(condition)`).
   - Single blank line between function definitions.
 - **Initializer lists:** Place `:` on the same line as the constructor. Wrap subsequent initializers on new lines aligned by tabs.
 

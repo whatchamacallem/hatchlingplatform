@@ -4,7 +4,7 @@
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
 /// \file hx/hxsettings.h Compiler detection and target specific C++11/C++14
-/// polyfill. Use `#if(HX_...)` instead of `#ifdef(HX_...)` for all `HX_`* macros.
+/// polyfill. Use `#if (HX_...)` instead of `#ifdef(HX_...)` for all `HX_`* macros.
 
 #if !HATCHLING_VER
 #error #include <hx/hatchling.h> instead.

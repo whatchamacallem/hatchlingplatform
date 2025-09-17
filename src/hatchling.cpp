@@ -147,13 +147,13 @@ bool hxprint_hashes(void) {
 
 	hxarray<const char*> filenames; filenames.reserve(hxstring_literal_hashes_().size());
 
-	for (const auto& it : hxstring_literal_hashes_()) {
+	for(const auto& it : hxstring_literal_hashes_()) {
 		filenames.push_back(it.str());
 	}
 
 	hxinsertion_sort(filenames.begin(), filenames.end(), hxfilename_less());
 
-	for (const char* str : filenames) {
+	for(const char* str : filenames) {
 		hxlog("  %08zx %s\n", (size_t)hxstring_literal_hash_debug(str), str);
 	}
 	return true;
@@ -219,11 +219,11 @@ hxnoexcept_unchecked void hxloghandler_v(hxloglevel_t level, const char* format,
 	hxassertrelease(len >= 0 && len < (int)HX_MAX_LINE, "vsnprintf");
 
 	hxfile& f = level == hxloglevel_log ? hxout : hxerr;
-	if (level == hxloglevel_warning) {
+	if(level == hxloglevel_warning) {
 		f << "WARNING ";
 		buf[len++] = '\n';
 	}
-	else if (level == hxloglevel_assert) {
+	else if(level == hxloglevel_assert) {
 		f.write("ASSERT_FAIL ", (sizeof "ASSERT_FAIL ") - 1u);
 		buf[len++] = '\n';
 	}
@@ -245,7 +245,7 @@ void hxshutdown(void) {
 extern "C"
 hxnoexcept_unchecked bool hxasserthandler(const char* file, size_t line) {
 	const char* f = hxbasename(file);
-	if (g_hxisinit && g_hxsettings.asserts_to_be_skipped > 0) {
+	if(g_hxisinit && g_hxsettings.asserts_to_be_skipped > 0) {
 		--g_hxsettings.asserts_to_be_skipped;
 		hxloghandler(hxloglevel_assert, "skipped %s(%zu) hash %08zx",
 			f, line, (size_t)hxstring_literal_hash_debug(file));

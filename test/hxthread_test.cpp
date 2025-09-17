@@ -41,7 +41,7 @@ void* hxthread_test_func_increment_(hxthread_test_simple_parameters_t_* paramete
 
 void* hxthread_test_func_notify_one(hxthread_test_parameters_t_* parameters_) {
 	hxunique_lock lock(*parameters_->mutex_);
-	while (!*parameters_->ready_) {
+	while(!*parameters_->ready_) {
 		parameters_->condition_variable_->wait(lock);
 	};
 	return hxnull;
@@ -49,10 +49,10 @@ void* hxthread_test_func_notify_one(hxthread_test_parameters_t_* parameters_) {
 
 void* hxthread_test_func_notify_all(hxthread_test_parameters_t_* parameters_) {
 	hxunique_lock lock(*parameters_->mutex_);
-	while (!*parameters_->ready_) {
+	while(!*parameters_->ready_) {
 		parameters_->condition_variable_->wait(lock);
 	}
-	if (parameters_->woken_) {
+	if(parameters_->woken_) {
 		++(*parameters_->woken_);
 	}
 	return hxnull;
@@ -66,7 +66,7 @@ void* hxthread_test_func_lock_unlock_multiple(hxthread_test_parameters_t_* param
 
 void* hxthread_test_func_wait_notify_sequence(hxthread_test_parameters_t_* parameters_) {
 	hxunique_lock lock(*parameters_->mutex_);
-	while (!*parameters_->ready_) {
+	while(!*parameters_->ready_) {
 		parameters_->condition_variable_->wait(lock);
 	}
 	return hxnull;
@@ -264,10 +264,10 @@ TEST(hxthread, multiple_thread_start_join) {
 	hxthread_test_simple_parameters_t_ argument_ = {&mutex_, &shared_};
 	hxthread* threads_[reps_];
 	int i_;
-	for (i_ = 0; i_ < reps_; ++i_) {
+	for(i_ = 0; i_ < reps_; ++i_) {
 		threads_[i_] = hxnew<hxthread>(&hxthread_test_func_increment_, &argument_);
 	}
-	for (i_ = 0; i_ < reps_; ++i_) {
+	for(i_ = 0; i_ < reps_; ++i_) {
 		threads_[i_]->join();
 		hxdelete(threads_[i_]);
 	}

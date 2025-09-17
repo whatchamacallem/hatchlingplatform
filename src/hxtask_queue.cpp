@@ -47,9 +47,9 @@ hxtask_queue::hxtask_queue(int32_t thread_pool_size_)
 	(void)thread_pool_size_;
 #if HX_USE_THREADS
 	m_thread_pool_size_ = (thread_pool_size_ >= 0) ? thread_pool_size_ : 2;
-	if (m_thread_pool_size_ > 0) {
+	if(m_thread_pool_size_ > 0) {
 		m_threads_ = (hxthread*)hxmalloc(m_thread_pool_size_ * sizeof(hxthread));
-		for (int32_t i_ = m_thread_pool_size_; i_--;) {
+		for(int32_t i_ = m_thread_pool_size_; i_--;) {
 			::new (m_threads_ + i_) hxthread(thread_task_loop_entry_, this);
 		}
 	}
@@ -58,11 +58,11 @@ hxtask_queue::hxtask_queue(int32_t thread_pool_size_)
 
 hxtask_queue::~hxtask_queue(void) {
 #if HX_USE_THREADS
-	if (m_thread_pool_size_ > 0) {
+	if(m_thread_pool_size_ > 0) {
 		thread_task_loop_(this, thread_mode_stopping_);
 		hxassertmsg(m_queue_run_level_ == run_level_stopped_, "threading_error");
 
-		for (int32_t i_ = m_thread_pool_size_; i_--;) {
+		for(int32_t i_ = m_thread_pool_size_; i_--;) {
 			m_threads_[i_].join();
 			m_threads_[i_].~hxthread();
 		}
@@ -81,7 +81,7 @@ void hxtask_queue::enqueue(hxtask* task_) {
 	task_->set_task_queue(this);
 
 #if HX_USE_THREADS
-	if (m_thread_pool_size_ > 0) {
+	if(m_thread_pool_size_ > 0) {
 		hxunique_lock lock_(m_mutex_);
 		hxassertrelease(m_queue_run_level_ == run_level_running_, "stopped_queue");
 		task_->set_next_task(m_next_task_);
@@ -98,14 +98,14 @@ void hxtask_queue::enqueue(hxtask* task_) {
 
 void hxtask_queue::wait_for_all(void) {
 #if HX_USE_THREADS
-	if (m_thread_pool_size_ > 0) {
+	if(m_thread_pool_size_ > 0) {
 		// Contribute current thread and request waiting until completion.
 		thread_task_loop_(this, thread_mode_waiting_);
 	}
 	else
 #endif
 	{
-		while (m_next_task_) {
+		while(m_next_task_) {
 			hxtask* task_ = m_next_task_;
 			m_next_task_ = task_->get_next_task();
 			task_->set_next_task(hxnull);
@@ -127,28 +127,28 @@ void* hxtask_queue::thread_task_loop_entry_(hxtask_queue* q_) {
 
 void hxtask_queue::thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_) {
 	hxtask* task_ = hxnull;
-	for (;;) {
+	for(;;) {
 		{
 			// task is executed outside of this RAII lock.
 			hxunique_lock lk_(q_->m_mutex_);
 
-			if (task_) {
+			if(task_) {
 				// Waited to reacquire critical after previous task.
 				task_ = hxnull;
 				hxassertmsg(q_->m_executing_count_ > 0, "internal_error");
-				if (--q_->m_executing_count_ == 0 && !q_->m_next_task_) {
+				if(--q_->m_executing_count_ == 0 && !q_->m_next_task_) {
 					q_->m_cond_var_completion_.notify_all();
 				}
 			}
 
 			// Workers wait for a next task or run_level_stopped_.
-			if (mode_ == thread_mode_pool_) {
+			if(mode_ == thread_mode_pool_) {
 				// Use predicate for spurious wakeups
 				q_->m_cond_var_new_tasks_.wait(lk_, hxtask_wait_for_tasks_(q_));
 			}
 
 			// Waiting threads contribute to the work.
-			if (q_->m_next_task_) {
+			if(q_->m_next_task_) {
 				task_ = q_->m_next_task_;
 				q_->m_next_task_ = task_->get_next_task();
 				++q_->m_executing_count_;
@@ -157,7 +157,7 @@ void hxtask_queue::thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_) {
 				// Nothing left for worker threads to do. The waiting threads still
 				// have work to do before they leave the main task loop.
 
-				if (mode_ != thread_mode_pool_) {
+				if(mode_ != thread_mode_pool_) {
 					// All tasks are dispatched. Now wait for m_executing_count_ to hit 0.
 					// Tasks may enqueue subtasks before processing is considered done.
 					// This asserts the queue is still running.
@@ -165,7 +165,7 @@ void hxtask_queue::thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_) {
 
 					// All tasks are now considered complete. The workers can be
 					// released if the queue is shutting down.
-					if (mode_ == thread_mode_stopping_) {
+					if(mode_ == thread_mode_stopping_) {
 						q_->m_queue_run_level_ = run_level_stopped_;
 						q_->m_cond_var_new_tasks_.notify_all();
 

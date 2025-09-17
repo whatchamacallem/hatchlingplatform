@@ -117,7 +117,7 @@ constexpr hxhash_t hxkey_hash(hxhash_t x_) {
 /// - `s` : The C string.
 inline hxhash_t hxkey_hash(const char* s_) {
     hxhash_t x_ = (hxhash_t)0x811c9dc5;
-    while (*s_ != '\0') {
+    while(*s_ != '\0') {
         x_ ^= (hxhash_t)*s_++;
         x_ *= (hxhash_t)0x01000193;
     }

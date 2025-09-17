@@ -12,7 +12,7 @@ extern "C"
 hxhash_t hxstring_literal_hash_debug(const char* s) {
 	hxhash_t x = 0u;
 	size_t i = hxmin<size_t>(strlen(s), 192u); // match limits of hxstring_literal_hash macro
-	while (i--) {
+	while(i--) {
 		x = (hxhash_t)0x01000193 * x ^ (hxhash_t)s[i]; // FNV-a1 prime.
 	}
 	return x;

@@ -86,7 +86,7 @@ private:
 #if HX_USE_THREADS
 	T_* get_local_() const {
 		T_* local_ = static_cast<T_*>(pthread_getspecific(m_key_));
-		if (!local_) {
+		if(!local_) {
 			local_ = new T_(m_default_value_);
 			hxassertrelease(local_, "new T");
 			int code_ = pthread_setspecific(m_key_, local_);
@@ -100,7 +100,7 @@ private:
 #endif
 
 	static void destroy_local_(void* ptr_) noexcept {
-		if (ptr_) {
+		if(ptr_) {
 			delete static_cast<T_*>(ptr_);
 		}
 	}
@@ -173,25 +173,25 @@ public:
 	/// - `defer_lock` : If true, does not lock the mutex immediately.
 	hxunique_lock(hxmutex& mtx_, bool defer_lock_=false)
 			: m_mutex_(mtx_), m_owns_(false) {
-		if (!defer_lock_) {
+		if(!defer_lock_) {
 			lock();
 		}
 	}
 	/// Unlocks the mutex if owned.
 	~hxunique_lock(void) {
-		if (m_owns_) {
+		if(m_owns_) {
 			unlock();
 		}
 	}
 	/// Locks the mutex if not already locked.
 	void lock(void) {
-		if (!m_owns_) {
+		if(!m_owns_) {
 			m_owns_ = m_mutex_.lock();
 		}
 	}
 	/// Unlocks the mutex if owned.
 	void unlock(void) {
-		if (m_owns_) {
+		if(m_owns_) {
 			m_mutex_.unlock();
 			m_owns_ = false;
 		}
@@ -249,7 +249,7 @@ public:
 	/// - `pred` : Predicate function to check.
 	template<typename predicate_t_>
 	void wait(hxunique_lock& lock_, predicate_t_ pred_) {
-		while (!pred_()) {
+		while(!pred_()) {
 			wait(lock_);
 		}
 	}

@@ -147,7 +147,7 @@ public:
 		/// Advances the iterator to the next element.
 		const_iterator& operator++(void) {
 			hxassertmsg(m_current_node_, "invalid_iterator"); // !end
-			if (!(m_current_node_ = (node_t_*)m_current_node_->hash_next())) {
+			if(!(m_current_node_ = (node_t_*)m_current_node_->hash_next())) {
 				next_bucket();
 			}
 			return *this;
@@ -172,8 +172,8 @@ public:
 		/// Advances the iterator to the next non-empty bucket.
 		void next_bucket(void) {
 			hxassertmsg(m_hash_table_ && !m_current_node_, "invalid_iterator");
-			while (m_next_index_ < m_hash_table_->m_table_.capacity()) {
-				if (node_t_* n_ = m_hash_table_->m_table_.data()[m_next_index_++]) {
+			while(m_next_index_ < m_hash_table_->m_table_.capacity()) {
+				if(node_t_* n_ = m_hash_table_->m_table_.data()[m_next_index_++]) {
 					m_current_node_ = n_;
 					return;
 				}
@@ -258,8 +258,8 @@ public:
 										hxsystem_allocator_t allocator_=hxsystem_allocator_current,
 										hxalignment_t alignment_=HX_ALIGNMENT) {
 		node_t_** pos_ = this->get_bucket_head_(hxkey_hash(key_));
-		for (node_t_* n_ = *pos_; n_; n_ = (node_t_*)n_->hash_next()) {
-			if (hxkey_equal(n_->key(), key_)) {
+		for(node_t_* n_ = *pos_; n_; n_ = (node_t_*)n_->hash_next()) {
+			if(hxkey_equal(n_->key(), key_)) {
 				return *n_;
 			}
 		}
@@ -292,9 +292,9 @@ public:
 	/// - `key` : The key to search for in the hash table.
 	/// - `previous` : A previously found `node_t` with the same key, or nullptr.
 	node_t_* find(const typename node_t_::key_t& key_, const node_t_* previous_=hxnull) {
-		if (!previous_) {
-			for (node_t_* n_ = *this->get_bucket_head_(hxkey_hash(key_)); n_; n_ = (node_t_*)n_->hash_next()) {
-				if (hxkey_equal(n_->key(), key_)) {
+		if(!previous_) {
+			for(node_t_* n_ = *this->get_bucket_head_(hxkey_hash(key_)); n_; n_ = (node_t_*)n_->hash_next()) {
+				if(hxkey_equal(n_->key(), key_)) {
 					return n_;
 				}
 			}
@@ -302,8 +302,8 @@ public:
 		else {
 			hxassertmsg(hxkey_equal(key_, previous_->key()), "previous_mismatch");
 			hxassertmsg(hxkey_hash(key_) == previous_->hash(), "previous_mismatch");
-			for (node_t_* n_ = (node_t_*)previous_->hash_next(); n_; n_ = (node_t_*)n_->hash_next()) {
-				if (hxkey_equal(n_->key(), key_)) {
+			for(node_t_* n_ = (node_t_*)previous_->hash_next(); n_; n_ = (node_t_*)n_->hash_next()) {
+				if(hxkey_equal(n_->key(), key_)) {
 					return n_;
 				}
 			}
@@ -322,8 +322,8 @@ public:
 	size_t count(const typename node_t_::key_t& key_) const {
 		size_t total_ = 0u;
 		hxhash_t hash_ = hxkey_hash(key_);
-		for (const node_t_* n_ = *this->get_bucket_head_(hash_); n_; n_ = (node_t_*)n_->hash_next()) {
-			if (hxkey_equal(n_->key(), key_)) {
+		for(const node_t_* n_ = *this->get_bucket_head_(hash_); n_; n_ = (node_t_*)n_->hash_next()) {
+			if(hxkey_equal(n_->key(), key_)) {
 				++total_;
 			}
 		}
@@ -335,8 +335,8 @@ public:
 	node_t_* extract(const typename node_t_::key_t& key_) {
 		hxhash_t hash_ = hxkey_hash(key_);
 		node_t_** current_ = this->get_bucket_head_(hash_);
-		while (node_t_* n_ = *current_) {
-			if (hxkey_equal(n_->key(), key_)) {
+		while(node_t_* n_ = *current_) {
+			if(hxkey_equal(n_->key(), key_)) {
 				*current_ = (node_t_*)n_->hash_next();
 				--m_size_;
 				return n_;
@@ -358,10 +358,10 @@ public:
 		size_t count_ = 0u;
 		hxhash_t hash_ = hxkey_hash(key_);
 		node_t_** current_ = this->get_bucket_head_(hash_);
-		while (node_t_* n_ = *current_) {
-			if (hxkey_equal(n_->key(), key_)) {
+		while(node_t_* n_ = *current_) {
+			if(hxkey_equal(n_->key(), key_)) {
 				*current_ = (node_t_*)n_->hash_next();
-				if (deleter_) {
+				if(deleter_) {
 					deleter_(n_);
 				}
 				++count_;
@@ -392,10 +392,10 @@ public:
 	/// - `deleter` : A function or functor to call on each removed `node_t`.
 	template<typename deleter_override_t_>
 	void clear(const deleter_override_t_& deleter_) {
-		if (m_size_ != 0u) {
-			if (deleter_) {
+		if(m_size_ != 0u) {
+			if(deleter_) {
 				node_t_** it_end_ = m_table_.data() + m_table_.capacity();
-				for (node_t_** it_ = m_table_.data(); it_ != it_end_; ++it_) {
+				for(node_t_** it_ = m_table_.data(); it_ != it_end_; ++it_) {
 					node_t_* n_ = *it_;
 					if(n_) {
 						*it_ = hxnull;
@@ -417,7 +417,7 @@ public:
 
 	/// Clears the hash table without deleting any Nodes.
 	void release_all(void) {
-		if (m_size_ != 0u) {
+		if(m_size_ != 0u) {
 			::memset(m_table_.data(), 0x00, sizeof(node_t*) * m_table_.capacity());
 			m_size_ = 0u;
 		}
@@ -438,9 +438,9 @@ public:
 		// An unallocated table will be ok.
 		size_t maximum_=0u;
 		const node_t_*const* it_end_ = m_table_.data() + m_table_.capacity();
-		for (const node_t_*const* it_ = m_table_.data(); it_ != it_end_; ++it_) {
+		for(const node_t_*const* it_ = m_table_.data(); it_ != it_end_; ++it_) {
 			size_t count_=0u;
-			for (const node_t_* n_ = *it_; n_; n_ = (const node_t_*)n_->hash_next()) {
+			for(const node_t_* n_ = *it_; n_; n_ = (const node_t_*)n_->hash_next()) {
 				++count_;
 			}
 			maximum_ = hxmax(maximum_, count_);

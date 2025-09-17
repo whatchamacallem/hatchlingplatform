@@ -49,17 +49,17 @@ public:
 			hxcycles_t delta = 0u;
 
 			// Open up a sub-scope if time allows.
-			if (target_ms >= 2.0f) {
+			if(target_ms >= 2.0f) {
 				float subtarget = target_ms / 2.0f;
 				const char* sub_label = s_hxtest_labels[(size_t)subtarget];
 				hxprofile_scope(sub_label);
 				generate_scopes(subtarget);
 			}
 
-			while ((double)delta * hxmilliseconds_per_cycle < target_ms) {
+			while((double)delta * hxmilliseconds_per_cycle < target_ms) {
 				// Perform work that might not be optimized away by the compiler.
 				uint32_t ops = (m_accumulator_ & 0xf) + 1;
-				for (uint32_t i = 0; i < ops; ++i) {
+				for(uint32_t i = 0; i < ops; ++i) {
 					m_accumulator_ ^= (uint32_t)m_test_prng_;
 				}
 
@@ -100,7 +100,7 @@ TEST_F(hxprofiler_test, write_to_chrome_tracing) {
 
 	hxtask_queue q;
 	hxprofiler_task_test tasks[s_hxtest_num_labels];
-	for (size_t i = s_hxtest_num_labels; i--; ) {
+	for(size_t i = s_hxtest_num_labels; i--; ) {
 		tasks[i].construct(s_hxtest_labels[i], (float)i);
 		q.enqueue(tasks + i);
 	}

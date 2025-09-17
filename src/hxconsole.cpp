@@ -58,23 +58,23 @@ void hxconsole_deregister(const char* id) {
 bool hxconsole_exec_line(const char* command) {
 	// Skip leading whitespace
 	const char* pos = command;
-	while (*pos != '\0' && hxconsole_is_delimiter_(*pos)) {
+	while(*pos != '\0' && hxconsole_is_delimiter_(*pos)) {
 		++pos;
 	}
 
 	// Skip comments and blank lines
-	if (hxconsole_is_end_of_line_(pos)) {
+	if(hxconsole_is_end_of_line_(pos)) {
 		return true;
 	}
 
 	const hxconsole_hash_table_node_* node = hxconsole_commands_().find(hxconsole_hash_table_key_(pos));
-	if (!node) {
+	if(!node) {
 		hxwarnmsg(0, "unknown_command %s", command);
 		return false;
 	}
 
 	// Skip command name
-	while (!hxconsole_is_delimiter_(*pos)) {
+	while(!hxconsole_is_delimiter_(*pos)) {
 		++pos;
 	}
 
@@ -97,7 +97,7 @@ bool hxconsole_exec_line(const char* command) {
 bool hxconsole_exec_file(hxfile& file) {
 	char buf[HX_MAX_LINE];
 	bool result = true;
-	while (result && file.get_line(buf)) {
+	while(result && file.get_line(buf)) {
 		result = hxconsole_exec_line(buf);
 	}
 	return result;
@@ -107,7 +107,7 @@ bool hxconsole_exec_filename(const char* filename) {
 	// Please don't assert.
 	hxfile file(hxfile::in|hxfile::skip_asserts, "%s", filename);
 	hxwarnmsg(file.is_open(), "cannot open: %s", filename);
-	if (file.is_open()) {
+	if(file.is_open()) {
 		bool is_ok = hxconsole_exec_file(file);
 		hxwarnmsg(is_ok, "encountering errors: %s", filename);
 		return is_ok;
@@ -120,14 +120,14 @@ bool hxconsole_exec_filename(const char* filename) {
 
 // Lists variables and commands in order.
 bool hxconsole_help(void) {
-	if ((HX_RELEASE) < 2) {
+	if((HX_RELEASE) < 2) {
 		hxinit();
 		hxsystem_allocator_scope temporary_stack(hxsystem_allocator_temporary_stack);
 		hxarray<const hxconsole_hash_table_node_*> cmds;
 		cmds.reserve(hxconsole_commands_().size());
-		for (hxconsole_command_table_::const_iterator it = hxconsole_commands_().cbegin();
+		for(hxconsole_command_table_::const_iterator it = hxconsole_commands_().cbegin();
 				it != hxconsole_commands_().cend(); ++it) {
-			if (::strncmp(it->key().str_, "hxconsole_test", 13) == 0 ||
+			if(::strncmp(it->key().str_, "hxconsole_test", 13) == 0 ||
 					::strncmp(it->key().str_, "s_hxconsole_test", 15) == 0) {
 				continue;
 			}
@@ -136,7 +136,7 @@ bool hxconsole_help(void) {
 
 		hxinsertion_sort<const hxconsole_hash_table_node_*, hxconsole_less_>(cmds.begin(), cmds.end(), hxconsole_less_());
 
-		for (hxarray<const hxconsole_hash_table_node_*>::iterator it = cmds.begin();
+		for(hxarray<const hxconsole_hash_table_node_*>::iterator it = cmds.begin();
 				it != cmds.end(); ++it) {
 			(*it)->command_()->usage_((*it)->key().str_);
 		}
@@ -157,7 +157,7 @@ static bool hxconsole_poke(hxconsolehex_t address_, hxconsolenumber_t bytes_, hx
 	volatile uint8_t* address = address_;
 	uint32_t bytes = bytes_;
 	uint64_t hex = hex_;
-	while (bytes--) {
+	while(bytes--) {
 		*address++ = (uint8_t)hex;
 		hex = (hex >> 8) | (hex << 56);
 	}

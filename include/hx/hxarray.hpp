@@ -170,7 +170,7 @@ public:
 		this->reserve((size_t)(end_ - begin_));
 		T_* it_ = this->data();
 		this->destruct_(it_, m_end_);
-		while (begin_ != end_) {
+		while(begin_ != end_) {
 			::new (it_++) T_(*begin_++);
 		}
 		m_end_ = it_;
@@ -273,7 +273,7 @@ public:
 	/// - `pos` : Pointer to the element to erase.
 	void erase_unordered(T_* pos_) {
 		hxassertmsg(pos_ >= this->data() && pos_ < m_end_, "invalid_iterator");
-		if (pos_ != --m_end_) {
+		if(pos_ != --m_end_) {
 			*pos_ = hxmove(*m_end_);
 		}
 		m_end_->~T_();
@@ -424,7 +424,7 @@ public:
 		T_* prev = this->data();
 		this->reserve_storage(size_, allocator_, alignment_);
 		hxassertmsg(!prev || prev == this->data(), "reallocation_disallowed"); (void)prev;
-		if (m_end_ == hxnull) {
+		if(m_end_ == hxnull) {
 			m_end_ = this->data();
 		}
 	}
@@ -436,8 +436,8 @@ public:
 	void resize(size_t size_) {
 		this->reserve(size_);
 		T_* end_ = this->data() + size_;
-		if (size_ >= this->size()) {
-			while (m_end_ != end_) {
+		if(size_ >= this->size()) {
+			while(m_end_ != end_) {
 				// This version uses a default constructor.
 				::new (m_end_++) T_();
 			}
@@ -455,8 +455,8 @@ public:
 	void resize(size_t size_, const T_& t_) {
 		this->reserve(size_);
 		T_* end_ = this->data() + size_;
-		if (size_ >= this->size()) {
-			while (m_end_ != end_) {
+		if(size_ >= this->size()) {
+			while(m_end_ != end_) {
 				// This version uses a copy constructor.
 				::new (m_end_++) T_(t_);
 			}
@@ -490,7 +490,7 @@ public:
 private:
 	// Destroys elements in the range [begin, end).
 	void destruct_(T_* begin_, T_* end_) {
-		while (begin_ != end_) {
+		while(begin_ != end_) {
 			begin_++->~T_();
 		}
 	}

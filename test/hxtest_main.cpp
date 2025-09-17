@@ -33,7 +33,7 @@ TEST(hxnew, smoketest) {
 TEST(death_test, fail) {
 	hxlog("EXPECTING_TEST_FAILURE\n");
 	SUCCEED();
-	for (int i = 10; i--;) {
+	for(int i = 10; i--;) {
 		FAIL() << "this message is intentionally blank.\n";
 	}
 	SUCCEED();

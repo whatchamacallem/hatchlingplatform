@@ -37,7 +37,7 @@ public:
 
 	void set_table_size_bits(hxhash_t bits_) {
 		hxassertmsg(m_table_size_bits_ == 0u || bits_ == m_table_size_bits_, "reallocation_disallowed");
-		if (m_table_size_bits_ == 0u) {
+		if(m_table_size_bits_ == 0u) {
 			hxassertmsg(bits_ > 0u && bits_ <= 31u, "bad_hash_bits %d", (int)bits_);
 			m_table_size_bits_ = bits_;
 			this->reserve_storage(1u << bits_);

@@ -95,7 +95,7 @@ bool hxfile::openv_(uint8_t mode, const char* filename, va_list args) {
 }
 
 void hxfile::close(void) {
-	if (m_owns_) {
+	if(m_owns_) {
 		::fclose((FILE*)m_file_pimpl_);
 	}
 	::memset((void*)this, 0x00, sizeof *this);
@@ -123,7 +123,7 @@ size_t hxfile::read(void* bytes, size_t byte_count) {
 	hxassertmsg((byte_count == bytes_read) || (m_open_mode_ & hxfile::skip_asserts),
 		"fread expected %zu != actual %zu: %s", byte_count, bytes_read, ::strerror(errno));
 
-	if (byte_count != bytes_read) {
+	if(byte_count != bytes_read) {
 		m_good_ = false;
 		m_eof_ = ::feof((FILE*)m_file_pimpl_);
 	}
@@ -153,7 +153,7 @@ bool hxfile::get_line(char* buffer, int buffer_size) {
 
 	hxassertmsg(!::ferror((FILE*)m_file_pimpl_), "fgets %s", ::strerror(errno));
 
-	if (!result) {
+	if(!result) {
 		m_good_ = false;
 		m_eof_ = (bool)::feof((FILE*)m_file_pimpl_); // 0: not past end.
 		return false; // EOF or error

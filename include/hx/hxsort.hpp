@@ -48,14 +48,14 @@ void hxinsertion_sort(T_* begin_, T_* end_, const less_t_& less_) {
 	// Address sanitizer: Avoids adding 1 to null iterators.
 	if(begin_ == end_) { return; }
 
-	for (T_ *i_ = begin_, *j_ = begin_ + 1; j_ < end_; i_ = j_++) {
-		if (!less_(*i_, *j_)) {
+	for(T_ *i_ = begin_, *j_ = begin_ + 1; j_ < end_; i_ = j_++) {
+		if(!less_(*i_, *j_)) {
 			// Default value construct. Use hxmove instead of hxswap because it
 			// should be more efficient for simple types. Complex types will
 			// require an T::operator=(T&&) to be efficient.
 			T_ t_ = hxmove(*j_);
 			*j_ = hxmove(*i_);
-			while (begin_ < i_ && !less_(i_[-1], t_)) {
+			while(begin_ < i_ && !less_(i_[-1], t_)) {
 				*i_ = hxmove(i_[-1]);
 				--i_;
 			}
@@ -81,7 +81,7 @@ void hxinsertion_sort(T_* begin_, T_* end_) {
 template<typename T_, typename less_t_>
 void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
 	ptrdiff_t sz_ = end_ - begin_;
-	if (sz_ <= 1) {
+	if(sz_ <= 1) {
 		// Sequence is already sorted and the following code assumes sz >= 2.
 		return;
 	}
@@ -98,17 +98,17 @@ void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
 	// remaining values that doesn't recurse and do range checks on children
 	// that don't exist. This still handles the case where the right child is
 	// missing from the last parent.
-	for (T_* it_ = begin_ + first_parent_index_; it_ > first_grandparent_; --it_) {
+	for(T_* it_ = begin_ + first_parent_index_; it_ > first_grandparent_; --it_) {
 		hxheapsort_heapify_bottom_(begin_, end_, it_, less_);
 	}
 
 	// Heapify the grandparents using in iterative method.
-	for (T_* it_ = first_grandparent_; it_ >= begin_; --it_) {
+	for(T_* it_ = first_grandparent_; it_ >= begin_; --it_) {
 		hxheapsort_heapify_(begin_, end_, it_, less_);
 	}
 
     // Sort phase. Swap the largest values to the end of the array.
-    for (T_* it_ = end_ - 1; it_ > begin_; --it_) {
+    for(T_* it_ = end_ - 1; it_ > begin_; --it_) {
         hxswap(*begin_, *it_);
         hxheapsort_heapify_(begin_, it_, begin_, less_);
     }

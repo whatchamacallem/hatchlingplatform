@@ -188,9 +188,9 @@ T_* hxnew(Args_&&... args_) noexcept {
 /// - `t` : Pointer to the object to delete.
 template <typename T_>
 void hxdelete(T_* t_) {
-	if (t_) {
+	if(t_) {
 		t_->~T_();
-		if ((HX_RELEASE) < 1) {
+		if((HX_RELEASE) < 1) {
 			// Mark as released to memory manager.
 			::memset((void*)t_, 0xcd, sizeof *t_);
 		}

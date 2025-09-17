@@ -121,14 +121,14 @@ TEST_F(hxarray_test, iteration) {
 		const hxarray<test_object, 10u>& cobjs = objs;
 
 		int32_t counter = 0;
-		for (hxarray<test_object, 10u>::iterator it = objs.begin(); it != objs.end(); ++it) {
+		for(hxarray<test_object, 10u>::iterator it = objs.begin(); it != objs.end(); ++it) {
 			EXPECT_EQ(it->id, objs[counter].id);
 			EXPECT_EQ(it->id, nums[counter]);
 			++counter;
 		}
 
 		counter = 0;
-		for (hxarray<test_object, 10u>::const_iterator it = cobjs.begin();
+		for(hxarray<test_object, 10u>::const_iterator it = cobjs.begin();
 				it != cobjs.end(); ++it) {
 			EXPECT_EQ(it->id, objs[counter].id);
 			EXPECT_EQ(it->id, nums[counter]);

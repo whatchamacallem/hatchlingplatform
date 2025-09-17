@@ -99,10 +99,10 @@ public:
 
 		HX_PROFILER_LOCK_();
 
-		if (g_hxprofiler_.m_is_started_) {
-			if ((t1_ - m_t0_) >= min_cycles_) {
+		if(g_hxprofiler_.m_is_started_) {
+			if((t1_ - m_t0_) >= min_cycles_) {
 				void* rec_ = g_hxprofiler_.m_records.emplace_back_unconstructed();
-				if (rec_) {
+				if(rec_) {
 					::new (rec_) hxprofiler_internal_::hxprofiler_record_(
 						m_t0_, t1_, m_label_, (uint32_t)hxthread_id());
 				}

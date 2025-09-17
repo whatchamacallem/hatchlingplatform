@@ -42,7 +42,7 @@ inline bool hxconsole_is_delimiter_(char ch_) { return ch_ <= 32; }
 
 // Checks for printing characters.
 inline bool hxconsole_is_end_of_line_(const char* str_) {
-	while (*str_ != '\0' && hxconsole_is_delimiter_(*str_)) {
+	while(*str_ != '\0' && hxconsole_is_delimiter_(*str_)) {
 		++str_;
 	}
 	return *str_ == '\0' || *str_ == '#'; // Skip comments
@@ -74,7 +74,7 @@ public:
 template<> class hxconsole_arg_<const char*> {
 public:
 	hxconsole_arg_(const char* str_, char** next_) {
-		while (*str_ != '\0' && hxconsole_is_delimiter_(*str_)) {
+		while(*str_ != '\0' && hxconsole_is_delimiter_(*str_)) {
 			++str_;
 		}
 		value_ = str_;
@@ -139,7 +139,7 @@ public:
 	virtual bool execute_(const char* str_) override {
 		char* ptr_ = const_cast<char*>(str_);
 		hxconsole_arg_<A_> arg1_(str_, &ptr_);
-		if (str_ < ptr_ && hxconsole_is_end_of_line_(ptr_)) {
+		if(str_ < ptr_ && hxconsole_is_end_of_line_(ptr_)) {
 			return m_fn_(arg1_.value_);
 		}
 		usage_();
@@ -160,9 +160,9 @@ public:
 		char* p_a_ = const_cast<char*>(str_);
 		char* p_b_ = const_cast<char*>(str_);
 		hxconsole_arg_<arg1_t_> arg1_(str_, &p_a_);
-		if (str_ < p_a_) {
+		if(str_ < p_a_) {
 			hxconsole_arg_<arg2_t_> arg2_(p_a_, &p_b_);
-			if (p_a_ < p_b_ && hxconsole_is_end_of_line_(p_b_)) {
+			if(p_a_ < p_b_ && hxconsole_is_end_of_line_(p_b_)) {
 				return m_fn_(arg1_.value_, arg2_.value_);
 			}
 		}
@@ -184,11 +184,11 @@ public:
 		char* p_a_ = const_cast<char*>(str_);
 		char* p_b_ = const_cast<char*>(str_);
 		hxconsole_arg_<arg1_t_> arg1_(str_, &p_a_);
-		if (str_ < p_a_) {
+		if(str_ < p_a_) {
 			hxconsole_arg_<arg2_t_> arg2_(p_a_, &p_b_);
-			if (p_a_ < p_b_) {
+			if(p_a_ < p_b_) {
 				hxconsole_arg_<arg3_t_> arg3_(p_b_, &p_a_);
-				if (p_b_ < p_a_ && hxconsole_is_end_of_line_(p_a_)) {
+				if(p_b_ < p_a_ && hxconsole_is_end_of_line_(p_a_)) {
 					return m_fn_(arg1_.value_, arg2_.value_, arg3_.value_);
 				}
 			}
@@ -212,13 +212,13 @@ public:
 		char* p_a_ = const_cast<char*>(str_);
 		char* p_b_ = const_cast<char*>(str_);
 		hxconsole_arg_<arg1_t_> arg1_(str_, &p_a_);
-		if (str_ < p_a_) {
+		if(str_ < p_a_) {
 			hxconsole_arg_<arg2_t_> arg2_(p_a_, &p_b_);
-			if (p_a_ < p_b_) {
+			if(p_a_ < p_b_) {
 				hxconsole_arg_<arg3_t_> arg3_(p_b_, &p_a_);
-				if (p_b_ < p_a_) {
+				if(p_b_ < p_a_) {
 					hxconsole_arg_<arg4_t_> arg4_(p_a_, &p_b_);
-					if (p_a_ < p_b_ && hxconsole_is_end_of_line_(p_b_)) {
+					if(p_a_ < p_b_ && hxconsole_is_end_of_line_(p_b_)) {
 						return m_fn_(arg1_.value_, arg2_.value_, arg3_.value_, arg4_.value_);
 					}
 				}
@@ -313,7 +313,7 @@ public:
 // Uses FNV-1a string hashing. Stops at whitespace.
 inline hxhash_t hxkey_hash(hxconsole_hash_table_key_ k_) {
 	hxhash_t x_ = (hxhash_t)0x811c9dc5;
-	while (!hxconsole_is_delimiter_(*k_.str_)) {
+	while(!hxconsole_is_delimiter_(*k_.str_)) {
 		x_ ^= (hxhash_t)*k_.str_++;
 		x_ *= (hxhash_t)0x01000193;
 	}
@@ -333,9 +333,9 @@ public:
 
 	hxconsole_hash_table_node_(hxconsole_hash_table_key_ key_)
 			: m_hash_next_(hxnull), m_key_(key_), m_hash_(hxkey_hash(key_)), m_command_(hxnull) {
-		if ((HX_RELEASE) < 1) {
+		if((HX_RELEASE) < 1) {
 			const char* k_ = key_.str_;
-			while (!hxconsole_is_delimiter_(*k_)) {
+			while(!hxconsole_is_delimiter_(*k_)) {
 				++k_;
 			}
 			hxassertmsg(*k_ == '\0', "bad_console_symbol \"%s\"", key_.str_);

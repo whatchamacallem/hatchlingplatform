@@ -33,8 +33,8 @@ public:
 
 	template<typename key_t>
 	static int q_sort_compare(const void* a, const void* b) {
-		if (*(const test_object<key_t>*)a < *(const test_object<key_t>*)b) { return -1; }
-		if (*(const test_object<key_t>*)b < *(const test_object<key_t>*)a) { return 1; }
+		if(*(const test_object<key_t>*)a < *(const test_object<key_t>*)b) { return -1; }
+		if(*(const test_object<key_t>*)b < *(const test_object<key_t>*)a) { return 1; }
 		return 0;
 	}
 
@@ -52,7 +52,7 @@ public:
 
 		// Radix sort
 		hxradix_sort<key_t, test_object<key_t> > rs; rs.reserve(size);
-		for (uint32_t i = size; i--;) {
+		for(uint32_t i = size; i--;) {
 			rs.insert(a[i].id, &a[i]);
 		}
 
@@ -64,7 +64,7 @@ public:
 		typename hxradix_sort<key_t, test_object<key_t> >::iterator it = rs.begin();
 		typename hxradix_sort<key_t, test_object<key_t> >::const_iterator cit = rs.cbegin();
 
-		for (uint32_t i=0u; i < size; ++i) {
+		for(uint32_t i=0u; i < size; ++i) {
 			EXPECT_EQ(b[i].id, rs[i].id);
 			EXPECT_EQ(b[i].id, (*it++).id);
 			EXPECT_EQ(b[i].id, (cit++)->id);

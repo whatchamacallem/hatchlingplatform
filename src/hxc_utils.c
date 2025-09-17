@@ -16,21 +16,21 @@ struct hxsettings g_hxsettings;
 __attribute__((no_sanitize("address")))
 #endif
 void hxhex_dump(const void* address, size_t bytes, int pretty) {
-	if ((HX_RELEASE) < 2 && address != hxnull) {
+	if((HX_RELEASE) < 2 && address != hxnull) {
 		bytes = (bytes + 15u) & ~(size_t)15; // round up to 16 bytes.
 		const uint8_t* addr = (const uint8_t*)address;
-		for (size_t i = 0; i < bytes;) {
-			if (pretty) {
+		for(size_t i = 0; i < bytes;) {
+			if(pretty) {
 				// Adjust the number of leading zeros for pointers to match uintptr_t.
 				hxlogconsole("%0*zx: ", (int)sizeof(uintptr_t), (size_t)addr);
 			}
 			const uint8_t* str = addr;
-			for (size_t maximum = 4; i < bytes && maximum--; i += 4) {
+			for(size_t maximum = 4; i < bytes && maximum--; i += 4) {
 				hxlogconsole("%02x%02x%02x%02x ", addr[0], addr[1], addr[2], addr[3]);
 				addr += 4;
 			}
-			if (pretty) {
-				while (str < addr) {
+			if(pretty) {
+				while(str < addr) {
 					hxlogconsole("%c", (*str >= 0x20 && *str <= 0x7e) ? *str : '.');
 					++str;
 				}
@@ -44,10 +44,10 @@ void hxhex_dump(const void* address, size_t bytes, int pretty) {
 __attribute__((no_sanitize("address")))
 #endif
 void hxfloat_dump(const float* address, size_t count) {
-	if ((HX_RELEASE) < 2 && address != hxnull) {
-		for (size_t i = 0; i < count;) {
+	if((HX_RELEASE) < 2 && address != hxnull) {
+		for(size_t i = 0; i < count;) {
 			hxlogconsole("%08x: ", (unsigned int)(uintptr_t)address);
-			for (size_t maximum = 4; i < count && maximum--; i++) {
+			for(size_t maximum = 4; i < count && maximum--; i++) {
 				hxlogconsole("%8f ", *address++);
 			}
 			hxlogconsole("\n");
@@ -57,8 +57,8 @@ void hxfloat_dump(const float* address, size_t count) {
 
 const char* hxbasename(const char* path) {
 	const char* result = path ? path : "(null)";
-	for (const char* it = result; *it != '\0'; ++it) {
-		if (*it == '/' || *it == '\\') {
+	for(const char* it = result; *it != '\0'; ++it) {
+		if(*it == '/' || *it == '\\') {
 			result = it + 1;
 		}
 	}
@@ -66,7 +66,7 @@ const char* hxbasename(const char* path) {
 }
 
 char* hxstring_duplicate(const char* string, enum hxsystem_allocator_t id) {
-	if (string) {
+	if(string) {
 		size_t len = strlen(string);
 		char* temp = (char*)hxmalloc_ext(len + 1, id, 0u);
 		memcpy(temp, string, len + 1);

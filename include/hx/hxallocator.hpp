@@ -81,7 +81,7 @@ public:
 
 	/// Calls hxfree() with any allocated memory.
 	~hxallocator(void) {
-		if (m_data_) {
+		if(m_data_) {
 			m_capacity_ = 0u;
 			hxfree(m_data_);
 			m_data_ = hxnull;
@@ -111,7 +111,7 @@ protected:
 	void reserve_storage(size_t size_,
 			hxsystem_allocator_t allocator_=hxsystem_allocator_current,
 			hxalignment_t alignment_=HX_ALIGNMENT) {
-		if (size_ <= m_capacity_) { return; }
+		if(size_ <= m_capacity_) { return; }
 		hxassertrelease(m_capacity_ == 0, "reallocation_disallowed");
 		m_data_ = (T_*)hxmalloc_ext(sizeof(T_) * size_, allocator_, alignment_);
 		m_capacity_ = size_;

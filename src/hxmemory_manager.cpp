@@ -42,7 +42,7 @@ hxnoexcept_unchecked static void* hxmalloc_checked(size_t size) {
 	void* t = ::malloc(size);
 	hxassertrelease(t, "malloc %zu", size);
 #if (HX_RELEASE) >= 3
-	if (!t) {
+	if(!t) {
 		hxloghandler(hxloglevel_assert, "malloc %zu", size);
 		::_Exit(EXIT_FAILURE);
 	}
@@ -217,7 +217,7 @@ public:
 		m_end_ = ((uintptr_t)ptr + size);
 		m_current = ((uintptr_t)ptr);
 
-		if ((HX_RELEASE) < 1) {
+		if((HX_RELEASE) < 1) {
 			::memset(ptr, 0xcd, size);
 		}
 	}
@@ -248,7 +248,7 @@ public:
 	void* allocate_non_virtual(size_t size, hxalignment_t alignment) {
 		--alignment; // use as a mask.
 		uintptr_t aligned = (m_current + alignment) & ~(uintptr_t)alignment;
-		if ((aligned + size) > m_end_) {
+		if((aligned + size) > m_end_) {
 			return hxnull;
 		}
 
@@ -296,7 +296,7 @@ public:
 		m_high_water = hxmax(m_high_water, m_current);
 
 		uintptr_t previous_current = m_begin_ + scope->get_previous_bytes_allocated();
-		if ((HX_RELEASE) < 1) {
+		if((HX_RELEASE) < 1) {
 			::memset((void*)previous_current, 0xcd, (size_t)(m_current - previous_current));
 		}
 		m_current = previous_current;
@@ -376,7 +376,7 @@ void hxmemory_manager::destruct(void) {
 size_t hxmemory_manager::leak_count(void) {
 	size_t leak_count = 0;
 	HX_MEMORY_MANAGER_LOCK_();
-	for (int32_t i = 0; i != hxsystem_allocator_current; ++i) {
+	for(int32_t i = 0; i != hxsystem_allocator_current; ++i) {
 		hxsystem_allocator_base& alignment = *m_memory_allocators[i];
 		if(alignment.get_allocation_count((hxsystem_allocator_t)i)) {
 			hxloghandler(hxloglevel_warning,
@@ -411,16 +411,16 @@ void hxmemory_manager::end_allocation_scope(
 }
 
 void* hxmemory_manager::allocate(size_t size, hxsystem_allocator_t id, hxalignment_t alignment) {
-	if (id == hxsystem_allocator_current) {
+	if(id == hxsystem_allocator_current) {
 		id = s_hxcurrent_memory_allocator;
 	}
 
-	if (size == 0u) {
+	if(size == 0u) {
 		size = 1u; // Enforce unique pointer values.
 	}
 
 	// following code assumes that "alignment-1" is a valid mask of unused bits.
-	if (alignment == 0) {
+	if(alignment == 0) {
 		alignment = 1u;
 	}
 
@@ -431,25 +431,25 @@ void* hxmemory_manager::allocate(size_t size, hxsystem_allocator_t id, hxalignme
 	void* ptr = get_allocator(id).allocate(size, alignment);
 	hxassertmsg(((uintptr_t)ptr & (alignment - (uintptr_t)1)) == 0,
 		"alignment_error wrong %zx from %d", (size_t)(uintptr_t)ptr, id);
-	if (ptr) { return ptr; }
+	if(ptr) { return ptr; }
 	hxlogwarning("overflowing_to_heap %s size %zu", get_allocator(id).label(), size);
 	return m_memory_allocator_heap.allocate(size, alignment);
 }
 
 void hxmemory_manager::free(void* ptr) {
-	if (ptr == hxnull) {
+	if(ptr == hxnull) {
 		return;
 	}
 
 	// this path is hard-coded for efficiency.
 	HX_MEMORY_MANAGER_LOCK_();
 
-	if (m_memory_allocator_temporary_stack.contains(ptr)) {
+	if(m_memory_allocator_temporary_stack.contains(ptr)) {
 		m_memory_allocator_temporary_stack.on_free_non_virtual(ptr);
 		return;
 	}
 
-	if (m_memory_allocator_permanent.contains(ptr)) {
+	if(m_memory_allocator_permanent.contains(ptr)) {
 		hxwarnmsg(g_hxsettings.deallocate_permanent, "ERROR: free from permanent");
 		m_memory_allocator_permanent.on_free_non_virtual(ptr);
 		return;
@@ -511,7 +511,7 @@ hxnoexcept_unchecked void* hxmalloc(size_t size) {
 	hxinit();
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 	void* ptr = s_hxmemory_manager->allocate(size, hxsystem_allocator_current, HX_ALIGNMENT);
-	if ((HX_RELEASE) < 1) {
+	if((HX_RELEASE) < 1) {
 		::memset(ptr, 0xab, size);
 	}
 	return ptr;
@@ -522,7 +522,7 @@ hxnoexcept_unchecked void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, hx
 	hxinit();
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 	void* ptr = s_hxmemory_manager->allocate(size, (hxsystem_allocator_t)id, alignment);
-	if ((HX_RELEASE) < 1) {
+	if((HX_RELEASE) < 1) {
 		::memset(ptr, 0xab, size);
 	}
 	return ptr;

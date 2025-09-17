@@ -1,7 +1,9 @@
-#ifndef HX_HATCHLING_PCH_USED
+#pragma once
 // SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
+
+#ifndef HX_HATCHLING_PCH_USED
 
 /// \file hx/hatchling_pch.hpp Includes some of the Hatchling headers for use
 /// building a C++ precompiled header. See `testmatrix.sh`. Use `hx/hatchling.h`
