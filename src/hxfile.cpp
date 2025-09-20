@@ -49,6 +49,12 @@ hxfile::~hxfile(void) {
 	close();
 }
 
+void hxfile::operator=(hxfile&& file_) {
+	close();
+	::memcpy((void*)this, &file_, sizeof file_);
+	::memset((void*)&file_, 0x00, sizeof file_);
+}
+
 bool hxfile::open(uint8_t mode, const char* filename, ...) {
 	close(); // openv_ assumes closed
 
@@ -180,14 +186,14 @@ bool hxfile::print(const char* format, ...) {
 }
 
 // See vscanf to reimplement without FILE* support.
-bool hxfile::scan(const char* format, ...) {
+int hxfile::scan(const char* format, ...) {
 	hxassertmsg((m_open_mode_ & hxfile::in) && m_file_pimpl_ && format, "invalid_parameter");
 
 	va_list args;
 	va_start(args, format);
-	int len = ::vfscanf((FILE*)m_file_pimpl_, format, args);
+	int items_scanned = ::vfscanf((FILE*)m_file_pimpl_, format, args);
 	va_end(args);
 
-	hxassertrelease(len >= 0 || (m_open_mode_ & hxfile::skip_asserts), "vfscanf %s", ::strerror(errno));
-	return len >= 0;
+	hxassertrelease(items_scanned >= 0 || (m_open_mode_ & hxfile::skip_asserts), "vfscanf %s", ::strerror(errno));
+	return items_scanned;
 }

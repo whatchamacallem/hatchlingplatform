@@ -44,9 +44,11 @@ TEST_F(hxfile_test, read_write) {
 	EXPECT_EQ(f.is_open(), true);
 
 	hxout << "smoke test hxout" << ".";
-	hxout.print("..\n");
+	hxout.print("..");
+	hxout << hxendl;
 	hxerr << "smoke test hxerr" << ".";
-	hxerr.print("..\n");
+	hxerr.print("..");
+	hxerr << hxendl;
 }
 
 TEST_F(hxfile_test, not_exist) {

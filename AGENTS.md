@@ -2,13 +2,19 @@
 
 AGENTS.md contains context intended to be useful to AI coding agents.
 
-## Project overview
+## License
+
+- SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
+- SPDX-License-Identifier: MIT
+- This file is licensed under the MIT license found in the LICENSE.md file.
+
+## Project Overview
 
 - Hatchling Platform is a C17/C++20 runtime library aimed at resource-constrained and cross-compiled targets.
 - Provides containers, allocators, a task system, profiling, a debug console, and a test framework with minimal dependencies.
 - Code is structured to compile without the C++ standard library, avoids exceptions/RTTI, and keeps allocations explicit.
 
-## Repository layout
+## Repository Layout
 
 - `include/hx`: Public headers (doxygen annotated); `hatchling_pch.hpp` includes some of it.
 - `src`: Library sources shared across targets.
@@ -16,7 +22,7 @@ AGENTS.md contains context intended to be useful to AI coding agents.
 - `bin`: Throwaway build directory created by scripts; safe to delete.
 - `docs`: Throwaway documentation directory created by scripts; safe to delete.
 
-## Quick commands
+## Quick Commands
 
 - `./debugbuild.sh`: Fast 32-bit clang build with asserts and diagnostic flags; artifacts go to `bin/` and are discarded.
 - `./testcmake.sh`: Configure (if needed) and build via CMake, then run the main `hxtest` suite.
@@ -33,7 +39,7 @@ AGENTS.md contains context intended to be useful to AI coding agents.
 - `./teststrip.sh`: Builds a size-optimized static binary with musl, strips it, and reports symbol sizes.
 - `./testwasm.sh [--headless]`: Builds the WebAssembly target. Without `--headless`, serves `index.html` locally and tries to open it in Chrome.
 
-## Development guidelines
+## Development Guidelines
 
 - Stick to C17 for `.c` sources and C++20 for `.cpp`/headers; keep compatibility with C98/C++11. Avoid introducing dependencies on the C++ standard library.
 - Do not add C++ exceptions or RTTI; many builds compile with `-fno-exceptions -fno-rtti`.

@@ -3,13 +3,6 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-// C++ RAII abstraction for FILE*. Use an alternate .cpp file for alternate
-// implementations. Allows for hxerr to be a serial port and file I/O to use
-// a DMA controller.
-//
-// NOTA BENE: get_position/set_position over 2 GiB is not supported on Windows.
-// As well, size_t is limited to 32-bits on 32 bit platforms.
-
 #include "hatchling.h"
 
 class hxfile;
@@ -26,33 +19,39 @@ extern hxfile hxerr;
 /// Global equivalent to /dev/null. May be written to but not read from.
 extern hxfile hxdev_null;
 
-/// `hxfile` - C++ RAII abstraction for C-style file I/O. Provides a mixture of
-/// unformatted binary stream operations and formatted C-style text I/O. This
-/// code will do your error handling for you if you let it. From an optimization
-/// perspective, `printf`/`scanf` turn out to be bytecode interpreters and those
-/// are hard to compete with for code size. `gcc` is recommended for validating
-/// their arguments when used in untested error handling. However, memory imaged
-/// data structres are still recommended because they have predictable memory
-/// allocation requirements and can be served by a dma controller. Finally, this
-/// interface is intended to be able to be reimplemented without rewriting the
-/// entire constellation of standard library file interfaces. To switch to using
-/// a different implementation use an alternate .cpp file for your target.
+/// Equivalent to `std::endl` without the flush. Does not change per-platform.
+#define hxendl "\n"
+
+/// `hxfile` - Single ownership C++ RAII abstraction for C-style `FILE*` I/O.
+/// Provides a mixture of unformatted binary stream operations and formatted
+/// `printf`/`scanf` style I/O. Provides optional error handling. `gcc` is
+/// useful for validating `printf`/`scanf` style arguments. However, memory
+/// imaged data structres are still recommended. Formatted I/O is intended to
+/// use UTF-8 with no carrige return.
+///
+/// To switch to using a different implementation just use an alternate .cpp
+/// file for your target. Allows for `hxerr` to be a serial port and file I/O
+/// to use a DMA controller.
+///
+/// NOTA BENE: `get_position`/`set_position` over 2 GiB is not supported on
+/// Windows. As well, `size_t` is limited to 4 GiB on all 32-bit platforms.
 class hxfile {
 public:
-	/// `open_mode::in/out` are from `std::ios_base::openmode` and indicate I/O
-	/// mode. `open_mode::skip_asserts` skips asserts and is similar to setting
-	/// `std::basic_ios::exceptions(0)`.
+	/// `open_mode` - Flags indicating how the file is to be used. Modifying or
+	/// appending to an existing file is not supported.
 	enum open_mode : uint8_t {
+		/// No flags.
 		none = 0u,
-		/// Open for binary reading.
+		/// Open for binary reading. E.g. "rb".
 		in = 1u,
-		/// Open for binary writing.
+		/// Open for binary writing. Replaces any existing file with an empty
+		/// one even if `in` is used at the same time. E.g. "wb".
 		out = 2u,
 		/// By default, any unexpected failure results in an assert. To allow
 		/// reasonably unforeseen asserts to be skipped, set skip_asserts. Bad
 		/// parameters (e.g., writing to a file that is not open, was not opened
 		/// to be written to, or providing a null buffer) will still result in
-		/// assertions.
+		/// assertions. E.g. "w+b".
 		skip_asserts = 4u
 	};
 
@@ -80,12 +79,8 @@ public:
 	/// scope.
 	~hxfile();
 
-	// Move operator=.
-	void operator=(hxfile&& file_) {
-		this->close();
-		::memcpy((void*)this, &file_, sizeof file_);
-		::memset((void*)&file_, 0x00, sizeof file_);
-	}
+	// Move operator=. No assignment operator is provided.
+	void operator=(hxfile&& file_);
 
 	/// Opens a file with the specified mode and formatted filename.
 	bool open(uint8_t mode_, const char* filename_, ...) hxattr_format_printf(3, 4);
@@ -147,16 +142,18 @@ public:
 	/// - `buffer_size` : Size of the buffer array.
 	bool get_line(char* buffer_, int buffer_size_);
 
-	/// Writes a formatted string to the file. Uses printf conventions.
+	/// Writes a formatted UTF-8 string to the file. Uses printf conventions.
 	/// Formatting and writing will be skipped when using hxdev_null.
 	/// - `format` : Format string, similar to printf.
 	/// - `...` Additional arguments for the format string.
 	bool print(const char* format_, ...) hxattr_format_printf(2, 3);
 
-	/// Reads a formatted string from the file. Uses scanf conventions.
+	/// Reads a formatted UTF-8 string from the file. Uses scanf conventions. Returns
+	/// the number of items matched or a negative value on EOF or failure. Use
+	/// hxfile::skip_asserts to read until EOF.
 	/// - `format` : Format string, similar to scanf.
 	/// - `...` Additional arguments for the format string.
-	bool scan(const char* format_, ...) hxattr_format_scanf(2, 3);
+	int scan(const char* format_, ...) hxattr_format_scanf(2, 3);
 
 	/// Reads a single unformatted native endian object from the file.
 	/// - `t` : Reference to the object where the data will be stored.
