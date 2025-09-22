@@ -101,6 +101,8 @@ The markdown source for the documentation is in the header files at
 `include/hx/` and is readable as is. A modern editor should also show the docs
 in a mouseover box.
 
+Also see `AGENTS.md` for a human readable contributors guide also meant for AI.
+
 ## Tested Environments
 
 Every compiler warning flag should be safe to enable. This is Ubuntu 24.04 LTS.

@@ -29,6 +29,15 @@ extern hxfile hxdev_null;
 /// imaged data structres are still recommended. Formatted I/O is intended to
 /// use UTF-8 with no carrige return.
 ///
+/// Here is the syntax to make a block of code conditional on opening a file.
+///
+/// ```
+/// if(hxfile f=hxfile("pkg%d", i)) {
+///   f.read1(manifest);
+///   // ...
+/// }
+/// ```
+///
 /// To switch to using a different implementation just use an alternate .cpp
 /// file for your target. Allows for `hxerr` to be a serial port and file I/O
 /// to use a DMA controller.
@@ -79,8 +88,12 @@ public:
 	/// scope.
 	~hxfile();
 
-	// Move operator=. No assignment operator is provided.
+	/// Move operator=. No assignment operator is provided.
 	void operator=(hxfile&& file_);
+
+	/// Checks if the file is open, EOF has not been reached and no error
+	/// encountered. See usage example in class doc.
+	operator bool(void) const { return m_good_; }
 
 	/// Opens a file with the specified mode and formatted filename.
 	bool open(uint8_t mode_, const char* filename_, ...) hxattr_format_printf(3, 4);

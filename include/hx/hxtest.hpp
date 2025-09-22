@@ -111,8 +111,8 @@ inline void InitGoogleTest(void) { }
 
 /// `TEST(suite_name, case_name)` - Google Test reimplementation. Defines a test
 /// case with a suite name and case name.
-/// - `suite_name` : A C valid identifier for the test suite.
-/// - `case_name` : A C valid identifier for the test case.
+/// - `suite_name` : A valid C identifier for the test suite.
+/// - `case_name` : A valid C identifier for the test case.
 #define TEST(suite_name_, case_name_) \
 	class HX_TEST_NAME_(hxtest_, suite_name_, case_name_) : public hxtest_case_interface_ { \
 	public: \
@@ -128,8 +128,8 @@ inline void InitGoogleTest(void) { }
 /// `TEST_F(suite_name, case_name)` - Google Test reimplementation for
 /// fixture-based tests. Defines a test case where the `suite_name` is a
 /// subclass of `testing::Test`.
-/// - `suite_name` : A C valid identifier for the test suite.
-/// - `case_name` : A C valid identifier for the test case.
+/// - `suite_name` : A valid C identifier for the test suite.
+/// - `case_name` : A valid C identifier for the test case.
 #define TEST_F(suite_name_, case_name_) \
 	class HX_TEST_NAME_(hxtest_, suite_name_, case_name_) : public hxtest_case_interface_ { \
 	public: \

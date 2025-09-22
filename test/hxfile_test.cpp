@@ -37,11 +37,12 @@ TEST_F(hxfile_test, empty_name) {
 #endif
 
 TEST_F(hxfile_test, read_write) {
-	hxfile f(hxfile::in | hxfile::out | hxfile::skip_asserts, "hxfile_test_read_write.txt");
-	f << "hxfile_test_read_write.txt";
+	if(hxfile f = hxfile(hxfile::in | hxfile::out | hxfile::skip_asserts, "hxfile_test_read_write.txt")) {
+		f << "hxfile_test_read_write.txt";
 
-	EXPECT_EQ(f.good(), true);
-	EXPECT_EQ(f.is_open(), true);
+		EXPECT_EQ(f.good(), true);
+		EXPECT_EQ(f.is_open(), true);
+	}
 
 	hxout << "smoke test hxout" << ".";
 	hxout.print("..");

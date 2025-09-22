@@ -1,8 +1,5 @@
 # license
 
-> _Please add your name here in any PR. Leap Motion, Inc also contributed a few
-> files to the first release but they have been replaced._
-
 Hatchling Platform and entanglement.py are distributed under this unmodified
 [MIT License](https://spdx.org/licenses/MIT.html).
 

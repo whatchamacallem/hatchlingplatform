@@ -92,7 +92,7 @@ bool hxfile::openv_(uint8_t mode, const char* filename, va_list args) {
 	hxassertmsg(len >= 0 && len < HX_MAX_LINE, "vsnprintf"); (void)len;
 
 	m_file_pimpl_ = ::fopen(buf, m);
-	hxassertrelease(m_file_pimpl_ || (mode & hxfile::skip_asserts), \
+	hxassertrelease(m_file_pimpl_ || (mode & hxfile::skip_asserts),
 		"fopen %s %s: %s", buf, m, ::strerror(errno));
 
 	m_owns_ = m_file_pimpl_ != hxnull;
