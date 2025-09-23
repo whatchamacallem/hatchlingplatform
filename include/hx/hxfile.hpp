@@ -27,13 +27,16 @@ extern hxfile hxdev_null;
 /// `printf`/`scanf` style I/O. Provides optional error handling. `gcc` is
 /// useful for validating `printf`/`scanf` style arguments. However, memory
 /// imaged data structres are still recommended. Formatted I/O is intended to
-/// use UTF-8 with no carrige return.
+/// use UTF-8 with no carrige return. EILSEQ may occur if UTF-8 is used in a
+/// format string directly. Pass UTF-8 as a %s string arg or use a real i18n
+/// library.
 ///
 /// Here is the syntax to make a block of code conditional on opening a file.
+/// The filename is also formatted printf style.
 ///
-/// ```
-/// if(hxfile f=hxfile("pkg%d", i)) {
-///   f.read1(manifest);
+/// ```cpp
+/// if(hxfile f=hxfile(hxfile::in|hxfile::skip_asserts, "pkg%d", i)) {
+///   f => manifest; // binary read.
 ///   // ...
 /// }
 /// ```
@@ -42,7 +45,7 @@ extern hxfile hxdev_null;
 /// file for your target. Allows for `hxerr` to be a serial port and file I/O
 /// to use a DMA controller.
 ///
-/// NOTA BENE: `get_position`/`set_position` over 2 GiB is not supported on
+/// NOTA BENE: `get_position`/`set_position` over 4 GiB is not supported on
 /// Windows. As well, `size_t` is limited to 4 GiB on all 32-bit platforms.
 class hxfile {
 public:

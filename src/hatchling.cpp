@@ -259,7 +259,7 @@ hxnoexcept_unchecked bool hxasserthandler(const char* file, size_t line) {
 }
 #else
 extern "C"
-hxnoexcept_unchecked hxnoreturn void hxasserthandler(hxhash_t file, size_t line) {
+hxnoexcept_unchecked [[noreturn]] void hxasserthandler(hxhash_t file, size_t line) {
 	hxloghandler(hxloglevel_assert, "exit file %08zx line %zu\n", (size_t)file, line);
 	_Exit(EXIT_FAILURE);
 }

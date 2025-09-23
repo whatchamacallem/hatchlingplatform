@@ -103,6 +103,13 @@ in a mouseover box.
 
 Also see `AGENTS.md` for a human readable contributors guide also meant for AI.
 
+## Other Projects
+
+- musl libc - https://musl.libc.org/ This is the recommended C library to use with
+Hatchling Platform in a freestanding environment.
+- etl - https://github.com/ETLCPP/etl A header only embedded template library.
+The ETL is larger and approaches the complexity of the standard library.
+
 ## Tested Environments
 
 Every compiler warning flag should be safe to enable. This is Ubuntu 24.04 LTS.

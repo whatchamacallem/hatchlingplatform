@@ -54,11 +54,18 @@
 /// `HX_FREESTANDING` - `0` : _MSC_VER indicates a hosted environment.
 #define HX_FREESTANDING 0
 
+/// hxrestrict - A pointer attribute indicating that for the lifetime of that pointer, it
+/// will be the sole means of accessing the object(s) it points to.
 #define hxrestrict __restrict
+
+/// Ignored on Windows.
 #define hxattr_format_printf(pos_, start_)
+
+/// Ignored on Windows.
 #define hxattr_format_scanf(pos_, start_)
+
+/// hxbreakpoint - A breakpoint that also works without the standard library.
 #define hxbreakpoint() (__debugbreak(),true)
-#define hxnoreturn
 
 /// Unlike noexcept this is undefined when violated. `hxnoexcept_unchecked` -
 /// `_MSC_VER's` `nothrow` attribute.
@@ -92,17 +99,25 @@
 #define HX_FREESTANDING 1
 #endif
 
+/// hxrestrict - A pointer attribute indicating that for the lifetime of that pointer, it
+/// will be the sole means of accessing the object(s) it points to.
 #define hxrestrict __restrict
+
+/// Indicates to gcc that a function uses printf-style formatting so it can
+/// type-check the format string.
 #define hxattr_format_printf(pos_, start_) __attribute__((format(printf, pos_, start_)))
+
+/// Indicates to gcc that a function uses scanf-style formatting so it can
+/// type-check the format string.
 #define hxattr_format_scanf(pos_, start_) __attribute__((format(scanf, pos_, start_)))
-#define hxnoreturn __attribute__((noreturn))
 
 #if defined __has_builtin && __has_builtin(__builtin_debugtrap)
 /// `hxbreakpoint` - Can be conditionally evaluated with the `&&` and `||` operators.
 /// Uses intrinsics when available. (E.g. clang.)
 #define hxbreakpoint() (__builtin_debugtrap(),true)
 #else
-#define hxbreakpoint() (raise(SIGTRAP),true) /// `hxbreakpoint` - Use SIGTRAP if debugtrap is not available.
+/// `hxbreakpoint` - Raises SIGTRAP when __builtin_debugtrap is not available.
+#define hxbreakpoint() (raise(SIGTRAP),true)
 #endif
 
 /// `hxnoexcept_unchecked` - Use gcc/clang `nothrow` attribute. Unlike `noexcept` this

@@ -119,7 +119,7 @@ hxnoexcept_unchecked bool hxasserthandler(const char* file_, size_t line_);
 #define hxlog(...) ((void)0)
 #define hxassertmsg(x_, ...) ((void)0)
 #define hxassert(x_) ((void)0)
-hxnoexcept_unchecked hxnoreturn void hxasserthandler(hxhash_t file_, size_t line_);
+hxnoexcept_unchecked [[noreturn]] void hxasserthandler(hxhash_t file_, size_t line_);
 #endif
 
 #if (HX_RELEASE) <= 1
@@ -303,7 +303,7 @@ inline int hxlog2i(size_t i_) {
 
 #else // !HX_CPLUSPLUS
 // ----------------------------------------------------------------------------
-// C utility macro API - Does it all backwards in heels.
+// C Macro Utility API - Does it all backwards in heels.
 
 /// `hxmin` - Returns the minimum value of `x` and `y` using a < comparison.
 /// - `x` : The first value.
