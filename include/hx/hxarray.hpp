@@ -18,42 +18,42 @@
 template<typename T_, size_t capacity_=hxallocator_dynamic_capacity>
 class hxarray : public hxallocator<T_, capacity_> {
 public:
-	/// Publishes the value type.
-	typedef T_ value_t;
 	/// Random access iterator.
 	typedef T_* iterator;
+
 	/// Const random access iterator.
 	typedef const T_* const_iterator;
+
+	/// Publishes the value type.
+	typedef T_ value_type;
 
 	/// Constructs an empty array with a capacity of Capacity. m_end_ will be 0
 	/// if Capacity is 0.
 	explicit hxarray(void) : m_end_(this->data()) { }
 
-	/// Constructs an array of a given size using T_'s default constructor.
+	/// Constructs an array of a given size using `T`'s default constructor.
 	/// - `size` : Sets array size as if resize(size) were called.
-	explicit hxarray(size_t size_) : m_end_(this->data()) {
+	explicit hxarray(size_t size_) : hxarray() {
 		this->resize(size_);
 	}
 
-	/// Constructs an array of a given size by making copies of t.
+	/// Constructs an array of a given size by making copies of `t`.
 	/// - `size` : Sets array size as if resize(size, t) were called.
-	/// - `t` : The const T& to be duplicated.
-	explicit hxarray(size_t size_, const T_& t_) : m_end_(this->data()) {
+	/// - `t` : The `const T&` to be duplicated.
+	explicit hxarray(size_t size_, const T_& t_) : hxarray() {
 		this->resize(size_, t_);
 	}
 
 	/// Copy constructs an array. Non-explicit to allow assignment constructor.
-	/// - `x` : A non-temporary Array<T>.
-	hxarray(const hxarray& x_) {
-		m_end_ = this->data();
+	/// - `x` : An `Array<T>`.
+	hxarray(const hxarray& x_) : hxarray() {
 		this->assign<const T_*>(x_.data(), x_.m_end_);
 	}
 
 	/// Copy constructs an array. Non-explicit to allow assignment constructor.
-	/// - `x` : A non-temporary Array<T>.
+	/// - `x` : A non-temporary `Array<T>`.
 	template <size_t capacity2_>
-	hxarray(const hxarray<T_, capacity2_>& x_) {
-		m_end_ = this->data();
+	hxarray(const hxarray<T_, capacity2_>& x_) : hxarray() {
 		this->assign<const T_*>(x_.data(), x_.end());
 	}
 
@@ -61,7 +61,7 @@ public:
 	/// from a statically allocated temporary for efficiency. Only works with
 	/// `hxallocator_dynamic_capacity`. Dynamically allocated arrays are swapped
 	/// with very little overhead.
-	/// - `x` : A temporary Array<T>.
+	/// - `x` : A temporary `Array<T>`.
 	hxarray(hxarray&& x_) : hxarray() {
 		this->swap(x_); // NOTA BENE: Requires capacity 0 to compile.
 	}
@@ -72,8 +72,8 @@ public:
 	/// uniform initialization is used.  E.g. hxarry<int>x{1,2} is an array
 	/// containing {1,2} and hxarry<int>x(1,2) is the array containing {2}.
 	/// - `x` : A std::initializer_list<x_t>.
-	template <typename value_t_>
-	hxarray(std::initializer_list<value_t_> list_) : hxarray() {
+	template <typename other_value_t_>
+	hxarray(std::initializer_list<other_value_t_> list_) : hxarray() {
 		this->assign(list_.begin(), list_.end());
 	}
 #endif
@@ -85,8 +85,8 @@ public:
 	/// hxarray<int> current_values(initial_values);
 	/// ```
 	/// - `array` : A const array of `array_length` `value_t`.
-	template<typename value_t_, size_t array_length_>
-	hxarray(const value_t_(&array_)[array_length_]) : hxarray() {
+	template<typename other_value_t_, size_t array_length_>
+	hxarray(const other_value_t_(&array_)[array_length_]) : hxarray() {
 		this->assign(array_+0, array_+array_length_);
 	}
 
@@ -112,8 +112,9 @@ public:
 	/// Appends the contents of another array.  (Non-standard, from Python.)
 	/// Vector math is not a goal so this should not end up overloaded.
 	/// - `x` : Another array. Not a temporary.
-	void operator+=(const hxarray& x_) {
-		for(const T_ *it_ = x_.data(), *end_ = x_.m_end_; it_ != end_; ++it_) {
+	template <size_t capacity2_>
+	void operator+=(const hxarray<T_, capacity2_>& x_) {
+		for(const T_ *it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
 			::new(this->emplace_back_unconstructed()) T_(*it_);
 		}
 	}
@@ -121,8 +122,9 @@ public:
 	/// Appends the contents of another array.  (Non-standard, from Python.)
 	/// Vector math is not a goal so this should not end up overloaded.
 	/// - `x` : Another array passed as a temporary.
-	void operator+=(hxarray&& x_) {
-		for(const T_ *it_ = x_.data(), *end_ = x_.m_end_; it_ != end_; ++it_) {
+	template <size_t capacity2_>
+	void operator+=(hxarray<T_, capacity2_>&& x_) {
+		for(const T_ *it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
 			::new(this->emplace_back_unconstructed()) T_(hxmove(*it_));
 		}
 	}
@@ -134,20 +136,20 @@ public:
 		this->assign<const T_*>(x_.data(), x_.m_end_);
 	}
 
+	/// Assigns the contents of another hxarray to this array. Standard except
+	/// reallocation is disallowed.
+	/// - `x` : A non-temporary Array<T>.
+	template <size_t capacity2_>
+	void operator=(const hxarray<T_, capacity2_>& x_) {
+		this->assign<const T_*>(x_.data(), x_.end());
+	}
+
 	/// Swap contents with a temporary array using `swap`. Only works with
 	/// `hxallocator_dynamic_capacity`. Dynamically allocated arrays are swapped
 	/// with very little overhead.
 	/// - `x` : A temporary Array<T>.
 	void operator=(hxarray&& x_) {
 		this->swap(x_);
-	}
-
-	/// Copies the elements of a container with random access iterators.
-	/// - `x` : Any container with random access iterators implementing begin
-	/// and end.
-	template <typename value_t_>
-	void operator=(const value_t_& x_) {
-		this->assign(x_.begin(), x_.end());
 	}
 
 	/// Assign from a C-style array. Usable as an `initializer_list` when
@@ -157,8 +159,8 @@ public:
 	/// hxarray<int, 32> current_values(initial_values);
 	/// ```
 	/// - `array` : A const array of `array_length` `value_t`.
-	template<typename value_t_, size_t array_length_>
-	void operator=(const value_t_(&array_)[array_length_]) {
+	template<typename other_value_t_, size_t array_length_>
+	void operator=(const other_value_t_(&array_)[array_length_]) {
 		this->assign(array_+0, array_+array_length_);
 	}
 
