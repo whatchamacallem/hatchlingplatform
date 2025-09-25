@@ -27,7 +27,7 @@ hxfile hxerr(stderr, hxfile::out);
 // Don't use stdout with the default index.js provided by the emsdk.
 hxfile hxerr(stdout, hxfile::out);
 #endif
-hxfile hxdev_null(hxnull, hxfile::out);
+hxfile hxdev_null((void*)0, hxfile::out);
 
 // In this version the file is a FILE*.
 hxfile::hxfile(void* file_, uint8_t mode) : hxfile() {
@@ -202,6 +202,11 @@ int hxfile::scan(const char* format, ...) {
 	int items_scanned = ::vfscanf((FILE*)m_file_pimpl_, format, args);
 	va_end(args);
 
-	hxassertrelease(items_scanned >= 0 || (m_open_mode_ & hxfile::skip_asserts), "vfscanf %s", ::strerror(errno));
+	hxassertrelease(items_scanned != EOF || (m_open_mode_ & hxfile::skip_asserts), "vfscanf %s", ::strerror(errno));
+
+	if(items_scanned == EOF) {
+		m_good_ = false;
+		m_eof_ = (bool)::feof((FILE*)m_file_pimpl_);
+	}
 	return items_scanned;
 }

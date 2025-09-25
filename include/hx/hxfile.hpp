@@ -27,12 +27,13 @@ extern hxfile hxdev_null;
 /// `printf`/`scanf` style I/O. Provides optional error handling. `gcc` is
 /// useful for validating `printf`/`scanf` style arguments. However, memory
 /// imaged data structres are still recommended. Formatted I/O is intended to
-/// use UTF-8 with no carrige return. EILSEQ may occur if UTF-8 is used in a
-/// format string directly. Pass UTF-8 as a %s string arg or use a real i18n
-/// library.
+/// use NUL terminated UTF-8 with no carrige return. EILSEQ may occur if UTF-8
+/// is used in a format string directly. Pass UTF-8 as a %s string arg or use a
+/// real i18n library instead. Uses binary I/O only for portability.
 ///
 /// Here is the syntax to make a block of code conditional on opening a file.
-/// The filename is also formatted printf style.
+/// The filename is also formatted printf style. This is equivalent to Python's
+/// `with open(filename, mode) as f:`.
 ///
 /// ```cpp
 /// if(hxfile f=hxfile(hxfile::in|hxfile::skip_asserts, "pkg%d", i)) {
@@ -81,6 +82,9 @@ public:
 	/// `hxout`, `hxerr` and `hxdev_null` instead.
 	hxfile(void* file_, uint8_t mode_);
 
+	// Delete usage where the filename comes first like with fopen.
+	hxfile(const char* file_, uint8_t mode_=0) = delete;
+
 	// Move constructor. No copy constructor is provided.
 	hxfile(hxfile&& file_) {
 		::memcpy((void*)this, &file_, sizeof file_);
@@ -107,9 +111,13 @@ public:
 	/// Checks if the file is open.
 	bool is_open(void) const { return m_file_pimpl_ != hxnull; }
 
-	/// Checks if the file is open, EOF has not been reached and no error
-	/// encountered.
+	/// Checks if the file is open, EOF has not been reached, no error
+	/// encountered and `no_good` not called.
 	bool good(void) const { return m_good_; }
+
+	/// Flags the file as not being good. Allows the user to report additional
+	/// errors without having to track them. Non-standard.
+	void no_good(void) { m_good_ = false; }
 
 	/// Checks if EOF has been reached.
 	bool eof(void) const { return m_eof_; }
@@ -161,9 +169,9 @@ public:
 	/// - `...` Additional arguments for the format string.
 	bool print(const char* format_, ...) hxattr_format_printf(2, 3);
 
-	/// Reads a formatted UTF-8 string from the file. Uses scanf conventions. Returns
-	/// the number of items matched or a negative value on EOF or failure. Use
-	/// hxfile::skip_asserts to read until EOF.
+	/// Reads a formatted UTF-8 string from the file. Uses scanf conventions.
+	/// Returns same as scanf. Use hxfile::skip_asserts to read until EOF.
+	/// Parse errors will set `good` to false.
 	/// - `format` : Format string, similar to scanf.
 	/// - `...` Additional arguments for the format string.
 	int scan(const char* format_, ...) hxattr_format_scanf(2, 3);
@@ -203,7 +211,6 @@ public:
 	/// - `str` : Reference to a string literal to write to the file.
 	template<size_t string_length_>
 	hxfile& operator<<(const char(&str_)[string_length_]) {
-		hxassertmsg(::strlen(str_) == (string_length_-1), "bad_string_literal");
 		this->write(str_, string_length_-1);
 		return *this;
 	}

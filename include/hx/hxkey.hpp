@@ -4,13 +4,14 @@
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
 /// \file hx/hxkey.hpp User overloadable key-equal, key-less and key-hash
-/// functions. This code will only use the `==` and `<` operators by default. That
-/// will work with a default or custom `<=>` operator. Alternately these calls can
-/// be overloaded to resolve key operations without global operator overloads.
-/// This code uses C++20 concepts when available and provides no fallbacks for
-/// SFINAE otherwise. Functors are recommended and supported for complex use
-/// cases as they are relatively easy to debug. See `hxkey_equal_function` and
-/// `hxkey_less_function` for generating default functors.
+/// functions. This code will only use the `==` and `<` operators by default.
+/// That will work with a default or custom `<=>` operator. Alternately these
+/// calls can be overloaded to resolve key operations without global operator
+/// overloads. This code uses C++20 concepts when available and provides no
+/// fallbacks for SFINAE otherwise. Partial specialization will not work before
+/// C++20. As an alternative functors are recommended and supported for complex
+/// use cases as they are relatively easy to debug. See `hxkey_equal_function`
+/// and `hxkey_less_function` for generating default functors.
 
 #include "hatchling.h"
 
