@@ -6,7 +6,7 @@
 #include "hxallocator.hpp"
 #include "hxkey.hpp"
 
-#if !HX_FREESTANDING // No hxinitializer_list freestanding.
+#if !HX_NO_LIBCXX
 #include <initializer_list>
 #endif
 
@@ -27,27 +27,24 @@ public:
 
 	/// Constructs an empty array with a capacity of Capacity. m_end_ will be 0
 	/// if Capacity is 0.
-	explicit hxarray(void)
-		: hxallocator<T_, capacity_>(), m_end_(this->data()) { }
+	explicit hxarray(void) : m_end_(this->data()) { }
 
 	/// Constructs an array of a given size using T_'s default constructor.
 	/// - `size` : Sets array size as if resize(size) were called.
-	explicit hxarray(size_t size_)
-			: hxallocator<T_, capacity_>(), m_end_(this->data()) {
+	explicit hxarray(size_t size_) : m_end_(this->data()) {
 		this->resize(size_);
 	}
 
 	/// Constructs an array of a given size by making copies of t.
 	/// - `size` : Sets array size as if resize(size, t) were called.
 	/// - `t` : The const T& to be duplicated.
-	explicit hxarray(size_t size_, const T_& t_)
-			: hxallocator<T_, capacity_>(), m_end_(this->data()) {
+	explicit hxarray(size_t size_, const T_& t_) : m_end_(this->data()) {
 		this->resize(size_, t_);
 	}
 
 	/// Copy constructs an array. Non-explicit to allow assignment constructor.
 	/// - `x` : A non-temporary Array<T>.
-	hxarray(const hxarray& x_) : hxallocator<T_, capacity_>() {
+	hxarray(const hxarray& x_) {
 		m_end_ = this->data();
 		this->assign<const T_*>(x_.data(), x_.m_end_);
 	}
@@ -55,7 +52,7 @@ public:
 	/// Copy constructs an array. Non-explicit to allow assignment constructor.
 	/// - `x` : A non-temporary Array<T>.
 	template <size_t capacity2_>
-	hxarray(const hxarray<T_, capacity2_>& x_) : hxallocator<T_, capacity_>() {
+	hxarray(const hxarray<T_, capacity2_>& x_) {
 		m_end_ = this->data();
 		this->assign<const T_*>(x_.data(), x_.end());
 	}
@@ -69,17 +66,29 @@ public:
 		this->swap(x_); // NOTA BENE: Requires capacity 0 to compile.
 	}
 
-#if !HX_FREESTANDING
+#if !HX_NO_LIBCXX
 	/// Pass values of std::initializer_list as initializers to an array of T.
 	/// WARNING: This constructor will override the other constructors when
 	/// uniform initialization is used.  E.g. hxarry<int>x{1,2} is an array
 	/// containing {1,2} and hxarry<int>x(1,2) is the array containing {2}.
 	/// - `x` : A std::initializer_list<x_t>.
-	template <typename x_t_>
-	hxarray(std::initializer_list<x_t_> list_) : hxarray() {
+	template <typename value_t_>
+	hxarray(std::initializer_list<value_t_> list_) : hxarray() {
 		this->assign(list_.begin(), list_.end());
 	}
 #endif
+
+	/// Construct from a C-style array. Usable as an `initializer_list` when
+	/// std:: is not available. E.g.:
+	/// ```cpp
+	/// static const int initial_values[] = { 5, 4, 3 };
+	/// hxarray<int> current_values(initial_values);
+	/// ```
+	/// - `array` : A const array of `array_length` `value_t`.
+	template<typename value_t_, size_t array_length_>
+	hxarray(const value_t_(&array_)[array_length_]) : hxarray() {
+		this->assign(array_+0, array_+array_length_);
+	}
 
 	/// Destructs the array and destroys all elements.
 	~hxarray(void) {
@@ -134,10 +143,23 @@ public:
 	}
 
 	/// Copies the elements of a container with random access iterators.
-	/// - `x` : Any container implementing begin and end.
-	template <typename x_t_>
-	void operator=(const x_t_& x_) {
+	/// - `x` : Any container with random access iterators implementing begin
+	/// and end.
+	template <typename value_t_>
+	void operator=(const value_t_& x_) {
 		this->assign(x_.begin(), x_.end());
+	}
+
+	/// Assign from a C-style array. Usable as an `initializer_list` when
+	/// std:: is not available. E.g.:
+	/// ```cpp
+	/// static const int initial_values[] = { 5, 4, 3 };
+	/// hxarray<int, 32> current_values(initial_values);
+	/// ```
+	/// - `array` : A const array of `array_length` `value_t`.
+	template<typename value_t_, size_t array_length_>
+	void operator=(const value_t_(&array_)[array_length_]) {
+		this->assign(array_+0, array_+array_length_);
 	}
 
 	/// Returns a const reference to the element at the specified index.
@@ -154,15 +176,7 @@ public:
 		return this->data()[index_];
 	}
 
-	/// Constructs an array of T from a C-style array of U. (Non-standard.)
-	/// - `a` : The array.
-	/// - `Sz` : Its size.
-	template<typename U_, size_t size_>
-	void assign(const U_(&a_)[size_]) {
-		this->assign(a_ + 0, a_ + size_);
-	}
-
-	/// Assigns elements from a range defined by iterators.
+	/// Assigns elements from a range defined by random access iterators.
 	/// - `begin` : The beginning iterator.
 	/// - `end` : The end iterator.
 	template <typename iter_t_>
@@ -343,7 +357,7 @@ public:
 		hxassertmsg(pos_ >= this->data() && pos_ <= m_end_ && !this->full(), "invalid_insert");
 		if(pos_ == m_end_) {
 			// Single constructor call for last element.
-			::new (m_end_++) T_(t_);
+			::new(m_end_++) T_(t_);
 		}
 		else {
 			// A copy constructor for a new end element followed by a series of

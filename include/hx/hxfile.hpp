@@ -114,11 +114,8 @@ public:
 	/// Checks if EOF has been reached.
 	bool eof(void) const { return m_eof_; }
 
-	/// Resets the goodness and EOF flags.
-	void clear(void) {
-		m_good_ = m_file_pimpl_ != hxnull;
-		m_eof_ = false;
-	}
+	/// Resets the goodness and EOF flags. Required after EOF is encountered.
+	void clear(void);
 
 	/// Returns the current open mode of the file.
 	uint8_t mode(void) const { return m_open_mode_; }

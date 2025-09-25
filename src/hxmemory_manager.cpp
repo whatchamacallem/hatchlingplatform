@@ -10,7 +10,7 @@ HX_REGISTER_FILENAME_HASH
 // Switches heap to using allocation tracking headers in debug.
 #define HX_USE_STD_ALIGNED_ALLOC (HX_CPLUSPLUS >= 201703L && (HX_RELEASE) >= 1)
 
-#if HX_FREESTANDING
+#if HX_NO_LIBCXX
 void* operator new(size_t size) {
 	void* ptr = ::malloc(size);
 	hxassertrelease(ptr, "malloc %zu", size);

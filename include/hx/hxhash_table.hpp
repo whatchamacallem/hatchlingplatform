@@ -148,7 +148,7 @@ public:
 		const_iterator& operator++(void) {
 			hxassertmsg(m_current_node_, "invalid_iterator"); // !end
 			if(!(m_current_node_ = (node_t_*)m_current_node_->hash_next())) {
-				next_bucket();
+				this->next_bucket();
 			}
 			return *this;
 		}
@@ -212,7 +212,7 @@ public:
 	explicit hxhash_table(void) { m_size_ = 0u; }
 
 	/// Destructs the hash table and releases all resources.
-	~hxhash_table(void) { clear(); }
+	~hxhash_table(void) { this->clear(); }
 
 	/// Returns a const iterator pointing to the beginning of the hash table.
 	const_iterator begin(void) const { return const_iterator(this); }

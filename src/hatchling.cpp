@@ -56,7 +56,7 @@ void hxsettings_construct();
 
 extern "C" {
 
-#if HX_FREESTANDING
+#if HX_NO_LIBCXX
 
 int __cxa_guard_acquire(size_t *guard) {
 	// Return 0 if already constructed.

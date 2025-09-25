@@ -50,10 +50,10 @@ protected:
 	constexpr void reserve_storage(size_t size_,
 			hxsystem_allocator_t allocator_=hxsystem_allocator_current,
 			hxalignment_t alignment_=HX_ALIGNMENT) {
-				(void)size_; (void)allocator_; (void)alignment_;
-				hxassertmsg(size_ <= fixed_capacity_, "overflowing_fixed_capacity");
-				hxassertmsg(((alignment_ - 1u) & (uintptr_t)this) == 0u,
-					"alignment_error static allocation");
+		(void)size_; (void)allocator_; (void)alignment_;
+		hxassertmsg(size_ <= fixed_capacity_, "overflowing_fixed_capacity Buffer overflow.");
+		hxassertmsg(((alignment_ - 1u) & (uintptr_t)this) == 0u,
+			"alignment_error Static allocation misaligned.");
 	}
 
 private:

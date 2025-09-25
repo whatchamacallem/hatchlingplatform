@@ -35,11 +35,11 @@
 /// - `0xde` - Returned to heap allocator.
 /// - `0xef` - Reserved for client poisoned data.
 ///
-/// Global new and delete are provided when `HX_FREESTANDING==1`. This is a requirement
-/// for running as a stand alone C++ runtime. Otherwise they are not interfered
-/// with. Those default versions do not use the memory manager's current
-/// allocator id because it may not be safe to do so. `hxnew` and `hxdelete` are
-/// available as substitutes.
+/// Global new and delete are provided when `HX_NO_LIBCXX==1`. This is a
+/// requirement for running as a stand alone C++ runtime. Otherwise they are not
+/// interfered with. Those default versions do not use the memory manager's
+/// current allocator id because it may not be safe to do so. `hxnew` and
+/// `hxdelete` are available as substitutes.
 ///
 /// It should be possible to implement a triple buffered streaming strategy
 /// for data processing by adding a two more temp stacks. An open world video
@@ -51,7 +51,7 @@
 #endif
 
 #if HX_CPLUSPLUS
-#if !HX_FREESTANDING
+#if !HX_NO_LIBCXX
 #include <new>
 #endif
 
@@ -111,7 +111,7 @@ char* hxnoexcept_unchecked hxstring_duplicate(const char* string_, enum hxsystem
 
 // Memory Manager C++ API
 
-#if HX_FREESTANDING
+#if HX_NO_LIBCXX
 // Declare placement new. These are not built into the compiler.
 inline void* operator new(size_t, void* ptr_) noexcept { return ptr_; }
 inline void* operator new[](size_t, void* ptr_) noexcept { return ptr_; }

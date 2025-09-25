@@ -41,7 +41,7 @@
 /// Return the current thread id. Returns `0` when threads are disabled.
 inline size_t hxthread_id() {
 #if HX_USE_THREADS
-	return (size_t)pthread_self();
+	return (size_t)::pthread_self();
 #else
 	return 0; // Single threaded.
 #endif
@@ -57,7 +57,7 @@ public:
 	explicit hxthread_local(const T_& default_value_ = T_())
 			: m_default_value_(default_value_) {
 #if HX_USE_THREADS
-		int code_ = pthread_key_create(&m_key_, destroy_local_);
+		int code_ = ::pthread_key_create(&m_key_, destroy_local_);
 		hxassertrelease(code_ == 0, "pthread_key_create %s", ::strerror(code_)); (void)code_;
 #endif
 	}
@@ -65,31 +65,31 @@ public:
 	/// Destroy every thread's private copy.
 	~hxthread_local() {
 #if HX_USE_THREADS
-		pthread_key_delete(m_key_);
+		::pthread_key_delete(m_key_);
 #endif
 	}
 
 	/// Set the thread local value from `T`.
-	void operator=(const T_& local_) { *get_local_() = local_; }
+	void operator=(const T_& local_) { *(this->get_local_()) = local_; }
 
 	/// Cast the thread local value to `T`.
-	operator const T_&() const { return *get_local_(); }
-	operator T_&() { return *get_local_(); }
+	operator const T_&() const { return *(this->get_local_()); }
+	operator T_&() { return *(this->get_local_()); }
 
 	/// "address of" operator returns `T*`.
-	const T_* operator&() const { return get_local_(); }
-	T_* operator&() { return get_local_(); }
+	const T_* operator&() const { return this->get_local_(); }
+	T_* operator&() { return this->get_local_(); }
 
 private:
 	// This is a form of "mutable when const." A thread should not
 	// know or care when storage is allocated for it.
 #if HX_USE_THREADS
 	T_* get_local_() const {
-		T_* local_ = static_cast<T_*>(pthread_getspecific(m_key_));
+		T_* local_ = static_cast<T_*>(::pthread_getspecific(m_key_));
 		if(!local_) {
 			local_ = new T_(m_default_value_);
 			hxassertrelease(local_, "new T");
-			int code_ = pthread_setspecific(m_key_, local_);
+			int code_ = ::pthread_setspecific(m_key_, local_);
 			hxassertrelease(code_ == 0, "pthread_setspecific %s", ::strerror(code_)); (void)code_;
 		}
 		return local_;
@@ -109,7 +109,7 @@ private:
 	hxthread_local& operator=(const hxthread_local&) = delete;
 
 #if HX_USE_THREADS
-	pthread_key_t m_key_;
+	::pthread_key_t m_key_;
 #endif
 	T_ m_default_value_;
 };
@@ -154,7 +154,7 @@ public:
 	}
 
 	/// Returns a pointer to the native pthread mutex handle.
-	pthread_mutex_t* native_handle(void) { return &m_mutex_; }
+	::pthread_mutex_t* native_handle(void) { return &m_mutex_; }
 
 private:
 	// Deleted copy constructor.
@@ -162,7 +162,7 @@ private:
 	// Deleted copy assignment operator.
 	hxmutex& operator=(const hxmutex&) = delete;
 
-	pthread_mutex_t m_mutex_;
+	::pthread_mutex_t m_mutex_;
 };
 
 /// `hxunique_lock` - `std::unique_lock` style RAII-style unique lock for `hxmutex`.
@@ -174,13 +174,13 @@ public:
 	hxunique_lock(hxmutex& mtx_, bool defer_lock_=false)
 			: m_mutex_(mtx_), m_owns_(false) {
 		if(!defer_lock_) {
-			lock();
+			this->lock();
 		}
 	}
 	/// Unlocks the mutex if owned.
 	~hxunique_lock(void) {
 		if(m_owns_) {
-			unlock();
+			this->unlock();
 		}
 	}
 	/// Locks the mutex if not already locked.
@@ -241,7 +241,7 @@ public:
 	/// otherwise.
 	/// - `lock` : The unique lock to use for waiting.
 	bool wait(hxunique_lock& lock_) {
-		return wait(lock_.mutex());
+		return this->wait(lock_.mutex());
 	}
 
 	/// Waits until the predicate returns true.
@@ -250,7 +250,7 @@ public:
 	template<typename predicate_t_>
 	void wait(hxunique_lock& lock_, predicate_t_ pred_) {
 		while(!pred_()) {
-			wait(lock_);
+			this->wait(lock_);
 		}
 	}
 
@@ -269,7 +269,7 @@ public:
 	}
 
 	/// Returns a pointer to the native pthread condition variable handle.
-	pthread_cond_t* native_handle(void) { return &m_cond_; }
+	::pthread_cond_t* native_handle(void) { return &m_cond_; }
 
 private:
 	// Deleted copy constructor.
@@ -277,7 +277,7 @@ private:
 	// Deleted copy assignment operator.
 	hxcondition_variable& operator=(const hxcondition_variable&) = delete;
 
-	pthread_cond_t m_cond_;
+	::pthread_cond_t m_cond_;
 };
 
 /// `hxthread` - `std::thread` style thread wrapper for pthreads. Provides thread
@@ -353,7 +353,7 @@ private:
 	// Deleted copy assignment operator.
 	hxthread& operator=(const hxthread&) = delete;
 
-	pthread_t m_thread_;
+	::pthread_t m_thread_;
 	bool m_started_;
 	bool m_joined_;
 };

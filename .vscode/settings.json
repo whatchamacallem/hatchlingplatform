@@ -57,6 +57,7 @@
         "LDFLAGS",
         "libc",
         "libclang",
+        "LIBCXX",
         "libentanglement",
         "listsymbols",
         "lpthread",

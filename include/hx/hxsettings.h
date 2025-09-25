@@ -50,9 +50,9 @@
 #define HX_USE_THREADS 1
 #endif
 
-/// A freestanding implementation does not have the standard C++11 library.
-/// `HX_FREESTANDING` - `0` : _MSC_VER indicates a hosted environment.
-#define HX_FREESTANDING 0
+/// `HX_NO_LIBCXX`: 0 - The entire C++ standard library is present and there
+/// is an operating system.
+#define HX_NO_LIBCXX 0
 
 /// hxrestrict - A pointer attribute indicating that for the lifetime of that pointer, it
 /// will be the sole means of accessing the object(s) it points to.
@@ -88,15 +88,14 @@
 #endif
 
 #if defined(__GLIBCXX__) || defined(_LIBCPP_VERSION)
-/// `HX_FREESTANDING`: 0 - libstdc++/libc++ are present. This is a hosted
-/// environment. A "freestanding" implementation does not have the standard C++
-/// library and may not have a complete C library.
-#define HX_FREESTANDING 0
+/// `HX_NO_LIBCXX`: 0 - libstdc++/libc++ are present and there is an operating
+/// system.
+#define HX_NO_LIBCXX 0
 #else
-/// `HX_FREESTANDING`: 1 - Set to 1 when glibc is not present. A "freestanding"
-/// implementation does not have the standard C++ library and may not have a
-/// complete C library.
-#define HX_FREESTANDING 1
+/// `HX_NO_LIBCXX`: 1 - Set to 1 when libstdc++/libc++ are not present. The
+/// implementation is incompatible with the standard C++ library and may not
+/// have a complete C library or an operating system.
+#define HX_NO_LIBCXX 1
 #endif
 
 /// hxrestrict - A pointer attribute indicating that for the lifetime of that pointer, it

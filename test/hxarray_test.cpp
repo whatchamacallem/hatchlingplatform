@@ -7,7 +7,7 @@
 
 #include <limits.h>
 
-#if !HX_FREESTANDING
+#if !HX_NO_LIBCXX
 #include <utility>
 #endif
 
@@ -228,7 +228,7 @@ TEST_F(hxarray_test, resizing) {
 
 		hxarray<test_object> objs(12);
 		objs.reserve(10); // reserve less than is being used.
-		objs.assign(nums);
+		objs = nums;
 
 		// Use the 2 arg version to delete it.
 		objs.resize(3, test_object());
@@ -366,7 +366,20 @@ TEST_F(hxarray_test, insert) {
 }
 #endif
 
-#if !HX_FREESTANDING
+TEST_F(hxarray_test, c_initializer_list) {
+	int i0[] = { 2, 7 };
+	hxarray<int, 2> x(i0);
+	EXPECT_EQ(x[1], 7);
+
+	int i1[] = { 12, 17 };
+	hxarray<int> y(i1);
+	EXPECT_EQ(y[1], 17);
+
+	y = i0;
+	EXPECT_EQ(y[1], 7);
+}
+
+#if !HX_NO_LIBCXX
 TEST_F(hxarray_test, initializer_list) {
 	hxarray<int, 2> x = { 2, 7 };
 	EXPECT_EQ(x[1], 7);
