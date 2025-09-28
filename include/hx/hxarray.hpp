@@ -268,7 +268,7 @@ public:
 
 	/// Erases the element indicated.
 	/// - `pos` : Pointer to the element to erase.
-	void erase(T_* pos_) {
+	void erase(T_* pos_) hxattr_nonnull(2) {
 		hxassertmsg(pos_ >= this->data() && pos_ < m_end_, "invalid_iterator");
 		while((pos_ + 1) != m_end_) {
 			*pos_ = hxmove(*(pos_ + 1));
@@ -287,7 +287,7 @@ public:
 	/// Variant of erase() that moves the end element down to replace the erased
 	/// element. (Non-standard.)
 	/// - `pos` : Pointer to the element to erase.
-	void erase_unordered(T_* pos_) {
+	void erase_unordered(T_* pos_) hxattr_nonnull(2) {
 		hxassertmsg(pos_ >= this->data() && pos_ < m_end_, "invalid_iterator");
 		if(pos_ != --m_end_) {
 			*pos_ = hxmove(*m_end_);
@@ -355,7 +355,7 @@ public:
 	/// emplace_back_unconstructed for storing large objects.
 	/// - `pos` : Pointer to the location to insert the new element at.
 	/// - `t` : The new element.
-	void insert(T_* pos_, const T_& t_) {
+	void insert(T_* pos_, const T_& t_) hxattr_nonnull(2) {
 		hxassertmsg(pos_ >= this->data() && pos_ <= m_end_ && !this->full(), "invalid_insert");
 		if(pos_ == m_end_) {
 			// Single constructor call for last element.

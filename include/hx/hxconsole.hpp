@@ -95,12 +95,12 @@ private:
 
 /// `hxconsole_deregister` - Explicit de-registration of a console symbol.
 /// - `id` : Valid C identifier that identifies the variable.
-void hxconsole_deregister(const char* id_);
+void hxconsole_deregister(const char* id_) hxattr_nonnull(1);
 
 /// `hxconsole_exec_line` - Evaluates a console command to either call a function or
 /// set a variable. E.g.: "srand 77" or "a_variable 5"
 /// - `command` : A string executed by the console.
-bool hxconsole_exec_line(const char* command_);
+bool hxconsole_exec_line(const char* command_) hxattr_nonnull(1);
 
 /// `hxconsole_exec_file` - Executes a configuration file which is opened for reading.
 /// Ignores blank lines and comments starting with #.
@@ -109,7 +109,7 @@ bool hxconsole_exec_file(hxfile& file_);
 
 /// `hxconsole_exec_filename` - Opens a configuration file by name and executes it.
 /// - `filename` : A file containing commands.
-bool hxconsole_exec_filename(const char* filename_);
+bool hxconsole_exec_filename(const char* filename_) hxattr_nonnull(1);
 
 /// `hxconsole_help` - Logs all console symbols to the console log.
 bool hxconsole_help(void);

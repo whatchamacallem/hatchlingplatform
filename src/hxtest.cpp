@@ -46,6 +46,8 @@ hxfile& hxtest_::condition_check_(bool condition_, const char* file_, size_t lin
 		}
 
 		// prints full path error messages that can be clicked on in an ide.
+		m_current_test_->case_();
+		m_current_test_->suite_();
 		hxloghandler(hxloglevel_assert, "test_fail %s.%s", m_current_test_->suite_(), m_current_test_->case_());
 		hxloghandler(hxloglevel_assert, "test_fail_at %s(%zu): %s", file_, line_, message_);
 
@@ -74,14 +76,14 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 
 	hxinsertion_sort(m_test_cases_, m_test_cases_ + m_num_test_cases_, hxtest_case_sort_);
 
-	m_pass_count_ = m_fail_count_ = 0;
+	m_pass_count_ = m_fail_count_ = 0u;
 	hxlogconsole("[==========] Running tests: %s\n", (m_test_suite_filter_ ? m_test_suite_filter_ : "All"));
 	for(hxtest_case_interface_** it_ = m_test_cases_; it_ != (m_test_cases_ + m_num_test_cases_); ++it_) {
 		if(!m_test_suite_filter_ || ::strcmp(m_test_suite_filter_, (*it_)->suite_()) == 0) {
 			hxlogconsole("[ RUN      ] %s.%s\n", (*it_)->suite_(), (*it_)->case_());
 			m_current_test_ = *it_;
 			m_test_state_ = test_state_nothing_asserted_;
-			m_assert_fail_count_ = 0;
+			m_assert_fail_count_ = 0u;
 
 #ifdef __cpp_exceptions
 			try
@@ -111,20 +113,21 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 			}
 		}
 	}
+	m_current_test_ = hxnull;
 
 	hxlogconsole("[==========] skipped %zu tests. failed %zu assertions.\n",
 		m_num_test_cases_ - m_pass_count_ - m_fail_count_, m_assert_fail_count_);
 
 	hxwarnmsg(m_pass_count_ + m_fail_count_, "nothing_tested");
 
-	if(m_pass_count_ != 0 && m_fail_count_ == 0) {
+	if(m_pass_count_ != 0u && m_fail_count_ == 0u) {
 		// This is Google Test style.  If only it were green.
 		hxloghandler(hxloglevel_console, "[  PASSED  ] %zu test%s.\n", m_pass_count_,
-			((m_pass_count_ != 1) ? "s" : ""));
+			((m_pass_count_ != 1u) ? "s" : ""));
 	}
 	else {
 		hxloghandler(hxloglevel_console, "%zu FAILED TEST%s ❌\n", m_fail_count_,
-			m_fail_count_ == 1 ? "" : "S");
+			m_fail_count_ == 1u ? "" : "S");
 		// Count nothing tested as 1 failure.
 		m_fail_count_ = hxmax(m_fail_count_, (size_t)1u);
 	}

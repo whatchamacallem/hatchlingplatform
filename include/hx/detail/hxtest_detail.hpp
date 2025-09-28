@@ -43,12 +43,12 @@ public:
 	static hxtest_& dispatcher_(void);
 
 	// Called by global constructors.
-	void add_test_(hxtest_case_interface_* fn_);
+	void add_test_(hxtest_case_interface_* fn_) hxattr_nonnull(2);
 
 	// Assert callback used by macros. Returns equivalent of /dev/null on
 	// success and the system log otherwise.
 	hxfile& condition_check_(bool condition_, const char* file_, size_t line_,
-							 const char* message_, bool is_assert_);
+							 const char* message_, bool is_assert_) hxattr_nonnull(3,5);
 
 	// Run tests. test_suite_filter_ must be identical.
 	size_t run_all_tests_(const char* test_suite_filter_=hxnull);

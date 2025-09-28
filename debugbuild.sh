@@ -12,6 +12,15 @@ set -o errexit
 
 export POSIXLY_CORRECT=1
 
+# Usage: wait_or_exit <pid>...
+wait_or_exit() {
+    for pid in "$@"; do
+        if ! wait "$pid"; then
+            exit 1
+        fi
+    done
+}
+
 HX_RELEASE="-DHX_RELEASE=0"
 
 # Compiler optimization level. Allows a fast debug build.
@@ -26,20 +35,27 @@ HX_FLAGS="-m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always"
 # Build artifacts are not retained.
 rm -rf ./bin; mkdir ./bin && cd ./bin
 
-set -o xtrace
-
-clang $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
-	-std=c17 -c ../src/*.c ../test/*.c
+ccache clang $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
+	-std=c17 -c ../src/*.c ../test/*.c & pids="$!"
 
 # Make a pch just in case it helps.
-clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
+ccache clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
 	-std=c++20 -pthread -fno-exceptions -fno-rtti ../include/hx/hatchling_pch.hpp \
-	-o hatchling_pch.hpp.pch
+	-o hatchling_pch.hpp.pch & pids="$pids $!"
 
-clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
+wait_or_exit $pids
+
+pids=""
+for file in ../*/*.cpp; do
+	ccache clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
+		-std=c++20 -pthread -fno-exceptions -fno-rtti -include-pch hatchling_pch.hpp.pch \
+		-c $file & pids="$pids $!"
+done
+
+wait_or_exit $pids
+
+ccache clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
 	-std=c++20 -pthread -fno-exceptions -fno-rtti -include-pch hatchling_pch.hpp.pch \
-	../*/*.cpp *.o -lpthread -lstdc++ -lm -o hxtest
+	*.o -lpthread -lstdc++ -lm -o hxtest
 
-# turn off tracing silently and make sure the command returns 0.
-{ set +o xtrace; } 2> /dev/null
 echo 🐉🐉🐉

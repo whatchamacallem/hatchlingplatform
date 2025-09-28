@@ -43,7 +43,7 @@
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
-template<typename T_, typename less_t_>
+template<typename T_, typename less_t_> hxattr_nonnull(1,2)
 void hxinsertion_sort(T_* begin_, T_* end_, const less_t_& less_) {
 	// Address sanitizer: Avoids adding 1 to null iterators.
 	if(begin_ == end_) { return; }
@@ -68,7 +68,7 @@ void hxinsertion_sort(T_* begin_, T_* end_, const less_t_& less_) {
 /// uses `hxkey_less`.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
-template<typename T_>
+template<typename T_> hxattr_nonnull(1,2)
 void hxinsertion_sort(T_* begin_, T_* end_) {
 	hxinsertion_sort(begin_, end_, hxkey_less_function<T_, T_>());
 }
@@ -78,7 +78,7 @@ void hxinsertion_sort(T_* begin_, T_* end_) {
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
-template<typename T_, typename less_t_>
+template<typename T_, typename less_t_> hxattr_nonnull(1,2)
 void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
 	ptrdiff_t sz_ = end_ - begin_;
 	if(sz_ <= 1) {
@@ -118,7 +118,7 @@ void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
 /// `hxkey_less`.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
-template<typename T_>
+template<typename T_> hxattr_nonnull(1,2)
 void hxheapsort(T_* begin_, T_* end_) {
 	hxheapsort(begin_, end_, hxkey_less_function<T_, T_>());
 }
@@ -130,7 +130,7 @@ void hxheapsort(T_* begin_, T_* end_) {
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
-template<typename T_, typename less_t_>
+template<typename T_, typename less_t_> hxattr_nonnull(1,2)
 void hxsort(T_* begin_, T_* end_, const less_t_& less_) {
 	hxintro_sort_(begin_, end_, less_, 2u * hxlog2i(end_ - begin_));
 }
@@ -139,7 +139,7 @@ void hxsort(T_* begin_, T_* end_, const less_t_& less_) {
 /// This version is intended for sorting large numbers of small objects.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
-template<typename T_>
+template<typename T_> hxattr_nonnull(1,2)
 void hxsort(T_* begin_, T_* end_) {
 	hxintro_sort_(begin_, end_, hxkey_less_function<T_, T_>(), 2u * hxlog2i(end_ - begin_));
 }
@@ -153,7 +153,7 @@ void hxsort(T_* begin_, T_* end_) {
 /// - `end` : Pointer to one past the last element in the range to search.
 /// - `val` : The value to search for.
 /// - `less` : A key comparison functor definining a less-than ordering relationship. (Optional.)
-template<typename T_, typename less_t_>
+template<typename T_, typename less_t_> hxattr_nonnull(1,2)
 const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_, const less_t_& less_) {
 	// don't operate on null pointer args. unallocated containers have this.
 	if(begin_ == end_) { return hxnull; }
@@ -181,7 +181,7 @@ const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_, cons
 /// - `begin` : Pointer to the beginning of the range to search.
 /// - `end` : Pointer to one past the last element in the range to search.
 /// - `val` : The value to search for.
-template<typename T_>
+template<typename T_> hxattr_nonnull(1,2)
 const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_) {
 	return hxbinary_search(begin_, end_, val_, hxkey_less_function<T_, T_>());
 }
@@ -191,7 +191,7 @@ const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_) {
 /// - `end` : Pointer to one past the last element in the range to search.
 /// - `val` : The value to search for.
 /// - `less` : A key comparison functor definining a less-than ordering relationship. (Optional.)
-template<typename T_, typename less_t_>
+template<typename T_, typename less_t_> hxattr_nonnull(1,2)
 T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_, const less_t_& less_) {
 	return const_cast<T_*>(hxbinary_search(const_cast<const T_*>(begin_),
 		const_cast<const T_*>(end_), val_, less_));
@@ -201,7 +201,7 @@ T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_, const less_t_& less_) 
 /// - `begin` : Pointer to the beginning of the range to search.
 /// - `end` : Pointer to one past the last element in the range to search.
 /// - `val` : The value to search for.
-template<typename T_>
+template<typename T_> hxattr_nonnull(1,2)
 T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_) {
 	return const_cast<T_*>(hxbinary_search(const_cast<const T_*>(begin_),
 		const_cast<const T_*>(end_), val_, hxkey_less_function<T_, T_>()));

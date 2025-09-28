@@ -148,7 +148,7 @@ inline void InitGoogleTest(void) { }
 #define RUN_ALL_TESTS(...) hxtest_::dispatcher_().run_all_tests_(__VA_ARGS__)
 
 /// `void SUCCEED()` - Marks the current test as successful without any checks.
-#define SUCCEED() hxtest_::dispatcher_().condition_check_(true, __FILE__, __LINE__, hxnull, false)
+#define SUCCEED() hxtest_::dispatcher_().condition_check_(true, __FILE__, __LINE__, "SUCCEED()", false)
 
 /// `void FAIL()` - Marks the current test as failed.
 #define FAIL() hxtest_::dispatcher_().condition_check_(false, __FILE__, __LINE__, "FAIL()", false)

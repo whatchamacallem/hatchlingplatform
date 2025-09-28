@@ -64,6 +64,9 @@
 /// Ignored on Windows.
 #define hxattr_format_scanf(pos_, start_)
 
+/// Ignored on Windows.
+#define hxattr_nonnull(...)
+
 /// hxbreakpoint - A breakpoint that also works without the standard library.
 #define hxbreakpoint() (__debugbreak(),true)
 
@@ -109,6 +112,9 @@
 /// Indicates to gcc that a function uses scanf-style formatting so it can
 /// type-check the format string.
 #define hxattr_format_scanf(pos_, start_) __attribute__((format(scanf, pos_, start_)))
+
+/// Indicates to gcc that a function has args that should not be null.
+#define hxattr_nonnull(...)__attribute__((nonnull (__VA_ARGS__)))
 
 #if defined __has_builtin && __has_builtin(__builtin_debugtrap)
 /// `hxbreakpoint` - Can be conditionally evaluated with the `&&` and `||` operators.

@@ -16,7 +16,7 @@ struct hxsettings g_hxsettings;
 __attribute__((no_sanitize("address")))
 #endif
 void hxhex_dump(const void* address, size_t bytes, int pretty) {
-	if((HX_RELEASE) < 2 && address != hxnull) {
+	if((HX_RELEASE) < 2) {
 		bytes = (bytes + 15u) & ~(size_t)15; // round up to 16 bytes.
 		const uint8_t* addr = (const uint8_t*)address;
 		for(size_t i = 0; i < bytes;) {
@@ -44,7 +44,7 @@ void hxhex_dump(const void* address, size_t bytes, int pretty) {
 __attribute__((no_sanitize("address")))
 #endif
 void hxfloat_dump(const float* address, size_t count) {
-	if((HX_RELEASE) < 2 && address != hxnull) {
+	if((HX_RELEASE) < 2) {
 		for(size_t i = 0; i < count;) {
 			hxlogconsole("%08x: ", (unsigned int)(uintptr_t)address);
 			for(size_t maximum = 4; i < count && maximum--; i++) {
@@ -56,21 +56,17 @@ void hxfloat_dump(const float* address, size_t count) {
 }
 
 const char* hxbasename(const char* path) {
-	const char* result = path ? path : "(null)";
-	for(const char* it = result; *it != '\0'; ++it) {
+	for(const char* it = path; *it != '\0'; ++it) {
 		if(*it == '/' || *it == '\\') {
-			result = it + 1;
+			path = it + 1;
 		}
 	}
-	return result;
+	return path;
 }
 
 char* hxstring_duplicate(const char* string, enum hxsystem_allocator_t id) {
-	if(string) {
-		size_t len = strlen(string);
-		char* temp = (char*)hxmalloc_ext(len + 1, id, 0u);
-		memcpy(temp, string, len + 1);
-		return temp;
-	}
-	return hxnull;
+	size_t len = strlen(string);
+	char* temp = (char*)hxmalloc_ext(len + 1, id, 0u);
+	memcpy(temp, string, len + 1);
+	return temp;
 }

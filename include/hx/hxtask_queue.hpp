@@ -25,7 +25,7 @@ public:
 	/// Queue a task for later execution. Does not delete task after execution.
 	/// Thread safe and callable from running tasks.
 	/// - `task` : A pointer to the task to be enqueued for execution.
-	void enqueue(hxtask* task_);
+	void enqueue(hxtask* task_) hxattr_nonnull(2);
 
 	/// The thread calling `wait_for_all` will execute tasks as well. Do not call
 	/// from `hxtask::execute`.

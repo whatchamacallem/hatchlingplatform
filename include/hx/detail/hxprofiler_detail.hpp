@@ -54,7 +54,7 @@ public:
 	void start_();
 	void stop_();
 	void log_();
-	void write_to_chrome_tracing_(const char* filename);
+	void write_to_chrome_tracing_(const char* filename) hxattr_nonnull(2);
 
 	// For testing
 	size_t records_size_(void) { return m_records.size(); }
@@ -86,7 +86,7 @@ template<hxcycles_t min_cycles_=0u>
 class hxprofiler_scope_internal_ {
 public:
 	// See hxprofile_scope() below.
-	hxprofiler_scope_internal_(const char* label_string_literal_)
+	hxprofiler_scope_internal_(const char* label_string_literal_) hxattr_nonnull(2)
 		: m_label_(label_string_literal_)
 	{
 		// fastest not to check if the profiler is running.

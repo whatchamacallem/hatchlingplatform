@@ -5,10 +5,10 @@
 
 #include "../hxkey.hpp"
 
-template<typename T_, typename less_t_>
+template<typename T_, typename less_t_> hxattr_nonnull(1,2)
 void hxinsertion_sort(T_* begin_, T_* end_, const less_t_& less_);
 
-template<typename T_, typename less_t_>
+template<typename T_, typename less_t_> hxattr_nonnull(1,2)
 void hxheapsort(T_* begin_, T_* end_, const less_t_& less_);
 
 namespace hxdetail_ {
@@ -21,7 +21,7 @@ enum : ptrdiff_t { hxpartition_sort_cutoff_ = 32 };
 /// - `end` : Pointer to one past the last element in the heap.
 /// - `current` : Pointer to the current element being heapified.
 /// - `less` : Comparison functor.
-template<typename T_, typename less_t_>
+template<typename T_, typename less_t_> hxattr_nonnull(1,2,3)
 void hxheapsort_heapify_(T_* begin_, const T_* end_, T_* current_, const less_t_& less_) {
 	for(;;) {
 		hxassertmsg(begin_ <= current_ && current_ < end_, "invalid_iterator");
@@ -66,7 +66,7 @@ void hxheapsort_heapify_(T_* begin_, const T_* end_, T_* current_, const less_t_
 /// - `end` : Pointer to one past the last element in the heap.
 /// - `current` : Pointer to the current element being heapified.
 /// - `less` : Comparison functor.
-template<typename T_, typename less_t_>
+template<typename T_, typename less_t_> hxattr_nonnull(1,2,3)
 void hxheapsort_heapify_bottom_(T_* begin_, const T_* end_, T_* current_, const less_t_& less_) {
 	T_* left_  = begin_ + 2 * (current_ - begin_) + 1;
 	T_* right_ = left_ + 1;
@@ -98,7 +98,7 @@ void hxheapsort_heapify_bottom_(T_* begin_, const T_* end_, T_* current_, const 
 /// - `callback` : Callback functor matching `void callback(T* begin, T* end, const
 /// less_t& less, int depth)` for recursive sorting.
 /// - `depth` : Current recursion depth.
-template<typename T_, typename less_t_, typename sort_callback_t_>
+template<typename T_, typename less_t_, typename sort_callback_t_>  hxattr_nonnull(1,2)
 void hxpartition_sort_(	T_* begin_, T_* end_, const less_t_& less_,
 						const sort_callback_t_& sort_callback_, int depth_) {
 	hxassertmsg((end_ - begin_) > hxpartition_sort_cutoff_, "range_error Use hxinsertion_sort.");
@@ -191,7 +191,7 @@ void hxpartition_sort_(	T_* begin_, T_* end_, const less_t_& less_,
 /// - `end` : Pointer to one past the last element in the range.
 /// - `less` : Comparison functor.
 /// - `depth` : Current recursion depth remaining.
-template<typename T_, typename less_t_>
+template<typename T_, typename less_t_> hxattr_nonnull(1,2)
 void hxintro_sort_(T_* begin_, T_* end_, const less_t_& less_, int depth_) {
 	hxassertmsg(begin_ != hxnull && begin_ <= end_, "range_error hxsort");
 

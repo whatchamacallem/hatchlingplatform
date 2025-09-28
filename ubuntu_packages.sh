@@ -38,8 +38,8 @@ separator
 c=$(echo "sudo apt install -y                              \
 	clang         cmake         doxygen       g++          \
 	g++-multilib  gcc-multilib  gcovr         gdb          \
-	gdb-multiarch llvm          llvm-18       llvm-18-dev  \
-	musl          musl-dev      musl-tools                 \
+	gdb-multiarch libc++-dev    llvm          llvm-18      \
+	llvm-18-dev   musl          musl-dev      musl-tools   \
 " | tr -s '[:space:]' ' ')
 echo "\$ $c"
 eval "$c"

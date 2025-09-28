@@ -63,7 +63,7 @@ typedef unsigned int hxalignment_t;
 
 /// `HX_ALIGNMENT` - The default alignment allows for storing things like
 /// pointers. This alignment should work for most types.
-#define HX_ALIGNMENT (hxalignment_t)sizeof(size_t)
+#define HX_ALIGNMENT (hxalignment_t)alignof(size_t)
 
 /// hxsystem_allocator_t. (See hxmemory_manager.cpp)
 enum hxsystem_allocator_t {
@@ -97,14 +97,15 @@ void* hxnoexcept_unchecked hxmalloc_ext(size_t size_, enum hxsystem_allocator_t 
 
 /// `hxfree` - Frees memory previously allocated with hxmalloc or hxmalloc_ext.
 /// - `ptr` : Pointer to the memory to free.
-void hxnoexcept_unchecked hxfree(void* ptr_);
+void hxnoexcept_unchecked hxfree(void* ptr_) hxattr_nonnull(1);
 
 /// `hxstring_duplicate` - Allocates a copy of a string using the specified memory
 /// manager. Returns a pointer to the duplicated string.
 /// - `string` : The string to duplicate.
 /// - `allocator` : The memory manager ID to use for allocation. Defaults to
 ///   hxsystem_allocator_current in C++.
-char* hxnoexcept_unchecked hxstring_duplicate(const char* string_, enum hxsystem_allocator_t allocator_ /*=hxsystem_allocator_current*/);
+char* hxnoexcept_unchecked hxstring_duplicate(const char* string_,
+	enum hxsystem_allocator_t allocator_ /*=hxsystem_allocator_current*/) hxattr_nonnull(1);
 
 #if HX_CPLUSPLUS
 } // extern "C"

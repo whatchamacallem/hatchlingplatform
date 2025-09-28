@@ -45,7 +45,7 @@ public:
 	const char* get_label(void) const { return m_label_ ? m_label_ : "task"; }
 
 	/// Sets the label of the task.
-	/// - `x` : A constant string literal or null to set as the task label.
+	/// - `x` : A constant string literal or null.
 	void set_label(const char* x_) { m_label_ = x_; }
 
 	/// Sets the task queue which is to be the exclusive owner of the task.

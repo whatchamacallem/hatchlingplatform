@@ -20,13 +20,6 @@ TEST(hxmemory_manager_test_f, bytes) {
 	}
 }
 
-TEST(hxmemory_manager_test_f, string_duplicate_null) {
-	// duplicating a null string is null.
-	void* p = hxstring_duplicate(hxnull);
-	ASSERT_TRUE(p == hxnull);
-	hxfree(hxnull);
-}
-
 TEST(hxmemory_manager_test_f, string_duplicate) {
 	char* p = hxstring_duplicate("str");
 	ASSERT_TRUE(p != hxnull);

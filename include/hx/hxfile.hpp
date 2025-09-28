@@ -20,6 +20,7 @@ extern hxfile hxerr;
 extern hxfile hxdev_null;
 
 /// Equivalent to `std::endl` without the flush. Does not change per-platform.
+/// Non-empty POSIX text files must end with \n.
 #define hxendl "\n"
 
 /// `hxfile` - Single ownership C++ RAII abstraction for C-style `FILE*` I/O.
@@ -140,13 +141,13 @@ public:
 	/// buffer.
 	/// - `bytes` : Pointer to the buffer where the read bytes will be stored.
 	/// - `count` : Number of bytes to read from the file.
-	size_t read(void* bytes_, size_t count_);
+	size_t read(void* bytes_, size_t count_) hxattr_nonnull(2);
 
 	/// Writes a specified number of bytes from the provided buffer to the file.
 	/// Writing will be skipped when using hxdev_null.
 	/// - `bytes` : Pointer to the buffer containing the bytes to write.
 	/// - `count` : Number of bytes to write to the file.
-	size_t write(const void* bytes_, size_t count_);
+	size_t write(const void* bytes_, size_t count_) hxattr_nonnull(2);
 
 	/// Reads an `\n` or `EOF` terminated character sequence. Allowed to fail on
 	/// `EOF` without needing to be `hxfile::skip_asserts`. Automatically
@@ -161,7 +162,7 @@ public:
 	/// `EOF` without needing to be `hxfile::skip_asserts`.
 	/// - `buffer` : Pointer to a char array where the line will be stored.
 	/// - `buffer_size` : Size of the buffer array.
-	bool get_line(char* buffer_, int buffer_size_);
+	bool get_line(char* buffer_, int buffer_size_) hxattr_nonnull(2);
 
 	/// Writes a formatted UTF-8 string to the file. Uses printf conventions.
 	/// Formatting and writing will be skipped when using hxdev_null.

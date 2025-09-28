@@ -116,7 +116,7 @@ enum hxloglevel_t {
 	|| hxbreakpoint())
 
 /// Assert handler. Do not call directly, signature changes and then is removed.
-hxnoexcept_unchecked bool hxasserthandler(const char* file_, size_t line_);
+hxnoexcept_unchecked bool hxasserthandler(const char* file_, size_t line_) hxattr_nonnull(1);
 
 #else // HX_RELEASE >= 1
 #define hxlog(...) ((void)0)
@@ -191,24 +191,24 @@ hxnoexcept_unchecked void hxloghandler(enum hxloglevel_t level_, const char* for
 /// - `level` : The log level (e.g., `hxloglevel_log`, `hxloglevel_warning`).
 /// - `format` : A `printf`-style format string.
 /// - `args` : A `va_list` containing the arguments for the format string.
-hxnoexcept_unchecked void hxloghandler_v(enum hxloglevel_t level_, const char* format_, va_list args_);
+hxnoexcept_unchecked void hxloghandler_v(enum hxloglevel_t level_, const char* format_, va_list args_) hxattr_nonnull(2);
 
 /// `hxhex_dump` - Prints an array of bytes formatted in hexadecimal. Additional
 /// information provided when pretty is non-zero.
 /// - `address` : Pointer to the start of the byte array.
 /// - `bytes` : The number of bytes to print.
 /// - `pretty` : Set non-zero to include extended visualization.
-void hxhex_dump(const void* address_, size_t bytes_, int pretty_);
+void hxhex_dump(const void* address_, size_t bytes_, int pretty_) hxattr_nonnull(1);
 
 /// `hxfloat_dump` - Prints an array of floating point values.
 /// - `address` : Pointer to the start of the float array.
 /// - `floats` : The number of floats to print.
-void hxfloat_dump(const float* address_, size_t floats_);
+void hxfloat_dump(const float* address_, size_t floats_) hxattr_nonnull(1);
 
 /// `hxbasename` - Returns a pointer to those characters following the last `\` or
 /// `/` character or path if those are not present.
 /// - `path` : The file path as a null-terminated string.
-const char* hxbasename(const char* path_);
+const char* hxbasename(const char* path_) hxattr_nonnull(1);
 
 // ----------------------------------------------------------------------------
 // C++ Template Utility API

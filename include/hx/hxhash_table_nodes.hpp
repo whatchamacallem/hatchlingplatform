@@ -44,7 +44,7 @@ class hxhash_table_node_string_literal : public hxhash_table_set_node<const char
 public:
 	/// Constructor initializes the node with a string key and computes its hash.
 	/// - `k` : The string key to initialize the node with.
-	hxhash_table_node_string_literal(const char* k_)
+	 hxattr_nonnull(2) hxhash_table_node_string_literal(const char* k_)
 		: hxhash_table_set_node<const char*>(k_) { }
 };
 
