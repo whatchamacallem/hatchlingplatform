@@ -78,6 +78,11 @@ enum hxsystem_allocator_t {
 	hxsystem_allocator_current
 };
 
+/// `hxfree` - Frees memory previously allocated with hxmalloc or hxmalloc_ext.
+/// Freeing null pointers is allowed.
+/// - `ptr` : Pointer to the memory to free.
+void hxnoexcept_unchecked hxfree(void* ptr_) hxattr_hot;
+
 /// `hxmalloc` - Allocates memory of the specified size using the default memory
 /// manager. A C++ overload optionally provides the same arguments as hxmalloc_ext.
 /// Will not return on failure.
@@ -86,18 +91,15 @@ enum hxsystem_allocator_t {
 ///   hxsystem_allocator_current.)
 /// - `alignment`(C++ only): The alignment for the allocation. (Default
 ///   is HX_ALIGNMENT.)
-void* hxnoexcept_unchecked hxmalloc(size_t size_) hxattr_hot;
+void* hxnoexcept_unchecked hxmalloc(size_t size_) hxattr_allocator(hxfree) hxattr_hot;
 
 /// `hxmalloc_ext` - Allocates memory of the specified size with a specific memory
 /// manager and alignment. Will not return on failure.
 /// - `size` : The size of the memory to allocate.
 /// - `allocator` : The memory manager ID to use for allocation. (Default is hxsystem_allocator_current.)
 /// - `alignment` : The alignment for the allocation. (Default is HX_ALIGNMENT.)
-void* hxnoexcept_unchecked hxmalloc_ext(size_t size_, enum hxsystem_allocator_t allocator_, hxalignment_t alignment_/*=HX_ALIGNMENT*/) hxattr_hot;
-
-/// `hxfree` - Frees memory previously allocated with hxmalloc or hxmalloc_ext.
-/// - `ptr` : Pointer to the memory to free.
-void hxnoexcept_unchecked hxfree(void* ptr_) hxattr_nonnull(1) hxattr_hot;
+void* hxnoexcept_unchecked hxmalloc_ext(size_t size_, enum hxsystem_allocator_t allocator_,
+	hxalignment_t alignment_/*=HX_ALIGNMENT*/) hxattr_allocator(hxfree) hxattr_hot;
 
 /// `hxstring_duplicate` - Allocates a copy of a string using the specified memory
 /// manager. Returns a pointer to the duplicated string.
@@ -105,7 +107,8 @@ void hxnoexcept_unchecked hxfree(void* ptr_) hxattr_nonnull(1) hxattr_hot;
 /// - `allocator` : The memory manager ID to use for allocation. Defaults to
 ///   hxsystem_allocator_current in C++.
 char* hxnoexcept_unchecked hxstring_duplicate(const char* string_,
-	enum hxsystem_allocator_t allocator_ /*=hxsystem_allocator_current*/) hxattr_nonnull(1) hxattr_hot;
+	enum hxsystem_allocator_t allocator_ /*=hxsystem_allocator_current*/)
+		 hxattr_allocator(hxfree) hxattr_nonnull(1) hxattr_hot;
 
 #if HX_CPLUSPLUS
 } // extern "C"
@@ -174,16 +177,6 @@ void hxmemory_manager_shut_down(void) hxattr_cold;
 /// made by the memory manager.
 size_t hxmemory_manager_leak_count(void) hxattr_cold;
 
-/// `hxnew<T, allocator, align>(...)` - Allocates and constructs an object of type
-/// T using an optional memory allocator and alignment. Returns a pointer to the
-/// newly constructed object. Will not return on failure.
-/// - `allocator` : The memory manager ID to use for allocation. Defaults to hxsystem_allocator_current.
-/// - `align` : A mask of low bits to be zero'd out when allocating new pointers. Defaults to HX_ALIGNMENT.
-template <typename T_, hxsystem_allocator_t allocator_=hxsystem_allocator_current, hxalignment_t align_=HX_ALIGNMENT, typename... Args_>
-T_* hxnew(Args_&&... args_) noexcept {
-	return ::new(hxmalloc_ext(sizeof(T_), allocator_, align_)) T_(args_...);
-}
-
 /// `hxdelete` - Deletes an object of type T and frees its memory using the memory
 /// manager.
 /// - `t` : Pointer to the object to delete.
@@ -197,6 +190,16 @@ void hxdelete(T_* t_) {
 		}
 		hxfree(t_);
 	}
+}
+
+/// `hxnew<T, allocator, align>(...)` - Allocates and constructs an object of type
+/// T using an optional memory allocator and alignment. Returns a pointer to the
+/// newly constructed object. Will not return on failure.
+/// - `allocator` : The memory manager ID to use for allocation. Defaults to hxsystem_allocator_current.
+/// - `align` : A mask of low bits to be zero'd out when allocating new pointers. Defaults to HX_ALIGNMENT.
+template <typename T_, hxsystem_allocator_t allocator_=hxsystem_allocator_current, hxalignment_t align_=HX_ALIGNMENT, typename... Args_>
+T_* hxnew(Args_&&... args_) {
+	return ::new(hxmalloc_ext(sizeof(T_), allocator_, align_)) T_(args_...);
 }
 
 /// `hxdeleter` - A functor that deletes objects of type T using hxdelete.

@@ -80,6 +80,9 @@
 /// `_MSC_VER's` `nothrow` attribute.
 #define hxnoexcept_unchecked __declspec(nothrow)
 
+/// Ignored on Windows.
+#define hxattr_allocator(...) __attribute__((malloc(__VA_ARGS__)))
+
 #else
 // ----------------------------------------------------------------------------
 // Target settings for clang and gcc. Further compilers will require
@@ -141,7 +144,15 @@
 /// is undefined when violated.
 #define hxnoexcept_unchecked __attribute__((nothrow))
 
-#endif // target settings
+/// hxattr_allocator - Mark allocator/deallocator pairs. See the gcc manual.
+#if defined(__clang__)
+#define hxattr_allocator(...) __attribute__ ((returns_nonnull))
+#else
+/// hxattr_allocator - gcc only.
+#define hxattr_allocator(...) __attribute__((malloc(__VA_ARGS__)))  __attribute__ ((returns_nonnull))
+#endif
+
+#endif // target specific settings
 
 // ----------------------------------------------------------------------------
 // Target independent C++11/C++14 polyfill.
