@@ -11,26 +11,26 @@ HX_REGISTER_FILENAME_HASH
 #define HX_USE_STD_ALIGNED_ALLOC (HX_CPLUSPLUS >= 201703L && (HX_RELEASE) >= 1)
 
 #if HX_NO_LIBCXX
-void* operator new(size_t size) {
+hxattr_hot void* operator new(size_t size) {
 	void* ptr = ::malloc(size);
 	hxassertrelease(ptr, "malloc %zu", size);
 	return ptr;
 }
-void* operator new[](size_t size) {
+hxattr_hot void* operator new[](size_t size) {
 	void* ptr = ::malloc(size);
 	hxassertrelease(ptr, "malloc %zu", size);
 	return ptr;
 }
-void operator delete(void* ptr) noexcept {
+hxattr_hot void operator delete(void* ptr) noexcept {
 	::free(ptr);
 }
-void operator delete(void* ptr, size_t) noexcept {
+hxattr_hot void operator delete(void* ptr, size_t) noexcept {
 	::free(ptr);
 }
-void operator delete[](void* ptr) noexcept {
+hxattr_hot void operator delete[](void* ptr) noexcept {
 	::free(ptr);
 }
-void operator delete[](void* ptr, size_t) noexcept {
+hxattr_hot void operator delete[](void* ptr, size_t) noexcept {
 	::free(ptr);
 }
 #endif
@@ -38,7 +38,7 @@ void operator delete[](void* ptr, size_t) noexcept {
 // hxmalloc_checked. Always check malloc and halt on failure. This is extremely
 // important with hardware where 0 is a valid address and can be written to with
 // disastrous results.
-hxnoexcept_unchecked static void* hxmalloc_checked(size_t size) {
+hxattr_hot hxnoexcept_unchecked static void* hxmalloc_checked(size_t size) {
 	void* t = ::malloc(size);
 	hxassertrelease(t, "malloc %zu", size);
 #if (HX_RELEASE) >= 3
@@ -89,7 +89,7 @@ public:
 class hxsystem_allocator_base {
 public:
 	hxsystem_allocator_base() : m_label_(hxnull) { }
-	void* allocate(size_t size, hxalignment_t alignment) {
+	hxattr_hot void* allocate(size_t size, hxalignment_t alignment) {
 		return on_alloc(size, alignment);
 	}
 
@@ -117,7 +117,7 @@ private:
 // obtain required alignment. This allows tracking bytes allocated in debug.
 class hxsystem_allocator_os_heap : public hxsystem_allocator_base {
 public:
-	void construct(const char* label) {
+	hxattr_cold void construct(const char* label) {
 		m_label_ = label;
 		m_allocation_count = 0u;
 		m_bytes_allocated = 0u;
@@ -138,7 +138,7 @@ public:
 		(void)id; return m_high_water;
 	}
 
-	virtual void* on_alloc(size_t size, hxalignment_t alignment) override {
+	hxattr_hot virtual void* on_alloc(size_t size, hxalignment_t alignment) override {
 #if HX_USE_STD_ALIGNED_ALLOC
 		++m_allocation_count;
 
@@ -173,7 +173,7 @@ public:
 #endif
 	}
 
-	void on_free_non_virtual(void* ptr) {
+	hxattr_hot void on_free_non_virtual(void* ptr) {
 #if HX_USE_STD_ALIGNED_ALLOC
 		--m_allocation_count;
 		::free(ptr);
@@ -209,7 +209,7 @@ private:
 
 class hxsystem_allocator_stack : public hxsystem_allocator_base {
 public:
-	void construct(void* ptr, size_t size, const char* label) {
+	hxattr_cold void construct(void* ptr, size_t size, const char* label) {
 		m_label_ = label;
 
 		m_allocation_count = 0u;
@@ -239,13 +239,13 @@ public:
 		(void)id; return m_current - m_begin_;
 	}
 
-	void* release(void) {
+	hxattr_cold void* release(void) {
 		void* t = (void*)m_begin_;
 		m_begin_ = 0;
 		return t;
 	}
 
-	void* allocate_non_virtual(size_t size, hxalignment_t alignment) {
+	hxattr_hot void* allocate_non_virtual(size_t size, hxalignment_t alignment) {
 		--alignment; // use as a mask.
 		uintptr_t aligned = (m_current + alignment) & ~(uintptr_t)alignment;
 		if((aligned + size) > m_end_) {
@@ -257,7 +257,7 @@ public:
 		return (void*)aligned;
 	}
 
-	void on_free_non_virtual(void* ptr) {
+	hxattr_hot void on_free_non_virtual(void* ptr) {
 		hxassertmsg(m_allocation_count > 0 && (uintptr_t)ptr >= m_begin_
 			&& (uintptr_t)ptr < m_current, "bad_free %s", m_label_);
 		--m_allocation_count; (void)ptr;
@@ -265,7 +265,7 @@ public:
 	}
 
 protected:
-	virtual void* on_alloc(size_t size, hxalignment_t alignment) override {
+	hxattr_hot virtual void* on_alloc(size_t size, hxalignment_t alignment) override {
 		return allocate_non_virtual(size, alignment);
 	}
 
@@ -281,12 +281,12 @@ protected:
 
 class hxsystem_allocator_temp_stack : public hxsystem_allocator_stack {
 public:
-	void construct(void* ptr, size_t size, const char* label) {
+	hxattr_cold void construct(void* ptr, size_t size, const char* label) {
 		hxsystem_allocator_stack::construct(ptr, size, label);
 		m_high_water = 0u;
 	}
 
-	virtual void end_allocation_scope(hxsystem_allocator_scope* scope,
+	hxattr_hot virtual void end_allocation_scope(hxsystem_allocator_scope* scope,
 			hxsystem_allocator_t old_id) override {
 		(void)old_id;
 		hxassertmsg(m_allocation_count <= scope->get_previous_allocation_count(),
@@ -302,7 +302,7 @@ public:
 		m_current = previous_current;
 	}
 
-	virtual size_t get_high_water(hxsystem_allocator_t id) override {
+	hxattr_hot virtual size_t get_high_water(hxsystem_allocator_t id) override {
 		(void)id;
 		m_high_water = hxmax(m_high_water, m_current);
 		return m_high_water - m_begin_;
@@ -317,22 +317,22 @@ protected:
 
 class hxmemory_manager {
 public:
-	void construct();
-	void destruct();
-	size_t leak_count();
+	hxattr_cold void construct();
+	hxattr_cold void destruct();
+	hxattr_cold size_t leak_count();
 
-	hxsystem_allocator_t begin_allocation_scope(hxsystem_allocator_scope* scope,
+	hxattr_hot hxsystem_allocator_t begin_allocation_scope(hxsystem_allocator_scope* scope,
 		hxsystem_allocator_t new_id);
-	void end_allocation_scope(hxsystem_allocator_scope* scope,
+	hxattr_hot void end_allocation_scope(hxsystem_allocator_scope* scope,
 		hxsystem_allocator_t previous_id);
 
-	hxsystem_allocator_base& get_allocator(hxsystem_allocator_t id) {
+	hxattr_hot hxsystem_allocator_base& get_allocator(hxsystem_allocator_t id) {
 		hxassertmsg(id >= 0 && id < hxsystem_allocator_current, "invalid_parameter %d", (int)id);
 		return *m_memory_allocators[id];
 	}
 
-	void* allocate(size_t size, hxsystem_allocator_t id, hxalignment_t alignment);
-	void free(void* ptr);
+	hxattr_hot void* allocate(size_t size, hxsystem_allocator_t id, hxalignment_t alignment);
+	hxattr_hot void free(void* ptr);
 
 private:
 	friend class hxsystem_allocator_scope;

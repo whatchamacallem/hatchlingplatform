@@ -86,18 +86,18 @@ enum hxsystem_allocator_t {
 ///   hxsystem_allocator_current.)
 /// - `alignment`(C++ only): The alignment for the allocation. (Default
 ///   is HX_ALIGNMENT.)
-void* hxnoexcept_unchecked hxmalloc(size_t size_);
+void* hxnoexcept_unchecked hxmalloc(size_t size_) hxattr_hot;
 
 /// `hxmalloc_ext` - Allocates memory of the specified size with a specific memory
 /// manager and alignment. Will not return on failure.
 /// - `size` : The size of the memory to allocate.
 /// - `allocator` : The memory manager ID to use for allocation. (Default is hxsystem_allocator_current.)
 /// - `alignment` : The alignment for the allocation. (Default is HX_ALIGNMENT.)
-void* hxnoexcept_unchecked hxmalloc_ext(size_t size_, enum hxsystem_allocator_t allocator_, hxalignment_t alignment_/*=HX_ALIGNMENT*/);
+void* hxnoexcept_unchecked hxmalloc_ext(size_t size_, enum hxsystem_allocator_t allocator_, hxalignment_t alignment_/*=HX_ALIGNMENT*/) hxattr_hot;
 
 /// `hxfree` - Frees memory previously allocated with hxmalloc or hxmalloc_ext.
 /// - `ptr` : Pointer to the memory to free.
-void hxnoexcept_unchecked hxfree(void* ptr_) hxattr_nonnull(1);
+void hxnoexcept_unchecked hxfree(void* ptr_) hxattr_nonnull(1) hxattr_hot;
 
 /// `hxstring_duplicate` - Allocates a copy of a string using the specified memory
 /// manager. Returns a pointer to the duplicated string.
@@ -105,7 +105,7 @@ void hxnoexcept_unchecked hxfree(void* ptr_) hxattr_nonnull(1);
 /// - `allocator` : The memory manager ID to use for allocation. Defaults to
 ///   hxsystem_allocator_current in C++.
 char* hxnoexcept_unchecked hxstring_duplicate(const char* string_,
-	enum hxsystem_allocator_t allocator_ /*=hxsystem_allocator_current*/) hxattr_nonnull(1);
+	enum hxsystem_allocator_t allocator_ /*=hxsystem_allocator_current*/) hxattr_nonnull(1) hxattr_hot;
 
 #if HX_CPLUSPLUS
 } // extern "C"
@@ -164,15 +164,15 @@ private:
 
 /// `hxmemory_manager_init` - Initializes the memory manager. Must be called before
 /// using any memory manager functions.
-void hxmemory_manager_init(void);
+void hxmemory_manager_init(void) hxattr_cold;
 
 /// `hxmemory_manager_shut_down` - Shuts down the memory manager. Frees any remaining
 /// resources.
-void hxmemory_manager_shut_down(void);
+void hxmemory_manager_shut_down(void) hxattr_cold;
 
 /// `hxmemory_manager_leak_count` - Returns the total number of allocations outstanding
 /// made by the memory manager.
-size_t hxmemory_manager_leak_count(void);
+size_t hxmemory_manager_leak_count(void) hxattr_cold;
 
 /// `hxnew<T, allocator, align>(...)` - Allocates and constructs an object of type
 /// T using an optional memory allocator and alignment. Returns a pointer to the

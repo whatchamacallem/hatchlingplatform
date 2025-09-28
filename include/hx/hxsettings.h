@@ -59,6 +59,12 @@
 #define hxrestrict __restrict
 
 /// Ignored on Windows.
+#define hxattr_hot
+
+/// Ignored on Windows.
+#define hxattr_cold
+
+/// Ignored on Windows.
 #define hxattr_format_printf(pos_, start_)
 
 /// Ignored on Windows.
@@ -104,6 +110,12 @@
 /// hxrestrict - A pointer attribute indicating that for the lifetime of that pointer, it
 /// will be the sole means of accessing the object(s) it points to.
 #define hxrestrict __restrict
+
+/// hxattr_hot - Optimize more aggressively.
+#define hxattr_hot __attribute__((hot))
+
+/// hxattr_cold - Optimize for size.
+#define hxattr_cold __attribute__((cold))
 
 /// Indicates to gcc that a function uses printf-style formatting so it can
 /// type-check the format string.

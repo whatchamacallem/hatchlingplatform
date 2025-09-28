@@ -37,7 +37,7 @@ extern hxfile hxdev_null;
 /// `with open(filename, mode) as f:`.
 ///
 /// ```cpp
-/// if(hxfile f=hxfile(hxfile::in|hxfile::skip_asserts, "pkg%d", i)) {
+/// if(hxfile f=hxfile(hxfile::in|hxfile::skip_asserts, "pkg%d.bin", i)) {
 ///   f => manifest; // binary read.
 ///   // ...
 /// }
@@ -141,13 +141,13 @@ public:
 	/// buffer.
 	/// - `bytes` : Pointer to the buffer where the read bytes will be stored.
 	/// - `count` : Number of bytes to read from the file.
-	size_t read(void* bytes_, size_t count_) hxattr_nonnull(2);
+	size_t read(void* bytes_, size_t count_) hxattr_nonnull(2) hxattr_hot;
 
 	/// Writes a specified number of bytes from the provided buffer to the file.
 	/// Writing will be skipped when using hxdev_null.
 	/// - `bytes` : Pointer to the buffer containing the bytes to write.
 	/// - `count` : Number of bytes to write to the file.
-	size_t write(const void* bytes_, size_t count_) hxattr_nonnull(2);
+	size_t write(const void* bytes_, size_t count_) hxattr_nonnull(2) hxattr_hot;
 
 	/// Reads an `\n` or `EOF` terminated character sequence. Allowed to fail on
 	/// `EOF` without needing to be `hxfile::skip_asserts`. Automatically
@@ -162,20 +162,20 @@ public:
 	/// `EOF` without needing to be `hxfile::skip_asserts`.
 	/// - `buffer` : Pointer to a char array where the line will be stored.
 	/// - `buffer_size` : Size of the buffer array.
-	bool get_line(char* buffer_, int buffer_size_) hxattr_nonnull(2);
+	bool get_line(char* buffer_, int buffer_size_) hxattr_nonnull(2) hxattr_hot;
 
 	/// Writes a formatted UTF-8 string to the file. Uses printf conventions.
 	/// Formatting and writing will be skipped when using hxdev_null.
 	/// - `format` : Format string, similar to printf.
 	/// - `...` Additional arguments for the format string.
-	bool print(const char* format_, ...) hxattr_format_printf(2, 3);
+	bool print(const char* format_, ...) hxattr_format_printf(2, 3) hxattr_hot;
 
 	/// Reads a formatted UTF-8 string from the file. Uses scanf conventions.
 	/// Returns same as scanf. Use hxfile::skip_asserts to read until EOF.
 	/// Parse errors will set `good` to false.
 	/// - `format` : Format string, similar to scanf.
 	/// - `...` Additional arguments for the format string.
-	int scan(const char* format_, ...) hxattr_format_scanf(2, 3);
+	int scan(const char* format_, ...) hxattr_format_scanf(2, 3) hxattr_hot;
 
 	/// Reads a single unformatted native endian object from the file.
 	/// - `t` : Reference to the object where the data will be stored.

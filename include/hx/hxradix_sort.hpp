@@ -31,7 +31,7 @@ public:
 	/// Sorts the internal array using the provided temporary memory allocator
 	/// to store histograms.
 	/// - `temp_memory` : A hxsystem_allocator_t id.
-	void sort(hxsystem_allocator_t temp_memory);
+	void sort(hxsystem_allocator_t temp_memory) hxattr_hot;
 
 protected:
 	/// \cond HIDDEN

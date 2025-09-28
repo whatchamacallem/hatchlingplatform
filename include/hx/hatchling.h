@@ -168,7 +168,7 @@ hxnoexcept_unchecked [[noreturn]] void hxasserthandler(hxhash_t file_, size_t li
 #endif
 
 /// `hxinit_internal` - Use `hxinit` instead. It checks `g_hxisinit`.
-void hxinit_internal(void);
+void hxinit_internal(void) hxattr_cold;
 
 /// `g_hxisinit` - Set to true by `hxinit`.
 extern bool g_hxisinit;
@@ -177,7 +177,7 @@ extern bool g_hxisinit;
 /// platform and confirms all memory allocations have been released. `HX_RELEASE
 /// < 3`. Does not clear `g_hxisinit`, shutdown is final. Logging and asserts
 /// are unaffected.
-void hxshutdown(void);
+void hxshutdown(void) hxattr_cold;
 
 /// `hxloghandler` - Enters formatted messages in the system log. This is the
 /// only access to logging when `HX_RELEASE > 2`.
@@ -198,12 +198,12 @@ hxnoexcept_unchecked void hxloghandler_v(enum hxloglevel_t level_, const char* f
 /// - `address` : Pointer to the start of the byte array.
 /// - `bytes` : The number of bytes to print.
 /// - `pretty` : Set non-zero to include extended visualization.
-void hxhex_dump(const void* address_, size_t bytes_, int pretty_) hxattr_nonnull(1);
+void hxhex_dump(const void* address_, size_t bytes_, int pretty_) hxattr_nonnull(1) hxattr_cold;
 
 /// `hxfloat_dump` - Prints an array of floating point values.
 /// - `address` : Pointer to the start of the float array.
 /// - `floats` : The number of floats to print.
-void hxfloat_dump(const float* address_, size_t floats_) hxattr_nonnull(1);
+void hxfloat_dump(const float* address_, size_t floats_) hxattr_nonnull(1) hxattr_cold;
 
 /// `hxbasename` - Returns a pointer to those characters following the last `\` or
 /// `/` character or path if those are not present.

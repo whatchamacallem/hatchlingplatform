@@ -18,13 +18,13 @@ __attribute__((no_sanitize("address")))
 void hxhex_dump(const void* address, size_t bytes, int pretty) {
 	if((HX_RELEASE) < 2) {
 		bytes = (bytes + 15u) & ~(size_t)15; // round up to 16 bytes.
-		const uint8_t* addr = (const uint8_t*)address;
+		const volatile uint8_t* addr = (const uint8_t*)address;
 		for(size_t i = 0; i < bytes;) {
 			if(pretty) {
 				// Adjust the number of leading zeros for pointers to match uintptr_t.
 				hxlogconsole("%0*zx: ", (int)sizeof(uintptr_t), (size_t)addr);
 			}
-			const uint8_t* str = addr;
+			const volatile uint8_t* str = addr;
 			for(size_t maximum = 4; i < bytes && maximum--; i += 4) {
 				hxlogconsole("%02x%02x%02x%02x ", addr[0], addr[1], addr[2], addr[3]);
 				addr += 4;
