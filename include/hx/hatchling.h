@@ -37,10 +37,10 @@
 
 /// `HATCHLING_VER` - Two digit major, minor and patch versions. Odd numbered
 /// minor versions are development branches. Yes, this is actually that old.
-#define HATCHLING_VER 31000l
+#define HATCHLING_VER 31100l
 /// `HATCHLING_TAG` - Major, minor and patch version tag name. Odd numbered
 /// minor versions are development branches and their tags end in `-dev`.
-#define HATCHLING_TAG "v3.10.0"
+#define HATCHLING_TAG "v3.11.0-dev"
 
 #include "hxsettings.h"
 #include "hxmemory_manager.h"
