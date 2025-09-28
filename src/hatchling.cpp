@@ -197,7 +197,7 @@ void hxinit_internal(void) {
 }
 
 extern "C"
-hxnoexcept_unchecked void hxloghandler(hxloglevel_t level, const char* format, ...) {
+hxattr_noexcept void hxloghandler(hxloglevel_t level, const char* format, ...) {
 	va_list args;
 	va_start(args, format);
 	hxloghandler_v(level, format, args);
@@ -205,7 +205,7 @@ hxnoexcept_unchecked void hxloghandler(hxloglevel_t level, const char* format, .
 }
 
 extern "C"
-hxnoexcept_unchecked void hxloghandler_v(hxloglevel_t level, const char* format, va_list args) {
+hxattr_noexcept void hxloghandler_v(hxloglevel_t level, const char* format, va_list args) {
 	if(g_hxisinit && g_hxsettings.log_level > level) {
 		return;
 	}
@@ -243,7 +243,7 @@ void hxshutdown(void) {
 
 #if (HX_RELEASE) == 0
 extern "C"
-hxnoexcept_unchecked bool hxasserthandler(const char* file, size_t line) {
+hxattr_noexcept bool hxasserthandler(const char* file, size_t line) {
 	const char* f = hxbasename(file);
 	if(g_hxisinit && g_hxsettings.asserts_to_be_skipped > 0) {
 		--g_hxsettings.asserts_to_be_skipped;
@@ -259,7 +259,7 @@ hxnoexcept_unchecked bool hxasserthandler(const char* file, size_t line) {
 }
 #else
 extern "C"
-hxnoexcept_unchecked hxattr_noreturn void hxasserthandler(hxhash_t file, size_t line) {
+hxattr_noexcept hxattr_noreturn void hxasserthandler(hxhash_t file, size_t line) {
 	hxloghandler(hxloglevel_assert, "exit file %08zx line %zu\n", (size_t)file, line);
 	_Exit(EXIT_FAILURE);
 }

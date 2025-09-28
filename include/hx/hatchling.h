@@ -116,13 +116,13 @@ enum hxloglevel_t {
 	|| hxbreakpoint())
 
 /// Assert handler. Do not call directly, signature changes and then is removed.
-hxnoexcept_unchecked bool hxasserthandler(const char* file_, size_t line_) hxattr_nonnull(1);
+hxattr_noexcept bool hxasserthandler(const char* file_, size_t line_) hxattr_nonnull(1);
 
 #else // HX_RELEASE >= 1
 #define hxlog(...) ((void)0)
 #define hxassertmsg(x_, ...) ((void)0)
 #define hxassert(x_) ((void)0)
-hxnoexcept_unchecked void hxasserthandler(hxhash_t file_, size_t line_) hxattr_noreturn;
+hxattr_noexcept void hxasserthandler(hxhash_t file_, size_t line_) hxattr_noreturn;
 #endif
 
 #if (HX_RELEASE) <= 1
@@ -184,14 +184,14 @@ void hxshutdown(void) hxattr_cold;
 /// - `level` : The log level (e.g., `hxloglevel_log`, `hxloglevel_warning`).
 /// - `format` : A `printf`-style format string.
 /// - `...` Additional arguments for the format string.
-hxnoexcept_unchecked void hxloghandler(enum hxloglevel_t level_, const char* format_, ...) hxattr_format_printf(2, 3);
+hxattr_noexcept void hxloghandler(enum hxloglevel_t level_, const char* format_, ...) hxattr_format_printf(2, 3);
 
 /// `hxloghandler_v` - A `va_list` version of `hxloghandler`. This is the only
 /// access to logging when `HX_RELEASE > 2`.
 /// - `level` : The log level (e.g., `hxloglevel_log`, `hxloglevel_warning`).
 /// - `format` : A `printf`-style format string.
 /// - `args` : A `va_list` containing the arguments for the format string.
-hxnoexcept_unchecked void hxloghandler_v(enum hxloglevel_t level_, const char* format_, va_list args_) hxattr_nonnull(2);
+hxattr_noexcept void hxloghandler_v(enum hxloglevel_t level_, const char* format_, va_list args_) hxattr_nonnull(2);
 
 /// `hxhex_dump` - Prints an array of bytes formatted in hexadecimal. Additional
 /// information provided when pretty is non-zero.

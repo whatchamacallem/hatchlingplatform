@@ -38,7 +38,7 @@ hxattr_hot void operator delete[](void* ptr, size_t) noexcept {
 // hxmalloc_checked. Always check malloc and halt on failure. This is extremely
 // important with hardware where 0 is a valid address and can be written to with
 // disastrous results.
-hxattr_hot hxnoexcept_unchecked static void* hxmalloc_checked(size_t size) {
+hxattr_hot hxattr_noexcept static void* hxmalloc_checked(size_t size) {
 	void* t = ::malloc(size);
 	hxassertrelease(t, "malloc %zu", size);
 #if (HX_RELEASE) >= 3
@@ -464,7 +464,7 @@ using namespace hxdetail_;
 // ----------------------------------------------------------------------------
 // hxsystem_allocator_scope
 
-hxnoexcept_unchecked hxsystem_allocator_scope::hxsystem_allocator_scope(hxsystem_allocator_t id)
+hxattr_noexcept hxsystem_allocator_scope::hxsystem_allocator_scope(hxsystem_allocator_t id)
 {
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 
@@ -476,7 +476,7 @@ hxnoexcept_unchecked hxsystem_allocator_scope::hxsystem_allocator_scope(hxsystem
 	m_previous_bytes_allocated_ = alignment.get_bytes_allocated(id);
 }
 
-hxnoexcept_unchecked hxsystem_allocator_scope::~hxsystem_allocator_scope(void) {
+hxattr_noexcept hxsystem_allocator_scope::~hxsystem_allocator_scope(void) {
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 	s_hxmemory_manager->end_allocation_scope(this, m_previous_allocator_);
 }
@@ -507,7 +507,7 @@ size_t hxsystem_allocator_scope::get_scope_bytes_allocated(void) const {
 // C API
 
 extern "C"
-hxnoexcept_unchecked void* hxmalloc(size_t size) {
+hxattr_noexcept void* hxmalloc(size_t size) {
 	hxinit();
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 	void* ptr = s_hxmemory_manager->allocate(size, hxsystem_allocator_current, HX_ALIGNMENT);
@@ -518,7 +518,7 @@ hxnoexcept_unchecked void* hxmalloc(size_t size) {
 }
 
 extern "C"
-hxnoexcept_unchecked void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, hxalignment_t alignment) {
+hxattr_noexcept void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, hxalignment_t alignment) {
 	hxinit();
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 	void* ptr = s_hxmemory_manager->allocate(size, (hxsystem_allocator_t)id, alignment);
@@ -529,7 +529,7 @@ hxnoexcept_unchecked void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, hx
 }
 
 extern "C"
-hxnoexcept_unchecked void hxfree(void *ptr) {
+hxattr_noexcept void hxfree(void *ptr) {
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 
 	// Nothing allocated from the OS memory manager can be freed here.  Not unless
@@ -569,19 +569,19 @@ size_t hxmemory_manager_leak_count(void) {
 #else // HX_MEMORY_MANAGER_DISABLE
 
 extern "C"
-hxnoexcept_unchecked void* hxmalloc(size_t size) {
+hxattr_noexcept void* hxmalloc(size_t size) {
 	return hxmalloc_checked(size);
 }
 
 // No support for alignment when disabled. This might make sense for WASM.
 extern "C"
-hxnoexcept_unchecked void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, hxalignment_t alignment) {
+hxattr_noexcept void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, hxalignment_t alignment) {
 	(void)id; (void)alignment;
 	return hxmalloc_checked(size);
 }
 
 extern "C"
-hxnoexcept_unchecked void hxfree(void *ptr) {
+hxattr_noexcept void hxfree(void *ptr) {
 	::free(ptr);
 }
 
@@ -591,14 +591,14 @@ void hxmemory_manager_shut_down(void) { }
 
 size_t hxmemory_manager_leak_count(void) { return 0; }
 
-hxnoexcept_unchecked hxsystem_allocator_scope::hxsystem_allocator_scope(hxsystem_allocator_t id)
+hxattr_noexcept hxsystem_allocator_scope::hxsystem_allocator_scope(hxsystem_allocator_t id)
 {
 	(void)id;
 	m_previous_allocation_count_ = 0;
 	m_previous_bytes_allocated_ = 0;
 }
 
-hxnoexcept_unchecked hxsystem_allocator_scope::~hxsystem_allocator_scope(void) { }
+hxattr_noexcept hxsystem_allocator_scope::~hxsystem_allocator_scope(void) { }
 
 size_t hxsystem_allocator_scope::get_total_allocation_count(void) const { return 0; }
 

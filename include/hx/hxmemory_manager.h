@@ -81,7 +81,7 @@ enum hxsystem_allocator_t {
 /// `hxfree` - Frees memory previously allocated with hxmalloc or hxmalloc_ext.
 /// Freeing null pointers is allowed.
 /// - `ptr` : Pointer to the memory to free.
-void hxnoexcept_unchecked hxfree(void* ptr_) hxattr_hot;
+void hxattr_noexcept hxfree(void* ptr_) hxattr_hot;
 
 /// `hxmalloc` - Allocates memory of the specified size using the default memory
 /// manager. A C++ overload optionally provides the same arguments as hxmalloc_ext.
@@ -91,14 +91,14 @@ void hxnoexcept_unchecked hxfree(void* ptr_) hxattr_hot;
 ///   hxsystem_allocator_current.)
 /// - `alignment`(C++ only): The alignment for the allocation. (Default
 ///   is HX_ALIGNMENT.)
-void* hxnoexcept_unchecked hxmalloc(size_t size_) hxattr_allocator(hxfree) hxattr_hot;
+void* hxattr_noexcept hxmalloc(size_t size_) hxattr_allocator(hxfree) hxattr_hot;
 
 /// `hxmalloc_ext` - Allocates memory of the specified size with a specific memory
 /// manager and alignment. Will not return on failure.
 /// - `size` : The size of the memory to allocate.
 /// - `allocator` : The memory manager ID to use for allocation. (Default is hxsystem_allocator_current.)
 /// - `alignment` : The alignment for the allocation. (Default is HX_ALIGNMENT.)
-void* hxnoexcept_unchecked hxmalloc_ext(size_t size_, enum hxsystem_allocator_t allocator_,
+void* hxattr_noexcept hxmalloc_ext(size_t size_, enum hxsystem_allocator_t allocator_,
 	hxalignment_t alignment_/*=HX_ALIGNMENT*/) hxattr_allocator(hxfree) hxattr_hot;
 
 /// `hxstring_duplicate` - Allocates a copy of a string using the specified memory
@@ -106,7 +106,7 @@ void* hxnoexcept_unchecked hxmalloc_ext(size_t size_, enum hxsystem_allocator_t 
 /// - `string` : The string to duplicate.
 /// - `allocator` : The memory manager ID to use for allocation. Defaults to
 ///   hxsystem_allocator_current in C++.
-char* hxnoexcept_unchecked hxstring_duplicate(const char* string_,
+char* hxattr_noexcept hxstring_duplicate(const char* string_,
 	enum hxsystem_allocator_t allocator_ /*=hxsystem_allocator_current*/)
 		 hxattr_allocator(hxfree) hxattr_nonnull(1) hxattr_hot;
 
@@ -129,10 +129,10 @@ class hxsystem_allocator_scope
 public:
 	/// `hxsystem_allocator_scope` - Constructor: Sets the current memory allocator to the specified ID.
 	/// - `allocator` : The memory manager ID to set for this scope.
-	hxnoexcept_unchecked hxsystem_allocator_scope(hxsystem_allocator_t allocator_);
+	hxattr_noexcept hxsystem_allocator_scope(hxsystem_allocator_t allocator_);
 
 	/// Destructor restores the previous memory manager allocator ID.
-	hxnoexcept_unchecked ~hxsystem_allocator_scope(void);
+	hxattr_noexcept ~hxsystem_allocator_scope(void);
 
 	/// Gets the total number of allocations made by the memory allocator.
 	size_t get_total_allocation_count(void) const;

@@ -54,6 +54,9 @@
 /// is an operating system.
 #define HX_NO_LIBCXX 0
 
+/// hxbreakpoint - A breakpoint that also works without the standard library.
+#define hxbreakpoint() (__debugbreak(),true)
+
 /// hxrestrict - A pointer attribute indicating that for the lifetime of that pointer, it
 /// will be the sole means of accessing the object(s) it points to.
 #define hxrestrict __restrict
@@ -73,12 +76,9 @@
 /// Ignored on Windows.
 #define hxattr_nonnull(...)
 
-/// hxbreakpoint - A breakpoint that also works without the standard library.
-#define hxbreakpoint() (__debugbreak(),true)
-
-/// Unlike noexcept this is undefined when violated. `hxnoexcept_unchecked` -
+/// Unlike noexcept this is undefined when violated. `hxattr_noexcept` -
 /// `_MSC_VER's` `nothrow` attribute.
-#define hxnoexcept_unchecked __declspec(nothrow)
+#define hxattr_noexcept __declspec(nothrow)
 
 /// Ignored on Windows.
 #define hxattr_allocator(...)
@@ -113,6 +113,15 @@
 #define HX_NO_LIBCXX 1
 #endif
 
+#if defined __has_builtin && __has_builtin(__builtin_debugtrap)
+/// `hxbreakpoint` - Can be conditionally evaluated with the `&&` and `||` operators.
+/// Uses intrinsics when available. (E.g. clang.)
+#define hxbreakpoint() (__builtin_debugtrap(),true)
+#else
+/// `hxbreakpoint` - Raises SIGTRAP when __builtin_debugtrap is not available.
+#define hxbreakpoint() (raise(SIGTRAP),true)
+#endif
+
 /// hxrestrict - A pointer attribute indicating that for the lifetime of that pointer, it
 /// will be the sole means of accessing the object(s) it points to.
 #define hxrestrict __restrict
@@ -134,18 +143,9 @@
 /// Indicates that a function has args that should not be null. Checked by UBSan.
 #define hxattr_nonnull(...)__attribute__((nonnull (__VA_ARGS__)))
 
-#if defined __has_builtin && __has_builtin(__builtin_debugtrap)
-/// `hxbreakpoint` - Can be conditionally evaluated with the `&&` and `||` operators.
-/// Uses intrinsics when available. (E.g. clang.)
-#define hxbreakpoint() (__builtin_debugtrap(),true)
-#else
-/// `hxbreakpoint` - Raises SIGTRAP when __builtin_debugtrap is not available.
-#define hxbreakpoint() (raise(SIGTRAP),true)
-#endif
-
-/// `hxnoexcept_unchecked` - Use gcc/clang `nothrow` attribute. Unlike `noexcept` this
+/// `hxattr_noexcept` - Use gcc/clang `nothrow` attribute. Unlike `noexcept` this
 /// is undefined when violated.
-#define hxnoexcept_unchecked __attribute__((nothrow))
+#define hxattr_noexcept __attribute__((nothrow))
 
 /// hxattr_allocator - Mark allocator/deallocator pairs. See the gcc manual.
 #if defined(__clang__)
