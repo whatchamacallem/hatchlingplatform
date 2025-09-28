@@ -77,7 +77,6 @@ hxtask_queue::~hxtask_queue(void) {
 }
 
 void hxtask_queue::enqueue(hxtask* task_) {
-	hxassertmsg(task_, "invalid_parameter null");
 	task_->set_task_queue(this);
 
 #if HX_USE_THREADS

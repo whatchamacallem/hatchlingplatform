@@ -193,7 +193,7 @@ void hxpartition_sort_(	T_* begin_, T_* end_, const less_t_& less_,
 /// - `depth` : Current recursion depth remaining.
 template<typename T_, typename less_t_> hxattr_nonnull(1,2) hxattr_hot
 void hxintro_sort_(T_* begin_, T_* end_, const less_t_& less_, int depth_) {
-	hxassertmsg(begin_ != hxnull && begin_ <= end_, "range_error hxsort");
+	hxassertmsg(begin_ <= end_, "range_error hxsort");
 
 	if((end_ - begin_) <= hxpartition_sort_cutoff_) {
 		hxinsertion_sort(begin_, end_, less_);

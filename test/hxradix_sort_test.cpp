@@ -79,12 +79,12 @@ public:
 
 TEST_F(hxradix_sort_test, null) {
 	hxradix_sort<uint32_t, const char> rs;
+	rs.reserve(1u);
 
 	rs.sort(hxsystem_allocator_temporary_stack);
 	EXPECT_EQ(rs.size(), 0u);
 	EXPECT_TRUE(rs.empty());
 
-	rs.reserve(1u);
 	rs.insert(123u, "s");
 
 	rs.sort(hxsystem_allocator_temporary_stack);

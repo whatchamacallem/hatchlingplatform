@@ -44,6 +44,7 @@ void hxhex_dump(const void* address, size_t bytes, int pretty) {
 __attribute__((no_sanitize("address")))
 #endif
 void hxfloat_dump(const float* address, size_t count) {
+	(void)address;
 	if((HX_RELEASE) < 2) {
 		for(size_t i = 0; i < count;) {
 			hxlogconsole("%08x: ", (unsigned int)(uintptr_t)address);

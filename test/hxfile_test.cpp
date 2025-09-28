@@ -43,6 +43,9 @@ TEST_F(hxfile_test, read_write) {
 		EXPECT_EQ(f.good(), true);
 		EXPECT_EQ(f.is_open(), true);
 	}
+	else {
+		FAIL();
+	}
 
 	hxout << "smoke test hxout" << ".";
 	hxout.print("..");

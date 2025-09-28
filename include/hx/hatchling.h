@@ -122,7 +122,7 @@ hxnoexcept_unchecked bool hxasserthandler(const char* file_, size_t line_) hxatt
 #define hxlog(...) ((void)0)
 #define hxassertmsg(x_, ...) ((void)0)
 #define hxassert(x_) ((void)0)
-hxnoexcept_unchecked [[noreturn]] void hxasserthandler(hxhash_t file_, size_t line_);
+hxnoexcept_unchecked void hxasserthandler(hxhash_t file_, size_t line_) hxattr_noreturn;
 #endif
 
 #if (HX_RELEASE) <= 1

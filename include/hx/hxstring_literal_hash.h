@@ -7,6 +7,9 @@
 /// they are not added to the release build. This provides asserts in a low RAM
 /// or limited download size scenario.
 
+// TODO: Try a consteval version that uses basenames at level 1 and hashes
+// basenames at level 2.
+
 #if !HATCHLING_VER
 #error #include <hx/hatchling.h> instead.
 #endif

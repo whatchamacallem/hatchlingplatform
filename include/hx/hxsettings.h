@@ -81,7 +81,10 @@
 #define hxnoexcept_unchecked __declspec(nothrow)
 
 /// Ignored on Windows.
-#define hxattr_allocator(...) __attribute__((malloc(__VA_ARGS__)))
+#define hxattr_allocator(...)
+
+/// Ignored on Windows.
+#define hxattr_noreturn
 
 #else
 // ----------------------------------------------------------------------------
@@ -128,7 +131,7 @@
 /// type-check the format string.
 #define hxattr_format_scanf(pos_, start_) __attribute__((format(scanf, pos_, start_)))
 
-/// Indicates to gcc that a function has args that should not be null.
+/// Indicates that a function has args that should not be null. Checked by UBSan.
 #define hxattr_nonnull(...)__attribute__((nonnull (__VA_ARGS__)))
 
 #if defined __has_builtin && __has_builtin(__builtin_debugtrap)
@@ -151,6 +154,8 @@
 /// hxattr_allocator - gcc only.
 #define hxattr_allocator(...) __attribute__((malloc(__VA_ARGS__)))  __attribute__ ((returns_nonnull))
 #endif
+
+#define hxattr_noreturn __attribute__((noreturn))
 
 #endif // target specific settings
 
