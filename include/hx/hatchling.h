@@ -37,10 +37,10 @@
 
 /// `HATCHLING_VER` - Two digit major, minor and patch versions. Odd numbered
 /// minor versions are development branches. Yes, this is actually that old.
-#define HATCHLING_VER 30900l
+#define HATCHLING_VER 31000l
 /// `HATCHLING_TAG` - Major, minor and patch version tag name. Odd numbered
 /// minor versions are development branches and their tags end in `-dev`.
-#define HATCHLING_TAG "v3.9.0-dev"
+#define HATCHLING_TAG "v3.10.0"
 
 #include "hxsettings.h"
 #include "hxmemory_manager.h"
@@ -116,13 +116,13 @@ enum hxloglevel_t {
 	|| hxbreakpoint())
 
 /// Assert handler. Do not call directly, signature changes and then is removed.
-hxattr_noexcept bool hxasserthandler(const char* file_, size_t line_) hxattr_nonnull(1);
+bool hxasserthandler(const char* file_, size_t line_) hxattr_noexcept hxattr_nonnull(1) hxattr_cold;
 
 #else // HX_RELEASE >= 1
 #define hxlog(...) ((void)0)
 #define hxassertmsg(x_, ...) ((void)0)
 #define hxassert(x_) ((void)0)
-hxattr_noexcept void hxasserthandler(hxhash_t file_, size_t line_) hxattr_noreturn;
+void hxasserthandler(hxhash_t file_, size_t line_) hxattr_noexcept hxattr_noreturn hxattr_cold;
 #endif
 
 #if (HX_RELEASE) <= 1
@@ -184,14 +184,14 @@ void hxshutdown(void) hxattr_cold;
 /// - `level` : The log level (e.g., `hxloglevel_log`, `hxloglevel_warning`).
 /// - `format` : A `printf`-style format string.
 /// - `...` Additional arguments for the format string.
-hxattr_noexcept void hxloghandler(enum hxloglevel_t level_, const char* format_, ...) hxattr_format_printf(2, 3);
+void hxloghandler(enum hxloglevel_t level_, const char* format_, ...) hxattr_noexcept hxattr_format_printf(2, 3);
 
 /// `hxloghandler_v` - A `va_list` version of `hxloghandler`. This is the only
 /// access to logging when `HX_RELEASE > 2`.
 /// - `level` : The log level (e.g., `hxloglevel_log`, `hxloglevel_warning`).
 /// - `format` : A `printf`-style format string.
 /// - `args` : A `va_list` containing the arguments for the format string.
-hxattr_noexcept void hxloghandler_v(enum hxloglevel_t level_, const char* format_, va_list args_) hxattr_nonnull(2);
+void hxloghandler_v(enum hxloglevel_t level_, const char* format_, va_list args_) hxattr_noexcept hxattr_nonnull(2);
 
 /// `hxhex_dump` - Prints an array of bytes formatted in hexadecimal. Additional
 /// information provided when pretty is non-zero.

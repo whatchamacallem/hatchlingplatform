@@ -214,7 +214,6 @@ hxattr_noexcept void hxloghandler_v(hxloglevel_t level, const char* format, va_l
 	char buf[HX_MAX_LINE];
 	int len = ::vsnprintf(buf, HX_MAX_LINE, format, args);
 
-
 	// Don't try and print the format string as it may be bad.
 	hxassertrelease(len >= 0 && len < (int)HX_MAX_LINE, "vsnprintf");
 

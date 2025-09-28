@@ -141,18 +141,19 @@
 #define hxattr_format_scanf(pos_, start_) __attribute__((format(scanf, pos_, start_)))
 
 /// Indicates that a function has args that should not be null. Checked by UBSan.
-#define hxattr_nonnull(...)__attribute__((nonnull (__VA_ARGS__)))
+#define hxattr_nonnull(...)__attribute__((nonnull(__VA_ARGS__)))
 
 /// `hxattr_noexcept` - Use gcc/clang `nothrow` attribute. Unlike `noexcept` this
 /// is undefined when violated.
 #define hxattr_noexcept __attribute__((nothrow))
 
-/// hxattr_allocator - Mark allocator/deallocator pairs. See the gcc manual.
 #if defined(__clang__)
-#define hxattr_allocator(...) __attribute__ ((returns_nonnull))
+/// hxattr_allocator - Static analysis is gcc only. Must return non-null.
+#define hxattr_allocator(...) __attribute__((returns_nonnull))
 #else
-/// hxattr_allocator - gcc only.
-#define hxattr_allocator(...) __attribute__((malloc(__VA_ARGS__)))  __attribute__ ((returns_nonnull))
+/// hxattr_allocator - Mark allocator/deallocator pairs for static analysis. See
+/// the gcc manual. Must return non-null as well.
+#define hxattr_allocator(...) __attribute__((malloc(__VA_ARGS__))) __attribute__((returns_nonnull))
 #endif
 
 #define hxattr_noreturn __attribute__((noreturn))
@@ -176,9 +177,9 @@
 #define HX_APPEND_COUNTER(x_) HX_APPEND_COUNTER1_(x_, __COUNTER__)
 
 #if !defined HX_MAX_LINE
-/// `HX_MAX_LINE` - Set to 500 if not defined. Maximum length for formatted messages
-/// printed with this platform.
-#define HX_MAX_LINE 500
+/// `HX_MAX_LINE` - Set to 512. Maximum length for formatted messages printed
+/// with this platform. Stack space needs to be available for it.
+#define HX_MAX_LINE 512
 #endif
 
 #if !defined HX_MEMORY_MANAGER_DISABLE
