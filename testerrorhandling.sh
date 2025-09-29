@@ -10,5 +10,4 @@ set -o errexit
 echo "NOTA BENE: These tests will spew errors and still return successfully."
 ./testmatrix.sh \
 	'-DHX_MEMORY_MANAGER_DISABLE=(HX_RELEASE==2)' \
-	'-DHX_TEST_ERROR_HANDLING=1' \
-	'-DHX_RADIX_SORT_BITS=11'
+	'-DHX_TEST_ERROR_HANDLING=1'

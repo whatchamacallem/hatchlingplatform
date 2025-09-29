@@ -231,18 +231,10 @@
 #define HX_TEST_ERROR_HANDLING 0
 #endif
 
-#if !defined HX_RADIX_SORT_BITS
-/// `HX_RADIX_SORT_BITS`. Radix sort algorithm configuration parameter. The 8-
-/// bit version tries to be memory efficient, the 11-bit version might make
-/// sense for large data sets. Set to `8` if not defined (must be either `8`
-/// or `11`).
-#define HX_RADIX_SORT_BITS 8
-#endif
-
 #if !defined HX_RADIX_SORT_MIN_SIZE
 /// `HX_RADIX_SORT_MIN_SIZE` - Radix sort uses `hxinsertion_sort` below this size.
-/// Set to `8` if not defined.
-#define HX_RADIX_SORT_MIN_SIZE 8u
+/// Set to `32` if not defined.
+#define HX_RADIX_SORT_MIN_SIZE 32u
 #endif
 
 #if HX_CPLUSPLUS

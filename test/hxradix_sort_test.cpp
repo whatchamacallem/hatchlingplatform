@@ -42,55 +42,46 @@ public:
 	void test_range_and_type(uint32_t size, uint32_t mask, key_t offset) {
 		hxsystem_allocator_scope temporary_stack(hxsystem_allocator_temporary_stack);
 
-		// Generate test_range_and_type data
+		// Generate test data
 		hxarray<test_object<key_t> > a;
 		generate<key_t>(a, size, mask, offset);
 
-		// Copy and sort test_range_and_type data
+		// Copy and sort test data
 		hxarray<test_object<key_t> > b(a);
 		::qsort(b.data(), b.size(), sizeof(test_object<key_t>), q_sort_compare<key_t>);
 
 		// Radix sort
-		hxradix_sort<key_t, test_object<key_t> > rs; rs.reserve(size);
+		hxarray<hxradix_sort_key<key_t, test_object<key_t>>> rs; rs.reserve(size);
 		for(uint32_t i = size; i--;) {
-			rs.insert(a[i].id, &a[i]);
+			rs.push_back(hxradix_sort_key<key_t, test_object<key_t>>(a[i].id, &a[i]));
 		}
 
-		rs.sort(hxsystem_allocator_temporary_stack);
+		hxradix_sort(rs.begin(), rs.end());
 
 		EXPECT_EQ(b.size(), size);
 		EXPECT_EQ(rs.size(), size);
 
-		typename hxradix_sort<key_t, test_object<key_t> >::iterator it = rs.begin();
-		typename hxradix_sort<key_t, test_object<key_t> >::const_iterator cit = rs.cbegin();
-
 		for(uint32_t i=0u; i < size; ++i) {
-			EXPECT_EQ(b[i].id, rs[i].id);
-			EXPECT_EQ(b[i].id, (*it++).id);
-			EXPECT_EQ(b[i].id, (cit++)->id);
+			EXPECT_EQ(b[i].id, rs[i].get_value()->id);
 		}
-
-		EXPECT_EQ(it, rs.end());
-		EXPECT_EQ(cit, rs.cend());
 	}
 
 	hxrandom m_prng_;
 };
 
 TEST_F(hxradix_sort_test, null) {
-	hxradix_sort<uint32_t, const char> rs;
+	hxarray<hxradix_sort_key<uint32_t, const char>> rs;
 	rs.reserve(1u);
 
-	rs.sort(hxsystem_allocator_temporary_stack);
+	hxradix_sort(rs.begin(), rs.end());
 	EXPECT_EQ(rs.size(), 0u);
 	EXPECT_TRUE(rs.empty());
 
-	rs.insert(123u, "s");
+	rs.push_back(hxradix_sort_key<uint32_t, const char>(123u, "s"));
 
-	rs.sort(hxsystem_allocator_temporary_stack);
+	hxradix_sort(rs.begin(), rs.end());
 	EXPECT_EQ(rs.size(), 1u);
-	EXPECT_EQ(rs[0], 's');
-	EXPECT_EQ(*rs.get(0), 's');
+	EXPECT_EQ(rs[0].get_value()[0], 's');
 	EXPECT_TRUE(!rs.empty());
 }
 
