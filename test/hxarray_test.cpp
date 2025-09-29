@@ -378,7 +378,7 @@ TEST_F(hxarray_test, c_initializer_list) {
 	y = i0;
 	EXPECT_EQ(y[1], 7);
 
-	hxarray<char, HX_MAX_LINE> z("char array 1");
+	hxarray<char, HX_MAX_LINE> z("prefix array 1");
 	while(z[0] != 'a') {
 		z.erase((size_t)0);
 	}

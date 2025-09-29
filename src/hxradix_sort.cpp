@@ -8,8 +8,8 @@
 HX_REGISTER_FILENAME_HASH
 
 void hxradix_sort_void(hxradix_sort_key_void* begin, hxradix_sort_key_void* end) {
-	// Max 2^31 keys due to histogram sizes.
-	hxassert(begin <= end && (end - begin) < (ptrdiff_t)INT32_MAX);
+	// Max 2^31 keys due to histogram sizes and a signed ptrdiff_t.
+	hxassert(begin <= end && (size_t)(end - begin) < (size_t)INT32_MAX);
 
 	uint32_t size = (uint32_t)(end - begin);
 	if(size <= HX_RADIX_SORT_MIN_SIZE) {
@@ -73,8 +73,8 @@ void hxradix_sort_void(hxradix_sort_key_void* begin, hxradix_sort_key_void* end)
 }
 
 void hxradix_sort_void11(hxradix_sort_key_void* begin, hxradix_sort_key_void* end) {
-	// Max 2^31 keys due to histogram sizes.
-	hxassert(begin <= end && (end - begin) < (ptrdiff_t)INT32_MAX);
+	// Max 2^31 keys due to histogram sizes and a signed ptrdiff_t.
+	hxassert(begin <= end && (size_t)(end - begin) < (size_t)INT32_MAX);
 
 	uint32_t size = (uint32_t)(end - begin);
 	if(size <= HX_RADIX_SORT_MIN_SIZE) {
