@@ -142,7 +142,7 @@ public:
 			: m_hash_table_(const_cast<hxhash_table*>(table_)), m_next_index_(0u), m_current_node_(hxnull) { next_bucket(); }
 
 		/// Constructs an iterator pointing to the end of the hash table.
-		const_iterator() : m_hash_table_(hxnull), m_next_index_(0u), m_current_node_(hxnull) { } // end
+		const_iterator(void) : m_hash_table_(hxnull), m_next_index_(0u), m_current_node_(hxnull) { } // end
 
 		/// Advances the iterator to the next element.
 		const_iterator& operator++(void) {
@@ -168,7 +168,7 @@ public:
 		/// Dereferences the iterator to access the current `node_t`'s pointer.
 		const node_t_* operator->(void) const { return m_current_node_; }
 
-	protected:
+	private:
 		/// Advances the iterator to the next non-empty bucket.
 		void next_bucket(void) {
 			hxassertmsg(m_hash_table_ && !m_current_node_, "invalid_iterator");
@@ -182,6 +182,9 @@ public:
 
 		hxhash_table* m_hash_table_;
 		hxhash_t m_next_index_;
+
+	protected:
+		// Used by const_iterator.
 		node_t_* m_current_node_;
 	};
 
@@ -211,8 +214,13 @@ public:
 	/// Constructs an empty hash table with a capacity of `table_size_bits^2`.
 	explicit hxhash_table(void) { m_size_ = 0u; }
 
-	/// Destructs the hash table and releases all resources.
+	/// Destructs the hash table and deletes all resources.
 	~hxhash_table(void) { this->clear(); }
+
+	/// Sets the number of hash bits and allocate memory for the table. (only
+	/// for dynamic capacity).
+	/// - `bits` : The number of hash bits to set for the hash table.
+	void set_table_size_bits(hxhash_t bits_) { return m_table_.set_table_size_bits(bits_); };
 
 	/// Returns a const iterator pointing to the beginning of the hash table.
 	const_iterator begin(void) const { return const_iterator(this); }
@@ -255,35 +263,14 @@ public:
 	/// - `allocator` : The memory manager ID to use for allocation. Defaults to hxsystem_allocator_current.
 	/// - `alignment` : The alignment for allocation. Defaults to `HX_ALIGNMENT`.
 	node_t_& insert_unique(const typename node_t_::key_t& key_,
-										hxsystem_allocator_t allocator_=hxsystem_allocator_current,
-										hxalignment_t alignment_=HX_ALIGNMENT) {
-		node_t_** pos_ = this->get_bucket_head_(hxkey_hash(key_));
-		for(node_t_* n_ = *pos_; n_; n_ = (node_t_*)n_->hash_next()) {
-			if(hxkey_equal(n_->key(), key_)) {
-				return *n_;
-			}
-		}
-		hxassertmsg(m_size_ < ~(size_t)0, "integer_overflow");
-		node_t_* n_ = ::new(hxmalloc_ext(sizeof(node_t_), allocator_, alignment_))node_t_(key_);
-		n_->hash_next() = *pos_;
-		*pos_ = n_;
-		++m_size_;
-		return *n_;
-	}
+		hxsystem_allocator_t allocator_=hxsystem_allocator_current,
+		hxalignment_t alignment_=HX_ALIGNMENT);
 
 	/// Inserts a `node_t` into the hash table, allowing duplicate keys. Nodes that
 	/// have non-null hash pointers are allowed because they may have been released
 	/// from a table that way.
 	/// - `node` : The `node_t` to insert into the hash table.
-	void insert_node(node_t_* ptr_) {
-		hxassertmsg(m_size_ < ~(size_t)0, "integer_overflow");
-		hxassertmsg(this->find(ptr_->key()) != ptr_, "container_reinsert");
-		hxhash_t hash_ = ptr_->hash();
-		node_t_** pos_ = this->get_bucket_head_(hash_);
-		ptr_->hash_next() = *pos_;
-		*pos_ = ptr_;
-		++m_size_;
-	}
+	void insert_node(node_t_* ptr_);
 
 	/// Returns a `node_t` matching key if any. If previous is non-null it must be
 	/// a node previously returned from `find()` with the same key and that has not
@@ -291,25 +278,7 @@ public:
 	/// The previous object is non-const as it may be modified.
 	/// - `key` : The key to search for in the hash table.
 	/// - `previous` : A previously found `node_t` with the same key, or nullptr.
-	node_t_* find(const typename node_t_::key_t& key_, const node_t_* previous_=hxnull) {
-		if(!previous_) {
-			for(node_t_* n_ = *this->get_bucket_head_(hxkey_hash(key_)); n_; n_ = (node_t_*)n_->hash_next()) {
-				if(hxkey_equal(n_->key(), key_)) {
-					return n_;
-				}
-			}
-		}
-		else {
-			hxassertmsg(hxkey_equal(key_, previous_->key()), "previous_mismatch");
-			hxassertmsg(hxkey_hash(key_) == previous_->hash(), "previous_mismatch");
-			for(node_t_* n_ = (node_t_*)previous_->hash_next(); n_; n_ = (node_t_*)n_->hash_next()) {
-				if(hxkey_equal(n_->key(), key_)) {
-					return n_;
-				}
-			}
-		}
-		return hxnull;
-	}
+	node_t_* find(const typename node_t_::key_t& key_, const node_t_* previous_=hxnull);
 
 	/// `const` version.
 	const node_t_* find(const typename node_t_::key_t& key_, const node_t_* previous_=hxnull) const {
@@ -319,62 +288,22 @@ public:
 
 	/// Counts the number of Nodes with the given key.
 	/// - `key` : The key to count occurrences of in the hash table.
-	size_t count(const typename node_t_::key_t& key_) const {
-		size_t total_ = 0u;
-		hxhash_t hash_ = hxkey_hash(key_);
-		for(const node_t_* n_ = *this->get_bucket_head_(hash_); n_; n_ = (node_t_*)n_->hash_next()) {
-			if(hxkey_equal(n_->key(), key_)) {
-				++total_;
-			}
-		}
-		return total_;
-	}
+	size_t count(const typename node_t_::key_t& key_) const;
 
 	/// Removes and returns the first `node_t` with the given key.
 	/// - `key` : The key to search for and remove from the hash table.
-	node_t_* extract(const typename node_t_::key_t& key_) {
-		hxhash_t hash_ = hxkey_hash(key_);
-		node_t_** current_ = this->get_bucket_head_(hash_);
-		while(node_t_* n_ = *current_) {
-			if(hxkey_equal(n_->key(), key_)) {
-				*current_ = (node_t_*)n_->hash_next();
-				--m_size_;
-				return n_;
-			}
-			// This avoids special case code for the head pointer.
-			current_ = (node_t_**)&n_->hash_next();
-		}
-		return hxnull;
-	}
+	node_t_* extract(const typename node_t_::key_t& key_);
 
-	/// Releases all Nodes matching key and calls `deleter()` on every node. Returns
+	/// Releases all Nodes matching key and calls `deleter` on every node. Returns
 	/// the number of nodes released. Deleter can be functions with signature `void
 	/// deleter(node_t*)` and functors supporting `operator()(node_t*)` and with an
 	/// `operator bool`. E.g. a free list or a null pointer.
 	/// - `key` : The key to search for and remove from the hash table.
 	/// - `deleter` : A function or functor to call on each removed `node_t`.
 	template<typename deleter_override_t_>
-	size_t erase(const typename node_t_::key_t& key_, const deleter_override_t_& deleter_) {
-		size_t count_ = 0u;
-		hxhash_t hash_ = hxkey_hash(key_);
-		node_t_** current_ = this->get_bucket_head_(hash_);
-		while(node_t_* n_ = *current_) {
-			if(hxkey_equal(n_->key(), key_)) {
-				*current_ = (node_t_*)n_->hash_next();
-				if(deleter_) {
-					deleter_(n_);
-				}
-				++count_;
-			}
-			else {
-				current_ = (node_t_**)&n_->hash_next();
-			}
-		}
-		m_size_ -= count_;
-		return count_;
-	}
+	size_t erase(const typename node_t_::key_t& key_, const deleter_override_t_& deleter_);
 
-	/// Removes and calls `hxdelete()` on nodes with an equivalent key.
+	/// Removes and calls `deleter_t::operator()` on nodes with an equivalent key.
 	size_t erase(const typename node_t_::key_t& key_) {
 		return this->erase(key_, deleter_t_());
 	}
@@ -391,82 +320,208 @@ public:
 	/// a free list or a null function pointer.
 	/// - `deleter` : A function or functor to call on each removed `node_t`.
 	template<typename deleter_override_t_>
-	void clear(const deleter_override_t_& deleter_) {
-		if(m_size_ != 0u) {
-			if(deleter_) {
-				node_t_** it_end_ = m_table_.data() + m_table_.capacity();
-				for(node_t_** it_ = m_table_.data(); it_ != it_end_; ++it_) {
-					node_t_* n_ = *it_;
-					if(n_) {
-						*it_ = hxnull;
-						for(node_t_* t_ = n_; t_; t_=n_) {
-							n_ = (node_t_*)n_->hash_next();
-							deleter_(t_);
-						}
-					}
-				}
-			}
-			else {
-				this->release_all();
-			}
-		}
-	}
+	void clear(const deleter_override_t_& deleter_);
 
-	/// Removes all nodes and calls `hxdelete()` on every node.
+	/// Removes all nodes and calls `deleter_t::operator()` on every node.
 	void clear(void) { this->clear(deleter_t_()); }
 
 	/// Clears the hash table without deleting any Nodes.
-	void release_all(void) {
-		if(m_size_ != 0u) {
-			::memset(m_table_.data(), 0x00, sizeof(node_t*) * m_table_.capacity());
-			m_size_ = 0u;
-		}
-	}
+	void release_all(void);
 
 	/// Returns the number of buckets in the hash table.
 	size_t bucket_count(void) const { return m_table_.capacity(); };
-
-	/// Sets the number of hash bits (only for dynamic capacity).
-	/// - `bits` : The number of hash bits to set for the hash table.
-	void set_table_size_bits(hxhash_t bits_) { return m_table_.set_table_size_bits(bits_); };
 
 	/// Returns the average number of Nodes per bucket.
 	float load_factor(void) const { return (float)m_size_ / (float)this->bucket_count(); }
 
 	/// Returns the size of the largest bucket.
-	size_t load_max(void) const {
-		// An unallocated table will be ok.
-		size_t maximum_=0u;
-		const node_t_*const* it_end_ = m_table_.data() + m_table_.capacity();
-		for(const node_t_*const* it_ = m_table_.data(); it_ != it_end_; ++it_) {
-			size_t count_=0u;
-			for(const node_t_* n_ = *it_; n_; n_ = (const node_t_*)n_->hash_next()) {
-				++count_;
-			}
-			maximum_ = hxmax(maximum_, count_);
-		}
-		return maximum_;
-	}
+	size_t load_max(void) const;
 
 private:
-	static_assert(table_size_bits_ <= 31u, "Hash bits must be [0..31]");
+	static_assert(table_size_bits_ < hxhash_bits, "Hash bits must be [0..hxhash_bits].");
 
 	// Not ideal.
 	hxhash_table(const hxhash_table&) = delete;
 
 	// Pointer to head of singly-linked list for key's hash value.
-	node_t_** get_bucket_head_(hxhash_t hash_) {
-		hxhash_t index_ = hash_ >> (32u - m_table_.get_table_size_bits());
-		hxassertmsg(index_ < m_table_.capacity(), "internal_error");
-		return m_table_.data() + index_;
-	}
+	node_t_** get_bucket_head_(hxhash_t hash_);
 
-	const node_t_*const* get_bucket_head_(hxhash_t hash_) const {
-		hxhash_t index_ = hash_ >> (32u - m_table_.get_table_size_bits());
-		hxassertmsg(index_ < m_table_.capacity(), "internal_error");
-		return m_table_.data() + index_;
-	}
+	const node_t_*const* get_bucket_head_(hxhash_t hash_) const;
 
 	size_t m_size_;
 	hxhash_table_internal_allocator_<node_t_, table_size_bits_> m_table_;
 };
+
+template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+inline node_t_& hxhash_table<node_t_, table_size_bits_, deleter_t_>::insert_unique(
+	const typename node_t_::key_t& key_,
+	hxsystem_allocator_t allocator_,
+	hxalignment_t alignment_)
+{
+	node_t_** pos_ = this->get_bucket_head_(hxkey_hash(key_));
+	for(node_t_* n_ = *pos_; n_; n_ = (node_t_*)n_->hash_next()) {
+		if(hxkey_equal(n_->key(), key_)) {
+			return *n_;
+		}
+	}
+	node_t_* n_ = ::new(hxmalloc_ext(sizeof(node_t_), allocator_, alignment_))node_t_(key_);
+	n_->hash_next() = *pos_;
+	*pos_ = n_;
+	++m_size_;
+	return *n_;
+}
+
+template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+inline void hxhash_table<node_t_, table_size_bits_, deleter_t_>::insert_node(node_t_* ptr_)
+{
+	hxassertmsg(this->find(ptr_->key()) != ptr_, "container_reinsert");
+	hxhash_t hash_ = ptr_->hash();
+	node_t_** pos_ = this->get_bucket_head_(hash_);
+	ptr_->hash_next() = *pos_;
+	*pos_ = ptr_;
+	++m_size_;
+}
+
+template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+inline node_t_* hxhash_table<node_t_, table_size_bits_, deleter_t_>::find(
+	const typename node_t_::key_t& key_, const node_t_* previous_)
+{
+	if(!previous_) {
+		for(node_t_* n_ = *this->get_bucket_head_(hxkey_hash(key_)); n_; n_ = (node_t_*)n_->hash_next()) {
+			if(hxkey_equal(n_->key(), key_)) {
+				return n_;
+			}
+		}
+	}
+	else {
+		hxassertmsg(hxkey_equal(key_, previous_->key()), "previous_mismatch");
+		hxassertmsg(hxkey_hash(key_) == previous_->hash(), "previous_mismatch");
+		for(node_t_* n_ = (node_t_*)previous_->hash_next(); n_; n_ = (node_t_*)n_->hash_next()) {
+			if(hxkey_equal(n_->key(), key_)) {
+				return n_;
+			}
+		}
+	}
+	return hxnull;
+}
+
+template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+inline size_t hxhash_table<node_t_, table_size_bits_, deleter_t_>::count(
+	const typename node_t_::key_t& key_) const
+{
+	size_t total_ = 0u;
+	hxhash_t hash_ = hxkey_hash(key_);
+	for(const node_t_* n_ = *this->get_bucket_head_(hash_); n_; n_ = (const node_t_*)n_->hash_next()) {
+		if(hxkey_equal(n_->key(), key_)) {
+			++total_;
+		}
+	}
+	return total_;
+}
+
+template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+inline node_t_* hxhash_table<node_t_, table_size_bits_, deleter_t_>::extract(
+	const typename node_t_::key_t& key_)
+{
+	hxhash_t hash_ = hxkey_hash(key_);
+	node_t_** current_ = this->get_bucket_head_(hash_);
+	while(node_t_* n_ = *current_) {
+		if(hxkey_equal(n_->key(), key_)) {
+			*current_ = (node_t_*)n_->hash_next();
+			--m_size_;
+			return n_;
+		}
+		// This avoids special case code for the head pointer.
+		current_ = (node_t_**)&n_->hash_next();
+	}
+	return hxnull;
+}
+
+template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+template<typename deleter_override_t_>
+inline size_t hxhash_table<node_t_, table_size_bits_, deleter_t_>::erase(
+	const typename node_t_::key_t& key_, const deleter_override_t_& deleter_)
+{
+	size_t count_ = 0u;
+	hxhash_t hash_ = hxkey_hash(key_);
+	node_t_** current_ = this->get_bucket_head_(hash_);
+	while(node_t_* n_ = *current_) {
+		if(hxkey_equal(n_->key(), key_)) {
+			*current_ = (node_t_*)n_->hash_next();
+			if(deleter_) {
+				deleter_(n_);
+			}
+			++count_;
+		}
+		else {
+			current_ = (node_t_**)&n_->hash_next();
+		}
+	}
+	m_size_ -= count_;
+	return count_;
+}
+
+template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+template<typename deleter_override_t_>
+inline void hxhash_table<node_t_, table_size_bits_, deleter_t_>::clear(
+	const deleter_override_t_& deleter_)
+{
+	if(m_size_ != 0u) {
+		if(deleter_) {
+			node_t_** it_end_ = m_table_.data() + m_table_.capacity();
+			for(node_t_** it_ = m_table_.data(); it_ != it_end_; ++it_) {
+				node_t_* n_ = *it_;
+				if(n_) {
+					*it_ = hxnull;
+					for(node_t_* t_ = n_; t_; t_ = n_) {
+						n_ = (node_t_*)n_->hash_next();
+						deleter_(t_);
+					}
+				}
+			}
+		}
+		else {
+			this->release_all();
+		}
+	}
+}
+
+template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+inline void hxhash_table<node_t_, table_size_bits_, deleter_t_>::release_all(void)
+{
+	if(m_size_ != 0u) {
+		::memset(m_table_.data(), 0x00, sizeof(node_t*) * m_table_.capacity());
+		m_size_ = 0u;
+	}
+}
+
+template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+inline size_t hxhash_table<node_t_, table_size_bits_, deleter_t_>::load_max(void) const
+{
+	size_t maximum_ = 0u;
+	const node_t_*const* it_end_ = m_table_.data() + m_table_.capacity();
+	for(const node_t_*const* it_ = m_table_.data(); it_ != it_end_; ++it_) {
+		size_t count_ = 0u;
+		for(const node_t_* n_ = *it_; n_; n_ = (const node_t_*)n_->hash_next()) {
+			++count_;
+		}
+		maximum_ = hxmax(maximum_, count_);
+	}
+	return maximum_;
+}
+
+template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+inline node_t_** hxhash_table<node_t_, table_size_bits_, deleter_t_>::get_bucket_head_(hxhash_t hash_)
+{
+	hxhash_t index_ = hash_ >> (hxhash_bits - m_table_.get_table_size_bits());
+	hxassertmsg(index_ < m_table_.capacity(), "internal_error");
+	return m_table_.data() + index_;
+}
+
+template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+inline const node_t_*const* hxhash_table<node_t_, table_size_bits_, deleter_t_>::get_bucket_head_(hxhash_t hash_) const
+{
+	hxhash_t index_ = hash_ >> (hxhash_bits - m_table_.get_table_size_bits());
+	hxassertmsg(index_ < m_table_.capacity(), "internal_error");
+	return m_table_.data() + index_;
+}

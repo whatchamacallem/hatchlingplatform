@@ -97,7 +97,7 @@ inline bool hxkey_less(const char* a_, const char* b_) {
 }
 
 /// Utility for resolving function pointers to `hxkey_less` from a partially
-/// specialized set of overloaded functions. E.g.
+/// specialized set of overloaded functions. E.g.:
 /// `hxkey_less_function<int>()(78, 77)`.
 template<typename A_, typename B_>
 inline bool (*hxkey_less_function(void))(const A_&, const B_&) {
@@ -107,7 +107,7 @@ inline bool (*hxkey_less_function(void))(const A_&, const B_&) {
 /// `hxkey_hash(T)` - Returns the hash of a numeric value. Used by the base
 /// class hash table node. It needs to be overridden for your key type.
 /// Overrides are evaluated when and where the hash table is instantiated. Uses
-/// the well studied hash multiplier taken from Linux's hash.h
+/// the well studied hash multiplier taken from Linux's hash.h.
 /// - `x` : The input value.
 constexpr hxhash_t hxkey_hash(hxhash_t x_) {
     return (hxhash_t)x_ * (hxhash_t)0x61C88647u;

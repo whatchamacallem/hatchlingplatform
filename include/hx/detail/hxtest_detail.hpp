@@ -13,7 +13,7 @@ namespace hxdetail_ {
 // hxtest_case_interface_ - Internal. Used to interrogate and dispatch tests.
 class hxtest_case_interface_ {
 public:
-	virtual void run_() = 0;
+	virtual void run_test_() = 0;
 	virtual const char* suite_() const = 0;
 	virtual const char* case_() const = 0;
 	virtual const char* file_() const = 0;

@@ -17,6 +17,9 @@
 /// `hxhash_t` - Unsigned 32-bit hash value. Expect collisions.
 typedef uint32_t hxhash_t;
 
+/// `hxhash_bits` - Number of bits in `hxhash_t`.
+#define hxhash_bits 32u
+
 /// `hxstring_literal_hash` - Compile time string hashing. To log filename hashes in
 /// a debug build, add `HX_REGISTER_FILENAME_HASH` to C++ source files. Compiles
 /// string constants up to length `192` to a hash value without a `constexpr`.

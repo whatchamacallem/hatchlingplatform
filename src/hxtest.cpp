@@ -92,7 +92,7 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 				// Tests should have no side effects. Therefore all allocations must be
 				// safe to reset.
 				hxsystem_allocator_scope temporary_stack(hxsystem_allocator_temporary_stack);
-				(*it_)->run_();
+				(*it_)->run_test_();
 			}
 #ifdef __cpp_exceptions
 			catch (...) {

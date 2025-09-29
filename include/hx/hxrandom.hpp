@@ -76,7 +76,7 @@ public:
 
 	/// Returns [0..2^32).
 	uint32_t advance32(void) {
-		m_state_ = 0x5851f42d4c957f2dull * m_state_ + 0x14057b7ef767814full;
+		m_state_ = (uint64_t)0x5851f42d4c957f2dull * m_state_ + (uint64_t)0x14057b7ef767814full;
 
 		// MODIFICATION: Use the 4 msb bits as a random 0..15 bit variable shift
 		// control. Ignores the low 13 bits because they are low quality.
@@ -100,16 +100,20 @@ private:
 /// `operator&(hxrandom& a, T b)` - Bitwise `&` with random `T` generated from `a`.
 /// - `a` : Bits to mask off. Undefined behavior when a negative integer.
 /// - `b` : A `hxrandom`.
-template <typename T_>  T_ operator&(T_ a_, hxrandom& b_) {
+template <typename T_> T_ operator&(T_ a_, hxrandom& b_) {
 	return T_((uint32_t)a_ & b_.advance32());
 }
-/// `operator&(int64_t a_, hxrandom& b_)` - Allow a signed 64-bit type here because
-/// it can be generated without automatically hitting undefined behaviour.
+
+/// `operator&(int64_t a_, hxrandom& b_)` - 64-bit version. Allow a signed
+/// 64-bit type here because it can be generated without automatically hitting
+/// undefined behaviour.
 /// - `a` : Bits to mask off. Undefined behavior when negative.
 /// - `b` : A `hxrandom`.
 inline int64_t operator&(int64_t a_, hxrandom& b_) {
    return (int64_t)((uint64_t)a_ & b_.advance64());
 }
+
+/// `operator&(uint64_t a_, hxrandom& b_)` - 64-bit version.
 inline uint64_t operator&(uint64_t a_, hxrandom& b_) {
 	return a_ & b_.advance64();
 }
@@ -117,19 +121,19 @@ inline uint64_t operator&(uint64_t a_, hxrandom& b_) {
 /// `operator&(T a, hxrandom& b)` - Bitwise & with random T generated from `a`.
 /// - `a` : A `hxrandom`.
 /// - `b` : Bits to mask off. Must be a positive integer.
-template <typename T_>  T_ operator&(hxrandom& a_, T_ b_) {
+template<typename T_> T_ operator&(hxrandom& a_, T_ b_) {
 	return b_ & a_;
 }
 
 /// `operator&=(T& a, hxrandom& b)` - Bitwise `&=` with random `T` generated from `b`.
 /// - `a` : Bits to mask off. Must be a positive integer.
 /// - `b` : A `hxrandom`.
-template <typename T_>  T_ operator&=(T_& a_, hxrandom& b_) {
+template<typename T_> T_ operator&=(T_& a_, hxrandom& b_) {
 	return (a_ = a_ & b_);
 }
 
 /// `operator%(hxrandom& a, T_ b)` - Generate an number of type `T` in the range `[0..b)`.
 /// Works with floating point divisors and uses no actual modulo or division.
-template <typename T_>  T_ operator%(hxrandom& dividend_, T_ divisor_) {
+template<typename T_> T_ operator%(hxrandom& dividend_, T_ divisor_) {
 	return dividend_.range(T_(0), divisor_);
 }

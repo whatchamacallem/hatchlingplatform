@@ -83,16 +83,16 @@ public:
 
 	// Not for direct use. This is the Google Test invocation protocol.
 	/// \cond HIDDEN
-	void run_(void) {
+	void run_test_(void) {
 		SetUp();
-		run_code_();
+		run_test_f_();
 		TearDown();
 	}
 	/// \endcond
 
-private:
+protected:
 	// Provided and used by the `TEST_F` macro.
-	virtual void run_code_() = 0;
+	virtual void run_test_f_() = 0;
 };
 
 /// `InitGoogleTest` - Initializes Google Test with command-line arguments. No-op in
@@ -117,13 +117,13 @@ inline void InitGoogleTest(void) { }
 	class HX_TEST_NAME_(hxtest_, suite_name_, case_name_) : public hxtest_case_interface_ { \
 	public: \
 		HX_TEST_NAME_(hxtest_, suite_name_, case_name_)(void) { hxtest_::dispatcher_().add_test_(this); } \
-		virtual void run_(void) override; \
+		virtual void run_test_(void) override; \
 		virtual const char* suite_(void) const override { return #suite_name_; } \
 		virtual const char* case_(void) const override { return #case_name_; } \
 		virtual const char* file_(void) const override { return __FILE__; } \
 		virtual size_t line_(void) const override { return __LINE__; } \
 	} static HX_TEST_NAME_(s_hxtest_, suite_name_, case_name_); \
-	void HX_TEST_NAME_(hxtest_, suite_name_, case_name_)::run_(void)
+	void HX_TEST_NAME_(hxtest_, suite_name_, case_name_)::run_test_(void)
 
 /// `TEST_F(suite_name, case_name)` - Google Test reimplementation for
 /// fixture-based tests. Defines a test case where the `suite_name` is a
@@ -133,15 +133,15 @@ inline void InitGoogleTest(void) { }
 #define TEST_F(suite_fixture_, case_name_) \
 	class HX_TEST_NAME_(hxtest_, suite_fixture_, case_name_) : public hxtest_case_interface_ { \
 	public: \
-		class hxtest_case_subclass_ : public suite_fixture_ { virtual void run_code_(void) override; }; \
+		class hxtest_case_subclass_ : public suite_fixture_ { virtual void run_test_f_(void) override; }; \
 		HX_TEST_NAME_(hxtest_, suite_fixture_, case_name_)(void) { hxtest_::dispatcher_().add_test_(this); } \
-		virtual void run_(void) override { hxtest_case_subclass_ subclass_; subclass_.run_(); } \
+		virtual void run_test_(void) override { hxtest_case_subclass_ subclass_; subclass_.run_test_(); } \
 		virtual const char* suite_(void) const override { return #suite_fixture_; } \
 		virtual const char* case_(void) const override { return #case_name_; } \
 		virtual const char* file_(void) const override { return __FILE__; } \
 		virtual size_t line_(void) const override { return __LINE__; } \
 	} static HX_TEST_NAME_(s_hxtest, suite_fixture_, case_name_); \
-	void HX_TEST_NAME_(hxtest_, suite_fixture_, case_name_)::hxtest_case_subclass_::run_code_(void)
+	void HX_TEST_NAME_(hxtest_, suite_fixture_, case_name_)::hxtest_case_subclass_::run_test_f_(void)
 
 /// `int RUN_ALL_TESTS(...)` - Executes all registered test cases.
 /// `...` : An optional const char* matching a specific test suite to run. (Non-standard.)
