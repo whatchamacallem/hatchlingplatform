@@ -41,7 +41,7 @@ HX_REGISTER_FILENAME_HASH
 // design there are no exceptions to handle... Although there are lots of
 // asserts.
 #if (HX_RELEASE) >= 1 && defined __cpp_exceptions && !defined __INTELLISENSE__
-static_assert(0, "warning: C++ exceptions are not recommended for embedded use.");
+static_assert(0, "Warning: C++ exceptions are not recommended for embedded use.");
 #endif
 
 // No reason for this to be visible.

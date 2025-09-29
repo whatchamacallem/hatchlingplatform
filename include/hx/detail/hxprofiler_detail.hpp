@@ -36,7 +36,7 @@ inline hxcycles_t hxtime_sample_cycles(void) {
 #elif defined __powerpc__ || defined __ppc__
 	__asm__ volatile("mftb %0" : "=r"(cycles_));
 #else
-static_assert(0, "Implement hxtime_sample_cycles");
+static_assert(0, "Implement hxtime_sample_cycles.");
 #endif
 	return (hxcycles_t)cycles_;
 }

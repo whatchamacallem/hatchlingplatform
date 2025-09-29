@@ -315,13 +315,11 @@ public:
 		hxassertmsg(!this->joinable(), "thread_still_running");
 
 		// Stay on the right side of the C++ standard by avoiding assumptions
-		// about pointer representations. The parameter pointer is never cast
-		// between types. Instead the bit pattern of the pointer is preserved
-		// while it is passed through the pthread API. This requires the pointers
-		// to use the same number of bytes.
-		static_assert(sizeof(void*) == sizeof(parameter_t_*), "Incompatible pointer types");
+		// about pointer representations. The parameter is being reinterpreted
+		// twice instead of cast once and reinterpreted back.
+		static_assert(sizeof(void*) == sizeof(parameter_t_*), "Incompatible pointer sizes.");
 
-		void* reinterpreted_parameter_=hxnull;
+		void* reinterpreted_parameter_;
 		::memcpy(&reinterpreted_parameter_, &parameter_, sizeof(void*));
 		int code_ = ::pthread_create(&m_thread_, 0, (entry_point_function_t_)entry_point_,
 			reinterpreted_parameter_);
