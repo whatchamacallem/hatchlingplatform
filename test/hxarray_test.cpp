@@ -377,6 +377,15 @@ TEST_F(hxarray_test, c_initializer_list) {
 
 	y = i0;
 	EXPECT_EQ(y[1], 7);
+
+	hxarray<char, HX_MAX_LINE> z("char array 1");
+	while(z[0] != 'a') {
+		z.erase((size_t)0);
+	}
+	EXPECT_TRUE(::strcmp(z.data(), "array 1") == 0);
+
+	z = "array 2";
+	EXPECT_TRUE(::strcmp(z.data(), "array 2") == 0);
 }
 
 #if !HX_NO_LIBCXX

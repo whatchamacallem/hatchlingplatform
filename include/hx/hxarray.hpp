@@ -12,9 +12,15 @@
 
 /// `hxarray` - Another vector class. Uses raw pointers as an iterator type so
 /// that you get compile errors and a debug experience that is in plain C++
-/// instead of the std. There are asserts. Please run a memory sanitizer and an
-/// undefined behavior sanitizer too. Use a C array if you need `constexpr`. The
-/// excessive number of operators is due to the rules about default operators.
+/// instead of the std. There are asserts.
+///
+/// hxarray can be used to manipulate strings as follows:
+///   `hxarray<char, HX_MAX_LINE> string_buffer("example C string");`
+/// however `operator+=` does not handle C strings for safety reasons.
+///
+/// Please run a memory sanitizer and an undefined behavior sanitizer too. Use a
+/// C array if you need `constexpr`. The excessive number of operators is due to
+/// the rules about default operators.
 template<typename T_, size_t capacity_=hxallocator_dynamic_capacity>
 class hxarray : public hxallocator<T_, capacity_> {
 public:
@@ -46,8 +52,8 @@ public:
 
 	/// Copy constructs an array. Non-explicit to allow assignment constructor.
 	/// - `x` : A non-temporary `Array<T>`.
-	template <size_t capacity2_>
-	hxarray(const hxarray<T_, capacity2_>& x_);
+	template <size_t capacity_x_>
+	hxarray(const hxarray<T_, capacity_x_>& x_);
 
 	/// Copy construct from a temporary using `swap`. Refuses to copy construct
 	/// from a statically allocated temporary for efficiency. Only works with
@@ -92,14 +98,14 @@ public:
 	/// Appends the contents of another array.  (Non-standard, from Python.)
 	/// Vector math is not a goal so this should not end up overloaded.
 	/// - `x` : Another array. Not a temporary.
-	template <size_t capacity2_>
-	void operator+=(const hxarray<T_, capacity2_>& x_);
+	template <size_t capacity_x_>
+	void operator+=(const hxarray<T_, capacity_x_>& x_);
 
 	/// Appends the contents of another array.  (Non-standard, from Python.)
 	/// Vector math is not a goal so this should not end up overloaded.
 	/// - `x` : Another array passed as a temporary.
-	template <size_t capacity2_>
-	void operator+=(hxarray<T_, capacity2_>&& x_);
+	template <size_t capacity_x_>
+	void operator+=(hxarray<T_, capacity_x_>&& x_);
 
 	/// Assigns the contents of another hxarray to this array. Standard except
 	/// reallocation is disallowed.
@@ -109,8 +115,8 @@ public:
 	/// Assigns the contents of another hxarray to this array. Standard except
 	/// reallocation is disallowed.
 	/// - `x` : A non-temporary Array<T>.
-	template <size_t capacity2_>
-	void operator=(const hxarray<T_, capacity2_>& x_);
+	template <size_t capacity_x_>
+	void operator=(const hxarray<T_, capacity_x_>& x_);
 
 	/// Swap contents with a temporary array using `swap`. Only works with
 	/// `hxallocator_dynamic_capacity`. Dynamically allocated arrays are swapped
@@ -137,6 +143,7 @@ public:
 	T_& operator[](size_t index_);
 
 	/// Assigns elements from a range defined by random access iterators.
+	/// `iter_t_::operator-` is required.
 	/// - `begin` : The beginning iterator.
 	/// - `end` : The end iterator.
 	template <typename iter_t_>
@@ -314,8 +321,9 @@ private:
 };
 
 // The array overloads of hxkey_equal, hxkey_less and hxswap are C++20 only.
-// Without the "requires" keyword these end up being ambiguous. Use T::equal,
-// T::less and T::swap. Use C++20 if you want to use arrays as generic keys.
+// Without the "requires" keyword these end up being ambiguous. Use
+// hxarray::equal, hxarray::less and hxarray::swap. Use C++20 if you want to use
+// arrays as generic keys.
 #if HX_CPLUSPLUS >= 202002L
 
 /// `bool hxequal(hxarray<T>& x, hxarray<T>& y)` - Compares the contents of x
@@ -361,8 +369,8 @@ hxarray<T_, capacity_>::hxarray(const hxarray& x_) : hxarray() {
 }
 
 template<typename T_, size_t capacity_>
-template<size_t capacity2_>
-hxarray<T_, capacity_>::hxarray(const hxarray<T_, capacity2_>& x_) : hxarray() {
+template<size_t capacity_x_>
+hxarray<T_, capacity_>::hxarray(const hxarray<T_, capacity_x_>& x_) : hxarray() {
 	this->assign<const T_*>(x_.data(), x_.end());
 }
 
@@ -401,16 +409,16 @@ void hxarray<T_, capacity_>::operator+=(T_&& x_) {
 }
 
 template<typename T_, size_t capacity_>
-template<size_t capacity2_>
-void hxarray<T_, capacity_>::operator+=(const hxarray<T_, capacity2_>& x_) {
+template<size_t capacity_x_>
+void hxarray<T_, capacity_>::operator+=(const hxarray<T_, capacity_x_>& x_) {
 	for(const T_ *it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
 		::new(this->emplace_back_unconstructed()) T_(*it_);
 	}
 }
 
 template<typename T_, size_t capacity_>
-template<size_t capacity2_>
-void hxarray<T_, capacity_>::operator+=(hxarray<T_, capacity2_>&& x_) {
+template<size_t capacity_x_>
+void hxarray<T_, capacity_>::operator+=(hxarray<T_, capacity_x_>&& x_) {
 	for(const T_ *it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
 		::new(this->emplace_back_unconstructed()) T_(hxmove(*it_));
 	}
@@ -422,8 +430,8 @@ void hxarray<T_, capacity_>::operator=(const hxarray& x_) {
 }
 
 template<typename T_, size_t capacity_>
-template<size_t capacity2_>
-void hxarray<T_, capacity_>::operator=(const hxarray<T_, capacity2_>& x_) {
+template<size_t capacity_x_>
+void hxarray<T_, capacity_>::operator=(const hxarray<T_, capacity_x_>& x_) {
 	this->assign<const T_*>(x_.data(), x_.end());
 }
 
