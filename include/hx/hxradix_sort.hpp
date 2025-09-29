@@ -3,18 +3,27 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-/// \file hx/hxradix_sort.hpp `hxradix_sort` is recommended as an Θ(n) sorting
-/// strategy for any primitive type that is 32-bits or less. This implementation
+/// \file hx/hxradix_sort.hpp hxradix_sort is recommended as an Θ(n) sorting
+/// strategy for any fundamental type that is 32-bits or less. This implementation
 /// does not cause code bloat and is the fastest sorting algorithm available for
 /// scalar keys. Radix sort is best when you need real-time guarantees and have a
 /// massive workload. This is not a toy. It was actually how IBM sorted punch
 /// cards.
+///
+/// For example :
+/// ```cpp
+///   hxarray<hxradix_sort_key<key_t, example_t>> rs; rs.reserve(size);
+///   for(uint32_t i = size; i--;) {
+///     rs.push_back(hxradix_sort_key<key_t, example_t>(x[i].id, &x[i]));
+///   }
+///   hxradix_sort(rs.begin(), rs.end());
+/// ```
 
 #include "hatchling.h"
 
-/// A key-value pair used with `hxradix_sort`. Only 32-bit fixed size types from
-/// `<stdint.h>` are supported for `key_t`. Requires `value_t` to be referenced
-/// as a pointer.
+/// A key-value pair used with `hxradix_sort`. Only 32-bit or smaller fixed size
+/// types from `<stdint.h>` are supported for `key_t`. Stores a pointer to
+/// `value_t` only.
 template<typename key_t_, typename value_t_>
 class hxradix_sort_key {
 public:
@@ -38,6 +47,9 @@ public:
 	uint32_t get_modified_key(void) const { return m_key_; }
 
 private:
+	// Required by hxradix_sort_void/hxradix_sort_void11.
+	static_assert(sizeof(void*) == sizeof(value_t_*), "Incompatible pointer sizes.");
+
 	// Internal. Possible conversion routines.
 	void set_(int8_t key_, value_t_* value_) { this->set_((int32_t)key_, value_); }
 	void set_(uint8_t key_, value_t_* value_) { m_key_=key_; m_value_=value_; }
@@ -58,9 +70,9 @@ private:
 	}
 	void set_(double key_, value_t_* value_) = delete; // Not supported.
 
-	// The key used for sorting. Not preserved in a usable form.
+	// The key used for sorting. May not be preserved in a usable form.
 	uint32_t m_key_;
-	// The value associated with the key.
+	// The value associated with the key. Reinterpreted as a void* during sorting.
 	value_t_* m_value_;
 };
 

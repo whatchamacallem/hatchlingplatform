@@ -34,10 +34,22 @@
 #define HX_CPLUSPLUS 0
 #endif
 
+#if defined HX_DOXYGEN
+
+#define HX_USE_THREADS 1
+#define hxattr_hot
+#define hxattr_cold
+#define hxattr_format_printf(...)
+#define hxattr_format_scanf(...)
+#define hxattr_nonnull(...)
+#define hxattr_noexcept
+#define hxattr_allocator(...)
+#define hxattr_noreturn
+
 // ----------------------------------------------------------------------------
 // Target settings for MSVC. Further compilers will require customization. MSVC
 // doesn't support C++'s feature test macros very well.
-#if defined _MSC_VER
+#elif defined _MSC_VER
 #error The MSVC build is currently unmaintained. It should be easy to fix.
 /// `_HAS_EXCEPTIONS` - _MSC_VER only. Disables exception handling. Must be
 /// included before standard headers.

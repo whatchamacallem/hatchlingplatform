@@ -11,7 +11,7 @@
 /// `T::operator<(const T&)` and `T::operator==(const T&)` are used.
 ///
 /// `hxradix_sort.hpp` is recommended as an `Θ(n)` sorting strategy for any
-/// primitive type that is 4-bytes or less. This implementation does not cause
+/// fundamental type that is 4-bytes or less. This implementation does not cause
 /// code bloat and is the fastest sorting algorithm available for scalar keys.
 /// Radix sort is best when you need real-time guarantees and have a massive
 /// workload. This is not a toy. It was actually how IBM sorted punch cards.

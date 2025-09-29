@@ -173,7 +173,7 @@ public:
 
 	/// Variant of emplace_back() that returns a pointer for use with placement
 	/// new. (Non-standard.)
-	void* emplace_back_unconstructed(void);
+	void* push_back_unconstructed(void);
 
 	/// Returns true if the arrays compare as equivalent. This version takes a
 	/// functor for key comparison.
@@ -245,7 +245,7 @@ public:
 	/// Inserts the element at the offset indicated. `insert(begin(), x)` and
 	/// `insert(end(), x)` will work as long as the array is allocated. Not
 	/// intended for objects that are expensive to move. Consider using
-	/// emplace_back_unconstructed for storing large objects.
+	/// push_back_unconstructed for storing large objects.
 	/// - `pos` : Pointer to the location to insert the new element at.
 	/// - `t` : The new element.
 	void insert(T_* pos_, const T_& t_) hxattr_nonnull(2);
@@ -400,19 +400,19 @@ hxarray<T_, capacity_>::~hxarray(void) {
 
 template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::operator+=(const T_& x_) {
-	::new(this->emplace_back_unconstructed()) T_(x_);
+	::new(this->push_back_unconstructed()) T_(x_);
 }
 
 template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::operator+=(T_&& x_) {
-	::new(this->emplace_back_unconstructed()) T_(hxmove(x_));
+	::new(this->push_back_unconstructed()) T_(hxmove(x_));
 }
 
 template<typename T_, size_t capacity_>
 template<size_t capacity_x_>
 void hxarray<T_, capacity_>::operator+=(const hxarray<T_, capacity_x_>& x_) {
 	for(const T_ *it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
-		::new(this->emplace_back_unconstructed()) T_(*it_);
+		::new(this->push_back_unconstructed()) T_(*it_);
 	}
 }
 
@@ -420,7 +420,7 @@ template<typename T_, size_t capacity_>
 template<size_t capacity_x_>
 void hxarray<T_, capacity_>::operator+=(hxarray<T_, capacity_x_>&& x_) {
 	for(const T_ *it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
-		::new(this->emplace_back_unconstructed()) T_(hxmove(*it_));
+		::new(this->push_back_unconstructed()) T_(hxmove(*it_));
 	}
 }
 
@@ -509,7 +509,7 @@ void hxarray<T_, capacity_>::clear(void) {
 }
 
 template<typename T_, size_t capacity_>
-void* hxarray<T_, capacity_>::emplace_back_unconstructed(void) {
+void* hxarray<T_, capacity_>::push_back_unconstructed(void) {
 	hxassertmsg(!this->full(), "stack_overflow");
 	return (void*)m_end_++;
 }

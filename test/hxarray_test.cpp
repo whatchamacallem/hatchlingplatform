@@ -165,7 +165,7 @@ TEST_F(hxarray_test, modification) {
 		objs.push_back(to);
 		objs.push_back((const test_object&)to);
 
-		::new (objs.emplace_back_unconstructed()) test_object;
+		::new (objs.push_back_unconstructed()) test_object;
 
 		// 91, 92, -1, -1, -2
 

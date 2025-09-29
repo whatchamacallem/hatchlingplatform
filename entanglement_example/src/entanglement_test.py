@@ -44,7 +44,7 @@ class run_all_tests(unittest.TestCase):
 		self.assert_instance_equal(system_under_test.function_overload(1,2), int, -1)
 		self.assert_instance_equal(system_under_test.function_overload(1,2,3,4), float, -2)
 
-	# Arrays of primitive types. These are important to numpy/mathematicians.
+	# Arrays of fundamental types. These are important to numpy/mathematicians.
 	def do_test_function_pointer(self, test_function, c_type, d_type, size :int, value: int):
 		input_array = (c_type * size)()
 		output_array = test_function(input_array, size, value)

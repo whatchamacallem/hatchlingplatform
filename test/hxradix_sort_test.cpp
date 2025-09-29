@@ -50,11 +50,11 @@ public:
 		hxarray<test_object<key_t> > b(a);
 		::qsort(b.data(), b.size(), sizeof(test_object<key_t>), q_sort_compare<key_t>);
 
-		// Radix sort using 8-bit digits.
+		// Radix sort using 8-bit digits and push_back_unconstructed.
 
 		hxarray<hxradix_sort_key<key_t, test_object<key_t>>> rs; rs.reserve(size);
 		for(uint32_t i = size; i--;) {
-			rs.push_back(hxradix_sort_key<key_t, test_object<key_t>>(a[i].id, &a[i]));
+			::new(rs.push_back_unconstructed()) hxradix_sort_key<key_t, test_object<key_t>>(a[i].id, &a[i]);
 		}
 
 		hxradix_sort(rs.begin(), rs.end());
@@ -66,7 +66,7 @@ public:
 			EXPECT_EQ(b[i].id, rs[i].get_value()->id);
 		}
 
-		// Do it again with 11-bit digits.
+		// Do it again with 11-bit digits using regular push_back.
 
 		rs.clear();
 		for(uint32_t i = size; i--;) {
