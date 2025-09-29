@@ -4,7 +4,7 @@
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
 /// \file hx/hxradix_sort.hpp `hxradix_sort` is recommended as an Θ(n) sorting
-/// strategy for any primitive type that is 4-bytes or less. This implementation
+/// strategy for any primitive type that is 32-bits or less. This implementation
 /// does not cause code bloat and is the fastest sorting algorithm available for
 /// scalar keys. Radix sort is best when you need real-time guarantees and have a
 /// massive workload. This is not a toy. It was actually how IBM sorted punch
@@ -12,26 +12,33 @@
 
 #include "hatchling.h"
 
-/// A key-value pair used in radix sorting. Only fixed size types from `<stdint.h>`
-/// are supported for `key_t`.
+/// A key-value pair used with `hxradix_sort`. Only 32-bit fixed size types from
+/// `<stdint.h>` are supported for `key_t`. Requires `value_t` to be referenced
+/// as a pointer.
 template<typename key_t_, typename value_t_>
 class hxradix_sort_key {
 public:
+	/// Construct from the required `key_t` type and `value_t*` type.
 	hxradix_sort_key(key_t_ key_, value_t_* value_) { this->set_(key_, value_); }
 
+	/// Set from the required `key_t` type and `value_t*` type.
 	void set(key_t_ key_, value_t_* value_) { this->set_(key_, value_); }
 
+	/// Return the stored `value_t*`.
 	const value_t_* get_value(void) const { return m_value_; }
 
+	/// Return the stored `value_t*`.
 	value_t_* get_value(void) { return m_value_; }
 
-	/// Comparison operator for sorting `hxradix_sort_key` objects by key as a fallback.
-	bool operator<(const hxradix_sort_key& rhs_) const { return m_key_ < rhs_.m_key_; }
+	/// Comparison operator for comparision sorting `hxradix_sort_key` objects
+	/// by key as a fallback for short arrays.
+	bool operator<(const hxradix_sort_key& x_) const { return m_key_ < x_.m_key_; }
 
 	/// A version of the key that may have been modified to work as a uint32_t.
 	uint32_t get_modified_key(void) const { return m_key_; }
 
 private:
+	// Internal. Possible conversion routines.
 	void set_(int8_t key_, value_t_* value_) { this->set_((int32_t)key_, value_); }
 	void set_(uint8_t key_, value_t_* value_) { m_key_=key_; m_value_=value_; }
 	void set_(int16_t key_, value_t_* value_) { this->set_((int32_t)key_, value_); }
@@ -40,8 +47,8 @@ private:
 		m_key_ = (uint32_t)(key_ ^ 0x80000000);
 		m_value_ = value_;
 	}
-	void set_(int64_t key_, value_t_* value_) = delete;
-	void set_(uint64_t key_, value_t_* value_) = delete;
+	void set_(int64_t key_, value_t_* value_) = delete; // Not supported.
+	void set_(uint64_t key_, value_t_* value_) = delete; // Not supported.
 	void set_(uint32_t key_, value_t_* value_) { m_key_=key_; m_value_=value_; }
 	void set_(float key_, value_t_* value_) {
 		uint32_t t_;
@@ -49,10 +56,12 @@ private:
 		m_key_ = t_ ^ (uint32_t)(((int32_t)t_ >> 31) | 0x80000000);
 		m_value_ = value_;
 	}
-	void set_(double key_, value_t_* value_) = delete;
+	void set_(double key_, value_t_* value_) = delete; // Not supported.
 
-	uint32_t m_key_; // The key used for sorting. Not preserved in a usable form.
-	value_t_* m_value_;	 // The associated value.
+	// The key used for sorting. Not preserved in a usable form.
+	uint32_t m_key_;
+	// The value associated with the key.
+	value_t_* m_value_;
 };
 
 /// Internal. Used to share the implementation with all pointer types.

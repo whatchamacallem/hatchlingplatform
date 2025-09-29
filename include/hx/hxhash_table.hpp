@@ -157,10 +157,10 @@ public:
 		const_iterator operator++(int) { const_iterator t_(*this); operator++(); return t_; }
 
 		/// Compares two iterators for equality.
-		bool operator==(const const_iterator& rhs_) const { return m_current_node_ == rhs_.m_current_node_; }
+		bool operator==(const const_iterator& x_) const { return m_current_node_ == x_.m_current_node_; }
 
 		/// Compares two iterators for inequality.
-		bool operator!=(const const_iterator& rhs_) const { return m_current_node_ != rhs_.m_current_node_; }
+		bool operator!=(const const_iterator& x_) const { return m_current_node_ != x_.m_current_node_; }
 
 		/// Dereferences the iterator to access the current `node_t`.
 		const node_t_& operator*(void) const { return *m_current_node_; }
