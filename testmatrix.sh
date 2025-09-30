@@ -20,13 +20,13 @@ set -o errexit
 export POSIXLY_CORRECT=1
 
 # Fatal warning flags.
-HX_ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
+ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
 	-Wfatal-errors -pedantic-errors"
 
-HX_FLAGS="-ffast-math -ggdb3"
+FLAGS="-ffast-math -ggdb3"
 
-HX_SANITIZE="-fsanitize=undefined,address -fsanitize-recover=undefined,address"
+SANITIZE="-fsanitize=undefined,address -fsanitize-recover=undefined,address"
 
 HX_DIR=`pwd`
 
@@ -49,10 +49,10 @@ gcc --version | grep gcc
 for I in 0 1 2 3; do
 echo gcc c++11 -O$I "$@"...
 # -std=c99
-gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS \
+gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $FLAGS $ERRORS \
 	-std=c99 -m32 "$@" -c $HX_DIR/src/*.c $HX_DIR/test/*.c
 # -std=c++14
-gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS \
+gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $FLAGS $ERRORS \
 	-pthread -std=c++11 -fno-exceptions -fno-rtti "$@" $HX_DIR/src/*.cpp \
 	$HX_DIR/test/*.cpp *.o -lpthread -lstdc++ -m32 -o hxtest
 
@@ -67,16 +67,16 @@ clang --version | grep clang
 for I in 0 1 2 3; do
 echo clang UBSan -O$I "$@"...
 # compile C17
-clang -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
-	-fdiagnostics-absolute-paths -std=c17 $HX_SANITIZE "$@" -c ../src/*.c ../test/*.c
+clang -I../include -DHX_RELEASE=$I -O$I $FLAGS $ERRORS -pedantic-errors \
+	-fdiagnostics-absolute-paths -std=c17 $SANITIZE "$@" -c ../src/*.c ../test/*.c
 # generate C++17 pch. clang does this automatically when a c++ header file is the target.
-clang++ -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
+clang++ -I../include -DHX_RELEASE=$I -O$I $FLAGS $ERRORS -pedantic-errors \
 	-DHX_USE_THREADS=$I -pthread -std=c++17 -fno-exceptions -fdiagnostics-absolute-paths \
-	$HX_SANITIZE "$@" ../include/hx/hatchling_pch.hpp -o hatchling_pch.hpp.pch
+	$SANITIZE "$@" ../include/hx/hatchling_pch.hpp -o hatchling_pch.hpp.pch
 # compile C++17 and link
-clang++ -I../include -DHX_RELEASE=$I -O$I $HX_FLAGS $HX_ERRORS -pedantic-errors \
+clang++ -I../include -DHX_RELEASE=$I -O$I $FLAGS $ERRORS -pedantic-errors \
 	-DHX_USE_THREADS=$I -pthread -std=c++17 -fno-exceptions -fdiagnostics-absolute-paths \
-	$HX_SANITIZE "$@" -include-pch hatchling_pch.hpp.pch ../src/*.cpp ../test/*.cpp *.o \
+	$SANITIZE "$@" -include-pch hatchling_pch.hpp.pch ../src/*.cpp ../test/*.cpp *.o \
 	-lpthread -lstdc++ -o hxtest
 
 run_hxtest

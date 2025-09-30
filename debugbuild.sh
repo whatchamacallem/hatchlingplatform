@@ -7,6 +7,8 @@
 #
 # The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:
 #   sudo apt-get install gcc-multilib g++-multilib gdb-multiarch
+#
+# Do not use a .pch with ccache. It won't work as expected.
 
 set -o errexit
 
@@ -21,41 +23,33 @@ wait_or_exit() {
     done
 }
 
-HX_RELEASE="-DHX_RELEASE=0"
+RELEASE="-DHX_RELEASE=0"
 
 # Compiler optimization level. Allows a fast debug build.
-HX_OPTIMIZATION="-O0"
+OPTIMIZATION="-O0"
 
-HX_ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
+ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
 	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
 	-pedantic-errors -Wfatal-errors"
 
-HX_FLAGS="-m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always"
+FLAGS="-m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always"
 
 # Build artifacts are not retained.
 rm -rf ./bin; mkdir ./bin && cd ./bin
 
-ccache clang $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
-	-std=c17 -c ../src/*.c ../test/*.c & pids="$!"
+ccache clang $RELEASE $OPTIMIZATION $ERRORS $FLAGS -I../include \
+	-std=c17 -c ../src/*.c ../test/*.c & PIDS="$!"
 
-# Make a pch just in case it helps.
-ccache clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
-	-std=c++20 -pthread -fno-exceptions -fno-rtti ../include/hx/hatchling_pch.hpp \
-	-o hatchling_pch.hpp.pch & pids="$pids $!"
-
-wait_or_exit $pids
-
-pids=""
-for file in ../*/*.cpp; do
-	ccache clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
-		-std=c++20 -pthread -fno-exceptions -fno-rtti -include-pch hatchling_pch.hpp.pch \
-		-c $file & pids="$pids $!"
+for FILE in ../*/*.cpp; do
+	ccache clang++ $RELEASE $OPTIMIZATION $ERRORS $FLAGS -I../include \
+		-std=c++20 -pthread -fno-exceptions -fno-rtti  \
+		-c $FILE & PIDS="$PIDS $!"
 done
 
-wait_or_exit $pids
+wait_or_exit $PIDS
 
-ccache clang++ $HX_RELEASE $HX_OPTIMIZATION $HX_ERRORS $HX_FLAGS -I../include \
-	-std=c++20 -pthread -fno-exceptions -fno-rtti -include-pch hatchling_pch.hpp.pch \
+ccache clang++ $RELEASE $OPTIMIZATION $ERRORS $FLAGS -I../include \
+	-std=c++20 -pthread -fno-exceptions -fno-rtti \
 	*.o -lpthread -lstdc++ -lm -o hxtest
 
 echo 🐉🐉🐉

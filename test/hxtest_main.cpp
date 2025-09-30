@@ -45,7 +45,7 @@ TEST(death_test, nothing_asserted) {
 
 static bool hxrun_all_tests(void) {
 	hxlogconsole("hatchling platform 🐉🐉🐉 " HATCHLING_TAG "\n");
-	hxlogconsole("release: %d profile: %d " __DATE__ " " __TIME__ "\n",
+	hxlogconsole("release: %d profile: %d\n",
 		(int)(HX_RELEASE), (int)(HX_PROFILE));
 	hxwarnmsg(HX_HATCHLING_PCH_USED, "pch not used");
 
