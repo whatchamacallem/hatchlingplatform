@@ -169,6 +169,7 @@ bool hxcheck_hash(hxconsolehex_t hash_) {
 	}
 	else {
 		hxlogconsole("%08zx: not found\n", (size_t)hash_);
+		return false;
 	}
 	return true;
 }
