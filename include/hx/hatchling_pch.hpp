@@ -7,9 +7,6 @@
 /// for use building a C++ precompiled header. See `testmatrix.sh`. Use
 /// `hx/hatchling.h` for building a C precompiled header.
 
-/// `HX_HATCHLING_PCH_USED` - Allows checking for correct use of -include-pch.
-#define HX_HATCHLING_PCH_USED 1
-
 // Tries not to include anything that will unnecessarily slow down the build.
 // As adding files to a .pch has a cost too.
 

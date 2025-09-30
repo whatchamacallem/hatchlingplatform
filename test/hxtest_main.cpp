@@ -45,9 +45,7 @@ TEST(death_test, nothing_asserted) {
 
 static bool hxrun_all_tests(void) {
 	hxlogconsole("hatchling platform 🐉🐉🐉 " HATCHLING_TAG "\n");
-	hxlogconsole("release: %d profile: %d\n",
-		(int)(HX_RELEASE), (int)(HX_PROFILE));
-	hxwarnmsg(HX_HATCHLING_PCH_USED, "pch not used");
+	hxlogconsole("release: %d profile: %d\n", (int)(HX_RELEASE), (int)(HX_PROFILE));
 
 	// RUN_ALL_TESTS is a Google Test symbol.
 	size_t tests_failing = (size_t)RUN_ALL_TESTS();

@@ -19,12 +19,6 @@
 #endif
 #endif
 
-#if !defined HX_HATCHLING_PCH_USED
-/// `HX_HATCHLING_PCH_USED` - Allows checking if `hatchling_pch.h` was used as
-/// expected.
-#define HX_HATCHLING_PCH_USED 0
-#endif
-
 #if defined __cplusplus
 /// `HX_CPLUSPLUS` - A version of `__cplusplus` that is defined to `0` when
 /// `__cplusplus` is undefined. Allows use in C preprocessor statements without
