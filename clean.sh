@@ -6,4 +6,4 @@
 # Nukes the files in .gitignore.
 git clean -Xdf
 
-ccache --clear
+ccache --clear --zero-stats

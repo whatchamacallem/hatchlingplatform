@@ -35,11 +35,11 @@ separator() {
 
 separator
 
-c=$(echo "sudo apt install -y                              \
-	clang         cmake         doxygen       g++          \
-	g++-multilib  gcc-multilib  gcovr         gdb          \
-	gdb-multiarch libc++-dev    llvm          llvm-18      \
-	llvm-18-dev   musl          musl-dev      musl-tools   \
+c=$(echo "sudo apt install -y                                         \
+	ccache        clang         cmake       doxygen     g++           \
+	g++-multilib  gcc-multilib  gcovr       gdb         gdb-multiarch \
+	libc++-dev    llvm          llvm-dev    musl        musl-dev      \
+	musl-tools                                                        \
 " | tr -s '[:space:]' ' ')
 echo "\$ $c"
 eval "$c"
