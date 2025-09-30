@@ -6,4 +6,6 @@
 # Nukes the files in .gitignore.
 git clean -Xdf
 
+# ccache is only for debugbuild.sh. Clearing it prevents stale binaries. It is
+# also worthwhile resetting the cache stats to keep them from getting stale.
 ccache --clear --zero-stats

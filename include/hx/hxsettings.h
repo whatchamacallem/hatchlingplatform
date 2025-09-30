@@ -19,31 +19,65 @@
 #endif
 #endif
 
-#if defined __cplusplus
+#if defined HX_DOXYGEN
 /// `HX_CPLUSPLUS` - A version of `__cplusplus` that is defined to `0` when
 /// `__cplusplus` is undefined. Allows use in C preprocessor statements without
 /// warnings when the compiler is configured to warn about undefined macros.
+#define HX_CPLUSPLUS 202002L // Document all supported standards.
+#elif defined __cplusplus
 #define HX_CPLUSPLUS __cplusplus
 #else
 #define HX_CPLUSPLUS 0
 #endif
 
+// ----------------------------------------------------------------------------
+// Target settings for Doxygen. See the Doxyfile. Run doxygen with no args.
 #if defined HX_DOXYGEN
 
 #define HX_USE_THREADS 1
+
+/// `hxbreakpoint` - Can be conditionally evaluated with the `&&` and `||`
+/// operators. Uses intrinsics when available. (E.g. clang.) Raises SIGTRAP when
+/// __builtin_debugtrap is not available.
+#define hxbreakpoint()
+
+/// hxrestrict - A pointer attribute indicating that for the lifetime of that pointer, it
+/// will be the sole means of accessing the object(s) it points to.
+#define hxrestrict
+
+/// hxattr_hot - Optimize more aggressively.
 #define hxattr_hot
+
+/// hxattr_cold - Optimize for size.
 #define hxattr_cold
-#define hxattr_format_printf(...)
-#define hxattr_format_scanf(...)
+
+/// Indicates to gcc that a function uses printf-style formatting so it can
+/// type-check the format string.
+#define hxattr_format_printf(pos_, start_)
+
+/// Indicates to gcc that a function uses scanf-style formatting so it can
+/// type-check the format string.
+#define hxattr_format_scanf(pos_, start_)
+
+/// Indicates that a function has args that should not be null. Checked by UBSan.
 #define hxattr_nonnull(...)
+
+/// `hxattr_noexcept` - Use gcc/clang `nothrow` attribute. Unlike `noexcept` this
+/// is undefined when violated.
 #define hxattr_noexcept
+
+/// hxattr_allocator - Mark allocator/deallocator pairs for static analysis. See
+/// the gcc manual. Must return non-null as well.
 #define hxattr_allocator(...)
+
+/// Indicates that a function will never return. E.g. by calling `_Exit`.
 #define hxattr_noreturn
 
 // ----------------------------------------------------------------------------
-// Target settings for MSVC. Further compilers will require customization. MSVC
-// doesn't support C++'s feature test macros very well.
+// Target settings for MSVC. MSVC doesn't support C++'s feature test macros very
+// well.
 #elif defined _MSC_VER
+
 #error The MSVC build is currently unmaintained. It should be easy to fix.
 /// `_HAS_EXCEPTIONS` - _MSC_VER only. Disables exception handling. Must be
 /// included before standard headers.
@@ -82,8 +116,7 @@
 /// Ignored on Windows.
 #define hxattr_nonnull(...)
 
-/// Unlike noexcept this is undefined when violated. `hxattr_noexcept` -
-/// `_MSC_VER's` `nothrow` attribute.
+/// Unlike `noexcept` this is undefined when violated.
 #define hxattr_noexcept __declspec(nothrow)
 
 /// Ignored on Windows.
@@ -92,10 +125,10 @@
 /// Ignored on Windows.
 #define hxattr_noreturn
 
-#else
 // ----------------------------------------------------------------------------
 // Target settings for clang and gcc. Further compilers will require
 // customization.
+#else // Assume gcc/clang.
 
 // hxthreads.hpp should work in C++11 with pthread.h. WASM still needs to be
 // hooked up. _POSIX_THREADS is the correct way to observe the -pthread compiler

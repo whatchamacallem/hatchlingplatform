@@ -29,7 +29,9 @@ typedef size_t hxcycles_t;
 
 #if HX_PROFILE
 #include "detail/hxprofiler_detail.hpp"
+/// \cond HIDDEN
 #define HX_PROFILE_ONLY_(x_) x_
+/// \endcond
 #else
 #define HX_PROFILE_ONLY_(x_) ((void)0)
 #endif

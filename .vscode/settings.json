@@ -29,6 +29,7 @@
         "DENTANGLEMENT",
         "displayname",
         "docstrings",
+        "Doxyfile",
         "DTEST",
         "dunder",
         "emcc",

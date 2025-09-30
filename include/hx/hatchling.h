@@ -19,7 +19,8 @@
 /// Available utilities are: `hxnull`, `hxnullptr`, `hxmove`, `hxmin`, `hxmax`,
 /// `hxabs`, `hxclamp`, `hxswap`, `hxhex_dump`, `hxfloat_dump`.
 
-// C Standard, Annex K is not portable. Asserts are used instead.
+/// C Standard, Annex K is not portable. Asserts and hxattr_nonnull are used
+/// instead.
 #define __STDC_WANT_LIB_EXT1__ 0
 
 // Use minimal C style headers. The std:: namespace may not exist. "You can't
