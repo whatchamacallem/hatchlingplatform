@@ -13,15 +13,6 @@ set -o errexit
 
 export POSIXLY_CORRECT=1
 
-# Usage: wait_or_exit <pid>...
-wait_or_exit() {
-    for pid in "$@"; do
-        if ! wait "$pid"; then
-            exit 1
-        fi
-    done
-}
-
 BUILD="-DHX_RELEASE=0 -O0"
 
 ERRORS="-Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual \
@@ -35,7 +26,7 @@ rm -rf ./bin; mkdir ./bin && cd ./bin
 
 for FILE in ../src/*.c ../test/*.c; do
 	ccache clang $BUILD $ERRORS $FLAGS -I../include \
-		-std=c17 -c $FILE & PIDS="$!"
+		-std=c17 -c $FILE & PIDS="$PIDS $!"
 done
 
 for FILE in ../src/*.cpp ../test/*.cpp; do
@@ -44,7 +35,11 @@ for FILE in ../src/*.cpp ../test/*.cpp; do
 		-c $FILE & PIDS="$PIDS $!"
 done
 
-wait_or_exit $PIDS
+for PID in $PIDS; do
+	if ! wait "$PID"; then
+		exit 1
+	fi
+done
 
 ccache clang++ $BUILD $FLAGS *.o -lpthread -lstdc++ -lm -o hxtest
 
