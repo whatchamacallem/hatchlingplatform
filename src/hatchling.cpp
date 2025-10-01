@@ -57,6 +57,13 @@ void __sanitizer_report_error_summary(const char *error_summary);
 
 #if HX_NO_LIBCXX
 
+// Provide declarations even though they are part of the ABI.
+int __cxa_guard_acquire(size_t *guard);
+void __cxa_guard_release(size_t *guard);
+void __cxa_guard_abort(uint64_t *guard);
+void __cxa_deleted_virtual(void);
+void __cxa_pure_virtual(void);
+
 int __cxa_guard_acquire(size_t *guard) {
 	// Return 0 if already constructed.
 	if(*guard == 1u) { return 0; }

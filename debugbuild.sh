@@ -45,4 +45,6 @@ done
 
 ccache clang++ $BUILD $FLAGS *.o -lpthread -lstdc++ -lm -o hxtest
 
+ccache --show-stats
+
 echo 🐉🐉🐉
