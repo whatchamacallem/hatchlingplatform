@@ -13,6 +13,7 @@ set -o errexit
 
 export POSIXLY_CORRECT=1
 
+# Should detect threading and standard library.
 BUILD="-DHX_RELEASE=0 -O0"
 
 # -Wdate-time is for ccache.

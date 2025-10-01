@@ -216,8 +216,8 @@ const char* hxbasename(const char* path_) hxattr_nonnull(1);
 /// parsing of UTF-8 string parameters. However, this is not `en_US.UTF-8` or
 /// the default C locale.
 inline bool hxisgraph(char ch_) {
-	return ((unsigned int)ch_ - 0x21u) < 0x5Eu
-		|| ((unsigned int)ch_ & 0x80u);
+	return ((unsigned char)ch_ - 0x21u) < 0x5Eu
+		|| ((unsigned char)ch_ & 0x80u);
 }
 
 /// Implements standard `isspace` for a locale where all non-ascii characters
@@ -226,8 +226,7 @@ inline bool hxisgraph(char ch_) {
 /// UTF-8 string parameters. However, this is not `en_US.UTF-8` or the default
 /// C locale.
 inline bool hxisspace(char ch_) {
-	return ((unsigned int)ch_ - 0x09u) < 0x05u
-		|| ((unsigned int)ch_ == 0x20u);
+	return ch_ == ' ' || ((unsigned char)ch_ - 0x09u) < 0x05u;
 }
 
 /// Returns `log2(n)` as an integer which is the power of 2 of the largest bit

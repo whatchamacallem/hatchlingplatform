@@ -9,13 +9,14 @@ set -o errexit
 
 export POSIXLY_CORRECT=1
 
-BUILD="-DHX_RELEASE=3 -Os -static"
+# Should detect no C++ standard library.
+BUILD="-DHX_RELEASE=3 -DHX_USE_THREADS=1 -Os -static"
 
 ERRORS="-Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual \
 	-Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time \
 	-Wmissing-declarations"
 
-FLAGS="-DHX_USE_THREADS=1 -g -ffunction-sections -fdata-sections -ffast-math"
+FLAGS="-g -ffunction-sections -fdata-sections -ffast-math"
 
 HX_DIR=`pwd`
 

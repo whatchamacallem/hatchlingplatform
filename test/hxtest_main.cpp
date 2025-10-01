@@ -10,6 +10,9 @@
 
 #include "hxctest.h"
 
+// Nothing else in hx depends on this.
+#include <ctype.h>
+
 HX_REGISTER_FILENAME_HASH
 
 int hxtest_main(int argc, char**argv);
@@ -44,6 +47,36 @@ TEST(death_test, nothing_asserted) {
 	hxlog("EXPECTING_TEST_FAILURE\n");
 }
 #endif
+
+TEST(hxisspace, compare_with_standard) {
+	// Don't use non-ascii or setlocale because it might not exist.
+
+	for (int c = 0; c < 128; ++c) {
+		const bool hx = hxisspace((char)c);
+		const bool st = ::isspace((unsigned char)c) != 0;
+		EXPECT_EQ(hx, st);
+	}
+	for (int c = 128; c < 256; ++c) {
+		const bool hx = hxisspace((char)c);
+		EXPECT_EQ(hx, false);
+	}
+}
+
+TEST(hxisgraph, compare_with_standard) {
+	// Don't use non-ascii or setlocale because it might not exist.
+
+	for (int c = 0; c <= 255; ++c) {
+		const bool hx = hxisgraph((char)c);
+
+		const bool expected = (c >= 0x21 && c <= 0x7E) || (c >= 0x80);
+		EXPECT_EQ(hx, expected);
+
+		if (c < 0x80) {
+			const bool st = ::isgraph(c) != 0;
+			EXPECT_EQ(hx, st);
+		}
+	}
+}
 
 static bool hxrun_all_tests(void) {
 	hxlogconsole("hatchling platform 🐉🐉🐉 " HATCHLING_TAG "\n");
