@@ -113,8 +113,8 @@ class hxhash_string_literal_
 
 class hxfilename_less {
 public:
-	bool operator()(const char* lhs, const char* rhs) const {
-		return hxstring_literal_hash_debug(lhs) < hxstring_literal_hash_debug(rhs);
+	bool operator()(const char* a, const char* b) const {
+		return hxstring_literal_hash_debug(a) < hxstring_literal_hash_debug(b);
 	}
 };
 

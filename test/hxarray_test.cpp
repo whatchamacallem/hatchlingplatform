@@ -26,9 +26,9 @@ public:
 			id = s_hxtest_current->m_next_id--;
 		}
 
-		test_object(const test_object& rhs) {
+		test_object(const test_object& x) {
 			++s_hxtest_current->m_constructed;
-			id = rhs.id;
+			id = x.id;
 		}
 		explicit test_object(int32_t x) {
 			hxassert(x >= 0); // User supplied IDs are positive
@@ -40,10 +40,10 @@ public:
 			id = ~0u;
 		}
 
-		void operator=(const test_object& rhs) { id = rhs.id; }
+		void operator=(const test_object& x) { id = x.id; }
 		bool operator==(int32_t x) const { return id == x; }
-		bool operator==(const test_object& rhs) const { return id == rhs.id; }
-		bool operator<(const test_object& rhs) const { return id < rhs.id; }
+		bool operator==(const test_object& x) const { return id == x.id; }
+		bool operator<(const test_object& x) const { return id < x.id; }
 
 		int32_t id;
 	};

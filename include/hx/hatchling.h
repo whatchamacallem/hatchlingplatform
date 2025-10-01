@@ -313,7 +313,7 @@ constexpr void hxswap(T_& x_, T_& y_) {
 
 /// `hxswap_memcpy` - Exchanges the contents of `x` and `y` using `memcpy` and a
 /// stack temporary. This is intended for internal use where it is known to be
-/// safe to do so.
+/// safe to do so. It is a cheap way to write `operator=(T&&)`.
 /// - `x` : First `T&`.
 /// - `y` : Second `T&`.
 template<typename T_>
@@ -328,21 +328,21 @@ constexpr void hxswap_memcpy(T_& x_, T_& y_) {
 // ----------------------------------------------------------------------------
 // C Macro Utility API - Does it all backwards in heels.
 
-/// `hxmin` - Returns the minimum value of `x` and `y` using a < comparison.
+/// `hxmin` - Returns the minimum value of `x` and `y` using a `<` comparison.
 /// - `x` : The first value.
 /// - `y` : The second value.
 #define hxmin(x_, y_) ((x_) < (y_) ? (x_) : (y_))
 
-/// `hxmax` - Returns the maximum value of x and y using a < comparison.
+/// `hxmax` - Returns the maximum value of `x` and `y` using a `<` comparison.
 /// - `x` : The first value.
 /// - `y` : The second value.
 #define hxmax(x_, y_) ((y_) < (x_) ? (x_) : (y_))
 
-/// `hxabs` - Returns the absolute value of x using a < comparison.
+/// `hxabs` - Returns the absolute value of `x` using a `<` comparison.
 /// - `x` : The value to compute the absolute value for.
 #define hxabs(x_) ((x_) < 0 ? (0 - (x_)) : (x_))
 
-/// `hxclamp` - Returns x clamped between the minimum and maximum using <
+/// `hxclamp` - Returns `x` clamped between the `minimum` and `maximum` using `<`
 /// comparisons.
 /// - `x` : The value to clamp.
 /// - `minimum` : The minimum allowable value.
@@ -350,10 +350,15 @@ constexpr void hxswap_memcpy(T_& x_, T_& y_) {
 #define hxclamp(x_, minimum_, maximum_) \
 	((x_) < (minimum_) ? (minimum_) : ((maximum_) < (x_) ? (maximum_) : (x_)))
 
-/// `hxswap_memcpy` - Exchanges the contents of x and y using a temporary.
+/// `hxswap_memcpy` - Exchanges the contents of `x` and `y` using `memcpy` and a
+/// stack temporary. This is intended for internal use where it is known to be
+/// safe to do so.
+/// - `x` : First object.
+/// - `y` : Second object.
 #define hxswap_memcpy(x_,y_) do { \
 	char t_[sizeof(x_) == sizeof(y_) ? (int)sizeof(x_) : -1]; \
-	memcpy((t_), &(y_), sizeof(x_)); \
+	memcpy(t_, &(y_), sizeof(x_)); \
 	memcpy(&(y_), &(x_), sizeof(x_)); \
-	memcpy(&(x_), (t_), sizeof(x_)); } while(0)
-#endif
+	memcpy(&(x_), t_, sizeof(x_)); } while(0)
+
+#endif // !HX_CPLUSPLUS

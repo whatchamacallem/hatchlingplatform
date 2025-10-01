@@ -20,9 +20,9 @@ namespace hxdetail_ {
 
 class hxconsole_less_ {
 public:
-	bool operator()(const hxconsole_hash_table_node_* lhs,
-			const hxconsole_hash_table_node_* rhs) const {
-		return hxkey_less(lhs->key().str_, rhs->key().str_);
+	bool operator()(const hxconsole_hash_table_node_* a,
+			const hxconsole_hash_table_node_* b) const {
+		return hxkey_less(a->key().str_, b->key().str_);
 	}
 };
 

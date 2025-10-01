@@ -25,9 +25,9 @@ public:
 			id = ~0u;
 		}
 
-		void operator=(const test_object& rhs) { id = rhs.id; }
+		void operator=(const test_object& x) { id = x.id; }
 		void operator=(int32_t x) { id = x; }
-		bool operator==(const test_object& rhs) const { return id == rhs.id; }
+		bool operator==(const test_object& x) const { return id == x.id; }
 		bool operator==(int32_t x) const { return id == x; }
 
 		operator float(void) const { return (float)id; }

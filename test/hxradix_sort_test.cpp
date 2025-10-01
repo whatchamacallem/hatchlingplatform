@@ -19,7 +19,7 @@ public:
 	public:
 		test_object(key_t k) : id(k) { }
 		~test_object(void) { id = (key_t)0; }
-		bool operator<(const test_object& rhs) const { return id < rhs.id; }
+		bool operator<(const test_object& x) const { return id < x.id; }
 		key_t id;
 	};
 

@@ -59,7 +59,7 @@ protected:
 private:
 	// *** The static allocator does not support swapping allocations or
 	// assignments from temporaries. ***
-	void swap(hxallocator& rhs) = delete;
+	void swap(hxallocator&) = delete;
 	hxallocator(const hxallocator&) = delete;
 	void operator=(const hxallocator&) = delete;
 
@@ -98,9 +98,8 @@ public:
 	T_* data(void) { return m_data_; }
 
 	/// Swap. Only works with fixed_capacity_ == hxallocator_dynamic_capacity
-	void swap(hxallocator& rhs) {
-		hxswap(m_capacity_, rhs.m_capacity_);
-		hxswap(m_data_, rhs.m_data_);
+	void swap(hxallocator& x_) {
+		hxswap_memcpy(*this, x_);
 	}
 
 protected:
