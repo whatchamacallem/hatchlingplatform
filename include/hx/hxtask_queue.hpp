@@ -14,10 +14,9 @@
 /// needed. See `<hx/hxtask.hpp>`.
 class hxtask_queue {
 public:
-	/// Create a new task queue. `thread_pool_size` determines the size of the worker
-	/// pool. A thread_pool_size of `-1` indicates using a default value, currently `2`.
-	/// A thread_pool_size of `0` does not use threading.
-	explicit hxtask_queue(size_t thread_pool_size_ = -1u);
+	/// Create a new task queue. `thread_pool_size` determines the size of the
+	/// worker thread pool. A thread_pool_size of `0` does not use threads.
+	explicit hxtask_queue(size_t thread_pool_size_);
 
 	/// Calls wait_for_all before destructing.
 	~hxtask_queue(void);
@@ -35,12 +34,12 @@ private:
 	hxtask_queue(const hxtask_queue&) = delete;
 	void operator=(const hxtask_queue&) = delete;
 
-	friend class hxtask_wait_for_tasks_;
-	friend class hxtask_wait_for_completion_;
-
 	hxtask* m_next_task_;
 
 #if HX_USE_THREADS
+	friend class hxtask_wait_for_tasks_;
+	friend class hxtask_wait_for_completion_;
+
 	enum thread_mode_t_ : uint8_t {
 		thread_mode_pool_,
 		thread_mode_waiting_,
