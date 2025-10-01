@@ -196,7 +196,7 @@ void hxdelete(T_* t_) {
 /// T using an optional memory allocator and alignment. Returns a pointer to the
 /// newly constructed object. Will not return on failure.
 /// - `allocator` : The memory manager ID to use for allocation. Defaults to hxsystem_allocator_current.
-/// - `align` : A mask of low bits to be zero'd out when allocating new pointers. Defaults to HX_ALIGNMENT.
+/// - `align` : A mask of low bits to be zeroed out when allocating new pointers. Defaults to HX_ALIGNMENT.
 template <typename T_, hxsystem_allocator_t allocator_=hxsystem_allocator_current, hxalignment_t align_=HX_ALIGNMENT, typename... Args_>
 T_* hxnew(Args_&&... args_) {
 	return ::new(hxmalloc_ext(sizeof(T_), allocator_, align_)) T_(args_...);

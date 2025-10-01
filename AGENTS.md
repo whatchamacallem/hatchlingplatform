@@ -96,11 +96,11 @@ Test Script | Description
 
 Syntax | Rule
 --- | ---
-Classes, structs, enums, concepts | E.g. `hxlower_snake_case`. (Hatchling Platform intentionally keeps type names lower-case snake case starting with hx.)
-Functions and methods | E.g. `hxlower_snake_case`.
-Variables | E.g. `hxlower_snake_case`. Parameters and member variables use a trailing underscore (e.g., `size_` and `m_size_`).
-Macros | E.g. `HX_UPPER_SNAKE_CASE`.
-Template parameters | E.g. `allocator_t_`, `value_t_`. Use snake case for clarity.
+Classes, structs, enums, concepts | E.g., `hxlower_snake_case`. (Hatchling Platform intentionally keeps type names lower-case snake case starting with hx.)
+Functions and methods | E.g., `hxlower_snake_case`.
+Variables | E.g., `hxlower_snake_case`. Parameters and member variables use a trailing underscore (e.g., `size_` and `m_size_`).
+Macros | E.g., `HX_UPPER_SNAKE_CASE`.
+Template parameters | E.g., `allocator_t_`, `value_t_`. Use snake case for clarity.
 
 ## Formatting Rules
 

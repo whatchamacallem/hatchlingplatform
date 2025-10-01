@@ -58,7 +58,7 @@ void hxconsole_deregister(const char* id) {
 bool hxconsole_exec_line(const char* command) {
 	// Skip leading whitespace
 	const char* pos = command;
-	while(*pos != '\0' && hxconsole_is_delimiter_(*pos)) {
+	while(*pos != '\0' && !hxisgraph(*pos)) {
 		++pos;
 	}
 
@@ -74,7 +74,7 @@ bool hxconsole_exec_line(const char* command) {
 	}
 
 	// Skip command name
-	while(!hxconsole_is_delimiter_(*pos)) {
+	while(hxisgraph(*pos)) {
 		++pos;
 	}
 

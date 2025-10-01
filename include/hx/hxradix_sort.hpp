@@ -28,56 +28,66 @@ template<typename key_t_, typename value_t_>
 class hxradix_sort_key {
 public:
 	/// Construct from the required `key_t` type and `value_t*` type.
-	hxradix_sort_key(key_t_ key_, value_t_* value_) { this->set_(key_, value_); }
+	hxradix_sort_key(key_t_ key_, value_t_ value_) { this->set_(key_, value_); }
 
 	/// Set from the required `key_t` type and `value_t*` type.
-	void set(key_t_ key_, value_t_* value_) { this->set_(key_, value_); }
+	void set(key_t_ key_, value_t_ value_) { this->set_(key_, value_); }
 
 	/// Return the stored `value_t*`.
-	const value_t_* get_value(void) const { return m_value_; }
+	const value_t_ get_value(void) const { return m_value_; }
 
 	/// Return the stored `value_t*`.
-	value_t_* get_value(void) { return m_value_; }
+	value_t_ get_value(void) { return m_value_; }
 
 	/// Comparison operator for comparision sorting `hxradix_sort_key` objects
 	/// by key as a fallback for short arrays.
-	bool operator<(const hxradix_sort_key& x_) const { return m_key_ < x_.m_key_; }
+	bool operator<(hxradix_sort_key x_) const { return m_key_ < x_.m_key_; }
 
 	/// A version of the key that may have been modified to work as a uint32_t.
 	uint32_t get_modified_key(void) const { return m_key_; }
 
 private:
-	// Required by hxradix_sort_void/hxradix_sort_void11.
-	static_assert(sizeof(void*) == sizeof(value_t_*), "Incompatible pointer sizes.");
+	// Required by the implementation of hxradix_sort_void/hxradix_sort_void11.
+	// Use a pointer or small struct for value_t. Otherwise the implementation
+	// does too much copying.
+	static_assert(sizeof(void*) >= sizeof(value_t_), "value_t size too big.");
 
 	// Internal. Possible conversion routines.
-	void set_(int8_t key_, value_t_* value_) { this->set_((int32_t)key_, value_); }
-	void set_(uint8_t key_, value_t_* value_) { m_key_=key_; m_value_=value_; }
-	void set_(int16_t key_, value_t_* value_) { this->set_((int32_t)key_, value_); }
-	void set_(uint16_t key_, value_t_* value_) { m_key_=key_; m_value_=value_; }
-	void set_(int32_t key_, value_t_* value_) {
-		m_key_ = (uint32_t)(key_ ^ 0x80000000);
+	void set_(int8_t key_, value_t_ value_) { this->set_((int32_t)key_, value_); }
+	void set_(uint8_t key_, value_t_ value_) { m_key_=key_; m_value_=value_; }
+	void set_(int16_t key_, value_t_ value_) { this->set_((int32_t)key_, value_); }
+	void set_(uint16_t key_, value_t_ value_) { m_key_=key_; m_value_=value_; }
+	void set_(int32_t key_, value_t_ value_) {
+		m_key_ = (uint32_t)key_ ^ 0x80000000u;
 		m_value_ = value_;
 	}
-	void set_(int64_t key_, value_t_* value_) = delete; // Not supported.
-	void set_(uint64_t key_, value_t_* value_) = delete; // Not supported.
-	void set_(uint32_t key_, value_t_* value_) { m_key_=key_; m_value_=value_; }
-	void set_(float key_, value_t_* value_) {
-		uint32_t t_;
+	void set_(int64_t key_, value_t_ value_) = delete; // Not supported.
+	void set_(uint64_t key_, value_t_ value_) = delete; // Not supported.
+	void set_(uint32_t key_, value_t_ value_) { m_key_=key_; m_value_=value_; }
+	void set_(float key_, value_t_ value_) {
+		// Reinterpret a float as a signed int in order to use a sign extending
+		// right shift before switching to well defined unsigned bit ops.
+		int32_t t_;
 		::memcpy(&t_, &key_, sizeof t_);
-		m_key_ = t_ ^ (uint32_t)(((int32_t)t_ >> 31) | 0x80000000);
+		m_key_ = (uint32_t)t_ ^ ((uint32_t)(t_ >> 31) | 0x80000000u);
 		m_value_ = value_;
 	}
-	void set_(double key_, value_t_* value_) = delete; // Not supported.
+	void set_(double key_, value_t_ value_) = delete; // Not supported.
 
 	// The key used for sorting. May not be preserved in a usable form.
 	uint32_t m_key_;
-	// The value associated with the key. Reinterpreted as a void* during sorting.
-	value_t_* m_value_;
+	union {
+		// The value associated with the key. Reinterpreted as a void* during
+		// sorting.
+		value_t_ m_value_;
+
+		// Forces m_value_ to occupy the same space as a void*.
+		void* m_void_ptr_;
+	};
 };
 
 /// Internal. Used to share the implementation with all pointer types.
-typedef hxradix_sort_key<uint32_t, void> hxradix_sort_key_void;
+typedef hxradix_sort_key<uint32_t, void*> hxradix_sort_key_void;
 
 /// Internal. The shared implementation used with all pointer types when sorting
 /// using 8-bit digits.

@@ -41,7 +41,7 @@ public:
 	/// - `x` : Pointer to the task to set as the next task.
 	void set_next_task(hxtask* x_) { m_next_task_ = x_; }
 
-	/// Returns the label of the task, or "task" if no label is set.
+	/// Returns the label of the task, or `"task"` if no label is set.
 	const char* get_label(void) const { return m_label_ ? m_label_ : "task"; }
 
 	/// Sets the label of the task.

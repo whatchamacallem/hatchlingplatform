@@ -22,14 +22,14 @@ public:
 
 	/// Functor returns hxrandom& which converts itself to the type it is
 	/// assigned to. Enables traditional syntax.
-	/// E.g. `uint32_t = m_prng(); // Returns [0..2^32).`
-	/// E.g. `double i = m_prng(); // Returns [0..1).`
+	/// E.g., `uint32_t = m_prng(); // Returns [0..2^32).`
+	/// E.g., `double i = m_prng(); // Returns [0..1).`
 	hxrandom& operator()(void) { return *this; }
 
 	/// Automatic cast to unsigned integer or floating point value. Floating point
 	/// results are between [0..1).  They can safely be used to generate array
 	/// indicies without overflowing.
-	/// E.g. `unsigned int = m_prng; // Returns [0..UINT_MAX].`
+	/// E.g., `unsigned int = m_prng; // Returns [0..UINT_MAX].`
 	operator float(void) {
 		return (float)this->advance32() * (1.0f / 4294967296.0f); // 0x1p-32f
 	}
@@ -53,8 +53,8 @@ public:
 	/// will return `0.0f` to `9.999f` and not `10.0f`. Uses a floating point multiply
 	/// instead of a divide. base + size must not overflow type and size must be
 	/// positive.
-	/// - `base` : The beginning of the range. E.g. 0.
-	/// - `size` : Positive size of the range. E.g. 10 elements.
+	/// - `base` : The beginning of the range. E.g., 0.
+	/// - `size` : Positive size of the range. E.g., 10 elements.
 	template<typename T_> T_ range(T_ base_, T_ size_) {
 		// Use double parameters if you need a bigger size. An emulated floating
 		// point multiply is faster and more stable than integer modulo.

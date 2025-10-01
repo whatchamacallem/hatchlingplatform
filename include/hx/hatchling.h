@@ -211,6 +211,37 @@ void hxfloat_dump(const float* address_, size_t floats_) hxattr_nonnull(1) hxatt
 /// - `path` : The file path as a null-terminated string.
 const char* hxbasename(const char* path_) hxattr_nonnull(1);
 
+/// Implements standard `isgraph` for a locale where all non-ascii characters
+/// are considered graphical or mark making. This is compatable with scanf-style
+/// parsing of UTF-8 string parameters. However, this is not `en_US.UTF-8` or
+/// the default C locale.
+inline bool hxisgraph(char ch_) {
+	return ((unsigned int)ch_ - 0x21u) < 0x5Eu
+		|| ((unsigned int)ch_ & 0x80u);
+}
+
+/// Implements standard `isspace` for a locale where all non-ascii characters
+/// are considered graphical or mark making. Returns nonzero for `' '`, `\t`,
+/// `\n`, `\v`, `\f` and `\r`. This is compatable with scanf-style parsing of
+/// UTF-8 string parameters. However, this is not `en_US.UTF-8` or the default
+/// C locale.
+inline bool hxisspace(char ch_) {
+	return ((unsigned int)ch_ - 0x09u) < 0x05u
+		|| ((unsigned int)ch_ == 0x20u);
+}
+
+/// Returns `log2(n)` as an integer which is the power of 2 of the largest bit
+/// in `n`. NOTA BENE: `hxlog2i(0)` is currently -127 and is undefined.
+/// - `i` : A `size_t`.
+inline int hxlog2i(size_t i_) {
+	// Use the floating point hardware because this isn't important enough for
+	// intrinsics.
+	float f_ = i_;
+    uint32_t bits_;
+    memcpy(&bits_, &f_, sizeof(float));
+    return ((bits_ >> 23) & 0xffu) - 127u;
+}
+
 // ----------------------------------------------------------------------------
 // C++ Template Utility API
 
@@ -291,18 +322,6 @@ constexpr void hxswap_memcpy(T_& x_, T_& y_) {
 	::memcpy(t_, &y_, sizeof x_);
 	::memcpy(&y_, &x_, sizeof x_);
 	::memcpy(&x_, t_, sizeof x_);
-}
-
-/// Returns `log2(n)` as an integer which is the power of 2 of the largest bit
-/// in `n`. NOTA BENE: `hxlog2i(0)` is currently -127 and is undefined.
-/// - `i` : A `size_t`.
-inline int hxlog2i(size_t i_) {
-	// Use the floating point hardware because this isn't important enough for
-	// intrinsics.
-	float f_ = i_;
-    uint32_t bits_;
-    ::memcpy(&bits_, &f_, sizeof(float));
-    return ((bits_ >> 23) & 0xffu) - 127u;
 }
 
 #else // !HX_CPLUSPLUS

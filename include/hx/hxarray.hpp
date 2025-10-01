@@ -65,7 +65,7 @@ public:
 #if !HX_NO_LIBCXX
 	/// Pass values of std::initializer_list as initializers to an array of T.
 	/// WARNING: This constructor will override the other constructors when
-	/// uniform initialization is used.  E.g. hxarry<int>x{1,2} is an array
+	/// uniform initialization is used.  E.g., hxarry<int>x{1,2} is an array
 	/// containing {1,2} and hxarry<int>x(1,2) is the array containing {2}.
 	/// - `x` : A std::initializer_list<x_t>.
 	template <typename other_value_t_>
@@ -73,7 +73,7 @@ public:
 #endif
 
 	/// Construct from a C-style array. Usable as an `initializer_list` when
-	/// std:: is not available. E.g.:
+	/// std:: is not available. E.g.,
 	/// ```cpp
 	/// static const int initial_values[] = { 5, 4, 3 };
 	/// hxarray<int> current_values(initial_values);
@@ -125,7 +125,7 @@ public:
 	void operator=(hxarray&& x_);
 
 	/// Assign from a C-style array. Usable as an `initializer_list` when
-	/// std:: is not available. E.g.:
+	/// std:: is not available. E.g.,
 	/// ```cpp
 	/// static const int initial_values[] = { 5, 4, 3 };
 	/// hxarray<int, 32> current_values(initial_values);

@@ -62,7 +62,7 @@ private:
 /// `hxconsole_command` - Registers a function using a global constructor. Use in a
 /// global scope. Command will have the same name and args as the function.
 /// - `x` : Valid C identifier that evaluates to a function pointer.
-///   E.g. hxconsole_command(srand);
+///   E.g., `hxconsole_command(srand);`
 #define hxconsole_command(x_) static hxconsole_constructor_ \
 	g_hxconsole_symbol_##x_(hxconsole_command_factory_(&(x_)), #x_)
 
@@ -70,16 +70,18 @@ private:
 /// Use in a global scope. Provided name_ must be a valid C identifier.
 /// - `x` : Any expression that evaluates to a function pointer.
 /// - `name` : Valid C identifier that identifies the command.
-///   E.g. hxconsole_command_named(srand, seed_rand);
+///   E.g., `hxconsole_command_named(srand, seed_rand);`
 #define hxconsole_command_named(x_, name_) static hxconsole_constructor_ \
 	g_hxconsole_symbol_##name_(hxconsole_command_factory_(&(x_)), #name_)
 
 /// `hxconsole_variable` - Registers a variable. Use in a global scope. Will have the
 /// same name as the variable.
 /// - `x` : Valid C identifier that evaluates to a variable.
-///   E.g.
+///   E.g.,
+/// ```cpp
 ///   static bool is_my_hack_enabled=false;
 ///   hxconsole_variable(is_my_hack_enabled);
+/// ```
 #define hxconsole_variable(x_) static hxconsole_constructor_ \
 	g_hxconsole_symbol_##x_(hxconsole_variable_factory_(&(x_)), #x_)
 
@@ -87,9 +89,11 @@ private:
 /// Provided name must be a valid C identifier.
 /// - `x` : Any expression that evaluates to a variable.
 /// - `name` : Valid C identifier that identifies the variable.
-///   E.g.
+///   E.g.,
+/// ```cpp
 ///   static bool is_my_hack_enabled=false;
 ///   hxconsole_variable_named(is_my_hack_enabled, f_hack); // add "f_hack" to the console.
+/// ```
 #define hxconsole_variable_named(x_, name_) static hxconsole_constructor_ \
 	g_hxconsole_symbol_##name_(hxconsole_variable_factory_(&(x_)), #name_)
 
@@ -98,7 +102,7 @@ private:
 void hxconsole_deregister(const char* id_) hxattr_nonnull(1);
 
 /// `hxconsole_exec_line` - Evaluates a console command to either call a function or
-/// set a variable. E.g.: "srand 77" or "a_variable 5"
+/// set a variable. E.g., `srand 77` or `a_variable 5`.
 /// - `command` : A string executed by the console.
 bool hxconsole_exec_line(const char* command_) hxattr_nonnull(1);
 

@@ -35,14 +35,9 @@ hxconsolehex_t::operator T_(void) const {
 
 namespace hxdetail_ {
 
-// Console tokens are delimited by any whitespace and non-printing low-ASCII
-// characters. `NUL` is considered a delimiter and must be checked for separately.
-// This happens to be UTF-8 compatable because it ignores characters `>= U+0100`.
-inline bool hxconsole_is_delimiter_(char ch_) { return ch_ <= 32; }
-
 // Checks for printing characters.
 inline bool hxconsole_is_end_of_line_(const char* str_) {
-	while(*str_ != '\0' && hxconsole_is_delimiter_(*str_)) {
+	while(*str_ != '\0' && !hxisgraph(*str_)) {
 		++str_;
 	}
 	return *str_ == '\0' || *str_ == '#'; // Skip comments
@@ -74,7 +69,7 @@ public:
 template<> class hxconsole_arg_<const char*> {
 public:
 	hxconsole_arg_(const char* str_, char** next_) {
-		while(*str_ != '\0' && hxconsole_is_delimiter_(*str_)) {
+		while(*str_ != '\0' && !hxisgraph(*str_)) {
 			++str_;
 		}
 		value_ = str_;
@@ -313,7 +308,7 @@ public:
 // Uses FNV-1a string hashing. Stops at whitespace.
 inline hxhash_t hxkey_hash(hxconsole_hash_table_key_ k_) {
 	hxhash_t x_ = (hxhash_t)0x811c9dc5;
-	while(!hxconsole_is_delimiter_(*k_.str_)) {
+	while(hxisgraph(*k_.str_)) {
 		x_ ^= (hxhash_t)*k_.str_++;
 		x_ *= (hxhash_t)0x01000193;
 	}
@@ -322,8 +317,8 @@ inline hxhash_t hxkey_hash(hxconsole_hash_table_key_ k_) {
 
 // A version of ::strcmp that stops at whitespace or NUL.
 inline hxhash_t hxkey_equal(hxconsole_hash_table_key_ a_, hxconsole_hash_table_key_ b_) {
-	while(!hxconsole_is_delimiter_(*a_.str_) && *a_.str_ == *b_.str_) { ++a_.str_; ++b_.str_; }
-	return hxconsole_is_delimiter_(*a_.str_) && hxconsole_is_delimiter_(*b_.str_);
+	while(hxisgraph(*a_.str_) && *a_.str_ == *b_.str_) { ++a_.str_; ++b_.str_; }
+	return !hxisgraph(*a_.str_) && !hxisgraph(*b_.str_);
 };
 
 // this is how to write a hash node without including hash table code.
@@ -335,7 +330,7 @@ public:
 			: m_hash_next_(hxnull), m_key_(key_), m_hash_(hxkey_hash(key_)), m_command_(hxnull) {
 		if((HX_RELEASE) < 1) {
 			const char* k_ = key_.str_;
-			while(!hxconsole_is_delimiter_(*k_)) {
+			while(hxisgraph(*k_)) {
 				++k_;
 			}
 			hxassertmsg(*k_ == '\0', "bad_console_symbol \"%s\"", key_.str_);

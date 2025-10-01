@@ -191,7 +191,7 @@ class run_all_tests(unittest.TestCase):
 	def test_operators_one_to_one(self):
 		# All operations return a matching string. A number of operators are
 		# missing. These are just the ones that have literal translations
-		# between languages. E.g. Python uses a cast to bool to implement && and
+		# between languages. E.g., Python uses a cast to bool to implement && and
 		# ||. There is no assignment operator because it wouldn't be what was
 		# expected. Urinary operators are tested here but the result is not
 		# explicit.

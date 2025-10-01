@@ -76,7 +76,7 @@ public:
 	operator const T_&() const { return *(this->get_local_()); }
 	operator T_&() { return *(this->get_local_()); }
 
-	/// "address of" operator returns `T*`.
+	/// The "address of" operator returns `T*`.
 	const T_* operator&() const { return this->get_local_(); }
 	T_* operator&() { return this->get_local_(); }
 

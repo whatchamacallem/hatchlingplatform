@@ -50,7 +50,7 @@ inline bool hxkey_equal(const char* a_, const char* b_) {
 }
 
 /// Utility for resolving function pointers to `hxkey_equal` from a partially
-/// specialized set of overloaded functions. E.g.
+/// specialized set of overloaded functions. E.g.,
 /// `hxkey_equal_function<int>()(1, 7)`.
 template<typename A_, typename B_>
 inline bool(*hxkey_equal_function(void))(const A_&, const B_&) {
@@ -97,7 +97,7 @@ inline bool hxkey_less(const char* a_, const char* b_) {
 }
 
 /// Utility for resolving function pointers to `hxkey_less` from a partially
-/// specialized set of overloaded functions. E.g.:
+/// specialized set of overloaded functions. E.g.,
 /// `hxkey_less_function<int>()(78, 77)`.
 template<typename A_, typename B_>
 inline bool (*hxkey_less_function(void))(const A_&, const B_&) {

@@ -28,6 +28,9 @@ $(tput rev)
 $(tput sgr 0)
 "
 
+# Delete files matching .gitignore and reset ccache.
+./clean.sh
+
 set -o errexit -o xtrace
 
 time ./debugbuild.sh
@@ -39,7 +42,7 @@ time ./testpythonbindings.sh
 time ./teststrip.sh
 time ./testwasm.sh --headless
 time doxygen
-./clean.sh
 
 { set +o xtrace; } 2> /dev/null
+./clean.sh
 echo All test scripts done.

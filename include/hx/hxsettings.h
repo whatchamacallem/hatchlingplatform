@@ -34,10 +34,16 @@
 // Target settings for Doxygen. See the Doxyfile. Run doxygen with no args.
 #if defined HX_DOXYGEN
 
+/// `HX_USE_THREADS` - Indicates pthreads is in use.
 #define HX_USE_THREADS 1
 
+/// `HX_NO_LIBCXX`: 1 - Set to 1 when libstdc++/libc++ are not present.
+/// Indicates the implementation is incompatible with the standard C++ library
+/// and may not have a complete C library or an operating system.
+#define HX_NO_LIBCXX 0
+
 /// `hxbreakpoint` - Can be conditionally evaluated with the `&&` and `||`
-/// operators. Uses intrinsics when available. (E.g. clang.) Raises SIGTRAP when
+/// operators. Uses intrinsics when available. (E.g., clang.) Raises SIGTRAP when
 /// __builtin_debugtrap is not available.
 #define hxbreakpoint()
 
@@ -66,12 +72,12 @@
 /// is undefined when violated.
 #define hxattr_noexcept
 
+/// Indicates that a function will never return. E.g., by calling `_Exit`.
+#define hxattr_noreturn
+
 /// hxattr_allocator - Mark allocator/deallocator pairs for static analysis. See
 /// the gcc manual. Must return non-null as well.
 #define hxattr_allocator(...)
-
-/// Indicates that a function will never return. E.g. by calling `_Exit`.
-#define hxattr_noreturn
 
 // ----------------------------------------------------------------------------
 // Target settings for MSVC. MSVC doesn't support C++'s feature test macros very
@@ -79,51 +85,27 @@
 #elif defined _MSC_VER
 
 #error The MSVC build is currently unmaintained. It should be easy to fix.
-/// `_HAS_EXCEPTIONS` - _MSC_VER only. Disables exception handling. Must be
-/// included before standard headers.
+
 #if !defined __cpp_exceptions && !defined _HAS_EXCEPTIONS
 #define _HAS_EXCEPTIONS 0
 #endif
 
 #if !defined HX_USE_THREADS
-/// `HX_USE_THREADS` - `_MSC_VER` indicates pthread support.
 #define HX_USE_THREADS 1
 #endif
 
-/// `HX_NO_LIBCXX`: 0 - The entire C++ standard library is present and there
-/// is an operating system.
 #define HX_NO_LIBCXX 0
 
-/// hxbreakpoint - A breakpoint that also works without the standard library.
 #define hxbreakpoint() (__debugbreak(),true)
-
-/// hxrestrict - A pointer attribute indicating that for the lifetime of that pointer, it
-/// will be the sole means of accessing the object(s) it points to.
 #define hxrestrict __restrict
-
-/// Ignored on Windows.
 #define hxattr_hot
-
-/// Ignored on Windows.
 #define hxattr_cold
-
-/// Ignored on Windows.
 #define hxattr_format_printf(pos_, start_)
-
-/// Ignored on Windows.
 #define hxattr_format_scanf(pos_, start_)
-
-/// Ignored on Windows.
 #define hxattr_nonnull(...)
-
-/// Unlike `noexcept` this is undefined when violated.
 #define hxattr_noexcept __declspec(nothrow)
-
-/// Ignored on Windows.
-#define hxattr_allocator(...)
-
-/// Ignored on Windows.
 #define hxattr_noreturn
+#define hxattr_allocator(...)
 
 // ----------------------------------------------------------------------------
 // Target settings for clang and gcc. Further compilers will require
@@ -142,65 +124,36 @@
 #endif
 
 #if defined(__GLIBCXX__) || defined(_LIBCPP_VERSION)
-/// `HX_NO_LIBCXX`: 0 - libstdc++/libc++ are present and there is an operating
-/// system.
 #define HX_NO_LIBCXX 0
 #else
-/// `HX_NO_LIBCXX`: 1 - Set to 1 when libstdc++/libc++ are not present. The
-/// implementation is incompatible with the standard C++ library and may not
-/// have a complete C library or an operating system.
 #define HX_NO_LIBCXX 1
 #endif
 
 #if defined __has_builtin && __has_builtin(__builtin_debugtrap)
-/// `hxbreakpoint` - Can be conditionally evaluated with the `&&` and `||` operators.
-/// Uses intrinsics when available. (E.g. clang.)
 #define hxbreakpoint() (__builtin_debugtrap(),true)
 #else
-/// `hxbreakpoint` - Raises SIGTRAP when __builtin_debugtrap is not available.
 #define hxbreakpoint() (raise(SIGTRAP),true)
 #endif
 
-/// hxrestrict - A pointer attribute indicating that for the lifetime of that pointer, it
-/// will be the sole means of accessing the object(s) it points to.
 #define hxrestrict __restrict
-
-/// hxattr_hot - Optimize more aggressively.
 #define hxattr_hot __attribute__((hot))
-
-/// hxattr_cold - Optimize for size.
 #define hxattr_cold __attribute__((cold))
-
-/// Indicates to gcc that a function uses printf-style formatting so it can
-/// type-check the format string.
 #define hxattr_format_printf(pos_, start_) __attribute__((format(printf, pos_, start_)))
-
-/// Indicates to gcc that a function uses scanf-style formatting so it can
-/// type-check the format string.
 #define hxattr_format_scanf(pos_, start_) __attribute__((format(scanf, pos_, start_)))
-
-/// Indicates that a function has args that should not be null. Checked by UBSan.
 #define hxattr_nonnull(...)__attribute__((nonnull(__VA_ARGS__)))
-
-/// `hxattr_noexcept` - Use gcc/clang `nothrow` attribute. Unlike `noexcept` this
-/// is undefined when violated.
 #define hxattr_noexcept __attribute__((nothrow))
+#define hxattr_noreturn __attribute__((noreturn))
 
 #if defined(__clang__)
-/// hxattr_allocator - Static analysis is gcc only. Must return non-null.
 #define hxattr_allocator(...) __attribute__((returns_nonnull))
 #else
-/// hxattr_allocator - Mark allocator/deallocator pairs for static analysis. See
-/// the gcc manual. Must return non-null as well.
 #define hxattr_allocator(...) __attribute__((malloc(__VA_ARGS__))) __attribute__((returns_nonnull))
 #endif
-
-#define hxattr_noreturn __attribute__((noreturn))
 
 #endif // target specific settings
 
 // ----------------------------------------------------------------------------
-// Target independent C++11/C++14 polyfill.
+// Target independent.
 
 /// \cond HIDDEN
 // HX_APPEND_COUNTER2_ - Used to generate unique identifiers. This is weird

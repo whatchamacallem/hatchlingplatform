@@ -79,9 +79,9 @@ inline hxcycles_t hxtime_sample_cycles(void);
 
 /// `hxprofiler_write_to_chrome_tracing(const char* filename)` - Stops sampling and
 /// writes samples to the provided file. Writes profiling data in a format usable
-/// by Chrome's chrome://tracing view. Usage: In Chrome go to "chrome://tracing/".
-/// Load the generated json file. Use the W/A/S/D keys. See
-/// http://www.chromium.org/developers/how-tos/trace-event-profiling-tool
+/// by Chrome's `chrome://tracing view`. Usage: In Chrome go to `chrome://tracing/`.
+/// Load the generated json file. Use the W, A, S and D keys. See
+/// `http://www.chromium.org/developers/how-tos/trace-event-profiling-tool`
 /// Compiles to a NOP when not in use.
 #define hxprofiler_write_to_chrome_tracing(filename_) \
 	HX_PROFILE_ONLY_( g_hxprofiler_.write_to_chrome_tracing_(filename_) )

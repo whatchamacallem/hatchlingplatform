@@ -20,7 +20,7 @@
 /// ```
 /// class T {
 ///   typedef K key_t;			// Tell the hash table what key to use.
-///   T(key_t);					// Construct from key. e.g. for operator[].
+///   T(key_t);					// Construct from key. e.g., for operator[].
 ///   void*& hash_next();		// Used by hxhash_table for an embedded linked list.
 ///   void* hash_next() const;	// Constant version of hash_next.
 ///   const key_t& key() const;	// Returns key constructed with.
@@ -297,7 +297,7 @@ public:
 	/// Releases all Nodes matching key and calls `deleter` on every node. Returns
 	/// the number of nodes released. Deleter can be functions with signature `void
 	/// deleter(node_t*)` and functors supporting `operator()(node_t*)` and with an
-	/// `operator bool`. E.g. a free list or a null pointer.
+	/// `operator bool`. E.g., a free list or a null pointer.
 	/// - `key` : The key to search for and remove from the hash table.
 	/// - `deleter` : A function or functor to call on each removed `node_t`.
 	template<typename deleter_override_t_>

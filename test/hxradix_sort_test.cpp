@@ -53,9 +53,9 @@ public:
 
 		// Radix sort using 8-bit digits and push_back_unconstructed.
 
-		hxarray<hxradix_sort_key<key_t, test_object<key_t>>> rs; rs.reserve(size);
+		hxarray<hxradix_sort_key<key_t, test_object<key_t>*>> rs; rs.reserve(size);
 		for(uint32_t i = size; i--;) {
-			::new(rs.push_back_unconstructed()) hxradix_sort_key<key_t, test_object<key_t>>(a[i].id, &a[i]);
+			::new(rs.push_back_unconstructed()) hxradix_sort_key<key_t, test_object<key_t>*>(a[i].id, &a[i]);
 		}
 
 		hxradix_sort(rs.begin(), rs.end());
@@ -71,7 +71,7 @@ public:
 
 		rs.clear();
 		for(uint32_t i = size; i--;) {
-			rs.push_back(hxradix_sort_key<key_t, test_object<key_t>>(a[i].id, &a[i]));
+			rs.push_back(hxradix_sort_key<key_t, test_object<key_t>*>(a[i].id, &a[i]));
 		}
 
 		hxradix_sort11(rs.begin(), rs.end());
@@ -88,14 +88,14 @@ public:
 };
 
 TEST_F(hxradix_sort_test, null) {
-	hxarray<hxradix_sort_key<uint32_t, const char>> rs;
+	hxarray<hxradix_sort_key<uint32_t, const char*>> rs;
 	rs.reserve(1u);
 
 	hxradix_sort(rs.begin(), rs.end());
 	EXPECT_EQ(rs.size(), 0u);
 	EXPECT_TRUE(rs.empty());
 
-	rs.push_back(hxradix_sort_key<uint32_t, const char>(123u, "s"));
+	rs.push_back(hxradix_sort_key<uint32_t, const char*>(123u, "s"));
 
 	hxradix_sort(rs.begin(), rs.end());
 	EXPECT_EQ(rs.size(), 1u);
@@ -104,14 +104,14 @@ TEST_F(hxradix_sort_test, null) {
 }
 
 TEST_F(hxradix_sort_test, null11) {
-	hxarray<hxradix_sort_key<uint32_t, const char>> rs;
+	hxarray<hxradix_sort_key<uint32_t, const char*>> rs;
 	rs.reserve(1u);
 
 	hxradix_sort11(rs.begin(), rs.end());
 	EXPECT_EQ(rs.size(), 0u);
 	EXPECT_TRUE(rs.empty());
 
-	rs.push_back(hxradix_sort_key<uint32_t, const char>(123u, "s"));
+	rs.push_back(hxradix_sort_key<uint32_t, const char*>(123u, "s"));
 
 	hxradix_sort11(rs.begin(), rs.end());
 	EXPECT_EQ(rs.size(), 1u);

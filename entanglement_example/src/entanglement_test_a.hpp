@@ -32,7 +32,7 @@ ENTANGLEMENT void function_overload();
 ENTANGLEMENT int function_overload(int a, int b);
 ENTANGLEMENT float function_overload(int, int, int, int);
 
-/// Pointers and arrays. Writes a series of numbers starting at a value. E.g.
+/// Pointers and arrays. Writes a series of numbers starting at a value. E.g.,
 /// size=3 and value=3 results in [3,4,5].
 ENTANGLEMENT int8_t* function_pointer_int8(int8_t* x, size_t size, int8_t value);
 ENTANGLEMENT uint16_t* function_pointer_uint16(uint16_t* x, size_t size, int16_t value);
@@ -88,7 +88,7 @@ ENTANGLEMENT void function_struct_pointer_fundamentals_multiply2(
 
 // All operations return the symbolic name of the operator. A number of
 // operators are missing. These are just the ones that have literal translations
-// between languages. E.g. Python uses a cast to bool to implement && and ||.
+// between languages. E.g., Python uses a cast to bool to implement && and ||.
 // There is no assignment operator because it wouldn't be what was expected.
 class ENTANGLEMENT_T OperatorTest {
 public:

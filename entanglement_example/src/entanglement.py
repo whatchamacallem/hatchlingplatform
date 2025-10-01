@@ -112,7 +112,7 @@ _clang_to_python: Dict[TypeKind, str] = {
 }
 
 # _operator_name_map - A number of operators are missing. These are just the
-# ones that have literal translations between languages. E.g. Python uses a cast
+# ones that have literal translations between languages. E.g., Python uses a cast
 # to bool to implement && and ||. There is no assignment operator because it
 # wouldn't always be what was expected. '__pos__' and '__neg__' are handled
 # elsewhere. This is for convenience only as additional operations can be

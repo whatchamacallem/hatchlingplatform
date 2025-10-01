@@ -20,7 +20,7 @@ extern hxfile hxerr;
 extern hxfile hxdev_null;
 
 /// Equivalent to `std::endl` without the flush. Does not change per-platform.
-/// Non-empty POSIX text files must end with \n.
+/// Non-empty POSIX text files must end with `\n`.
 #define hxendl "\n"
 
 /// `hxfile` - Single ownership C++ RAII abstraction for C-style `FILE*` I/O.
@@ -56,16 +56,16 @@ public:
 	enum open_mode : uint8_t {
 		/// No flags.
 		none = 0u,
-		/// Open for binary reading. E.g. "rb".
+		/// Open for binary reading. E.g., `"rb"`.
 		in = 1u,
 		/// Open for binary writing. Replaces any existing file with an empty
-		/// one even if `in` is used at the same time. E.g. "wb".
+		/// one even if `in` is used at the same time. E.g., `"wb"`.
 		out = 2u,
 		/// By default, any unexpected failure results in an assert. To allow
 		/// reasonably unforeseen asserts to be skipped, set skip_asserts. Bad
 		/// parameters (e.g., writing to a file that is not open, was not opened
 		/// to be written to, or providing a null buffer) will still result in
-		/// assertions. E.g. "w+b".
+		/// assertions. E.g., `"w+b"`.
 		skip_asserts = 4u
 	};
 
