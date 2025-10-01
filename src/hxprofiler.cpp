@@ -15,13 +15,13 @@ namespace hxdetail_ {
 // ----------------------------------------------------------------------------
 // Console commands
 
-bool hxprofile_start_command_(void) { hxprofiler_start(); return true; }
+static bool hxprofile_start_command_(void) { hxprofiler_start(); return true; }
 
-bool hxprofile_stop_command_(void) { hxprofiler_stop(); return true; }
+static bool hxprofile_stop_command_(void) { hxprofiler_stop(); return true; }
 
-bool hxprofiler_log_command_(void) { hxprofiler_log(); return true; }
+static bool hxprofiler_log_command_(void) { hxprofiler_log(); return true; }
 
-bool hxprofiler_write_to_chrome_tracing_command_(const char* filename) {
+static bool hxprofiler_write_to_chrome_tracing_command_(const char* filename) {
 	hxprofiler_write_to_chrome_tracing(filename);
 	return true;
 }

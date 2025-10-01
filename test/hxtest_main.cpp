@@ -12,6 +12,8 @@
 
 HX_REGISTER_FILENAME_HASH
 
+int hxtest_main(int argc, char**argv);
+
 // Run all the C tests.
 TEST(hxctest, all_tests) {
 	EXPECT_TRUE(hxctest_all());

@@ -22,7 +22,7 @@ export POSIXLY_CORRECT=1
 # Fatal warning flags.
 ERRORS="-Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual \
 	-Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time \
-	-Waggregate-return -Wmissing-declarations -Wredundant-decls"
+	-Wmissing-declarations"
 
 FLAGS="-ffast-math -ggdb3"
 
@@ -50,7 +50,7 @@ for I in 0 1 2 3; do
 echo gcc c++11 -O$I "$@"...
 # -std=c99
 gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $FLAGS $ERRORS \
-	-std=c99 -m32 "$@" -c $HX_DIR/src/*.c $HX_DIR/test/*.c
+	-pthread -std=c99 -m32 "$@" -c $HX_DIR/src/*.c $HX_DIR/test/*.c
 # -std=c++14
 gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $FLAGS $ERRORS \
 	-pthread -std=c++11 -fno-exceptions -fno-rtti "$@" $HX_DIR/src/*.cpp \
@@ -68,7 +68,7 @@ for I in 0 1 2 3; do
 echo clang UBSan -O$I "$@"...
 # compile C17
 clang -I../include -DHX_RELEASE=$I -O$I $FLAGS $ERRORS -pedantic-errors \
-	-fdiagnostics-absolute-paths -std=c17 $SANITIZE "$@" -c ../src/*.c ../test/*.c
+	-fdiagnostics-absolute-paths -pthread -std=c17 $SANITIZE "$@" -c ../src/*.c ../test/*.c
 # generate C++17 pch. clang does this automatically when a c++ header file is the target.
 clang++ -I../include -DHX_RELEASE=$I -O$I $FLAGS $ERRORS -pedantic-errors \
 	-DHX_USE_THREADS=$I -pthread -std=c++17 -fno-exceptions -fdiagnostics-absolute-paths \

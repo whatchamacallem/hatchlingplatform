@@ -239,7 +239,7 @@ inline int hxlog2i(size_t i_) {
 	float f_ = (float)i_;
     uint32_t bits_;
     memcpy(&bits_, &f_, sizeof(float));
-    return ((bits_ >> 23) & 0xffu) - 127u;
+    return (int)((bits_ >> 23) & 0xffu) - 127;
 }
 
 // ----------------------------------------------------------------------------
@@ -320,8 +320,8 @@ template<typename T_>
 constexpr void hxswap_memcpy(T_& x_, T_& y_) {
 	char t_[sizeof x_];
 	::memcpy(t_, &y_, sizeof x_);
-	::memcpy(&y_, &x_, sizeof x_);
-	::memcpy(&x_, t_, sizeof x_);
+	::memcpy((void*)&y_, &x_, sizeof x_);
+	::memcpy((void*)&x_, t_, sizeof x_);
 }
 
 #else // !HX_CPLUSPLUS

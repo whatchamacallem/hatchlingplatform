@@ -39,14 +39,13 @@ hxtask_queue::hxtask_queue(size_t thread_pool_size_)
 	: m_next_task_(hxnull)
 #if HX_USE_THREADS
 	, m_queue_run_level_(run_level_running_)
-	, m_thread_pool_size_(0)
+	, m_thread_pool_size_(thread_pool_size_)
 	, m_threads_(hxnull)
 	, m_executing_count_(0)
 #endif
 {
 	(void)thread_pool_size_;
 #if HX_USE_THREADS
-	m_thread_pool_size_ = (thread_pool_size_ >= 0) ? thread_pool_size_ : 2;
 	if(m_thread_pool_size_ > 0) {
 		m_threads_ = (hxthread*)hxmalloc(m_thread_pool_size_ * sizeof(hxthread));
 		for(size_t i_ = m_thread_pool_size_; i_--;) {

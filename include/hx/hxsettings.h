@@ -251,6 +251,9 @@ struct hxsettings {
 /// `g_hxsettings` - Global class constructed by `hxinit`.
 extern struct hxsettings g_hxsettings;
 
+/// Internal. Used to reset settings at startup.
+void hxsettings_construct(void);
+
 #if HX_CPLUSPLUS
 } // extern "C"
 #endif

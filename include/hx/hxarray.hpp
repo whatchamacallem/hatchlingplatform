@@ -380,8 +380,8 @@ hxarray<T_, capacity_>::hxarray(hxarray&& x_) : hxarray() {
 	static_assert(capacity_ == hxallocator_dynamic_capacity,
 		"Capacity hxallocator_dynamic_capacity required for temporaries.");
 
-	::memcpy(this, &x_, sizeof x_);
-	::memset(&x_, 0x00, sizeof x_);
+	::memcpy((void*)this, &x_, sizeof x_);
+	::memset((void*)&x_, 0x00, sizeof x_);
 }
 
 template<typename T_, size_t capacity_>

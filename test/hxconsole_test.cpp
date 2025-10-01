@@ -349,7 +349,7 @@ TEST(hxconsole_test, file_test) {
 	EXPECT_EQ(s_hxconsole_test_file_var2, 89.0f);
 }
 
-bool hxconsole_test_failing_command(void) {
+static bool hxconsole_test_failing_command(void) {
 	return false;
 }
 

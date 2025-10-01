@@ -16,7 +16,7 @@ HX_REGISTER_FILENAME_HASH
 // Compares command lines to static strings. Hashing stops at first non-printing
 // character on command line.
 
-namespace hxdetail_ {
+namespace {
 
 class hxconsole_less_ {
 public:
@@ -37,18 +37,18 @@ hxconsole_command_table_& hxconsole_commands_(void) {
 	return table_;
 }
 
+} // namespace {
+
 // ----------------------------------------------------------------------------
 // Console API
 
-void hxconsole_register_(hxconsole_hash_table_node_* node) {
+// hxconsole_register_ is internal only.
+void hxdetail_::hxconsole_register_(hxconsole_hash_table_node_* node) {
 	hxassertmsg(node->key().str_ && node->command_(), "invalid_parameter");
 	hxassertmsg(!hxconsole_commands_().find(node->key()), "command_reregistered %s", node->key().str_);
 
 	hxconsole_commands_().insert_node(node);
 }
-
-} // hxdetail_
-using namespace hxdetail_;
 
 // Nodes are statically allocated. Do not delete.
 void hxconsole_deregister(const char* id) {

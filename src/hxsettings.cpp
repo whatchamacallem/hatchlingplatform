@@ -26,7 +26,7 @@ hxconsole_variable_named(g_hxsettings.asserts_to_be_skipped, skipasserts);
 hxconsole_variable_named(g_hxsettings.log_level, loglevel);
 } // hxdetail_
 
-void hxsettings_construct(void) {
+extern "C" void hxsettings_construct(void) {
 	g_hxsettings.log_level = hxloglevel_log;
 	g_hxsettings.deallocate_permanent = false;
 

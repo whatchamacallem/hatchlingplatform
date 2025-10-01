@@ -11,6 +11,12 @@ extern "C" {
 
 bool hxctest_all(void);
 
+bool hxctest_hatchling_h(void);
+bool hxctest_math(void);
+bool hxctest_clamp(void);
+bool hxctest_swap(void);
+bool hxctest_memory(void);
+
 #if HX_CPLUSPLUS
 } // extern "C"
 #endif

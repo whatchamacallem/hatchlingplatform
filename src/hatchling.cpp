@@ -44,9 +44,6 @@ HX_REGISTER_FILENAME_HASH
 static_assert(0, "Warning: C++ exceptions are not recommended for embedded use.");
 #endif
 
-// No reason for this to be visible.
-void hxsettings_construct();
-
 // ----------------------------------------------------------------------------
 // When not hosted, provide no locking around the initialization of function
 // scope static variables. Provide a release mode assert to enforce that locking
@@ -55,6 +52,8 @@ void hxsettings_construct();
 // virtual tables.
 
 extern "C" {
+
+void __sanitizer_report_error_summary(const char *error_summary);
 
 #if HX_NO_LIBCXX
 
@@ -106,7 +105,7 @@ void __sanitizer_report_error_summary(const char *error_summary) {
 #if (HX_RELEASE) < 1
 
 // Implements HX_REGISTER_FILENAME_HASH in debug. See hxstring_literal_hash.h.
-namespace hxdetail_ {
+namespace {
 
 class hxhash_string_literal_
 		: public hxhash_table<hxregister_string_literal_hash, 5, hxdo_not_delete> { };
@@ -123,12 +122,12 @@ hxhash_string_literal_& hxstring_literal_hashes_(void) {
 	return s_hxstring_literal_hashes_;
 }
 
-} // hxdetail_ {
+} // namespace {
 
 // The key for the table is a string hash.
 hxregister_string_literal_hash::hxregister_string_literal_hash(const char* str_)
 		: m_hash_next_(0), m_hash_(hxstring_literal_hash_debug(str_)), m_str_(str_) {
-	hxdetail_::hxstring_literal_hashes_().insert_node(this);
+	hxstring_literal_hashes_().insert_node(this);
 }
 
 // The hash table code expects to be able to hash a `key_t` and compare it equal
@@ -138,7 +137,7 @@ hxhash_t hxregister_string_literal_hash::hash(void) const {
 	return hxkey_hash(m_hash_);
 };
 
-bool hxprint_hashes(void) {
+static bool hxprint_hashes(void) {
 	hxinit();
 
 	// sort by hash.
@@ -159,7 +158,7 @@ bool hxprint_hashes(void) {
 	return true;
 }
 
-bool hxcheck_hash(hxconsolehex_t hash_) {
+static bool hxcheck_hash(hxconsolehex_t hash_) {
 	hxregister_string_literal_hash* node = hxstring_literal_hashes_().find(hash_);
 	if(node) {
 		while(node) {

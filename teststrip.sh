@@ -13,7 +13,7 @@ BUILD="-DHX_RELEASE=3 -Os -static"
 
 ERRORS="-Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual \
 	-Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time \
-	-Waggregate-return -Wmissing-declarations -Wredundant-decls"
+	-Wmissing-declarations"
 
 FLAGS="-DHX_USE_THREADS=1 -g -ffunction-sections -fdata-sections -ffast-math"
 

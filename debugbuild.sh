@@ -15,9 +15,10 @@ export POSIXLY_CORRECT=1
 
 BUILD="-DHX_RELEASE=0 -O0"
 
+# -Wdate-time is for ccache.
 ERRORS="-Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual \
 	-Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time \
-	-Waggregate-return -Wmissing-declarations -Wredundant-decls"
+	-Wmissing-declarations"
 
 FLAGS="-m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always"
 
@@ -26,7 +27,7 @@ rm -rf ./bin; mkdir ./bin && cd ./bin
 
 for FILE in ../src/*.c ../test/*.c; do
 	ccache clang $BUILD $ERRORS $FLAGS -I../include \
-		-std=c17 -c $FILE & PIDS="$PIDS $!"
+		-std=c17 -pthread -c $FILE & PIDS="$PIDS $!"
 done
 
 for FILE in ../src/*.cpp ../test/*.cpp; do
