@@ -236,7 +236,7 @@ inline bool hxisspace(char ch_) {
 inline int hxlog2i(size_t i_) {
 	// Use the floating point hardware because this isn't important enough for
 	// intrinsics.
-	float f_ = i_;
+	float f_ = (float)i_;
     uint32_t bits_;
     memcpy(&bits_, &f_, sizeof(float));
     return ((bits_ >> 23) & 0xffu) - 127u;
@@ -313,7 +313,7 @@ constexpr void hxswap(T_& x_, T_& y_) {
 
 /// `hxswap_memcpy` - Exchanges the contents of `x` and `y` using `memcpy` and a
 /// stack temporary. This is intended for internal use where it is known to be
-/// safe to do so. It is a cheap way to write `operator=(T&&)`.
+/// safe to do so. It is a cheap way to implement `T::operator=(T&&)`.
 /// - `x` : First `T&`.
 /// - `y` : Second `T&`.
 template<typename T_>

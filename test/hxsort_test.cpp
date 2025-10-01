@@ -83,8 +83,6 @@ TEST(hxbinary_search_test, simple_case) {
 }
 
 // The sort_api_t tests check for correct use of references to temporaries.
-// This is not being tested aggressively in C++98.
-
 class sort_api_t {
 public:
 	// This is not used by the sort code.
@@ -98,7 +96,7 @@ public:
 	}
 
 	~sort_api_t() {
-		value = 0xefefefef;
+		::memset(&value, 0xef, sizeof value);
 	}
 
     sort_api_t& operator=(sort_api_t&& other) noexcept {
@@ -156,15 +154,15 @@ private:
 
 TEST(hxsort_test, sort_grinder) {
 	hxrandom rng(2);
-	int max_size_mask = 0x7f;
+	size_t max_size_mask = 0x7f;
 	hxarray<sort_api_t> insertion_sorted; insertion_sorted.reserve(max_size_mask);
 	hxarray<sort_api_t> heap_sorted; heap_sorted.reserve(max_size_mask);
 	hxarray<sort_api_t> generic_sorted; generic_sorted.reserve(max_size_mask);
 
 	for(int i=12; i--; ) {
 		// Set up the arrays to be sorted.
-		int size = (max_size_mask >> i) & rng;
-		for(int j=size; j--;) {
+		size_t size = (max_size_mask >> i) & rng;
+		for(size_t j=size; j--;) {
 			insertion_sorted.push_back(sort_api_t(rng.range(100, 200)));
 			// Use the && constructor and not the const& one.
 			heap_sorted.push_back(sort_api_t(0));
@@ -190,21 +188,21 @@ TEST(hxsort_test, sort_grinder) {
 
 TEST(hxsort_test, sort_grinder_generic) {
 	hxrandom rng(3);
-	int max_size_mask = 0xffff;
+	size_t max_size_mask = 0xffff;
 	hxarray<sort_api_t> sorted; sorted.reserve(max_size_mask);
 	hxarray<int> histogram(20000, 0);
 
 	for(int i=10; i--; ) {
 		// Pick random values of increasing maximum value up to 2^16 and keep a
 		// count of them.
-		int size = (max_size_mask >> i) & rng;
+		size_t size = (max_size_mask >> i) & rng;
 		if(size <= 16) {
 			continue;
 		}
-		for(int j=size; j--;) {
+		for(size_t j=size; j--;) {
 			int x = rng.range(10000, 10000);
 			sorted.push_back(sort_api_t(x));
-			++histogram[x];
+			++histogram[(size_t)x];
 		}
 
 		hxsort(sorted.begin(), sorted.end());
@@ -212,13 +210,13 @@ TEST(hxsort_test, sort_grinder_generic) {
 		// Check that all values are accounted for starting with the last one.
 		// Confirm sort order with (j <= j+1) while walking down to the first
 		// value. Note size > 16.
-		--histogram[sorted[size - 1].value];
-		for(int j=size - 1; j--;) {
-			--histogram[sorted[j].value];
+		--histogram[(size_t)sorted[size - 1].value];
+		for(size_t j=size - 1u; j--;) {
+			--histogram[(size_t)sorted[j].value];
 			// Use pointers just to show that they are dereferenced by hxkey_less.
 			EXPECT_FALSE(hxkey_less(&sorted[j + 1], &sorted[j]));
 		}
-		for(int j=20000; j-- > 10000;) {
+		for(size_t j=20000u; j-- > 10000u;) {
 			EXPECT_EQ(histogram[j], 0);
 		}
 		sorted.clear();
@@ -235,7 +233,7 @@ TEST(hxbinary_search_test, binary_search_grinder) {
 	}
 	hxsort(sorted.begin(), sorted.end());
 
-	for(int i=100; i--; ) {
+	for(size_t i=100u; i--; ) {
 		sort_api_t t = (sort_api_t&&)sorted[i]; // Don't pass an address that is in the array.
 		sort_api_t* ptr = hxbinary_search(sorted.begin(), sorted.end(), t);
 		// Assert logical equivalence without using ==. The pointer may point

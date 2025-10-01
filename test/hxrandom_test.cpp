@@ -55,7 +55,7 @@ TEST(hxrandom_test, ops) {
 		// floating point mod.
 		float f = rng % 255.0f;
 		EXPECT_TRUE(f >= 0.0f && f < 255.0f);
-		float d = rng % 255.0;
+		double d = rng % 255.0;
 		EXPECT_TRUE(d >= 0.0 && d < 255.0);
 
 		{
@@ -140,13 +140,11 @@ TEST(hxrandom_test, histogram) {
 	hxarray<int> hist(buckets, 0);
 
 	for(int i=(buckets*iters); i--;) {
-		// Doesn't require an unsigned type here. No floating point used.
-		++hist[rng() % (buckets - 1)];
+		// Doesn't require an unsigned type for %. No floating point used.
+		++hist[(size_t)(rng() % (buckets - 1))];
 	}
-	int t=0;
-	for(int i=buckets; i--;) {
+	for(size_t i=buckets; i--;) {
 		EXPECT_LE(hist[i], max);
-		t = hxmax(t, hist[i]);
 	}
 }
 
@@ -159,11 +157,9 @@ TEST(hxrandom_test, histogram_f) {
 
 	for(int i=(buckets*iters); i--;) {
 		// Run the full 64-bit bit double pipeline.
-		++hist[(int)(rng() % (double)buckets)];
+		++hist[(size_t)(rng() % (double)buckets)];
 	}
-	int t=0;
-	for(int i=buckets; i--;) {
+	for(size_t i=buckets; i--;) {
 		EXPECT_LE(hist[i], max);
-		t = hxmax(t, hist[i]);
 	}
 }

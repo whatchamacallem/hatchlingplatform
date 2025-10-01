@@ -80,18 +80,18 @@ void hxinsertion_sort(T_* begin_, T_* end_) {
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
 template<typename T_, typename less_t_> hxattr_nonnull(1,2) hxattr_hot
 void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
-	ptrdiff_t sz_ = end_ - begin_;
-	if(sz_ <= 1) {
+	ptrdiff_t size_ = end_ - begin_;
+	if(size_ <= 1) {
 		// Sequence is already sorted and the following code assumes sz >= 2.
 		return;
 	}
 
 	// Find the index of the first parent node. It will be >= 0 because sz >= 2.
-	ptrdiff_t first_parent_index_ = sz_ / 2u - 1u;
+	ptrdiff_t first_parent_index_ = (size_ >> 1) - 1;
 
 	// The first grandparent is just clamped to >= 0 because it avoids a special
 	// case when it does not exist.
-	ptrdiff_t first_grandparent_index_ = hxmax<ptrdiff_t>(sz_ / 4u - 1u, 0u);
+	ptrdiff_t first_grandparent_index_ = hxmax<ptrdiff_t>((size_ >> 2) - 1, 0);
 	T_* first_grandparent_ = begin_ + first_grandparent_index_;
 
 	// Do not visit leaf nodes at all. Then run an optimized version on half the
@@ -132,7 +132,7 @@ void hxheapsort(T_* begin_, T_* end_) {
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
 template<typename T_, typename less_t_> hxattr_nonnull(1,2) hxattr_hot
 void hxsort(T_* begin_, T_* end_, const less_t_& less_) {
-	hxintro_sort_(begin_, end_, less_, 2u * hxlog2i(end_ - begin_));
+	hxintro_sort_(begin_, end_, less_, 2 * hxlog2i((size_t)(end_ - begin_)));
 }
 
 /// `hxsort (specialization)` - An overload of `hxsort` that uses `hxkey_less`.
@@ -141,7 +141,7 @@ void hxsort(T_* begin_, T_* end_, const less_t_& less_) {
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename T_> hxattr_nonnull(1,2) hxattr_hot
 void hxsort(T_* begin_, T_* end_) {
-	hxintro_sort_(begin_, end_, hxkey_less_function<T_, T_>(), 2u * hxlog2i(end_ - begin_));
+	hxintro_sort_(begin_, end_, hxkey_less_function<T_, T_>(), 2 * hxlog2i((size_t)(end_ - begin_)));
 }
 
 /// `hxbinary_search` - Performs a binary search in the range [first, last).

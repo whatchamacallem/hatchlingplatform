@@ -37,10 +37,10 @@ public:
 		return (double)this->advance64() * (1.0 / 18446744073709551616.0); // 0x1p-64;
 	}
 	operator uint8_t(void) {
-		return this->advance32();
+		return (uint8_t)this->advance32();
 	}
 	operator uint16_t(void) {
-		return this->advance32();
+		return (uint16_t)this->advance32();
 	}
 	operator uint32_t(void) {
 		return this->advance32();
@@ -67,8 +67,10 @@ public:
 		hxassertmsg(size_ < (double)0x40000000000000ll, "insufficient_precision %f", (double)size_); // 0x1p54f
 		return base_ + size_ * (double)*this;
 	}
+
+	// Negative size is undefined.
 	int64_t range(int64_t base_, int64_t size_) {
-		return base_ + (int64_t)(this->advance64() % size_);
+		return base_ + (int64_t)(this->advance64() % (uint64_t)size_);
 	}
 	uint64_t range(uint64_t base_, uint64_t size_) {
 		return base_ + this->advance64() % size_;
@@ -83,7 +85,7 @@ public:
 		// Returns 32 bits chosen at a random offset starting between the 13th
 		// and 28th bits. 4 bits shift control + 32 returned + up to 15 shifted
 		// off + 13 always discarded = 64 bits.
-		uint32_t result_ = (uint32_t)(m_state_ >> ((int)(m_state_ >> 60) + 13u));
+		uint32_t result_ = (uint32_t)(m_state_ >> ((m_state_ >> 60) + 13u));
 		return result_;
 	}
 

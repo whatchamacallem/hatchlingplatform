@@ -55,22 +55,11 @@ public:
 	template <size_t capacity_x_>
 	hxarray(const hxarray<T_, capacity_x_>& x_);
 
-	/// Copy construct from a temporary using `swap`. Refuses to copy construct
-	/// from a statically allocated temporary for efficiency. Only works with
-	/// `hxallocator_dynamic_capacity`. Dynamically allocated arrays are swapped
-	/// with very little overhead.
+	/// Copy construct from a temporary. Refuses to copy construct from a
+	/// statically allocated temporary for efficiency. Only works with
+	/// `hxallocator_dynamic_capacity`.
 	/// - `x` : A temporary `Array<T>`.
 	hxarray(hxarray&& x_);
-
-#if !HX_NO_LIBCXX
-	/// Pass values of std::initializer_list as initializers to an array of T.
-	/// WARNING: This constructor will override the other constructors when
-	/// uniform initialization is used.  E.g., hxarry<int>x{1,2} is an array
-	/// containing {1,2} and hxarry<int>x(1,2) is the array containing {2}.
-	/// - `x` : A std::initializer_list<x_t>.
-	template <typename other_value_t_>
-	hxarray(std::initializer_list<other_value_t_> list_);
-#endif
 
 	/// Construct from a C-style array. Usable as an `initializer_list` when
 	/// std:: is not available. E.g.,
@@ -82,30 +71,18 @@ public:
 	template<typename other_value_t_, size_t array_length_>
 	hxarray(const other_value_t_(&array_)[array_length_]);
 
+#if !HX_NO_LIBCXX
+	/// Pass values of std::initializer_list as initializers to an array of T.
+	/// WARNING: This constructor will override the other constructors when
+	/// uniform initialization is used.  E.g., hxarry<int>x{1,2} is an array
+	/// containing {1,2} and hxarry<int>x(1,2) is the array containing {2}.
+	/// - `x` : A std::initializer_list<x_t>.
+	template <typename other_value_t_>
+	hxarray(std::initializer_list<other_value_t_> list_);
+#endif
+
 	/// Destructs the array and destroys all elements.
 	~hxarray(void);
-
-	/// Appends an element.  (Non-standard.) Vector math is not a goal so this
-	/// should not end up overloaded.
-	/// - `x` : An object to append. Not a temporary.
-	void operator+=(const T_& x_);
-
-	/// Appends an element.  (Non-standard.) Vector math is not a goal so this
-	/// should not end up overloaded.
-	/// - `x` : An object to append. Passed as a temporary.
-	void operator+=(T_&& x_);
-
-	/// Appends the contents of another array.  (Non-standard, from Python.)
-	/// Vector math is not a goal so this should not end up overloaded.
-	/// - `x` : Another array. Not a temporary.
-	template <size_t capacity_x_>
-	void operator+=(const hxarray<T_, capacity_x_>& x_);
-
-	/// Appends the contents of another array.  (Non-standard, from Python.)
-	/// Vector math is not a goal so this should not end up overloaded.
-	/// - `x` : Another array passed as a temporary.
-	template <size_t capacity_x_>
-	void operator+=(hxarray<T_, capacity_x_>&& x_);
 
 	/// Assigns the contents of another hxarray to this array. Standard except
 	/// reallocation is disallowed.
@@ -141,6 +118,28 @@ public:
 	/// Returns a reference to the element at the specified index.
 	/// - `index` : The index of the element.
 	T_& operator[](size_t index_);
+
+	/// Appends an element.  (Non-standard.) Vector math is not a goal so this
+	/// should not end up overloaded.
+	/// - `x` : An object to append. Not a temporary.
+	void operator+=(const T_& x_);
+
+	/// Appends an element.  (Non-standard.) Vector math is not a goal so this
+	/// should not end up overloaded.
+	/// - `x` : An object to append. Passed as a temporary.
+	void operator+=(T_&& x_);
+
+	/// Appends the contents of another array.  (Non-standard, from Python.)
+	/// Vector math is not a goal so this should not end up overloaded.
+	/// - `x` : Another array. Not a temporary.
+	template <size_t capacity_x_>
+	void operator+=(const hxarray<T_, capacity_x_>& x_);
+
+	/// Appends the contents of another array.  (Non-standard, from Python.)
+	/// Vector math is not a goal so this should not end up overloaded.
+	/// - `x` : Another array passed as a temporary.
+	template <size_t capacity_x_>
+	void operator+=(hxarray<T_, capacity_x_>&& x_);
 
 	/// Assigns elements from a range defined by random access iterators.
 	/// `iter_t_::operator-` is required.
@@ -317,6 +316,8 @@ public:
 private:
 	// Destroys elements in the range [begin, end).
 	void destruct_(T_* begin_, T_* end_);
+
+	// 1 past the last element.
 	T_* m_end_;
 };
 
@@ -376,7 +377,17 @@ hxarray<T_, capacity_>::hxarray(const hxarray<T_, capacity_x_>& x_) : hxarray() 
 
 template<typename T_, size_t capacity_>
 hxarray<T_, capacity_>::hxarray(hxarray&& x_) : hxarray() {
-	this->swap(x_); // NOTA BENE: Requires capacity 0 to compile.
+	static_assert(capacity_ == hxallocator_dynamic_capacity,
+		"Capacity hxallocator_dynamic_capacity required for temporaries.");
+
+	::memcpy(this, &x_, sizeof x_);
+	::memset(&x_, 0x00, sizeof x_);
+}
+
+template<typename T_, size_t capacity_>
+template<typename other_value_t_, size_t array_length_>
+hxarray<T_, capacity_>::hxarray(const other_value_t_(&array_)[array_length_]) : hxarray() {
+	this->assign(array_ + 0, array_ + array_length_);
 }
 
 #if !HX_NO_LIBCXX
@@ -388,40 +399,8 @@ hxarray<T_, capacity_>::hxarray(std::initializer_list<other_value_t_> list_) : h
 #endif
 
 template<typename T_, size_t capacity_>
-template<typename other_value_t_, size_t array_length_>
-hxarray<T_, capacity_>::hxarray(const other_value_t_(&array_)[array_length_]) : hxarray() {
-	this->assign(array_ + 0, array_ + array_length_);
-}
-
-template<typename T_, size_t capacity_>
 hxarray<T_, capacity_>::~hxarray(void) {
 	this->destruct_(this->data(), m_end_);
-}
-
-template<typename T_, size_t capacity_>
-void hxarray<T_, capacity_>::operator+=(const T_& x_) {
-	::new(this->push_back_unconstructed()) T_(x_);
-}
-
-template<typename T_, size_t capacity_>
-void hxarray<T_, capacity_>::operator+=(T_&& x_) {
-	::new(this->push_back_unconstructed()) T_(hxmove(x_));
-}
-
-template<typename T_, size_t capacity_>
-template<size_t capacity_x_>
-void hxarray<T_, capacity_>::operator+=(const hxarray<T_, capacity_x_>& x_) {
-	for(const T_ *it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
-		::new(this->push_back_unconstructed()) T_(*it_);
-	}
-}
-
-template<typename T_, size_t capacity_>
-template<size_t capacity_x_>
-void hxarray<T_, capacity_>::operator+=(hxarray<T_, capacity_x_>&& x_) {
-	for(const T_ *it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
-		::new(this->push_back_unconstructed()) T_(hxmove(*it_));
-	}
 }
 
 template<typename T_, size_t capacity_>
@@ -456,6 +435,32 @@ template<typename T_, size_t capacity_>
 T_& hxarray<T_, capacity_>::operator[](size_t index_) {
 	hxassertmsg(index_ < this->size(), "invalid_index %zu", index_);
 	return this->data()[index_];
+}
+
+template<typename T_, size_t capacity_>
+void hxarray<T_, capacity_>::operator+=(const T_& x_) {
+	::new(this->push_back_unconstructed()) T_(x_);
+}
+
+template<typename T_, size_t capacity_>
+void hxarray<T_, capacity_>::operator+=(T_&& x_) {
+	::new(this->push_back_unconstructed()) T_(hxmove(x_));
+}
+
+template<typename T_, size_t capacity_>
+template<size_t capacity_x_>
+void hxarray<T_, capacity_>::operator+=(const hxarray<T_, capacity_x_>& x_) {
+	for(const T_ *it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
+		::new(this->push_back_unconstructed()) T_(*it_);
+	}
+}
+
+template<typename T_, size_t capacity_>
+template<size_t capacity_x_>
+void hxarray<T_, capacity_>::operator+=(hxarray<T_, capacity_x_>&& x_) {
+	for(const T_ *it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
+		::new(this->push_back_unconstructed()) T_(hxmove(*it_));
+	}
 }
 
 template<typename T_, size_t capacity_>
@@ -647,8 +652,8 @@ void hxarray<T_, capacity_>::insert(size_t index_, const T_& t_) {
 template<typename T_, size_t capacity_>
 template<typename less_t_, typename equal_t_, size_t capacity_x_>
 bool hxarray<T_, capacity_>::less(const hxarray<T_, capacity_x_>& x_, const less_t_& less_, const equal_t_& equal_) const {
-	size_t sz_ = hxmin(this->size(), x_.size());
-	for(const T_ *it0_ = this->data(), *it1_ = x_.data(), *end_ = it0_ + sz_;
+	size_t size_ = hxmin(this->size(), x_.size());
+	for(const T_ *it0_ = this->data(), *it1_ = x_.data(), *end_ = it0_ + size_;
 			it0_ != end_; ++it0_, ++it1_) {
 		// Use `a == b` instead of `a < b && b < a` for performance.
 		if(!equal_(*it0_, *it1_)) {
@@ -739,9 +744,11 @@ size_t hxarray<T_, capacity_>::size_bytes(void) const {
 
 template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::swap(hxarray& x_) {
-	// NOTA BENE: Only hxallocator_dynamic_capacity works here.
-	hxallocator<T_, capacity_>::swap(x_);
-	hxswap(x_.m_end_, m_end_);
+	static_assert(capacity_ == hxallocator_dynamic_capacity,
+		"Dynamic capacity required for hxarray::swap");
+
+	// hxarray has a dynamic allocator that allows memcpy.
+	hxswap_memcpy(*this, x_);
 }
 
 template<typename T_, size_t capacity_>

@@ -109,7 +109,8 @@ inline bool (*hxkey_less_function(void))(const A_&, const B_&) {
 /// Overrides are evaluated when and where the hash table is instantiated. Uses
 /// the well studied hash multiplier taken from Linux's hash.h.
 /// - `x` : The input value.
-constexpr hxhash_t hxkey_hash(hxhash_t x_) {
+template<typename T_>
+constexpr hxhash_t hxkey_hash(T_ x_) {
     return (hxhash_t)x_ * (hxhash_t)0x61C88647u;
 };
 

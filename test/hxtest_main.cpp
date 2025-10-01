@@ -19,10 +19,10 @@ TEST(hxctest, all_tests) {
 
 // Make sure new and delete plausibly exist. Make sure hxnullptr compiles.
 TEST(hxnew, smoketest) {
-	int* t = new int(3);
+	unsigned int* t = new unsigned int(3);
 	ASSERT_TRUE(t);
 	hxassertrelease(t, "new"); // Should be impossible.
-	*t = 0xdeadbeef;
+	*t = 0xdeadbeefu;
 	delete t;
 	t = hxnullptr;
 	ASSERT_FALSE(t);

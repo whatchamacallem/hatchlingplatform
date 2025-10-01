@@ -22,7 +22,7 @@ public:
 		}
 		~test_object(void) {
 			++s_hxtest_current->m_destructed;
-			id = ~0u;
+			id = -1;
 		}
 
 		void operator=(const test_object& x) { id = x.id; }

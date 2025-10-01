@@ -57,9 +57,6 @@ protected:
 	}
 
 private:
-	// *** The static allocator does not support swapping allocations or
-	// assignments from temporaries. ***
-	void swap(hxallocator&) = delete;
 	hxallocator(const hxallocator&) = delete;
 	void operator=(const hxallocator&) = delete;
 
@@ -67,7 +64,7 @@ private:
 };
 
 /// `hxallocator<0>` - Capacity is set by first call to reserve_storage() and may
-/// not be extended.
+/// not be extended. May be moved using `hxswap_memcpy`.
 template<typename T_>
 class hxallocator<T_, hxallocator_dynamic_capacity> {
 public:
@@ -96,11 +93,6 @@ public:
 
 	/// Returns an array of T.
 	T_* data(void) { return m_data_; }
-
-	/// Swap. Only works with fixed_capacity_ == hxallocator_dynamic_capacity
-	void swap(hxallocator& x_) {
-		hxswap_memcpy(*this, x_);
-	}
 
 protected:
 	/// Capacity is set by first call to reserve_storage and may not be extended.

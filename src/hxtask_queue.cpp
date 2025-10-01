@@ -35,7 +35,7 @@ public:
 #endif
 
 // Should abort if exceptions are enabled and
-hxtask_queue::hxtask_queue(int32_t thread_pool_size_)
+hxtask_queue::hxtask_queue(size_t thread_pool_size_)
 	: m_next_task_(hxnull)
 #if HX_USE_THREADS
 	, m_queue_run_level_(run_level_running_)
@@ -49,7 +49,7 @@ hxtask_queue::hxtask_queue(int32_t thread_pool_size_)
 	m_thread_pool_size_ = (thread_pool_size_ >= 0) ? thread_pool_size_ : 2;
 	if(m_thread_pool_size_ > 0) {
 		m_threads_ = (hxthread*)hxmalloc(m_thread_pool_size_ * sizeof(hxthread));
-		for(int32_t i_ = m_thread_pool_size_; i_--;) {
+		for(size_t i_ = m_thread_pool_size_; i_--;) {
 			::new (m_threads_ + i_) hxthread(thread_task_loop_entry_, this);
 		}
 	}
@@ -62,7 +62,7 @@ hxtask_queue::~hxtask_queue(void) {
 		thread_task_loop_(this, thread_mode_stopping_);
 		hxassertmsg(m_queue_run_level_ == run_level_stopped_, "threading_error");
 
-		for(int32_t i_ = m_thread_pool_size_; i_--;) {
+		for(size_t i_ = m_thread_pool_size_; i_--;) {
 			m_threads_[i_].join();
 			m_threads_[i_].~hxthread();
 		}

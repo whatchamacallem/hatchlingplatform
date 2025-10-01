@@ -9,13 +9,11 @@ set -o errexit
 
 export POSIXLY_CORRECT=1
 
-RELEASE="-DHX_RELEASE=3"
+BUILD="-DHX_RELEASE=3 -Os -static"
 
-OPTIMIZATION="-Os -static"
-
-ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
-	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
-	-pedantic-errors -Wfatal-errors"
+ERRORS="-Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual \
+	-Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time \
+	-Waggregate-return -Wmissing-declarations -Wredundant-decls"
 
 FLAGS="-DHX_USE_THREADS=1 -g -ffunction-sections -fdata-sections -ffast-math"
 
@@ -26,11 +24,11 @@ rm -rf ./bin; mkdir ./bin && cd ./bin
 
 set -o xtrace
 
-musl-gcc $RELEASE $OPTIMIZATION $ERRORS $FLAGS -I$HX_DIR/include \
+musl-gcc $BUILD $ERRORS $FLAGS -I$HX_DIR/include \
 	-std=c17 -c $HX_DIR/src/*.c $HX_DIR/test/*.c
 
 # Includes lld specific instruction to dead-strip. musl is the only library.
-musl-gcc $RELEASE $OPTIMIZATION $ERRORS $FLAGS -I$HX_DIR/include \
+musl-gcc $BUILD $ERRORS $FLAGS -I$HX_DIR/include \
 	-std=c++17 -Wl,--gc-sections -fno-exceptions -fno-rtti \
 	$HX_DIR/src/*.cpp $HX_DIR/test/*.cpp *.o -o hxtest
 

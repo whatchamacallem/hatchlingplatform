@@ -37,7 +37,7 @@ public:
 		}
 		~test_object(void) {
 			++s_hxtest_current->m_destructed;
-			id = ~0u;
+			id = -1;
 		}
 
 		void operator=(const test_object& x) { id = x.id; }
@@ -120,14 +120,14 @@ TEST_F(hxarray_test, iteration) {
 
 		const hxarray<test_object, 10u>& cobjs = objs;
 
-		int32_t counter = 0;
+		uint32_t counter = 0u;
 		for(hxarray<test_object, 10u>::iterator it = objs.begin(); it != objs.end(); ++it) {
 			EXPECT_EQ(it->id, objs[counter].id);
 			EXPECT_EQ(it->id, nums[counter]);
 			++counter;
 		}
 
-		counter = 0;
+		counter = 0u;
 		for(hxarray<test_object, 10u>::const_iterator it = cobjs.begin();
 				it != cobjs.end(); ++it) {
 			EXPECT_EQ(it->id, objs[counter].id);

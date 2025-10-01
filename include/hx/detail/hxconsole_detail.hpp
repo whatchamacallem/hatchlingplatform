@@ -16,7 +16,7 @@ hxconsolenumber_t::operator T_(void) const {
 	// promotes its operands to int and so that requires more casting.
 	const bool is_signed_ = static_cast<T_>(-1) < T_(0u);
 	const T_ min_value_ = is_signed_ ? T_(T_(1u) << (sizeof(T_) * 8 - 1)) : T_(0u);
-	const T_ max_value_ = ~min_value_;
+	const T_ max_value_ = (T_)~min_value_;
 
 	double clamped_ = hxclamp(m_x_, (double)min_value_, (double)max_value_);
 	hxassertmsg(m_x_ == clamped_, "parameter_overflow %lf -> %lf", m_x_, clamped_);

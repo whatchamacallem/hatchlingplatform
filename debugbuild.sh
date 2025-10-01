@@ -5,8 +5,7 @@
 #
 # This build uses 32-bit pointers because they are easier to read.
 #
-# The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:
-#   sudo apt-get install gcc-multilib g++-multilib gdb-multiarch
+# The -m32 switch enables 32-bit compilation. See ubuntu_packages.sh.
 #
 # Do not use a .pch with ccache. It won't work as expected.
 
@@ -23,33 +22,30 @@ wait_or_exit() {
     done
 }
 
-RELEASE="-DHX_RELEASE=0"
+BUILD="-DHX_RELEASE=0 -O0"
 
-# Compiler optimization level. Allows a fast debug build.
-OPTIMIZATION="-O0"
-
-ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
-	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
-	-pedantic-errors -Wfatal-errors"
+ERRORS="-Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual \
+	-Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time \
+	-Waggregate-return -Wmissing-declarations -Wredundant-decls"
 
 FLAGS="-m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always"
 
 # Build artifacts are not retained.
 rm -rf ./bin; mkdir ./bin && cd ./bin
 
-ccache clang $RELEASE $OPTIMIZATION $ERRORS $FLAGS -I../include \
-	-std=c17 -c ../src/*.c ../test/*.c & PIDS="$!"
+for FILE in ../src/*.c ../test/*.c; do
+	ccache clang $BUILD $ERRORS $FLAGS -I../include \
+		-std=c17 -c $FILE & PIDS="$!"
+done
 
-for FILE in ../*/*.cpp; do
-	ccache clang++ $RELEASE $OPTIMIZATION $ERRORS $FLAGS -I../include \
+for FILE in ../src/*.cpp ../test/*.cpp; do
+	ccache clang++ $BUILD $ERRORS $FLAGS -I../include \
 		-std=c++20 -pthread -fno-exceptions -fno-rtti  \
 		-c $FILE & PIDS="$PIDS $!"
 done
 
 wait_or_exit $PIDS
 
-ccache clang++ $RELEASE $OPTIMIZATION $ERRORS $FLAGS -I../include \
-	-std=c++20 -pthread -fno-exceptions -fno-rtti \
-	*.o -lpthread -lstdc++ -lm -o hxtest
+ccache clang++ $BUILD $FLAGS *.o -lpthread -lstdc++ -lm -o hxtest
 
 echo 🐉🐉🐉

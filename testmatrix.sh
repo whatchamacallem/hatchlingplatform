@@ -20,9 +20,9 @@ set -o errexit
 export POSIXLY_CORRECT=1
 
 # Fatal warning flags.
-ERRORS="-Wall -Wextra -Werror -Wcast-qual -Wdisabled-optimization -Wshadow \
-	-Wwrite-strings -Wundef -Wendif-labels -Wstrict-overflow=1 -Wunused-parameter \
-	-Wfatal-errors -pedantic-errors"
+ERRORS="-Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual \
+	-Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time \
+	-Waggregate-return -Wmissing-declarations -Wredundant-decls"
 
 FLAGS="-ffast-math -ggdb3"
 

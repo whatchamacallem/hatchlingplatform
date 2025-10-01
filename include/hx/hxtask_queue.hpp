@@ -17,7 +17,7 @@ public:
 	/// Create a new task queue. `thread_pool_size` determines the size of the worker
 	/// pool. A thread_pool_size of `-1` indicates using a default value, currently `2`.
 	/// A thread_pool_size of `0` does not use threading.
-	explicit hxtask_queue(int32_t thread_pool_size_ = -1);
+	explicit hxtask_queue(size_t thread_pool_size_ = -1u);
 
 	/// Calls wait_for_all before destructing.
 	~hxtask_queue(void);
@@ -55,7 +55,7 @@ private:
 	static void thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_);
 
 	run_level_t_ m_queue_run_level_;
-	int32_t m_thread_pool_size_;
+	size_t m_thread_pool_size_;
 	hxthread* m_threads_;
 	hxmutex m_mutex_;
 	hxcondition_variable m_cond_var_new_tasks_;

@@ -201,7 +201,7 @@ void hxintro_sort_(T_* begin_, T_* end_, const less_t_& less_, int depth_) {
 		hxheapsort(begin_, end_, less_);
 	} else {
 		// Have the partition sort call back to hxsort for each sub-partition.
-		hxpartition_sort_(begin_, end_, less_, hxintro_sort_<T_, less_t_>, depth_ - 1u);
+		hxpartition_sort_(begin_, end_, less_, hxintro_sort_<T_, less_t_>, depth_ - 1);
 	}
 }
 

@@ -227,7 +227,7 @@ hxattr_noexcept void hxloghandler_v(hxloglevel_t level, const char* format, va_l
 		f.write("ASSERT_FAIL ", (sizeof "ASSERT_FAIL ") - 1u);
 		buf[len++] = '\n';
 	}
-	f.write(buf, len);
+	f.write(buf, (size_t)len);
 }
 
 // HX_RELEASE < 3 facilities for testing tear down. Just call _Exit() otherwise.

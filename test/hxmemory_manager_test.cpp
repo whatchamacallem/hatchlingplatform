@@ -100,7 +100,7 @@ public:
 		uintptr_t start_count = 0;
 		uintptr_t start_bytes = 0;
 		void* ptr2 = hxnull;
-		size_t asserts_allowed = g_hxsettings.asserts_to_be_skipped;
+		int asserts_allowed = g_hxsettings.asserts_to_be_skipped;
 
 		{
 			hxsystem_allocator_scope allocator_scope(id);
