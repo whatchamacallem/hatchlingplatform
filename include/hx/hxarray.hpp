@@ -12,11 +12,11 @@
 
 /// `hxarray` - Another vector class. Uses raw pointers as an iterator type so
 /// that you get compile errors and a debug experience that is in plain C++
-/// instead of the std. There are asserts.
+/// instead of the std. There are exhaustive asserts.
 ///
-/// `hxarray` can be used to manipulate strings as follows:
+/// `hxarray` can be constructed from C string literals as follows:
 ///   `hxarray<char, HX_MAX_LINE> string_buffer("example C string");`
-/// however `operator+=` does not handle C strings for safety reasons.
+/// however `operator+=` does not support C strings/arrays.
 ///
 /// Please run a memory sanitizer and an undefined behavior sanitizer too. Use a
 /// C array if you need `constexpr`. The excessive number of operators is due to
@@ -120,12 +120,14 @@ public:
 	T_& operator[](size_t index_);
 
 	/// Appends an element. (Non-standard.) Vector math is not a goal so this
-	/// should not end up overloaded. Forwarding would be too ambiguous.
+	/// should not end up overloaded. Perfect argument forwarding would be too
+	/// ambiguous.
 	/// - `x` : An object to append. Not a temporary.
 	void operator+=(const T_& x_);
 
 	/// Appends an element. (Non-standard.) Vector math is not a goal so this
-	/// should not end up overloaded.
+	/// should not end up overloaded. Perfect argument forwarding would be too
+	/// ambiguous.
 	/// - `x` : An object to append. Passed as a temporary.
 	void operator+=(T_&& x_);
 
@@ -195,21 +197,30 @@ public:
 	/// Returns an `iterator` to the end of the array.
 	T_* end(void);
 
-	/// Erases the element indicated.
+	/// Erases the element indicated. Should not compile with hxnull. Support
+	/// for erasing ranges has not ben added yet.
 	/// - `pos` : Pointer to the element to erase.
-	void erase(T_* pos_) hxattr_nonnull(2);
+	void erase(const T_* pos_) hxattr_nonnull(2);
 
-	/// Erases the element indicated.
+	/// Erases the element indicated. Use `(size_t)0` to write the integer literal 0.
 	/// - `index` : Index of the element to erase.
 	void erase(size_t index_);
 
 	/// Variant of `erase` that moves the end element down to replace the erased
-	/// element. (Non-standard.)
+	/// element. Should not compile with hxnull. (Non-standard.) Can be used to
+	/// erase elements of an array as it is traversed. E.g.,
+	/// ```cpp
+	/// for(size_t i = a.size(); i--; ) {
+	/// 	if(should_erase(a[i])) {
+	/// 		a.erase_unordered(i);
+	/// 	}
+	/// }
+	/// ```
 	/// - `pos` : Pointer to the element to erase.
-	void erase_unordered(T_* pos_) hxattr_nonnull(2);
+	void erase_unordered(const T_* pos_) hxattr_nonnull(2);
 
 	/// Variant of `erase` that moves the end element down to replace erased
-	/// element. (Non-standard.)
+	/// element. Use `(size_t)0` to write the integer literal 0. (Non-standard.)
 	/// - `index` : The index of the element to erase.
 	void erase_unordered(size_t index_);
 
@@ -232,17 +243,19 @@ public:
 	/// (Non-standard.)
 	bool full(void) const;
 
-	/// Inserts the element at the offset indicated. `insert(begin(), x)` and
-	/// `insert(end(), x)` will work as long as the array is allocated. Not
-	/// intended for objects that are expensive to move. Consider using
+	/// Inserts the element at the offset indicated.  Should not compile with
+	/// hxnull. `insert(begin(), x)` and `insert(end(), x)` will work as long as
+	/// the array is allocated. Not intended for objects that are expensive to
+	/// move. Support for inserting ranges has not ben added yet. Consider using
 	/// push_back_unconstructed for storing large objects.
 	/// - `pos` : Pointer to the location to insert the new element at.
 	/// - `x` : The new element.
 	template<typename ref_t_>
-	void insert(T_* pos_, ref_t_&& x_) hxattr_nonnull(2);
+	void insert(const T_* pos_, ref_t_&& x_) hxattr_nonnull(2);
 
-	/// Inserts the element at the offset indicated. `insert(begin(), x)` and
-	/// `insert(end(), x)` will work as long as the array is allocated.
+	/// Inserts the element at the offset indicated. Use `(size_t)0` to write
+	/// the integer literal 0. `insert(begin(), x)` and `insert(end(), x)` will
+	/// work as long as the array is allocated.
 	/// - `index` : Index of the location to insert the new element at.
 	/// - `x` : The new element.
 	template<typename ref_t_>
@@ -266,7 +279,8 @@ public:
 	/// Removes the end element from the array.
 	void pop_back(void);
 
-	/// Appends the element to the end of the array.
+	/// Appends the element to the end of the array. `ref_t` may be any type
+	/// that can be used to construct `T`.
 	/// - `x` : The element to add.
 	template<typename ref_t_>
 	void push_back(ref_t_&& x_);
@@ -455,13 +469,15 @@ void hxarray<T_, capacity_>::operator+=(hxarray<T_, capacity_x_>&& x_) {
 template<typename T_, size_t capacity_>
 template<typename iter_t_>
 void hxarray<T_, capacity_>::assign(iter_t_ begin_, iter_t_ end_) {
+	hxassertmsg((end_ - begin_) >= 0, "invalid_iterator");
 	this->reserve((size_t)(end_ - begin_));
-	T_* hxrestrict it_ = this->data();
-	this->destruct_(it_, m_end_);
-	while(begin_ != end_) {
-		::new (it_++) T_(*begin_++);
+	T_* hxrestrict it0_ = this->data();
+	this->destruct_(it0_, m_end_);
+	iter_t_ it1_(begin_); // begin_ may be a reference.
+	while(it1_ != end_) {
+		::new (it0_++) T_(*it1_++);
 	}
-	m_end_ = it_;
+	m_end_ = it0_;
 }
 
 template<typename T_, size_t capacity_>
@@ -545,10 +561,11 @@ T_* hxarray<T_, capacity_>::end(void) {
 }
 
 template<typename T_, size_t capacity_>
-void hxarray<T_, capacity_>::erase(T_* pos_) {
+void hxarray<T_, capacity_>::erase(const T_* pos_) {
 	hxassertmsg(pos_ >= this->data() && pos_ < m_end_, "invalid_iterator");
 	while((pos_ + 1) != m_end_) {
-		*pos_ = hxmove(*(pos_ + 1));
+		// Having a non-const this pointer provides valid write access.
+		*const_cast<T_*>(pos_) = hxmove(*(pos_ + 1));
 		++pos_;
 	}
 	(--m_end_)->~T_();
@@ -561,10 +578,11 @@ void hxarray<T_, capacity_>::erase(size_t index_) {
 }
 
 template<typename T_, size_t capacity_>
-void hxarray<T_, capacity_>::erase_unordered(T_* pos_) {
+void hxarray<T_, capacity_>::erase_unordered(const T_* pos_) {
 	hxassertmsg(pos_ >= this->data() && pos_ < m_end_, "invalid_iterator");
 	if(pos_ != --m_end_) {
-		*pos_ = hxmove(*m_end_);
+		// Having a non-const this pointer provides valid write access.
+		*const_cast<T_*>(pos_) = hxmove(*m_end_);
 	}
 	m_end_->~T_();
 }
@@ -602,7 +620,7 @@ bool hxarray<T_, capacity_>::full(void) const {
 
 template<typename T_, size_t capacity_>
 template<typename ref_t_>
-void hxarray<T_, capacity_>::insert(T_* pos_, ref_t_&& x_) {
+void hxarray<T_, capacity_>::insert(const T_* pos_, ref_t_&& x_) {
 	hxassertmsg(pos_ >= this->data() && pos_ <= m_end_ && !this->full(), "invalid_insert");
 	if(pos_ == m_end_) {
 		// Single constructor call for last element.
