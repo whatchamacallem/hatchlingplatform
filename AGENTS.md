@@ -110,7 +110,7 @@ Line length | Soft limit of 80 characters.
 Indentation | Use tabs set to 4 spaces per-tab.
 Braces | K&R style. Opening brace on the same line for functions, classes, enums, and control blocks. Empty bodies use `{ }`.
 Spacing | No space after `for`, `if` and `while` keywords (`if(condition)`). Single blank line between function definitions.
-Initializer lists | Place `:` on the same line as the constructor. Wrap subsequent initializer on new lines aligned by tabs. Not supported freestanding.
+Initializer lists | Place `:` on the same line as the constructor. Wrap subsequent initializer on new lines aligned by tabs. Not supported without libc++.
 Pointer/reference declarators | Attach to the type (`T* t` not `T *t`).
 Trailing comments | Prefer standalone doxygen `///` comments above the code they describe.
 

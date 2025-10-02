@@ -52,7 +52,7 @@ extern hxfile hxdev_null;
 class hxfile {
 public:
 	/// `open_mode` - Flags indicating how the file is to be used. Modifying or
-	/// appending to an existing file is not supported.
+	/// appending to an existing file is not implemented.
 	enum open_mode : uint8_t {
 		/// No flags.
 		none = 0u,

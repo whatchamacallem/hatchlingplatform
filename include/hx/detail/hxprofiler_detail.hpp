@@ -101,9 +101,8 @@ public:
 
 		if(g_hxprofiler_.m_is_started_) {
 			if((t1_ - m_t0_) >= min_cycles_) {
-				void* rec_ = g_hxprofiler_.m_records.push_back_unconstructed();
-				if(rec_) {
-					::new (rec_) hxprofiler_internal_::hxprofiler_record_(
+				if(!g_hxprofiler_.m_records.full()) {
+					g_hxprofiler_.m_records.emplace_back(
 						m_t0_, t1_, m_label_, (uint32_t)hxthread_id());
 				}
 			}

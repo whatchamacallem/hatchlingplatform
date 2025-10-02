@@ -10,9 +10,11 @@
 #include <initializer_list>
 #endif
 
-/// `hxarray` - Another vector class. Uses raw pointers as an iterator type so
+/// `hxarray` - Implements both `std::vector` and `std::inplace_vector` with a
+/// lot added a few things missing. Uses raw pointers as an iterator type so
 /// that you get compile errors and a debug experience that is in plain C++
-/// instead of the std. There are exhaustive asserts.
+/// instead of using iterators. There are exhaustive asserts. C++23 ranges are
+/// not implemented.
 ///
 /// `hxarray` can be constructed from C string literals as follows:
 ///   `hxarray<char, HX_MAX_LINE> string_buffer("example C string");`
@@ -229,8 +231,12 @@ public:
 	/// Calls a function, lambda or `std::function` on each element.
 	/// (Non-standard.) Lambdas and `std::function` can be provided as
 	/// temporaries and that has to be allowed. The `&&` variant of
-	/// `functor_t::operator()` is being selected using `hxmove`. This is a
-	/// traditional way to signal to the functor that it is a temporary.
+	/// `functor_t::operator()` may be selected using `hxmove`. This is a
+	/// traditional way to signal to the functor that it is a temporary. E.g.,
+	/// ```cpp
+	/// hxarray<int> a(3, 0);
+	/// a.for_each([](int& x) { ++x; }); // Produces { 1, 1, 1 }.
+	/// ```
 	/// `fn` - A function like object.
 	template<typename functor_t_>
 	void for_each(functor_t_&& fn_);
@@ -246,10 +252,10 @@ public:
 	bool full(void) const;
 
 	/// Inserts the element at the offset indicated.  Should not compile with
-	/// hxnull. `insert(begin(), x)` and `insert(end(), x)` will work as long as
+	/// `hxnull`. `insert(begin(), x)` and `insert(end(), x)` will work as long as
 	/// the array is allocated. Not intended for objects that are expensive to
 	/// move. Support for inserting ranges has not ben added yet. Consider using
-	/// push_back_unconstructed for storing large objects.
+	/// `emplace_back` for storing large objects.
 	/// - `pos` : Pointer to the location to insert the new element at.
 	/// - `x` : The new element.
 	template<typename ref_t_>
@@ -263,7 +269,7 @@ public:
 	template<typename ref_t_>
 	void insert(size_t index_, ref_t_&& x_);
 
-	/// Returns true if this array compares as less than x. Sorts [1] before
+	/// Returns true if this array compares as less than `x`. Sorts [1] before
 	/// [1,2]. This version takes two functors for key comparison.
 	/// - `x` : The other array.
 	/// - `less` : A key comparison functor definining a less-than ordering relationship.
@@ -289,10 +295,6 @@ public:
 	/// - `x` : The element to add.
 	template<typename ref_t_>
 	void push_back(ref_t_&& x_);
-
-	/// Variant of `push_back` that returns a pointer for use with placement
-	/// new. (Non-standard.)
-	void* push_back_unconstructed(void);
 
 	/// Reserves storage for at least the specified number of elements.
 	/// - `size` : The number of elements to reserve storage for.
@@ -327,6 +329,9 @@ public:
 	void swap(hxarray& x_);
 
 private:
+	// Returns a pointer for use with placement new.
+	void* push_back_unconstructed_(void);
+
 	// Destroys elements in the range [begin, end).
 	void destruct_(T_* begin_, T_* end_);
 
@@ -451,19 +456,19 @@ T_& hxarray<T_, capacity_>::operator[](size_t index_) {
 
 template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::operator+=(const T_& x_) {
-	::new(this->push_back_unconstructed()) T_(x_);
+	::new(this->push_back_unconstructed_()) T_(x_);
 }
 
 template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::operator+=(T_&& x_) {
-	::new(this->push_back_unconstructed()) T_(hxmove(x_));
+	::new(this->push_back_unconstructed_()) T_(hxmove(x_));
 }
 
 template<typename T_, size_t capacity_>
 template<size_t capacity_x_>
 void hxarray<T_, capacity_>::operator+=(const hxarray<T_, capacity_x_>& x_) {
 	for(const T_* hxrestrict it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
-		::new(this->push_back_unconstructed()) T_(*it_);
+		::new(this->push_back_unconstructed_()) T_(*it_);
 	}
 }
 
@@ -471,7 +476,7 @@ template<typename T_, size_t capacity_>
 template<size_t capacity_x_>
 void hxarray<T_, capacity_>::operator+=(hxarray<T_, capacity_x_>&& x_) {
 	for(const T_* hxrestrict it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
-		::new(this->push_back_unconstructed()) T_(hxmove(*it_));
+		::new(this->push_back_unconstructed_()) T_(hxmove(*it_));
 	}
 }
 
@@ -530,7 +535,7 @@ void hxarray<T_, capacity_>::clear(void) {
 template<typename T_, size_t capacity_>
 template<typename... args_t_>
 T_& hxarray<T_, capacity_>::emplace_back(args_t_&&... args_) {
-	return *::new (this->push_back_unconstructed()) T_(hxforward<args_t_>(args_)...);
+	return *::new (this->push_back_unconstructed_()) T_(hxforward<args_t_>(args_)...);
 }
 
 template<typename T_, size_t capacity_>
@@ -694,12 +699,6 @@ void hxarray<T_, capacity_>::push_back(ref_t_&& x_) {
 }
 
 template<typename T_, size_t capacity_>
-void* hxarray<T_, capacity_>::push_back_unconstructed(void) {
-	hxassertmsg(!this->full(), "stack_overflow");
-	return (void*)m_end_++;
-}
-
-template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::reserve(size_t size_,
 		hxsystem_allocator_t allocator_,
 		hxalignment_t alignment_) {
@@ -760,6 +759,12 @@ void hxarray<T_, capacity_>::swap(hxarray& x_) {
 
 	// hxarray has a dynamic allocator that allows memcpy.
 	hxswap_memcpy(*this, x_);
+}
+
+template<typename T_, size_t capacity_>
+void* hxarray<T_, capacity_>::push_back_unconstructed_(void) {
+	hxassertmsg(!this->full(), "stack_overflow");
+	return (void*)m_end_++;
 }
 
 template<typename T_, size_t capacity_>
