@@ -55,7 +55,7 @@ void hxradix_sort_void(hxradix_sort_key_void* begin, hxradix_sort_key_void* end)
 		hxhistogram_t t3 = hist3[i] + sum3; hist3[i] = sum3; sum3 = t3;
 	}
 
-	// 2 or 4 pass radix sort
+	// 2 or 4 pass radix sort.
 	for(const hxradix_sort_key_void* hxrestrict it = buf0; it != buf0End; ++it) {
 		buf1[hist0[it->get_modified_key() & 0xffu]++] = *it;
 	}

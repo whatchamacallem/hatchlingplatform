@@ -8,10 +8,7 @@
 class hxtask_queue;
 
 /// `hxtask` - Base class for operations to be performed on a different thread or
-/// at a later time. NOTA BENE: While the current allocator is a thread local
-/// attribute, the memory manager does not support concurrent access to the
-/// same allocator. Either preallocate working buffers or arrange for locking
-/// around shared allocators.
+/// at a later time.
 class hxtask {
 public:
 	/// Construct task. `static_label` must be a static string.
@@ -28,9 +25,8 @@ public:
 
 	/// Executes the task. This is the main function to be implemented by
 	/// derived classes. This call is the last time this object is touched by
-	/// hxtask_queue. It may delete or re-enqueue itself. Will also be wrapped
-	/// in `hxprofile_scope(get_label());` This function may delete or re-enqueue
-	/// the task.
+	/// hxtask_queue. This function may delete or re-enqueue the task. Will also
+	/// be wrapped in `hxprofile_scope(get_label());`
 	/// - `q` : Pointer to the task queue managing this task.
 	virtual void execute(hxtask_queue* q_) = 0;
 

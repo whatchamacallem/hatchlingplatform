@@ -379,7 +379,6 @@ template<typename T_, size_t capacity_>
 hxarray<T_, capacity_>::hxarray(hxarray&& x_) : hxarray() {
 	static_assert(capacity_ == hxallocator_dynamic_capacity,
 		"Capacity hxallocator_dynamic_capacity required for temporaries.");
-
 	::memcpy((void*)this, &x_, sizeof x_);
 	::memset((void*)&x_, 0x00, sizeof x_);
 }
@@ -450,7 +449,7 @@ void hxarray<T_, capacity_>::operator+=(T_&& x_) {
 template<typename T_, size_t capacity_>
 template<size_t capacity_x_>
 void hxarray<T_, capacity_>::operator+=(const hxarray<T_, capacity_x_>& x_) {
-	for(const T_ *it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
+	for(const T_* hxrestrict it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
 		::new(this->push_back_unconstructed()) T_(*it_);
 	}
 }
@@ -458,7 +457,7 @@ void hxarray<T_, capacity_>::operator+=(const hxarray<T_, capacity_x_>& x_) {
 template<typename T_, size_t capacity_>
 template<size_t capacity_x_>
 void hxarray<T_, capacity_>::operator+=(hxarray<T_, capacity_x_>&& x_) {
-	for(const T_ *it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
+	for(const T_* hxrestrict it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
 		::new(this->push_back_unconstructed()) T_(hxmove(*it_));
 	}
 }
@@ -467,7 +466,7 @@ template<typename T_, size_t capacity_>
 template<typename iter_t_>
 void hxarray<T_, capacity_>::assign(iter_t_ begin_, iter_t_ end_) {
 	this->reserve((size_t)(end_ - begin_));
-	T_* it_ = this->data();
+	T_* hxrestrict it_ = this->data();
 	this->destruct_(it_, m_end_);
 	while(begin_ != end_) {
 		::new (it_++) T_(*begin_++);
@@ -525,7 +524,7 @@ bool hxarray<T_, capacity_>::equal(const hxarray<T_, capacity_x_>& x_, const equ
 	if(this->size() != x_.size()) {
 		return false;
 	}
-	for(const T_ *it0_ = this->data(), *it1_ = x_.data(), *end_ = m_end_;
+	for(const T_* it0_ = this->data(), *it1_ = x_.data(), *end_ = m_end_;
 			it0_ != end_; ++it0_, ++it1_) {
 		if(!equal_(*it0_, *it1_)) {
 			return false;
@@ -589,7 +588,7 @@ void hxarray<T_, capacity_>::erase_unordered(size_t index_) {
 template<typename T_, size_t capacity_>
 template<typename functor_t_>
 void hxarray<T_, capacity_>::for_each(functor_t_& fn_) {
-	for(T_ *it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
+	for(T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
 		fn_(*it_);
 	}
 }
@@ -597,7 +596,7 @@ void hxarray<T_, capacity_>::for_each(functor_t_& fn_) {
 template<typename T_, size_t capacity_>
 template<typename functor_t_>
 void hxarray<T_, capacity_>::for_each(functor_t_&& fn_) {
-	for(T_ *it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
+	for(T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
 		hxmove(fn_)(*it_);
 	}
 }
@@ -653,7 +652,7 @@ template<typename T_, size_t capacity_>
 template<typename less_t_, typename equal_t_, size_t capacity_x_>
 bool hxarray<T_, capacity_>::less(const hxarray<T_, capacity_x_>& x_, const less_t_& less_, const equal_t_& equal_) const {
 	size_t size_ = hxmin(this->size(), x_.size());
-	for(const T_ *it0_ = this->data(), *it1_ = x_.data(), *end_ = it0_ + size_;
+	for(const T_* it0_ = this->data(), *it1_ = x_.data(), *end_ = it0_ + size_;
 			it0_ != end_; ++it0_, ++it1_) {
 		// Use `a == b` instead of `a < b && b < a` for performance.
 		if(!equal_(*it0_, *it1_)) {
