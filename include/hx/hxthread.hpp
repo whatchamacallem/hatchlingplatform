@@ -38,7 +38,7 @@
 #include <pthread.h>
 #endif
 
-/// Return the current thread id. Returns `0` when threads are disabled.
+/// Return the current thread ID. Returns `0` when threads are disabled.
 inline size_t hxthread_id() {
 #if HX_USE_THREADS
 	return (size_t)::pthread_self();

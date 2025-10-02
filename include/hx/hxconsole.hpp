@@ -39,7 +39,7 @@ private:
 	double m_x_;
 };
 
-/// `hxconsolehex_t` - A hex value. Uses uint64_t as an intermediate type. This
+/// `hxconsolehex_t` - A hex value. Uses `uint64_t` as an intermediate type. This
 /// type of command parameter parses hex and then uses a C-style cast to
 /// convert to any type. Useful for passing pointers and hash values via the
 /// console. Always 64-bit.

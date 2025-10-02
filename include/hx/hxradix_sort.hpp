@@ -43,7 +43,7 @@ public:
 	/// by key as a fallback for short arrays.
 	bool operator<(hxradix_sort_key x_) const { return m_key_ < x_.m_key_; }
 
-	/// A version of the key that may have been modified to work as a uint32_t.
+	/// A version of the key that may have been modified to work as a `uint32_t`.
 	uint32_t get_modified_key(void) const { return m_key_; }
 
 private:

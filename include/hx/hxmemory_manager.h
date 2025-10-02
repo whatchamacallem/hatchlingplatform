@@ -4,7 +4,7 @@
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
 /// \file hx/hxmemory_manager.h Memory Manager C API. Memory allocators are
-/// selected using an id. These are the large system-wide allocators, not the
+/// selected using an ID. These are the large system-wide allocators, not the
 /// per-container `hxallocator` which allocates from here.
 ///
 /// General purpose memory allocators are inefficient and unsafe to use. The
@@ -21,7 +21,7 @@
 /// lifetime of the application. They can be allocated with 0 overhead using
 /// `hxsystem_allocator_permanent`.
 ///
-/// NOTA BENE: The current allocator id is a thread local attribute that is
+/// NOTA BENE: The current allocator ID is a thread local attribute that is
 /// managed by the `hxsystem_allocator_scope` RAII class. This provides a non-
 /// intrusive way to move swaths of code to different allocators.
 ///
@@ -188,7 +188,7 @@ void hxmemory_manager_shut_down(void) hxattr_cold;
 /// made by the memory manager.
 size_t hxmemory_manager_leak_count(void) hxattr_cold;
 
-/// `hxdelete` - Deletes an object of type T and frees its memory using the memory
+/// `hxdelete` - Deletes an object of type `T` and frees its memory using the memory
 /// manager.
 /// - `t` : Pointer to the object to delete.
 template <typename T_>
@@ -204,7 +204,7 @@ void hxdelete(T_* t_) {
 }
 
 /// `hxnew<T, allocator, align>(...)` - Allocates and constructs an object of type
-/// T using an optional memory allocator and alignment. Returns a pointer to the
+/// `T` using an optional memory allocator and alignment. Returns a pointer to the
 /// newly constructed object. Will not return on failure.
 /// - `allocator` : The memory manager ID to use for allocation. Defaults to `hxsystem_allocator_current`.
 /// - `align` : A mask of low bits to be zeroed out when allocating new pointers. Defaults to `HX_ALIGNMENT`.
@@ -239,15 +239,15 @@ public:
 	operator bool(void) const { return false; }
 };
 
-/// `hxmalloc` - Add `hxmalloc_ext args` to `hxmalloc` C interface. Allocates memory with a
+/// `hxmalloc` - Add `hxmalloc_ext` args to `hxmalloc` C interface. Allocates memory with a
 /// specific memory manager and alignment.
 inline void* hxmalloc( size_t size_, enum hxsystem_allocator_t allocator_, hxalignment_t alignment_=HX_ALIGNMENT) {
 	return hxmalloc_ext(size_, allocator_, alignment_);
 }
 
-/// `hxstring_duplicate` - Add default args to C interface:
-///   allocator=hxsystem_allocator_current
-/// Duplicates a string using the default memory manager.
+/// `hxstring_duplicate` - Add default args to C interface. The allocator is
+/// `hxsystem_allocator_current`. Duplicates a string using the default memory
+/// manager.
 inline char* hxstring_duplicate(const char* s_) {
 	return hxstring_duplicate(s_, hxsystem_allocator_current);
 }

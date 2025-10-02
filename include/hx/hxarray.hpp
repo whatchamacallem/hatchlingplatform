@@ -14,7 +14,7 @@
 /// that you get compile errors and a debug experience that is in plain C++
 /// instead of the std. There are asserts.
 ///
-/// hxarray can be used to manipulate strings as follows:
+/// `hxarray` can be used to manipulate strings as follows:
 ///   `hxarray<char, HX_MAX_LINE> string_buffer("example C string");`
 /// however `operator+=` does not handle C strings for safety reasons.
 ///
@@ -33,16 +33,16 @@ public:
 	/// Publishes the value type.
 	typedef T_ value_type;
 
-	/// Constructs an empty array with a capacity of Capacity. m_end_ will be 0
-	/// if Capacity is 0.
+	/// Constructs an empty array with a capacity of Capacity. `m_end_` will be 0
+	/// if `capacity` is 0.
 	explicit hxarray(void);
 
 	/// Constructs an array of a given size using `T`'s default constructor.
-	/// - `size` : Sets array size as if resize(size) were called.
+	/// - `size` : Sets array size as if `resize(size)` were called.
 	explicit hxarray(size_t size_);
 
 	/// Constructs an array of a given size by making copies of `t`.
-	/// - `size` : Sets array size as if resize(size, t) were called.
+	/// - `size` : Sets array size as if `resize(size, t)` were called.
 	/// - `t` : The `const T&` to be duplicated.
 	explicit hxarray(size_t size_, const T_& t_);
 
@@ -76,7 +76,7 @@ public:
 	/// WARNING: This constructor will override the other constructors when
 	/// uniform initialization is used.  E.g., `hxarry<int>x{1,2}` is an array
 	/// containing `{1,2}` and `hxarry<int>x(1,2)` is the array containing `{2}`.
-	/// - `x` : A `std::initializer_list<other_value_t_>`.
+	/// - `x` : A `std::initializer_list<other_value_t>`.
 	template <typename other_value_t_>
 	hxarray(std::initializer_list<other_value_t_> x_);
 #endif
@@ -142,7 +142,7 @@ public:
 	void operator+=(hxarray<T_, capacity_x_>&& x_);
 
 	/// Assigns elements from a range defined by random access iterators.
-	/// `iter_t_::operator-` is required.
+	/// `iter_t::operator-` is required.
 	/// - `begin` : The beginning iterator.
 	/// - `end` : The end iterator.
 	template <typename iter_t_>

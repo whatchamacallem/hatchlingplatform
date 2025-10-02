@@ -211,7 +211,7 @@ void hxfloat_dump(const float* address_, size_t floats_) hxattr_nonnull(1) hxatt
 /// - `path` : The file path as a null-terminated string.
 const char* hxbasename(const char* path_) hxattr_nonnull(1);
 
-/// Implements standard `isgraph` for a locale where all non-ascii characters
+/// Implements standard `isgraph` for a locale where all non-ASCII characters
 /// are considered graphical or mark making. This is compatable with scanf-style
 /// parsing of UTF-8 string parameters. However, this is not `en_US.UTF-8` or
 /// the default C locale.
@@ -220,7 +220,7 @@ inline bool hxisgraph(char ch_) {
 		|| ((unsigned char)ch_ & 0x80u);
 }
 
-/// Implements standard `isspace` for a locale where all non-ascii characters
+/// Implements standard `isspace` for a locale where all non-ASCII characters
 /// are considered graphical or mark making. Returns nonzero for space and
 /// `\t \n \v \f \r`. This is compatable with scanf-style parsing of
 /// UTF-8 string parameters. However, this is not `en_US.UTF-8` or the default
@@ -247,14 +247,14 @@ inline int hxlog2i(size_t i_) {
 #if HX_CPLUSPLUS
 } // extern "C"
 
-/// `hxnullptr_t` - A class that will only convert to a null T pointer. Useful
+/// `hxnullptr_t` - A class that will only convert to a null `T` pointer. Useful
 /// when an integer constant arg would be ambiguous or otherwise break template
 /// code. `hxnullptr` is a `hxnullptr_t`. Use plain `hxnull` for comparisons.
 class hxnullptr_t {
 public:
-	/// null T pointer.
+	/// Null `T` pointer.
 	template<typename T_> constexpr operator T_*() const { return 0; }
-	/// null T member function pointer.
+	/// Null `T` member function pointer.
 	template<typename T_, typename M_> constexpr operator M_ T_::*() const { return 0; }
 	/// No address-of operator.
 	void operator&() const = delete;

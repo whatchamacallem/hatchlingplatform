@@ -15,8 +15,8 @@
 /// switch over code using standard containers. In particular, all modification
 /// of the table is non-standard.
 ///
-/// Note that any node T using key K will work as long as it has the following
-/// fields and K has an `operator==` or an `hxkey_equal` overload.
+/// Note that any node `T` using key `K` will work as long as it has the following
+/// fields and `K` has an `operator==` or an `hxkey_equal` overload.
 /// ```
 /// class T {
 ///   typedef K key_t;			// Tell the hash table what key to use.

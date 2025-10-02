@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-/// \file hx/hxallocator.hpp Similar to `std::allocator`. Allows for static or
+/// \file hx/hxallocator.hpp Similar to std::allocator. Allows for static or
 /// dynamic allocation.
 
 #include "hatchling.h"

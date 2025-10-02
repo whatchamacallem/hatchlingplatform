@@ -49,7 +49,7 @@ TEST(death_test, nothing_asserted) {
 #endif
 
 TEST(hxisspace, compare_with_standard) {
-	// Don't use non-ascii or setlocale because it might not exist.
+	// Don't use non-ASCII or setlocale because it might not exist.
 
 	for (int c = 0; c < 128; ++c) {
 		const bool hx = hxisspace((char)c);
@@ -63,7 +63,7 @@ TEST(hxisspace, compare_with_standard) {
 }
 
 TEST(hxisgraph, compare_with_standard) {
-	// Don't use non-ascii or setlocale because it might not exist.
+	// Don't use non-ASCII or setlocale because it might not exist.
 
 	for (int c = 0; c <= 255; ++c) {
 		const bool hx = hxisgraph((char)c);

@@ -9,11 +9,11 @@
 #include "hatchling.h"
 
 /// `hxrandom` - 64-bit MMIX LCG. Knuth, D. 2002 (Modified to perturb return.)
-/// Performs an automatic cast to any integer or floating point value. Generates
-/// a new value every time. Usable as a functor or by simply calling the
-/// provided cast operator to your type. Has a period of 2^64 and passes routine
-/// numerical tests with only 8 bytes of state and using simple arithmetic.
-/// Intended for test data or games and not mathematical applications.
+/// Performs an automatic cast to any unsigned integer or floating point value.
+/// Usable as a functor or by using the provided cast operator for your type. Has
+/// a period of 2^64 and passes routine numerical tests with only 8 bytes of
+/// state and using simple arithmetic. Intended for test data or games and not
+/// mathematical applications.
 class hxrandom {
 public:
 	/// Constructor to initialize the random number generator.
@@ -51,7 +51,7 @@ public:
 
 	/// Returns a random number in the range [base..base+range). `range(0.0f,10.0f)`
 	/// will return `0.0f` to `9.999f` and not `10.0f`. Uses a floating point multiply
-	/// instead of a divide. base + size must not overflow type and size must be
+	/// instead of a divide. `base` + `size` must not overflow type and `size` must be
 	/// positive.
 	/// - `base` : The beginning of the range. E.g., 0.
 	/// - `size` : Positive size of the range. E.g., 10 elements.
@@ -62,7 +62,7 @@ public:
 		return base_ + (T_)((float)size_ * (float)*this);
 	}
 	double range(double base_, double size_) {
-		// Use uint64_t parameters if you need a bigger size. An emulated floating
+		// Use `uint64_t` parameters if you need a bigger size. An emulated floating
 		// point multiply is faster and more stable than integer modulo.
 		hxassertmsg(size_ < (double)0x40000000000000ll, "insufficient_precision %f", (double)size_); // 0x1p54f
 		return base_ + size_ * (double)*this;
