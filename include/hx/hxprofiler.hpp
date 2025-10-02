@@ -45,7 +45,7 @@ static const double hxmicroseconds_per_cycle = 1.0e+6 / hxcycles_per_second;
 static const hxcycles_t hxdefault_cycles_cutoff = 1000;
 
 /// `hxtime_sample_cycles()` - Set up the processor cycle counter for your
-/// architecture. This is callable without enabling HX_PROFILE.
+/// architecture. This is callable without enabling `HX_PROFILE`.
 inline hxcycles_t hxtime_sample_cycles(void);
 
 /// `hxprofile_scope(const char* label_string_literal)` - Declares an RAII-style

@@ -20,7 +20,7 @@ public:
 	/// - `stream` : Index or seed value for a given stream of random numbers.
 	hxrandom(uint64_t stream_ = 1u) : m_state_(stream_) { }
 
-	/// Functor returns hxrandom& which converts itself to the type it is
+	/// Functor returns `hxrandom&` which converts itself to the type it is
 	/// assigned to. Enables traditional syntax.
 	/// E.g., `uint32_t = m_prng(); // Returns [0..2^32).`
 	/// E.g., `double i = m_prng(); // Returns [0..1).`

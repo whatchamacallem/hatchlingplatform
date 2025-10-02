@@ -40,8 +40,8 @@ public:
 		{
 			hxsystem_allocator_scope allocator_scope(id);
 
-			start_count = allocator_scope.get_total_allocation_count();
-			start_bytes = allocator_scope.get_total_bytes_allocated();
+			start_count = allocator_scope.get_initial_allocation_count();
+			start_bytes = allocator_scope.get_initial_bytes_allocated();
 
 			void* ptr1 = hxmalloc(100);
 			void* ptr2 = hxmalloc(200);
@@ -51,15 +51,13 @@ public:
 			{
 				// Google Test spams new/delete with std::string operations:
 				hxsystem_allocator_scope spam_guard(hxsystem_allocator_heap);
-				ASSERT_EQ(allocator_scope.get_scope_allocation_count(), 2u);
-				ASSERT_EQ(allocator_scope.get_previous_allocation_count(), start_count);
-				ASSERT_EQ(allocator_scope.get_total_allocation_count(), 2u + start_count);
-				if(allocator_scope.get_scope_bytes_allocated() != 0) {
+				ASSERT_EQ(allocator_scope.get_initial_allocation_count(), start_count);
+				ASSERT_EQ(allocator_scope.get_current_allocation_count(), 2u + start_count);
+				if(allocator_scope.get_current_bytes_allocated() != 0) {
 					// Allocators are not required to track byes outstanding.
 					// But they have to get it right when they do.
-					ASSERT_NEAR(allocator_scope.get_scope_bytes_allocated(), 300u, 2u * HX_ALIGNMENT);
-					ASSERT_NEAR(allocator_scope.get_total_bytes_allocated(), start_bytes + 300u, 2u * HX_ALIGNMENT);
-					ASSERT_EQ(allocator_scope.get_previous_bytes_allocated(), start_bytes);
+					ASSERT_NEAR(allocator_scope.get_current_bytes_allocated(), start_bytes + 300u, 2u * HX_ALIGNMENT);
+					ASSERT_EQ(allocator_scope.get_initial_bytes_allocated(), start_bytes);
 				}
 			}
 
@@ -70,16 +68,12 @@ public:
 			g_hxsettings.deallocate_permanent = false;
 
 			// Special case for heaps that do not track free.
-			if(allocator_scope.get_scope_bytes_allocated() != 0) {
+			if(allocator_scope.get_current_bytes_allocated() != 0) {
 				// Google Test spams new/delete with std::string operations:
 				hxsystem_allocator_scope spam_guard(hxsystem_allocator_heap);
 
 				// The debug heap requires HX_ALLOCATIONS_LOG_LEVEL enabled to track bytes allocated.
-				ASSERT_NEAR(allocator_scope.get_scope_bytes_allocated(), 300, 2u * HX_ALIGNMENT);
-			}
-			else {
-				// This allocator is not reporting bytes outstanding.S
-				ASSERT_EQ(allocator_scope.get_total_bytes_allocated(), 0u);
+				ASSERT_NEAR(allocator_scope.get_current_bytes_allocated(), 300, 2u * HX_ALIGNMENT);
 			}
 		}
 
@@ -89,8 +83,8 @@ public:
 
 			// Google Test spams new/delete with std::string operations:
 			hxsystem_allocator_scope spam_guard(hxsystem_allocator_heap);
-			ASSERT_EQ(allocator_scope.get_previous_allocation_count(), start_count);
-			ASSERT_EQ(allocator_scope.get_previous_bytes_allocated(), start_bytes);
+			ASSERT_EQ(allocator_scope.get_initial_allocation_count(), start_count);
+			ASSERT_EQ(allocator_scope.get_initial_bytes_allocated(), start_bytes);
 		}
 	}
 
@@ -105,12 +99,12 @@ public:
 		{
 			hxsystem_allocator_scope allocator_scope(id);
 
-			ASSERT_EQ(0u, allocator_scope.get_scope_allocation_count());
-			ASSERT_EQ(0u, allocator_scope.get_scope_bytes_allocated());
+			ASSERT_EQ(0u, allocator_scope.get_current_allocation_count());
+			ASSERT_EQ(0u, allocator_scope.get_current_bytes_allocated());
 
 			// Track the starting state to see how it is affected by a leak.
-			start_count = allocator_scope.get_previous_allocation_count();
-			start_bytes = allocator_scope.get_previous_bytes_allocated();
+			start_count = allocator_scope.get_initial_allocation_count();
+			start_bytes = allocator_scope.get_initial_bytes_allocated();
 
 			void* ptr1 = hxmalloc(100);
 			ptr2 = hxmalloc(200);
@@ -127,10 +121,10 @@ public:
 			hxsystem_allocator_scope allocator_scope(id);
 
 			// the allocator knows it has an outstanding allocation
-			ASSERT_EQ(allocator_scope.get_previous_allocation_count(), start_count + 1);
+			ASSERT_EQ(allocator_scope.get_initial_allocation_count(), start_count + 1);
 
 			// however the allocated memory was reset.
-			ASSERT_EQ(allocator_scope.get_previous_bytes_allocated(), start_bytes);
+			ASSERT_EQ(allocator_scope.get_initial_bytes_allocated(), start_bytes);
 
 			g_hxsettings.asserts_to_be_skipped = 1;
 			hxfree(ptr2);

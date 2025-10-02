@@ -253,14 +253,14 @@ public:
 	bool empty(void) const { return m_size_ == 0u; }
 
 	/// Returns a node containing key if any or allocates and returns a new one.
-	/// Any allocation required uses hxsystem_allocator_current and `HX_ALIGNMENT`.
+	/// Any allocation required uses `hxsystem_allocator_current` and `HX_ALIGNMENT`.
 	/// - `key` : The key to search for or insert.
 	node_t_& operator[](const typename node_t_::key_t& key_) { return this->insert_unique(key_); }
 
 	/// Returns a node containing key if any or allocates and returns a new one.
 	/// Unfortunately this code may calculate the hash twice.
 	/// - `key` : The key to search for or insert.
-	/// - `allocator` : The memory manager ID to use for allocation. Defaults to hxsystem_allocator_current.
+	/// - `allocator` : The memory manager ID to use for allocation. Defaults to `hxsystem_allocator_current`.
 	/// - `alignment` : The alignment for allocation. Defaults to `HX_ALIGNMENT`.
 	node_t_& insert_unique(const typename node_t_::key_t& key_,
 		hxsystem_allocator_t allocator_=hxsystem_allocator_current,

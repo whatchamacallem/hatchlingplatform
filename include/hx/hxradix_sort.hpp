@@ -99,21 +99,21 @@ void hxradix_sort_void(hxradix_sort_key_void* begin_, hxradix_sort_key_void* end
 hxattr_nonnull(1,2) hxattr_hot
 void hxradix_sort_void11(hxradix_sort_key_void* begin_, hxradix_sort_key_void* end_);
 
-/// hxradix_sort - Sorts an array of `value_t*` by `key_t` using 8-bit digits.
-/// `key_t` is the sort key and `value_t` the value being sorted. Keys of
-/// `double`, `int64_t` and `uint64_t` are not supported. `hxradix_sort` scales
-/// linearly with the byte length of the key whereas `hxinsertion_sort` is Θ(n)
-/// on mostly sorted data.
+/// Sorts an array of `value_t*` by `key_t` using 8-bit digits. `key_t` is the
+/// sort key and `value_t` the value being sorted. Keys of `double`, `int64_t`
+/// and `uint64_t` are not supported. `hxradix_sort` scales linearly with the
+/// byte length of the key whereas `hxinsertion_sort` is Θ(n) on mostly sorted
+/// data.
 template<typename key_t_, typename value_t_> hxattr_nonnull(1,2) hxattr_hot
 void hxradix_sort(hxradix_sort_key<key_t_, value_t_>* begin_, hxradix_sort_key<key_t_, value_t_>* end_) {
 	hxradix_sort_void((hxradix_sort_key_void*)begin_, (hxradix_sort_key_void*)end_);
 }
 
-/// hxradix_sort - Sorts an array of `value_t*` by `key_t` using 11-bit digits.
-/// `key_t` is the sort key and `value_t` the value being sorted. Keys of
-/// `double`, `int64_t` and `uint64_t` are not supported. `hxradix_sort` scales
-/// linearly with the byte length of the key whereas `hxinsertion_sort` is Θ(n)
-/// on mostly sorted data.
+/// Sorts an array of `value_t*` by `key_t` using 11-bit digits. `key_t` is the
+/// sort key and `value_t` the value being sorted. Keys of `double`, `int64_t`
+/// and `uint64_t` are not supported. `hxradix_sort` scales linearly with the
+/// byte length of the key whereas `hxinsertion_sort` is Θ(n) on mostly sorted
+/// data.
 template<typename key_t_, typename value_t_> hxattr_nonnull(1,2) hxattr_hot
 void hxradix_sort11(hxradix_sort_key<key_t_, value_t_>* begin_, hxradix_sort_key<key_t_, value_t_>* end_) {
 	hxradix_sort_void11((hxradix_sort_key_void*)begin_, (hxradix_sort_key_void*)end_);

@@ -185,7 +185,7 @@ void hxpartition_sort_(	T_* begin_, T_* end_, const less_t_& less_,
 }
 
 /// Implements the introsort algorithm which is a hybrid of quicksort, heapsort
-/// and insertion sort. hxsort is implemented using `hxintro_sort_`.
+/// and insertion sort. `hxsort` is implemented using `hxintro_sort_`.
 /// `hxintro_sort_` calls itself recursively until it hits its depth limit.
 /// - `begin` : Pointer to the first element in the range.
 /// - `end` : Pointer to one past the last element in the range.

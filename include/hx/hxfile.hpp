@@ -144,7 +144,7 @@ public:
 	size_t read(void* bytes_, size_t count_) hxattr_nonnull(2) hxattr_hot;
 
 	/// Writes a specified number of bytes from the provided buffer to the file.
-	/// Writing will be skipped when using hxdev_null.
+	/// Writing will be skipped when using `hxdev_null`.
 	/// - `bytes` : Pointer to the buffer containing the bytes to write.
 	/// - `count` : Number of bytes to write to the file.
 	size_t write(const void* bytes_, size_t count_) hxattr_nonnull(2) hxattr_hot;
@@ -164,14 +164,14 @@ public:
 	/// - `buffer_size` : Size of the buffer array.
 	bool get_line(char* buffer_, int buffer_size_) hxattr_nonnull(2) hxattr_hot;
 
-	/// Writes a formatted UTF-8 string to the file. Uses printf conventions.
-	/// Formatting and writing will be skipped when using hxdev_null.
+	/// Writes a formatted UTF-8 string to the file. Uses `printf` conventions.
+	/// Formatting and writing will be skipped when using `hxdev_null`.
 	/// - `format` : Format string, similar to printf.
 	/// - `...` Additional arguments for the format string.
 	bool print(const char* format_, ...) hxattr_format_printf(2, 3) hxattr_hot;
 
-	/// Reads a formatted UTF-8 string from the file. Uses scanf conventions.
-	/// Returns same as scanf. Use hxfile::skip_asserts to read until EOF.
+	/// Reads a formatted UTF-8 string from the file. Uses `scanf` conventions.
+	/// Returns same as scanf. Use `hxfile::skip_asserts` to read until `EOF`.
 	/// Parse errors will set `good` to false.
 	/// - `format` : Format string, similar to scanf.
 	/// - `...` Additional arguments for the format string.
@@ -208,7 +208,7 @@ public:
 	}
 
 	/// Writes a string literal to the file. Supports Google Test style
-	/// diagnostic messages in hxtest.
+	/// diagnostic messages in `hxtest`.
 	/// - `str` : Reference to a string literal to write to the file.
 	template<size_t string_length_>
 	hxfile& operator<<(const char(&str_)[string_length_]) {

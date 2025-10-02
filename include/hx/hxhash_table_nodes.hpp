@@ -8,7 +8,7 @@
 
 #include "hxhash_table.hpp"
 
-/// `hxhash_table_node_integer` - `node_t` for use with hxhash_table for integer
+/// `hxhash_table_node_integer` - `node_t` for use with `hxhash_table` for integer
 /// types. See documentation of `hxhash_table` for interface. This is a great
 /// example of a `node_t` that doesn't use a base class.
 template<typename key_t_>
@@ -19,7 +19,7 @@ public:
 	hxhash_table_node_integer(const key_t_& key_) :
 		m_hash_next_(hxnull), m_key_(key_) { }
 
-	/// Boilerplate for hxhash_table.
+	/// Boilerplate for `hxhash_table`.
 	void* hash_next(void) const { return m_hash_next_; }
 	void*& hash_next(void) { return m_hash_next_; }
 

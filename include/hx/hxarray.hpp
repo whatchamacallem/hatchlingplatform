@@ -74,22 +74,22 @@ public:
 #if !HX_NO_LIBCXX
 	/// Pass values of std::initializer_list as initializers to an array of T.
 	/// WARNING: This constructor will override the other constructors when
-	/// uniform initialization is used.  E.g., hxarry<int>x{1,2} is an array
-	/// containing {1,2} and hxarry<int>x(1,2) is the array containing {2}.
-	/// - `x` : A std::initializer_list<x_t>.
+	/// uniform initialization is used.  E.g., `hxarry<int>x{1,2}` is an array
+	/// containing `{1,2}` and `hxarry<int>x(1,2)` is the array containing `{2}`.
+	/// - `x` : A `std::initializer_list<other_value_t_>`.
 	template <typename other_value_t_>
-	hxarray(std::initializer_list<other_value_t_> list_);
+	hxarray(std::initializer_list<other_value_t_> x_);
 #endif
 
 	/// Destructs the array and destroys all elements.
 	~hxarray(void);
 
-	/// Assigns the contents of another hxarray to this array. Standard except
+	/// Assigns the contents of another `hxarray` to this array. Standard except
 	/// reallocation is disallowed.
 	/// - `x` : A non-temporary Array<T>.
 	void operator=(const hxarray& x_);
 
-	/// Assigns the contents of another hxarray to this array. Standard except
+	/// Assigns the contents of another `hxarray` to this array. Standard except
 	/// reallocation is disallowed.
 	/// - `x` : A non-temporary Array<T>.
 	template <size_t capacity_x_>
@@ -154,23 +154,23 @@ public:
 	/// Returns a reference to the end element in the array.
 	T_& back(void);
 
-	/// Returns a const_iterator to the beginning of the array.
+	/// Returns a `const_iterator` to the beginning of the array.
 	const T_* begin(void) const;
 
-	/// Returns an iterator to the beginning of the array.
+	/// Returns an `iterator` to the beginning of the array.
 	T_* begin(void);
 
-	/// Returns a const_iterator to the beginning of the array (alias for
+	/// Returns a `const_iterator` to the beginning of the array (alias for
 	/// begin()).
 	const T_* cbegin(void) const;
 
-	/// Returns a const_iterator to the end of the array.
+	/// Returns a `const_iterator` to the end of the array.
 	const T_* cend(void) const;
 
 	/// Clears the array, destroying all elements.
 	void clear(void);
 
-	/// Variant of emplace_back() that returns a pointer for use with placement
+	/// Variant of `emplace_back` that returns a pointer for use with placement
 	/// new. (Non-standard.)
 	void* push_back_unconstructed(void);
 
@@ -181,7 +181,7 @@ public:
 	template<typename equal_t_, size_t capacity_x_>
 	bool equal(const hxarray<T_, capacity_x_>& x_, const equal_t_& equal_) const;
 
-	/// Returns true if the arrays compare equivalent using hxkey_equal.
+	/// Returns true if the arrays compare equivalent using `hxkey_equal`.
 	/// - `x` : The other array.
 	template<size_t capacity_x_>
 	bool equal(const hxarray<T_, capacity_x_>& x_) const;
@@ -189,10 +189,10 @@ public:
 	/// Returns true if the array is empty.
 	bool empty(void) const;
 
-	/// Returns a const_iterator to the end of the array.
+	/// Returns a `const_iterator` to the end of the array.
 	const T_* end(void) const;
 
-	/// Returns an iterator to the end of the array.
+	/// Returns an `iterator` to the end of the array.
 	T_* end(void);
 
 	/// Erases the element indicated.
@@ -283,8 +283,8 @@ public:
 
 	/// Reserves storage for at least the specified number of elements.
 	/// - `size` : The number of elements to reserve storage for.
-	/// - `allocator` : The memory manager ID to use for allocation (default: hxsystem_allocator_current)
-	/// - `alignment` : The alignment to for the allocation. (default: HX_ALIGNMENT)
+	/// - `allocator` : The memory manager ID to use for allocation (default: `hxsystem_allocator_current`)
+	/// - `alignment` : The alignment to for the allocation. (default: `HX_ALIGNMENT`)
 	void reserve(size_t size_,
 			hxsystem_allocator_t allocator_=hxsystem_allocator_current,
 			hxalignment_t alignment_=HX_ALIGNMENT);
@@ -392,8 +392,8 @@ hxarray<T_, capacity_>::hxarray(const other_value_t_(&array_)[array_length_]) : 
 #if !HX_NO_LIBCXX
 template<typename T_, size_t capacity_>
 template<typename other_value_t_>
-hxarray<T_, capacity_>::hxarray(std::initializer_list<other_value_t_> list_) : hxarray() {
-	this->assign(list_.begin(), list_.end());
+hxarray<T_, capacity_>::hxarray(std::initializer_list<other_value_t_> x_) : hxarray() {
+	this->assign(x_.begin(), x_.end());
 }
 #endif
 

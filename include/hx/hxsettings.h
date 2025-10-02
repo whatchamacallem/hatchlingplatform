@@ -43,40 +43,43 @@
 #define HX_NO_LIBCXX 0
 
 /// `hxbreakpoint` - Can be conditionally evaluated with the `&&` and `||`
-/// operators. Uses intrinsics when available. (E.g., clang.) Raises SIGTRAP when
-/// __builtin_debugtrap is not available.
-#define hxbreakpoint()
+/// operators. Uses intrinsics when available. (E.g., clang's.) Raises `SIGTRAP`
+/// when `__builtin_debugtrap` is not available.
+#define hxbreakpoint() true
 
-/// hxrestrict - A pointer attribute indicating that for the lifetime of that pointer, it
-/// will be the sole means of accessing the object(s) it points to.
+/// `hxrestrict` - A pointer attribute indicating that for the lifetime of that
+/// pointer, it will be the sole means of accessing the object(s) it points to.
+/// Prevents a write iterator from interfering with a read iterator.
 #define hxrestrict
 
-/// hxattr_hot - Optimize more aggressively.
+/// `hxattr_hot` - Optimize a function more aggressively.
 #define hxattr_hot
 
-/// hxattr_cold - Optimize for size.
+/// `hxattr_cold` - Optimize a function for size.
 #define hxattr_cold
 
-/// Indicates to gcc that a function uses printf-style formatting so it can
-/// type-check the format string.
+/// `hxattr_format_printf` - Indicates to gcc that a function uses `printf`-style
+/// formatting so it can type-check the format string.
 #define hxattr_format_printf(pos_, start_)
 
-/// Indicates to gcc that a function uses scanf-style formatting so it can
-/// type-check the format string.
+/// `hxattr_format_scanf` - Indicates to gcc that a function uses `scanf`-style
+/// formatting so it can type-check the format string.
 #define hxattr_format_scanf(pos_, start_)
 
-/// Indicates that a function has args that should not be null. Checked by UBSan.
+/// `hxattr_nonnull` - Indicates that a function has args that should not be
+/// null. Checked by `UBSan`.
 #define hxattr_nonnull(...)
 
-/// `hxattr_noexcept` - Use gcc/clang `nothrow` attribute. Unlike `noexcept` this
-/// is undefined when violated.
+/// `hxattr_noexcept` - Use gcc/clang `nothrow` attribute. Unlike `noexcept`
+/// this is undefined when violated.
 #define hxattr_noexcept
 
-/// Indicates that a function will never return. E.g., by calling `_Exit`.
+/// `hxattr_noreturn` - Indicates that a function will never return. E.g., by
+/// calling `_Exit`.
 #define hxattr_noreturn
 
-/// hxattr_allocator - Mark allocator/deallocator pairs for static analysis. See
-/// the gcc manual. Must return non-null as well.
+/// `hxattr_allocator` - Mark allocator/deallocator pairs for static analysis.
+/// See the gcc manual. Must return non-null as well.
 #define hxattr_allocator(...)
 
 // ----------------------------------------------------------------------------
@@ -202,7 +205,7 @@
 #if !defined HX_PROFILE
 /// `HX_PROFILE`
 /// - `0` Disables code for capturing profiling data.
-/// - `1` Compiles in code. See hxprofile_scope().
+/// - `1` Compiles in code. See `hxprofile_scope`.
 #define HX_PROFILE (HX_RELEASE) < 2
 #endif
 

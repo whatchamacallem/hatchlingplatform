@@ -19,7 +19,7 @@
 /// Available utilities are: `hxnull`, `hxnullptr`, `hxmove`, `hxmin`, `hxmax`,
 /// `hxabs`, `hxclamp`, `hxswap`, `hxhex_dump`, `hxfloat_dump`.
 
-/// C Standard, Annex K is not portable. Asserts and hxattr_nonnull are used
+/// C Standard, Annex K is not portable. Asserts and `hxattr_nonnull` are used
 /// instead.
 #define __STDC_WANT_LIB_EXT1__ 0
 
@@ -57,15 +57,15 @@ extern "C" {
 /// Independently controls what messages are compiled in. See
 /// `g_hxsettings.log_level`.
 enum hxloglevel_t {
-	/// Written to hxout. Structured output. No automatic newline.
+	/// Written to `hxout`. Structured output. No automatic newline.
 	hxloglevel_log,
-	/// Written to hxerr. Unstructured informative output including error
-	/// messages regarding console commands and hxtest results. No automatic
+	/// Written to `hxerr`. Unstructured informative output including error
+	/// messages regarding console commands and `hxtest` results. No automatic
 	/// newline. No news is good news.
 	hxloglevel_console,
-	/// Written to hxerr. Warnings about serious problems.
+	/// Written to `hxerr`. Warnings about serious problems.
 	hxloglevel_warning,
-	/// Written to hxerr. Reason for abnormal termination or test failure.
+	/// Written to `hxerr`. Reason for abnormal termination or test failure.
 	hxloglevel_assert
 };
 
@@ -221,8 +221,8 @@ inline bool hxisgraph(char ch_) {
 }
 
 /// Implements standard `isspace` for a locale where all non-ascii characters
-/// are considered graphical or mark making. Returns nonzero for `' '`, `\t`,
-/// `\n`, `\v`, `\f` and `\r`. This is compatable with scanf-style parsing of
+/// are considered graphical or mark making. Returns nonzero for space and
+/// `\t \n \v \f \r`. This is compatable with scanf-style parsing of
 /// UTF-8 string parameters. However, this is not `en_US.UTF-8` or the default
 /// C locale.
 inline bool hxisspace(char ch_) {
