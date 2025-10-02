@@ -213,9 +213,10 @@ T_* hxnew(Args_&&... args_) {
 	return ::new(hxmalloc_ext(sizeof(T_), allocator_, align_)) T_(args_...);
 }
 
-/// `hxdeleter` - A functor that deletes objects of type `T` using `hxdelete`.
-/// Implements std::default_delete.
-class hxdeleter {
+/// A functor that deletes objects of type `T` using `hxdelete`. Used by
+/// containers to implement the destruction of their contents according to a
+/// template parameter. Implements `std::default_delete`.
+class hxdefault_delete {
 public:
 	/// Deletes the object using `hxdelete`.
 	template <typename T_>
@@ -225,9 +226,9 @@ public:
 	operator bool(void) const { return true; }
 };
 
-/// Implement `hxdeleter` with NOPs. Allows the compiler to remove the destructors
-/// from containers that handle static allocations or don't own their contents for
-/// another reason.
+/// A version of `hxdefault_delete` that does not delete the object. Allows
+/// removing object destruction from container destructors that handle static
+/// allocations or don't own their contents for another reason.
 class hxdo_not_delete {
 public:
 	/// Does not delete the object.

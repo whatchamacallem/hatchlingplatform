@@ -62,7 +62,7 @@ public:
 	hxarray(hxarray&& x_);
 
 	/// Construct from a C-style array. Usable as an `initializer_list` when
-	/// std:: is not available. E.g.,
+	/// `std::` is not available. E.g.,
 	/// ```cpp
 	/// static const int initial_values[] = { 5, 4, 3 };
 	/// hxarray<int> current_values(initial_values);
@@ -72,7 +72,7 @@ public:
 	hxarray(const other_value_t_(&array_)[array_length_]);
 
 #if !HX_NO_LIBCXX
-	/// Pass values of std::initializer_list as initializers to an array of T.
+	/// Pass values of `std::initializer_list` as initializers to an array of `T`.
 	/// WARNING: This constructor will override the other constructors when
 	/// uniform initialization is used.  E.g., `hxarry<int>x{1,2}` is an array
 	/// containing `{1,2}` and `hxarry<int>x(1,2)` is the array containing `{2}`.
@@ -102,7 +102,7 @@ public:
 	void operator=(hxarray&& x_);
 
 	/// Assign from a C-style array. Usable as an `initializer_list` when
-	/// std:: is not available. E.g.,
+	/// `std::` is not available. E.g.,
 	/// ```cpp
 	/// static const int initial_values[] = { 5, 4, 3 };
 	/// hxarray<int, 32> current_values(initial_values);
@@ -203,17 +203,17 @@ public:
 	/// - `index` : Index of the element to erase.
 	void erase(size_t index_);
 
-	/// Variant of erase() that moves the end element down to replace the erased
+	/// Variant of `erase` that moves the end element down to replace the erased
 	/// element. (Non-standard.)
 	/// - `pos` : Pointer to the element to erase.
 	void erase_unordered(T_* pos_) hxattr_nonnull(2);
 
-	/// Variant of erase() that moves the end element down to replace erased
+	/// Variant of `erase` that moves the end element down to replace erased
 	/// element. (Non-standard.)
 	/// - `index` : The index of the element to erase.
 	void erase_unordered(size_t index_);
 
-	/// Calls a function, lambda or std::function on each element.
+	/// Calls a function, lambda or `std::function` on each element.
 	/// (Non-standard.)
 	/// `fn` - A function like object.
 	template<typename functor_t_>

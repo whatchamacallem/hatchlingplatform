@@ -14,7 +14,7 @@
 /// - `TEST(suite, name)` - Defines a test case without a fixture.
 /// - `TEST_F(fixture, name)` - Defines a test case using a fixture class.
 /// - Use `ASSERT_`* for fatal assertions and `EXPECT_`* for non-fatal.
-/// - See `RUN_ALL_TESTS()` in `test/hxtest_main.cpp` for example.
+/// - See `RUN_ALL_TESTS` in `test/hxtest_main.cpp` for example.
 ///
 /// - Simple Test Case (no fixture):
 /// ```
@@ -147,17 +147,16 @@ inline void InitGoogleTest(void) { }
 /// `...` : An optional const char* matching a specific test suite to run. (Non-standard.)
 #define RUN_ALL_TESTS(...) hxtest_::dispatcher_().run_all_tests_(__VA_ARGS__)
 
-/// `void SUCCEED()` - Marks the current test as successful without any checks.
+/// `void SUCCEED(void)` - Marks the current test as successful without any checks.
 #define SUCCEED() hxtest_::dispatcher_().condition_check_(true, __FILE__, __LINE__, "SUCCEED()", false)
 
-/// `void FAIL()` - Marks the current test as failed.
+/// `void FAIL(void)` - Marks the current test as failed.
 #define FAIL() hxtest_::dispatcher_().condition_check_(false, __FILE__, __LINE__, "FAIL()", false)
 
 /// `void EXPECT_TRUE(bool)` - Checks that the condition is true.
 #define EXPECT_TRUE(x_) hxtest_::dispatcher_().condition_check_((x_), __FILE__, __LINE__, #x_, false)
 /// `void EXPECT_FALSE(bool)` - Checks that the condition is false.
 #define EXPECT_FALSE(x_) hxtest_::dispatcher_().condition_check_(!(x_), __FILE__, __LINE__, "!" #x_, false)
-
 /// `void EXPECT_NEAR(T expected, T actual, T absolute_range)` - Checks that two values are within a given range.
 #define EXPECT_NEAR(expected_, actual_, absolute_range_) hxtest_::dispatcher_().condition_check_( \
 	(((expected_) < (actual_)) ? ((actual_)-(expected_)) : ((expected_)-(actual_))) <= (absolute_range_), \
@@ -179,7 +178,6 @@ inline void InitGoogleTest(void) { }
 #define ASSERT_TRUE(x_) hxtest_::dispatcher_().condition_check_((x_), __FILE__, __LINE__, #x_, true)
 /// `void ASSERT_FALSE(bool)` - Asserts that the condition is false.
 #define ASSERT_FALSE(x_) hxtest_::dispatcher_().condition_check_(!(x_), __FILE__, __LINE__, "!" #x_, true)
-
 /// `void ASSERT_NEAR(T expected, T actual, T absolute_range)` - Asserts that two values are within a given range.
 #define ASSERT_NEAR(expected_, actual_, absolute_range_) hxtest_::dispatcher_().condition_check_( \
 	(((expected_) < (actual_)) ? ((actual_)-(expected_)) : ((expected_)-(actual_))) <= (absolute_range_), \

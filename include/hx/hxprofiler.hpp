@@ -36,15 +36,15 @@ typedef size_t hxcycles_t;
 #define HX_PROFILE_ONLY_(x_) ((void)0)
 #endif
 
-/// `hxcycles_per_second` - Please customize for your processor speed. This assumes
-/// 2.8ghz. These are really only used with printf which promotes everything to
-/// double anyhow.
+/// `hxcycles_per_second` - Please customize for your processor speed. This
+/// assumes 2.8ghz. These are really only used with printf which promotes
+/// everything to double anyhow.
 static const double hxcycles_per_second = 2.8e+9;
 static const double hxmilliseconds_per_cycle = 1.0e+3 / hxcycles_per_second;
 static const double hxmicroseconds_per_cycle = 1.0e+6 / hxcycles_per_second;
 static const hxcycles_t hxdefault_cycles_cutoff = 1000;
 
-/// `hxtime_sample_cycles()` - Set up the processor cycle counter for your
+/// `hxtime_sample_cycles(void)` - Set up the processor cycle counter for your
 /// architecture. This is callable without enabling `HX_PROFILE`.
 inline hxcycles_t hxtime_sample_cycles(void);
 
@@ -65,23 +65,23 @@ inline hxcycles_t hxtime_sample_cycles(void);
 	HX_PROFILE_ONLY_(hxprofiler_scope_internal_<min_cycles_> \
 		HX_APPEND_COUNTER(hxprofile_scope_)(label_string_literal_))
 
-/// `hxprofiler_start()` - Clears samples and begins sampling. Compiles to a NOP when
-/// not in use.
+/// `hxprofiler_start(void)` - Clears samples and begins sampling. Compiles to a
+/// NOP when not in use.
 #define hxprofiler_start() HX_PROFILE_ONLY_(g_hxprofiler_.start_())
 
-/// `hxprofiler_stop()` - Ends sampling. Does not clear samples. Compiles to a NOP
-/// when not in use.
+/// `hxprofiler_stop(void)` - Ends sampling. Does not clear samples. Compiles to
+/// a NOP when not in use.
 #define hxprofiler_stop() HX_PROFILE_ONLY_(g_hxprofiler_.stop_())
 
-/// `hxprofiler_log()` - Stops sampling and writes samples to the system log.
-/// Compiles to a NOP when not in use.
+/// `hxprofiler_log(void)` - Stops sampling and writes samples to the system
+/// log. Compiles to a NOP when not in use.
 #define hxprofiler_log() HX_PROFILE_ONLY_(g_hxprofiler_.log_())
 
-/// `hxprofiler_write_to_chrome_tracing(const char* filename)` - Stops sampling and
-/// writes samples to the provided file. Writes profiling data in a format usable
-/// by Chrome's `chrome://tracing view`. Usage: In Chrome go to `chrome://tracing/`.
-/// Load the generated json file. Use the W, A, S and D keys. See
-/// `http://www.chromium.org/developers/how-tos/trace-event-profiling-tool`
+/// `hxprofiler_write_to_chrome_tracing(const char* filename)` - Stops sampling
+/// and writes samples to the provided file. Writes profiling data in a format
+/// usable by Chrome's `chrome://tracing view`. Usage: In Chrome go to
+/// `chrome://tracing/`. Load the generated json file. Use the W, A, S and D
+/// keys. See `http://www.chromium.org/developers/how-tos/trace-event-profiling-tool`
 /// Compiles to a NOP when not in use.
 #define hxprofiler_write_to_chrome_tracing(filename_) \
 	HX_PROFILE_ONLY_( g_hxprofiler_.write_to_chrome_tracing_(filename_) )

@@ -125,7 +125,7 @@ protected:
 /// the table does not own the nodes.
 template<typename node_t_,
 	hxhash_t table_size_bits_=hxallocator_dynamic_capacity,
-	typename deleter_t_=hxdeleter>
+	typename deleter_t_=hxdefault_delete>
 class hxhash_table {
 public:
 	typedef node_t_ node_t;

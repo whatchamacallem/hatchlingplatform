@@ -82,7 +82,7 @@ enum hxloglevel_t {
 #error HX_RELEASE must be [0..3].
 #endif
 
-/// `hxinit()` - Initializes the platform.
+/// `hxinit` - Initializes the platform.
 #define hxinit() (void)(g_hxisinit || (hxinit_internal(), 0))
 
 #if (HX_RELEASE) == 0 // debug facilities
