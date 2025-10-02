@@ -27,7 +27,7 @@ public:
 	hxrandom& operator()(void) { return *this; }
 
 	/// Automatic cast to unsigned integer or floating point value. Floating point
-	/// results are between [0..1).  They can safely be used to generate array
+	/// results are between [0..1). They can safely be used to generate array
 	/// indicies without overflowing.
 	/// E.g., `unsigned int = m_prng; // Returns [0..UINT_MAX].`
 	operator float(void) {

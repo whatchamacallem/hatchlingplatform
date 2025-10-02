@@ -524,7 +524,7 @@ extern "C"
 hxattr_noexcept void hxfree(void *ptr) {
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 
-	// Nothing allocated from the OS memory manager can be freed here.  Not unless
+	// Nothing allocated from the OS memory manager can be freed here. Not unless
 	// it is wrapped with hxsystem_allocator_os_heap.
 	s_hxmemory_manager->free(ptr);
 }

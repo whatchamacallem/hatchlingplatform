@@ -74,7 +74,7 @@ public:
 #if !HX_NO_LIBCXX
 	/// Pass values of `std::initializer_list` as initializers to an array of `T`.
 	/// WARNING: This constructor will override the other constructors when
-	/// uniform initialization is used.  E.g., `hxarry<int>x{1,2}` is an array
+	/// uniform initialization is used. E.g., `hxarry<int>x{1,2}` is an array
 	/// containing `{1,2}` and `hxarry<int>x(1,2)` is the array containing `{2}`.
 	/// - `x` : A `std::initializer_list<other_value_t>`.
 	template <typename other_value_t_>
@@ -119,23 +119,23 @@ public:
 	/// - `index` : The index of the element.
 	T_& operator[](size_t index_);
 
-	/// Appends an element.  (Non-standard.) Vector math is not a goal so this
+	/// Appends an element. (Non-standard.) Vector math is not a goal so this
 	/// should not end up overloaded.
 	/// - `x` : An object to append. Not a temporary.
 	void operator+=(const T_& x_);
 
-	/// Appends an element.  (Non-standard.) Vector math is not a goal so this
+	/// Appends an element. (Non-standard.) Vector math is not a goal so this
 	/// should not end up overloaded.
 	/// - `x` : An object to append. Passed as a temporary.
 	void operator+=(T_&& x_);
 
-	/// Appends the contents of another array.  (Non-standard, from Python.)
+	/// Appends the contents of another array. (Non-standard, from Python.)
 	/// Vector math is not a goal so this should not end up overloaded.
 	/// - `x` : Another array. Not a temporary.
 	template <size_t capacity_x_>
 	void operator+=(const hxarray<T_, capacity_x_>& x_);
 
-	/// Appends the contents of another array.  (Non-standard, from Python.)
+	/// Appends the contents of another array. (Non-standard, from Python.)
 	/// Vector math is not a goal so this should not end up overloaded.
 	/// - `x` : Another array passed as a temporary.
 	template <size_t capacity_x_>

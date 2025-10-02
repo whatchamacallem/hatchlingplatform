@@ -95,7 +95,7 @@ class run_all_tests(unittest.TestCase):
 
 	def test_function_pointer_wchar(self):
 		# Passing string buffers requires an array of ctypes wchar. Returning
-		# wchar* results in a str. Python strings are immutable.  This is what
+		# wchar* results in a str. Python strings are immutable. This is what
 		# you get.
 		one_hundred_characters = (ctypes.c_wchar * 100)()
 		result : str = system_under_test.function_pointer_wchar(one_hundred_characters)

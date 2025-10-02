@@ -121,7 +121,7 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 	hxwarnmsg(m_pass_count_ + m_fail_count_, "nothing_tested");
 
 	if(m_pass_count_ != 0u && m_fail_count_ == 0u) {
-		// This is Google Test style.  If only it were green.
+		// This is Google Test style. If only it were green.
 		hxloghandler(hxloglevel_console, "[  PASSED  ] %zu test%s.\n", m_pass_count_,
 			((m_pass_count_ != 1u) ? "s" : ""));
 	}

@@ -465,7 +465,7 @@ def _calculate_type_string(cursor: Cursor, cpp_type_ref: Type, symbols: Dict[str
 	# available.
 	definition_cursor = cpp_type_canonical.get_declaration()
 	if not definition_cursor or not definition_cursor.is_definition():
-		# Make an exception for unknown pointer fields.  They are required.
+		# Make an exception for unknown pointer fields. They are required.
 		if is_pointer and result_kind is _type_string_kind.ctypes_struct:
 			return '_Ctypes.c_void_p'
 

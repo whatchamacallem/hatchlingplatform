@@ -7,7 +7,7 @@
 import os, setuptools, subprocess, sys
 from typing import List
 
-# C++ build command.  E.g., cmake, make and ./build.sh.
+# C++ build command. E.g., cmake, make and ./build.sh.
 SETUP_CPP_COMMAND = ['./setup_cpp.sh']
 
 # Python wrapper build command.
