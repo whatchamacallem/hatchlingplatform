@@ -19,11 +19,11 @@
 #endif
 #endif
 
-#if defined HX_DOXYGEN
+#if defined HX_DOXYGEN_PARSER
 /// `HX_CPLUSPLUS` - A version of `__cplusplus` that is defined to `0` when
 /// `__cplusplus` is undefined. Allows use in C preprocessor statements without
 /// warnings when the compiler is configured to warn about undefined macros.
-#define HX_CPLUSPLUS 202002L // Document all supported standards.
+#define HX_CPLUSPLUS 202002L // Document all supported C++ standards.
 #elif defined __cplusplus
 #define HX_CPLUSPLUS __cplusplus
 #else
@@ -32,7 +32,7 @@
 
 // ----------------------------------------------------------------------------
 // Target settings for Doxygen. See the Doxyfile. Run doxygen with no args.
-#if defined HX_DOXYGEN
+#if defined HX_DOXYGEN_PARSER
 
 /// `HX_USE_THREADS` - Indicates pthreads is in use.
 #define HX_USE_THREADS 1
@@ -52,7 +52,8 @@
 /// Prevents a write iterator from interfering with a read iterator.
 #define hxrestrict
 
-/// `hxattr_hot` - Optimize a function more aggressively.
+/// `hxattr_hot` - Optimize a function more aggressively. Significantly increases
+/// code utilization. Adjust implementation according to needs.
 #define hxattr_hot
 
 /// `hxattr_cold` - Optimize a function for size.
@@ -129,9 +130,11 @@
 #if defined(__GLIBCXX__) || defined(_LIBCPP_VERSION)
 #define HX_NO_LIBCXX 0
 #else
+// Always true in C.
 #define HX_NO_LIBCXX 1
 #endif
 
+// gcc can't set a breakpoint properly.
 #if defined __has_builtin && __has_builtin(__builtin_debugtrap)
 #define hxbreakpoint() (__builtin_debugtrap(),true)
 #else
@@ -139,7 +142,7 @@
 #endif
 
 #define hxrestrict __restrict
-#define hxattr_hot __attribute__((hot))
+#define hxattr_hot __attribute__((hot)) __attribute__((flatten))
 #define hxattr_cold __attribute__((cold))
 #define hxattr_format_printf(pos_, start_) __attribute__((format(printf, pos_, start_)))
 #define hxattr_format_scanf(pos_, start_) __attribute__((format(scanf, pos_, start_)))
@@ -147,10 +150,13 @@
 #define hxattr_noexcept __attribute__((nothrow))
 #define hxattr_noreturn __attribute__((noreturn))
 
+// clang can't handle the malloc attributes args.
 #if defined(__clang__)
-#define hxattr_allocator(...) __attribute__((returns_nonnull))
+#define hxattr_allocator(...) \
+	__attribute__((returns_nonnull)) __attribute__((warn_unused_result))
 #else
-#define hxattr_allocator(...) __attribute__((malloc(__VA_ARGS__))) __attribute__((returns_nonnull))
+#define hxattr_allocator(...) __attribute__((malloc(__VA_ARGS__))) \
+	__attribute__((returns_nonnull)) __attribute__((warn_unused_result))
 #endif
 
 #endif // target specific settings

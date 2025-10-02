@@ -16,8 +16,9 @@
 /// for debugging, active when `HX_RELEASE < 3`. `hxinit` initializes the
 /// platform and `hxshutdown` releases resources when `HX_RELEASE < 3`.
 ///
-/// Available utilities are: `hxnull`, `hxnullptr`, `hxmove`, `hxmin`, `hxmax`,
-/// `hxabs`, `hxclamp`, `hxswap`, `hxhex_dump`, `hxfloat_dump`.
+/// Available utilities are: `hxnull`, `hxnullptr`, `hxmove`, `hxforward`,
+/// `hxmin`, `hxmax`, `hxabs`, `hxclamp`, `hxswap`, `hxhex_dump`,
+/// `hxfloat_dump`.
 
 /// C Standard, Annex K is not portable. Asserts and `hxattr_nonnull` are used
 /// instead.
@@ -266,8 +267,41 @@ public:
 /// comparisons.
 #define hxnullptr hxnullptr_t()
 
-/// Converts a `T&` to a `T&&`.
-template<typename T_> constexpr T_&& hxmove(T_& x_) { return static_cast<T_&&>(x_); }
+/// Internal. Returns `T` with references removed as
+/// `hxremove_reference<T>::type`. Used by `hxremove_reference_t`.
+template<class T_> struct hxremove_reference       { using type = T_; };
+template<class T_> struct hxremove_reference<T_&>  { using type = T_; };
+template<class T_> struct hxremove_reference<T_&&> { using type = T_; };
+
+/// hxremove_reference_t<T> - Returns `T` with references removed.
+template<class T_> using hxremove_reference_t = typename hxremove_reference<T_>::type;
+
+/// Implements `std::move`. Converts either a `T&` or a `T&&` to a `T&&`. Do not
+/// specify `T` explicitly as it will not work as expected. This uses the rules
+/// about reference collapsing to handle both `T&` and `T&&`.
+template<class T_>
+constexpr hxremove_reference_t<T_>&& hxmove(T_&& t_) {
+    return static_cast<hxremove_reference_t<T_>&&>(t_);
+}
+
+/// Implements `std::forward`. Call as `hxforward<T>(x)` **from inside a
+/// templated forwarding function** where the parameter was declared `T&&` and
+/// `T` was **deduced**. `T` must be explicitly specified. E.g.,
+/// ```cpp
+///   template<class T>
+///   void forwards_temp(T&&x) { requires_temp(hxforward<T>(x)); }
+/// ```
+/// This is the `T&` version of hxforward.
+template<class T_>
+constexpr T_&& hxforward(typename hxremove_reference<T_>::type& t) noexcept {
+    return static_cast<T_&&>(t);
+}
+
+/// This is the `T&&` version of hxforward.
+template<class T_>
+constexpr T_&& hxforward(typename hxremove_reference<T_>::type&& t) noexcept {
+    return static_cast<T_&&>(t);
+}
 
 // More portable versions of min, max, abs and clamp using only operator<.
 
@@ -305,9 +339,9 @@ constexpr const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& maximum_
 template<typename T_>
 constexpr void hxswap(T_& x_, T_& y_) {
 	hxassertmsg(&x_ != &y_, "hxswap No swapping with self.");
-	T_ t_(hxmove<T_>(x_));
-	x_ = hxmove<T_>(y_);
-	y_ = hxmove<T_>(t_);
+	T_ t_(hxmove(x_));
+	x_ = hxmove(y_);
+	y_ = hxmove(t_);
 }
 
 /// `hxswap_memcpy` - Exchanges the contents of `x` and `y` using `memcpy` and a

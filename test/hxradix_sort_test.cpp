@@ -28,7 +28,7 @@ public:
 		a.reserve(size);
 		for(uint32_t i= size;i--;) {
 			uint32_t x = m_prng_() & mask;
-			a.push_back((key_t)x - offset);
+			a.push_back((key_t)((key_t)x - offset));
 		}
 	}
 

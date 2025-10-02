@@ -41,10 +41,10 @@ public:
 	/// - `size` : Sets array size as if `resize(size)` were called.
 	explicit hxarray(size_t size_);
 
-	/// Constructs an array of a given size by making copies of `t`.
+	/// Constructs an array of a given size by making copies of `x`.
 	/// - `size` : Sets array size as if `resize(size, t)` were called.
-	/// - `t` : The `const T&` to be duplicated.
-	explicit hxarray(size_t size_, const T_& t_);
+	/// - `x` : The `const T&` to be duplicated.
+	explicit hxarray(size_t size_, const T_& x_);
 
 	/// Copy constructs an array. Non-explicit to allow assignment constructor.
 	/// - `x` : An `Array<T>`.
@@ -120,7 +120,7 @@ public:
 	T_& operator[](size_t index_);
 
 	/// Appends an element. (Non-standard.) Vector math is not a goal so this
-	/// should not end up overloaded.
+	/// should not end up overloaded. Forwarding would be too ambiguous.
 	/// - `x` : An object to append. Not a temporary.
 	void operator+=(const T_& x_);
 
@@ -214,12 +214,6 @@ public:
 	void erase_unordered(size_t index_);
 
 	/// Calls a function, lambda or `std::function` on each element.
-	/// (Non-standard.)
-	/// `fn` - A function like object.
-	template<typename functor_t_>
-	void for_each(functor_t_& fn_);
-
-	/// Calls a function, lambda or `std::function` on each element.
 	/// (Non-standard.) Lambdas and `std::function` can be provided as
 	/// temporaries and that has to be allowed. The `&&` variant of
 	/// `functor_t::operator()` is being selected using `hxmove`. This is a
@@ -234,26 +228,25 @@ public:
 	/// Returns a reference to the begin element in the array.
 	T_& front(void);
 
-	/// Returns true if the array is full.
-	bool full(void) const;
-
 	/// Returns true when the array is full (size equal capacity).
 	/// (Non-standard.)
-	bool full(void);
+	bool full(void) const;
 
 	/// Inserts the element at the offset indicated. `insert(begin(), x)` and
 	/// `insert(end(), x)` will work as long as the array is allocated. Not
 	/// intended for objects that are expensive to move. Consider using
 	/// push_back_unconstructed for storing large objects.
 	/// - `pos` : Pointer to the location to insert the new element at.
-	/// - `t` : The new element.
-	void insert(T_* pos_, const T_& t_) hxattr_nonnull(2);
+	/// - `x` : The new element.
+	template<typename ref_t_>
+	void insert(T_* pos_, ref_t_&& x_) hxattr_nonnull(2);
 
 	/// Inserts the element at the offset indicated. `insert(begin(), x)` and
 	/// `insert(end(), x)` will work as long as the array is allocated.
 	/// - `index` : Index of the location to insert the new element at.
 	/// - `x` : The new element.
-	void insert(size_t index_, const T_& t_);
+	template<typename ref_t_>
+	void insert(size_t index_, ref_t_&& x_);
 
 	/// Returns true if this array compares as less than x. Sorts [1] before
 	/// [1,2]. This version takes two functors for key comparison.
@@ -273,13 +266,10 @@ public:
 	/// Removes the end element from the array.
 	void pop_back(void);
 
-	/// Adds a copy of the element to the end of the array.
-	/// - `t` : The element to add.
-	void push_back(const T_& t_);
-
-	/// Move the element to the end of the array.
-	/// - `t` : The element to move.
-	void push_back(T_&& t_);
+	/// Appends the element to the end of the array.
+	/// - `x` : The element to add.
+	template<typename ref_t_>
+	void push_back(ref_t_&& x_);
 
 	/// Reserves storage for at least the specified number of elements.
 	/// - `size` : The number of elements to reserve storage for.
@@ -298,8 +288,8 @@ public:
 	/// An overload with an initial value for new elements. Resizes the array to
 	/// the specified size, copy constructing or destroying elements as needed.
 	/// - `size` : The new size of the array.
-	/// - `t` : Initial value for new elements.
-	void resize(size_t size_, const T_& t_);
+	/// - `x` : Initial value for new elements.
+	void resize(size_t size_, const T_& x_);
 
 	/// Returns the number of elements in the array.
 	size_t size(void) const;
@@ -360,8 +350,8 @@ hxarray<T_, capacity_>::hxarray(size_t size_) : hxarray() {
 }
 
 template<typename T_, size_t capacity_>
-hxarray<T_, capacity_>::hxarray(size_t size_, const T_& t_) : hxarray() {
-	this->resize(size_, t_);
+hxarray<T_, capacity_>::hxarray(size_t size_, const T_& x_) : hxarray() {
+	this->resize(size_, x_);
 }
 
 template<typename T_, size_t capacity_>
@@ -587,17 +577,9 @@ void hxarray<T_, capacity_>::erase_unordered(size_t index_) {
 
 template<typename T_, size_t capacity_>
 template<typename functor_t_>
-void hxarray<T_, capacity_>::for_each(functor_t_& fn_) {
-	for(T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
-		fn_(*it_);
-	}
-}
-
-template<typename T_, size_t capacity_>
-template<typename functor_t_>
 void hxarray<T_, capacity_>::for_each(functor_t_&& fn_) {
 	for(T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
-		hxmove(fn_)(*it_);
+		hxforward<functor_t_>(fn_)(*it_);
 	}
 }
 
@@ -619,16 +601,12 @@ bool hxarray<T_, capacity_>::full(void) const {
 }
 
 template<typename T_, size_t capacity_>
-bool hxarray<T_, capacity_>::full(void) {
-	return this->size() == this->capacity();
-}
-
-template<typename T_, size_t capacity_>
-void hxarray<T_, capacity_>::insert(T_* pos_, const T_& t_) {
+template<typename ref_t_>
+void hxarray<T_, capacity_>::insert(T_* pos_, ref_t_&& x_) {
 	hxassertmsg(pos_ >= this->data() && pos_ <= m_end_ && !this->full(), "invalid_insert");
 	if(pos_ == m_end_) {
 		// Single constructor call for last element.
-		::new(m_end_++) T_(t_);
+		::new(m_end_++) T_(hxforward<ref_t_>(x_));
 	}
 	else {
 		// A copy constructor for a new end element followed by a series of
@@ -638,14 +616,15 @@ void hxarray<T_, capacity_>::insert(T_* pos_, const T_& t_) {
 		while(pos_ < --it_) {
 			*it_ = it_[-1];
 		}
-		*it_ = t_;
+		*it_ = hxforward<ref_t_>(x_);
 	}
 }
 
 template<typename T_, size_t capacity_>
-void hxarray<T_, capacity_>::insert(size_t index_, const T_& t_) {
+template<typename ref_t_>
+void hxarray<T_, capacity_>::insert(size_t index_, ref_t_&& x_) {
 	hxassertmsg(index_ <= this->size(), "invalid_index %zu", index_);
-	this->insert(this->data() + index_, t_);
+	this->insert(this->data() + index_, hxforward<ref_t_>(x_));
 }
 
 template<typename T_, size_t capacity_>
@@ -676,15 +655,10 @@ void hxarray<T_, capacity_>::pop_back(void) {
 }
 
 template<typename T_, size_t capacity_>
-void hxarray<T_, capacity_>::push_back(const T_& t_) {
+template<typename ref_t_>
+void hxarray<T_, capacity_>::push_back(ref_t_&& x_) {
 	hxassertmsg(!this->full(), "stack_overflow");
-	::new (m_end_++) T_(t_);
-}
-
-template<typename T_, size_t capacity_>
-void hxarray<T_, capacity_>::push_back(T_&& t_) {
-	hxassertmsg(!this->full(), "stack_overflow");
-	::new (m_end_++) T_(hxmove(t_));
+	::new (m_end_++) T_(hxforward<ref_t_>(x_));
 }
 
 template<typename T_, size_t capacity_>
@@ -716,13 +690,13 @@ void hxarray<T_, capacity_>::resize(size_t size_) {
 }
 
 template<typename T_, size_t capacity_>
-void hxarray<T_, capacity_>::resize(size_t size_, const T_& t_) {
+void hxarray<T_, capacity_>::resize(size_t size_, const T_& x_) {
 	this->reserve(size_);
 	T_* end_ = this->data() + size_;
 	if(size_ >= this->size()) {
 		while(m_end_ != end_) {
 			// This version uses a copy constructor.
-			::new (m_end_++) T_(t_);
+			::new (m_end_++) T_(x_);
 		}
 	}
 	else {

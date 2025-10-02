@@ -33,7 +33,7 @@ $(tput sgr 0)
 
 set -o errexit -o xtrace
 
-time ./debugbuild.sh
+time ./debugbuild.sh --headless
 time ./testcmake.sh
 time ./testcoverage.sh --headless
 time ./testerrorhandling.sh

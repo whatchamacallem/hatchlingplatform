@@ -13,6 +13,12 @@ set -o errexit
 
 export POSIXLY_CORRECT=1
 
+# Clear the output window when used interactively.
+if [ "$1" != "--headless" ]; then
+	export TERM=xterm-256color
+	clear
+fi
+
 # Should detect threading and standard library.
 BUILD="-DHX_RELEASE=0 -O0"
 

@@ -16,7 +16,7 @@ IMAGE_PATH             = .
 INPUT                  = include/hx/ README.md
 MACRO_EXPANSION        = YES
 OUTPUT_DIRECTORY       = docs/
-PREDEFINED             = HX_DOXYGEN=1
+PREDEFINED             = HX_DOXYGEN_PARSER=1
 PROJECT_NAME           = "Hatchling Platform"
 SHOW_INCLUDE_FILES     = NO
 USE_MDFILE_AS_MAINPAGE = README.md
