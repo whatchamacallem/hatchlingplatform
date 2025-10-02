@@ -172,9 +172,11 @@ public:
 	/// Clears the array, destroying all elements.
 	void clear(void);
 
-	/// Variant of `emplace_back` that returns a pointer for use with placement
-	/// new. (Non-standard.)
-	void* push_back_unconstructed(void);
+	/// Emplaces an element at the end of the array using forwarded arguments.
+	/// Returns a reference to the new element.
+	/// - `args` : Arguments forwarded to `T`'s constructor.
+	template<typename... args_t_>
+	T_& emplace_back(args_t_&&... args_);
 
 	/// Returns true if the arrays compare as equivalent. This version takes a
 	/// functor for key comparison.
@@ -276,6 +278,9 @@ public:
 	template<size_t capacity_x_>
 	bool less(const hxarray<T_, capacity_x_>& x_) const;
 
+	/// Returns the capacity of the array or 0 if unallocated.
+	size_t max_size(void);
+
 	/// Removes the end element from the array.
 	void pop_back(void);
 
@@ -284,6 +289,10 @@ public:
 	/// - `x` : The element to add.
 	template<typename ref_t_>
 	void push_back(ref_t_&& x_);
+
+	/// Variant of `push_back` that returns a pointer for use with placement
+	/// new. (Non-standard.)
+	void* push_back_unconstructed(void);
 
 	/// Reserves storage for at least the specified number of elements.
 	/// - `size` : The number of elements to reserve storage for.
@@ -519,9 +528,9 @@ void hxarray<T_, capacity_>::clear(void) {
 }
 
 template<typename T_, size_t capacity_>
-void* hxarray<T_, capacity_>::push_back_unconstructed(void) {
-	hxassertmsg(!this->full(), "stack_overflow");
-	return (void*)m_end_++;
+template<typename... args_t_>
+T_& hxarray<T_, capacity_>::emplace_back(args_t_&&... args_) {
+	return *::new (this->push_back_unconstructed()) T_(hxforward<args_t_>(args_)...);
 }
 
 template<typename T_, size_t capacity_>
@@ -667,6 +676,11 @@ bool hxarray<T_, capacity_>::less(const hxarray<T_, capacity_x_>& x_) const {
 }
 
 template<typename T_, size_t capacity_>
+size_t hxarray<T_, capacity_>::max_size(void) {
+	return this->capacity();
+}
+
+template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::pop_back(void) {
 	hxassertmsg(!this->empty(), "stack_underflow");
 	(--m_end_)->~T_();
@@ -677,6 +691,12 @@ template<typename ref_t_>
 void hxarray<T_, capacity_>::push_back(ref_t_&& x_) {
 	hxassertmsg(!this->full(), "stack_overflow");
 	::new (m_end_++) T_(hxforward<ref_t_>(x_));
+}
+
+template<typename T_, size_t capacity_>
+void* hxarray<T_, capacity_>::push_back_unconstructed(void) {
+	hxassertmsg(!this->full(), "stack_overflow");
+	return (void*)m_end_++;
 }
 
 template<typename T_, size_t capacity_>

@@ -193,6 +193,31 @@ TEST_F(hxarray_test, modification) {
 	EXPECT_TRUE(Check_totals(11));
 }
 
+TEST_F(hxarray_test, emplace_back) {
+	{
+		hxarray<test_object> objs;
+		objs.reserve(3u);
+
+		test_object& default_inserted = objs.emplace_back();
+		EXPECT_EQ(objs.data(), &default_inserted);
+		EXPECT_EQ(default_inserted.id, -1);
+
+		test_object original(42);
+		test_object& copy_inserted = objs.emplace_back(original);
+		EXPECT_EQ(objs.data() + 1, &copy_inserted);
+		EXPECT_EQ(copy_inserted.id, original.id);
+
+		test_object& value_inserted = objs.emplace_back(77);
+		EXPECT_EQ(objs.data() + 2, &value_inserted);
+		EXPECT_EQ(value_inserted.id, 77);
+
+		EXPECT_EQ(objs.size(), 3u);
+		EXPECT_EQ(objs.back().id, 77);
+	}
+
+	EXPECT_TRUE(Check_totals(4));
+}
+
 TEST_F(hxarray_test, for_each) {
 	static const unsigned char nums[5] = { 91, 92, 93, 94, 95 };
 	hxarray<int> objs;
