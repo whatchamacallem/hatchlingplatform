@@ -76,7 +76,7 @@ void hxinsertion_sort(T_* begin_, T_* end_) {
 }
 
 /// `hxmake_heap` - Converts the range `[begin, end)` into a max heap using the
-/// provided comparator. This is Floyd's buildHeap.
+/// provided comparator. Should work well for mostly heapified data.
 /// - `begin` : Pointer to the beginning of the range to heapify.
 /// - `end` : Pointer to one past the last element in the range to heapify.
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
@@ -84,17 +84,21 @@ template<typename T_, typename less_t_> hxattr_nonnull(1,2) hxattr_hot
 void hxmake_heap(T_* begin_, T_* end_, const less_t_& less_) {
 	for(T_* heap_end_ = begin_ + 1; heap_end_ < end_; ) {
 		T_* node_ = heap_end_++;
-		T_ value_ = hxmove(*node_);
-		T_* hole_ = node_;
-		while(hole_ > begin_) {
-			T_* parent_ = begin_ + ((hole_ - begin_ - 1) >> 1);
-			if(!less_(*parent_, value_)) {
-				break;
+		T_* parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
+		if(less_(*parent_, *node_)) {
+			T_ value_ = hxmove(*node_);
+			do {
+				*node_ = hxmove(*parent_);
+				node_ = parent_;
+				if(node_ == begin_) {
+					break;
+				}
+				parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
 			}
-			*hole_ = hxmove(*parent_);
-			hole_ = parent_;
+			while(less_(*parent_, value_))
+				/**/;
+			*node_ = hxmove(value_);
 		}
-		*hole_ = hxmove(value_);
 	}
 }
 
