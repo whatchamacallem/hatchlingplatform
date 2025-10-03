@@ -61,6 +61,93 @@ TEST(hxsort_test, sort_int_case) {
 	do_sort_int_case(hxsort<int, bool (*)(int, int)>);
 }
 
+TEST(hxmergesort_test, basic_cases) {
+	{
+		int left[1] = { 0 };
+		int right[1] = { 0 };
+		int dest[2] = { 111, 222 };
+
+		hxmerge(left, left, right, right, dest);
+
+		EXPECT_EQ(dest[0], 111);
+		EXPECT_EQ(dest[1], 222);
+	}
+
+	{
+		int left[3] = { -4, 0, 17 };
+		int right[1] = { 0 };
+		int dest[3] = { 91, 92, 93 };
+
+		hxmerge(left, left + 3, right, right, dest);
+
+		const int expected[3] = { -4, 0, 17 };
+		for(size_t i = 0; i < 3; ++i) {
+			EXPECT_EQ(dest[i], expected[i]);
+		}
+	}
+
+	{
+		int left[1] = { 0 };
+		int right[4] = { -3, -2, 6, 99 };
+		int dest[4] = { 81, 82, 83, 84 };
+
+		hxmerge(left, left, right, right + 4, dest);
+
+		const int expected[4] = { -3, -2, 6, 99 };
+		for(size_t i = 0; i < 4; ++i) {
+			EXPECT_EQ(dest[i], expected[i]);
+		}
+	}
+
+	{
+		int left[4] = { -5, 2, 4, 15 };
+		int right[5] = { -7, 0, 3, 8, 19 };
+		int dest[9] = { 0 };
+
+		hxmerge(left, left + 4, right, right + 5, dest);
+
+		const int expected[9] = {
+			-7, -5, 0, 2, 3, 4, 8, 15, 19
+		};
+		for(size_t i = 0; i < 9; ++i) {
+			EXPECT_EQ(dest[i], expected[i]);
+		}
+	}
+}
+
+struct hxmerge_record_t {
+	int key;
+	int ticket;
+
+	bool operator<(const hxmerge_record_t& other_) const noexcept {
+		return key < other_.key;
+	}
+};
+
+TEST(hxmergesort_test, preserves_stable_ordering) {
+	hxmerge_record_t left[] = {
+		{ 1, 0 }, { 3, 0 }, { 5, 0 }, { 5, 1 }
+	};
+	hxmerge_record_t right[] = {
+		{ 1, 1 }, { 3, 1 }, { 5, 2 }, { 7, 0 }
+	};
+	hxmerge_record_t dest[8] = { };
+
+	const size_t left_count = sizeof left / sizeof left[0];
+	const size_t right_count = sizeof right / sizeof right[0];
+
+	hxmerge(left, left + left_count, right, right + right_count, dest);
+
+	const hxmerge_record_t expected[] = {
+		{ 1, 0 }, { 1, 1 }, { 3, 0 }, { 3, 1 },
+		{ 5, 0 }, { 5, 1 }, { 5, 2 }, { 7, 0 }
+	};
+	for(size_t i = 0; i < left_count + right_count; ++i) {
+		EXPECT_EQ(dest[i].key, expected[i].key);
+		EXPECT_EQ(dest[i].ticket, expected[i].ticket);
+	}
+}
+
 TEST(hxbinary_search_test, simple_case) {
 	int ints[5] = { 2, 5, 6, 88, 99 };
 	int* result = hxbinary_search(ints+0, ints+5, 88, sort_int);

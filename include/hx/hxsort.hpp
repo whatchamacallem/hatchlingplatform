@@ -64,7 +64,7 @@ void hxinsertion_sort(T_* begin_, T_* end_, const less_t_& less_) {
 	}
 }
 
-/// `hxinsertion_sort (specialization)` - An overload of `hxinsertion_sort` that
+/// `hxinsertion_sort` (specialization) - An overload of `hxinsertion_sort` that
 /// uses `hxkey_less`.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
@@ -114,7 +114,7 @@ void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
     }
 }
 
-/// `hxheapsort (specialization)` - An overload of `hxheapsort` that uses
+/// `hxheapsort` (specialization) - An overload of `hxheapsort` that uses
 /// `hxkey_less`.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
@@ -135,13 +135,57 @@ void hxsort(T_* begin_, T_* end_, const less_t_& less_) {
 	hxintro_sort_(begin_, end_, less_, 2 * hxlog2i((size_t)(end_ - begin_)));
 }
 
-/// `hxsort (specialization)` - An overload of `hxsort` that uses `hxkey_less`.
+/// `hxsort` (specialization) - An overload of `hxsort` that uses `hxkey_less`.
 /// This version is intended for sorting large numbers of small objects.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename T_> hxattr_nonnull(1,2) hxattr_hot
 void hxsort(T_* begin_, T_* end_) {
 	hxintro_sort_(begin_, end_, hxkey_less_function<T_, T_>(), 2 * hxlog2i((size_t)(end_ - begin_)));
+}
+
+/// `hxmerge` - Performs a stable merge sort of two ordered ranges `[begin0,
+/// end0)` and `[begin1, end1)` -> `dest`. The input arrays must not overlap the
+/// destination array.
+///
+/// Assumes both `[begin0, end0)` and `[begin1, end1)` are ordered by the `less`
+/// functor.
+/// - `begin0` : Pointer to the beginning of the first ordered range to merge.
+/// - `end0` : Pointer to one past the last element of the first ordered range.
+/// - `begin1` : Pointer to the beginning of the second ordered range to merge.
+/// - `end1` : Pointer to one past the last element of the second ordered range.
+/// - `dest` : Pointer to the destination range receiving the merged output.
+/// - `less` : Comparator defining the less-than ordering relationship.
+template<typename T_, typename less_t_> hxattr_nonnull(1,2,3,4,5) hxattr_hot
+void hxmerge(T_* begin0_, T_* end0_, T_* begin1_, T_* end1_,
+					T_* hxrestrict dest_, const less_t_& less_) {
+    while (begin0_ != end0_ && begin1_ != end1_) {
+        if (less_(*begin1_, *begin0_)) {
+            *dest_++ = *begin1_++;
+        } else {
+            *dest_++ = *begin0_++;
+        }
+    }
+    while (begin0_ != end0_) {
+        *dest_++ = *begin0_++;
+    }
+    while (begin1_ != end1_) {
+        *dest_++ = *begin1_++;
+    }
+}
+
+/// `hxmerge` (specialization) - Performs a stable merge sort of two ordered
+/// ranges `[begin0, end0)` and `[begin1, end1)` -> `dest`. The input arrays
+/// must not overlap the destination array. Assumes both `[begin0, end0)` and
+/// `[begin1, end1)` are ordered by `hxless(a,b)`.
+/// - `begin0` : Pointer to the beginning of the first ordered range to merge.
+/// - `end0` : Pointer to one past the last element of the first ordered range.
+/// - `begin1` : Pointer to the beginning of the second ordered range to merge.
+/// - `end1` : Pointer to one past the last element of the second ordered range.
+/// - `dest` : Pointer to the destination range receiving the merged output.
+template<typename T_> hxattr_nonnull(1,2,3,4,5) hxattr_hot
+void hxmerge(T_* begin0_, T_* end0_, T_* begin1_, T_* end1_, T_* hxrestrict dest_) {
+	hxmerge(begin0_, end0_, begin1_, end1_, dest_, hxkey_less_function<T_, T_>());
 }
 
 /// `hxbinary_search` - Performs a binary search in the range [first, last).
@@ -176,7 +220,7 @@ const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_, cons
 	return hxnull;
 }
 
-/// `hxbinary_search (specialization)` - An overload of `hxbinary_search` that
+/// `hxbinary_search` (specialization) - An overload of `hxbinary_search` that
 /// uses `hxkey_less`.
 /// - `begin` : Pointer to the beginning of the range to search.
 /// - `end` : Pointer to one past the last element in the range to search.
@@ -197,7 +241,7 @@ T_* hxbinary_search(T_* begin_, T_* end_, const T_& val_, const less_t_& less_) 
 		const_cast<const T_*>(end_), val_, less_));
 }
 
-/// `hxbinary_search (specialization)` - Non-const overload using `hxkey_less`.
+/// `hxbinary_search` (specialization) - Non-const overload using `hxkey_less`.
 /// - `begin` : Pointer to the beginning of the range to search.
 /// - `end` : Pointer to one past the last element in the range to search.
 /// - `val` : The value to search for.
