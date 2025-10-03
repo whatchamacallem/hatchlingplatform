@@ -58,10 +58,6 @@ public:
 		s_hxtest_current = 0;
 	}
 
-	bool Check_totals(int32_t total) const {
-		return m_constructed == total && m_destructed == total;
-	}
-
 	int32_t m_constructed;
 	int32_t m_destructed;
 	int32_t m_next_id;

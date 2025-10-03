@@ -11,18 +11,17 @@
 #endif
 
 /// `hxarray` - Implements both `std::vector` and `std::inplace_vector` with a
-/// lot added a few things missing. Uses raw pointers as an iterator type so
-/// that you get compile errors and a debug experience that is in plain C++
-/// instead of using iterators. There are exhaustive asserts. C++23 ranges are
-/// not implemented.
+/// chunk added a few things missing. Uses raw pointers as an iterator type so
+/// that you get compile errors and a debug symbols that use plain C++ pointers
+/// instead. There are exhaustive asserts. C++23 ranges are not yet implemented.
 ///
 /// `hxarray` can be constructed from C string literals as follows:
 ///   `hxarray<char, HX_MAX_LINE> string_buffer("example C string");`
-/// however `operator+=` does not support C strings/arrays.
+/// however `operator+=` does not support C strings.
 ///
 /// Please run a memory sanitizer and an undefined behavior sanitizer too. Use a
-/// C array if you need `constexpr`. The excessive number of operators is due to
-/// the rules about default operators.
+/// C array for now if you need `constexpr`. The excessive number of operators
+/// is due to the rules about default operators.
 template<typename T_, size_t capacity_=hxallocator_dynamic_capacity>
 class hxarray : public hxallocator<T_, capacity_> {
 public:
@@ -114,11 +113,11 @@ public:
 	void operator=(const other_value_t_(&array_)[array_length_]);
 
 	/// Returns a const reference to the element at the specified index.
-	/// - `index` : The index of the element.
+	/// - `index` : The 0-based offset of the element.
 	const T_& operator[](size_t index_) const;
 
 	/// Returns a reference to the element at the specified index.
-	/// - `index` : The index of the element.
+	/// - `index` : The 0-based offset of the element.
 	T_& operator[](size_t index_);
 
 	/// Appends an element. (Non-standard.) Vector math is not a goal so this
@@ -158,17 +157,17 @@ public:
 	/// Returns a reference to the end element in the array.
 	T_& back(void);
 
-	/// Returns a `const_iterator` to the beginning of the array.
+	/// Returns a `const T*` to the beginning of the array.
 	const T_* begin(void) const;
 
-	/// Returns an `iterator` to the beginning of the array.
+	/// Returns an `T*` to the beginning of the array.
 	T_* begin(void);
 
-	/// Returns a `const_iterator` to the beginning of the array (alias for
+	/// Returns a `const T*` to the beginning of the array (alias for
 	/// begin()).
 	const T_* cbegin(void) const;
 
-	/// Returns a `const_iterator` to the end of the array.
+	/// Returns a `const T*` to the end of the array.
 	const T_* cend(void) const;
 
 	/// Clears the array, destroying all elements.
@@ -195,10 +194,10 @@ public:
 	/// Returns true if the array is empty.
 	bool empty(void) const;
 
-	/// Returns a `const_iterator` to the end of the array.
+	/// Returns a `const T*` to the end of the array.
 	const T_* end(void) const;
 
-	/// Returns an `iterator` to the end of the array.
+	/// Returns an `T*` to the end of the array.
 	T_* end(void);
 
 	/// Erases the element indicated. Should not compile with hxnull. Support
@@ -250,6 +249,14 @@ public:
 	/// Returns true when the array is full (size equal capacity).
 	/// (Non-standard.)
 	bool full(void) const;
+
+	/// Returns a `const T*` to element at the `index` or `hxnull` otherwise.
+	/// - `index` : The 0-based offset of the element.
+	const T_* get(size_t index_) const;
+
+	/// Returns a `T*` to element at the `index` or `hxnull` otherwise.
+	/// - `index` : The 0-based offset of the element.
+	T_* get(size_t index_);
 
 	/// Inserts the element at the offset indicated.  Should not compile with
 	/// `hxnull`. `insert(begin(), x)` and `insert(end(), x)` will work as long as
@@ -630,6 +637,18 @@ T_& hxarray<T_, capacity_>::front(void) {
 template<typename T_, size_t capacity_>
 bool hxarray<T_, capacity_>::full(void) const {
 	return m_end_ == this->data() + this->capacity();
+}
+
+template<typename T_, size_t capacity_>
+const T_* hxarray<T_, capacity_>::get(size_t index_) const {
+	// Casting a signed index is well defined. Comparing pointers would be undefined.
+	return index_ < this->size() ? this->data() + index_ : hxnull;
+}
+
+template<typename T_, size_t capacity_>
+T_* hxarray<T_, capacity_>::get(size_t index_) {
+	// Casting a signed index is well defined. Comparing pointers would be undefined.
+	return index_ < this->size() ? this->data() + index_ : hxnull;
 }
 
 template<typename T_, size_t capacity_>

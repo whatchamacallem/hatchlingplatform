@@ -59,7 +59,7 @@ public:
 		s_hxtest_current = 0;
 	}
 
-	bool Check_totals(size_t total) const {
+	bool check_totals(size_t total) const {
 		return m_constructed == total && m_destructed == total;
 	}
 
@@ -106,7 +106,7 @@ TEST_F(hxarray_test, allocators) {
 	objs_dynamic.clear();
 	objs_static.clear();
 
-	EXPECT_TRUE(Check_totals(8));
+	EXPECT_TRUE(check_totals(8));
 }
 
 TEST_F(hxarray_test, iteration) {
@@ -141,7 +141,30 @@ TEST_F(hxarray_test, iteration) {
 		EXPECT_EQ(cobjs.back(), nums[2]);
 	}
 
-	EXPECT_TRUE(Check_totals(6));
+	EXPECT_TRUE(check_totals(6));
+}
+
+TEST_F(hxarray_test, get) {
+	{
+		hxarray<test_object, 4u> objs; objs.reserve(4u);
+		objs.emplace_back(10);
+		objs.emplace_back(20);
+
+		const hxarray<test_object, 4u>& cobjs = objs;
+
+		EXPECT_EQ(objs.get(0), objs.begin());
+		EXPECT_EQ(objs.get(1), objs.begin() + 1);
+		EXPECT_EQ(objs.get(2), hxnull);
+
+		EXPECT_EQ(cobjs.get(0), cobjs.begin());
+		EXPECT_EQ(cobjs.get(1), cobjs.begin() + 1);
+		EXPECT_EQ(cobjs.get(2), hxnull);
+
+		objs.pop_back();
+		EXPECT_EQ(objs.get(1), hxnull);
+	}
+
+	EXPECT_TRUE(check_totals(2));
 }
 
 TEST_F(hxarray_test, modification) {
@@ -190,7 +213,7 @@ TEST_F(hxarray_test, modification) {
 		EXPECT_EQ(objs[4].id, 99);
 	}
 
-	EXPECT_TRUE(Check_totals(11));
+	EXPECT_TRUE(check_totals(11));
 }
 
 TEST_F(hxarray_test, emplace_back) {
@@ -215,7 +238,7 @@ TEST_F(hxarray_test, emplace_back) {
 		EXPECT_EQ(objs.back().id, 77);
 	}
 
-	EXPECT_TRUE(Check_totals(4));
+	EXPECT_TRUE(check_totals(4));
 }
 
 TEST_F(hxarray_test, for_each) {
@@ -282,7 +305,7 @@ TEST_F(hxarray_test, resizing) {
 		EXPECT_EQ(objs.capacity(), 12u);
 	}
 
-	EXPECT_TRUE(Check_totals(25));
+	EXPECT_TRUE(check_totals(25));
 }
 
 TEST_F(hxarray_test, assignment) {
@@ -314,7 +337,7 @@ TEST_F(hxarray_test, assignment) {
 		EXPECT_EQ(objs5[0].id, 67);
 	}
 
-	EXPECT_TRUE(Check_totals(6));
+	EXPECT_TRUE(check_totals(6));
 }
 
 #if HX_CPLUSPLUS >= 202002L
@@ -346,7 +369,7 @@ TEST_F(hxarray_test, plus_equals) {
 		EXPECT_TRUE(hxkey_less(objs3, objs));
 	}
 
-	EXPECT_TRUE(Check_totals(22));
+	EXPECT_TRUE(check_totals(22));
 }
 
 TEST_F(hxarray_test, erase) {
@@ -365,7 +388,7 @@ TEST_F(hxarray_test, erase) {
 		EXPECT_TRUE(hxkey_equal(objs, final_expected));
 	}
 
-	EXPECT_TRUE(Check_totals(9));
+	EXPECT_TRUE(check_totals(9));
 }
 
 TEST_F(hxarray_test, insert) {
@@ -387,7 +410,7 @@ TEST_F(hxarray_test, insert) {
 		EXPECT_TRUE(hxkey_equal(objs, final_expected));
 	}
 
-	EXPECT_TRUE(Check_totals(18)); // <-- This is why we don't use insert.
+	EXPECT_TRUE(check_totals(18)); // <-- This is why we don't use insert.
 }
 #endif
 
