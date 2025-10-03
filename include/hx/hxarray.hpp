@@ -23,6 +23,8 @@
 /// Please run a memory sanitizer and an undefined behavior sanitizer too. Use a
 /// C array for now if you need `constexpr`. The excessive number of operators
 /// is due to the rules about default operators.
+/// - `T` : Element type stored by the array.
+/// - `capacity` : Maximum element count or `hxallocator_dynamic_capacity` for dynamic storage.
 template<typename T_, size_t capacity_=hxallocator_dynamic_capacity>
 class hxarray : public hxallocator<T_, capacity_> {
 public:
@@ -209,7 +211,7 @@ public:
 	/// functor for key comparison.
 	/// - `x` : The other array.
 	/// - `equal` : A key comparison functor definining an equivalence relationship.
-	template<typename equal_t_, size_t capacity_x_>
+	template<size_t capacity_x_, typename equal_t_>
 	bool equal(const hxarray<T_, capacity_x_>& x_, const equal_t_& equal_) const;
 
 	/// Returns true if the arrays compare equivalent using `hxkey_equal`.
@@ -314,7 +316,7 @@ public:
 	/// - `x` : The other array.
 	/// - `less` : A key comparison functor definining a less-than ordering relationship.
 	/// - `equal` : A key comparison functor definining an equivalence relationship.
-	template<typename less_t_, typename equal_t_, size_t capacity_x_>
+	template<size_t capacity_x_, typename less_t_, typename equal_t_>
 	bool less(const hxarray<T_, capacity_x_>& x_, const less_t_& less_, const equal_t_& equal_) const;
 
 	/// Returns true if this array compares less than `x` using `hxkey_equal`
@@ -631,7 +633,7 @@ T_& hxarray<T_, capacity_>::emplace_back(args_t_&&... args_) {
 }
 
 template<typename T_, size_t capacity_>
-template<typename equal_t_, size_t capacity_x_>
+template<size_t capacity_x_, typename equal_t_>
 bool hxarray<T_, capacity_>::equal(const hxarray<T_, capacity_x_>& x_, const equal_t_& equal_) const {
 	if(this->size() != x_.size()) {
 		return false;
@@ -777,7 +779,7 @@ void hxarray<T_, capacity_>::insert(size_t index_, ref_t_&& x_) {
 }
 
 template<typename T_, size_t capacity_>
-template<typename less_t_, typename equal_t_, size_t capacity_x_>
+template<size_t capacity_x_, typename less_t_, typename equal_t_>
 bool hxarray<T_, capacity_>::less(const hxarray<T_, capacity_x_>& x_, const less_t_& less_, const equal_t_& equal_) const {
 	size_t size_ = hxmin(this->size(), x_.size());
 	for(const T_* it0_ = this->data(), *it1_ = x_.data(), *end_ = it0_ + size_;
