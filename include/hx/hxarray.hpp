@@ -346,9 +346,10 @@ public:
 
 	/// Inserts an element into a max-heap. This implements `std::push_heap` and
 	/// `std::priority_queue` using `hxless` for ordering. See `pop_heap`.
+	/// Returns a reference to the element added.
 	/// - `x` : The element to add.
 	template<typename ref_t_>
-	void push_heap(ref_t_&& x_);
+	T_& push_heap(ref_t_&& x_);
 
 	/// Reserves storage for at least the specified number of elements.
 	/// - `size` : The number of elements to reserve storage for.
@@ -835,7 +836,7 @@ void hxarray<T_, capacity_>::push_back(ref_t_&& x_) {
 
 template<typename T_, size_t capacity_>
 template<typename ref_t_>
-void hxarray<T_, capacity_>::push_heap(ref_t_&& x_) {
+T_& hxarray<T_, capacity_>::push_heap(ref_t_&& x_) {
 	hxassertmsg(!this->full(), "stack_overflow");
 	::new (m_end_) T_(hxforward<ref_t_>(x_));
 
@@ -849,6 +850,7 @@ void hxarray<T_, capacity_>::push_heap(ref_t_&& x_) {
 		hxswap(*parent_, *node_);
 		node_ = parent_;
 	}
+	return *node_;
 }
 
 template<typename T_, size_t capacity_>

@@ -86,32 +86,24 @@ void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
 		return;
 	}
 
-	// Find the index of the first parent node. It will be >= 0 because sz >= 2.
-	ptrdiff_t first_parent_index_ = (size_ >> 1) - 1;
-
-	// The first grandparent is just clamped to >= 0 because it avoids a special
-	// case when it does not exist.
-	ptrdiff_t first_grandparent_index_ = hxmax<ptrdiff_t>((size_ >> 2) - 1, 0);
-	T_* first_grandparent_ = begin_ + first_grandparent_index_;
-
-	// Do not visit leaf nodes at all. Then run an optimized version on half the
-	// remaining values that doesn't recurse and do range checks on children
-	// that don't exist. This still handles the case where the right child is
-	// missing from the last parent.
-	for(T_* it_ = begin_ + first_parent_index_; it_ > first_grandparent_; --it_) {
-		hxheapsort_heapify_bottom_(begin_, end_, it_, less_);
+	// Build the heap by sifting each element up to its proper position.
+	for(T_* heap_end_ = begin_ + 1; heap_end_ < end_; ) {
+		T_* node_ = heap_end_++;
+		while(node_ > begin_) {
+			T_* parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
+			if(!less_(*parent_, *node_)) {
+				break;
+			}
+			hxswap(*parent_, *node_);
+			node_ = parent_;
+		}
 	}
 
-	// Heapify the grandparents using in iterative method.
-	for(T_* it_ = first_grandparent_; it_ >= begin_; --it_) {
-		hxheapsort_heapify_(begin_, end_, it_, less_);
+	// Sort phase. Swap the largest values to the end of the array.
+	for(T_* it_ = end_ - 1; it_ > begin_; --it_) {
+		hxswap(*begin_, *it_);
+		hxheapsort_heapify_(begin_, it_, begin_, less_);
 	}
-
-    // Sort phase. Swap the largest values to the end of the array.
-    for(T_* it_ = end_ - 1; it_ > begin_; --it_) {
-        hxswap(*begin_, *it_);
-        hxheapsort_heapify_(begin_, it_, begin_, less_);
-    }
 }
 
 /// `hxheapsort` (specialization) - An overload of `hxheapsort` that uses

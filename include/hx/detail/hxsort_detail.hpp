@@ -61,32 +61,6 @@ void hxheapsort_heapify_(T_* begin_, const T_* end_, T_* current_, const less_t_
 	}
 }
 
-/// Heapify operation for parents (but not grandparents).
-/// - `begin` : Pointer to the first element in the heap.
-/// - `end` : Pointer to one past the last element in the heap.
-/// - `current` : Pointer to the current element being heapified.
-/// - `less` : Comparison functor.
-template<typename T_, typename less_t_> hxattr_nonnull(1,2,3) hxattr_hot
-void hxheapsort_heapify_bottom_(T_* begin_, const T_* end_, T_* current_, const less_t_& less_) {
-	T_* left_  = begin_ + 2 * (current_ - begin_) + 1;
-	T_* right_ = left_ + 1;
-
-	// NB The very last parent may be missing a right child.
-	hxassertmsg(begin_ <= left_ && left_ < end_, "invalid_iterator");
-
-	if(right_ < end_ && less_(*current_, *right_)) {
-		if(less_(*left_, *right_)) {
-			hxswap(*current_, *right_);
-		}
-		else {
-			hxswap(*current_, *left_);
-		}
-	}
-	else if(less_(*current_, *left_)) {
-		hxswap(*current_, *left_);
-	}
-}
-
 /// Sort `[begin, end)` in-place using Dual-Pivot QuickSort. Based on Java's
 /// `Array.sort` implementation details. Should be resistant to degeneration.
 /// Average time: `Θ(n log n)`, worst time: `Θ(n²)`. This algorithm is only
