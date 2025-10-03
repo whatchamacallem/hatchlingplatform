@@ -359,6 +359,77 @@ TEST_F(hxarray_test, for_each) {
 	objs.for_each(y);
 }
 
+TEST_F(hxarray_test, all_of_any_of) {
+	static const unsigned char nums[5] = { 91, 92, 93, 94, 95 };
+	hxarray<int> objs;
+	objs.assign(nums, nums + (sizeof nums / sizeof *nums));
+
+	EXPECT_TRUE(objs.all_of([](const int& x) { return x > 0; }));
+	EXPECT_FALSE(objs.all_of([](const int& x) { return x < 95; }));
+
+	int all_calls = 0;
+	auto all_counter = [&](const int& value_) -> bool {
+		++all_calls;
+		return value_ < 93;
+	};
+	EXPECT_FALSE(objs.all_of(all_counter));
+	EXPECT_EQ(all_calls, 3);
+
+	int any_calls = 0;
+	auto any_counter = [&](const int& value_) -> bool {
+		++any_calls;
+		return value_ == 94;
+	};
+	EXPECT_TRUE(objs.any_of(any_counter));
+	EXPECT_EQ(any_calls, 4);
+
+	int miss_calls = 0;
+	auto miss_counter = [&](const int& value_) -> bool {
+		++miss_calls;
+		return value_ == -1;
+	};
+	EXPECT_FALSE(objs.any_of(miss_counter));
+	EXPECT_EQ(miss_calls, 5);
+
+	objs.clear();
+	auto empty_predicate = [](const int&) -> bool {
+		hxassertmsg(0, "internal error");
+		return false;
+	};
+	EXPECT_TRUE(objs.all_of(empty_predicate));
+	EXPECT_FALSE(objs.any_of(empty_predicate));
+}
+
+TEST_F(hxarray_test, erase_if) {
+	static const int nums[5] = { 1, 2, 3, 4, 5 };
+	hxarray<int> objs;
+	objs.assign(nums, nums + (sizeof nums / sizeof *nums));
+
+	int remove_calls = 0;
+	auto remove_even = [&](int& value_) -> bool {
+		++remove_calls;
+		return (value_ & 1) == 0;
+	};
+	EXPECT_EQ(objs.erase_if(remove_even), 2u);
+	EXPECT_EQ(remove_calls, 5);
+
+	hxarray<int> expected { 1, 5, 3 };
+	EXPECT_EQ(objs.size(), expected.size());
+	for(size_t i = 0; i < expected.size(); ++i) {
+		EXPECT_EQ(objs[i], expected[i]);
+	}
+
+	EXPECT_EQ(objs.erase_if([](int value_) { return value_ == 1; }), 1u);
+	EXPECT_EQ(objs.size(), 2u);
+
+	objs.clear();
+	auto empty_predicate = [](int&) -> bool {
+		hxassertmsg(0, "internal error");
+		return false;
+	};
+	EXPECT_EQ(objs.erase_if(empty_predicate), 0u);
+}
+
 TEST_F(hxarray_test, resizing) {
 	{
 		static const int32_t nums[5] = { 51, 52, 53, 54, 55 };

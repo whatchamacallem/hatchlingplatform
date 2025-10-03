@@ -144,6 +144,18 @@ public:
 	template <size_t capacity_x_>
 	void operator+=(hxarray<T_, capacity_x_>&& x_);
 
+	/// Returns true if the predicate returns true for every element and false
+	/// otherwise. Will stop iterating when the predicate returns false.
+	/// - `fn` : A functor returning boolean.
+	template<typename functor_t_>
+	bool all_of(functor_t_&& fn_) const;
+
+	/// Returns true if the predicate returns true for any element and false
+	/// otherwise. Will stop iterating when the predicate returns true.
+	/// - `fn` : A functor returning boolean.
+	template<typename functor_t_>
+	bool any_of(functor_t_&& fn_) const;
+
 	/// Assigns elements from a range defined by random access iterators.
 	/// `iter_t::operator-` is required.
 	/// - `begin` : The beginning iterator.
@@ -222,6 +234,13 @@ public:
 	/// - `index` : Index of the element to erase.
 	void erase(size_t index_);
 
+	/// Removes elements for which the predicate returns true. (Non-standard.)
+	/// Equivalent to calling `erase_unordered` inside a reverse loop. Returns
+	/// the number of erased elements.
+	/// - `fn` : A functor returning boolean.
+	template<typename functor_t_>
+	size_t erase_if(functor_t_&& fn_);
+
 	/// Variant of `erase` that moves the end element down to replace the erased
 	/// element. Should not compile with hxnull. (Non-standard.) Can be used to
 	/// erase elements of an array as it is traversed. E.g.,
@@ -249,7 +268,7 @@ public:
 	/// hxarray<int> a(3, 0);
 	/// a.for_each([](int& x) { ++x; }); // Produces { 1, 1, 1 }.
 	/// ```
-	/// `fn` - A function like object.
+	/// - `fn` : A functor.
 	template<typename functor_t_>
 	void for_each(functor_t_&& fn_);
 
@@ -504,6 +523,28 @@ void hxarray<T_, capacity_>::operator+=(hxarray<T_, capacity_x_>&& x_) {
 }
 
 template<typename T_, size_t capacity_>
+template<typename functor_t_>
+bool hxarray<T_, capacity_>::all_of(functor_t_&& fn_) const {
+	for(const T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
+		if(!hxforward<functor_t_>(fn_)(*it_)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+template<typename T_, size_t capacity_>
+template<typename functor_t_>
+bool hxarray<T_, capacity_>::any_of(functor_t_&& fn_) const {
+	for(const T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
+		if(hxforward<functor_t_>(fn_)(*it_)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+template<typename T_, size_t capacity_>
 template<typename iter_t_>
 void hxarray<T_, capacity_>::assign(iter_t_ begin_, iter_t_ end_) {
 	hxassertmsg((end_ - begin_) >= 0, "invalid_iterator");
@@ -628,6 +669,19 @@ template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::erase(size_t index_) {
 	hxassertmsg(index_ < this->size(), "invalid_index %zu", index_);
 	this->erase(this->data() + index_);
+}
+
+template<typename T_, size_t capacity_>
+template<typename functor_t_>
+size_t hxarray<T_, capacity_>::erase_if(functor_t_&& fn_) {
+	size_t removed_ = 0u;
+	for(size_t index_ = this->size(); index_--;) {
+		if(hxforward<functor_t_>(fn_)(this->data()[index_])) {
+			this->erase_unordered(index_);
+			++removed_;
+		}
+	}
+	return removed_;
 }
 
 template<typename T_, size_t capacity_>
