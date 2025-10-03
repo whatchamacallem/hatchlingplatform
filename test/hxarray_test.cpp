@@ -124,6 +124,22 @@ private:
 	T* end_;
 };
 
+template<typename array_t_>
+static bool hxarray_test_is_max_heap(const array_t_& heap_) {
+	const size_t size_ = heap_.size();
+	for(size_t parent_ = 0; parent_ != size_; ++parent_) {
+		const size_t left_ = (parent_ << 1) + 1;
+		const size_t right_ = left_ + 1;
+		if(left_ < size_ && hxkey_less(heap_[parent_], heap_[left_])) {
+			return false;
+		}
+		if(right_ < size_ && hxkey_less(heap_[parent_], heap_[right_])) {
+			return false;
+		}
+	}
+	return true;
+}
+
 // Test hxmove/hxforward<T> here as they are used extensively by hxarray.
 TEST(hxarray_test, hxmove_regression) {
 	hxarray_test_move_tracker source(123);
@@ -303,6 +319,60 @@ TEST_F(hxarray_test, modification) {
 	}
 
 	EXPECT_TRUE(check_totals(11));
+}
+
+TEST_F(hxarray_test, push_heap_maintains_max_heap) {
+	static const int values[] = { 3, 7, 1, 9, 5, 8 };
+	const size_t value_count = sizeof values / sizeof *values;
+
+	hxarray<int, 16u> heap;
+	int max_value = INT_MIN;
+	for(size_t index = 0; index < value_count; ++index) {
+		const int value = values[index];
+		heap.push_heap(value);
+		if(value > max_value) {
+			max_value = value;
+		}
+		EXPECT_TRUE(hxarray_test_is_max_heap(heap));
+		EXPECT_EQ(heap.front(), max_value);
+	}
+
+	EXPECT_EQ(heap.size(), value_count);
+}
+
+TEST_F(hxarray_test, pop_heap_restores_heap_after_removal) {
+	static const int values[] = { 5, 12, 3, 7, 9, 4, 15, 5 };
+	const size_t value_count = sizeof values / sizeof *values;
+
+	hxarray<int, 16u> heap;
+	for(size_t index = 0; index < value_count; ++index) {
+		heap.push_heap(values[index]);
+	}
+
+	EXPECT_TRUE(hxarray_test_is_max_heap(heap));
+	EXPECT_EQ(heap.size(), value_count);
+
+	hxarray<int, 16u> removed;
+	size_t expected_size = value_count;
+	while(!heap.empty()) {
+		const int root_value = heap.front();
+		removed.push_back(root_value);
+		heap.pop_heap();
+		--expected_size;
+		EXPECT_EQ(heap.size(), expected_size);
+		EXPECT_TRUE(hxarray_test_is_max_heap(heap));
+		for(size_t index = 0; index < heap.size(); ++index) {
+			EXPECT_LE(heap[index], root_value);
+		}
+	}
+
+	EXPECT_TRUE(heap.empty());
+	EXPECT_EQ(removed.size(), value_count);
+
+	static const int expected[] = { 15, 12, 9, 7, 5, 5, 4, 3 };
+	for(size_t index = 0; index < value_count; ++index) {
+		EXPECT_EQ(removed[index], expected[index]);
+	}
 }
 
 TEST_F(hxarray_test, emplace_back) {

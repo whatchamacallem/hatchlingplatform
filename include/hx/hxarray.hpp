@@ -5,6 +5,7 @@
 
 #include "hxallocator.hpp"
 #include "hxkey.hpp"
+#include "detail/hxsort_detail.hpp"
 
 #if !HX_NO_LIBCXX
 #include <initializer_list>
@@ -173,7 +174,7 @@ public:
 	/// Assigns elements from a temporary range. This overload enables moving the
 	/// range elements into the array when forwarding rvalues.
 	/// - `range` : The range to move elements from.
-	template <typename range_t_, typename = hxenable_if_t<!hxis_lvalue_reference<range_t_>::value> >
+	template <typename range_t_, typename=hxenable_if_t<!hxis_lvalue_reference<range_t_>::value>>
 	void assign_range(range_t_&& range_);
 
 	/// Returns a const reference to the end element in the array.
@@ -330,11 +331,22 @@ public:
 	/// Removes the end element from the array.
 	void pop_back(void);
 
+	/// Removes the first (maximum) element from a max-heap. This implements
+	/// `std::pop_heap` and `std::priority_queue` using `hxless` for ordering. See
+	/// `push_heap`.
+	void pop_heap(void);
+
 	/// Appends the element to the end of the array. `ref_t` may be any type
 	/// that can be used to construct `T`.
 	/// - `x` : The element to add.
 	template<typename ref_t_>
 	void push_back(ref_t_&& x_);
+
+	/// Inserts an element into a max-heap. This implements `std::push_heap` and
+	/// `std::priority_queue` using `hxless` for ordering. See `pop_heap`.
+	/// - `x` : The element to add.
+	template<typename ref_t_>
+	void push_heap(ref_t_&& x_);
 
 	/// Reserves storage for at least the specified number of elements.
 	/// - `size` : The number of elements to reserve storage for.
@@ -797,10 +809,44 @@ void hxarray<T_, capacity_>::pop_back(void) {
 }
 
 template<typename T_, size_t capacity_>
+void hxarray<T_, capacity_>::pop_heap(void) {
+	hxassertmsg(!this->empty(), "stack_underflow");
+	T_* begin_ = this->data();
+	T_* last_ = m_end_ - 1;
+	if(begin_ == last_) {
+		last_->~T_();
+		m_end_ = last_;
+		return;
+	}
+	*begin_ = hxmove(*last_);
+	last_->~T_();
+	m_end_ = last_;
+	hxdetail_::hxheapsort_heapify_(begin_, m_end_, begin_, hxkey_less_function<T_, T_>());
+}
+
+template<typename T_, size_t capacity_>
 template<typename ref_t_>
 void hxarray<T_, capacity_>::push_back(ref_t_&& x_) {
 	hxassertmsg(!this->full(), "stack_overflow");
 	::new (m_end_++) T_(hxforward<ref_t_>(x_));
+}
+
+template<typename T_, size_t capacity_>
+template<typename ref_t_>
+void hxarray<T_, capacity_>::push_heap(ref_t_&& x_) {
+	hxassertmsg(!this->full(), "stack_overflow");
+	::new (m_end_) T_(hxforward<ref_t_>(x_));
+
+	T_* begin_ = this->data();
+	T_* node_ = m_end_++;
+	while(node_ > begin_) {
+		T_* parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
+		if(!hxkey_less(*parent_, *node_)) {
+			break;
+		}
+		hxswap(*parent_, *node_);
+		node_ = parent_;
+	}
 }
 
 template<typename T_, size_t capacity_>

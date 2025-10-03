@@ -131,17 +131,17 @@ inline void InitGoogleTest(void) { }
 /// - `suite_fixture` : The test suite base class used as a fixture.
 /// - `case_name` : A valid C identifier for the test case.
 #define TEST_F(suite_fixture_, case_name_) \
-	class HX_TEST_NAME_(hxtest_, suite_fixture_, case_name_) : public hxtest_case_interface_ { \
+	class HX_TEST_NAME_(hxtest_f_, suite_fixture_, case_name_) : public hxtest_case_interface_ { \
 	public: \
 		class hxtest_case_subclass_ : public suite_fixture_ { virtual void run_test_f_(void) override; }; \
-		HX_TEST_NAME_(hxtest_, suite_fixture_, case_name_)(void) { hxtest_::dispatcher_().add_test_(this); } \
+		HX_TEST_NAME_(hxtest_f_, suite_fixture_, case_name_)(void) { hxtest_::dispatcher_().add_test_(this); } \
 		virtual void run_test_(void) override { hxtest_case_subclass_ subclass_; subclass_.run_test_(); } \
 		virtual const char* suite_(void) const override { return #suite_fixture_; } \
 		virtual const char* case_(void) const override { return #case_name_; } \
 		virtual const char* file_(void) const override { return __FILE__; } \
 		virtual size_t line_(void) const override { return __LINE__; } \
-	} static HX_TEST_NAME_(s_hxtest, suite_fixture_, case_name_); \
-	void HX_TEST_NAME_(hxtest_, suite_fixture_, case_name_)::hxtest_case_subclass_::run_test_f_(void)
+	} static HX_TEST_NAME_(s_hxtest_f_, suite_fixture_, case_name_); \
+	void HX_TEST_NAME_(hxtest_f_, suite_fixture_, case_name_)::hxtest_case_subclass_::run_test_f_(void)
 
 /// `int RUN_ALL_TESTS(...)` - Executes all registered test cases.
 /// `...` : An optional const char* matching a specific test suite to run. (Non-standard.)
