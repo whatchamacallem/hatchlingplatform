@@ -23,41 +23,36 @@ enum : ptrdiff_t { hxpartition_sort_cutoff_ = 32 };
 /// - `less` : Comparison functor.
 template<typename T_, typename less_t_> hxattr_nonnull(1,2,3) hxattr_hot
 void hxheapsort_heapify_(T_* begin_, const T_* end_, T_* current_, const less_t_& less_) {
+	hxassertmsg(begin_ <= current_ && current_ < end_, "invalid_iterator");
+
+	const ptrdiff_t heap_size_ = end_ - begin_;
+	ptrdiff_t current_index_ = current_ - begin_;
+
 	for(;;) {
-		hxassertmsg(begin_ <= current_ && current_ < end_, "invalid_iterator");
-
-		T_* left_  = begin_ + 2 * (current_ - begin_) + 1;
-		T_* right_ = left_ + 1;
-		T_* next_  = 0;
-
-		if(right_ < end_) {
-			// Deal with the case where there are two children first.
-			if(less_(*left_, *right_)) {
-				next_ = right_;
-			}
-			else {
-				next_ = left_;
-			}
-			if(less_(*next_, *current_)) {
-				// Neither child greater.
-				return;
-			}
-		}
-		else if(right_ == end_) {
-			// Special case for a single child. It will have no child itself.
-			// Hopefully this uses the processor status flags from the last
-			// compare.
-			if(less_(*current_, *left_)) {
-				hxswap(*current_, *left_);
-			}
+		const ptrdiff_t left_index_ = (current_index_ << 1) + 1;
+		if(left_index_ >= heap_size_) {
 			return;
 		}
-		else {
-			return; // No children.
+
+		ptrdiff_t next_index_ = left_index_;
+		T_* next_ = begin_ + left_index_;
+
+		const ptrdiff_t right_index_ = left_index_ + 1;
+		if(right_index_ < heap_size_) {
+			T_* right_ = begin_ + right_index_;
+			if(less_(*next_, *right_)) {
+				next_ = right_;
+				next_index_ = right_index_;
+			}
 		}
 
-		hxswap(*current_, *next_);
-		current_ = next_;
+		T_* current_ptr_ = begin_ + current_index_;
+		if(!less_(*current_ptr_, *next_)) {
+			return;
+		}
+
+		hxswap(*current_ptr_, *next_);
+		current_index_ = next_index_;
 	}
 }
 
