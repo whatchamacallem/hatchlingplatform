@@ -45,6 +45,8 @@
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
 template<typename T_, typename less_t_> hxattr_nonnull(1,2) hxattr_hot
 void hxinsertion_sort(T_* begin_, T_* end_, const less_t_& less_) {
+	hxassertmsg(begin_ <= end_, "invalid_iterator");
+
 	// Address sanitizer: Avoids adding 1 to null iterators.
 	if(begin_ == end_) { return; }
 
@@ -74,7 +76,7 @@ void hxinsertion_sort(T_* begin_, T_* end_) {
 }
 
 /// `hxmake_heap` - Converts the range `[begin, end)` into a max heap using the
-/// provided comparator.
+/// provided comparator. This is Floyd's buildHeap.
 /// - `begin` : Pointer to the beginning of the range to heapify.
 /// - `end` : Pointer to one past the last element in the range to heapify.
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
@@ -86,7 +88,7 @@ void hxmake_heap(T_* begin_, T_* end_, const less_t_& less_) {
 			T_* parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
 			if(!less_(*parent_, *node_)) {
 				break;
-			}
+		}
 			hxswap(*parent_, *node_);
 			node_ = parent_;
 		}
@@ -158,23 +160,24 @@ void hxsort(T_* begin_, T_* end_) {
 /// - `end0` : Pointer to one past the last element of the first ordered range.
 /// - `begin1` : Pointer to the beginning of the second ordered range to merge.
 /// - `end1` : Pointer to one past the last element of the second ordered range.
-/// - `dest` : Pointer to the destination range receiving the merged output.
+/// - `output` : Pointer to the destination range receiving the merged output.
 /// - `less` : Comparator defining the less-than ordering relationship.
 template<typename T_, typename less_t_> hxattr_nonnull(1,2,3,4,5) hxattr_hot
 void hxmerge(T_* begin0_, T_* end0_, T_* begin1_, T_* end1_,
-					T_* hxrestrict dest_, const less_t_& less_) {
+					T_* hxrestrict output_, const less_t_& less_) {
+	hxassertmsg(begin0_ <= end0_ && begin1_ <= end1_, "invalid_iterator");
     while (begin0_ != end0_ && begin1_ != end1_) {
         if (less_(*begin1_, *begin0_)) {
-            *dest_++ = *begin1_++;
+            *output_++ = *begin1_++;
         } else {
-            *dest_++ = *begin0_++;
+            *output_++ = *begin0_++;
         }
     }
     while (begin0_ != end0_) {
-        *dest_++ = *begin0_++;
+        *output_++ = *begin0_++;
     }
     while (begin1_ != end1_) {
-        *dest_++ = *begin1_++;
+        *output_++ = *begin1_++;
     }
 }
 
@@ -205,6 +208,7 @@ template<typename T_, typename less_t_> hxattr_nonnull(1,2) hxattr_hot
 const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_, const less_t_& less_) {
 	// don't operate on null pointer args. unallocated containers have this.
 	if(begin_ == end_) { return hxnull; }
+	hxassertmsg(begin_ <= end_, "invalid_iterator");
 
 	ptrdiff_t a_ = 0;
 	ptrdiff_t b_ = end_ - begin_ - 1;
