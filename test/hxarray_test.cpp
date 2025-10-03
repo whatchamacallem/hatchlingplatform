@@ -409,6 +409,14 @@ TEST(hxarray_test, assign_range_from_const) {
 	EXPECT_EQ(elements[1], assigned_elements[1]);
 	EXPECT_EQ(elements[2], assigned_elements[2]);
 	EXPECT_EQ(elements[3], assigned_elements[3]);
+	EXPECT_FALSE(elements[0].moved_from);
+	EXPECT_FALSE(elements[1].moved_from);
+	EXPECT_FALSE(elements[2].moved_from);
+	EXPECT_FALSE(elements[3].moved_from);
+	EXPECT_FALSE(assigned_elements[0].moved_from);
+	EXPECT_FALSE(assigned_elements[1].moved_from);
+	EXPECT_FALSE(assigned_elements[2].moved_from);
+	EXPECT_FALSE(assigned_elements[3].moved_from);
 }
 
 TEST(hxarray_test, assign_range_from_rvalue) {
@@ -434,6 +442,77 @@ TEST(hxarray_test, assign_range_from_rvalue) {
 	EXPECT_TRUE(source_elements[0].moved_from);
 	EXPECT_TRUE(source_elements[1].moved_from);
 	EXPECT_TRUE(source_elements[2].moved_from);
+}
+
+TEST(hxarray_test, push_back_move_tracker) {
+	hxarray_test_move_tracker source(42);
+	hxarray<hxarray_test_move_tracker> elements;
+	elements.reserve(3u);
+	elements.push_back(hxmove(source));
+
+	EXPECT_EQ(elements.size(), 1u);
+	EXPECT_EQ(elements[0].value, 42);
+	EXPECT_FALSE(elements[0].moved_from);
+	EXPECT_TRUE(source.moved_from);
+
+	hxarray_test_move_tracker other(84);
+	elements.push_back(other);
+
+	EXPECT_EQ(elements.size(), 2u);
+	EXPECT_EQ(elements[1].value, 84);
+	EXPECT_FALSE(elements[0].moved_from);
+	EXPECT_FALSE(elements[1].moved_from);
+	EXPECT_FALSE(other.moved_from);
+}
+
+TEST(hxarray_test, plus_equals_move_tracker_element) {
+	hxarray_test_move_tracker source(5);
+	hxarray<hxarray_test_move_tracker> elements;
+	elements.reserve(3u);
+	elements += hxmove(source);
+
+	EXPECT_EQ(elements.size(), 1u);
+	EXPECT_EQ(elements[0].value, 5);
+	EXPECT_FALSE(elements[0].moved_from);
+	EXPECT_TRUE(source.moved_from);
+
+	hxarray_test_move_tracker other(11);
+	elements += other;
+
+	EXPECT_EQ(elements.size(), 2u);
+	EXPECT_EQ(elements[1].value, 11);
+	EXPECT_FALSE(elements[0].moved_from);
+	EXPECT_FALSE(elements[1].moved_from);
+	EXPECT_FALSE(other.moved_from);
+}
+
+TEST(hxarray_test, plus_equals_move_tracker_array) {
+	hxarray_test_move_tracker initial(1);
+	hxarray<hxarray_test_move_tracker> elements;
+	elements.reserve(5u);
+	elements.push_back(initial);
+
+	EXPECT_FALSE(initial.moved_from);
+
+	static const int32_t appended_values[] = { 3, 5, 7 };
+	hxarray<hxarray_test_move_tracker> appended;
+	appended = appended_values;
+
+	elements += hxmove(appended);
+
+	EXPECT_EQ(elements.size(), 4u);
+	EXPECT_EQ(elements[0].value, 1);
+	EXPECT_EQ(elements[1].value, 3);
+	EXPECT_EQ(elements[2].value, 5);
+	EXPECT_EQ(elements[3].value, 7);
+	EXPECT_FALSE(elements[0].moved_from);
+	EXPECT_FALSE(elements[1].moved_from);
+	EXPECT_FALSE(elements[2].moved_from);
+	EXPECT_FALSE(elements[3].moved_from);
+	EXPECT_EQ(appended.size(), 3u);
+	EXPECT_TRUE(appended[0].moved_from);
+	EXPECT_TRUE(appended[1].moved_from);
+	EXPECT_TRUE(appended[2].moved_from);
 }
 
 #if HX_CPLUSPLUS >= 202002L
