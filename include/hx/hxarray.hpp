@@ -63,7 +63,7 @@ public:
 	hxarray(hxarray&& x_);
 
 	/// Construct from a C-style array. Usable as an `initializer_list` when
-	/// `std::` is not available. E.g.,
+	/// the `std` namespace is not available. E.g.,
 	/// ```cpp
 	/// static const int initial_values[] = { 5, 4, 3 };
 	/// hxarray<int> current_values(initial_values);
@@ -103,7 +103,7 @@ public:
 	void operator=(hxarray&& x_);
 
 	/// Assign from a C-style array. Usable as an `initializer_list` when
-	/// `std::` is not available. E.g.,
+	/// the `std` namespace is not available. E.g.,
 	/// ```cpp
 	/// static const int initial_values[] = { 5, 4, 3 };
 	/// hxarray<int, 32> current_values(initial_values);

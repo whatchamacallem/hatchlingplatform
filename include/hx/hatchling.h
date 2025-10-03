@@ -290,9 +290,6 @@ template<class T_> using hxremove_reference_t = typename hxremove_reference<T_>:
 template<typename T_> struct hxis_lvalue_reference { enum { value = 0 }; };
 template<typename T_> struct hxis_lvalue_reference<T_&> { enum { value = 1 }; };
 
-/// `hxis_lvalue_reference_v` - Implements `std::is_lvalue_reference_v`.
-template<class T_> using hxis_lvalue_reference_v = typename hxis_lvalue_reference<T_>::type;
-
 /// Implements `std::move`. Converts either a `T&` or a `T&&` to a `T&&`. Do not
 /// specify `T` explicitly as it will not work as expected. This uses the rules
 /// about reference collapsing to handle both `T&` and `T&&`.
@@ -311,7 +308,7 @@ constexpr hxremove_reference_t<T_>&& hxmove(T_&& t_) {
 /// This is the `T&&` version of hxforward.
 template<class T_>
 constexpr T_&& hxforward(typename hxremove_reference<T_>::type&& t) noexcept {
-	static_assert(!hxis_lvalue_reference_v<T_>(), "T must be a `T&&` reference.");
+	static_assert(!hxis_lvalue_reference<T_>::value, "T must be a `T&&` reference.");
 	return static_cast<T_&&>(t);
 }
 
