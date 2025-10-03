@@ -305,14 +305,14 @@ constexpr hxremove_reference_t<T_>&& hxmove(T_&& t_) {
 ///   template<class T>
 ///   void forwards_temp(T&&x) { requires_temp(hxforward<T>(x)); }
 /// ```
-/// This is the `T&&` version of hxforward.
+/// This is the `T&&` version of hxforward<T>.
 template<class T_>
 constexpr T_&& hxforward(typename hxremove_reference<T_>::type&& t) noexcept {
 	static_assert(!hxis_lvalue_reference<T_>::value, "T must be a `T&&` reference.");
 	return static_cast<T_&&>(t);
 }
 
-/// This is the `T&` version of hxforward. It gets invoked when `T` turns out
+/// This is the `T&` version of hxforward<T>. It gets invoked when `T` turns out
 /// to be an l-value. This happens then a `T&` is passed as a `T&&`.
 template<class T_>
 constexpr T_&& hxforward(typename hxremove_reference<T_>::type& t) noexcept {

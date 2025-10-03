@@ -124,7 +124,7 @@ private:
 	T* end_;
 };
 
-// Test hxmove/hxforward here as they are used extensively by hxarray.
+// Test hxmove/hxforward<T> here as they are used extensively by hxarray.
 TEST(hxarray_test, hxmove_regression) {
 	hxarray_test_move_tracker source(123);
 	hxarray_test_move_tracker target(hxmove(source));

@@ -304,8 +304,9 @@ public:
 	template<size_t capacity_x_>
 	bool less(const hxarray<T_, capacity_x_>& x_) const;
 
-	/// Returns the capacity of the array or 0 if unallocated.
-	size_t max_size(void);
+	/// Returns the capacity of the array or 0 if unallocated. This is the
+	/// standard way to report that reallocation is not allowed.
+	size_t max_size(void) const;
 
 	/// Removes the end element from the array.
 	void pop_back(void);
@@ -383,7 +384,8 @@ bool hxkey_less(const hxarray<T_, capacity_x_>& x_, const hxarray<T_, capacity_y
 /// and y. Only works with `hxallocator_dynamic_capacity`. Dynamically allocated
 /// arrays are swapped with very little overhead.
 template<typename T_>
-void hxswap(const hxarray<T_>& x_, const hxarray<T_>& y_) {
+void hxswap(hxarray<T_, hxallocator_dynamic_capacity>& x_,
+			hxarray<T_, hxallocator_dynamic_capacity>& y_) {
 	x_.swap(y_);
 }
 
@@ -730,7 +732,7 @@ bool hxarray<T_, capacity_>::less(const hxarray<T_, capacity_x_>& x_) const {
 }
 
 template<typename T_, size_t capacity_>
-size_t hxarray<T_, capacity_>::max_size(void) {
+size_t hxarray<T_, capacity_>::max_size(void) const {
 	return this->capacity();
 }
 

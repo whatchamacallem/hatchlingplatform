@@ -57,17 +57,11 @@ class hxhash_table_set_node {
 public:
 	typedef key_t_ key_t;
 
-	hxhash_table_set_node(const key_t_& key_)
-		: m_hash_next_(hxnull), m_key_(key_)
+	template<typename ref_t_>
+	hxhash_table_set_node(ref_t_&& key_)
+		: m_hash_next_(hxnull), m_key_(hxforward<ref_t_>(key_))
 	{
-		// NOTE: You need to implement hxkey_hash for your key_t_ type.
-		m_hash_ = hxkey_hash(key_);
-	}
-
-	hxhash_table_set_node(key_t_&& key_)
-		: m_hash_next_(hxnull), m_key_(key_)
-	{
-		// NOTE: You need to implement hxkey_hash for your key_t_ type.
+		// You need to implement hxkey_hash for your key_t_ type.
 		m_hash_ = hxkey_hash(m_key_);
 	}
 
@@ -104,11 +98,9 @@ public:
 	hxhash_table_map_node(const key_t_& key_) :
 		hxhash_table_set_node<key_t_>(key_) { }
 
-	hxhash_table_map_node(const key_t_& key_, const value_t_& value_) :
-		hxhash_table_set_node<key_t_>(key_), m_value_(value_) { }
-
-	hxhash_table_map_node(const key_t_& key_, value_t_&& value_) :
-		hxhash_table_set_node<key_t_>(key_), m_value_(value_) { }
+	template<typename ref_t_>
+	hxhash_table_map_node(const key_t_& key_, ref_t_&& value_) :
+		hxhash_table_set_node<key_t_>(key_), m_value_(hxforward<ref_t_>(value_)) { }
 
 	const value_t_& value(void) const { return m_value_; }
 	value_t_& value(void) { return m_value_; }
@@ -220,7 +212,7 @@ public:
 	/// Sets the number of hash bits and allocate memory for the table. (only
 	/// for dynamic capacity).
 	/// - `bits` : The number of hash bits to set for the hash table.
-	void set_table_size_bits(hxhash_t bits_) { return m_table_.set_table_size_bits(bits_); };
+	void set_table_size_bits(hxhash_t bits_) { m_table_.set_table_size_bits(bits_); };
 
 	/// Returns a const iterator pointing to the beginning of the hash table.
 	const_iterator begin(void) const { return const_iterator(this); }
@@ -332,7 +324,9 @@ public:
 	size_t bucket_count(void) const { return m_table_.capacity(); };
 
 	/// Returns the average number of Nodes per bucket.
-	float load_factor(void) const { return (float)m_size_ / (float)this->bucket_count(); }
+	float load_factor(void) const {
+		return m_table_.capacity() ? ((float)m_size_ / (float)m_table_.capacity()) : 0u;
+	}
 
 	/// Returns the size of the largest bucket.
 	size_t load_max(void) const;
@@ -479,6 +473,7 @@ inline void hxhash_table<node_t_, table_size_bits_, deleter_t_>::clear(
 					}
 				}
 			}
+			m_size_ = 0u;
 		}
 		else {
 			this->release_all();
