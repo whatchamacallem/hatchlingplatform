@@ -73,20 +73,13 @@ void hxinsertion_sort(T_* begin_, T_* end_) {
 	hxinsertion_sort(begin_, end_, hxkey_less_function<T_, T_>());
 }
 
-/// `hxheapsort` - Sorts the elements in the range `[begin, end)` in comparison
-/// order using the heapsort algorithm.
-/// - `begin` : Pointer to the beginning of the range to sort.
-/// - `end` : Pointer to one past the last element in the range to sort.
+/// `hxmake_heap` - Converts the range `[begin, end)` into a max heap using the
+/// provided comparator.
+/// - `begin` : Pointer to the beginning of the range to heapify.
+/// - `end` : Pointer to one past the last element in the range to heapify.
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
 template<typename T_, typename less_t_> hxattr_nonnull(1,2) hxattr_hot
-void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
-	ptrdiff_t size_ = end_ - begin_;
-	if(size_ <= 1) {
-		// Sequence is already sorted and the following code assumes sz >= 2.
-		return;
-	}
-
-	// Build the heap by sifting each element up to its proper position.
+void hxmake_heap(T_* begin_, T_* end_, const less_t_& less_) {
 	for(T_* heap_end_ = begin_ + 1; heap_end_ < end_; ) {
 		T_* node_ = heap_end_++;
 		while(node_ > begin_) {
@@ -98,6 +91,25 @@ void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
 			node_ = parent_;
 		}
 	}
+}
+
+/// `hxmake_heap` (specialization) - An overload of `hxmake_heap` that uses
+/// `hxkey_less`.
+/// - `begin` : Pointer to the beginning of the range to heapify.
+/// - `end` : Pointer to one past the last element in the range to heapify.
+template<typename T_> hxattr_nonnull(1,2) hxattr_hot
+void hxmake_heap(T_* begin_, T_* end_) {
+	hxmake_heap(begin_, end_, hxkey_less_function<T_, T_>());
+}
+
+/// `hxheapsort` - Sorts the elements in the range `[begin, end)` in comparison
+/// order using the heapsort algorithm.
+/// - `begin` : Pointer to the beginning of the range to sort.
+/// - `end` : Pointer to one past the last element in the range to sort.
+/// - `less` : A key comparison functor definining a less-than ordering relationship.
+template<typename T_, typename less_t_> hxattr_nonnull(1,2) hxattr_hot
+void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
+	hxmake_heap(begin_, end_, less_);
 
 	// Sort phase. Swap the largest values to the end of the array.
 	for(T_* it_ = end_ - 1; it_ > begin_; --it_) {
