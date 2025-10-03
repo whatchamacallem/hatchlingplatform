@@ -68,61 +68,55 @@ public:
 	int32_t m_next_id;
 };
 
-class hxassign_const_pointer_range {
-public:
-	hxassign_const_pointer_range(const int32_t* begin_, const int32_t* end_)
-		: begin_(begin_), end_(end_) { }
-
-	const int32_t* begin() const { return begin_; }
-	const int32_t* end() const { return end_; }
-
-private:
-	const int32_t* begin_;
-	const int32_t* end_;
-};
-
-struct hxassign_range_move_tracker {
+struct hxarray_test_move_tracker {
 	int32_t value;
 	bool moved_from;
 
-	hxassign_range_move_tracker(void)
+	hxarray_test_move_tracker(void)
 		: value(0), moved_from(false) { }
 
-	explicit hxassign_range_move_tracker(int32_t value_)
+	explicit hxarray_test_move_tracker(int32_t value_)
 		: value(value_), moved_from(false) { }
 
-	hxassign_range_move_tracker(const hxassign_range_move_tracker& other_)
+	hxarray_test_move_tracker(const hxarray_test_move_tracker& other_)
 		: value(other_.value), moved_from(false) { }
 
-	hxassign_range_move_tracker(hxassign_range_move_tracker&& other_)
+	hxarray_test_move_tracker(hxarray_test_move_tracker&& other_)
 		: value(other_.value), moved_from(false) { other_.moved_from = true; }
 
-	hxassign_range_move_tracker& operator=(const hxassign_range_move_tracker& other_) {
+	hxarray_test_move_tracker& operator=(const hxarray_test_move_tracker& other_) {
 		value = other_.value;
 		moved_from = false;
 		return *this;
 	}
 
-	hxassign_range_move_tracker& operator=(hxassign_range_move_tracker&& other_) {
+	hxarray_test_move_tracker& operator=(hxarray_test_move_tracker&& other_) {
 		value = other_.value;
 		moved_from = false;
 		other_.moved_from = true;
 		return *this;
 	}
+
+	bool operator==(const hxarray_test_move_tracker& other_) const {
+		return value == other_.value && moved_from == other_.moved_from;
+	}
 };
 
-class hxassign_mutable_pointer_range {
+template<typename T>
+class hxarray_test_pointer_range {
 public:
-	hxassign_mutable_pointer_range(hxassign_range_move_tracker* begin_,
-		hxassign_range_move_tracker* end_)
+	hxarray_test_pointer_range(T* begin_, T* end_)
 		: begin_(begin_), end_(end_) { }
 
-	hxassign_range_move_tracker* begin() { return begin_; }
-	hxassign_range_move_tracker* end() { return end_; }
+	T* begin() { return begin_; }
+	T* end() { return end_; }
+
+	const T& operator[](size_t index_) const { return begin_[index_]; }
+	T& operator[](size_t index_) { return begin_[index_]; }
 
 private:
-	hxassign_range_move_tracker* begin_;
-	hxassign_range_move_tracker* end_;
+	T* begin_;
+	T* end_;
 };
 
 TEST_F(hxarray_test, empty_full) {
@@ -398,15 +392,16 @@ TEST_F(hxarray_test, assignment) {
 }
 
 TEST(hxarray_test, assign_range_from_const) {
-	static const int32_t assigned_elements[] = { 4, 7, 11, 18 };
-	const size_t assigned_count = sizeof assigned_elements / sizeof *assigned_elements;
+	const int32_t assigned_element_ints[] = { 4, 7, 11, 18 };
+	const hxarray<hxarray_test_move_tracker> assigned_elements = assigned_element_ints;
+	const size_t assigned_count = sizeof assigned_element_ints / sizeof *assigned_element_ints;
 
-	hxarray<int32_t> elements;
+	hxarray<hxarray_test_move_tracker> elements;
 	elements.reserve(assigned_count + 1u);
 	elements.push_back(91);
 
-	const hxassign_const_pointer_range range(assigned_elements,
-		assigned_elements + assigned_count);
+	hxarray_test_pointer_range<const hxarray_test_move_tracker> range(
+		assigned_elements.begin(), assigned_elements.end());
 	elements.assign_range(range);
 
 	EXPECT_EQ(elements.size(), assigned_count);
@@ -417,16 +412,16 @@ TEST(hxarray_test, assign_range_from_const) {
 }
 
 TEST(hxarray_test, assign_range_from_rvalue) {
-	static hxassign_range_move_tracker source_elements[] = {
-		hxassign_range_move_tracker(5),
-		hxassign_range_move_tracker(9),
-		hxassign_range_move_tracker(13)
+	static hxarray_test_move_tracker source_elements[] = {
+		hxarray_test_move_tracker(5),
+		hxarray_test_move_tracker(9),
+		hxarray_test_move_tracker(13)
 	};
 	const size_t source_count = sizeof source_elements / sizeof *source_elements;
 
-	hxarray<hxassign_range_move_tracker> elements;
+	hxarray<hxarray_test_move_tracker> elements;
 	elements.reserve(source_count);
-	elements.assign_range(hxassign_mutable_pointer_range(
+	elements.assign_range(hxarray_test_pointer_range(
 		source_elements, source_elements + source_count));
 
 	EXPECT_EQ(elements.size(), source_count);
