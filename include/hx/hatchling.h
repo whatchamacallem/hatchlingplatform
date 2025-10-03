@@ -276,6 +276,19 @@ template<class T_> struct hxremove_reference<T_&&> { using type = T_; };
 /// hxremove_reference_t<T> - Returns `T` with references removed.
 template<class T_> using hxremove_reference_t = typename hxremove_reference<T_>::type;
 
+/// Internal. Implements `std::enable_if`. This is used instead of the `requires`
+/// keyword when backwards compatibility is required.
+template<bool condition_, typename type_=void> struct hxenable_if { };
+template<typename type_> struct hxenable_if<true, type_> { using type = type_; };
+
+/// hxenable_if_t<condition> - Implements `std::enable_if_t`.
+template<bool condition_, typename type_=void>
+using hxenable_if_t = typename hxenable_if<condition_, type_>::type;
+
+/// `hxis_lvalue_reference` - Implements `std::is_lvalue_reference`.
+template<typename T_> struct hxis_lvalue_reference { enum { value = 0 }; };
+template<typename T_> struct hxis_lvalue_reference<T_&> { enum { value = 1 }; };
+
 /// Implements `std::move`. Converts either a `T&` or a `T&&` to a `T&&`. Do not
 /// specify `T` explicitly as it will not work as expected. This uses the rules
 /// about reference collapsing to handle both `T&` and `T&&`.

@@ -419,6 +419,33 @@ TEST(hxarray_test, assign_range_from_const) {
 	EXPECT_FALSE(assigned_elements[3].moved_from);
 }
 
+TEST(hxarray_test, assign_range_from_mutable_range) {
+	static hxarray_test_move_tracker source_elements[] = {
+		hxarray_test_move_tracker(2),
+		hxarray_test_move_tracker(3),
+		hxarray_test_move_tracker(5)
+	};
+	const size_t source_count = sizeof source_elements / sizeof *source_elements;
+
+	hxarray<hxarray_test_move_tracker> elements;
+	elements.reserve(source_count);
+
+	hxarray_test_pointer_range<hxarray_test_move_tracker> range(
+		source_elements, source_elements + source_count);
+	elements.assign_range(range);
+
+	EXPECT_EQ(elements.size(), source_count);
+	EXPECT_EQ(elements[0].value, 2);
+	EXPECT_EQ(elements[1].value, 3);
+	EXPECT_EQ(elements[2].value, 5);
+	EXPECT_FALSE(elements[0].moved_from);
+	EXPECT_FALSE(elements[1].moved_from);
+	EXPECT_FALSE(elements[2].moved_from);
+	EXPECT_FALSE(source_elements[0].moved_from);
+	EXPECT_FALSE(source_elements[1].moved_from);
+	EXPECT_FALSE(source_elements[2].moved_from);
+}
+
 TEST(hxarray_test, assign_range_from_rvalue) {
 	static hxarray_test_move_tracker source_elements[] = {
 		hxarray_test_move_tracker(5),
@@ -490,32 +517,110 @@ TEST(hxarray_test, plus_equals_move_tracker_element) {
 
 TEST(hxarray_test, plus_equals_move_tracker_array) {
 	hxarray_test_move_tracker initial(1);
-	hxarray<hxarray_test_move_tracker> elements;
-	elements.reserve(5u);
-	elements.push_back(initial);
+	static const int32_t appended_values[] = { 3, 5, 7 };
+
+	hxarray<hxarray_test_move_tracker> move_target;
+	move_target.reserve(5u);
+	move_target.push_back(initial);
+
+	hxarray<hxarray_test_move_tracker> copy_target;
+	copy_target.reserve(5u);
+	copy_target.push_back(initial);
 
 	EXPECT_FALSE(initial.moved_from);
 
-	static const int32_t appended_values[] = { 3, 5, 7 };
-	hxarray<hxarray_test_move_tracker> appended;
-	appended = appended_values;
+	hxarray<hxarray_test_move_tracker> move_source;
+	move_source = appended_values;
 
-	// Confirm the array does actually get moved.
-	elements += hxmove(appended);
+	hxarray<hxarray_test_move_tracker> copy_source;
+	copy_source = appended_values;
 
-	EXPECT_EQ(elements.size(), 4u);
-	EXPECT_EQ(elements[0].value, 1);
-	EXPECT_EQ(elements[1].value, 3);
-	EXPECT_EQ(elements[2].value, 5);
-	EXPECT_EQ(elements[3].value, 7);
+	// Confirm the array of temporaries does actually get moved.
+	move_target += hxmove(move_source);
+
+	EXPECT_EQ(move_target.size(), 4u);
+	EXPECT_EQ(move_target[0].value, 1);
+	EXPECT_EQ(move_target[1].value, 3);
+	EXPECT_EQ(move_target[2].value, 5);
+	EXPECT_EQ(move_target[3].value, 7);
+	EXPECT_FALSE(move_target[0].moved_from);
+	EXPECT_FALSE(move_target[1].moved_from);
+	EXPECT_FALSE(move_target[2].moved_from);
+	EXPECT_FALSE(move_target[3].moved_from);
+	EXPECT_EQ(move_source.size(), 3u);
+	EXPECT_TRUE(move_source[0].moved_from);
+	EXPECT_TRUE(move_source[1].moved_from);
+	EXPECT_TRUE(move_source[2].moved_from);
+
+	// Confirm the lvalue source does not get moved.
+	copy_target += copy_source;
+
+	EXPECT_EQ(copy_target.size(), 4u);
+	EXPECT_EQ(copy_target[0].value, 1);
+	EXPECT_EQ(copy_target[1].value, 3);
+	EXPECT_EQ(copy_target[2].value, 5);
+	EXPECT_EQ(copy_target[3].value, 7);
+	EXPECT_FALSE(copy_target[0].moved_from);
+	EXPECT_FALSE(copy_target[1].moved_from);
+	EXPECT_FALSE(copy_target[2].moved_from);
+	EXPECT_FALSE(copy_target[3].moved_from);
+	EXPECT_EQ(copy_source.size(), 3u);
+	EXPECT_FALSE(copy_source[0].moved_from);
+	EXPECT_FALSE(copy_source[1].moved_from);
+	EXPECT_FALSE(copy_source[2].moved_from);
+}
+
+TEST(hxarray_test, insert_move_tracker_move_and_copy) {
+	hxarray<hxarray_test_move_tracker> elements;
+	elements.reserve(4u);
+
+	hxarray_test_move_tracker initial(10);
+	elements.push_back(initial);
+	EXPECT_FALSE(initial.moved_from);
+
+	hxarray_test_move_tracker move_source(20);
+	elements.insert(elements.begin(), hxmove(move_source));
+
+	EXPECT_EQ(elements.size(), 2u);
+	EXPECT_EQ(elements[0].value, 20);
+	EXPECT_EQ(elements[1].value, 10);
+	EXPECT_TRUE(move_source.moved_from);
+	EXPECT_FALSE(elements[0].moved_from);
+	EXPECT_FALSE(elements[1].moved_from);
+
+	hxarray_test_move_tracker copy_source(30);
+	elements.insert(2u, copy_source);
+
+	EXPECT_EQ(elements.size(), 3u);
+	EXPECT_EQ(elements[0].value, 20);
+	EXPECT_EQ(elements[1].value, 10);
+	EXPECT_EQ(elements[2].value, 30);
+	EXPECT_FALSE(copy_source.moved_from);
 	EXPECT_FALSE(elements[0].moved_from);
 	EXPECT_FALSE(elements[1].moved_from);
 	EXPECT_FALSE(elements[2].moved_from);
-	EXPECT_FALSE(elements[3].moved_from);
-	EXPECT_EQ(appended.size(), 3u);
-	EXPECT_TRUE(appended[0].moved_from);
-	EXPECT_TRUE(appended[1].moved_from);
-	EXPECT_TRUE(appended[2].moved_from);
+}
+
+TEST(hxarray_test, emplace_back_move_tracker_forwarding) {
+	hxarray<hxarray_test_move_tracker> elements;
+	elements.reserve(3u);
+
+	hxarray_test_move_tracker copy_source(40);
+	hxarray_test_move_tracker move_source(50);
+
+	hxarray_test_move_tracker& copy_inserted = elements.emplace_back(copy_source);
+	EXPECT_EQ(&copy_inserted, &elements[0]);
+	EXPECT_EQ(elements[0].value, 40);
+	EXPECT_FALSE(elements[0].moved_from);
+	EXPECT_FALSE(copy_source.moved_from);
+
+	hxarray_test_move_tracker& move_inserted = elements.emplace_back(hxmove(move_source));
+	EXPECT_EQ(&move_inserted, &elements[1]);
+	EXPECT_EQ(elements[1].value, 50);
+	EXPECT_FALSE(elements[1].moved_from);
+	EXPECT_TRUE(move_source.moved_from);
+
+	EXPECT_EQ(elements.size(), 2u);
 }
 
 #if HX_CPLUSPLUS >= 202002L

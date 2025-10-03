@@ -151,21 +151,17 @@ public:
 	template <typename iter_t_>
 	void assign(iter_t_ begin_, iter_t_ end_);
 
-	/// Assigns elements from a range. `range_t::begin` and `range_t::end` are
-	/// required as `std::begin` and `std::end` may not exist. Use `operator=`
-	/// to assign from a C-style array.
-	/// - `begin` : The beginning iterator.
-	/// - `end` : The end iterator.
+	/// Assigns elements from a range referenced by an lvalue. `range_t::begin`
+	/// and `range_t::end` are required as `std::begin` and `std::end` may not
+	/// exist. Use `operator=` to assign from a C-style array.
+	/// - `range` : The range to copy elements from.
 	template <typename range_t_>
-	void assign_range(const range_t_& range_);
+	void assign_range(range_t_& range_);
 
-	/// Assigns elements from a range. `range_t::begin` and `range_t::end` are
-	/// required as `std::begin` and `std::end` may not exist. Use `operator=`
-	/// to assign from a C-style array. This can be used to pass containers as
-	/// temporaries but is likely less efficient than other methods.
-	/// - `begin` : The beginning iterator.
-	/// - `end` : The end iterator.
-	template <typename range_t_>
+	/// Assigns elements from a temporary range. This overload enables moving the
+	/// range elements into the array when forwarding rvalues.
+	/// - `range` : The range to move elements from.
+	template <typename range_t_, typename = hxenable_if_t<!hxis_lvalue_reference<range_t_>::value> >
 	void assign_range(range_t_&& range_);
 
 	/// Returns a const reference to the end element in the array.
@@ -527,12 +523,12 @@ const T_& hxarray<T_, capacity_>::back(void) const {
 
 template<typename T_, size_t capacity_>
 template<typename range_t_>
-void hxarray<T_, capacity_>::assign_range(const range_t_& range_) {
+void hxarray<T_, capacity_>::assign_range(range_t_& range_) {
 	this->assign(range_.begin(), range_.end());
 }
 
 template<typename T_, size_t capacity_>
-template<typename range_t_>
+template<typename range_t_, typename>
 void hxarray<T_, capacity_>::assign_range(range_t_&& range_) {
 	this->clear();
 	// Sorry, std::begin and std::end may not exist.
