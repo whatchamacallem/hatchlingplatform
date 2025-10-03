@@ -84,14 +84,17 @@ template<typename T_, typename less_t_> hxattr_nonnull(1,2) hxattr_hot
 void hxmake_heap(T_* begin_, T_* end_, const less_t_& less_) {
 	for(T_* heap_end_ = begin_ + 1; heap_end_ < end_; ) {
 		T_* node_ = heap_end_++;
-		while(node_ > begin_) {
-			T_* parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
-			if(!less_(*parent_, *node_)) {
+		T_ value_ = hxmove(*node_);
+		T_* hole_ = node_;
+		while(hole_ > begin_) {
+			T_* parent_ = begin_ + ((hole_ - begin_ - 1) >> 1);
+			if(!less_(*parent_, value_)) {
 				break;
+			}
+			*hole_ = hxmove(*parent_);
+			hole_ = parent_;
 		}
-			hxswap(*parent_, *node_);
-			node_ = parent_;
-		}
+		*hole_ = hxmove(value_);
 	}
 }
 
