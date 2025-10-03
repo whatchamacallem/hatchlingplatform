@@ -68,6 +68,63 @@ public:
 	int32_t m_next_id;
 };
 
+class hxassign_const_pointer_range {
+public:
+	hxassign_const_pointer_range(const int32_t* begin_, const int32_t* end_)
+		: begin_(begin_), end_(end_) { }
+
+	const int32_t* begin() const { return begin_; }
+	const int32_t* end() const { return end_; }
+
+private:
+	const int32_t* begin_;
+	const int32_t* end_;
+};
+
+struct hxassign_range_move_tracker {
+	int32_t value;
+	bool moved_from;
+
+	hxassign_range_move_tracker(void)
+		: value(0), moved_from(false) { }
+
+	explicit hxassign_range_move_tracker(int32_t value_)
+		: value(value_), moved_from(false) { }
+
+	hxassign_range_move_tracker(const hxassign_range_move_tracker& other_)
+		: value(other_.value), moved_from(false) { }
+
+	hxassign_range_move_tracker(hxassign_range_move_tracker&& other_)
+		: value(other_.value), moved_from(false) { other_.moved_from = true; }
+
+	hxassign_range_move_tracker& operator=(const hxassign_range_move_tracker& other_) {
+		value = other_.value;
+		moved_from = false;
+		return *this;
+	}
+
+	hxassign_range_move_tracker& operator=(hxassign_range_move_tracker&& other_) {
+		value = other_.value;
+		moved_from = false;
+		other_.moved_from = true;
+		return *this;
+	}
+};
+
+class hxassign_mutable_pointer_range {
+public:
+	hxassign_mutable_pointer_range(hxassign_range_move_tracker* begin_,
+		hxassign_range_move_tracker* end_)
+		: begin_(begin_), end_(end_) { }
+
+	hxassign_range_move_tracker* begin() { return begin_; }
+	hxassign_range_move_tracker* end() { return end_; }
+
+private:
+	hxassign_range_move_tracker* begin_;
+	hxassign_range_move_tracker* end_;
+};
+
 TEST_F(hxarray_test, empty_full) {
 	hxarray<test_object, hxallocator_dynamic_capacity> a;
 	EXPECT_TRUE(a.empty());
@@ -338,6 +395,50 @@ TEST_F(hxarray_test, assignment) {
 	}
 
 	EXPECT_TRUE(check_totals(6));
+}
+
+TEST(hxarray_test, assign_range_from_const) {
+	static const int32_t assigned_elements[] = { 4, 7, 11, 18 };
+	const size_t assigned_count = sizeof assigned_elements / sizeof *assigned_elements;
+
+	hxarray<int32_t> elements;
+	elements.reserve(assigned_count + 1u);
+	elements.push_back(91);
+
+	const hxassign_const_pointer_range range(assigned_elements,
+		assigned_elements + assigned_count);
+	elements.assign_range(range);
+
+	EXPECT_EQ(elements.size(), assigned_count);
+	EXPECT_EQ(elements[0], assigned_elements[0]);
+	EXPECT_EQ(elements[1], assigned_elements[1]);
+	EXPECT_EQ(elements[2], assigned_elements[2]);
+	EXPECT_EQ(elements[3], assigned_elements[3]);
+}
+
+TEST(hxarray_test, assign_range_from_rvalue) {
+	static hxassign_range_move_tracker source_elements[] = {
+		hxassign_range_move_tracker(5),
+		hxassign_range_move_tracker(9),
+		hxassign_range_move_tracker(13)
+	};
+	const size_t source_count = sizeof source_elements / sizeof *source_elements;
+
+	hxarray<hxassign_range_move_tracker> elements;
+	elements.reserve(source_count);
+	elements.assign_range(hxassign_mutable_pointer_range(
+		source_elements, source_elements + source_count));
+
+	EXPECT_EQ(elements.size(), source_count);
+	EXPECT_EQ(elements[0].value, 5);
+	EXPECT_EQ(elements[1].value, 9);
+	EXPECT_EQ(elements[2].value, 13);
+	EXPECT_FALSE(elements[0].moved_from);
+	EXPECT_FALSE(elements[1].moved_from);
+	EXPECT_FALSE(elements[2].moved_from);
+	EXPECT_TRUE(source_elements[0].moved_from);
+	EXPECT_TRUE(source_elements[1].moved_from);
+	EXPECT_TRUE(source_elements[2].moved_from);
 }
 
 #if HX_CPLUSPLUS >= 202002L
