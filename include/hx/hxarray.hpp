@@ -499,7 +499,8 @@ void hxarray<T_, capacity_>::operator+=(const hxarray<T_, capacity_x_>& x_) {
 template<typename T_, size_t capacity_>
 template<size_t capacity_x_>
 void hxarray<T_, capacity_>::operator+=(hxarray<T_, capacity_x_>&& x_) {
-	for(const T_* hxrestrict it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
+	// Non-const mutable operation.
+	for(T_* hxrestrict it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
 		::new(this->push_back_unconstructed_()) T_(hxmove(*it_));
 	}
 }

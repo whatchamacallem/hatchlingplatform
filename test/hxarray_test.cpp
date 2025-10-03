@@ -455,6 +455,7 @@ TEST(hxarray_test, push_back_move_tracker) {
 	EXPECT_FALSE(elements[0].moved_from);
 	EXPECT_TRUE(source.moved_from);
 
+	// Confirm the array does not get moved.
 	hxarray_test_move_tracker other(84);
 	elements.push_back(other);
 
@@ -476,6 +477,7 @@ TEST(hxarray_test, plus_equals_move_tracker_element) {
 	EXPECT_FALSE(elements[0].moved_from);
 	EXPECT_TRUE(source.moved_from);
 
+	// Confirm the array does not get moved.
 	hxarray_test_move_tracker other(11);
 	elements += other;
 
@@ -498,6 +500,7 @@ TEST(hxarray_test, plus_equals_move_tracker_array) {
 	hxarray<hxarray_test_move_tracker> appended;
 	appended = appended_values;
 
+	// Confirm the array does actually get moved.
 	elements += hxmove(appended);
 
 	EXPECT_EQ(elements.size(), 4u);
