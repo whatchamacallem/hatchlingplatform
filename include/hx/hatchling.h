@@ -267,6 +267,16 @@ public:
 /// comparisons.
 #define hxnullptr hxnullptr_t()
 
+/// Internal. Implements `std::enable_if`. This is used instead of the `requires`
+/// keyword when backwards compatibility is required. Used by `hxenable_if_t.`
+template<bool condition_, typename type_=void> struct hxenable_if { };
+template<typename type_> struct hxenable_if<true, type_> { using type = type_; };
+
+/// hxenable_if_t<condition> - Implements `std::enable_if_t`. This is used
+/// instead of the `requires` keyword when backwards compatibility is required.
+template<bool condition_, typename type_=void>
+using hxenable_if_t = typename hxenable_if<condition_, type_>::type;
+
 /// Internal. Returns `T` with references removed as
 /// `hxremove_reference<T>::type`. Used by `hxremove_reference_t`.
 template<class T_> struct hxremove_reference       { using type = T_; };
@@ -275,15 +285,6 @@ template<class T_> struct hxremove_reference<T_&&> { using type = T_; };
 
 /// hxremove_reference_t<T> - Returns `T` with references removed.
 template<class T_> using hxremove_reference_t = typename hxremove_reference<T_>::type;
-
-/// Internal. Implements `std::enable_if`. This is used instead of the `requires`
-/// keyword when backwards compatibility is required.
-template<bool condition_, typename type_=void> struct hxenable_if { };
-template<typename type_> struct hxenable_if<true, type_> { using type = type_; };
-
-/// hxenable_if_t<condition> - Implements `std::enable_if_t`.
-template<bool condition_, typename type_=void>
-using hxenable_if_t = typename hxenable_if<condition_, type_>::type;
 
 /// `hxis_lvalue_reference` - Implements `std::is_lvalue_reference`.
 template<typename T_> struct hxis_lvalue_reference { enum { value = 0 }; };
