@@ -84,6 +84,10 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 	// The starting point. Expected to reset to zero after each test.
 	hxsystem_allocator_scope temporary_stack_base(hxsystem_allocator_temporary_stack);
 
+	hxassertrelease(temporary_stack_base.get_current_allocation_count() == 0u
+				&& temporary_stack_base.get_current_bytes_allocated() == 0u,
+		"test_leaks Temp stack is expected to be empty when running tests.");
+
 	for(hxtest_case_interface_** it_ = m_test_cases_; it_ != (m_test_cases_ + m_num_test_cases_); ++it_) {
 		if(!m_test_suite_filter_ || ::strcmp(m_test_suite_filter_, (*it_)->suite_()) == 0) {
 			hxlogconsole("[ RUN      ] %s.%s\n", (*it_)->suite_(), (*it_)->case_());
@@ -95,25 +99,26 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 			try
 #endif
 			{
-				// Tests should have no side effects. Therefore all allocations must be
-				// safe to reset.
+				// All tested functionality should have no memory allocation
+				// side effects. Therefore the temp allocator must start out
+				// empty and be safe to reset.
 				hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+
 				(*it_)->run_test_();
+
+				// Expect the test to use another scope to reset the stack if needed.
+				size_t t_count = temporary_stack_base.get_current_allocation_count();
+				size_t t_bytes = temporary_stack_base.get_current_bytes_allocated();
+				if(t_count || t_bytes) {
+					this->condition_check_(false, (*it_)->file_(), (*it_)->line_(),
+						"test_leaks All tests must reset the temp stack.", true);
+				}
 			}
 #ifdef __cpp_exceptions
 			catch (...) {
 				this->condition_check_(false, (*it_)->file_(), (*it_)->line_(), "unexpected_exception", true);
 			}
 #endif
-
-			// Hardcode the assumption that the temp stack is not already being
-			// used when run_all_tests_ is called. It isn't meant to have random
-			// stuff lying around.
-			if(temporary_stack_base.get_current_bytes_allocated()
-				|| temporary_stack_base.get_current_bytes_allocated()) {
-				this->condition_check_(false, (*it_)->file_(), (*it_)->line_(), "test_leaks", true);
-			}
-
 			if(m_test_state_ == test_state_nothing_asserted_) {
 				this->condition_check_(false, (*it_)->file_(), (*it_)->line_(), "nothing_tested", false);
 			}
