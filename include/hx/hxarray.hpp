@@ -756,7 +756,7 @@ T_* hxarray<T_, capacity_>::get(size_t index_) {
 template<typename T_, size_t capacity_>
 template<typename ref_t_>
 void hxarray<T_, capacity_>::insert(const T_* pos_, ref_t_&& x_) {
-	hxassertmsg(pos_ >= this->data() && pos_ <= m_end_ && !this->full(), "invalid_insert");
+	hxassertmsg(pos_ >= this->data() && pos_ <= m_end_, "invalid_insert");
 	if(pos_ == m_end_) {
 		// Single constructor call for last element.
 		::new(m_end_++) T_(hxforward<ref_t_>(x_));
@@ -835,11 +835,8 @@ T_& hxarray<T_, capacity_>::push_back(args_t_&&... args_) {
 template<typename T_, size_t capacity_>
 template<typename ref_t_>
 T_& hxarray<T_, capacity_>::push_heap(ref_t_&& x_) {
-	hxassertmsg(!this->full(), "stack_overflow");
-	::new (m_end_) T_(hxforward<ref_t_>(x_));
-
 	T_* begin_ = this->data();
-	T_* node_ = m_end_++;
+	T_* node_ = ::new(this->push_back_unconstructed_()) T_(hxforward<ref_t_>(x_));
 	while(node_ > begin_) {
 		T_* parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
 		if(!hxkey_less(*parent_, *node_)) {
@@ -870,7 +867,7 @@ void hxarray<T_, capacity_>::resize(size_t size_) {
 	if(size_ >= this->size()) {
 		while(m_end_ != end_) {
 			// This version uses a default constructor.
-			::new (m_end_++) T_();
+			::new (this->push_back_unconstructed_()) T_();
 		}
 	}
 	else {
@@ -886,7 +883,7 @@ void hxarray<T_, capacity_>::resize(size_t size_, const T_& x_) {
 	if(size_ >= this->size()) {
 		while(m_end_ != end_) {
 			// This version uses a copy constructor.
-			::new (m_end_++) T_(x_);
+			::new (this->push_back_unconstructed_()) T_(x_);
 		}
 	}
 	else {
