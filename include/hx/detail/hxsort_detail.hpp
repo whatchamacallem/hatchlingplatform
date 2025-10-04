@@ -56,7 +56,7 @@ void hxmake_heap_(iterator_t_ hxrestrict begin_, iterator_t_ end_, const less_t_
 		iterator_t_ node_ = heap_end_++;
 		iterator_t_ parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
 		if(less_(*parent_, *node_)) {
-			hxremove_reference_t<decltype(*node_)> value_ = hxmove(*node_);
+			auto value_ = hxmove(*node_);
 			do {
 				*node_ = hxmove(*parent_);
 				node_ = parent_;

@@ -37,13 +37,14 @@ void hxtest_::add_test_(hxtest_case_interface_* fn_) {
 hxfile& hxtest_::condition_check_(bool condition_, const char* file_, size_t line_, const char* message_, bool is_assert_) {
 	hxassertrelease(m_current_test_, "test_not_started");
 	m_test_state_ = (condition_ && m_test_state_ != test_state_fail_) ? test_state_pass_ : test_state_fail_;
-	if(!condition_) {
-		if(++m_assert_fail_count_ >= max_fail_messages_) {
-			if(m_assert_fail_count_ == max_fail_messages_) {
-				hxlogconsole("remaining asserts will fail silently...\n");
+		if(!condition_) {
+			++m_total_assert_count_;
+			if(++m_assert_count_ >= max_fail_messages_) {
+				if(m_assert_count_ == max_fail_messages_) {
+					hxlogconsole("remaining asserts will fail silently...\n");
+				}
+				return hxdev_null;
 			}
-			return hxdev_null;
-		}
 
 		// prints full path error messages that can be clicked on in an ide.
 		m_current_test_->case_();
@@ -77,13 +78,14 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 	hxinsertion_sort(m_test_cases_, m_test_cases_ + m_num_test_cases_, hxtest_case_sort_);
 
 	m_pass_count_ = m_fail_count_ = 0u;
+	m_total_assert_count_ = 0u;
 	hxlogconsole("[==========] Running tests: %s\n", (m_test_suite_filter_ ? m_test_suite_filter_ : "All"));
 	for(hxtest_case_interface_** it_ = m_test_cases_; it_ != (m_test_cases_ + m_num_test_cases_); ++it_) {
 		if(!m_test_suite_filter_ || ::strcmp(m_test_suite_filter_, (*it_)->suite_()) == 0) {
 			hxlogconsole("[ RUN      ] %s.%s\n", (*it_)->suite_(), (*it_)->case_());
 			m_current_test_ = *it_;
 			m_test_state_ = test_state_nothing_asserted_;
-			m_assert_fail_count_ = 0u;
+			m_assert_count_ = 0u;
 
 #ifdef __cpp_exceptions
 			try
@@ -116,7 +118,7 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 	m_current_test_ = hxnull;
 
 	hxlogconsole("[==========] skipped %zu tests. failed %zu assertions.\n",
-		m_num_test_cases_ - m_pass_count_ - m_fail_count_, m_assert_fail_count_);
+		m_num_test_cases_ - m_pass_count_ - m_fail_count_, m_total_assert_count_);
 
 	hxwarnmsg(m_pass_count_ + m_fail_count_, "nothing_tested");
 

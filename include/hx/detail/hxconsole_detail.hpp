@@ -14,8 +14,9 @@ template<typename T_>
 hxconsolenumber_t::operator T_(void) const {
 	// Reimplement std::numeric_limits for 2's compliment. The << operator
 	// promotes its operands to int and so that requires more casting.
+	// Sorry, this is junk and undefined behavior.
 	const bool is_signed_ = static_cast<T_>(-1) < T_(0u);
-	const T_ min_value_ = is_signed_ ? T_(T_(1u) << (sizeof(T_) * 8 - 1)) : T_(0u);
+	const T_ min_value_ = is_signed_ ? (T_(1u) << (sizeof(T_) * 8 - 1)) : T_(0u);
 	const T_ max_value_ = (T_)~min_value_;
 
 	double clamped_ = hxclamp(m_x_, (double)min_value_, (double)max_value_);

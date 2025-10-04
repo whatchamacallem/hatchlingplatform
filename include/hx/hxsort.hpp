@@ -55,7 +55,7 @@ void hxinsertion_sort(iterator_t_ hxrestrict begin_, iterator_t_ end_, const les
 			// Default value construct. Use hxmove instead of hxswap because it
 			// should be more efficient for simple types. Complex types will
 			// require an T::operator=(T&&) to be efficient.
-			hxremove_reference_t<decltype(*j_)> t_ = hxmove(*j_);
+			auto t_ = hxmove(*j_);
 			*j_ = hxmove(*i_);
 			while(begin_ < i_ && !less_(*(i_-1), t_)) {
 				*i_ = hxmove(*(i_-1));

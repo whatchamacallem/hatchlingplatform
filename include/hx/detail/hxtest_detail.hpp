@@ -64,7 +64,8 @@ private:
 	test_state_t_ m_test_state_;
 	size_t m_pass_count_;
 	size_t m_fail_count_;
-	size_t m_assert_fail_count_;
+	size_t m_total_assert_count_;
+	size_t m_assert_count_;
 };
 
 } // hxdetail_

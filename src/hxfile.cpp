@@ -146,7 +146,7 @@ size_t hxfile::write(const void* bytes, size_t byte_count) {
 
 	if(m_file_pimpl_ == hxnull) {
 		// Writing to null as /dev/null supported.
-		return 0u;
+		return byte_count;
 	}
 	size_t bytes_written = ::fwrite(bytes, 1, byte_count, (FILE*)m_file_pimpl_);
 
@@ -178,7 +178,7 @@ bool hxfile::print(const char* format, ...) {
 
 	if(m_file_pimpl_ == hxnull) {
 		// Writing to null as /dev/null supported.
-		return 0u;
+		return true;
 	}
 
 	va_list args;
