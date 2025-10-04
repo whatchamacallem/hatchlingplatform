@@ -56,9 +56,9 @@ void do_sort_int_case(const sort_callback_t_& sort_callback_) {
 
 TEST(hxsort_test, sort_int_case) {
 	// Instantiate and pass the sort templates as function pointers.
-	do_sort_int_case(hxinsertion_sort<int, bool (*)(int, int)>);
-	do_sort_int_case(hxheapsort<int, bool (*)(int, int)>);
-	do_sort_int_case(hxsort<int, bool (*)(int, int)>);
+	do_sort_int_case(hxinsertion_sort<int*, bool (*)(int, int)>);
+	do_sort_int_case(hxheapsort<int*, bool (*)(int, int)>);
+	do_sort_int_case(hxsort<int*, bool (*)(int, int)>);
 }
 
 TEST(hxmergesort_test, basic_cases) {

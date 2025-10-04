@@ -134,7 +134,7 @@ bool hxconsole_help(void) {
 			cmds.push_back(&*it);
 		}
 
-		hxinsertion_sort<const hxconsole_hash_table_node_*, hxconsole_less_>(cmds.begin(), cmds.end(), hxconsole_less_());
+		hxinsertion_sort<const hxconsole_hash_table_node_**, hxconsole_less_>(cmds.begin(), cmds.end(), hxconsole_less_());
 
 		for(hxarray<const hxconsole_hash_table_node_*>::iterator it = cmds.begin();
 				it != cmds.end(); ++it) {

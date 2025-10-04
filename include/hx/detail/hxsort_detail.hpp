@@ -5,11 +5,11 @@
 
 #include "../hxkey.hpp"
 
-template<typename T_, typename less_t_> hxattr_nonnull(1,2) hxattr_hot
-void hxinsertion_sort(T_* begin_, T_* end_, const less_t_& less_);
+template<typename iterator_t_, typename less_t_> hxattr_hot
+void hxinsertion_sort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_);
 
-template<typename T_, typename less_t_> hxattr_nonnull(1,2) hxattr_hot
-void hxheapsort(T_* begin_, T_* end_, const less_t_& less_);
+template<typename iterator_t_, typename less_t_> hxattr_hot
+void hxheapsort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_);
 
 namespace hxdetail_ {
 
@@ -21,17 +21,17 @@ enum : ptrdiff_t { hxpartition_sort_cutoff_ = 32 };
 /// - `end` : Pointer to one past the last element in the heap.
 /// - `current` : Pointer to the current element being heapified.
 /// - `less` : Comparison functor.
-template<typename T_, typename less_t_> hxattr_nonnull(1,2,3) hxattr_hot
-void hxheapsort_heapify_(T_* begin_, const T_* end_, T_* current_, const less_t_& less_) {
+template<typename iterator_t_, typename less_t_> hxattr_hot
+void hxheapsort_heapify_(iterator_t_ begin_, const iterator_t_ end_, iterator_t_ current_, const less_t_& less_) {
 	hxassertmsg(begin_ <= current_ && current_ < end_, "invalid_iterator");
 	for(;;) {
-		T_* left_ = begin_ + (((current_ - begin_) << 1) + 1);
+		iterator_t_ left_ = begin_ + (((current_ - begin_) << 1) + 1);
 		if(left_ >= end_) {
 			return;
 		}
 
-		T_* next_ = left_;
-		T_* right_ = left_ + 1;
+		iterator_t_ next_ = left_;
+		iterator_t_ right_ = left_ + 1;
 		if(right_ < end_ && less_(*next_, *right_)) {
 			next_ = right_;
 		}
@@ -50,13 +50,13 @@ void hxheapsort_heapify_(T_* begin_, const T_* end_, T_* current_, const less_t_
 /// - `begin` : Pointer to the beginning of the range to heapify.
 /// - `end` : Pointer to one past the last element in the range to heapify.
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
-template<typename T_, typename less_t_> hxattr_nonnull(1,2) hxattr_hot
-void hxmake_heap_(T_* begin_, T_* end_, const less_t_& less_) {
-	for(T_* heap_end_ = begin_ + 1; heap_end_ < end_; ) {
-		T_* node_ = heap_end_++;
-		T_* parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
+template<typename iterator_t_, typename less_t_> hxattr_hot
+void hxmake_heap_(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_) {
+	for(iterator_t_ heap_end_ = begin_ + 1; heap_end_ < end_; ) {
+		iterator_t_ node_ = heap_end_++;
+		iterator_t_ parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
 		if(less_(*parent_, *node_)) {
-			T_ value_ = hxmove(*node_);
+			hxremove_reference_t<decltype(*node_)> value_ = hxmove(*node_);
 			do {
 				*node_ = hxmove(*parent_);
 				node_ = parent_;
@@ -83,8 +83,8 @@ void hxmake_heap_(T_* begin_, T_* end_, const less_t_& less_) {
 /// - `callback` : Callback functor matching `void callback(T* begin, T* end, const
 /// less_t& less, int depth)` for recursive sorting.
 /// - `depth` : Current recursion depth.
-template<typename T_, typename less_t_, typename sort_callback_t_>  hxattr_nonnull(1,2) hxattr_hot
-void hxpartition_sort_(	T_* begin_, T_* end_, const less_t_& less_,
+template<typename iterator_t_, typename less_t_, typename sort_callback_t_>  hxattr_hot
+void hxpartition_sort_(	iterator_t_ begin_, iterator_t_ end_, const less_t_& less_,
 						const sort_callback_t_& sort_callback_, int depth_) {
 	hxassertmsg((end_ - begin_) > hxpartition_sort_cutoff_, "range_error Use hxinsertion_sort.");
 	ptrdiff_t length_ = end_ - begin_;
@@ -92,11 +92,11 @@ void hxpartition_sort_(	T_* begin_, T_* end_, const less_t_& less_,
 	// Select 5 pivot values at 1/7th increments. And allow them to be naturally
 	// sorted.
     ptrdiff_t seventh_ = (length_ >> 3) + (length_ >> 6) + 1;
-    T_* p2_ = begin_ + (length_ >> 1);
-    T_* p1_ = p2_ - seventh_;
-    T_* p0_ = p1_ - seventh_;
-    T_* p3_ = p2_ + seventh_;
-    T_* p4_ = p3_ + seventh_;
+    iterator_t_ p2_ = begin_ + (length_ >> 1);
+    iterator_t_ p1_ = p2_ - seventh_;
+    iterator_t_ p0_ = p1_ - seventh_;
+    iterator_t_ p3_ = p2_ + seventh_;
+    iterator_t_ p4_ = p3_ + seventh_;
 
 	// This is a Bose-Nelson sorting network for 5 elements. It should work well
 	// with a processor that has branch prediction.
@@ -110,7 +110,7 @@ void hxpartition_sort_(	T_* begin_, T_* end_, const less_t_& less_,
 	if(less_(*p4_, *p3_)) { hxswap(p4_, p3_); }
 	if(less_(*p3_, *p2_)) { hxswap(p3_, p2_); }
 
-    T_* back_ = end_ - 1; // Pointer to the last value.
+    iterator_t_ back_ = end_ - 1; // Pointer to the last value.
 
 	// Move the selected pivots out of the way by placing them at the ends of
 	// the range.
@@ -121,12 +121,12 @@ void hxpartition_sort_(	T_* begin_, T_* end_, const less_t_& less_,
 
 	// Points to end of less-than range, which is empty and is right after the
 	// first pivot.
-	T_* lt_ = begin_ + 1;
+	iterator_t_ lt_ = begin_ + 1;
 	// Points to end of greater-than range, which is empty and right before the
 	// last pivot. This is an end iterator that goes left.
-	T_* gt_ = back_ - 1;
+	iterator_t_ gt_ = back_ - 1;
 
-	for(T_* i_ = lt_; i_ <= gt_; ) {
+	for(iterator_t_ i_ = lt_; i_ <= gt_; ) {
 		if(less_(*i_, *begin_)) {
 			// Swap into less-than range and extend it.
 			if(lt_ != i_) {
@@ -176,8 +176,8 @@ void hxpartition_sort_(	T_* begin_, T_* end_, const less_t_& less_,
 /// - `end` : Pointer to one past the last element in the range.
 /// - `less` : Comparison functor.
 /// - `depth` : Current recursion depth remaining.
-template<typename T_, typename less_t_> hxattr_nonnull(1,2) hxattr_hot
-void hxintro_sort_(T_* begin_, T_* end_, const less_t_& less_, int depth_) {
+template<typename iterator_t_, typename less_t_> hxattr_hot
+void hxintro_sort_(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_, int depth_) {
 	hxassertmsg(begin_ <= end_, "range_error hxsort");
 
 	if((end_ - begin_) <= hxpartition_sort_cutoff_) {
@@ -186,7 +186,7 @@ void hxintro_sort_(T_* begin_, T_* end_, const less_t_& less_, int depth_) {
 		hxheapsort(begin_, end_, less_);
 	} else {
 		// Have the partition sort call back to hxsort for each sub-partition.
-		hxpartition_sort_(begin_, end_, less_, hxintro_sort_<T_, less_t_>, depth_ - 1);
+		hxpartition_sort_(begin_, end_, less_, hxintro_sort_<iterator_t_, less_t_>, depth_ - 1);
 	}
 }
 
