@@ -24,35 +24,51 @@ enum : ptrdiff_t { hxpartition_sort_cutoff_ = 32 };
 template<typename T_, typename less_t_> hxattr_nonnull(1,2,3) hxattr_hot
 void hxheapsort_heapify_(T_* begin_, const T_* end_, T_* current_, const less_t_& less_) {
 	hxassertmsg(begin_ <= current_ && current_ < end_, "invalid_iterator");
-
-	const ptrdiff_t heap_size_ = end_ - begin_;
-	ptrdiff_t current_index_ = current_ - begin_;
-
 	for(;;) {
-		const ptrdiff_t left_index_ = (current_index_ << 1) + 1;
-		if(left_index_ >= heap_size_) {
+		T_* left_ = begin_ + (((current_ - begin_) << 1) + 1);
+		if(left_ >= end_) {
 			return;
 		}
 
-		ptrdiff_t next_index_ = left_index_;
-		T_* next_ = begin_ + left_index_;
+		T_* next_ = left_;
+		T_* right_ = left_ + 1;
+		if(right_ < end_ && less_(*next_, *right_)) {
+			next_ = right_;
+		}
 
-		const ptrdiff_t right_index_ = left_index_ + 1;
-		if(right_index_ < heap_size_) {
-			T_* right_ = begin_ + right_index_;
-			if(less_(*next_, *right_)) {
-				next_ = right_;
-				next_index_ = right_index_;
+		if(!less_(*current_, *next_)) {
+			return;
+		}
+
+		hxswap(*current_, *next_);
+		current_ = next_;
+	}
+}
+
+/// `hxmake_heap_` - Converts the range `[begin, end)` into a max heap using the
+/// provided comparator. Should work well for mostly heapified data.
+/// - `begin` : Pointer to the beginning of the range to heapify.
+/// - `end` : Pointer to one past the last element in the range to heapify.
+/// - `less` : A key comparison functor definining a less-than ordering relationship.
+template<typename T_, typename less_t_> hxattr_nonnull(1,2) hxattr_hot
+void hxmake_heap_(T_* begin_, T_* end_, const less_t_& less_) {
+	for(T_* heap_end_ = begin_ + 1; heap_end_ < end_; ) {
+		T_* node_ = heap_end_++;
+		T_* parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
+		if(less_(*parent_, *node_)) {
+			T_ value_ = hxmove(*node_);
+			do {
+				*node_ = hxmove(*parent_);
+				node_ = parent_;
+				if(node_ == begin_) {
+					break;
+				}
+				parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
 			}
+			while(less_(*parent_, value_))
+				/**/;
+			*node_ = hxmove(value_);
 		}
-
-		T_* current_ptr_ = begin_ + current_index_;
-		if(!less_(*current_ptr_, *next_)) {
-			return;
-		}
-
-		hxswap(*current_ptr_, *next_);
-		current_index_ = next_index_;
 	}
 }
 

@@ -814,16 +814,14 @@ void hxarray<T_, capacity_>::pop_back(void) {
 template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::pop_heap(void) {
 	hxassertmsg(!this->empty(), "stack_underflow");
-	T_* begin_ = this->data();
-	T_* last_ = m_end_ - 1;
-	if(begin_ == last_) {
-		last_->~T_();
-		m_end_ = last_;
+	T_* hxrestrict begin_ = this->data();
+	--m_end_;
+	if(begin_ == m_end_) {
+		begin_->~T_();
 		return;
 	}
-	*begin_ = hxmove(*last_);
-	last_->~T_();
-	m_end_ = last_;
+	*begin_ = hxmove(*m_end_);
+	m_end_->~T_();
 	hxdetail_::hxheapsort_heapify_(begin_, m_end_, begin_, hxkey_less_function<T_, T_>());
 }
 

@@ -75,42 +75,6 @@ void hxinsertion_sort(T_* begin_, T_* end_) {
 	hxinsertion_sort(begin_, end_, hxkey_less_function<T_, T_>());
 }
 
-/// `hxmake_heap` - Converts the range `[begin, end)` into a max heap using the
-/// provided comparator. Should work well for mostly heapified data.
-/// - `begin` : Pointer to the beginning of the range to heapify.
-/// - `end` : Pointer to one past the last element in the range to heapify.
-/// - `less` : A key comparison functor definining a less-than ordering relationship.
-template<typename T_, typename less_t_> hxattr_nonnull(1,2) hxattr_hot
-void hxmake_heap(T_* begin_, T_* end_, const less_t_& less_) {
-	for(T_* heap_end_ = begin_ + 1; heap_end_ < end_; ) {
-		T_* node_ = heap_end_++;
-		T_* parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
-		if(less_(*parent_, *node_)) {
-			T_ value_ = hxmove(*node_);
-			do {
-				*node_ = hxmove(*parent_);
-				node_ = parent_;
-				if(node_ == begin_) {
-					break;
-				}
-				parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
-			}
-			while(less_(*parent_, value_))
-				/**/;
-			*node_ = hxmove(value_);
-		}
-	}
-}
-
-/// `hxmake_heap` (specialization) - An overload of `hxmake_heap` that uses
-/// `hxkey_less`.
-/// - `begin` : Pointer to the beginning of the range to heapify.
-/// - `end` : Pointer to one past the last element in the range to heapify.
-template<typename T_> hxattr_nonnull(1,2) hxattr_hot
-void hxmake_heap(T_* begin_, T_* end_) {
-	hxmake_heap(begin_, end_, hxkey_less_function<T_, T_>());
-}
-
 /// `hxheapsort` - Sorts the elements in the range `[begin, end)` in comparison
 /// order using the heapsort algorithm.
 /// - `begin` : Pointer to the beginning of the range to sort.
@@ -118,7 +82,7 @@ void hxmake_heap(T_* begin_, T_* end_) {
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
 template<typename T_, typename less_t_> hxattr_nonnull(1,2) hxattr_hot
 void hxheapsort(T_* begin_, T_* end_, const less_t_& less_) {
-	hxmake_heap(begin_, end_, less_);
+	hxmake_heap_(begin_, end_, less_);
 
 	// Sort phase. Swap the largest values to the end of the array.
 	for(T_* it_ = end_ - 1; it_ > begin_; --it_) {
@@ -217,19 +181,19 @@ const T_* hxbinary_search(const T_* begin_, const T_* end_, const T_& val_, cons
 	if(begin_ == end_) { return hxnull; }
 	hxassertmsg(begin_ <= end_, "invalid_iterator");
 
-	ptrdiff_t a_ = 0;
-	ptrdiff_t b_ = end_ - begin_ - 1;
+	const T_* first_ = begin_;
+	const T_* last_ = end_;
 
-	while(a_ <= b_) {
-		ptrdiff_t mid_ = a_ + (b_ - a_) / 2;
-		if(!less_(val_, begin_[mid_])) {
-			if(!less_(begin_[mid_], val_)) {
-				return begin_ + mid_;
-			}
-			a_ = mid_ + 1; // val is > mid.
+	while(first_ < last_) {
+		const T_* mid_ = first_ + (last_ - first_) / 2;
+		if(less_(*mid_, val_)) {
+			first_ = mid_ + 1; // val is greater than mid.
+		}
+		else if(less_(val_, *mid_)) {
+			last_ = mid_; // val is less than mid.
 		}
 		else {
-			b_ = mid_ - 1; // val is < mid.
+			return mid_;
 		}
 	}
 	return hxnull;
