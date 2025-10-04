@@ -338,11 +338,12 @@ public:
 	/// `push_heap`.
 	void pop_heap(void);
 
-	/// Appends the element to the end of the array. `ref_t` may be any type
-	/// that can be used to construct `T`.
+	/// Appends the element to the end of the array. `args_t` may be any types
+	/// that can be used to construct `T`. Returns a reference to the new
+	/// element.
 	/// - `x` : The element to add.
-	template<typename ref_t_>
-	void push_back(ref_t_&& x_);
+	template<typename... args_t_>
+	T_& push_back(args_t_&&... args_);
 
 	/// Inserts an element into a max-heap. This implements `std::push_heap` and
 	/// `std::priority_queue` using `hxless` for ordering. See `pop_heap`.
@@ -826,10 +827,9 @@ void hxarray<T_, capacity_>::pop_heap(void) {
 }
 
 template<typename T_, size_t capacity_>
-template<typename ref_t_>
-void hxarray<T_, capacity_>::push_back(ref_t_&& x_) {
-	hxassertmsg(!this->full(), "stack_overflow");
-	::new (m_end_++) T_(hxforward<ref_t_>(x_));
+template<typename... args_t_>
+T_& hxarray<T_, capacity_>::push_back(args_t_&&... args_) {
+	return *::new (this->push_back_unconstructed_()) T_(hxforward<args_t_>(args_)...);
 }
 
 template<typename T_, size_t capacity_>
