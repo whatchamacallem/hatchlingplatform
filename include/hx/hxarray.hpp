@@ -569,7 +569,7 @@ void hxarray<T_, capacity_>::assign(iter_t_ begin_, iter_t_ end_) {
 	this->destruct_(it0_, m_end_);
 	iter_t_ it1_(begin_); // begin_ may be a reference.
 	while(it1_ != end_) {
-		::new (it0_++) T_(*it1_++);
+		::new(it0_++) T_(*it1_++);
 	}
 	m_end_ = it0_;
 }
@@ -631,7 +631,7 @@ void hxarray<T_, capacity_>::clear(void) {
 template<typename T_, size_t capacity_>
 template<typename... args_t_>
 T_& hxarray<T_, capacity_>::emplace_back(args_t_&&... args_) {
-	return *::new (this->push_back_unconstructed_()) T_(hxforward<args_t_>(args_)...);
+	return *::new(this->push_back_unconstructed_()) T_(hxforward<args_t_>(args_)...);
 }
 
 template<typename T_, size_t capacity_>
@@ -829,7 +829,7 @@ void hxarray<T_, capacity_>::pop_heap(void) {
 template<typename T_, size_t capacity_>
 template<typename... args_t_>
 T_& hxarray<T_, capacity_>::push_back(args_t_&&... args_) {
-	return *::new (this->push_back_unconstructed_()) T_(hxforward<args_t_>(args_)...);
+	return *::new(this->push_back_unconstructed_()) T_(hxforward<args_t_>(args_)...);
 }
 
 template<typename T_, size_t capacity_>
@@ -844,12 +844,12 @@ T_& hxarray<T_, capacity_>::push_heap(ref_t_&& arg_) {
 			break;
 		}
 		// Shifts unconstructed element into position.
-		::new ((void*)node_) T_(hxmove(*parent_));
+		::new((void*)node_) T_(hxmove(*parent_));
 		parent_->~T_();
 		node_ = parent_;
 	}
 	// Construct new element.
-	::new ((void*)node_) T_(hxmove(arg_));
+	::new((void*)node_) T_(hxmove(arg_));
 	return *node_;
 }
 
@@ -872,7 +872,7 @@ void hxarray<T_, capacity_>::resize(size_t size_) {
 	if(size_ >= this->size()) {
 		while(m_end_ != end_) {
 			// This version uses a default constructor.
-			::new (this->push_back_unconstructed_()) T_();
+			::new(this->push_back_unconstructed_()) T_();
 		}
 	}
 	else {
@@ -888,7 +888,7 @@ void hxarray<T_, capacity_>::resize(size_t size_, const T_& x_) {
 	if(size_ >= this->size()) {
 		while(m_end_ != end_) {
 			// This version uses a copy constructor.
-			::new (this->push_back_unconstructed_()) T_(x_);
+			::new(this->push_back_unconstructed_()) T_(x_);
 		}
 	}
 	else {

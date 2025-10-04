@@ -366,9 +366,9 @@ void hxmemory_manager::construct(void) {
 	m_memory_allocators[hxsystem_allocator_permanent] = &m_memory_allocator_permanent;
 	m_memory_allocators[hxsystem_allocator_temporary_stack] = &m_memory_allocator_temporary_stack;
 
-	::new (&m_memory_allocator_heap) hxsystem_allocator_os_heap(); // set vtable ptr.
-	::new (&m_memory_allocator_permanent) hxsystem_allocator_stack();
-	::new (&m_memory_allocator_temporary_stack) hxsystem_allocator_temp_stack();
+	::new(&m_memory_allocator_heap) hxsystem_allocator_os_heap(); // set vtable ptr.
+	::new(&m_memory_allocator_permanent) hxsystem_allocator_stack();
+	::new(&m_memory_allocator_temporary_stack) hxsystem_allocator_temp_stack();
 
 	m_memory_allocator_heap.construct("heap");
 	m_memory_allocator_permanent.construct(hxmalloc_checked(HX_MEMORY_BUDGET_PERMANENT),
