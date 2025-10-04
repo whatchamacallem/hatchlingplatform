@@ -22,10 +22,10 @@ fi
 # Should detect threading and standard library.
 BUILD="-DHX_RELEASE=0 -O0"
 
-# -Wdate-time is for ccache.
+# -Wdate-time is for ccache. -Wno-unused-variable is only for debugging.
 ERRORS="-Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual \
 	-Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time \
-	-Wmissing-declarations"
+	-Wmissing-declarations -Wno-unused-variable"
 
 FLAGS="-m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always"
 

@@ -72,14 +72,18 @@ hxfile& hxtest_::condition_check_(bool condition_, const char* file_, size_t lin
 
 size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 	hxinit(); // RUN_ALL_TESTS could be called first.
+	hxlogconsole("[==========] Running tests: %s\n", (test_suite_filter_ ? test_suite_filter_ : "All"));
 
 	m_test_suite_filter_ = test_suite_filter_;
-
-	hxinsertion_sort(m_test_cases_, m_test_cases_ + m_num_test_cases_, hxtest_case_sort_);
-
 	m_pass_count_ = m_fail_count_ = 0u;
 	m_total_assert_count_ = 0u;
-	hxlogconsole("[==========] Running tests: %s\n", (m_test_suite_filter_ ? m_test_suite_filter_ : "All"));
+
+	// Breaking hxinsertion_sort breaks everything...
+	hxinsertion_sort(m_test_cases_, m_test_cases_ + m_num_test_cases_, hxtest_case_sort_);
+
+	// The starting point. Expected to reset to zero after each test.
+	hxsystem_allocator_scope temporary_stack_base(hxsystem_allocator_temporary_stack);
+
 	for(hxtest_case_interface_** it_ = m_test_cases_; it_ != (m_test_cases_ + m_num_test_cases_); ++it_) {
 		if(!m_test_suite_filter_ || ::strcmp(m_test_suite_filter_, (*it_)->suite_()) == 0) {
 			hxlogconsole("[ RUN      ] %s.%s\n", (*it_)->suite_(), (*it_)->case_());
@@ -93,7 +97,7 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 			{
 				// Tests should have no side effects. Therefore all allocations must be
 				// safe to reset.
-				hxsystem_allocator_scope temporary_stack(hxsystem_allocator_temporary_stack);
+				hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 				(*it_)->run_test_();
 			}
 #ifdef __cpp_exceptions
@@ -101,6 +105,14 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 				this->condition_check_(false, (*it_)->file_(), (*it_)->line_(), "unexpected_exception", true);
 			}
 #endif
+
+			// Hardcode the assumption that the temp stack is not already being
+			// used when run_all_tests_ is called. It isn't meant to have random
+			// stuff lying around.
+			if(temporary_stack_base.get_current_bytes_allocated()
+				|| temporary_stack_base.get_current_bytes_allocated()) {
+				this->condition_check_(false, (*it_)->file_(), (*it_)->line_(), "test_leaks", true);
+			}
 
 			if(m_test_state_ == test_state_nothing_asserted_) {
 				this->condition_check_(false, (*it_)->file_(), (*it_)->line_(), "nothing_tested", false);

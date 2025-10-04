@@ -28,9 +28,9 @@ extern hxfile hxdev_null;
 /// `printf`/`scanf` style I/O. Provides optional error handling. `gcc` is
 /// useful for validating `printf`/`scanf` style arguments. However, memory
 /// imaged data structres are still recommended. Formatted I/O is intended to
-/// use NUL terminated UTF-8 with no carrige return. EILSEQ may occur if UTF-8
-/// is used in a format string directly. Pass UTF-8 as a %s string arg or use a
-/// real i18n library instead. Uses binary I/O only for portability.
+/// use `\0` terminated UTF-8 with no carrige return. `EILSEQ` may occur if
+/// UTF-8 is used in a format string directly. Pass UTF-8 as a %s string arg or
+/// use a real i18n library instead. Uses binary I/O only for portability.
 ///
 /// Here is the syntax to make a block of code conditional on opening a file.
 /// The filename is also formatted printf style. This is equivalent to Python's
@@ -99,7 +99,7 @@ public:
 	/// Move operator=. No assignment operator is provided.
 	void operator=(hxfile&& file_);
 
-	/// Checks if the file is open, EOF has not been reached and no error
+	/// Checks if the file is open, `EOF` has not been reached and no error
 	/// encountered. See usage example in class doc.
 	operator bool(void) const { return m_good_; }
 
@@ -112,7 +112,7 @@ public:
 	/// Checks if the file is open.
 	bool is_open(void) const { return m_file_pimpl_ != hxnull; }
 
-	/// Checks if the file is open, EOF has not been reached, no error
+	/// Checks if the file is open, `EOF` has not been reached, no error
 	/// encountered and `no_good` not called.
 	bool good(void) const { return m_good_; }
 
@@ -120,10 +120,10 @@ public:
 	/// errors without having to track them. Non-standard.
 	void no_good(void) { m_good_ = false; }
 
-	/// Checks if EOF has been reached.
+	/// Checks if `EOF` has been reached.
 	bool eof(void) const { return m_eof_; }
 
-	/// Resets the goodness and EOF flags. Required after EOF is encountered.
+	/// Resets the goodness and `EOF` flags. Required after `EOF` is encountered.
 	void clear(void);
 
 	/// Returns the current open mode of the file.

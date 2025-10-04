@@ -429,11 +429,11 @@ void* hxmemory_manager::allocate(size_t size, hxsystem_allocator_t id, hxalignme
 	}
 
 	// following code assumes that "alignment-1" is a valid mask of unused bits.
-	if(alignment == 0) {
+	if(alignment == 0u) {
 		alignment = 1u;
 	}
 
-	hxassertmsg(((alignment - 1) & (alignment)) == 0u, \
+	hxassertmsg(((alignment - 1u) & (alignment)) == 0u, \
 		"alignment_error not pow2 %zu", (size_t)alignment);
 
 	HX_MEMORY_MANAGER_LOCK_();
