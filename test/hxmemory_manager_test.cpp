@@ -12,6 +12,7 @@ HX_REGISTER_FILENAME_HASH
 // are designed to fail and use EXPECT_ for those specific tests.
 
 TEST(hxmemory_manager_test_fn, bytes) {
+	hxsystem_allocator_scope temporary_stack_scope = hxsystem_allocator_temporary_stack;
 	for(size_t i=10u; i--;) {
 		void* p = hxmalloc(i);
 		ASSERT_TRUE(p != hxnull);
@@ -21,6 +22,7 @@ TEST(hxmemory_manager_test_fn, bytes) {
 }
 
 TEST(hxmemory_manager_test_fn, string_duplicate) {
+	hxsystem_allocator_scope temporary_stack_scope = hxsystem_allocator_temporary_stack;
 	char* p = hxstring_duplicate("str");
 	ASSERT_TRUE(p != hxnull);
 	ASSERT_TRUE(::strcmp(p, "str") == 0);
@@ -86,23 +88,19 @@ public:
 		}
 	}
 
-	void test_memory_allocator_leak(hxsystem_allocator_t id) {
-		(void)id;
+	void test_memory_allocator_leak(void) {
 #if (HX_RELEASE) < 1
-		uintptr_t start_count = 0;
-		uintptr_t start_bytes = 0;
 		void* ptr2 = hxnull;
 		int asserts_allowed = g_hxsettings.asserts_to_be_skipped;
 
 		{
-			hxsystem_allocator_scope allocator_scope(id);
+			hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
 
+			// The temp stack is expected to be empty for this test.
+			ASSERT_EQ(0u, allocator_scope.get_initial_allocation_count());
+			ASSERT_EQ(0u, allocator_scope.get_initial_bytes_allocated());
 			ASSERT_EQ(0u, allocator_scope.get_current_allocation_count());
 			ASSERT_EQ(0u, allocator_scope.get_current_bytes_allocated());
-
-			// Track the starting state to see how it is affected by a leak.
-			start_count = allocator_scope.get_initial_allocation_count();
-			start_bytes = allocator_scope.get_initial_bytes_allocated();
 
 			void* ptr1 = hxmalloc(100);
 			ptr2 = hxmalloc(200);
@@ -111,19 +109,21 @@ public:
 
 			hxfree(ptr1); // Only free the one.
 
+			// Prepare to trigger an assert when the scope closes.
 			g_hxsettings.asserts_to_be_skipped = 1;
 		}
 		ASSERT_EQ(g_hxsettings.asserts_to_be_skipped, 0); // hxassert was hit, leak in scope
 
 		{
-			hxsystem_allocator_scope allocator_scope(id);
+			hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
 
 			// the allocator knows it has an outstanding allocation
-			ASSERT_EQ(allocator_scope.get_initial_allocation_count(), start_count + 1);
+			ASSERT_EQ(allocator_scope.get_initial_allocation_count(), 1);
 
 			// however the allocated memory was reset.
-			ASSERT_EQ(allocator_scope.get_initial_bytes_allocated(), start_bytes);
+			ASSERT_EQ(allocator_scope.get_initial_bytes_allocated(), 0);
 
+			// Trigger the assert that catches late deletes.
 			g_hxsettings.asserts_to_be_skipped = 1;
 			hxfree(ptr2);
 		}
@@ -146,7 +146,7 @@ TEST_F(hxmemory_manager_test, execute) {
 #if !(HX_MEMORY_MANAGER_DISABLE)
 	hxlog("EXPECTING_TEST_FAILURE\n");
 	// Only the temporary stack expects all allocations to be `free`'d.
-	test_memory_allocator_leak(hxsystem_allocator_temporary_stack);
+	test_memory_allocator_leak();
 #endif
 }
 

@@ -6,6 +6,7 @@
 #include <hx/hxrandom.hpp>
 #include <hx/hxsort.hpp>
 #include <hx/hxarray.hpp>
+#include <hx/hxmemory_manager.h>
 #include <hx/hxtest.hpp>
 
 HX_REGISTER_FILENAME_HASH
@@ -41,8 +42,6 @@ public:
 
 	template<typename key_t>
 	void test_range_and_type(uint32_t size, uint32_t mask, key_t offset) {
-		hxsystem_allocator_scope temporary_stack(hxsystem_allocator_temporary_stack);
-
 		// Generate test data
 		hxarray<test_object<key_t> > a;
 		generate<key_t>(a, size, mask, offset);
@@ -85,7 +84,7 @@ public:
 	}
 
 	// Move all tests to the temp stack.
-	hxsystem_allocator_scope m_temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	hxsystem_allocator_scope m_temporary_stack_scope = hxsystem_allocator_temporary_stack;
 	hxrandom m_prng_;
 };
 

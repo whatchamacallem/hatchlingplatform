@@ -93,7 +93,9 @@ TEST(hxprofiler_profile, single_scope_runs_for_1ms) {
 }
 
 TEST(hxprofiler_profile, write_to_chrome_tracing_command) {
-	// Shut down profiling and use console commands for next capture.
+	hxsystem_allocator_scope temporary_stack_scope = hxsystem_allocator_temporary_stack;
+
+	// Reset profiling and use console commands for next capture.
 	hxprofiler_stop();
 	hxconsole_exec_line("profilestart");
 
