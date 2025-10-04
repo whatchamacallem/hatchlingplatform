@@ -72,7 +72,8 @@ void hxinsertion_sort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename iterator_t_> hxattr_hot
 void hxinsertion_sort(iterator_t_ begin_, iterator_t_ end_) {
-	hxinsertion_sort(begin_, end_, hxkey_less_function<decltype(*begin_), decltype(*begin_)>());
+	using element_t_ = hxremove_reference_t<decltype(*begin_)>;
+	hxinsertion_sort(begin_, end_, hxkey_less_function<element_t_, element_t_>());
 }
 
 /// `hxheapsort` - Sorts the elements in the range `[begin, end)` in comparison
@@ -97,7 +98,8 @@ void hxheapsort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_) {
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename iterator_t_> hxattr_hot
 void hxheapsort(iterator_t_ begin_, iterator_t_ end_) {
-	hxheapsort(begin_, end_, hxkey_less_function<decltype(*begin_), decltype(*begin_)>());
+	using element_t_ = hxremove_reference_t<decltype(*begin_)>;
+	hxheapsort(begin_, end_, hxkey_less_function<element_t_, element_t_>());
 }
 
 /// `hxsort` - A general purpose sort routine using `T::T()`, `T::~T()`,
@@ -118,7 +120,8 @@ void hxsort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_) {
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename iterator_t_> hxattr_hot
 void hxsort(iterator_t_ begin_, iterator_t_ end_) {
-	hxintro_sort_(begin_, end_, hxkey_less_function<decltype(*begin_), decltype(*begin_)>(),
+	using element_t_ = hxremove_reference_t<decltype(*begin_)>;
+	hxintro_sort_(begin_, end_, hxkey_less_function<element_t_, element_t_>(),
 		2 * hxlog2i((size_t)(end_ - begin_)));
 }
 
@@ -165,8 +168,9 @@ void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_, iterat
 template<typename iterator_t_> hxattr_hot
 void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
 		iterator_t_ end1_, iterator_t_ hxrestrict dest_) {
+	using element_t_ = hxremove_reference_t<decltype(*begin0_)>;
 	hxmerge(begin0_, end0_, begin1_, end1_, dest_,
-		hxkey_less_function<decltype(*begin0_), decltype(*begin0_)>());
+		hxkey_less_function<element_t_, element_t_>());
 }
 
 /// `hxbinary_search` - Performs a binary search in the range [first, last).
@@ -176,7 +180,7 @@ void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
 /// is less than) the second. See `hxkey_less`.
 /// - `begin` : Pointer to the beginning of the range to search.
 /// - `end` : Pointer to one past the last element in the range to search.
-/// - `val` : The value to search for.
+/// - `value` : The value to search for.
 /// - `less` : A key comparison functor definining a less-than ordering relationship. (Optional.)
 template<typename iterator_t_, typename value_t_, typename less_t_> hxattr_hot
 iterator_t_ hxbinary_search(iterator_t_ begin_, iterator_t_ end_, const value_t_& value_, const less_t_& less_) {
@@ -206,8 +210,9 @@ iterator_t_ hxbinary_search(iterator_t_ begin_, iterator_t_ end_, const value_t_
 /// uses `hxkey_less`.
 /// - `begin` : Pointer to the beginning of the range to search.
 /// - `end` : Pointer to one past the last element in the range to search.
-/// - `val` : The value to search for.
+/// - `value` : The value to search for.
 template<typename iterator_t_, typename value_t_> hxattr_hot
 iterator_t_ hxbinary_search(iterator_t_ begin_, iterator_t_ end_, const value_t_& value_) {
-	return hxbinary_search(begin_, end_, value_, hxkey_less_function<decltype(*begin_), decltype(*begin_)>());
+	using element_t_ = hxremove_reference_t<decltype(*begin_)>;
+	return hxbinary_search(begin_, end_, value_, hxkey_less_function<element_t_, element_t_>());
 }
