@@ -13,9 +13,9 @@
 
 HX_REGISTER_FILENAME_HASH
 
-static class hxarray_test* s_hxtest_current = hxnull;
+static class hxarray_test_f* s_hxtest_current = hxnull;
 
-class hxarray_test :
+class hxarray_test_f :
 	public testing::Test
 {
 public:
@@ -48,14 +48,14 @@ public:
 		int32_t id;
 	};
 
-	hxarray_test(void) {
+	hxarray_test_f(void) {
 		hxassert(s_hxtest_current == hxnull);
 		m_constructed = 0;
 		m_destructed = 0;
 		m_next_id = -1;
 		s_hxtest_current = this;
 	}
-	~hxarray_test(void) {
+	~hxarray_test_f(void) {
 		s_hxtest_current = 0;
 	}
 
@@ -173,7 +173,7 @@ TEST(hxarray_test, hxforward_preserves_value_category) {
 	EXPECT_TRUE(rvalue_source.moved_from);
 }
 
-TEST_F(hxarray_test, empty_full) {
+TEST_F(hxarray_test_f, empty_full) {
 	hxarray<test_object, hxallocator_dynamic_capacity> a;
 	EXPECT_TRUE(a.empty());
 	EXPECT_TRUE(a.full());
@@ -188,7 +188,7 @@ TEST_F(hxarray_test, empty_full) {
 	EXPECT_TRUE(!a.full());
 }
 
-TEST_F(hxarray_test, allocators) {
+TEST_F(hxarray_test_f, allocators) {
 	hxarray<test_object> objs_dynamic;
 	objs_dynamic.reserve(10u);
 	hxarray<test_object, 10u> objs_static;
@@ -214,7 +214,7 @@ TEST_F(hxarray_test, allocators) {
 	EXPECT_TRUE(check_totals(8));
 }
 
-TEST_F(hxarray_test, iteration) {
+TEST_F(hxarray_test_f, iteration) {
 	{
 		static const int32_t nums[3] = { 21, 22, 23 };
 
@@ -249,7 +249,7 @@ TEST_F(hxarray_test, iteration) {
 	EXPECT_TRUE(check_totals(6));
 }
 
-TEST_F(hxarray_test, get) {
+TEST_F(hxarray_test_f, get) {
 	{
 		hxarray<test_object, 4u> objs; objs.reserve(4u);
 		objs.emplace_back(10);
@@ -259,20 +259,20 @@ TEST_F(hxarray_test, get) {
 
 		EXPECT_EQ(objs.get(0), objs.begin());
 		EXPECT_EQ(objs.get(1), objs.begin() + 1);
-		EXPECT_EQ(objs.get(2), hxnull);
+		EXPECT_EQ(objs.get(2), hxnullptr);
 
 		EXPECT_EQ(cobjs.get(0), cobjs.begin());
 		EXPECT_EQ(cobjs.get(1), cobjs.begin() + 1);
-		EXPECT_EQ(cobjs.get(2), hxnull);
+		EXPECT_EQ(cobjs.get(2), hxnullptr);
 
 		objs.pop_back();
-		EXPECT_EQ(objs.get(1), hxnull);
+		EXPECT_EQ(objs.get(1), hxnullptr);
 	}
 
 	EXPECT_TRUE(check_totals(2));
 }
 
-TEST_F(hxarray_test, modification) {
+TEST_F(hxarray_test_f, modification) {
 	{
 		static const int32_t nums[5] = { 91, 92, 93, 94, 95 };
 
@@ -321,7 +321,7 @@ TEST_F(hxarray_test, modification) {
 	EXPECT_TRUE(check_totals(11));
 }
 
-TEST_F(hxarray_test, push_heap_maintains_max_heap) {
+TEST_F(hxarray_test_f, push_heap_maintains_max_heap) {
 	static const int values[] = { 3, 7, 1, 9, 5, 8 };
 	const size_t value_count = sizeof values / sizeof *values;
 
@@ -340,7 +340,7 @@ TEST_F(hxarray_test, push_heap_maintains_max_heap) {
 	EXPECT_EQ(heap.size(), value_count);
 }
 
-TEST_F(hxarray_test, pop_heap_restores_heap_after_removal) {
+TEST_F(hxarray_test_f, pop_heap_restores_heap_after_removal) {
 	static const int values[] = { 5, 12, 3, 7, 9, 4, 15, 5 };
 	const size_t value_count = sizeof values / sizeof *values;
 
@@ -375,7 +375,7 @@ TEST_F(hxarray_test, pop_heap_restores_heap_after_removal) {
 	}
 }
 
-TEST_F(hxarray_test, emplace_back) {
+TEST_F(hxarray_test_f, emplace_back) {
 	{
 		hxarray<test_object> objs;
 		objs.reserve(3u);
@@ -400,7 +400,7 @@ TEST_F(hxarray_test, emplace_back) {
 	EXPECT_TRUE(check_totals(4));
 }
 
-TEST_F(hxarray_test, for_each) {
+TEST_F(hxarray_test_f, for_each) {
 	static const unsigned char nums[5] = { 91, 92, 93, 94, 95 };
 	hxarray<int> objs;
 	objs.assign(nums, nums + (sizeof nums / sizeof *nums));
@@ -429,7 +429,7 @@ TEST_F(hxarray_test, for_each) {
 	objs.for_each(y);
 }
 
-TEST_F(hxarray_test, all_of_any_of) {
+TEST_F(hxarray_test_f, all_of_any_of) {
 	static const unsigned char nums[5] = { 91, 92, 93, 94, 95 };
 	hxarray<int> objs;
 	objs.assign(nums, nums + (sizeof nums / sizeof *nums));
@@ -470,7 +470,7 @@ TEST_F(hxarray_test, all_of_any_of) {
 	EXPECT_FALSE(objs.any_of(empty_predicate));
 }
 
-TEST_F(hxarray_test, erase_if) {
+TEST_F(hxarray_test_f, erase_if) {
 	static const int nums[5] = { 1, 2, 3, 4, 5 };
 	hxarray<int> objs;
 	objs.assign(nums, nums + (sizeof nums / sizeof *nums));
@@ -500,7 +500,7 @@ TEST_F(hxarray_test, erase_if) {
 	EXPECT_EQ(objs.erase_if(empty_predicate), 0u);
 }
 
-TEST_F(hxarray_test, resizing) {
+TEST_F(hxarray_test_f, resizing) {
 	{
 		static const int32_t nums[5] = { 51, 52, 53, 54, 55 };
 
@@ -538,7 +538,7 @@ TEST_F(hxarray_test, resizing) {
 	EXPECT_TRUE(check_totals(25));
 }
 
-TEST_F(hxarray_test, assignment) {
+TEST_F(hxarray_test_f, assignment) {
 	{
 		hxarray<test_object> objs;
 		objs.reserve(1);
@@ -793,7 +793,7 @@ TEST(hxarray_test, emplace_back_move_tracker_forwarding) {
 }
 
 #if HX_CPLUSPLUS >= 202002L
-TEST_F(hxarray_test, plus_equals) {
+TEST_F(hxarray_test_f, plus_equals) {
 	{
 		hxarray<test_object> objs;
 		objs.reserve(10);
@@ -824,7 +824,7 @@ TEST_F(hxarray_test, plus_equals) {
 	EXPECT_TRUE(check_totals(22));
 }
 
-TEST_F(hxarray_test, erase) {
+TEST_F(hxarray_test_f, erase) {
 	{
 		hxarray<test_object> objs { 1, 2, 3, 4, 5 };
 		objs.erase(1);
@@ -843,7 +843,7 @@ TEST_F(hxarray_test, erase) {
 	EXPECT_TRUE(check_totals(9));
 }
 
-TEST_F(hxarray_test, insert) {
+TEST_F(hxarray_test_f, insert) {
 	{
 		// The numeric constant zero is also a pointer. It seems more convenient
 		// to allow both indicies and pointers than to worry about it.
@@ -866,7 +866,7 @@ TEST_F(hxarray_test, insert) {
 }
 #endif
 
-TEST_F(hxarray_test, c_initializer_list) {
+TEST_F(hxarray_test_f, c_initializer_list) {
 	int i0[] = { 2, 7 };
 	hxarray<int, 2> x(i0);
 	EXPECT_EQ(x[1], 7);
@@ -889,7 +889,7 @@ TEST_F(hxarray_test, c_initializer_list) {
 }
 
 #if !HX_NO_LIBCXX
-TEST_F(hxarray_test, initializer_list) {
+TEST_F(hxarray_test_f, initializer_list) {
 	hxarray<int, 2> x = { 2, 7 };
 	EXPECT_EQ(x[1], 7);
 
@@ -897,7 +897,7 @@ TEST_F(hxarray_test, initializer_list) {
 	EXPECT_EQ(y[1], 17);
 }
 
-TEST_F(hxarray_test, temporaries) {
+TEST_F(hxarray_test_f, temporaries) {
 	// test r-value dynamically allocated temporaries
 	{
 		hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);

@@ -11,7 +11,7 @@ HX_REGISTER_FILENAME_HASH
 // macros. Memory corruption sounds fatal so sure why not. Some of these tests
 // are designed to fail and use EXPECT_ for those specific tests.
 
-TEST(hxmemory_manager_test_f, bytes) {
+TEST(hxmemory_manager_test_fn, bytes) {
 	for(size_t i=10u; i--;) {
 		void* p = hxmalloc(i);
 		ASSERT_TRUE(p != hxnull);
@@ -20,7 +20,7 @@ TEST(hxmemory_manager_test_f, bytes) {
 	}
 }
 
-TEST(hxmemory_manager_test_f, string_duplicate) {
+TEST(hxmemory_manager_test_fn, string_duplicate) {
 	char* p = hxstring_duplicate("str");
 	ASSERT_TRUE(p != hxnull);
 	ASSERT_TRUE(::strcmp(p, "str") == 0);
