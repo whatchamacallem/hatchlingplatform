@@ -34,13 +34,14 @@ if [ ! -e "$FILE_ARG" ]; then
 fi
 
 FILE_ABSOLUTE=$(realpath -- "$FILE_ARG")
-rel_file=${FILE_ABSOLUTE#"$HX_DIR/"}
+FILE_RELATIVE=${FILE_ABSOLUTE#"$HX_DIR/"}
 
-tmp_file=$(mktemp ~/.cache/hx-diff.sh.XXXXXX)
+TMP_ID=$(git rev-parse --short $COMMIT_ID)
+TMP_FILE=$(mktemp ~/.cache/$TMP_ID.XXXX)
 
-if ! git -C "$HX_DIR" show "$COMMIT_ID:$rel_file" > "$tmp_file"; then
+if ! git -C "$HX_DIR" show "$COMMIT_ID:$FILE_RELATIVE" > "$TMP_FILE"; then
 	echo 'error: unable to read file from the specified commit.' >&2
 	exit 1
 fi
 
-code --diff "$tmp_file" "$FILE_ABSOLUTE"
+code --diff "$TMP_FILE" "$FILE_ABSOLUTE"

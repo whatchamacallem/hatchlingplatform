@@ -84,11 +84,11 @@ public:
 };
 #endif
 // ----------------------------------------------------------------------------
-// hxsystem_allocator_base
+// hxmemory_allocator_base
 
-class hxsystem_allocator_base {
+class hxmemory_allocator_base {
 public:
-	hxsystem_allocator_base() : m_label_(hxnull) { }
+	hxmemory_allocator_base() : m_label_(hxnull) { }
 	hxattr_hot void* allocate(size_t size, hxalignment_t alignment) {
 		return on_alloc(size, alignment);
 	}
@@ -106,16 +106,16 @@ protected:
 	virtual void* on_alloc(size_t size, hxalignment_t alignment) = 0;
 	const char* m_label_;
 private:
-	void operator=(const hxsystem_allocator_base&) = delete;
+	void operator=(const hxmemory_allocator_base&) = delete;
 };
 
 // ----------------------------------------------------------------------------
-// hxsystem_allocator_os_heap
+// hxmemory_allocator_os_heap
 //
 // This just calls aligned_alloc when HX_RELEASE > 0. In debug and in C++98
 // mode this code wraps heap allocations with a header and adds padding to
 // obtain required alignment. This allows tracking bytes allocated in debug.
-class hxsystem_allocator_os_heap : public hxsystem_allocator_base {
+class hxmemory_allocator_os_heap : public hxmemory_allocator_base {
 public:
 	hxattr_cold void construct(const char* label) {
 		m_label_ = label;
@@ -209,9 +209,9 @@ private:
 };
 
 // ----------------------------------------------------------------------------
-// hxsystem_allocator_stack: Nothing can be freed.
+// hxmemory_allocator_stack: Nothing can be freed.
 
-class hxsystem_allocator_stack : public hxsystem_allocator_base {
+class hxmemory_allocator_stack : public hxmemory_allocator_base {
 public:
 	hxattr_cold void construct(void* ptr, size_t size, const char* label) {
 		m_label_ = label;
@@ -286,12 +286,12 @@ protected:
 };
 
 // ----------------------------------------------------------------------------
-// hxsystem_allocator_temp_stack: Resets after a scope closes.
+// hxmemory_allocator_temp_stack: Resets after a scope closes.
 
-class hxsystem_allocator_temp_stack : public hxsystem_allocator_stack {
+class hxmemory_allocator_temp_stack : public hxmemory_allocator_stack {
 public:
 	hxattr_cold void construct(void* ptr, size_t size, const char* label) {
-		hxsystem_allocator_stack::construct(ptr, size, label);
+		hxmemory_allocator_stack::construct(ptr, size, label);
 		m_high_water = 0u;
 	}
 
@@ -335,7 +335,7 @@ public:
 	hxattr_hot void end_allocation_scope(hxsystem_allocator_scope* scope,
 		hxsystem_allocator_t previous_id);
 
-	hxattr_hot hxsystem_allocator_base& get_allocator(hxsystem_allocator_t id) {
+	hxattr_hot hxmemory_allocator_base& get_allocator(hxsystem_allocator_t id) {
 		hxassertmsg(id >= 0 && id < hxsystem_allocator_current, "invalid_parameter %d", (int)id);
 		return *m_memory_allocators[id];
 	}
@@ -349,11 +349,11 @@ private:
 	// NOTA BENE:  The current allocator is a thread local attribute.
 	static hxthread_local<hxsystem_allocator_t> s_hxcurrent_memory_allocator;
 
-	hxsystem_allocator_base* m_memory_allocators[hxsystem_allocator_current];
+	hxmemory_allocator_base* m_memory_allocators[hxsystem_allocator_current];
 
-	hxsystem_allocator_os_heap	  m_memory_allocator_heap;
-	hxsystem_allocator_stack	  m_memory_allocator_permanent;
-	hxsystem_allocator_temp_stack m_memory_allocator_temporary_stack;
+	hxmemory_allocator_os_heap	  m_memory_allocator_heap;
+	hxmemory_allocator_stack	  m_memory_allocator_permanent;
+	hxmemory_allocator_temp_stack m_memory_allocator_temporary_stack;
 };
 
 hxthread_local<hxsystem_allocator_t>
@@ -366,9 +366,9 @@ void hxmemory_manager::construct(void) {
 	m_memory_allocators[hxsystem_allocator_permanent] = &m_memory_allocator_permanent;
 	m_memory_allocators[hxsystem_allocator_temporary_stack] = &m_memory_allocator_temporary_stack;
 
-	::new(&m_memory_allocator_heap) hxsystem_allocator_os_heap(); // set vtable ptr.
-	::new(&m_memory_allocator_permanent) hxsystem_allocator_stack();
-	::new(&m_memory_allocator_temporary_stack) hxsystem_allocator_temp_stack();
+	::new(&m_memory_allocator_heap) hxmemory_allocator_os_heap(); // set vtable ptr.
+	::new(&m_memory_allocator_permanent) hxmemory_allocator_stack();
+	::new(&m_memory_allocator_temporary_stack) hxmemory_allocator_temp_stack();
 
 	m_memory_allocator_heap.construct("heap");
 	m_memory_allocator_permanent.construct(hxmalloc_checked_(HX_MEMORY_BUDGET_PERMANENT),
@@ -386,7 +386,7 @@ size_t hxmemory_manager::leak_count(void) {
 	size_t leak_count = 0;
 	HX_MEMORY_MANAGER_LOCK_();
 	for(int32_t i = 0; i != hxsystem_allocator_current; ++i) {
-		hxsystem_allocator_base& allocator = *m_memory_allocators[i];
+		hxmemory_allocator_base& allocator = *m_memory_allocators[i];
 		if(allocator.get_allocation_count((hxsystem_allocator_t)i)) {
 			hxloghandler(hxloglevel_warning,
 				"memory_leak %s count %zu size %zu high_water %zu",
@@ -525,7 +525,7 @@ hxattr_noexcept void hxfree(void *ptr) {
 	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
 
 	// Nothing allocated from the OS memory manager can be freed here. Not unless
-	// it is wrapped with hxsystem_allocator_os_heap.
+	// it is wrapped with hxmemory_allocator_os_heap.
 	s_hxmemory_manager->free(ptr);
 }
 

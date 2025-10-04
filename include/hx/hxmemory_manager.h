@@ -123,11 +123,11 @@ inline void* operator new(size_t, void* ptr_) noexcept { return ptr_; }
 inline void* operator new[](size_t, void* ptr_) noexcept { return ptr_; }
 #endif
 
-// Internal.
+// Internal. These talk to hxsystem_allocator_scope directly.
 /// \cond HIDDEN
 namespace hxdetail_ {
-	class hxsystem_allocator_os_heap;
-	class hxsystem_allocator_stack;
+	class hxmemory_allocator_os_heap;
+	class hxmemory_allocator_stack;
 }
 /// \endcond
 
@@ -172,8 +172,8 @@ private:
 	// The hxsystem_allocator_* classes are responsible for setting
 	// m_initial_allocation_count_ and m_initial_bytes_allocated_.
 	// This avoids a number of virtual calls.
-	friend class hxdetail_::hxsystem_allocator_os_heap;
-	friend class hxdetail_::hxsystem_allocator_stack;
+	friend class hxdetail_::hxmemory_allocator_os_heap;
+	friend class hxdetail_::hxmemory_allocator_stack;
 
 	// Deleted copy constructor to prevent copying.
 	hxsystem_allocator_scope(const hxsystem_allocator_scope&) = delete;
