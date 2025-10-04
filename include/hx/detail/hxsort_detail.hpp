@@ -15,15 +15,15 @@ namespace hxdetail_ {
 
 enum : ptrdiff_t { hxpartition_sort_cutoff_ = 32 };
 
-/// Restores the heap property by pushing a value down until it is not greater
-/// than its children.
+/// Restores the heap property by pushing the first value down until it is not
+/// greater than its children.
 /// - `begin` : Pointer to the first element in the heap.
 /// - `end` : Pointer to one past the last element in the heap.
 /// - `current` : Pointer to the current element being heapified.
 /// - `less` : Comparison functor.
 template<typename iterator_t_, typename less_t_> hxattr_hot
-void hxheapsort_heapify_(iterator_t_ begin_, const iterator_t_ end_, iterator_t_ current_, const less_t_& less_) {
-	hxassertmsg(begin_ <= current_ && current_ < end_, "invalid_iterator");
+void hxheapsort_heapify_(iterator_t_ hxrestrict begin_, const iterator_t_ end_, const less_t_& less_) {
+	iterator_t_ current_ = begin_;
 	for(;;) {
 		iterator_t_ left_ = begin_ + (((current_ - begin_) << 1) + 1);
 		if(left_ >= end_) {
@@ -51,7 +51,7 @@ void hxheapsort_heapify_(iterator_t_ begin_, const iterator_t_ end_, iterator_t_
 /// - `end` : Pointer to one past the last element in the range to heapify.
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
 template<typename iterator_t_, typename less_t_> hxattr_hot
-void hxmake_heap_(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_) {
+void hxmake_heap_(iterator_t_ hxrestrict begin_, iterator_t_ end_, const less_t_& less_) {
 	for(iterator_t_ heap_end_ = begin_ + 1; heap_end_ < end_; ) {
 		iterator_t_ node_ = heap_end_++;
 		iterator_t_ parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
@@ -84,7 +84,7 @@ void hxmake_heap_(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_) {
 /// less_t& less, int depth)` for recursive sorting.
 /// - `depth` : Current recursion depth.
 template<typename iterator_t_, typename less_t_, typename sort_callback_t_>  hxattr_hot
-void hxpartition_sort_(	iterator_t_ begin_, iterator_t_ end_, const less_t_& less_,
+void hxpartition_sort_(iterator_t_ hxrestrict begin_, iterator_t_ end_, const less_t_& less_,
 						const sort_callback_t_& sort_callback_, int depth_) {
 	hxassertmsg((end_ - begin_) > hxpartition_sort_cutoff_, "range_error Use hxinsertion_sort.");
 	ptrdiff_t length_ = end_ - begin_;
@@ -177,7 +177,7 @@ void hxpartition_sort_(	iterator_t_ begin_, iterator_t_ end_, const less_t_& les
 /// - `less` : Comparison functor.
 /// - `depth` : Current recursion depth remaining.
 template<typename iterator_t_, typename less_t_> hxattr_hot
-void hxintro_sort_(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_, int depth_) {
+void hxintro_sort_(iterator_t_ hxrestrict begin_, iterator_t_ end_, const less_t_& less_, int depth_) {
 	hxassertmsg(begin_ <= end_, "range_error hxsort");
 
 	if((end_ - begin_) <= hxpartition_sort_cutoff_) {

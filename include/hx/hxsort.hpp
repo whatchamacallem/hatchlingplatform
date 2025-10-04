@@ -44,7 +44,7 @@
 /// - `end` : Pointer to one past the last element in the range to sort.
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
 template<typename iterator_t_, typename less_t_> hxattr_hot
-void hxinsertion_sort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_) {
+void hxinsertion_sort(iterator_t_ hxrestrict begin_, iterator_t_ end_, const less_t_& less_) {
 	hxassertmsg(begin_ <= end_, "invalid_iterator");
 
 	// Address sanitizer: Avoids adding 1 to null iterators.
@@ -71,7 +71,7 @@ void hxinsertion_sort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename iterator_t_> hxattr_hot
-void hxinsertion_sort(iterator_t_ begin_, iterator_t_ end_) {
+void hxinsertion_sort(iterator_t_ hxrestrict begin_, iterator_t_ end_) {
 	using element_t_ = hxremove_reference_t<decltype(*begin_)>;
 	hxinsertion_sort(begin_, end_, hxkey_less_function<element_t_, element_t_>());
 }
@@ -82,13 +82,13 @@ void hxinsertion_sort(iterator_t_ begin_, iterator_t_ end_) {
 /// - `end` : Pointer to one past the last element in the range to sort.
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
 template<typename iterator_t_, typename less_t_> hxattr_hot
-void hxheapsort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_) {
+void hxheapsort(iterator_t_ hxrestrict begin_, iterator_t_ end_, const less_t_& less_) {
 	hxmake_heap_(begin_, end_, less_);
 
 	// Sort phase. Swap the largest values to the end of the array.
 	for(iterator_t_ it_ = end_ - 1; it_ > begin_; --it_) {
 		hxswap(*begin_, *it_);
-		hxheapsort_heapify_(begin_, it_, begin_, less_);
+		hxheapsort_heapify_(begin_, it_, less_);
 	}
 }
 
@@ -97,7 +97,7 @@ void hxheapsort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_) {
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename iterator_t_> hxattr_hot
-void hxheapsort(iterator_t_ begin_, iterator_t_ end_) {
+void hxheapsort(iterator_t_ hxrestrict begin_, iterator_t_ end_) {
 	using element_t_ = hxremove_reference_t<decltype(*begin_)>;
 	hxheapsort(begin_, end_, hxkey_less_function<element_t_, element_t_>());
 }
@@ -110,7 +110,7 @@ void hxheapsort(iterator_t_ begin_, iterator_t_ end_) {
 /// - `end` : Pointer to one past the last element in the range to sort.
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
 template<typename iterator_t_, typename less_t_> hxattr_hot
-void hxsort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_) {
+void hxsort(iterator_t_ hxrestrict begin_, iterator_t_ end_, const less_t_& less_) {
 	hxintro_sort_(begin_, end_, less_, 2 * hxlog2i((size_t)(end_ - begin_)));
 }
 
@@ -119,7 +119,7 @@ void hxsort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_) {
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename iterator_t_> hxattr_hot
-void hxsort(iterator_t_ begin_, iterator_t_ end_) {
+void hxsort(iterator_t_ hxrestrict begin_, iterator_t_ end_) {
 	using element_t_ = hxremove_reference_t<decltype(*begin_)>;
 	hxintro_sort_(begin_, end_, hxkey_less_function<element_t_, element_t_>(),
 		2 * hxlog2i((size_t)(end_ - begin_)));

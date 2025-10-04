@@ -823,7 +823,7 @@ void hxarray<T_, capacity_>::pop_heap(void) {
 	}
 	*begin_ = hxmove(*m_end_);
 	m_end_->~T_();
-	hxdetail_::hxheapsort_heapify_(begin_, m_end_, begin_, hxkey_less_function<T_, T_>());
+	hxdetail_::hxheapsort_heapify_(begin_, m_end_, hxkey_less_function<T_, T_>());
 }
 
 template<typename T_, size_t capacity_>
