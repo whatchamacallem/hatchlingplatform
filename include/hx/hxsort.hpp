@@ -83,9 +83,11 @@ void hxinsertion_sort(iterator_t_ hxrestrict begin_, iterator_t_ end_) {
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
 template<typename iterator_t_, typename less_t_> hxattr_hot
 void hxheapsort(iterator_t_ hxrestrict begin_, iterator_t_ end_, const less_t_& less_) {
+	// This is std::make_heap.
 	hxmake_heap_(begin_, end_, less_);
 
-	// Sort phase. Swap the largest values to the end of the array.
+	// Swaps the largest values to the end of the array. These two implement
+	// std::pop_heap.
 	for(iterator_t_ it_ = end_ - 1; it_ > begin_; --it_) {
 		hxswap(*begin_, *it_);
 		hxheapsort_heapify_(begin_, it_, less_);

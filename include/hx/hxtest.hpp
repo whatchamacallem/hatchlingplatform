@@ -179,9 +179,9 @@ inline void InitGoogleTest(void) { }
 /// `void ASSERT_FALSE(bool)` - Asserts that the condition is false.
 #define ASSERT_FALSE(x_) hxtest_::dispatcher_().condition_check_(!(x_), __FILE__, __LINE__, "!" #x_, true)
 /// `void ASSERT_NEAR(T expected, T actual, T absolute_range)` - Asserts that two values are within a given range.
-#define ASSERT_NEAR(expected_, actual_, absolute_range_) hxtest_::dispatcher_().condition_check_( \
-	(((expected_) < (actual_)) ? ((actual_)-(expected_)) : ((expected_)-(actual_))) <= (absolute_range_), \
-	__FILE__, __LINE__, "abs(" #expected_ "-" #actual_ ") <= " #absolute_range_, true)
+#define ASSERT_NEAR(expected_, actual_, absolute_error_) hxtest_::dispatcher_().condition_check_( \
+	(((expected_) < (actual_)) ? ((actual_)-(expected_)) : ((expected_)-(actual_))) <= (absolute_error_), \
+	__FILE__, __LINE__, "abs(" #expected_ " - " #actual_ ") <= " #absolute_error_, true)
 /// `void ASSERT_LT(T a, T b)` - Asserts `a < b`.
 #define ASSERT_LT(a_, b_) hxtest_::dispatcher_().condition_check_((a_) < (b_), __FILE__, __LINE__, #a_ " < " #b_, true)
 /// `void ASSERT_GT(T a, T b)` - Asserts `a > b` using `b < a`.

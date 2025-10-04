@@ -110,8 +110,8 @@ static hxarray_test_move_tracker hxarray_test_forward_construct(T_&& tracker_) {
 template<typename T>
 class hxarray_test_pointer_range {
 public:
-	hxarray_test_pointer_range(T* begin_, T* end_)
-		: begin_(begin_), end_(end_) { }
+	hxarray_test_pointer_range(T* b, T* e)
+		: begin_(b), end_(e) { }
 
 	T* begin() { return begin_; }
 	T* end() { return end_; }
@@ -570,6 +570,30 @@ TEST_F(hxarray_test_f, assignment) {
 	EXPECT_TRUE(check_totals(6));
 }
 
+#if HX_CPLUSPLUS >= 202002L
+TEST(hxarray_test, assign_range_from_rvalue) {
+	static hxarray_test_move_tracker source_elements[] = {
+		hxarray_test_move_tracker(5),
+		hxarray_test_move_tracker(9),
+		hxarray_test_move_tracker(13)
+	};
+	const size_t source_count = sizeof source_elements / sizeof *source_elements;
+
+	hxarray<hxarray_test_move_tracker> elements;
+	elements.reserve(source_count);
+	elements.assign_range(hxarray_test_pointer_range(
+		source_elements, source_elements + source_count));
+
+	EXPECT_EQ(elements.size(), source_count);
+	EXPECT_EQ(elements[0].value, 5);
+	EXPECT_EQ(elements[1].value, 9);
+	EXPECT_EQ(elements[2].value, 13);
+	for(size_t i = 0u; i < source_count; ++i) {
+		EXPECT_FALSE(elements[i].moved_from);
+		EXPECT_TRUE(source_elements[i].moved_from);
+	}
+}
+
 TEST(hxarray_test, assign_range_from_const) {
 	const int32_t assigned_element_ints[] = { 4, 7, 11, 18 };
 	const hxarray<hxarray_test_move_tracker> assigned_elements = assigned_element_ints;
@@ -618,29 +642,7 @@ TEST(hxarray_test, assign_range_from_mutable_range) {
 		EXPECT_FALSE(source_elements[i].moved_from);
 	}
 }
-
-TEST(hxarray_test, assign_range_from_rvalue) {
-	static hxarray_test_move_tracker source_elements[] = {
-		hxarray_test_move_tracker(5),
-		hxarray_test_move_tracker(9),
-		hxarray_test_move_tracker(13)
-	};
-	const size_t source_count = sizeof source_elements / sizeof *source_elements;
-
-	hxarray<hxarray_test_move_tracker> elements;
-	elements.reserve(source_count);
-	elements.assign_range(hxarray_test_pointer_range(
-		source_elements, source_elements + source_count));
-
-	EXPECT_EQ(elements.size(), source_count);
-	EXPECT_EQ(elements[0].value, 5);
-	EXPECT_EQ(elements[1].value, 9);
-	EXPECT_EQ(elements[2].value, 13);
-	for(size_t i = 0u; i < source_count; ++i) {
-		EXPECT_FALSE(elements[i].moved_from);
-		EXPECT_TRUE(source_elements[i].moved_from);
-	}
-}
+#endif
 
 TEST(hxarray_test, push_back_move_tracker) {
 	hxarray_test_move_tracker source(42);

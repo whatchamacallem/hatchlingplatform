@@ -35,10 +35,10 @@ hxattr_hot void operator delete[](void* ptr, size_t) noexcept {
 }
 #endif
 
-// hxmalloc_checked. Always check malloc and halt on failure. This is extremely
+// hxmalloc_checked_. Always check malloc and halt on failure. This is extremely
 // important with hardware where 0 is a valid address and can be written to with
 // disastrous results.
-hxattr_hot hxattr_noexcept static void* hxmalloc_checked(size_t size) {
+hxattr_hot hxattr_noexcept static void* hxmalloc_checked_(size_t size) {
 	void* t = ::malloc(size);
 	hxassertrelease(t, "malloc %zu", size);
 #if (HX_RELEASE) >= 3
@@ -160,7 +160,7 @@ public:
 		--alignment; // use as a mask.
 
 		// Place header immediately before aligned allocation.
-		uintptr_t actual = (uintptr_t)hxmalloc_checked(
+		uintptr_t actual = (uintptr_t)hxmalloc_checked_(
 			size + sizeof(hxmemory_allocation_header) + alignment);
 		uintptr_t aligned = (actual + sizeof(hxmemory_allocation_header) + alignment) & ~(size_t)alignment;
 		hxmemory_allocation_header& hdr = ((hxmemory_allocation_header*)aligned)[-1];
@@ -371,9 +371,9 @@ void hxmemory_manager::construct(void) {
 	::new(&m_memory_allocator_temporary_stack) hxsystem_allocator_temp_stack();
 
 	m_memory_allocator_heap.construct("heap");
-	m_memory_allocator_permanent.construct(hxmalloc_checked(HX_MEMORY_BUDGET_PERMANENT),
+	m_memory_allocator_permanent.construct(hxmalloc_checked_(HX_MEMORY_BUDGET_PERMANENT),
 		(HX_MEMORY_BUDGET_PERMANENT), "perm");
-	m_memory_allocator_temporary_stack.construct(hxmalloc_checked(HX_MEMORY_BUDGET_TEMPORARY_STACK),
+	m_memory_allocator_temporary_stack.construct(hxmalloc_checked_(HX_MEMORY_BUDGET_TEMPORARY_STACK),
 		(HX_MEMORY_BUDGET_TEMPORARY_STACK), "temp");
 }
 
@@ -532,7 +532,7 @@ hxattr_noexcept void hxfree(void *ptr) {
 void hxmemory_manager_init(void) {
 	hxassertrelease(!s_hxmemory_manager, "reinit memory manager");
 
-	s_hxmemory_manager = (hxmemory_manager*)hxmalloc_checked(sizeof(hxmemory_manager));
+	s_hxmemory_manager = (hxmemory_manager*)hxmalloc_checked_(sizeof(hxmemory_manager));
 	::memset((void*)s_hxmemory_manager, 0x00, sizeof(hxmemory_manager));
 
 	s_hxmemory_manager->construct();
@@ -562,14 +562,15 @@ size_t hxmemory_manager_leak_count(void) {
 
 extern "C"
 hxattr_noexcept void* hxmalloc(size_t size) {
-	return hxmalloc_checked(size);
+	return hxmalloc_checked_(size);
 }
 
-// No support for alignment when disabled. This might make sense for WASM.
+// No support for special alignments when disabled. This is enough for WASM.
 extern "C"
 hxattr_noexcept void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, hxalignment_t alignment) {
 	(void)id; (void)alignment;
-	return hxmalloc_checked(size);
+	hxassert(alignment <= HX_ALIGNMENT, "alignment_error Memory manager is disabled.");
+	return hxmalloc_checked_(size);
 }
 
 extern "C"
@@ -593,8 +594,6 @@ hxattr_noexcept hxsystem_allocator_scope::hxsystem_allocator_scope(hxsystem_allo
 hxattr_noexcept hxsystem_allocator_scope::~hxsystem_allocator_scope(void) { }
 
 size_t hxsystem_allocator_scope::get_total_allocation_count(void) const { return 0; }
-
-size_t hxsystem_allocator_scope::get_total_bytes_allocated(void) const { return 0; }
 
 size_t hxsystem_allocator_scope::get_current_allocation_count(void) const { return 0; }
 

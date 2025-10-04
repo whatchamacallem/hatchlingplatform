@@ -147,7 +147,7 @@ TEST_F(hxmemory_manager_test, execute) {
 	// Leak checking requires the memory manager.
 #if !(HX_MEMORY_MANAGER_DISABLE)
 	hxlog("EXPECTING_TEST_FAILURE\n");
-	// Only the Temporary_stack expects all allocations to be free()'d.
+	// Only the temporary stack expects all allocations to be `free`'d.
 	test_memory_allocator_leak(hxsystem_allocator_temporary_stack);
 #endif
 }
@@ -155,7 +155,7 @@ TEST_F(hxmemory_manager_test, execute) {
 TEST_F(hxmemory_manager_test, temp_overflow) {
 	hxlogconsole("EXPECTING_TEST_WARNINGS\n");
 
-	// there is no policy against using the debug heap in release
+	// There is no policy against using the debug heap in release.
 	void* p = hxmalloc_ext(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1, hxsystem_allocator_temporary_stack, 0u);
 	ASSERT_TRUE(p != hxnull);
 	hxfree(p);
