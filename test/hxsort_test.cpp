@@ -11,6 +11,18 @@
 #include <stdio.h>
 
 HX_REGISTER_FILENAME_HASH
+struct hxmerge_record_t {
+	int key;
+	int ticket;
+
+	bool operator<(const hxmerge_record_t& other_) const noexcept {
+		return key < other_.key;
+	}
+};
+
+static bool hxmerge_desc_less(const hxmerge_record_t& lhs_, const hxmerge_record_t& rhs_) {
+	return lhs_.key > rhs_.key;
+}
 
 // Run some simple integer tests first.
 static bool sort_int(int a, int b) {
@@ -115,15 +127,6 @@ TEST(hxmergesort_test, basic_cases) {
 	}
 }
 
-struct hxmerge_record_t {
-	int key;
-	int ticket;
-
-	bool operator<(const hxmerge_record_t& other_) const noexcept {
-		return key < other_.key;
-	}
-};
-
 TEST(hxmergesort_test, preserves_stable_ordering) {
 	hxmerge_record_t left[] = {
 		{ 1, 0 }, { 3, 0 }, { 5, 0 }, { 5, 1 }
@@ -148,6 +151,22 @@ TEST(hxmergesort_test, preserves_stable_ordering) {
 	}
 }
 
+TEST(hxmergesort_test, custom_comparator) {
+	hxmerge_record_t left[] = { { 9, 0 }, { 7, 0 }, { 5, 0 } };
+	hxmerge_record_t right[] = { { 8, 0 }, { 5, 1 }, { 3, 0 } };
+	hxmerge_record_t dest[6] = { };
+
+	hxmerge(left, left + 3, right, right + 3, dest, hxmerge_desc_less);
+
+	const hxmerge_record_t expected[] = {
+		{ 9, 0 }, { 8, 0 }, { 7, 0 }, { 5, 0 }, { 5, 1 }, { 3, 0 }
+	};
+	for(size_t i = 0; i < sizeof expected / sizeof expected[0]; ++i) {
+		EXPECT_EQ(dest[i].key, expected[i].key);
+		EXPECT_EQ(dest[i].ticket, expected[i].ticket);
+	}
+}
+
 TEST(hxbinary_search_test, simple_case) {
 	int ints[5] = { 2, 5, 6, 88, 99 };
 	int* result = hxbinary_search(ints+0, ints+5, 88, sort_int);
@@ -166,6 +185,12 @@ TEST(hxbinary_search_test, simple_case) {
 	EXPECT_TRUE(result == hxnull);
 
 	result = hxbinary_search(ints+0, ints+5, 7);
+	EXPECT_TRUE(result == hxnull);
+}
+
+TEST(hxbinary_search_test, empty_range_returns_null) {
+	int ints[1] = { 11 };
+	int* result = hxbinary_search(ints, ints, 11, sort_int); // Zero size.
 	EXPECT_TRUE(result == hxnull);
 }
 
