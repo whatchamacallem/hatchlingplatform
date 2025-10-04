@@ -837,18 +837,18 @@ template<typename ref_t_>
 T_& hxarray<T_, capacity_>::push_heap(ref_t_&& arg_) {
 	T_* begin_ = this->data();
 	T_* node_ = static_cast<T_*>(this->push_back_unconstructed_());
-	if(node_ != begin_) {
+	while(node_ != begin_) {
 		T_* parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
-		while(hxkey_less(*parent_, arg_)) {
-			::new ((void*)node_) T_(hxmove(*parent_));
-			parent_->~T_();
-			node_ = parent_;
-			if(node_ == begin_) {
-				break;
-			}
-			parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
+		// arg_ has to be comparable to T_.
+		if(!hxkey_less(*parent_, arg_)) {
+			break;
 		}
+		// Shifts unconstructed element into position.
+		::new ((void*)node_) T_(hxmove(*parent_));
+		parent_->~T_();
+		node_ = parent_;
 	}
+	// Construct new element.
 	::new ((void*)node_) T_(hxmove(arg_));
 	return *node_;
 }
