@@ -321,7 +321,7 @@ TEST_F(hxarray_test_f, modification) {
 	EXPECT_TRUE(check_totals(11));
 }
 
-TEST_F(hxarray_test_f, push_heap_maintains_max_heap) {
+TEST(hxarray_test, push_heap_preserves_heap_property) {
 	static const int values[] = { 3, 7, 1, 9, 5, 8 };
 	const size_t value_count = sizeof values / sizeof *values;
 
@@ -340,7 +340,7 @@ TEST_F(hxarray_test_f, push_heap_maintains_max_heap) {
 	EXPECT_EQ(heap.size(), value_count);
 }
 
-TEST_F(hxarray_test_f, pop_heap_restores_heap_after_removal) {
+TEST(hxarray_test, pop_heap_preserves_heap_on_removal) {
 	static const int values[] = { 5, 12, 3, 7, 9, 4, 15, 5 };
 	const size_t value_count = sizeof values / sizeof *values;
 
@@ -400,7 +400,7 @@ TEST_F(hxarray_test_f, emplace_back) {
 	EXPECT_TRUE(check_totals(4));
 }
 
-TEST_F(hxarray_test_f, for_each) {
+TEST(hxarray_test, for_each_invokes_functors) {
 	static const unsigned char nums[5] = { 91, 92, 93, 94, 95 };
 	hxarray<int> objs;
 	objs.assign(nums, nums + (sizeof nums / sizeof *nums));
@@ -429,7 +429,7 @@ TEST_F(hxarray_test_f, for_each) {
 	objs.for_each(y);
 }
 
-TEST_F(hxarray_test_f, all_of_any_of) {
+TEST(hxarray_test, all_of_any_of) {
 	static const unsigned char nums[5] = { 91, 92, 93, 94, 95 };
 	hxarray<int> objs;
 	objs.assign(nums, nums + (sizeof nums / sizeof *nums));
@@ -470,7 +470,7 @@ TEST_F(hxarray_test_f, all_of_any_of) {
 	EXPECT_FALSE(objs.any_of(empty_predicate));
 }
 
-TEST_F(hxarray_test_f, erase_if) {
+TEST(hxarray_test, erase_if) {
 	static const int nums[5] = { 1, 2, 3, 4, 5 };
 	hxarray<int> objs;
 	objs.assign(nums, nums + (sizeof nums / sizeof *nums));
@@ -868,7 +868,7 @@ TEST_F(hxarray_test_f, insert) {
 }
 #endif
 
-TEST_F(hxarray_test_f, c_initializer_list) {
+TEST(hxarray_test, c_initializer_list) {
 	int i0[] = { 2, 7 };
 	hxarray<int, 2> x(i0);
 	EXPECT_EQ(x[1], 7);
@@ -891,7 +891,7 @@ TEST_F(hxarray_test_f, c_initializer_list) {
 }
 
 #if !HX_NO_LIBCXX
-TEST_F(hxarray_test_f, initializer_list) {
+TEST(hxarray_test, initializer_list_brace_support) {
 	hxarray<int, 2> x = { 2, 7 };
 	EXPECT_EQ(x[1], 7);
 
@@ -899,7 +899,7 @@ TEST_F(hxarray_test_f, initializer_list) {
 	EXPECT_EQ(y[1], 17);
 }
 
-TEST_F(hxarray_test_f, temporaries) {
+TEST(hxarray_test, temporaries_allow_rvalue_transfers) {
 	// test r-value dynamically allocated temporaries
 	{
 		hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);

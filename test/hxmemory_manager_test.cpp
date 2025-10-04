@@ -150,7 +150,7 @@ TEST_F(hxmemory_manager_test, execute) {
 #endif
 }
 
-TEST_F(hxmemory_manager_test, temp_overflow) {
+TEST(hxmemory_manager_test_fn, temp_overflow) {
 	hxlogconsole("EXPECTING_TEST_WARNINGS\n");
 
 	// There is no policy against using the debug heap in release.
