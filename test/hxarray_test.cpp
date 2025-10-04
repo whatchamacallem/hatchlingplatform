@@ -340,33 +340,6 @@ TEST_F(hxarray_test, push_heap_maintains_max_heap) {
 	EXPECT_EQ(heap.size(), value_count);
 }
 
-TEST_F(hxarray_test, push_heap_forwards_multiple_arguments) {
-	class multi_arg_heap_value {
-	public:
-		multi_arg_heap_value(int primary_, int secondary_)
-			: primary(primary_), secondary(secondary_) { }
-
-		bool operator<(const multi_arg_heap_value& other_) const {
-			if(primary == other_.primary) {
-				return secondary < other_.secondary;
-			}
-			return primary < other_.primary;
-		}
-
-		int primary;
-		int secondary;
-	};
-
-	hxarray<multi_arg_heap_value, 8u> heap;
-	heap.push_heap(1, 2);
-	heap.push_heap(5, 0);
-	heap.push_heap(5, 3);
-
-	EXPECT_TRUE(hxarray_test_is_max_heap(heap));
-	EXPECT_EQ(heap.front().primary, 5);
-	EXPECT_EQ(heap.front().secondary, 3);
-}
-
 TEST_F(hxarray_test, pop_heap_restores_heap_after_removal) {
 	static const int values[] = { 5, 12, 3, 7, 9, 4, 15, 5 };
 	const size_t value_count = sizeof values / sizeof *values;

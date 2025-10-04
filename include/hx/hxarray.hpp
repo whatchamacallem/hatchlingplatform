@@ -349,8 +349,8 @@ public:
 	/// `std::priority_queue` using `hxless` for ordering. See `pop_heap`.
 	/// Returns a reference to the element added.
 	/// - `args` : Arguments forwarded to `T`'s constructor.
-	template<typename... args_t_>
-	T_& push_heap(args_t_&&... args_);
+	template<typename ref_t_>
+	T_& push_heap(ref_t_&& arg_);
 
 	/// Reserves storage for at least the specified number of elements.
 	/// - `size` : The number of elements to reserve storage for.
@@ -833,18 +833,23 @@ T_& hxarray<T_, capacity_>::push_back(args_t_&&... args_) {
 }
 
 template<typename T_, size_t capacity_>
-template<typename... args_t_>
-T_& hxarray<T_, capacity_>::push_heap(args_t_&&... args_) {
+template<typename ref_t_>
+T_& hxarray<T_, capacity_>::push_heap(ref_t_&& arg_) {
 	T_* begin_ = this->data();
-	T_* node_ = ::new(this->push_back_unconstructed_()) T_(hxforward<args_t_>(args_)...);
-	while(node_ > begin_) {
+	T_* node_ = static_cast<T_*>(this->push_back_unconstructed_());
+	if(node_ != begin_) {
 		T_* parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
-		if(!hxkey_less(*parent_, *node_)) {
-			break;
+		while(hxkey_less(*parent_, arg_)) {
+			::new ((void*)node_) T_(hxmove(*parent_));
+			parent_->~T_();
+			node_ = parent_;
+			if(node_ == begin_) {
+				break;
+			}
+			parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
 		}
-		hxswap(*parent_, *node_);
-		node_ = parent_;
 	}
+	::new ((void*)node_) T_(hxmove(arg_));
 	return *node_;
 }
 
