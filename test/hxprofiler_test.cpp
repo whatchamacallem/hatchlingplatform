@@ -25,57 +25,56 @@ static const char* s_hxtest_labels[] = {
 };
 static const size_t s_hxtest_num_labels = sizeof s_hxtest_labels / sizeof *s_hxtest_labels;
 
-class hxprofiler_test :
-	public testing::Test
-{
+namespace {
+
+class hxprofiler_task_test : public hxtask {
 public:
-	class hxprofiler_task_test : public hxtask {
-	public:
-		hxprofiler_task_test() : m_target_ms_(0.0f), m_accumulator_(0) { }
+	hxprofiler_task_test() : m_target_ms_(0.0f), m_accumulator_(0) { }
 
-		void construct(const char* label, float target_ms) {
-			set_label(label);
-			m_target_ms_ = target_ms;
-			m_accumulator_ = 0;
+	void construct(const char* label, float target_ms) {
+		set_label(label);
+		m_target_ms_ = target_ms;
+		m_accumulator_ = 0;
+	}
+
+	virtual void execute(hxtask_queue* q) override {
+		(void)q;
+		generate_scopes(m_target_ms_);
+	}
+
+	virtual void generate_scopes(float target_ms) {
+		hxcycles_t start_cycles = hxtime_sample_cycles();
+		hxcycles_t delta = 0u;
+
+		// Open up a sub-scope if time allows.
+		if(target_ms >= 2.0f) {
+			float subtarget = target_ms / 2.0f;
+			const char* sub_label = s_hxtest_labels[(size_t)subtarget];
+			hxprofile_scope(sub_label);
+			generate_scopes(subtarget);
 		}
 
-		virtual void execute(hxtask_queue* q) override {
-			(void)q;
-			generate_scopes(m_target_ms_);
-		}
-
-		virtual void generate_scopes(float target_ms) {
-			hxcycles_t start_cycles = hxtime_sample_cycles();
-			hxcycles_t delta = 0u;
-
-			// Open up a sub-scope if time allows.
-			if(target_ms >= 2.0f) {
-				float subtarget = target_ms / 2.0f;
-				const char* sub_label = s_hxtest_labels[(size_t)subtarget];
-				hxprofile_scope(sub_label);
-				generate_scopes(subtarget);
+		while((double)delta * hxmilliseconds_per_cycle < target_ms) {
+			// Perform work that might not be optimized away by the compiler.
+			uint32_t ops = (m_accumulator_ & 0xf) + 1;
+			for(uint32_t i = 0; i < ops; ++i) {
+				m_accumulator_ ^= (uint32_t)m_test_prng_;
 			}
 
-			while((double)delta * hxmilliseconds_per_cycle < target_ms) {
-				// Perform work that might not be optimized away by the compiler.
-				uint32_t ops = (m_accumulator_ & 0xf) + 1;
-				for(uint32_t i = 0; i < ops; ++i) {
-					m_accumulator_ ^= (uint32_t)m_test_prng_;
-				}
-
-				// Unsigned arithmetic handles clock wrapping correctly.
-				delta = hxtime_sample_cycles() - start_cycles;
-			}
+			// Unsigned arithmetic handles clock wrapping correctly.
+			delta = hxtime_sample_cycles() - start_cycles;
 		}
+	}
 
-	private:
-		float m_target_ms_;
-		uint32_t m_accumulator_;
-		hxrandom m_test_prng_;
-	};
+private:
+	float m_target_ms_;
+	uint32_t m_accumulator_;
+	hxrandom m_test_prng_;
 };
 
-TEST_F(hxprofiler_test, single1ms) {
+} // namespace
+
+TEST(hxprofiler_profile, single_scope_runs_for_1ms) {
 	hxprofiler_start();
 
 	size_t start_records = g_hxprofiler_.records_size_();
@@ -93,7 +92,7 @@ TEST_F(hxprofiler_test, single1ms) {
 	EXPECT_TRUE(is_ok);
 }
 
-TEST_F(hxprofiler_test, write_to_chrome_tracing) {
+TEST(hxprofiler_profile, write_to_chrome_tracing_command) {
 	// Shut down profiling and use console commands for next capture.
 	hxprofiler_stop();
 	hxconsole_exec_line("profilestart");

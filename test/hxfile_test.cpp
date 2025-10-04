@@ -9,24 +9,23 @@ HX_REGISTER_FILENAME_HASH
 
 // Console_test.cpp provides coverage for normal operation.
 
-class hxfile_test : public testing::Test
-{
-public:
-	class test_t_ {
-	public:
-		uint32_t a;
-		int16_t b;
-		uint8_t c;
-		int8_t d;
-	};
+namespace {
+
+struct hxfile_test_record {
+	uint32_t a;
+	int16_t b;
+	uint8_t c;
+	int8_t d;
 };
+
+} // namespace
 
 #if defined __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
 #endif
 
-TEST_F(hxfile_test, empty_name) {
+TEST(hxfile_io, empty_name_rejects_empty_path) {
 	hxfile f(hxfile::in | hxfile::skip_asserts, "");
 	EXPECT_EQ(f.good(), false);
 	EXPECT_EQ(f.is_open(), false);
@@ -36,7 +35,7 @@ TEST_F(hxfile_test, empty_name) {
 #pragma GCC diagnostic pop
 #endif
 
-TEST_F(hxfile_test, read_write) {
+TEST(hxfile_io, read_write_round_trip) {
 	if(hxfile f = hxfile(hxfile::in | hxfile::out | hxfile::skip_asserts, "hxfile_test_read_write.txt")) {
 		f << "hxfile_test_read_write.txt";
 
@@ -55,7 +54,7 @@ TEST_F(hxfile_test, read_write) {
 	hxerr << hxendl;
 }
 
-TEST_F(hxfile_test, not_exist) {
+TEST(hxfile_io, missing_file_reports_expectations) {
 	hxfile f(hxfile::in | hxfile::skip_asserts, "test_file_does_not_exist_%d", 123);
 	EXPECT_EQ(f.good(), false);
 	EXPECT_EQ(f.is_open(), false);
@@ -67,7 +66,7 @@ TEST_F(hxfile_test, not_exist) {
 	hxdev_null << "dev/null should not exist";
 }
 
-TEST_F(hxfile_test, offset) {
+TEST(hxfile_io, seek_and_read_maintain_state) {
 	// Write a test file. Test get/set_position and read1/write1.
 
 	struct { uint32_t x; } a { 0xefefefefu }, b { 0x01020304u }, c { 0x0u };
@@ -90,7 +89,7 @@ TEST_F(hxfile_test, offset) {
 	EXPECT_EQ(f.get_pos(), 8u);
 }
 
-TEST_F(hxfile_test, operations) {
+TEST(hxfile_io, move_copy_and_stream_operators) {
 	// Write a test file. Take the copy operators for a spin.
 
 	// C++17 Uses "guaranteed copy elision" requiring hxmove here to invoke
@@ -98,7 +97,7 @@ TEST_F(hxfile_test, operations) {
 	hxfile ft(hxfile::out | hxfile::skip_asserts, "hxfile_test_operators.bin");
 	hxfile f(hxmove(ft));
 	EXPECT_FALSE(ft.good());
-	test_t_ x { 77777u, -555, 77u, -55 };
+	hxfile_test_record x { 77777u, -555, 77u, -55 };
 	int a = -3;
 
 	f <= x <= a;
@@ -115,7 +114,8 @@ TEST_F(hxfile_test, operations) {
 	EXPECT_TRUE(f.good());
 	EXPECT_FALSE(ft.good());
 
-	test_t_ y; ::memset(&y, 0x00, sizeof y);
+	hxfile_test_record y;
+	::memset(&y, 0x00, sizeof y);
 	int b = 0;
 	int thirty = 0;
 	int seventy = 0;
