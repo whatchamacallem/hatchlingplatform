@@ -166,6 +166,7 @@ public:
 	template <typename iter_t_>
 	void assign(iter_t_ begin_, iter_t_ end_);
 
+#if HX_CPLUSPLUS >= 202002L
 	/// Assigns elements from a range referenced by an lvalue. `range_t::begin`
 	/// and `range_t::end` are required as `std::begin` and `std::end` may not
 	/// exist. Use `operator=` to assign from a C-style array.
@@ -178,6 +179,7 @@ public:
 	/// - `range` : The range to move elements from.
 	template <typename range_t_, typename=hxenable_if_t<!hxis_lvalue_reference<range_t_>::value>>
 	void assign_range(range_t_&& range_);
+#endif
 
 	/// Returns a const reference to the end element in the array.
 	const T_& back(void) const;
@@ -580,6 +582,7 @@ const T_& hxarray<T_, capacity_>::back(void) const {
 	return m_end_[-1];
 }
 
+#if HX_CPLUSPLUS >= 202002L
 template<typename T_, size_t capacity_>
 template<typename range_t_>
 void hxarray<T_, capacity_>::assign_range(range_t_& range_) {
@@ -595,6 +598,7 @@ void hxarray<T_, capacity_>::assign_range(range_t_&& range_) {
 		::new(this->push_back_unconstructed_()) T_(hxmove(*it_));
 	}
 }
+#endif
 
 template<typename T_, size_t capacity_>
 T_& hxarray<T_, capacity_>::back(void) {

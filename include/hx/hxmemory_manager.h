@@ -66,7 +66,10 @@ typedef unsigned int hxalignment_t;
 /// `hxsystem_allocator_t` - This is intended to be extendable by the application.
 /// See `hxmemory_manager.cpp`.
 enum hxsystem_allocator_t {
-	/// OS heap with alignment and stats.
+	/// OS heap with alignment and stats. Allocations made directly to `new`,
+	/// `delete`, `malloc` and `free` are not tracked by hxsystem_allocator_heap.
+	/// Those need to be overriden to use `hxnew`, `hxdelete`, `hxmalloc` and
+	/// `hxfree` as desired.
 	hxsystem_allocator_heap,
 	/// Contigious allocations that must not be freed.
 	hxsystem_allocator_permanent,
@@ -77,14 +80,14 @@ enum hxsystem_allocator_t {
 	hxsystem_allocator_current
 };
 
-/// `hxfree` - Frees memory previously allocated with `hxmalloc` or `hxmalloc_ext`.
-/// Freeing null pointers is allowed.
+/// `hxfree` - Frees memory previously allocated with `hxmalloc` or
+/// `hxmalloc_ext`. Freeing null pointers is allowed.
 /// - `ptr` : Pointer to the memory to free.
 void hxfree(void* ptr_) hxattr_noexcept hxattr_hot;
 
 /// `hxmalloc` - Allocates memory of the specified size using the default memory
-/// manager. A C++ overload optionally provides the same arguments as `hxmalloc_ext`.
-/// Will not return on failure.
+/// manager. A C++ overload optionally provides the same arguments as
+/// `hxmalloc_ext`. Will not return on failure.
 /// - `size` : The size of the memory to allocate.
 /// - `allocator`(C++ only): The memory manager ID to use for allocation. (Default is
 ///   `hxsystem_allocator_current`.)
@@ -92,16 +95,16 @@ void hxfree(void* ptr_) hxattr_noexcept hxattr_hot;
 ///   is `HX_ALIGNMENT`.)
 void* hxmalloc(size_t size_) hxattr_allocator(hxfree) hxattr_noexcept hxattr_hot;
 
-/// `hxmalloc_ext` - Allocates memory of the specified size with a specific memory
-/// manager and alignment. Will not return on failure.
+/// `hxmalloc_ext` - Allocates memory of the specified size with a specific
+/// memory manager and alignment. Will not return on failure.
 /// - `size` : The size of the memory to allocate.
 /// - `allocator` : The memory manager ID to use for allocation. (Default is `hxsystem_allocator_current`.)
 /// - `alignment` : The alignment for the allocation. (Default is `HX_ALIGNMENT`.)
 void* hxmalloc_ext(size_t size_, enum hxsystem_allocator_t allocator_,
 	hxalignment_t alignment_/*=HX_ALIGNMENT*/) hxattr_noexcept hxattr_allocator(hxfree) hxattr_hot;
 
-/// `hxstring_duplicate` - Allocates a copy of a string using the specified memory
-/// manager. Returns a pointer to the duplicated string.
+/// `hxstring_duplicate` - Allocates a copy of a string using the specified
+/// memory manager. Returns a pointer to the duplicated string.
 /// - `string` : The string to duplicate.
 /// - `allocator` : The memory manager ID to use for allocation. Defaults to
 ///   `hxsystem_allocator_current` in C++.
@@ -138,17 +141,25 @@ namespace hxdetail_ {
 class hxsystem_allocator_scope
 {
 public:
-	/// `hxsystem_allocator_scope` - Constructor: Sets the current memory allocator to the specified ID.
-	/// - `allocator` : The memory manager ID to set for this scope.
+	/// `hxsystem_allocator_scope` - Constructor: Sets the current memory
+	/// allocator to the specified ID.
+	/// - `allocator` : The memory manager ID to set for this scope. May modify
+	///   new allocator in a way that cannot be shared between threads.
 	hxsystem_allocator_scope(hxsystem_allocator_t allocator_) hxattr_noexcept;
 
-	/// Destructor restores the previous memory manager allocator ID.
+	/// Destructor restores the stored previous memory manager allocator ID. May
+	/// modify current allocator in a way that cannot be shared between threads.
 	~hxsystem_allocator_scope(void) hxattr_noexcept;
 
-	/// Gets the total number of allocations made by the memory allocator.
+	/// Gets the total number of allocations outstanding for this memory
+	/// allocator. There should be no system overhead. Allocations made directly
+	/// to `new`, `delete`, `malloc` and `free` are not tracked by
+	/// hxsystem_allocator_heap.
 	size_t get_current_allocation_count(void) const;
 
-	/// Gets the total number of bytes allocated by the memory allocator.
+	/// Gets the total number of bytes allocated outstanding for this memory
+	/// allocator. Freed bytes might not be reused until the scope closes. There
+	/// may also be significant system overhead that is not being reported.
 	size_t get_current_bytes_allocated(void) const;
 
 	/// Gets the number of allocations made when this scope was entered.
@@ -176,20 +187,20 @@ private:
 	size_t m_initial_bytes_allocated_;
 };
 
-/// `hxmemory_manager_init` - Initializes the memory manager. Must be called before
-/// using any memory manager functions.
+/// `hxmemory_manager_init` - Initializes the memory manager. Must be called
+/// before using any memory manager functions.
 void hxmemory_manager_init(void) hxattr_cold;
 
-/// `hxmemory_manager_shut_down` - Shuts down the memory manager. Frees any remaining
-/// resources.
+/// `hxmemory_manager_shut_down` - Shuts down the memory manager. Frees any
+/// remaining resources.
 void hxmemory_manager_shut_down(void) hxattr_cold;
 
-/// `hxmemory_manager_leak_count` - Returns the total number of allocations outstanding
-/// made by the memory manager.
+/// `hxmemory_manager_leak_count` - Returns the total number of allocations
+/// outstanding made by the memory manager.
 size_t hxmemory_manager_leak_count(void) hxattr_cold;
 
-/// `hxdelete` - Deletes an object of type `T` and frees its memory using the memory
-/// manager.
+/// `hxdelete` - Deletes an object of type `T` and frees its memory using the
+/// memory manager.
 /// - `t` : Pointer to the object to delete.
 template <typename T_>
 void hxdelete(T_* t_) {
@@ -203,9 +214,9 @@ void hxdelete(T_* t_) {
 	}
 }
 
-/// `hxnew<T, allocator, align>(...)` - Allocates and constructs an object of type
-/// `T` using an optional memory allocator and alignment. Returns a pointer to the
-/// newly constructed object. Will not return on failure.
+/// `hxnew<T, allocator, align>(...)` - Allocates and constructs an object of
+/// type `T` using an optional memory allocator and alignment. Returns a pointer
+/// to the newly constructed object. Will not return on failure.
 /// - `allocator` : The memory manager ID to use for allocation. Defaults to `hxsystem_allocator_current`.
 /// - `align` : A mask of low bits to be zeroed out when allocating new pointers. Defaults to `HX_ALIGNMENT`.
 template <typename T_, hxsystem_allocator_t allocator_=hxsystem_allocator_current, hxalignment_t align_=HX_ALIGNMENT, typename... Args_>
@@ -239,8 +250,8 @@ public:
 	operator bool(void) const { return false; }
 };
 
-/// `hxmalloc` - Add `hxmalloc_ext` args to `hxmalloc` C interface. Allocates memory with a
-/// specific memory manager and alignment.
+/// `hxmalloc` - Add `hxmalloc_ext` args to `hxmalloc` C interface. Allocates
+/// memory with a specific memory manager and alignment.
 inline void* hxmalloc( size_t size_, enum hxsystem_allocator_t allocator_, hxalignment_t alignment_=HX_ALIGNMENT) {
 	return hxmalloc_ext(size_, allocator_, alignment_);
 }
