@@ -84,6 +84,8 @@ public:
 		}
 	}
 
+	// Move all tests to the temp stack.
+	hxsystem_allocator_scope m_temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom m_prng_;
 };
 

@@ -64,7 +64,7 @@ public:
 };
 
 TEST_F(hxhash_table_test, null) {
-	{
+		{
 		typedef hxhash_table<hxtest_integer, 4> Table;
 		Table table;
 		EXPECT_EQ(table.size(), 0u);
@@ -140,6 +140,7 @@ TEST_F(hxhash_table_test, single) {
 
 TEST_F(hxhash_table_test, multiple) {
 	static const int N = 78;
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
 		// Table will be overloaded.
 		typedef hxhash_table<hxtest_integer> Table;

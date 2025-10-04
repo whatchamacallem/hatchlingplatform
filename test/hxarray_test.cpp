@@ -174,6 +174,7 @@ TEST(hxarray_test, hxforward_preserves_value_category) {
 }
 
 TEST_F(hxarray_test_f, empty_full) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxarray<test_object, hxallocator_dynamic_capacity> a;
 	EXPECT_TRUE(a.empty());
 	EXPECT_TRUE(a.full());
@@ -189,6 +190,7 @@ TEST_F(hxarray_test_f, empty_full) {
 }
 
 TEST_F(hxarray_test_f, allocators) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxarray<test_object> objs_dynamic;
 	objs_dynamic.reserve(10u);
 	hxarray<test_object, 10u> objs_static;
@@ -273,6 +275,7 @@ TEST_F(hxarray_test_f, get) {
 }
 
 TEST_F(hxarray_test_f, modification) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
 		static const int32_t nums[5] = { 91, 92, 93, 94, 95 };
 
@@ -376,6 +379,7 @@ TEST(hxarray_test, pop_heap_preserves_heap_on_removal) {
 }
 
 TEST_F(hxarray_test_f, emplace_back) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
 		hxarray<test_object> objs;
 		objs.reserve(3u);
@@ -401,6 +405,7 @@ TEST_F(hxarray_test_f, emplace_back) {
 }
 
 TEST(hxarray_test, for_each_invokes_functors) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	static const unsigned char nums[5] = { 91, 92, 93, 94, 95 };
 	hxarray<int> objs;
 	objs.assign(nums, nums + (sizeof nums / sizeof *nums));
@@ -430,6 +435,7 @@ TEST(hxarray_test, for_each_invokes_functors) {
 }
 
 TEST(hxarray_test, all_of_any_of) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	static const unsigned char nums[5] = { 91, 92, 93, 94, 95 };
 	hxarray<int> objs;
 	objs.assign(nums, nums + (sizeof nums / sizeof *nums));
@@ -471,6 +477,7 @@ TEST(hxarray_test, all_of_any_of) {
 }
 
 TEST(hxarray_test, erase_if) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	static const int nums[5] = { 1, 2, 3, 4, 5 };
 	hxarray<int> objs;
 	objs.assign(nums, nums + (sizeof nums / sizeof *nums));
@@ -501,6 +508,7 @@ TEST(hxarray_test, erase_if) {
 }
 
 TEST_F(hxarray_test_f, resizing) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
 		static const int32_t nums[5] = { 51, 52, 53, 54, 55 };
 
@@ -539,6 +547,7 @@ TEST_F(hxarray_test_f, resizing) {
 }
 
 TEST_F(hxarray_test_f, assignment) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
 		hxarray<test_object> objs;
 		objs.reserve(1);
@@ -572,6 +581,7 @@ TEST_F(hxarray_test_f, assignment) {
 
 #if HX_CPLUSPLUS >= 202002L
 TEST(hxarray_test, assign_range_from_rvalue) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	static hxarray_test_move_tracker source_elements[] = {
 		hxarray_test_move_tracker(5),
 		hxarray_test_move_tracker(9),
@@ -595,6 +605,7 @@ TEST(hxarray_test, assign_range_from_rvalue) {
 }
 
 TEST(hxarray_test, assign_range_from_const) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	const int32_t assigned_element_ints[] = { 4, 7, 11, 18 };
 	const hxarray<hxarray_test_move_tracker> assigned_elements = assigned_element_ints;
 	const size_t assigned_count = sizeof assigned_element_ints / sizeof *assigned_element_ints;
@@ -619,6 +630,7 @@ TEST(hxarray_test, assign_range_from_const) {
 }
 
 TEST(hxarray_test, assign_range_from_mutable_range) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	static hxarray_test_move_tracker source_elements[] = {
 		hxarray_test_move_tracker(2),
 		hxarray_test_move_tracker(3),
@@ -645,6 +657,7 @@ TEST(hxarray_test, assign_range_from_mutable_range) {
 #endif
 
 TEST(hxarray_test, push_back_move_tracker) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxarray_test_move_tracker source(42);
 	hxarray<hxarray_test_move_tracker> elements;
 	elements.reserve(3u);
@@ -667,6 +680,7 @@ TEST(hxarray_test, push_back_move_tracker) {
 }
 
 TEST(hxarray_test, plus_equals_move_tracker_element) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxarray_test_move_tracker source(5);
 	hxarray<hxarray_test_move_tracker> elements;
 	elements.reserve(3u);
@@ -689,6 +703,7 @@ TEST(hxarray_test, plus_equals_move_tracker_element) {
 }
 
 TEST(hxarray_test, plus_equals_move_tracker_array) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxarray_test_move_tracker initial(1);
 	static const int32_t appended_values[] = { 3, 5, 7 };
 
@@ -742,6 +757,7 @@ TEST(hxarray_test, plus_equals_move_tracker_array) {
 }
 
 TEST(hxarray_test, insert_move_tracker_move_and_copy) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxarray<hxarray_test_move_tracker> elements;
 	elements.reserve(4u);
 
@@ -773,6 +789,7 @@ TEST(hxarray_test, insert_move_tracker_move_and_copy) {
 }
 
 TEST(hxarray_test, emplace_back_move_tracker_forwarding) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxarray<hxarray_test_move_tracker> elements;
 	elements.reserve(3u);
 
@@ -796,6 +813,7 @@ TEST(hxarray_test, emplace_back_move_tracker_forwarding) {
 
 #if HX_CPLUSPLUS >= 202002L
 TEST_F(hxarray_test_f, plus_equals) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
 		hxarray<test_object> objs;
 		objs.reserve(10);
@@ -827,6 +845,7 @@ TEST_F(hxarray_test_f, plus_equals) {
 }
 
 TEST_F(hxarray_test_f, erase) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
 		hxarray<test_object> objs { 1, 2, 3, 4, 5 };
 		objs.erase(1);
@@ -846,6 +865,7 @@ TEST_F(hxarray_test_f, erase) {
 }
 
 TEST_F(hxarray_test_f, insert) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
 		// The numeric constant zero is also a pointer. It seems more convenient
 		// to allow both indicies and pointers than to worry about it.
@@ -869,6 +889,7 @@ TEST_F(hxarray_test_f, insert) {
 #endif
 
 TEST(hxarray_test, c_initializer_list) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	int i0[] = { 2, 7 };
 	hxarray<int, 2> x(i0);
 	EXPECT_EQ(x[1], 7);
@@ -892,6 +913,7 @@ TEST(hxarray_test, c_initializer_list) {
 
 #if !HX_NO_LIBCXX
 TEST(hxarray_test, initializer_list_brace_support) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxarray<int, 2> x = { 2, 7 };
 	EXPECT_EQ(x[1], 7);
 

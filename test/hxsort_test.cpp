@@ -265,6 +265,7 @@ private:
 };
 
 TEST(hxsort_test, sort_grinder) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(2);
 	size_t max_size_mask = 0x7f;
 	hxarray<sort_api_t> insertion_sorted; insertion_sorted.reserve(max_size_mask);
@@ -299,6 +300,7 @@ TEST(hxsort_test, sort_grinder) {
 }
 
 TEST(hxsort_test, sort_grinder_generic) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(3);
 	size_t max_size_mask = 0xffff;
 	hxarray<sort_api_t> sorted; sorted.reserve(max_size_mask);
@@ -336,6 +338,7 @@ TEST(hxsort_test, sort_grinder_generic) {
 }
 
 TEST(hxbinary_search_test, binary_search_grinder) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(4);
 	hxarray<sort_api_t> sorted; sorted.reserve(100);
 
