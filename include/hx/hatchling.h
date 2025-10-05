@@ -39,10 +39,10 @@
 
 /// `HATCHLING_VER` - Two digit major, minor and patch versions. Odd numbered
 /// minor versions are development branches. Yes, this is actually that old.
-#define HATCHLING_VER 31300l
+#define HATCHLING_VER 31400l
 /// `HATCHLING_TAG` - Major, minor and patch version tag name. Odd numbered
 /// minor versions are development branches and their tags end in `-dev`.
-#define HATCHLING_TAG "v3.13.0-dev"
+#define HATCHLING_TAG "v3.14.0"
 
 #include "hxsettings.h"
 #include "hxmemory_manager.h"
@@ -242,7 +242,7 @@ inline int hxlog2i(size_t i_) {
     return (int)((bits_ >> 23) & 0xffu) - 127;
 }
 
-/// Returns true if `x` is finite (not NaN or ±inf).
+/// Returns true if `x` is finite (not NaN or ±inf). Implements `isfinitef`.
 inline int hxisfinitef(float x_) {
     uint32_t u_;
     memcpy(&u_, &x_, sizeof u_);
@@ -250,7 +250,7 @@ inline int hxisfinitef(float x_) {
     return (u_ & 0x7F800000u) != 0x7F800000u;
 }
 
-/// Returns true if `x` is finite (not NaN or ±inf).
+/// Returns true if `x` is finite (not NaN or ±inf). Implements `isfinitel`.
 inline int hxisfinitel(double x_) {
     uint64_t u_;
     memcpy(&u_, &x_, sizeof u_);
