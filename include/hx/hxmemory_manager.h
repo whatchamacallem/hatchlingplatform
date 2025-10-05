@@ -27,15 +27,15 @@
 ///
 /// Alignment must be a power of two. (It always is.)
 ///
-/// `HX_RELEASE == 0` default memory markings:
+/// `HX_RELEASE == 0` debug memory byte patterns:
 ///
-/// | Hex    | Decimal | Meaning                                        |
-/// | ------ | ------- | ---------------------------------------------- |
-/// | `0xab` |     171 | Allocated to client code.                      |
-/// | `0xbc` |     188 | Allocated to `hxallocator` dynamic allocation. |
-/// | `0xcd` |     205 | Belongs to system allocator.                   |
-/// | `0xde` |     222 | Returned to heap allocator.                    |
-/// | `0xef` |     239 | Reserved for client poisoned data.             |
+/// | Hex    | Decimal | Pattern Description                              |
+/// | ------ | ------- | ------------------------------------------------ |
+/// | `0xab` | 171     | Allocated to client code.                        |
+/// | `0xbc` | 188     | Allocated to `hxallocator` dynamic allocation.   |
+/// | `0xcd` | 205     | Belongs to system allocator.                     |
+/// | `0xde` | 222     | Returned to heap allocator.                      |
+/// | `0xef` | 239     | Reserved for client poisoned data. Also `0xefu`. |
 ///
 /// Global new and delete are provided when `HX_NO_LIBCXX==1`. This is a
 /// requirement for running as a stand alone C++ runtime. Otherwise they are not
