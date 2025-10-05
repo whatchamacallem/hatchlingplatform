@@ -155,4 +155,4 @@ When generating new or modified C++ code:
 - Avoid hidden dynamic allocations.
 - Provide markdown Doxygen comments for APIs and meaningful assertions for invariants.
 - Add or update tests mirroring the feature set; keep them deterministic.
-- Run `./debugbuild.sh` after code changes and fix errors.
+- Run `CCACHE_DISABLE=1 ./debugbuild.sh` after code changes and fix errors.

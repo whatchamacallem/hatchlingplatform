@@ -50,6 +50,9 @@ TEST(hxtest_macros, relational) {
 	hxtest_relational_<uint32_t>(static_cast<uint32_t>(100), static_cast<uint32_t>(101));
 	hxtest_relational_<float>(-0.00002f, -0.00001f);
 	hxtest_relational_<double>(0.0, 1.0);
+
+	ASSERT_STREQ("a", "a");
+	ASSERT_STRNE("a", "b");
 }
 
 // Run all the C tests.
