@@ -9,33 +9,37 @@
 HX_REGISTER_FILENAME_HASH
 
 TEST(hxrandom_test, generation) {
-	hxrandom rng;
-	for(int s=100; s--;) {
+	hxrandom rng(1u);
 
-		// implicit casts and copy constructors
-		uint8_t uint8 = rng;
-		uint16_t uint16 = rng;
-		uint32_t uint32 = rng;
-		uint64_t uint64 = rng;
+	// implicit casts and assignment constructors
+	uint8_t uint8 = rng;
+	uint16_t uint16 = rng;
+	uint32_t uint32 = rng;
+	uint64_t uint64 = rng;
+
+	// functor calls and assignment operators
+	uint8 = rng();
+	uint16 = rng();
+	uint32 = rng();
+	uint64 = rng();
+
+	(void)uint8; (void)uint16; (void)uint32; (void)uint64;
+
+	for(int s=10; s--;) {
+
+		// implicit casts and assignment constructors
 		float f = rng;
 		float d = rng;
 
 		// functor calls and assignment operators
-		uint8 = rng();
-		uint16 = rng();
-		uint32 = rng();
-		uint64 = rng();
-
 		f = rng();
 		d = rng();
 
 		(void)uint8; (void)uint16; (void)uint32; (void)uint64;
 
-		EXPECT_TRUE(f >= 0.0f && f < 1.0f);
-		EXPECT_TRUE(d >= 0.0 && d < 1.0);
-
-		// Check that the rng isn't just spitting out zeros.
-		EXPECT_TRUE((uint32_t)rng() | (uint32_t)rng());
+		// The odds of hitting zero in the first 20 numbers should be zero.
+		EXPECT_TRUE(f > 0.0f && f < 1.0f);
+		EXPECT_TRUE(d > 0.0 && d < 1.0);
 	}
 }
 
@@ -111,6 +115,47 @@ TEST(hxrandom_test, ops) {
 
 		// Check that the rng isn't just spitting out zeros.
 		EXPECT_TRUE((uint32_t)rng() | (uint32_t)rng());
+	}
+}
+
+TEST(hxrandom_test, read_populates_buffer) {
+	hxrandom rng(0x654321u);
+
+	uint8_t buffer[] = {
+		0xefu, 0xefu, 0xefu, 0xefu,
+		0xefu, 0xefu, 0xefu, 0xefu,
+		0xefu
+	};
+	size_t size = sizeof buffer / sizeof *buffer;
+	size_t read_count = size - 2; // 7. Intentionally odd.
+
+	rng.read(buffer, read_count);
+
+	hxrandom verifier(0x654321u);
+	size_t remaining = read_count;
+	const uint8_t* expected = buffer;
+
+	// This just documents an expected interface and sequence.
+	while(remaining >= 4) {
+		uint32_t x = verifier.generate32();
+		EXPECT_EQ(*expected++, (uint8_t)x);
+		EXPECT_EQ(*expected++, (uint8_t)(x >> 8));
+		EXPECT_EQ(*expected++, (uint8_t)(x >> 16));
+		EXPECT_EQ(*expected++, (uint8_t)(x >> 24));
+		remaining -= 4;
+	}
+	if(remaining) {
+		uint32_t x = verifier.generate32();
+		do {
+			EXPECT_EQ(*expected++, (uint8_t)x);
+			x >>= 8;
+		} while(--remaining)
+			/**/;
+	}
+
+	// Check for a tail overwrite.
+	for(size_t i = read_count; i < size; ++i) {
+		EXPECT_EQ(buffer[i], 0xefu);
 	}
 }
 

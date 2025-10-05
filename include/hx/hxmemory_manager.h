@@ -29,11 +29,13 @@
 ///
 /// `HX_RELEASE == 0` default memory markings:
 ///
-/// - `0xab` - Allocated to client code.
-/// - `0xbc` - Allocated to `hxallocator` dynamic allocation.
-/// - `0xcd` - Belongs to system allocator.
-/// - `0xde` - Returned to heap allocator.
-/// - `0xef` - Reserved for client poisoned data.
+/// | Hex    | Decimal | Meaning                                        |
+/// | ------ | ------- | ---------------------------------------------- |
+/// | `0xab` |     171 | Allocated to client code.                      |
+/// | `0xbc` |     188 | Allocated to `hxallocator` dynamic allocation. |
+/// | `0xcd` |     205 | Belongs to system allocator.                   |
+/// | `0xde` |     222 | Returned to heap allocator.                    |
+/// | `0xef` |     239 | Reserved for client poisoned data.             |
 ///
 /// Global new and delete are provided when `HX_NO_LIBCXX==1`. This is a
 /// requirement for running as a stand alone C++ runtime. Otherwise they are not

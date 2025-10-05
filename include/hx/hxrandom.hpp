@@ -27,10 +27,10 @@ public:
 	/// E.g., `double i = m_prng(); // Returns [0..1).`
 	hxrandom& operator()(void) { return *this; }
 
-	/// Automatic cast to unsigned integer or floating point value. Floating point
-	/// results are between [0..1). They can safely be used to generate array
-	/// indicies without overflowing.
-	/// E.g., `unsigned int = m_prng; // Returns [0..UINT_MAX].`
+	/// Automatic cast to unsigned integer or floating point value. Floating
+	/// point results are between [0..1). They can safely be used to generate
+	/// array indicies without overflowing. E.g.,
+	/// `unsigned int = m_prng; // Returns [0..UINT_MAX].`
 	operator float(void) {
 		return (float)this->generate32() * (1.0f / 4294967296.0f); // 0x1p-32f
 	}
@@ -50,10 +50,10 @@ public:
 		return this->generate64();
 	}
 
-	/// Returns a random number in the range [base..base+range). `range(0.0f,10.0f)`
-	/// will return `0.0f` to `9.999f` and not `10.0f`. Uses a floating point multiply
-	/// instead of a divide. `base` + `size` must not overflow type and `size` must be
-	/// positive.
+	/// Returns a random number in the range [base..base+range).
+	/// `range(0.0f,10.0f)` will return `0.0f` to `9.999f` and not `10.0f`. Uses
+	/// a floating point multiply instead of a divide. `base` + `size` must not
+	/// overflow type and `size` must be positive.
 	/// - `base` : The beginning of the range. E.g., 0.
 	/// - `size` : Positive size of the range. E.g., 10 elements.
 	template<typename T_> T_ range(T_ base_, T_ size_) {
@@ -63,8 +63,9 @@ public:
 		return base_ + (T_)((float)size_ * (float)*this);
 	}
 	double range(double base_, double size_) {
-		// Use `uint64_t` parameters if you need a bigger size. An emulated floating
-		// point multiply is faster and more stable than integer modulo.
+		// Use `uint64_t` parameters if you need a bigger size. An emulated
+		// floating point multiply is faster and more stable than integer
+		// modulo.
 		hxassertmsg(size_ < (double)0x40000000000000ll, "insufficient_precision %f", (double)size_); // 0x1p54f
 		return base_ + size_ * (double)*this;
 	}
@@ -77,23 +78,26 @@ public:
 		return base_ + this->generate64() % size_;
 	}
 
-	/// Reads a specified number of random bytes into the provided buffer.
+	/// Reads a specified number of random bytes into the provided buffer. The
+	/// sequence generated will be the same as a little endian stream of
+	/// `uint32_t` generated using `generate32`.
 	/// - `bytes` : Pointer to the buffer where the random bytes will be stored.
 	/// - `count` : Number of bytes to read.
 	void read(void* bytes_, size_t count_) hxattr_nonnull(2) {
 		uint8_t* chars_ = (uint8_t*)bytes_;
 		while(count_>=4) {
-			uint32_t x = this->generate32();
-			*chars_++ = (uint8_t)x;
-			*chars_++ = (uint8_t)(x >>= 8);
-			*chars_++ = (uint8_t)(x >>= 8);
-			*chars_++ = (uint8_t)(x >>= 8);
+			uint32_t x_ = this->generate32();
+			*chars_++ = (uint8_t)x_;
+			*chars_++ = (uint8_t)(x_ >> 8);
+			*chars_++ = (uint8_t)(x_ >> 16);
+			*chars_++ = (uint8_t)(x_ >> 24);
 			count_ -= 4;
 		}
 		if(count_) {
-			uint32_t x = this->generate32();
+			uint32_t x_ = this->generate32();
 			do {
-				*chars_++ = (uint8_t)(x >>= 8);
+				*chars_++ = (uint8_t)x_;
+				x_ >>= 8;
 			} while(--count_)
 				/* */;
 		}
@@ -122,7 +126,8 @@ private:
 	uint64_t m_state_;
 };
 
-/// `operator&(hxrandom& a, T b)` - Bitwise `&` with random `T` generated from `a`.
+/// `operator&(hxrandom& a, T b)` - Bitwise `&` with random `T` generated from
+/// `a`.
 /// - `a` : Bits to mask off. Undefined behavior when a negative integer.
 /// - `b` : A `hxrandom`.
 template <typename T_> T_ operator&(T_ a_, hxrandom& b_) {
@@ -150,7 +155,8 @@ template<typename T_> T_ operator&(hxrandom& a_, T_ b_) {
 	return b_ & a_;
 }
 
-/// `operator&=(T& a, hxrandom& b)` - Bitwise `&=` with random `T` generated from `b`.
+/// `operator&=(T& a, hxrandom& b)` - Bitwise `&=` with random `T` generated
+/// from `b`.
 /// - `a` : Bits to mask off. Must be a positive integer.
 /// - `b` : A `hxrandom`.
 template<typename T_> T_ operator&=(T_& a_, hxrandom& b_) {

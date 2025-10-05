@@ -208,7 +208,7 @@ public:
 	}
 
 	~sort_api_t() {
-		::memset(&value, 0xef, sizeof value);
+		::memset(&value, 0xefu, sizeof value);
 	}
 
     sort_api_t& operator=(sort_api_t&& other) noexcept {
