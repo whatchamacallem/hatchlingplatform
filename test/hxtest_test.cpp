@@ -221,3 +221,15 @@ TEST(hxforward, forwards_rvalue_reference_through_template) {
 	EXPECT_EQ(hxforward_value_kind_rvalue,
 		hxforward_forward_through_template_(hxforward_make_forwarded_()));
 }
+
+TEST(hxforward, forwards_moved_lvalue_reference_through_template) {
+	hxforwarded_t_ value = { 17 };
+	EXPECT_EQ(hxforward_value_kind_rvalue,
+		hxforward_forward_through_template_(hxmove(value)));
+}
+
+TEST(hxforward, forwards_moved_const_lvalue_reference_through_template) {
+	const hxforwarded_t_ value = { 19 };
+	EXPECT_EQ(hxforward_value_kind_const_rvalue,
+		hxforward_forward_through_template_(hxmove(value)));
+}
