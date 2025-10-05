@@ -11,17 +11,18 @@ namespace hxdetail_ {
 // hxtest_*_eq_ — ULP-based floating point equality (GoogleTest-compatible)
 // Compares IEEE-754 numbers by **Units in the Last Place (ULPs)** with a fixed
 // threshold of **4 ULPs** for gtest’s `EXPECT_FLOAT_EQ` / `EXPECT_DOUBLE_EQ`.
-// Unlike Google Test this rejects any infinite values on policy.
+// Unlike Google Test this fails any non-finite values because comparing test
+/// data with infinity indicates a possible concern.
 bool hxtest_float_eq_(float a_, float b_) {
     if (!hxisfinitef(a_) || !hxisfinitef(b_)) { return false; }
     if (a_ == b_) { return true; }
 
-    uint32_t ua_; memcpy(&ua_, &a_, sizeof ua_);
-    uint32_t ub_; memcpy(&ub_, &b_, sizeof ub_);
+    uint32_t ua_; ::memcpy(&ua_, &a_, sizeof ua_);
+    uint32_t ub_; ::memcpy(&ub_, &b_, sizeof ub_);
 
     const uint32_t sign_mask_ = 1u << 31;
-    const uint32_t ba_ = (ua_ & sign_mask_) ? (~ua_ + (uint32_t)1) : (sign_mask_ | ua_);
-    const uint32_t bb_ = (ub_ & sign_mask_) ? (~ub_ + (uint32_t)1) : (sign_mask_ | ub_);
+    const uint32_t ba_ = (ua_ & sign_mask_) ? (~ua_ + 1u) : (sign_mask_ | ua_);
+    const uint32_t bb_ = (ub_ & sign_mask_) ? (~ub_ + 1u) : (sign_mask_ | ub_);
     const uint32_t delta_ = (ba_ >= bb_) ? (ba_ - bb_) : (bb_ - ba_);
 
     return delta_ <= 4u; // 4 ULPs.
@@ -31,12 +32,12 @@ bool hxtest_double_eq_(double a_, double b_) {
     if (!hxisfinitel(a_) || !hxisfinitel(b_)) { return false; }
     if (a_ == b_) { return true; }
 
-    uint64_t ua_; memcpy(&ua_, &a_, sizeof ua_);
-    uint64_t ub_; memcpy(&ub_, &b_, sizeof ub_);
+    uint64_t ua_; ::memcpy(&ua_, &a_, sizeof ua_);
+    uint64_t ub_; ::memcpy(&ub_, &b_, sizeof ub_);
 
-    const uint64_t sign_mask_ = (1ull << 63);
-    const uint64_t ba_ = (ua_ & sign_mask_) ? (~ua_ + 1ull) : (sign_mask_ | ua_);
-    const uint64_t bb_ = (ub_ & sign_mask_) ? (~ub_ + 1ull) : (sign_mask_ | ub_);
+    const uint64_t sign_mask_ = 1ull << 63;
+    const uint64_t ba_ = (ua_ & sign_mask_) ? (~ua_ + 1u) : (sign_mask_ | ua_);
+    const uint64_t bb_ = (ub_ & sign_mask_) ? (~ub_ + 1u) : (sign_mask_ | ub_);
     const uint64_t delta_ = (ba_ >= bb_) ? (ba_ - bb_) : (bb_ - ba_);
 
     return delta_ <= 4u; // 4 ULPs.
