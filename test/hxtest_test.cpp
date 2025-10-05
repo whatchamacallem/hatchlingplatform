@@ -113,8 +113,9 @@ TEST(death_test, fail) {
 	for(int i = 10; i--;) {
 		FAIL() << "this message is intentionally blank.\n";
 	}
-	SUCCEED();
+	hxassertrelease(0, "internal_error FAIL() did not return");
 }
+
 TEST(death_test, nothing_asserted) {
 	hxlog("EXPECTING_TEST_FAILURE\n");
 }
