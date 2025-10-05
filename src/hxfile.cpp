@@ -85,7 +85,7 @@ bool hxfile::openv_(uint8_t mode, const char* filename, va_list args) {
 	}
 
 	char buf[HX_MAX_LINE];
-	int len = ::vsnprintf(buf, HX_MAX_LINE, filename, args);
+	const int len = ::vsnprintf(buf, HX_MAX_LINE, filename, args);
 	hxassertmsg(len >= 0 && len < HX_MAX_LINE, "vsnprintf"); (void)len;
 
 	m_file_pimpl_ = ::fopen(buf, m);
@@ -129,7 +129,7 @@ bool hxfile::set_pos(size_t position_) {
 size_t hxfile::read(void* bytes, size_t byte_count) {
 	hxassertmsg((m_open_mode_ & hxfile::in) && m_file_pimpl_, "invalid_file");
 
-	size_t bytes_read = ::fread(bytes, 1, byte_count, (FILE*)m_file_pimpl_);
+	const size_t bytes_read = ::fread(bytes, 1, byte_count, (FILE*)m_file_pimpl_);
 
 	hxassertmsg((byte_count == bytes_read) || (m_open_mode_ & hxfile::skip_asserts),
 		"fread expected %zu != actual %zu: %s", byte_count, bytes_read, ::strerror(errno));
@@ -148,7 +148,7 @@ size_t hxfile::write(const void* bytes, size_t byte_count) {
 		// Writing to null as /dev/null supported.
 		return byte_count;
 	}
-	size_t bytes_written = ::fwrite(bytes, 1, byte_count, (FILE*)m_file_pimpl_);
+	const size_t bytes_written = ::fwrite(bytes, 1, byte_count, (FILE*)m_file_pimpl_);
 
 	hxassertmsg((byte_count == bytes_written) || (m_open_mode_ & hxfile::skip_asserts),
 		"fwrite expected %zu != actual %zu: %s", byte_count, bytes_written, ::strerror(errno));
@@ -183,7 +183,7 @@ bool hxfile::print(const char* format, ...) {
 
 	va_list args;
 	va_start(args, format);
-	int len = ::vfprintf((FILE*)m_file_pimpl_, format, args);
+	const int len = ::vfprintf((FILE*)m_file_pimpl_, format, args);
 	va_end(args);
 
 	hxassertrelease(len >= 0, "vfprintf %s", ::strerror(errno));
@@ -196,7 +196,7 @@ int hxfile::scan(const char* format, ...) {
 
 	va_list args;
 	va_start(args, format);
-	int items_scanned = ::vfscanf((FILE*)m_file_pimpl_, format, args);
+	const int items_scanned = ::vfscanf((FILE*)m_file_pimpl_, format, args);
 	va_end(args);
 
 	hxassertrelease(items_scanned != EOF || (m_open_mode_ & hxfile::skip_asserts), "vfscanf %s", ::strerror(errno));

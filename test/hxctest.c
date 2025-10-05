@@ -62,7 +62,7 @@ bool hxctest_memory(void) {
 	hxfree(b33);
 	hxfree(b32);
 
-	bool result = strcmp("test", t) == 0;
+	const bool result = strcmp("test", t) == 0;
 	hxfree(t);
 	return result;
 }

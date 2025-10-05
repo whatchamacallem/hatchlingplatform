@@ -82,7 +82,7 @@ bool hxconsole_exec_line(const char* command) {
 	try
 #endif
 	{
-		bool result = node->command_()->execute_(pos);
+		const bool result = node->command_()->execute_(pos);
 		hxwarnmsg(result, "command_failed %s", command);
 		return result;
 	}
@@ -108,7 +108,7 @@ bool hxconsole_exec_filename(const char* filename) {
 	hxfile file(hxfile::in|hxfile::skip_asserts, "%s", filename);
 	hxwarnmsg(file.is_open(), "cannot open: %s", filename);
 	if(file.is_open()) {
-		bool is_ok = hxconsole_exec_file(file);
+		const bool is_ok = hxconsole_exec_file(file);
 		hxwarnmsg(is_ok, "encountering errors: %s", filename);
 		return is_ok;
 	}

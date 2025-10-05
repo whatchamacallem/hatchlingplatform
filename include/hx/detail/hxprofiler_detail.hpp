@@ -21,7 +21,7 @@
 inline hxcycles_t hxtime_sample_cycles(void) {
 	uint64_t cycles_ = 0; (void)cycles_;
 #if defined __wasm__
-	double t_ = emscripten_get_now() * 1.0e+6;
+	const double t_ = emscripten_get_now() * 1.0e+6;
 	cycles_ = (uint64_t)t_;
 #elif defined __x86_64__ || defined __i386__
 	cycles_ = __rdtsc();
@@ -95,7 +95,7 @@ public:
 
 	~hxprofiler_scope_internal_(void) {
 		// Avoid overhead in leaf samples.
-		hxcycles_t t1_ = hxtime_sample_cycles();
+		const hxcycles_t t1_ = hxtime_sample_cycles();
 
 		HX_PROFILER_LOCK_();
 

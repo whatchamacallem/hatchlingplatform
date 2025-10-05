@@ -60,7 +60,7 @@ void hxprofiler_internal_::log_(void) {
 
 		if(i != 0) { hxlogconsole(",\n"); }
 
-		hxcycles_t delta = rec.m_end_ - rec.m_begin_;
+		const hxcycles_t delta = rec.m_end_ - rec.m_begin_;
 		hxlogconsole("{ \"name\":\"%s\", \"ms\":%.15g, \"thread\":\"%x\" }",
 			rec.m_label_, (double)delta * hxmilliseconds_per_cycle,
 			(unsigned int)rec.m_thread_id_);
@@ -77,7 +77,7 @@ void hxprofiler_internal_::write_to_chrome_tracing_(const char* filename) {
 	f.print("[\n");
 	if(!m_records.empty()) {
 		// this works for 32-bit hxcycles_t too.
-		hxcycles_t epoch = m_records[0].m_begin_;
+		const hxcycles_t epoch = m_records[0].m_begin_;
 		for(size_t i = 0; i < m_records.size(); ++i) {
 			const hxprofiler_record_& rec = m_records[i];
 			if(i != 0) { f.print(",\n"); }

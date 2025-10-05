@@ -135,7 +135,7 @@ TEST(hxfile_io, move_copy_and_stream_operators) {
 	EXPECT_TRUE(f.good());
 	EXPECT_FALSE(f.eof());
 	char t;
-	size_t extra_byte = f.read(&t, 1); // fails!
+	const size_t extra_byte = f.read(&t, 1); // fails!
 	EXPECT_TRUE(f.eof());
 	EXPECT_EQ(extra_byte, 0u);
 	EXPECT_FALSE(f.good());

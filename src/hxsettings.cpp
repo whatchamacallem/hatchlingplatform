@@ -14,7 +14,7 @@ namespace hxdetail_ {
 // Confirm the correct number of asserts were triggered and consume the remaining
 // allowance.
 static bool checkasserts(void) {
-	int unused_asserts = g_hxsettings.asserts_to_be_skipped;
+	const int unused_asserts = g_hxsettings.asserts_to_be_skipped;
 	g_hxsettings.asserts_to_be_skipped = 0;
 	return unused_asserts == 0;
 }

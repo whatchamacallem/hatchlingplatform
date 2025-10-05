@@ -84,7 +84,7 @@ static bool hxrun_all_tests(void) {
 	hxlogconsole("release: %d profile: %d\n", (int)(HX_RELEASE), (int)(HX_PROFILE));
 
 	// RUN_ALL_TESTS is a Google Test symbol.
-	size_t tests_failing = (size_t)RUN_ALL_TESTS();
+	const size_t tests_failing = (size_t)RUN_ALL_TESTS();
 
 #if HX_TEST_ERROR_HANDLING
 	// The 2 above and one in the console tests.

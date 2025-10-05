@@ -10,7 +10,7 @@ namespace hxdetail_ {
 
 // Run tests in well defined alphanumeric order.
 static bool hxtest_case_sort_(const hxtest_case_interface_* a_, const hxtest_case_interface_* b_) {
-	int compare_ = ::strcmp(a_->suite_(), b_->suite_());
+	const int compare_ = ::strcmp(a_->suite_(), b_->suite_());
 	if(compare_ == 0) { return ::strcmp(a_->case_(), b_->case_()) < 0; }
 	return compare_ < 0;
 }
@@ -102,8 +102,8 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 				(*it_)->run_test_();
 
 				// Expect the test to use another scope to reset the stack if needed.
-				size_t t_count = temporary_stack_base.get_current_allocation_count();
-				size_t t_bytes = temporary_stack_base.get_current_bytes_allocated();
+				const size_t t_count = temporary_stack_base.get_current_allocation_count();
+				const size_t t_bytes = temporary_stack_base.get_current_bytes_allocated();
 				if(t_count || t_bytes) {
 					this->condition_check_(false, (*it_)->file_(), (*it_)->line_(),
 						"test_leaks All tests must reset the temp stack.", true);

@@ -15,7 +15,7 @@ void hxradix_sort_void(hxradix_sort_key_void* begin, hxradix_sort_key_void* end)
 	// Check for size overflowing hxhistogram_t.
 	hxassertmsg((size_t)(end - begin) < ~(hxhistogram_t)0, "hxradix_sort_void Too big.");
 
-	hxhistogram_t size = (hxhistogram_t)(end - begin);
+	const hxhistogram_t size = (hxhistogram_t)(end - begin);
 	if(size < HX_RADIX_SORT_MIN_SIZE) {
 		hxinsertion_sort(begin, end);
 		return;
@@ -39,7 +39,7 @@ void hxradix_sort_void(hxradix_sort_key_void* begin, hxradix_sort_key_void* end)
 	hxhistogram_t* hxrestrict hist3 = histograms + (256 * 3);
 
 	for(const hxradix_sort_key_void* hxrestrict it = buf0; it != buf0End; ++it) {
-		hxhistogram_t x = it->get_modified_key();
+		const hxhistogram_t x = it->get_modified_key();
 		++hist0[x & 0xffu];
 		++hist1[(x >> 8) & 0xffu];
 		++hist2[(x >> 16) & 0xffu];
@@ -79,7 +79,7 @@ void hxradix_sort_void11(hxradix_sort_key_void* begin, hxradix_sort_key_void* en
 	// Check for size overflowing hxhistogram_t.
 	hxassertmsg((size_t)(end - begin) < ~(hxhistogram_t)0, "hxradix_sort_void Too big.");
 
-	hxhistogram_t size = (hxhistogram_t)(end - begin);
+	const hxhistogram_t size = (hxhistogram_t)(end - begin);
 	if(size < HX_RADIX_SORT_MIN_SIZE) {
 		hxinsertion_sort(begin, end);
 		return;
@@ -103,7 +103,7 @@ void hxradix_sort_void11(hxradix_sort_key_void* begin, hxradix_sort_key_void* en
 	hxhistogram_t* hxrestrict hist2 = histograms + 4096u; // 1024 values
 
 	for(const hxradix_sort_key_void* hxrestrict it = buf0; it != buf0End; ++it) {
-		hxhistogram_t x = it->get_modified_key();
+		const hxhistogram_t x = it->get_modified_key();
 		++hist0[x & 0x7ffu];
 		++hist1[(x >> 11) & 0x7ffu];
 		++hist2[x >> 22];

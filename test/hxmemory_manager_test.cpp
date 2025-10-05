@@ -91,7 +91,7 @@ public:
 	void test_memory_allocator_leak(void) {
 #if (HX_RELEASE) < 1
 		void* ptr2 = hxnull;
-		int asserts_allowed = g_hxsettings.asserts_to_be_skipped;
+		const int asserts_allowed = g_hxsettings.asserts_to_be_skipped;
 
 		{
 			hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);

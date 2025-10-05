@@ -792,7 +792,7 @@ void hxarray<T_, capacity_>::insert(size_t index_, ref_t_&& x_) {
 template<typename T_, size_t capacity_>
 template<size_t capacity_x_, typename less_t_, typename equal_t_>
 bool hxarray<T_, capacity_>::less(const hxarray<T_, capacity_x_>& x_, const less_t_& less_, const equal_t_& equal_) const {
-	size_t size_ = hxmin(this->size(), x_.size());
+	const size_t size_ = hxmin(this->size(), x_.size());
 	for(const T_* it0_ = this->data(), *it1_ = x_.data(), *end_ = it0_ + size_;
 			it0_ != end_; ++it0_, ++it1_) {
 		// Use `a == b` instead of `a < b && b < a` for performance.

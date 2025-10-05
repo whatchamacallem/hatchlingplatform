@@ -8,9 +8,9 @@
 HX_REGISTER_FILENAME_HASH
 
 TEST(hxstring_hash_test, equality) {
-	hxhash_t hash1 = hxstring_literal_hash("");
-	hxhash_t hash2 = hxstring_literal_hash("abc");
-	hxhash_t hash3 = hxstring_literal_hash(
+	const hxhash_t hash1 = hxstring_literal_hash("");
+	const hxhash_t hash2 = hxstring_literal_hash("abc");
+	const hxhash_t hash3 = hxstring_literal_hash(
 		"The quick brown fox jumps over the lazy dog. "
 		"1234567890qwertyuiopasdfghjklzxcvbnm"
 		"1234567890qwertyuiopasdfghjklzxcvbnm"

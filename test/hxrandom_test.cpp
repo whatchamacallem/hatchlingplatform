@@ -126,8 +126,8 @@ TEST(hxrandom_test, read_populates_buffer) {
 		0xefu, 0xefu, 0xefu, 0xefu,
 		0xefu
 	};
-	size_t size = sizeof buffer / sizeof *buffer;
-	size_t read_count = size - 2; // 7. Intentionally odd.
+	const size_t size = sizeof buffer / sizeof *buffer;
+	const size_t read_count = size - 2; // 7. Intentionally odd.
 
 	rng.read(buffer, read_count);
 
@@ -137,7 +137,7 @@ TEST(hxrandom_test, read_populates_buffer) {
 
 	// This just documents an expected interface and sequence.
 	while(remaining >= 4) {
-		uint32_t x = verifier.generate32();
+		const uint32_t x = verifier.generate32();
 		EXPECT_EQ(*expected++, (uint8_t)x);
 		EXPECT_EQ(*expected++, (uint8_t)(x >> 8));
 		EXPECT_EQ(*expected++, (uint8_t)(x >> 16));

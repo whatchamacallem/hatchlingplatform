@@ -43,12 +43,12 @@ public:
 	}
 
 	virtual void generate_scopes(float target_ms) {
-		hxcycles_t start_cycles = hxtime_sample_cycles();
+		const hxcycles_t start_cycles = hxtime_sample_cycles();
 		hxcycles_t delta = 0u;
 
 		// Open up a sub-scope if time allows.
 		if(target_ms >= 2.0f) {
-			float subtarget = target_ms / 2.0f;
+			const float subtarget = target_ms / 2.0f;
 			const char* sub_label = s_hxtest_labels[(size_t)subtarget];
 			hxprofile_scope(sub_label);
 			generate_scopes(subtarget);
@@ -56,7 +56,7 @@ public:
 
 		while((double)delta * hxmilliseconds_per_cycle < target_ms) {
 			// Perform work that might not be optimized away by the compiler.
-			uint32_t ops = (m_accumulator_ & 0xf) + 1;
+			const uint32_t ops = (m_accumulator_ & 0xf) + 1;
 			for(uint32_t i = 0; i < ops; ++i) {
 				m_accumulator_ ^= (uint32_t)m_test_prng_;
 			}
@@ -77,7 +77,7 @@ private:
 TEST(hxprofiler_profile, single_scope_runs_for_1ms) {
 	hxprofiler_start();
 
-	size_t start_records = g_hxprofiler_.records_size_();
+	const size_t start_records = g_hxprofiler_.records_size_();
 	{
 		hxprofile_scope("1 ms");
 		hxprofiler_task_test one;
@@ -88,7 +88,7 @@ TEST(hxprofiler_profile, single_scope_runs_for_1ms) {
 	EXPECT_TRUE(1u == (g_hxprofiler_.records_size_() - start_records));
 
 	// stops the profiler and dumps sample to console:
-	bool is_ok = hxconsole_exec_line("profilelog");
+	const bool is_ok = hxconsole_exec_line("profilelog");
 	EXPECT_TRUE(is_ok);
 }
 

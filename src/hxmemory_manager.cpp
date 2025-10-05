@@ -160,9 +160,9 @@ public:
 		--alignment; // use as a mask.
 
 		// Place header immediately before aligned allocation.
-		uintptr_t actual = (uintptr_t)hxmalloc_checked_(
+		const uintptr_t actual = (uintptr_t)hxmalloc_checked_(
 			size + sizeof(hxmemory_allocation_header) + alignment);
-		uintptr_t aligned = (actual + sizeof(hxmemory_allocation_header) + alignment) & ~(size_t)alignment;
+		const uintptr_t aligned = (actual + sizeof(hxmemory_allocation_header) + alignment) & ~(size_t)alignment;
 		hxmemory_allocation_header& hdr = ((hxmemory_allocation_header*)aligned)[-1];
 		hdr.size = size;
 		hdr.actual = actual;
@@ -256,7 +256,7 @@ public:
 
 	hxattr_hot void* allocate_non_virtual(size_t size, hxalignment_t alignment) {
 		--alignment; // use as a mask.
-		uintptr_t aligned = (m_current + alignment) & ~(uintptr_t)alignment;
+		const uintptr_t aligned = (m_current + alignment) & ~(uintptr_t)alignment;
 		if((aligned + size) > m_end_) {
 			return hxnull;
 		}
@@ -307,7 +307,7 @@ public:
 		// Do not reset m_allocation_count = scope->get_initial_allocation_count()
 		// as that just breaks leak tracking.
 
-		uintptr_t previous_current = m_begin_ + scope->get_initial_bytes_allocated();
+		const uintptr_t previous_current = m_begin_ + scope->get_initial_bytes_allocated();
 		if((HX_RELEASE) < 1) {
 			::memset((void*)previous_current, 0xcd, (size_t)(m_current - previous_current));
 		}
@@ -546,7 +546,7 @@ void hxmemory_manager_shut_down(void) {
 
 	// Any allocations made while active will crash when free'd. If these are
 	// not fixed you will hit a leak sanitizer elsewhere.
-	size_t leak_count = s_hxmemory_manager->leak_count();
+	const size_t leak_count = s_hxmemory_manager->leak_count();
 	hxassertrelease(leak_count == 0, "memory_leak at shutdown %zu", leak_count); (void)leak_count;
 
 	// Return everything to the system allocator.

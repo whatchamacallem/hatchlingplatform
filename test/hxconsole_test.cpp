@@ -178,24 +178,24 @@ TEST(hxconsole_test, register_command) {
 	hxlogconsole("EXPECTING_TEST_WARNINGS\n");
 
 	s_hxconsole_test_result_hook = 0.0f;
-	bool b0 = hxconsole_exec_line("hxconsole_test_register0 77 ..."); // 77 + 3 int8_t string
+	const bool b0 = hxconsole_exec_line("hxconsole_test_register0 77 ..."); // 77 + 3 int8_t string
 	EXPECT_TRUE(b0);
 	EXPECT_EQ(80.0f, s_hxconsole_test_result_hook);
 
 	s_hxconsole_test_result_hook = 0.0f;
-	bool b1 = hxconsole_exec_line("hxconsole_test_register1 12.5");
+	const bool b1 = hxconsole_exec_line("hxconsole_test_register1 12.5");
 	EXPECT_TRUE(b1);
 	EXPECT_EQ(12.5f, s_hxconsole_test_result_hook);
 
 	// *Missing arg*
 	s_hxconsole_test_result_hook = -1.0f;
-	bool b2 = hxconsole_exec_line("hxconsole_test_register2 ");
+	const bool b2 = hxconsole_exec_line("hxconsole_test_register2 ");
 	EXPECT_FALSE(b2);
 	EXPECT_EQ(-1.0f, s_hxconsole_test_result_hook);
 
 	// *Missing second arg*
 	s_hxconsole_test_result_hook = -2.0f;
-	bool b3 = hxconsole_exec_line("hxconsole_test_register3 7 ");
+	const bool b3 = hxconsole_exec_line("hxconsole_test_register3 7 ");
 	EXPECT_FALSE(b3);
 	EXPECT_EQ(-2.0f, s_hxconsole_test_result_hook);
 
