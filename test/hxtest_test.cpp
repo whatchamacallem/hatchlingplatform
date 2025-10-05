@@ -88,6 +88,14 @@ TEST(hxtest_macros, double_eq) {
 	ASSERT_DOUBLE_EQ(a * a, 0.01);
 }
 
+TEST(hxabs, double_values) {
+	const double negative = -42.75;
+	const double positive = 42.75;
+	EXPECT_DOUBLE_EQ(hxabs(negative), positive);
+	EXPECT_DOUBLE_EQ(hxabs(positive), positive);
+	EXPECT_DOUBLE_EQ(hxabs(-0.0), -0.0);
+}
+
 // Run all the C tests.
 TEST(hxctest, all_tests) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
@@ -166,6 +174,30 @@ TEST(hxisgraph, compare_with_standard) {
 			EXPECT_EQ(hx, st);
 		}
 	}
+}
+
+TEST(hxarray_iterators, cbegin_cend) {
+	hxarray<int, 4u> values;
+	values.push_back(1);
+	values.push_back(3);
+	values.push_back(5);
+
+	const hxarray<int, 4u>& const_values = values;
+	const int expected[] = { 1, 3, 5 };
+	const size_t expected_count = sizeof(expected) / sizeof(expected[0]);
+	size_t index = 0u;
+
+	for (const int* it = const_values.cbegin(); it != const_values.cend(); ++it) {
+		ASSERT_LT(index, expected_count);
+		EXPECT_EQ(*it, expected[index]);
+		++index;
+	}
+
+	EXPECT_EQ(index, const_values.size());
+	EXPECT_EQ(const_values.cbegin(), const_values.begin());
+	EXPECT_EQ(const_values.cend(), const_values.end());
+	EXPECT_EQ(const_values.cbegin() + const_values.size(),
+		const_values.cend());
 }
 
 
