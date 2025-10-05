@@ -242,6 +242,22 @@ inline int hxlog2i(size_t i_) {
     return (int)((bits_ >> 23) & 0xffu) - 127;
 }
 
+/// Returns true if `x` is finite (not NaN or ±inf).
+inline int hxisfinitef(float x_) {
+    uint32_t u_;
+    memcpy(&u_, &x_, sizeof u_);
+    // Finite iff exponent != all 1s (0xFF)
+    return (u_ & 0x7F800000u) != 0x7F800000u;
+}
+
+/// Returns true if `x` is finite (not NaN or ±inf).
+inline int hxisfinitel(double x_) {
+    uint64_t u_;
+    memcpy(&u_, &x_, sizeof u_);
+    // Finite iff exponent != all 1s (0x7FF)
+    return (u_ & 0x7FF0000000000000ull) != 0x7FF0000000000000ull;
+}
+
 // ----------------------------------------------------------------------------
 // C++ Template Utility API
 
@@ -318,8 +334,6 @@ template<class T_>
 constexpr T_&& hxforward(typename hxremove_reference<T_>::type& t) noexcept {
 	return static_cast<T_&&>(t);
 }
-
-// More portable versions of min, max, abs and clamp using only operator<.
 
 /// `hxmin` - Returns the minimum value of `x` and `y` using a `<` comparison.
 /// `operator<`. Returns the minimum value of `x` and `y` using a `<` comparison.

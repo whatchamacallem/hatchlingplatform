@@ -150,8 +150,12 @@ inline void InitGoogleTest(void) { }
 /// `void SUCCEED(void)` - Marks the current test as successful without any checks.
 #define SUCCEED() hxtest_::dispatcher_().condition_check_(true, __FILE__, __LINE__, "SUCCEED()", false)
 
-/// `void FAIL(void)` - Marks the current test as failed.
-#define FAIL() hxtest_::dispatcher_().condition_check_(false, __FILE__, __LINE__, "FAIL()", false)
+/// `void FAIL(void)` - NOTA BENE. Calls `return`. Marks the current test as failed.
+#define FAIL() do { hxtest_::dispatcher_().condition_check_(false, __FILE__, __LINE__, "FAIL()", false); return; } while (0)
+/// `void ADD_FAILURE(void)` - Adds a non-fatal failure at the current location.
+#define ADD_FAILURE() hxtest_::dispatcher_().condition_check_(false, __FILE__, __LINE__, "ADD_FAILURE()", false)
+/// `void ADD_FAILURE_AT(const char*, size_t)` - Adds a non-fatal failure at the specified location.
+#define ADD_FAILURE_AT(file_, line_) hxtest_::dispatcher_().condition_check_(false, (file_), (size_t)(line_), "ADD_FAILURE_AT()", false)
 
 /// `void EXPECT_TRUE(bool)` - Checks that the condition is true.
 #define EXPECT_TRUE(x_) hxtest_::dispatcher_().condition_check_((x_), __FILE__, __LINE__, #x_, false)
@@ -173,6 +177,14 @@ inline void InitGoogleTest(void) { }
 #define EXPECT_EQ(a_, b_) hxtest_::dispatcher_().condition_check_((a_) == (b_), __FILE__, __LINE__, #a_ " == " #b_, false)
 /// `void EXPECT_NE(T a, T b)` - Checks `a != b` using `!(a == b)`.
 #define EXPECT_NE(a_, b_) hxtest_::dispatcher_().condition_check_(!((a_) == (b_)), __FILE__, __LINE__, #a_ " != " #b_, false)
+/// `void EXPECT_FLOAT_EQ(float a, float b)` - Checks floats for equality within a scaled tolerance.
+#define EXPECT_FLOAT_EQ(a_, b_) hxtest_::dispatcher_().condition_check_(hxtest_float_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " ~= " #b_, false)
+/// `void EXPECT_DOUBLE_EQ(double a, double b)` - Checks doubles for equality within a scaled tolerance.
+#define EXPECT_DOUBLE_EQ(a_, b_) hxtest_::dispatcher_().condition_check_(hxtest_double_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " ~= " #b_, false)
+/// `void EXPECT_STREQ(const char* a, const char* b)` - Checks that two C strings are equal, handling null pointers.
+#define EXPECT_STREQ(a_, b_) hxtest_::dispatcher_().condition_check_(::strcmp((a_), (b_)) == 0, __FILE__, __LINE__, #a_ " == " #b_, false)
+/// `void EXPECT_STRNE(const char* a, const char* b)` - Checks that two C strings differ, handling null pointers.
+#define EXPECT_STRNE(a_, b_) hxtest_::dispatcher_().condition_check_(::strcmp((a_), (b_)) != 0, __FILE__, __LINE__, #a_ " != " #b_, false)
 
 /// `void ASSERT_TRUE(bool)` - Asserts that the condition is true.
 #define ASSERT_TRUE(x_) hxtest_::dispatcher_().condition_check_((x_), __FILE__, __LINE__, #x_, true)
@@ -194,5 +206,13 @@ inline void InitGoogleTest(void) { }
 #define ASSERT_EQ(a_, b_) hxtest_::dispatcher_().condition_check_((a_) == (b_), __FILE__, __LINE__, #a_ " == " #b_, true)
 /// `void ASSERT_NE(T a, T b)` - Asserts `a != b` using `!(a == b)`.
 #define ASSERT_NE(a_, b_) hxtest_::dispatcher_().condition_check_(!((a_) == (b_)), __FILE__, __LINE__, #a_ " != " #b_, true)
+/// `void ASSERT_FLOAT_EQ(float a, float b)` - Checks floats for equality within a scaled tolerance.
+#define ASSERT_FLOAT_EQ(a_, b_) hxtest_::dispatcher_().condition_check_(hxtest_float_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " ~= " #b_, true)
+/// `void ASSERT_DOUBLE_EQ(double a, double b)` - Checks doubles for equality within a scaled tolerance.
+#define ASSERT_DOUBLE_EQ(a_, b_) hxtest_::dispatcher_().condition_check_(hxtest_double_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " ~= " #b_, true)
+/// `void ASSERT_STREQ(const char* a, const char* b)` - Checks that two C strings are equal, handling null pointers.
+#define ASSERT_STREQ(a_, b_) hxtest_::dispatcher_().condition_check_(::strcmp((a_), (b_)) == 0, __FILE__, __LINE__, #a_ " == " #b_, true)
+/// `void ASSERT_STRNE(const char* a, const char* b)` - Checks that two C strings differ, handling null pointers.
+#define ASSERT_STRNE(a_, b_) hxtest_::dispatcher_().condition_check_(::strcmp((a_), (b_)) != 0, __FILE__, __LINE__, #a_ " != " #b_, true)
 
 #endif // !HX_USE_GOOGLE_TEST

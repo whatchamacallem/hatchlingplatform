@@ -113,6 +113,8 @@
         "skipasserts",
         "smoketest",
         "stdint",
+        "STREQ",
+        "STRNE",
         "testall",
         "testcmake",
         "testcoverage",
