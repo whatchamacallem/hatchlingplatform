@@ -25,8 +25,8 @@ static bool hxrun_all_tests(void) {
 	const size_t tests_failing = (size_t)RUN_ALL_TESTS();
 
 #if HX_TEST_ERROR_HANDLING
-	// The 2 above and one in the console tests.
-	const int s_hxexpected_failures = 3;
+	// The 4 in hxtest_test and one in the console tests.
+	const int s_hxexpected_failures = 5;
 
 	hxassertrelease(tests_failing == s_hxexpected_failures,
 		"unexpected_failures expected %d tests to fail", s_hxexpected_failures);

@@ -481,20 +481,20 @@ hxarray<T_, capacity_>::~hxarray(void) {
 
 template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::operator=(const hxarray& x_) {
-	hxassertmsg((void*)this != (void*)&x_, "invalid_reference Assignment to self.");
+	hxassertmsg((const void*)this != (const void*)&x_, "invalid_reference Assignment to self.");
 	this->assign<const T_*>(x_.data(), x_.m_end_);
 }
 
 template<typename T_, size_t capacity_>
 template<size_t capacity_x_>
 void hxarray<T_, capacity_>::operator=(const hxarray<T_, capacity_x_>& x_) {
-	hxassertmsg((void*)this != (void*)&x_, "invalid_reference Assignment to self.");
+	hxassertmsg((const void*)this != (const void*)&x_, "invalid_reference Assignment to self.");
 	this->assign<const T_*>(x_.data(), x_.end());
 }
 
 template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::operator=(hxarray&& x_) {
-	hxassertmsg((void*)this != (void*)&x_, "invalid_reference Assignment to self.");
+	hxassertmsg((const void*)this != (const void*)&x_, "invalid_reference Assignment to self.");
 	this->swap(x_);
 }
 
@@ -529,7 +529,7 @@ void hxarray<T_, capacity_>::operator+=(T_&& x_) {
 template<typename T_, size_t capacity_>
 template<size_t capacity_x_>
 void hxarray<T_, capacity_>::operator+=(const hxarray<T_, capacity_x_>& x_) {
-	hxassertmsg((void*)this != (void*)&x_, "invalid_reference Assignment to self.");
+	hxassertmsg((const void*)this != (const void*)&x_, "invalid_reference Assignment to self.");
 	for(const T_* hxrestrict it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
 		::new(this->push_back_unconstructed_()) T_(*it_);
 	}
@@ -538,7 +538,7 @@ void hxarray<T_, capacity_>::operator+=(const hxarray<T_, capacity_x_>& x_) {
 template<typename T_, size_t capacity_>
 template<size_t capacity_x_>
 void hxarray<T_, capacity_>::operator+=(hxarray<T_, capacity_x_>&& x_) {
-	hxassertmsg((void*)this != (void*)&x_, "invalid_reference Assignment to self.");
+	hxassertmsg((const void*)this != (const void*)&x_, "invalid_reference Assignment to self.");
 	// Non-const mutable operation.
 	for(T_* hxrestrict it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
 		::new(this->push_back_unconstructed_()) T_(hxmove(*it_));

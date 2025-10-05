@@ -111,15 +111,32 @@ TEST(death_test, fail) {
 	hxlog("EXPECTING_TEST_FAILURE\n");
 	SUCCEED();
 	for(int i = 10; i--;) {
-		FAIL() << "this message is intentionally blank.\n";
+		FAIL();
 	}
 	hxassertrelease(0, "internal_error FAIL() did not return");
+}
+
+TEST(death_test, add_failure) {
+	hxlog("EXPECTING_TEST_FAILURE\n");
+	SUCCEED();
+	ADD_FAILURE() << "This message is intentionally blank.\n";
+}
+
+TEST(death_test, add_failure_at) {
+	hxlog("EXPECTING_TEST_FAILURE\n");
+	SUCCEED();
+	ADD_FAILURE_AT("fake_file.cpp", 10000) << "This message is also intentionally blank.\n";
 }
 
 TEST(death_test, nothing_asserted) {
 	hxlog("EXPECTING_TEST_FAILURE\n");
 }
 #endif
+
+// Another "nothing asserted" test case.
+TEST(death_test, succeed) {
+	SUCCEED();
+}
 
 TEST(hxisspace, compare_with_standard) {
 	// Don't use non-ASCII or setlocale because it might not exist.
