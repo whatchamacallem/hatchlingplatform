@@ -167,3 +167,57 @@ TEST(hxisgraph, compare_with_standard) {
 		}
 	}
 }
+
+
+namespace {
+
+enum hxforward_value_kind {
+	hxforward_value_kind_none,
+	hxforward_value_kind_lvalue,
+	hxforward_value_kind_const_lvalue,
+	hxforward_value_kind_rvalue,
+	hxforward_value_kind_const_rvalue
+};
+
+struct hxforwarded_t_ {
+	int value;
+};
+
+hxforwarded_t_ hxforward_make_forwarded_() { return { 11 }; }
+const hxforwarded_t_ hxforward_make_const_forwarded_() { return { 13 }; }
+hxforward_value_kind hxforward_detect_(hxforwarded_t_&) { return hxforward_value_kind_lvalue; }
+hxforward_value_kind hxforward_detect_(const hxforwarded_t_&) { return hxforward_value_kind_const_lvalue; }
+hxforward_value_kind hxforward_detect_(hxforwarded_t_&&) { return hxforward_value_kind_rvalue; }
+hxforward_value_kind hxforward_detect_(const hxforwarded_t_&&) { return hxforward_value_kind_const_rvalue; }
+
+template<typename T_>
+hxforward_value_kind hxforward_forward_through_template_(T_&& value_) {
+	return hxforward_detect_(hxforward<T_>(value_));
+}
+
+} // namespace
+
+TEST(hxforward, forwards_prvalue_expression) {
+	EXPECT_EQ(hxforward_value_kind_rvalue,
+		hxforward_detect_(hxforward<hxforwarded_t_>(hxforward_make_forwarded_())));
+}
+
+TEST(hxforward, forwards_const_prvalue_expression) {
+	EXPECT_EQ(hxforward_value_kind_const_rvalue,
+		hxforward_detect_(hxforward<const hxforwarded_t_>(hxforward_make_const_forwarded_())));
+}
+
+TEST(hxforward, forwards_lvalue_reference_through_template) {
+	hxforwarded_t_ value = { 7 };
+	EXPECT_EQ(hxforward_value_kind_lvalue, hxforward_forward_through_template_(value));
+}
+
+TEST(hxforward, forwards_const_lvalue_reference_through_template) {
+	const hxforwarded_t_ value = { 9 };
+	EXPECT_EQ(hxforward_value_kind_const_lvalue, hxforward_forward_through_template_(value));
+}
+
+TEST(hxforward, forwards_rvalue_reference_through_template) {
+	EXPECT_EQ(hxforward_value_kind_rvalue,
+		hxforward_forward_through_template_(hxforward_make_forwarded_()));
+}
