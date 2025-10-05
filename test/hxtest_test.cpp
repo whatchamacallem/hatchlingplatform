@@ -55,6 +55,39 @@ TEST(hxtest_macros, relational) {
 	ASSERT_STRNE("a", "b");
 }
 
+// These avoid knowing anything about the implementation.
+TEST(hxtest_macros, float_eq) {
+	const float third = 1.0f / 3.0f;
+	ASSERT_FLOAT_EQ(third + third + third, 1.0f);
+
+	const float a = 0.1f;
+	const float b = 0.2f;
+	const float c = 0.3f;
+	ASSERT_FLOAT_EQ(a + b, c);
+	ASSERT_FLOAT_EQ(c - b, a);
+	ASSERT_FLOAT_EQ((a + b) - a, b);
+
+	const float tenth = 1.0f / 10.0f;
+	ASSERT_FLOAT_EQ(tenth * 10.0f, 1.0f);
+	ASSERT_FLOAT_EQ(a * a, 0.01f);
+}
+
+TEST(hxtest_macros, double_eq) {
+	const double third = 1.0 / 3.0;
+	ASSERT_DOUBLE_EQ(third + third + third, 1.0);
+
+	const double a = 0.1;
+	const double b = 0.2;
+	const double c = 0.3;
+	ASSERT_DOUBLE_EQ(a + b, c);
+	ASSERT_DOUBLE_EQ(c - b, a);
+	ASSERT_DOUBLE_EQ((a + b) - a, b);
+
+	const double tenth = 1.0 / 10.0;
+	ASSERT_DOUBLE_EQ(tenth * 10.0, 1.0);
+	ASSERT_DOUBLE_EQ(a * a, 0.01);
+}
+
 // Run all the C tests.
 TEST(hxctest, all_tests) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);

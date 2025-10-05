@@ -57,6 +57,8 @@
 ///   FAIL();				  // Marks test as failed
 /// ```
 /// - `ASSERT_`* macros are equivalent to `EXPECT_`*
+///
+/// See: https://google.github.io/googletest/reference/assertions.html
 
 // Used to resolve `HX_USE_GOOGLE_TEST`.
 #include "hatchling.h"
