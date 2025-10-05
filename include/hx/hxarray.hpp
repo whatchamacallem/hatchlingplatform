@@ -840,14 +840,14 @@ template<typename T_, size_t capacity_>
 template<typename ref_t_>
 T_& hxarray<T_, capacity_>::push_heap(ref_t_&& arg_) {
 	T_* begin_ = this->data();
-	T_* node_ = static_cast<T_*>(this->push_back_unconstructed_());
+	T_* node_ = (T_*)this->push_back_unconstructed_();
 	while(node_ != begin_) {
 		T_* parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
 		// arg_ has to be comparable to T_.
 		if(!hxkey_less(*parent_, arg_)) {
 			break;
 		}
-		// Shifts unconstructed element into position.
+		// Shifts unconstructed element (the hole) into position.
 		::new((void*)node_) T_(hxmove(*parent_));
 		parent_->~T_();
 		node_ = parent_;

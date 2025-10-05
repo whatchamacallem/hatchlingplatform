@@ -102,9 +102,9 @@ Also see `AGENTS.md` for a human readable contributors guide also meant for AI.
 
 ## Other Projects
 
-- musl libc - https://musl.libc.org/ This is the recommended C library to use with
+- musl libc - <https://musl.libc.org/> This is the recommended C library to use with
 Hatchling Platform in a freestanding environment.
-- etl - https://github.com/ETLCPP/etl A header only embedded template library.
+- etl - <https://github.com/ETLCPP/etl> A header only embedded template library.
 The ETL is larger and approaches the complexity of the standard library.
 
 ## Tested Environments
@@ -124,6 +124,7 @@ python 3.12.3
 
 ## License
 
-© 2017-2025 Adrian Johnston. This project is licensed under the terms of the MIT license found in the `LICENSE.md` file.
+© 2017-2025 Adrian Johnston. This project is licensed under the terms of the MIT
+license found in the `LICENSE.md` file.
 
 🐉🐉🐉
