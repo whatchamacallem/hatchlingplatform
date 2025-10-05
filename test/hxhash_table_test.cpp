@@ -85,7 +85,7 @@ TEST_F(hxhash_table_test, null) {
 }
 
 TEST_F(hxhash_table_test, single) {
-	hxsystem_allocator_scope temporary_stack_scope = hxsystem_allocator_temporary_stack;
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	static const int k = 77;
 	{
@@ -142,7 +142,7 @@ TEST_F(hxhash_table_test, single) {
 
 TEST_F(hxhash_table_test, multiple) {
 	static const int N = 78;
-	hxsystem_allocator_scope temporary_stack_scope = hxsystem_allocator_temporary_stack;
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
 		// Table will be overloaded.
 		typedef hxhash_table<hxtest_integer> Table;
@@ -261,7 +261,7 @@ TEST_F(hxhash_table_test, multiple) {
 }
 
 TEST_F(hxhash_table_test, strings) {
-	hxsystem_allocator_scope temporary_stack_scope = hxsystem_allocator_temporary_stack;
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	static const char* colors[] = {
 		"Red","Orange","Yellow",

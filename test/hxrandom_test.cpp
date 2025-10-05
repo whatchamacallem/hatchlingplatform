@@ -133,7 +133,7 @@ TEST(hxrandom_test, range) {
 }
 
 TEST(hxrandom_test, histogram) {
-	hxsystem_allocator_scope temporary_stack_scope = hxsystem_allocator_temporary_stack;
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(40000);
 	const int buckets = 1 << 10; // 1k buckets
 	const int iters = 1000;
@@ -150,7 +150,7 @@ TEST(hxrandom_test, histogram) {
 }
 
 TEST(hxrandom_test, histogram_f) {
-	hxsystem_allocator_scope temporary_stack_scope = hxsystem_allocator_temporary_stack;
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(40000);
 	const int buckets = 1000; // 1k buckets
 	const int iters = 1000;

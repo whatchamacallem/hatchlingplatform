@@ -141,8 +141,7 @@ namespace hxdetail_ {
 class hxsystem_allocator_scope
 {
 public:
-	/// `hxsystem_allocator_scope` - Constructor: Sets the current memory
-	/// allocator to the specified ID.
+	/// Constructor: Sets the current memory allocator to the specified ID.
 	/// - `allocator` : The memory manager ID to set for this scope. May modify
 	///   new allocator in a way that cannot be shared between threads.
 	hxsystem_allocator_scope(hxsystem_allocator_t allocator_) hxattr_noexcept;

@@ -24,6 +24,9 @@ public:
 		key_t id;
 	};
 
+	// Move everything onto the temp stack.
+	hxradix_sort_test(void) : m_temporary_stack_scope(hxsystem_allocator_temporary_stack) { }
+
 	template<typename key_t>
 	void generate(hxarray<test_object<key_t> >& a, uint32_t size, uint32_t mask, key_t offset) {
 		a.reserve(size);
@@ -84,7 +87,7 @@ public:
 	}
 
 	// Move all tests to the temp stack.
-	hxsystem_allocator_scope m_temporary_stack_scope = hxsystem_allocator_temporary_stack;
+	hxsystem_allocator_scope m_temporary_stack_scope;
 	hxrandom m_prng_;
 };
 

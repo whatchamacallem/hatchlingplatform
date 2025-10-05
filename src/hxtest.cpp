@@ -99,11 +99,6 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 			try
 #endif
 			{
-				// All tested functionality should have no memory allocation
-				// side effects. Therefore the temp allocator must start out
-				// empty and be safe to reset.
-				hxsystem_allocator_scope temporary_stack_scope = hxsystem_allocator_temporary_stack;
-
 				(*it_)->run_test_();
 
 				// Expect the test to use another scope to reset the stack if needed.

@@ -44,14 +44,13 @@ run_hxtest() {
 # Build artifacts are not retained.
 rm -rf ./bin; mkdir ./bin && cd ./bin
 
-# Test gcc with minimum specifications: -std=c99 and -std=c++11.
 gcc --version | grep gcc
 for I in 0 1 2 3; do
-echo gcc c++11 -O$I "$@"...
-# -std=c99
+echo gcc c99/c++11 -O$I "$@" ...
+
 gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $FLAGS $ERRORS \
 	-pthread -std=c99 -m32 "$@" -c $HX_DIR/src/*.c $HX_DIR/test/*.c
-# -std=c++14
+
 gcc -I$HX_DIR/include -DHX_RELEASE=$I -O$I $FLAGS $ERRORS \
 	-pthread -std=c++11 -fno-exceptions -fno-rtti "$@" $HX_DIR/src/*.cpp \
 	$HX_DIR/test/*.cpp *.o -lpthread -lstdc++ -m32 -o hxtest
@@ -65,17 +64,17 @@ done
 # just to make sure there are none.
 clang --version | grep clang
 for I in 0 1 2 3; do
-echo clang UBSan -O$I "$@"...
+echo clang c17/c++20 UBSan -O$I "$@" ...
 # compile C17
 clang -I../include -DHX_RELEASE=$I -O$I $FLAGS $ERRORS -pedantic-errors \
 	-fdiagnostics-absolute-paths -pthread -std=c17 $SANITIZE "$@" -c ../src/*.c ../test/*.c
 # generate C++17 pch. clang does this automatically when a c++ header file is the target.
 clang++ -I../include -DHX_RELEASE=$I -O$I $FLAGS $ERRORS -pedantic-errors \
-	-DHX_USE_THREADS=$I -pthread -std=c++17 -fno-exceptions -fdiagnostics-absolute-paths \
+	-DHX_USE_THREADS=$I -pthread -std=c++20 -fno-exceptions -fdiagnostics-absolute-paths \
 	$SANITIZE "$@" ../include/hx/hatchling_pch.hpp -o hatchling_pch.hpp.pch
 # compile C++17 and link
 clang++ -I../include -DHX_RELEASE=$I -O$I $FLAGS $ERRORS -pedantic-errors \
-	-DHX_USE_THREADS=$I -pthread -std=c++17 -fno-exceptions -fdiagnostics-absolute-paths \
+	-DHX_USE_THREADS=$I -pthread -std=c++20 -fno-exceptions -fdiagnostics-absolute-paths \
 	$SANITIZE "$@" -include-pch hatchling_pch.hpp.pch ../src/*.cpp ../test/*.cpp *.o \
 	-lpthread -lstdc++ -o hxtest
 

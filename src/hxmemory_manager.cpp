@@ -569,7 +569,7 @@ hxattr_noexcept void* hxmalloc(size_t size) {
 extern "C"
 hxattr_noexcept void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, hxalignment_t alignment) {
 	(void)id; (void)alignment;
-	hxassert(alignment <= HX_ALIGNMENT, "alignment_error Memory manager is disabled.");
+	hxassertmsg(alignment <= HX_ALIGNMENT, "alignment_error Memory manager is disabled.");
 	return hxmalloc_checked_(size);
 }
 
@@ -592,8 +592,6 @@ hxattr_noexcept hxsystem_allocator_scope::hxsystem_allocator_scope(hxsystem_allo
 }
 
 hxattr_noexcept hxsystem_allocator_scope::~hxsystem_allocator_scope(void) { }
-
-size_t hxsystem_allocator_scope::get_total_allocation_count(void) const { return 0; }
 
 size_t hxsystem_allocator_scope::get_current_allocation_count(void) const { return 0; }
 

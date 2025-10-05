@@ -19,7 +19,7 @@ int hxtest_main(int argc, char**argv);
 
 // Run all the C tests.
 TEST(hxctest, all_tests) {
-	hxsystem_allocator_scope temporary_stack_scope = hxsystem_allocator_temporary_stack;
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	EXPECT_TRUE(hxctest_all());
 }
 

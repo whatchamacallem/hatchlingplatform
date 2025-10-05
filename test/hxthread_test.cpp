@@ -257,7 +257,7 @@ TEST(hxcondition_variable, wait_notify_sequence) {
 }
 
 TEST(hxthread, multiple_thread_start_join) {
-	hxsystem_allocator_scope temporary_stack_scope = hxsystem_allocator_temporary_stack;
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	const int reps = 10;
 	int shared = 0;

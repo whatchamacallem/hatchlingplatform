@@ -12,7 +12,7 @@ HX_REGISTER_FILENAME_HASH
 // are designed to fail and use EXPECT_ for those specific tests.
 
 TEST(hxmemory_manager_test_fn, bytes) {
-	hxsystem_allocator_scope temporary_stack_scope = hxsystem_allocator_temporary_stack;
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	for(size_t i=10u; i--;) {
 		void* p = hxmalloc(i);
 		ASSERT_TRUE(p != hxnull);
@@ -22,7 +22,7 @@ TEST(hxmemory_manager_test_fn, bytes) {
 }
 
 TEST(hxmemory_manager_test_fn, string_duplicate) {
-	hxsystem_allocator_scope temporary_stack_scope = hxsystem_allocator_temporary_stack;
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	char* p = hxstring_duplicate("str");
 	ASSERT_TRUE(p != hxnull);
 	ASSERT_TRUE(::strcmp(p, "str") == 0);

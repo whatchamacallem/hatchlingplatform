@@ -1,10 +1,5 @@
 # Hatchling Platform
 
-[![Generic
-badge](https://img.shields.io/badge/hatchling-platform-blue.svg)](https://github.com/whatchamacallem/hatchlingplatform)
-[![GitHub
-version](https://badge.fury.io/gh/whatchamacallem%2Fhatchlingplatform.svg)](http://badge.fury.io/gh/whatchamacallem%2Fhatchlingplatform)
-
 Please use the most recent tagged release.
 
 <img src="hatchling_logo.png" alt="logo">
