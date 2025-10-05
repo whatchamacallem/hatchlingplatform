@@ -7,7 +7,11 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// hxsettings - g_hxsettings is declared in hxc_utils.c for maximum portability.
+// The global settings object. Constructed by hxinit after some global
+// constructors may have run and before setting up memory management.
+// OS specific source code is required to construct settings earlier.
+// Logging and asserts will default to on until constructed.
+extern "C" { struct hxsettings g_hxsettings; }
 
 namespace hxdetail_ {
 #if (HX_RELEASE) < 1

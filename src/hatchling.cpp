@@ -14,6 +14,9 @@
 
 HX_REGISTER_FILENAME_HASH
 
+// g_hxisinit. Do not initialize to 0. MSVC actually handles that differently.
+extern "C" { bool g_hxisinit; }
+
 // HX_FLOATING_POINT_TRAPS - Traps (FE_DIVBYZERO|FE_INVALID|FE_OVERFLOW) in
 // debug so you can safely run without checks for them in release. Use
 // -DHX_FLOATING_POINT_TRAPS=0 to disable this debug facility. There is no C++

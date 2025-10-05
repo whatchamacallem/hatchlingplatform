@@ -2,15 +2,9 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-#include "../include/hx/hatchling.h"
+#include "../include/hx/hxutility.h"
 
-// C utils
-
-// g_hxisinit. Do not initialize to 0. MSVC actually handles that differently.
-bool g_hxisinit;
-
-// g_hxsettings. Declared here in plain C for maximum portability.
-struct hxsettings g_hxsettings;
+// The non-inline utility functions are all in plain C.
 
 #if defined __clang__
 __attribute__((no_sanitize("address")))

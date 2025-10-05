@@ -28,7 +28,8 @@ set -o xtrace
 musl-gcc $BUILD $ERRORS $FLAGS -I$HX_DIR/include \
 	-std=c17 -c $HX_DIR/src/*.c $HX_DIR/test/*.c
 
-for VERSION in 11 17 20; do
+# Test every supported version of the standard without libc++.
+for VERSION in 11 14 17 20; do
 
 # Includes lld specific instruction to dead-strip. musl is the only library.
 musl-gcc $BUILD $ERRORS $FLAGS -I$HX_DIR/include \

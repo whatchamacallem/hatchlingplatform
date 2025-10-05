@@ -83,7 +83,8 @@ enum hxloglevel_t {
 #error HX_RELEASE must be [0..3].
 #endif
 
-/// `hxinit` - Initializes the platform.
+/// `hxinit` - Initializes the platform. Call hxinit before allocating memory
+/// in a global constructor.
 #define hxinit() (void)(g_hxisinit || (hxinit_internal(), 0))
 
 #if (HX_RELEASE) == 0 // debug facilities
