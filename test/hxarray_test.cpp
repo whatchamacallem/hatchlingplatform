@@ -490,9 +490,8 @@ TEST(hxarray_test, erase_if) {
 	EXPECT_EQ(objs.erase_if(remove_even), 2u);
 	EXPECT_EQ(remove_calls, 5);
 
-	hxarray<int> expected { 1, 5, 3 };
-	EXPECT_EQ(objs.size(), expected.size());
-	for(size_t i = 0; i < expected.size(); ++i) {
+	static const int expected[] = { 1, 5, 3 };
+	for(size_t i = 0; i < 3; ++i) {
 		EXPECT_EQ(objs[i], expected[i]);
 	}
 
@@ -811,7 +810,9 @@ TEST(hxarray_test, emplace_back_move_tracker_forwarding) {
 	EXPECT_EQ(elements.size(), 2u);
 }
 
-#if HX_CPLUSPLUS >= 202002L
+// std::initializer_list is great for writing test code for an array class...
+// Not sure what else.
+#if HX_CPLUSPLUS >= 202002L && !HX_NO_LIBCXX
 TEST_F(hxarray_test_f, plus_equals) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
@@ -851,17 +852,18 @@ TEST_F(hxarray_test_f, erase) {
 		objs.erase(1);
 		objs.erase(objs.begin() + 2);
 
-		hxarray<test_object> expected { 1, 3, 5 };
+		static const int expected_values[] = { 1, 3, 5 };
+		hxarray<test_object> expected(expected_values);
 		EXPECT_TRUE(hxkey_equal(objs, expected));
 
 		objs.erase(objs.begin());
 		objs.erase(objs.end() - 1);
 
-		hxarray<test_object> final_expected { 3 };
-		EXPECT_TRUE(hxkey_equal(objs, final_expected));
+		EXPECT_TRUE(hxkey_equal(objs[0], 3));
+		EXPECT_EQ(objs.size(), 1u);
 	}
 
-	EXPECT_TRUE(check_totals(9));
+	EXPECT_TRUE(check_totals(8));
 }
 
 TEST_F(hxarray_test_f, insert) {

@@ -28,11 +28,16 @@ set -o xtrace
 musl-gcc $BUILD $ERRORS $FLAGS -I$HX_DIR/include \
 	-std=c17 -c $HX_DIR/src/*.c $HX_DIR/test/*.c
 
+for VERSION in 11 17 20; do
+
 # Includes lld specific instruction to dead-strip. musl is the only library.
 musl-gcc $BUILD $ERRORS $FLAGS -I$HX_DIR/include \
-	-std=c++17 -Wl,--gc-sections -fno-exceptions -fno-rtti \
+	-std=c++$VERSION -Wl,--gc-sections -fno-exceptions -fno-rtti \
 	$HX_DIR/src/*.cpp $HX_DIR/test/*.cpp *.o -o hxtest
 
+done
+
+# Only process and display the c++20 version.
 strip -o hxtest-strip --strip-unneeded hxtest
 
 # turn off tracing silently and make sure the command returns 0.
