@@ -304,6 +304,9 @@ public:
 
 		m_high_water = hxmax(m_high_water, m_current);
 
+		// Do not reset m_allocation_count = scope->get_initial_allocation_count()
+		// as that just breaks leak tracking.
+
 		uintptr_t previous_current = m_begin_ + scope->get_initial_bytes_allocated();
 		if((HX_RELEASE) < 1) {
 			::memset((void*)previous_current, 0xcd, (size_t)(m_current - previous_current));
