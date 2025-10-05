@@ -235,27 +235,21 @@ inline bool hxisspace(char ch_) {
 /// - `i` : A `size_t`.
 inline int hxlog2i(size_t i_) {
 	// Use the floating point hardware because this isn't important enough for
-	// intrinsics.
-	float f_ = (float)i_;
-    uint32_t bits_;
-    memcpy(&bits_, &f_, sizeof(float));
-    return (int)((bits_ >> 23) & 0xffu) - 127;
+	// The memcpy is an intrinsic.
+	float f_ = (float)i_; uint32_t bits_; memcpy(&bits_, &f_, sizeof f_);
+	return (int)((bits_ >> 23) & 0xffu) - 127;
 }
 
-/// Returns true if `x` is finite (not NaN or ±inf). Implements `isfinitef`.
+/// Returns true if the float `x` is finite (not NaN or ±inf). Implements `isfinitef`.
 inline int hxisfinitef(float x_) {
-    uint32_t u_;
-    memcpy(&u_, &x_, sizeof u_);
-    // Finite iff exponent != all 1s (0xFF)
-    return (u_ & 0x7F800000u) != 0x7F800000u;
+	uint32_t u_; memcpy(&u_, &x_, sizeof u_); // An intrinsic.
+	return (u_ & 0x7f800000u) != 0x7f800000u;
 }
 
-/// Returns true if `x` is finite (not NaN or ±inf). Implements `isfinitel`.
+/// Returns true if the double `x` is finite (not NaN or ±inf). Implements `isfinitel`.
 inline int hxisfinitel(double x_) {
-    uint64_t u_;
-    memcpy(&u_, &x_, sizeof u_);
-    // Finite iff exponent != all 1s (0x7FF)
-    return (u_ & 0x7FF0000000000000ull) != 0x7FF0000000000000ull;
+	uint64_t u_; memcpy(&u_, &x_, sizeof u_); // An intrinsic.
+	return (u_ & 0x7ff0000000000000ull) != 0x7ff0000000000000ull;
 }
 
 // ----------------------------------------------------------------------------
@@ -280,31 +274,63 @@ public:
 /// `hxnullptr` - An instance of a class that will only convert to a null
 /// pointer. Useful when an integer constant arg would be ambiguous or otherwise
 /// break template code. `hxnullptr` is a `hxnullptr_t`. Use plain `hxnull` for
-/// comparisons.
+/// `==` and `!=` comparisons.
 #define hxnullptr hxnullptr_t()
 
-/// Internal. Implements `std::enable_if`. This is used instead of the `requires`
+/// Implements `std::enable_if`. This is available instead of the `requires`
 /// keyword when backwards compatibility is required. Used by `hxenable_if_t.`
 template<bool condition_, typename type_=void> struct hxenable_if { };
 template<typename type_> struct hxenable_if<true, type_> { using type = type_; };
 
-/// hxenable_if_t<condition> - Implements `std::enable_if_t`. This is used
+/// hxenable_if_t<condition> - Implements `std::enable_if_t`. This is available
 /// instead of the `requires` keyword when backwards compatibility is required.
 template<bool condition_, typename type_=void>
 using hxenable_if_t = typename hxenable_if<condition_, type_>::type;
 
 /// Internal. Returns `T` with references removed as
-/// `hxremove_reference<T>::type`. Used by `hxremove_reference_t`.
-template<class T_> struct hxremove_reference       { using type = T_; };
-template<class T_> struct hxremove_reference<T_&>  { using type = T_; };
-template<class T_> struct hxremove_reference<T_&&> { using type = T_; };
+/// `hxremove_reference_<T>::type`. Used by `hxremove_reference_t`.
+template<class T_> struct hxremove_reference_       { using type = T_; };
+template<class T_> struct hxremove_reference_<T_&>  { using type = T_; };
+template<class T_> struct hxremove_reference_<T_&&> { using type = T_; };
 
 /// hxremove_reference_t<T> - Returns `T` with references removed.
-template<class T_> using hxremove_reference_t = typename hxremove_reference<T_>::type;
+template<class T_> using hxremove_reference_t = typename hxremove_reference_<T_>::type;
 
-/// Internal. Implements `std::is_lvalue_reference`.
-template<typename T_> struct hxis_lvalue_reference { enum { value = 0 }; };
-template<typename T_> struct hxis_lvalue_reference<T_&> { enum { value = 1 }; };
+/// Implements `std::true_type`/`std::false_type`.
+struct hxfalse_t { enum { value = 0 }; };
+struct hxtrue_t { enum { value = 1 }; };
+
+/// Implements `std::is_lvalue_reference`.
+template<typename T_> struct hxis_lvalue_reference : public hxfalse_t { };
+template<typename T_> struct hxis_lvalue_reference<T_&> : public hxtrue_t { };
+
+/// Internal. Implements `std::remove_cv`.
+template<class T_> struct hxremove_cv_ { using type = T_; };
+template<class T_> struct hxremove_cv_<const T_> { using type = T_; };
+template<class T_> struct hxremove_cv_<volatile T_> { using type = T_; };
+template<class T_> struct hxremove_cv_<const volatile T_> { using type = T_; };
+
+/// Removes const and volatile from a type. Implements `std::remove_cv_t`.
+/// This is used to maintain semantic compatibility with the standard.
+template<class T_> using hxremove_cv_t = typename hxremove_cv_<T_>::type;
+
+/// Internal. Returns `std::is_pointer` as `hxis_pointer_<T>::type` but without
+/// handling cv.
+template<typename T_> struct hxis_pointer_ : public hxfalse_t { };
+template<typename T_> struct hxis_pointer_<T_*> : public hxtrue_t { };
+
+/// Returns whether T is a pointer type as `hxis_pointer_<T>::type`. Implements
+/// `std::is_pointer`.
+template<class T> struct hxis_pointer : hxis_pointer_<hxremove_cv_t<T>> { };
+
+/// Internal. Adds the `__restrict` keyword to C++ pointers. Used by
+/// `hxadd_attr_if_ptr_t`.
+template<class T_, int = hxis_pointer<T_>::value> struct hxrestrict_t_;
+template<class T_> struct hxrestrict_t_<T_, 0> { using type = T_; };
+template<class T_> struct hxrestrict_t_<T_, 1> { using type = T_ hxrestrict; };
+
+/// Adds the `__restrict` keyword to C++ pointers.
+template<class T_> using hxrestrict_t = typename hxrestrict_t_<T_>::type;
 
 /// Implements `std::move`. Converts either a `T&` or a `T&&` to a `T&&`. Do not
 /// specify `T` explicitly as it will not work as expected. This uses the rules
@@ -323,7 +349,7 @@ constexpr hxremove_reference_t<T_>&& hxmove(T_&& t_) {
 /// ```
 /// This is the `T&&` version of hxforward<T>.
 template<class T_>
-constexpr T_&& hxforward(typename hxremove_reference<T_>::type&& t) noexcept {
+constexpr T_&& hxforward(hxremove_reference_t<T_>&& t) noexcept {
 	static_assert(!hxis_lvalue_reference<T_>::value, "T must be a `T&&` reference.");
 	return static_cast<T_&&>(t);
 }
@@ -331,7 +357,7 @@ constexpr T_&& hxforward(typename hxremove_reference<T_>::type&& t) noexcept {
 /// This is the `T&` version of hxforward<T>. It gets invoked when `T` turns out
 /// to be an l-value. This happens then a `T&` is passed as a `T&&`.
 template<class T_>
-constexpr T_&& hxforward(typename hxremove_reference<T_>::type& t) noexcept {
+constexpr T_&& hxforward(hxremove_reference_t<T_>& t) noexcept {
 	return static_cast<T_&&>(t);
 }
 
@@ -381,6 +407,7 @@ constexpr void hxswap(T_& x_, T_& y_) {
 /// - `y` : Second `T&`.
 template<typename T_>
 constexpr void hxswap_memcpy(T_& x_, T_& y_) {
+	hxassertmsg(&x_ != &y_, "hxswap_memcpy No swapping with self.");
 	char t_[sizeof x_];
 	::memcpy(t_, &y_, sizeof x_);
 	::memcpy((void*)&y_, &x_, sizeof x_);
