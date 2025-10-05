@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-#include <hx/hatchling.h>
-#include <stdio.h>
+#include <hx/hxutility.h>
 
 #include "hxctest.h"
+
+#include <stdio.h>
+
 
 // Make sure this all compiles and runs in C99.
 bool hxctest_hatchling_h(void) {

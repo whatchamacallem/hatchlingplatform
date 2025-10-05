@@ -3,6 +3,7 @@
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
 #include "../include/hx/hatchling.h"
+#include "../include/hx/hxutility.h"
 
 HX_REGISTER_FILENAME_HASH
 

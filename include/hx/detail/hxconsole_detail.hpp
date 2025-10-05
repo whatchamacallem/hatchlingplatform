@@ -9,6 +9,8 @@
 // theory a byte code interpreter that understood the target calling
 // convention could shave off 10k from a system with 100s of commands.
 
+#include "../hxutility.h"
+
 // Automatic cast from double with clamping.
 template<typename T_>
 hxconsolenumber_t::operator T_(void) const {

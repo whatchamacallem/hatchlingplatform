@@ -4,6 +4,7 @@
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
 #include "../hxkey.hpp"
+#include "../hxutility.h"
 
 template<typename iterator_t_, typename less_t_> hxattr_hot
 void hxinsertion_sort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_);

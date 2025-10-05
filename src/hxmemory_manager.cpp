@@ -4,6 +4,7 @@
 
 #include "../include/hx/hatchling.h"
 #include "../include/hx/hxthread.hpp"
+#include "../include/hx/hxutility.h"
 
 HX_REGISTER_FILENAME_HASH
 

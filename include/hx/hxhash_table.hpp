@@ -46,6 +46,7 @@
 
 #include "detail/hxhash_table_detail.hpp"
 #include "hxkey.hpp"
+#include "hxutility.h"
 
 /// `hxhash_table_set_node` - Optional base class for unordered set entries.
 /// Caches the hash value. Copying and modification are disallowed to protect
