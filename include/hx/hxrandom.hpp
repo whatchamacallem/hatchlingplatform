@@ -8,12 +8,13 @@
 
 #include "hatchling.h"
 
-/// `hxrandom` - 64-bit MMIX LCG. Knuth, D. 2002 (Modified to perturb return.)
-/// Performs an automatic cast to any unsigned integer or floating point value.
-/// Usable as a functor or by using the provided cast operator for your type. Has
-/// a period of 2^64 and passes routine numerical tests with only 8 bytes of
-/// state and using simple arithmetic. Intended for test data or games and not
-/// mathematical applications.
+/// `hxrandom` - 64-bit MMIX LCG. Knuth, D. 2002. (Modified to perturb return so
+/// that all bits are of equal quality.) Performs an automatic cast to any
+/// unsigned integer or floating point value. Usable as a functor or by using
+/// the provided cast operator for your type. Has a period of 2^64 and passes
+/// routine numerical tests with only 8 bytes of state and using simple
+/// arithmetic. Intended for test data or games and not mathematical
+/// applications.
 class hxrandom {
 public:
 	/// Constructor to initialize the random number generator.
@@ -31,22 +32,22 @@ public:
 	/// indicies without overflowing.
 	/// E.g., `unsigned int = m_prng; // Returns [0..UINT_MAX].`
 	operator float(void) {
-		return (float)this->advance32() * (1.0f / 4294967296.0f); // 0x1p-32f
+		return (float)this->generate32() * (1.0f / 4294967296.0f); // 0x1p-32f
 	}
 	operator double(void) {
-		return (double)this->advance64() * (1.0 / 18446744073709551616.0); // 0x1p-64;
+		return (double)this->generate64() * (1.0 / 18446744073709551616.0); // 0x1p-64;
 	}
 	operator uint8_t(void) {
-		return (uint8_t)this->advance32();
+		return (uint8_t)this->generate32();
 	}
 	operator uint16_t(void) {
-		return (uint16_t)this->advance32();
+		return (uint16_t)this->generate32();
 	}
 	operator uint32_t(void) {
-		return this->advance32();
+		return this->generate32();
 	}
 	operator uint64_t(void) {
-		return this->advance64();
+		return this->generate64();
 	}
 
 	/// Returns a random number in the range [base..base+range). `range(0.0f,10.0f)`
@@ -70,14 +71,36 @@ public:
 
 	// Negative size is undefined.
 	int64_t range(int64_t base_, int64_t size_) {
-		return base_ + (int64_t)(this->advance64() % (uint64_t)size_);
+		return base_ + (int64_t)(this->generate64() % (uint64_t)size_);
 	}
 	uint64_t range(uint64_t base_, uint64_t size_) {
-		return base_ + this->advance64() % size_;
+		return base_ + this->generate64() % size_;
 	}
 
-	/// Returns [0..2^32).
-	uint32_t advance32(void) {
+	/// Reads a specified number of random bytes into the provided buffer.
+	/// - `bytes` : Pointer to the buffer where the random bytes will be stored.
+	/// - `count` : Number of bytes to read.
+	void read(void* bytes_, size_t count_) hxattr_nonnull(2) {
+		uint8_t* chars_ = (uint8_t*)bytes_;
+		while(count_>=4) {
+			uint32_t x = this->generate32();
+			*chars_++ = (uint8_t)x;
+			*chars_++ = (uint8_t)(x >>= 8);
+			*chars_++ = (uint8_t)(x >>= 8);
+			*chars_++ = (uint8_t)(x >>= 8);
+			count_ -= 4;
+		}
+		if(count_) {
+			uint32_t x = this->generate32();
+			do {
+				*chars_++ = (uint8_t)(x >>= 8);
+			} while(--count_)
+				/* */;
+		}
+	}
+
+	/// Returns a pseudo random number in the interval [0..2^32).
+	uint32_t generate32(void) {
 		m_state_ = (uint64_t)0x5851f42d4c957f2dull * m_state_ + (uint64_t)0x14057b7ef767814full;
 
 		// MODIFICATION: Use the 4 msb bits as a random 0..15 bit variable shift
@@ -89,9 +112,9 @@ public:
 		return result_;
 	}
 
-	/// Returns [0..2^64).
-	uint64_t advance64(void) {
-		uint64_t result_ = (uint64_t)this->advance32() | ((uint64_t)this->advance32() << 32);
+	/// Returns a pseudo random number in the interval [0..2^64).
+	uint64_t generate64(void) {
+		uint64_t result_ = (uint64_t)this->generate32() | ((uint64_t)this->generate32() << 32);
 		return result_;
 	}
 
@@ -103,7 +126,7 @@ private:
 /// - `a` : Bits to mask off. Undefined behavior when a negative integer.
 /// - `b` : A `hxrandom`.
 template <typename T_> T_ operator&(T_ a_, hxrandom& b_) {
-	return T_((uint32_t)a_ & b_.advance32());
+	return T_((uint32_t)a_ & b_.generate32());
 }
 
 /// `operator&(int64_t a_, hxrandom& b_)` - 64-bit version. Allow a signed
@@ -112,12 +135,12 @@ template <typename T_> T_ operator&(T_ a_, hxrandom& b_) {
 /// - `a` : Bits to mask off. Undefined behavior when negative.
 /// - `b` : A `hxrandom`.
 inline int64_t operator&(int64_t a_, hxrandom& b_) {
-   return (int64_t)((uint64_t)a_ & b_.advance64());
+   return (int64_t)((uint64_t)a_ & b_.generate64());
 }
 
 /// `operator&(uint64_t a_, hxrandom& b_)` - 64-bit version.
 inline uint64_t operator&(uint64_t a_, hxrandom& b_) {
-	return a_ & b_.advance64();
+	return a_ & b_.generate64();
 }
 
 /// `operator&(T a, hxrandom& b)` - Bitwise & with random T generated from `a`.
@@ -134,8 +157,9 @@ template<typename T_> T_ operator&=(T_& a_, hxrandom& b_) {
 	return (a_ = a_ & b_);
 }
 
-/// `operator%(hxrandom& a, T_ b)` - Generate an number of type `T` in the range `[0..b)`.
-/// Works with floating point divisors and uses no actual modulo or division.
+/// `operator%(hxrandom& a, T_ b)` - Generate an number of type `T` in the range
+/// `[0..b)`. Works with floating point divisors and uses no actual modulo or
+/// division.
 template<typename T_> T_ operator%(hxrandom& dividend_, T_ divisor_) {
 	return dividend_.range(T_(0), divisor_);
 }
