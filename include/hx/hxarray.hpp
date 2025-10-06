@@ -700,8 +700,9 @@ template<typename T_, size_t capacity_>
 template<typename functor_t_>
 size_t hxarray<T_, capacity_>::erase_if(functor_t_&& fn_) {
 	size_t removed_ = 0u;
+	T_* data_ = this->data();
 	for(size_t index_ = this->size(); index_--;) {
-		if(hxforward<functor_t_>(fn_)(this->data()[index_])) {
+		if(hxforward<functor_t_>(fn_)(data_[index_])) {
 			this->erase_unordered(index_);
 			++removed_;
 		}
