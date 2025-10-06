@@ -229,38 +229,14 @@ private:
 	// This is what is not being used.
 
 	sort_api_t() = delete;
-    sort_api_t(const sort_api_t& other) = delete;
+    sort_api_t(const sort_api_t&) = delete;
 	// Did you use hxmove?
-    sort_api_t& operator=(const sort_api_t& other) = delete;
-    bool operator==(const sort_api_t& other) const = delete;
-    bool operator!=(const sort_api_t& other) const = delete;
-    bool operator>(const sort_api_t& other) const = delete;
-    bool operator>=(const sort_api_t& other) const = delete;
-    bool operator<=(const sort_api_t& other) const = delete;
-    sort_api_t operator+(const sort_api_t& other) const = delete;
-    sort_api_t operator-(const sort_api_t& other) const = delete;
-    sort_api_t operator*(const sort_api_t& other) const = delete;
-    sort_api_t operator/(const sort_api_t& other) const = delete;
-    sort_api_t operator%(const sort_api_t& other) const = delete;
-    sort_api_t& operator+=(const sort_api_t& other) = delete;
-    sort_api_t& operator-=(const sort_api_t& other) = delete;
-    sort_api_t& operator*=(const sort_api_t& other) = delete;
-    sort_api_t& operator/=(const sort_api_t& other) = delete;
-    sort_api_t& operator%=(const sort_api_t& other) = delete;
-	bool operator&(const sort_api_t& other) const = delete;
-	bool operator|(const sort_api_t& other) const = delete;
-	bool operator^(const sort_api_t& other) const = delete;
-	sort_api_t operator~(void) const = delete;
-	sort_api_t operator<<(const sort_api_t& other) const = delete;
-	sort_api_t operator>>(const sort_api_t& other) const = delete;
-	sort_api_t& operator&=(const sort_api_t& other) = delete;
-	sort_api_t& operator|=(const sort_api_t& other) = delete;
-	sort_api_t& operator^=(const sort_api_t& other) = delete;
-	sort_api_t& operator<<=(const sort_api_t& other) = delete;
-	sort_api_t& operator>>=(const sort_api_t& other) = delete;
-	bool operator&&(const sort_api_t& other) const = delete;
-	bool operator||(const sort_api_t& other) const = delete;
-	bool operator!(void) const = delete;
+    sort_api_t& operator=(const sort_api_t&) = delete;
+    bool operator==(const sort_api_t&) const = delete;
+    bool operator!=(const sort_api_t&) const = delete;
+    bool operator>(const sort_api_t&) const = delete;
+    bool operator>=(const sort_api_t&) const = delete;
+    bool operator<=(const sort_api_t&) const = delete;
 };
 
 class sort_iter_api_t {
@@ -269,12 +245,9 @@ public:
 	sort_iter_api_t(const sort_iter_api_t& x) = default;
 	sort_iter_api_t& operator=(const sort_iter_api_t& x) = default;
 
-	// Not hxnull, hxnullptr.
-	sort_iter_api_t(int null) = delete;
-	sort_iter_api_t(hxnullptr_t null) = delete;
-
 	// Require only the standard pointer operations. No array notation.
 	sort_api_t& operator*(void) const { hxassert(m_pointer != hxnull); return *m_pointer; }
+
 	sort_iter_api_t& operator++(void) { hxassert(m_pointer != hxnull); ++m_pointer; return *this; }
 	sort_iter_api_t operator++(int) { hxassert(m_pointer != hxnull); sort_iter_api_t temp_(*this); ++m_pointer; return temp_; }
 	sort_iter_api_t& operator--(void) { hxassert(m_pointer != hxnull); --m_pointer; return *this; }
@@ -289,6 +262,19 @@ public:
 	bool operator<=(const sort_iter_api_t& other_) const { return m_pointer <= other_.m_pointer; }
 	bool operator>=(const sort_iter_api_t& other_) const { return m_pointer >= other_.m_pointer; }
 private:
+	// This is what is not being used.
+
+	// Not hxnull, hxnullptr. Return the "end" instead.
+	sort_iter_api_t(int null) = delete;
+	sort_iter_api_t(hxnullptr_t null) = delete;
+	void operator[](int index) const = delete;
+
+    sort_api_t& operator+=(const sort_api_t&) = delete;
+    sort_api_t& operator-=(const sort_api_t&) = delete;
+	bool operator&&(const sort_api_t&) const = delete;
+	bool operator||(const sort_api_t&) const = delete;
+	bool operator!(void) const = delete;
+
 	sort_api_t* m_pointer;
 };
 
@@ -401,13 +387,8 @@ TEST(hxsort_iter_test, hxmerge_iterator_support) {
 
 TEST(hxsort_iter_test, hxbinary_search_iterator_support) {
 	sort_api_t values_[7] = {
-		sort_api_t(-5),
-		sort_api_t(-1),
-		sort_api_t(0),
-		sort_api_t(3),
-		sort_api_t(5),
-		sort_api_t(8),
-		sort_api_t(12)
+		sort_api_t(-5), sort_api_t(-1), sort_api_t(0), sort_api_t(3),
+		sort_api_t(5), sort_api_t(8), sort_api_t(12)
 	};
 
 	sort_iter_api_t begin_(values_);
@@ -504,7 +485,7 @@ TEST(hxsort_test, sort_grinder_generic) {
 		for(size_t j=size - 1u; j--;) {
 			--histogram[(size_t)sorted[j].value];
 			// Use pointers just to show that they are dereferenced by hxkey_less.
-			EXPECT_FALSE(hxkey_less(&sorted[j + 1], &sorted[j]));
+			EXPECT_FALSE(hxkey_less(sorted.get(j + 1), sorted.get(j)));
 		}
 		for(size_t j=20000u; j-- > 10000u;) {
 			EXPECT_EQ(histogram[j], 0);
