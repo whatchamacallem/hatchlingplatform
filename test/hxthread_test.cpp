@@ -72,6 +72,31 @@ void* hxthread_test_func_wait_notify_sequence(hxthread_test_parameters_t* parame
 	return hxnull;
 }
 
+hxmutex hxthread_local_destructor_mutex;
+int hxthread_local_destructor_count = 0;
+
+class hxthread_local_destructor_tracker {
+public:
+	hxthread_local_destructor_tracker(bool track=false) : track_(track) { }
+
+	~hxthread_local_destructor_tracker() {
+		if(track_) {
+			hxunique_lock lock(hxthread_local_destructor_mutex);
+			++hxthread_local_destructor_count;
+		}
+	}
+
+	bool track_;
+};
+
+hxthread_local<hxthread_local_destructor_tracker> hxthread_local_destructor_tls;
+
+void* hxthread_local_destructor_thread(int*) {
+	hxthread_local_destructor_tracker& tracker = hxthread_local_destructor_tls;
+	tracker.track_ = true;
+	return hxnull;
+}
+
 } // namespace {
 
 TEST(hxunique_lock, basic_lock_unlock) {
@@ -273,6 +298,20 @@ TEST(hxthread, multiple_thread_start_join) {
 		hxdelete(threads[i]);
 	}
 	EXPECT_EQ(shared, reps);
+}
+
+TEST(hxthread_local, destroy_local_runs_on_thread_exit) {
+	{
+		hxunique_lock lock(hxthread_local_destructor_mutex);
+		hxthread_local_destructor_count = 0;
+	}
+
+	int dummy=0;
+	hxthread thread(&hxthread_local_destructor_thread, &dummy);
+	thread.join();
+
+	hxunique_lock lock(hxthread_local_destructor_mutex);
+	EXPECT_EQ(hxthread_local_destructor_count, 1);
 }
 
 #endif // HX_USE_THREADS

@@ -62,7 +62,7 @@ public:
 #endif
 	}
 
-	/// Destroy every thread's private copy.
+	/// Doesn't seem to do much. Frees resources.
 	~hxthread_local() {
 #if HX_USE_THREADS
 		::pthread_key_delete(m_key_);
@@ -100,9 +100,8 @@ private:
 #endif
 
 	static void destroy_local_(void* ptr_) noexcept {
-		if(ptr_) {
-			delete static_cast<T_*>(ptr_);
-		}
+		hxassertmsg(ptr_, "destroy_local_");
+		delete static_cast<T_*>(ptr_);
 	}
 
 	explicit hxthread_local(const hxthread_local&) = delete;
