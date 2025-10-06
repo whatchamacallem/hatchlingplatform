@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <ctype.h>
+#include <math.h>
 
 HX_REGISTER_FILENAME_HASH
 
@@ -260,20 +261,16 @@ TEST(hxutility_test, hxlog2i_returns_highest_set_bit) {
 }
 
 TEST(hxutility_test, hxisfinite_detects_special_values) {
-	union { uint32_t bits; float value; } float_bits;
-	union { uint32_t bits; float value; } float_nan_bits;
-	union { uint64_t bits; double value; } double_bits;
-
-	float_bits.bits = 0x7f800000u;
-	float_nan_bits.bits = 0x7fc00000u;
-	double_bits.bits = 0x7ff0000000000000ull;
+	const float float_infinity = INFINITY;
+	const float float_nan = NAN;
+	const long double long_double_infinity = HUGE_VALL;
 
 	EXPECT_TRUE(hxisfinitef(0.0f));
-	EXPECT_FALSE(hxisfinitef(float_bits.value));
-	EXPECT_FALSE(hxisfinitef(float_nan_bits.value));
+	EXPECT_FALSE(hxisfinitef(float_infinity));
+	EXPECT_FALSE(hxisfinitef(float_nan));
 
-	EXPECT_TRUE(hxisfinitel(0.0));
-	EXPECT_FALSE(hxisfinitel(double_bits.value));
+	EXPECT_TRUE(hxisfinitel(0.0l));
+	EXPECT_FALSE(hxisfinitel(long_double_infinity));
 }
 
 TEST(hxutility_test, arithmetic_helpers_cover_min_max_abs_clamp) {
