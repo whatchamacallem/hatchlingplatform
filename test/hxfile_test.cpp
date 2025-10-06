@@ -7,8 +7,6 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// Console_test.cpp provides coverage for normal operation.
-
 namespace {
 
 struct hxfile_test_record {

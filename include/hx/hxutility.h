@@ -135,6 +135,10 @@ template<class T_> struct hxremove_cv_<const volatile T_> { using type = T_; };
 /// This is used to maintain semantic compatibility with the standard.
 template<class T_> using hxremove_cv_t = typename hxremove_cv_<T_>::type;
 
+/// Implements `std::is_const`.
+template<typename T_> struct hxis_const : public hxfalse_t { };
+template<typename T_> struct hxis_const<const T_> : public hxtrue_t { };
+
 /// Implements `std::is_void`.
 template<typename T_> struct hxis_void_ : public hxfalse_t { };
 template<> struct hxis_void_<void> : public hxtrue_t { };
