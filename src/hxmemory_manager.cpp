@@ -69,9 +69,6 @@ static hxmutex s_hxmemory_manager_mutex;
 
 namespace hxdetail_ {
 
-// Needs to be a pointer to prevent a constructor running at a bad time.
-class hxmemory_manager* s_hxmemory_manager = hxnull;
-
 // ----------------------------------------------------------------------------
 // hxmemory_allocation_header - Used until C++17.
 #if !HX_USE_STD_ALIGNED_ALLOC
@@ -367,6 +364,8 @@ private:
 hxthread_local<hxsystem_allocator_t>
 hxmemory_manager::s_hxcurrent_memory_allocator(hxsystem_allocator_heap);
 
+static hxmemory_manager s_hxmemory_manager;
+
 void hxmemory_manager::construct(void) {
 	s_hxcurrent_memory_allocator = hxsystem_allocator_heap;
 
@@ -483,24 +482,24 @@ using namespace hxdetail_;
 
 hxattr_noexcept hxsystem_allocator_scope::hxsystem_allocator_scope(hxsystem_allocator_t id)
 {
-	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
+	hxassertmsg(g_hxisinit, "not_init memory manager");
 	m_this_allocator_ = id;
-	m_initial_allocator_ = s_hxmemory_manager->begin_allocation_scope(this, id);
+	m_initial_allocator_ = s_hxmemory_manager.begin_allocation_scope(this, id);
 }
 
 hxattr_noexcept hxsystem_allocator_scope::~hxsystem_allocator_scope(void) {
-	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
-	s_hxmemory_manager->end_allocation_scope(this, m_initial_allocator_);
+	hxassertmsg(g_hxisinit, "not_init memory manager");
+	s_hxmemory_manager.end_allocation_scope(this, m_initial_allocator_);
 }
 
 size_t hxsystem_allocator_scope::get_current_allocation_count(void) const {
-	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
-	return s_hxmemory_manager->get_allocator(m_this_allocator_).get_allocation_count(m_this_allocator_);
+	hxassertmsg(g_hxisinit, "not_init memory manager");
+	return s_hxmemory_manager.get_allocator(m_this_allocator_).get_allocation_count(m_this_allocator_);
 }
 
 size_t hxsystem_allocator_scope::get_current_bytes_allocated(void) const {
-	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
-	return s_hxmemory_manager->get_allocator(m_this_allocator_).get_bytes_allocated(m_this_allocator_);
+	hxassertmsg(g_hxisinit, "not_init memory manager");
+	return s_hxmemory_manager.get_allocator(m_this_allocator_).get_bytes_allocated(m_this_allocator_);
 }
 
 // ----------------------------------------------------------------------------
@@ -509,8 +508,8 @@ size_t hxsystem_allocator_scope::get_current_bytes_allocated(void) const {
 extern "C"
 hxattr_noexcept void* hxmalloc(size_t size) {
 	hxinit();
-	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
-	void* ptr = s_hxmemory_manager->allocate(size, hxsystem_allocator_current, HX_ALIGNMENT);
+	hxassertmsg(g_hxisinit, "not_init memory manager");
+	void* ptr = s_hxmemory_manager.allocate(size, hxsystem_allocator_current, HX_ALIGNMENT);
 	if((HX_RELEASE) < 1) {
 		::memset(ptr, 0xab, size);
 	}
@@ -520,8 +519,8 @@ hxattr_noexcept void* hxmalloc(size_t size) {
 extern "C"
 hxattr_noexcept void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, hxalignment_t alignment) {
 	hxinit();
-	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
-	void* ptr = s_hxmemory_manager->allocate(size, (hxsystem_allocator_t)id, alignment);
+	hxassertmsg(g_hxisinit, "not_init memory manager");
+	void* ptr = s_hxmemory_manager.allocate(size, (hxsystem_allocator_t)id, alignment);
 	if((HX_RELEASE) < 1) {
 		::memset(ptr, 0xab, size);
 	}
@@ -530,39 +529,34 @@ hxattr_noexcept void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, hxalign
 
 extern "C"
 hxattr_noexcept void hxfree(void *ptr) {
-	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
+	hxassertmsg(g_hxisinit, "not_init memory manager");
 
 	// Nothing allocated from the OS memory manager can be freed here. Not unless
 	// it is wrapped with hxmemory_allocator_os_heap.
-	s_hxmemory_manager->free(ptr);
+	s_hxmemory_manager.free(ptr);
 }
 
 void hxmemory_manager_init(void) {
-	hxassertrelease(!s_hxmemory_manager, "reinit memory manager");
+	hxassertrelease(!g_hxisinit, "reinit memory manager");
 
-	s_hxmemory_manager = (hxmemory_manager*)hxmalloc_checked_(sizeof(hxmemory_manager));
-	::memset((void*)s_hxmemory_manager, 0x00, sizeof(hxmemory_manager));
-
-	s_hxmemory_manager->construct();
+	s_hxmemory_manager.construct();
 }
 
 void hxmemory_manager_shut_down(void) {
-	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
+	hxassertmsg(g_hxisinit, "not_init memory manager");
 
 	// Any allocations made while active will crash when free'd. If these are
 	// not fixed you will hit a leak sanitizer elsewhere.
-	const size_t leak_count = s_hxmemory_manager->leak_count();
+	const size_t leak_count = s_hxmemory_manager.leak_count();
 	hxassertrelease(leak_count == 0, "memory_leak at shutdown %zu", leak_count); (void)leak_count;
 
 	// Return everything to the system allocator.
-	s_hxmemory_manager->destruct();
-	::free(s_hxmemory_manager);
-	s_hxmemory_manager = hxnull;
+	s_hxmemory_manager.destruct();
 }
 
 size_t hxmemory_manager_leak_count(void) {
-	hxassertmsg(s_hxmemory_manager, "not_init memory manager");
-	return s_hxmemory_manager->leak_count();
+	hxassertmsg(g_hxisinit, "not_init memory manager");
+	return s_hxmemory_manager.leak_count();
 }
 
 // ----------------------------------------------------------------------------

@@ -196,7 +196,6 @@ extern "C"
 void hxinit_internal(void) {
 	hxassertrelease(!g_hxisinit, "not_init");
 	hxsettings_construct();
-	g_hxisinit = true;
 
 #if HX_FLOATING_POINT_TRAPS
 	// You need the math library -lm. This is nonstandard glibc/_GNU_SOURCE.
@@ -204,6 +203,7 @@ void hxinit_internal(void) {
 #endif
 
 	hxmemory_manager_init();
+	g_hxisinit = true;
 }
 
 extern "C"
@@ -244,8 +244,10 @@ extern "C"
 void hxshutdown(void) {
 	if(g_hxisinit) {
 #if (HX_RELEASE) < 3
-		// Will trap further activity and leaks.
 		hxmemory_manager_shut_down();
+		// Try to trap further activity. This will break global destructors that
+		// call hxfree. There isn't an easier way to do leak tracking.
+		g_hxisinit = false;
 #endif
 	}
 }
