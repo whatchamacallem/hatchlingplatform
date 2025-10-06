@@ -45,36 +45,36 @@
 ///
 ///   | Macro | Assertion |
 ///   | --- | --- |
-///   | `SUCCEED(void)` | Non-fatal; marks the test as explicitly successful. |
-///   | `FAIL(void)` | Fatal; records failure and returns from the test. |
-///   | `ADD_FAILURE(void)` | Non-fatal; records a failure at the current location. |
-///   | `ADD_FAILURE_AT(const char*, size_t)` | Non-fatal; records a failure at the provided file and line. |
-///   | `EXPECT_TRUE(bool)` | Non-fatal; requires the condition to evaluate to true. |
-///   | `EXPECT_FALSE(bool)` | Non-fatal; requires the condition to evaluate to false. |
-///   | `EXPECT_EQ(T, T)` | Non-fatal; requires both values to compare equal. |
-///   | `EXPECT_NE(T, T)` | Non-fatal; requires both values to compare not equal. |
-///   | `EXPECT_LT(T, T)` | Non-fatal; requires the left operand to be less than the right operand. |
-///   | `EXPECT_GT(T, T)` | Non-fatal; requires the left operand to be greater than the right operand. |
-///   | `EXPECT_LE(T, T)` | Non-fatal; requires the left operand to be less than or equal to the right operand. |
-///   | `EXPECT_GE(T, T)` | Non-fatal; requires the left operand to be greater than or equal to the right operand. |
-///   | `EXPECT_NEAR(T, T, T)` | Non-fatal; requires both values to be within the provided absolute tolerance. |
-///   | `EXPECT_FLOAT_EQ(float, float)` | Non-fatal; requires floats to match within an adaptive tolerance. |
-///   | `EXPECT_DOUBLE_EQ(double, double)` | Non-fatal; requires doubles to match within an adaptive tolerance. |
-///   | `EXPECT_STREQ(const char*, const char*)` | Non-fatal; requires both C strings to match. |
-///   | `EXPECT_STRNE(const char*, const char*)` | Non-fatal; requires both C strings to differ. |
-///   | `ASSERT_TRUE(bool)` | Fatal; requires the condition to evaluate to true. |
-///   | `ASSERT_FALSE(bool)` | Fatal; requires the condition to evaluate to false. |
-///   | `ASSERT_EQ(T, T)` | Fatal; requires both values to compare equal. |
-///   | `ASSERT_NE(T, T)` | Fatal; requires both values to compare not equal. |
-///   | `ASSERT_LT(T, T)` | Fatal; requires the left operand to be less than the right operand. |
-///   | `ASSERT_GT(T, T)` | Fatal; requires the left operand to be greater than the right operand. |
-///   | `ASSERT_LE(T, T)` | Fatal; requires the left operand to be less than or equal to the right operand. |
-///   | `ASSERT_GE(T, T)` | Fatal; requires the left operand to be greater than or equal to the right operand. |
-///   | `ASSERT_NEAR(T, T, T)` | Fatal; requires both values to be within the provided absolute tolerance. |
-///   | `ASSERT_FLOAT_EQ(float, float)` | Fatal; requires floats to match within an adaptive tolerance. |
-///   | `ASSERT_DOUBLE_EQ(double, double)` | Fatal; requires doubles to match within an adaptive tolerance. |
-///   | `ASSERT_STREQ(const char*, const char*)` | Fatal; requires both C strings to match. |
-///   | `ASSERT_STRNE(const char*, const char*)` | Fatal; requires both C strings to differ. |
+///   | `SUCCEED(void)` | Marks the current test as successful without any checks. |
+///   | `FAIL(void)` | NOTA BENE. Calls `return`. Marks the current test as failed. |
+///   | `ADD_FAILURE(void)` | Adds a non-fatal failure at the current location. |
+///   | `ADD_FAILURE_AT(const char*, size_t)` | Adds a non-fatal failure at the specified location. |
+///   | `EXPECT_TRUE(bool)` | Requires that the condition is true. |
+///   | `EXPECT_FALSE(bool)` | Requires that the condition is false. |
+///   | `EXPECT_EQ(T, T)` | Requires `a == b`. |
+///   | `EXPECT_NE(T, T)` | Requires `a != b` using `!(a == b)`. |
+///   | `EXPECT_LT(T, T)` | Requires `a < b`. |
+///   | `EXPECT_GT(T, T)` | Requires `a > b` using `b < a`. |
+///   | `EXPECT_LE(T, T)` | Requires `a <= b` using `!(b < a)`. |
+///   | `EXPECT_GE(T, T)` | Requires `a >= b` using `!(a < b)`. |
+///   | `EXPECT_NEAR(T, T, T)` | Requires that two values are within a given range. |
+///   | `EXPECT_FLOAT_EQ(float, float)` | Checks floats for equality within a scaled tolerance. |
+///   | `EXPECT_DOUBLE_EQ(double, double)` | Checks doubles for equality within a scaled tolerance. |
+///   | `EXPECT_STREQ(const char*, const char*)` | Requires that two C strings are equal, handling null pointers. |
+///   | `EXPECT_STRNE(const char*, const char*)` | Requires that two C strings differ, handling null pointers. |
+///   | `ASSERT_TRUE(bool)` | Requires that the condition is true. |
+///   | `ASSERT_FALSE(bool)` | Requires that the condition is false. |
+///   | `ASSERT_EQ(T, T)` | Requires `a == b`. |
+///   | `ASSERT_NE(T, T)` | Requires `a != b` using `!(a == b)`. |
+///   | `ASSERT_LT(T, T)` | Requires `a < b`. |
+///   | `ASSERT_GT(T, T)` | Requires `a > b` using `b < a`. |
+///   | `ASSERT_LE(T, T)` | Requires `a <= b` using `!(b < a)`. |
+///   | `ASSERT_GE(T, T)` | Requires `a >= b` using `!(a < b)`. |
+///   | `ASSERT_NEAR(T, T, T)` | Requires that two values are within a given range. |
+///   | `ASSERT_FLOAT_EQ(float, float)` | Checks floats for equality within a scaled tolerance. |
+///   | `ASSERT_DOUBLE_EQ(double, double)` | Checks doubles for equality within a scaled tolerance. |
+///   | `ASSERT_STREQ(const char*, const char*)` | Requires that two C strings are equal, handling null pointers. |
+///   | `ASSERT_STRNE(const char*, const char*)` | Requires that two C strings differ, handling null pointers. |
 ///
 /// See: https://google.github.io/googletest/reference/assertions.html
 
@@ -181,62 +181,62 @@ inline void InitGoogleTest(void) { }
 /// `void ADD_FAILURE_AT(const char*, size_t)` - Adds a non-fatal failure at the specified location.
 #define ADD_FAILURE_AT(file_, line_) hxtest_::dispatcher_().condition_check_(false, (file_), (size_t)(line_), "ADD_FAILURE_AT()", false)
 
-/// `void EXPECT_TRUE(bool)` - Checks that the condition is true.
+/// `void EXPECT_TRUE(bool)` - Requires that the condition is true.
 #define EXPECT_TRUE(x_) hxtest_::dispatcher_().condition_check_((x_), __FILE__, __LINE__, #x_, false)
-/// `void EXPECT_FALSE(bool)` - Checks that the condition is false.
+/// `void EXPECT_FALSE(bool)` - Requires that the condition is false.
 #define EXPECT_FALSE(x_) hxtest_::dispatcher_().condition_check_(!(x_), __FILE__, __LINE__, "!" #x_, false)
-/// `void EXPECT_NEAR(T expected, T actual, T absolute_range)` - Checks that two values are within a given range.
+/// `void EXPECT_NEAR(T expected, T actual, T absolute_range)` - Requires that two values are within a given range.
 #define EXPECT_NEAR(expected_, actual_, absolute_range_) hxtest_::dispatcher_().condition_check_( \
 	(((expected_) < (actual_)) ? ((actual_)-(expected_)) : ((expected_)-(actual_))) <= (absolute_range_), \
 	__FILE__, __LINE__, "abs(" #expected_ "-" #actual_ ") <= " #absolute_range_, false)
-/// `void EXPECT_LT(T a, T b)` - Checks `a < b`.
+/// `void EXPECT_LT(T a, T b)` - Requires `a < b`.
 #define EXPECT_LT(a_, b_) hxtest_::dispatcher_().condition_check_((a_) < (b_), __FILE__, __LINE__, #a_ " < " #b_, false)
-/// `void EXPECT_GT(T a, T b)` - Checks `a > b` using `b < a`.
+/// `void EXPECT_GT(T a, T b)` - Requires `a > b` using `b < a`.
 #define EXPECT_GT(a_, b_) hxtest_::dispatcher_().condition_check_((b_) < (a_), __FILE__, __LINE__, #a_ " > " #b_, false)
-/// `void EXPECT_LE(T a, T b)` - Checks `a <= b` using `!(b < a)`.
+/// `void EXPECT_LE(T a, T b)` - Requires `a <= b` using `!(b < a)`.
 #define EXPECT_LE(a_, b_) hxtest_::dispatcher_().condition_check_(!((b_) < (a_)), __FILE__, __LINE__, #a_ " <= " #b_, false)
-/// `void EXPECT_GE(T a, T b)` - Checks `a >= b` using `!(a < b)`.
+/// `void EXPECT_GE(T a, T b)` - Requires `a >= b` using `!(a < b)`.
 #define EXPECT_GE(a_, b_) hxtest_::dispatcher_().condition_check_(!((a_) < (b_)), __FILE__, __LINE__, #a_ " >= " #b_, false)
-/// `void EXPECT_EQ(T a, T b)` - Checks `a == b`.
+/// `void EXPECT_EQ(T a, T b)` - Requires `a == b`.
 #define EXPECT_EQ(a_, b_) hxtest_::dispatcher_().condition_check_((a_) == (b_), __FILE__, __LINE__, #a_ " == " #b_, false)
-/// `void EXPECT_NE(T a, T b)` - Checks `a != b` using `!(a == b)`.
+/// `void EXPECT_NE(T a, T b)` - Requires `a != b` using `!(a == b)`.
 #define EXPECT_NE(a_, b_) hxtest_::dispatcher_().condition_check_(!((a_) == (b_)), __FILE__, __LINE__, #a_ " != " #b_, false)
-/// `void EXPECT_FLOAT_EQ(float a, float b)` - Checks floats for equality within a scaled tolerance.
+/// `void EXPECT_FLOAT_EQ(float a, float b)` - Requires floats for equality within a scaled tolerance.
 #define EXPECT_FLOAT_EQ(a_, b_) hxtest_::dispatcher_().condition_check_(hxtest_float_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " ~= " #b_, false)
-/// `void EXPECT_DOUBLE_EQ(double a, double b)` - Checks doubles for equality within a scaled tolerance.
+/// `void EXPECT_DOUBLE_EQ(double a, double b)` - Requires doubles for equality within a scaled tolerance.
 #define EXPECT_DOUBLE_EQ(a_, b_) hxtest_::dispatcher_().condition_check_(hxtest_double_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " ~= " #b_, false)
-/// `void EXPECT_STREQ(const char* a, const char* b)` - Checks that two C strings are equal, handling null pointers.
+/// `void EXPECT_STREQ(const char* a, const char* b)` - Requires that two C strings are equal, handling null pointers.
 #define EXPECT_STREQ(a_, b_) hxtest_::dispatcher_().condition_check_(::strcmp((a_), (b_)) == 0, __FILE__, __LINE__, #a_ " == " #b_, false)
-/// `void EXPECT_STRNE(const char* a, const char* b)` - Checks that two C strings differ, handling null pointers.
+/// `void EXPECT_STRNE(const char* a, const char* b)` - Requires that two C strings differ, handling null pointers.
 #define EXPECT_STRNE(a_, b_) hxtest_::dispatcher_().condition_check_(::strcmp((a_), (b_)) != 0, __FILE__, __LINE__, #a_ " != " #b_, false)
 
-/// `void ASSERT_TRUE(bool)` - Asserts that the condition is true.
+/// `void ASSERT_TRUE(bool)` - Requires that the condition is true.
 #define ASSERT_TRUE(x_) hxtest_::dispatcher_().condition_check_((x_), __FILE__, __LINE__, #x_, true)
-/// `void ASSERT_FALSE(bool)` - Asserts that the condition is false.
+/// `void ASSERT_FALSE(bool)` - Requires that the condition is false.
 #define ASSERT_FALSE(x_) hxtest_::dispatcher_().condition_check_(!(x_), __FILE__, __LINE__, "!" #x_, true)
-/// `void ASSERT_NEAR(T expected, T actual, T absolute_range)` - Asserts that two values are within a given range.
+/// `void ASSERT_NEAR(T expected, T actual, T absolute_range)` - Requires that two values are within a given range.
 #define ASSERT_NEAR(expected_, actual_, absolute_error_) hxtest_::dispatcher_().condition_check_( \
 	(((expected_) < (actual_)) ? ((actual_)-(expected_)) : ((expected_)-(actual_))) <= (absolute_error_), \
 	__FILE__, __LINE__, "abs(" #expected_ " - " #actual_ ") <= " #absolute_error_, true)
-/// `void ASSERT_LT(T a, T b)` - Asserts `a < b`.
+/// `void ASSERT_LT(T a, T b)` - Requires `a < b`.
 #define ASSERT_LT(a_, b_) hxtest_::dispatcher_().condition_check_((a_) < (b_), __FILE__, __LINE__, #a_ " < " #b_, true)
-/// `void ASSERT_GT(T a, T b)` - Asserts `a > b` using `b < a`.
+/// `void ASSERT_GT(T a, T b)` - Requires `a > b` using `b < a`.
 #define ASSERT_GT(a_, b_) hxtest_::dispatcher_().condition_check_((b_) < (a_), __FILE__, __LINE__, #a_ " > " #b_, true)
-/// `void ASSERT_LE(T a, T b)` - Asserts `a <= b` using `!(b < a)`.
+/// `void ASSERT_LE(T a, T b)` - Requires `a <= b` using `!(b < a)`.
 #define ASSERT_LE(a_, b_) hxtest_::dispatcher_().condition_check_(!((b_) < (a_)), __FILE__, __LINE__, #a_ " <= " #b_, true)
-/// `void ASSERT_GE(T a, T b)` - Asserts `a >= b` using `!(a < b)`.
+/// `void ASSERT_GE(T a, T b)` - Requires `a >= b` using `!(a < b)`.
 #define ASSERT_GE(a_, b_) hxtest_::dispatcher_().condition_check_(!((a_) < (b_)), __FILE__, __LINE__, #a_ " >= " #b_, true)
-/// `void ASSERT_EQ(T a, T b)` - Asserts `a == b`.
+/// `void ASSERT_EQ(T a, T b)` - Requires `a == b`.
 #define ASSERT_EQ(a_, b_) hxtest_::dispatcher_().condition_check_((a_) == (b_), __FILE__, __LINE__, #a_ " == " #b_, true)
-/// `void ASSERT_NE(T a, T b)` - Asserts `a != b` using `!(a == b)`.
+/// `void ASSERT_NE(T a, T b)` - Requires `a != b` using `!(a == b)`.
 #define ASSERT_NE(a_, b_) hxtest_::dispatcher_().condition_check_(!((a_) == (b_)), __FILE__, __LINE__, #a_ " != " #b_, true)
-/// `void ASSERT_FLOAT_EQ(float a, float b)` - Checks floats for equality within a scaled tolerance.
+/// `void ASSERT_FLOAT_EQ(float a, float b)` - Requires floats for equality within a scaled tolerance.
 #define ASSERT_FLOAT_EQ(a_, b_) hxtest_::dispatcher_().condition_check_(hxtest_float_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " ~= " #b_, true)
-/// `void ASSERT_DOUBLE_EQ(double a, double b)` - Checks doubles for equality within a scaled tolerance.
+/// `void ASSERT_DOUBLE_EQ(double a, double b)` - Requires doubles for equality within a scaled tolerance.
 #define ASSERT_DOUBLE_EQ(a_, b_) hxtest_::dispatcher_().condition_check_(hxtest_double_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " ~= " #b_, true)
-/// `void ASSERT_STREQ(const char* a, const char* b)` - Checks that two C strings are equal, handling null pointers.
+/// `void ASSERT_STREQ(const char* a, const char* b)` - Requires that two C strings are equal, handling null pointers.
 #define ASSERT_STREQ(a_, b_) hxtest_::dispatcher_().condition_check_(::strcmp((a_), (b_)) == 0, __FILE__, __LINE__, #a_ " == " #b_, true)
-/// `void ASSERT_STRNE(const char* a, const char* b)` - Checks that two C strings differ, handling null pointers.
+/// `void ASSERT_STRNE(const char* a, const char* b)` - Requires that two C strings differ, handling null pointers.
 #define ASSERT_STRNE(a_, b_) hxtest_::dispatcher_().condition_check_(::strcmp((a_), (b_)) != 0, __FILE__, __LINE__, #a_ " != " #b_, true)
 
 #endif // !HX_USE_GOOGLE_TEST
