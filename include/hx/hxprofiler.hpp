@@ -8,6 +8,15 @@
 /// Allows exporting to Chrome's tracing format
 /// (`hxprofiler_write_to_chrome_tracing`). Profiling is enabled only if
 /// `HX_PROFILE` is defined.
+///
+/// | Macro | Purpose |
+/// | --- | --- |
+/// | `hxprofile_scope` | Records scoped samples keyed by a string literal. |
+/// | `hxprofile_scope_min` | Records scoped samples when the cycle cutoff is met. |
+/// | `hxprofiler_start` | Clears existing samples then starts recording. |
+/// | `hxprofiler_stop` | Stops recording while retaining samples. |
+/// | `hxprofiler_log` | Logs captured samples to the system log. |
+/// | `hxprofiler_write_to_chrome_tracing` | Writes captured samples to Chrome tracing JSON. |
 
 #include "hatchling.h"
 

@@ -10,6 +10,12 @@
 /// file I/O. C-style calls that return `bool` with up to four arguments using
 /// `const char*`, `hxconsolenumber_t`, or `hxconsolehex_t` parameter types are
 /// required for the bindings to work. See the following commands for examples.
+///
+/// | Parameter Type | Purpose |
+/// | --- | --- |
+/// | `const char*` | Passes ASCII/UTF-8 tokens directly to the command handler. |
+/// | `hxconsolenumber_t` | Transports numeric arguments via a double-backed wrapper. |
+/// | `hxconsolehex_t` | Transports integer or pointer arguments encoded as hexadecimal. |
 
 #include "hatchling.h"
 
