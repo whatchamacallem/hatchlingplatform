@@ -48,33 +48,33 @@
 ///   | `SUCCEED(void)` | Marks the current test as successful without any checks. |
 ///   | `FAIL(void)` | NOTA BENE. Calls `return`. Marks the current test as failed. |
 ///   | `ADD_FAILURE(void)` | Adds a non-fatal failure at the current location. |
-///   | `ADD_FAILURE_AT(const char*, size_t)` | Adds a non-fatal failure at the specified location. |
-///   | `EXPECT_TRUE(bool)` | Requires that the condition is true. |
-///   | `EXPECT_FALSE(bool)` | Requires that the condition is false. |
-///   | `EXPECT_EQ(T, T)` | Requires `a == b`. |
-///   | `EXPECT_NE(T, T)` | Requires `a != b` using `!(a == b)`. |
-///   | `EXPECT_LT(T, T)` | Requires `a < b`. |
-///   | `EXPECT_GT(T, T)` | Requires `a > b` using `b < a`. |
-///   | `EXPECT_LE(T, T)` | Requires `a <= b` using `!(b < a)`. |
-///   | `EXPECT_GE(T, T)` | Requires `a >= b` using `!(a < b)`. |
-///   | `EXPECT_NEAR(T, T, T)` | Requires that two values are within a given range. |
-///   | `EXPECT_FLOAT_EQ(float, float)` | Checks floats for equality within a scaled tolerance. |
-///   | `EXPECT_DOUBLE_EQ(double, double)` | Checks doubles for equality within a scaled tolerance. |
-///   | `EXPECT_STREQ(const char*, const char*)` | Requires that two C strings are equal, handling null pointers. |
-///   | `EXPECT_STRNE(const char*, const char*)` | Requires that two C strings differ, handling null pointers. |
-///   | `ASSERT_TRUE(bool)` | Requires that the condition is true. |
-///   | `ASSERT_FALSE(bool)` | Requires that the condition is false. |
-///   | `ASSERT_EQ(T, T)` | Requires `a == b`. |
-///   | `ASSERT_NE(T, T)` | Requires `a != b` using `!(a == b)`. |
-///   | `ASSERT_LT(T, T)` | Requires `a < b`. |
-///   | `ASSERT_GT(T, T)` | Requires `a > b` using `b < a`. |
-///   | `ASSERT_LE(T, T)` | Requires `a <= b` using `!(b < a)`. |
-///   | `ASSERT_GE(T, T)` | Requires `a >= b` using `!(a < b)`. |
-///   | `ASSERT_NEAR(T, T, T)` | Requires that two values are within a given range. |
-///   | `ASSERT_FLOAT_EQ(float, float)` | Checks floats for equality within a scaled tolerance. |
-///   | `ASSERT_DOUBLE_EQ(double, double)` | Checks doubles for equality within a scaled tolerance. |
-///   | `ASSERT_STREQ(const char*, const char*)` | Requires that two C strings are equal, handling null pointers. |
-///   | `ASSERT_STRNE(const char*, const char*)` | Requires that two C strings differ, handling null pointers. |
+///   | `ADD_FAILURE_AT(const char* file, size_t line)` | Adds a non-fatal failure at the specified location. |
+///   | `EXPECT_TRUE(bool x)` | Requires that the condition is true. |
+///   | `EXPECT_FALSE(bool x)` | Requires that the condition is false. |
+///   | `EXPECT_EQ(T a, T b)` | Requires `a == b`. |
+///   | `EXPECT_NE(T a, T b)` | Requires `a != b` using `!(a == b)`. |
+///   | `EXPECT_LT(T a, T b)` | Requires `a < b`. |
+///   | `EXPECT_GT(T a, T b)` | Requires `a > b` using `b < a`. |
+///   | `EXPECT_LE(T a, T b)` | Requires `a <= b` using `!(b < a)`. |
+///   | `EXPECT_GE(T a, T b)` | Requires `a >= b` using `!(a < b)`. |
+///   | `EXPECT_NEAR(T expected, T actual, T absolute_range)` | Requires that two values are within a given range. |
+///   | `EXPECT_FLOAT_EQ(float a, float b)` | Checks floats for equality within a scaled tolerance. |
+///   | `EXPECT_DOUBLE_EQ(double a, double b)` | Checks doubles for equality within a scaled tolerance. |
+///   | `EXPECT_STREQ(const char* a, const char* b)` | Requires that two C strings are equal, handling null pointers. |
+///   | `EXPECT_STRNE(const char* a, const char* b)` | Requires that two C strings differ, handling null pointers. |
+///   | `ASSERT_TRUE(bool x)` | Requires that the condition is true. |
+///   | `ASSERT_FALSE(bool x)` | Requires that the condition is false. |
+///   | `ASSERT_EQ(T a, T b)` | Requires `a == b`. |
+///   | `ASSERT_NE(T a, T b)` | Requires `a != b` using `!(a == b)`. |
+///   | `ASSERT_LT(T a, T b)` | Requires `a < b`. |
+///   | `ASSERT_GT(T a, T b)` | Requires `a > b` using `b < a`. |
+///   | `ASSERT_LE(T a, T b)` | Requires `a <= b` using `!(b < a)`. |
+///   | `ASSERT_GE(T a, T b)` | Requires `a >= b` using `!(a < b)`. |
+///   | `ASSERT_NEAR(T expected, T actual, T absolute_error)` | Requires that two values are within a given range. |
+///   | `ASSERT_FLOAT_EQ(float a, float b)` | Checks floats for equality within a scaled tolerance. |
+///   | `ASSERT_DOUBLE_EQ(double a, double b)` | Checks doubles for equality within a scaled tolerance. |
+///   | `ASSERT_STREQ(const char* a, const char* b)` | Requires that two C strings are equal, handling null pointers. |
+///   | `ASSERT_STRNE(const char* a, const char* b)` | Requires that two C strings differ, handling null pointers. |
 ///
 /// See: https://google.github.io/googletest/reference/assertions.html
 
