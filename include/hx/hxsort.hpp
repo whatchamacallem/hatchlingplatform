@@ -149,16 +149,16 @@ void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_, iterat
 	hxrestrict_t<iterator_t_> output_r_(output_);
     while (begin0_ != end0_ && begin1_ != end1_) {
         if (less_(*begin1_, *begin0_)) {
-            *output_r_++ = *begin1_++;
+            *output_r_++ = hxmove(*begin1_++);
         } else {
-            *output_r_++ = *begin0_++;
+            *output_r_++ = hxmove(*begin0_++);
         }
     }
     while (begin0_ != end0_) {
-        *output_r_++ = *begin0_++;
+        *output_r_++ = hxmove(*begin0_++);
     }
     while (begin1_ != end1_) {
-        *output_r_++ = *begin1_++;
+        *output_r_++ = hxmove(*begin1_++);
     }
 }
 
@@ -180,10 +180,10 @@ void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
 }
 
 /// `hxbinary_search` - Performs a binary search in the range [first, last).
-/// Returns `null` if the value is not found. Unsorted data will lead to errors.
+/// Returns `end` if the value is not found. Unsorted data will lead to errors.
 /// Non-unique values will be selected from arbitrarily. The compare parameter
 /// is a functor that returns true if the first argument is ordered before (i.e.
-/// is less than) the second. See `hxkey_less`.
+/// is less than) the second. The return value is non-standard.
 /// - `begin` : Pointer to the beginning of the range to search.
 /// - `end` : Pointer to one past the last element in the range to search.
 /// - `value` : The value to search for.
@@ -191,7 +191,7 @@ void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
 template<typename iterator_t_, typename value_t_, typename less_t_> hxattr_hot
 iterator_t_ hxbinary_search(iterator_t_ begin_, iterator_t_ end_, const value_t_& value_, const less_t_& less_) {
 	// don't operate on null pointer args. unallocated containers have this.
-	if(begin_ == end_) { return hxnull; }
+	if(begin_ == end_) { return end_; }
 	hxassertmsg(begin_ <= end_, "invalid_iterator");
 
 	iterator_t_ first_ = begin_;
@@ -209,7 +209,7 @@ iterator_t_ hxbinary_search(iterator_t_ begin_, iterator_t_ end_, const value_t_
 			return mid_;
 		}
 	}
-	return hxnullptr;
+	return end_;
 }
 
 /// `hxbinary_search` (specialization) - An overload of `hxbinary_search` that

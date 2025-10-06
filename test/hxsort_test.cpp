@@ -170,29 +170,26 @@ TEST(hxmergesort_test, custom_comparator) {
 
 TEST(hxbinary_search_test, simple_case) {
 	int ints[5] = { 2, 5, 6, 88, 99 };
-	int* result = hxbinary_search(ints+0, ints+5, 88, sort_int);
-	EXPECT_TRUE(result != hxnull && *result == 88);
+	int* ints_end = ints+5;
 
-	const int* cresult = hxbinary_search((const int*)ints+0, (const int*)ints+5, 2, sort_int);
-	EXPECT_TRUE(cresult != hxnull && *cresult == 2);
+	// hxbinary_search returns end when not fond.
+	int* result = hxbinary_search(ints_end, ints+5, 88, sort_int);
+	EXPECT_TRUE(result != ints_end && *result == 88);
+	const int* cresult = hxbinary_search((const int*)ints_end, (const int*)ints+5, 2, sort_int);
+	EXPECT_TRUE(cresult != ints_end && *cresult == 2);
+	cresult = hxbinary_search((const int*)ints_end, (const int*)ints+5, 99);
+	EXPECT_TRUE(cresult != ints_end && *cresult == 99);
 
-	cresult = hxbinary_search((const int*)ints+0, (const int*)ints+5, 99);
-	EXPECT_TRUE(cresult != hxnull && *cresult == 99);
+	result = hxbinary_search(ints_end, ints+5, 0);
+	EXPECT_TRUE(result == ints_end);
+	result = hxbinary_search(ints_end, ints+5, 100);
+	EXPECT_TRUE(result == ints_end);
+	result = hxbinary_search(ints_end, ints+5, 7);
+	EXPECT_TRUE(result == ints_end);
 
-	result = hxbinary_search(ints+0, ints+5, 0);
-	EXPECT_TRUE(result == hxnull);
-
-	result = hxbinary_search(ints+0, ints+5, 100);
-	EXPECT_TRUE(result == hxnull);
-
-	result = hxbinary_search(ints+0, ints+5, 7);
-	EXPECT_TRUE(result == hxnull);
-}
-
-TEST(hxbinary_search_test, empty_range_returns_null) {
-	int ints[1] = { 11 };
-	int* result = hxbinary_search(ints, ints, 11, sort_int); // Zero size.
-	EXPECT_TRUE(result == hxnull);
+	// Empty range returns end.
+	result = hxbinary_search(ints, ints, 11, sort_int); // Zero size.
+	EXPECT_TRUE(result == ints);
 }
 
 // The sort_api_t tests check for correct use of references to temporaries.
@@ -233,6 +230,7 @@ private:
 
 	sort_api_t() = delete;
     sort_api_t(const sort_api_t& other) = delete;
+	// Did you use hxmove?
     sort_api_t& operator=(const sort_api_t& other) = delete;
     bool operator==(const sort_api_t& other) const = delete;
     bool operator!=(const sort_api_t& other) const = delete;
@@ -271,8 +269,9 @@ public:
 	sort_iter_api_t(const sort_iter_api_t& x) = default;
 	sort_iter_api_t& operator=(const sort_iter_api_t& x) = default;
 
-	// hxnullptr returned from binary search, not hxnull.
-	sort_iter_api_t(int null_) = delete;
+	// Not hxnull, hxnullptr.
+	sort_iter_api_t(int null) = delete;
+	sort_iter_api_t(hxnullptr_t null) = delete;
 
 	// Require only the standard pointer operations. No array notation.
 	sort_api_t& operator*(void) const { hxassert(m_pointer != hxnull); return *m_pointer; }
@@ -366,23 +365,11 @@ TEST(hxsort_iter_test, iterator_support) {
 }
 
 TEST(hxsort_iter_test, hxmerge_iterator_support) {
-	sort_api_t left_[3] = {
-		sort_api_t(1),
-		sort_api_t(3),
-		sort_api_t(5)
-	};
-	sort_api_t right_[3] = {
-		sort_api_t(2),
-		sort_api_t(4),
-		sort_api_t(6)
-	};
+	sort_api_t left_[3] = { sort_api_t(1), sort_api_t(3), sort_api_t(5) };
+	sort_api_t right_[3] = { sort_api_t(2), sort_api_t(4), sort_api_t(6) };
 	sort_api_t dest_[6] = {
-		sort_api_t(0),
-		sort_api_t(0),
-		sort_api_t(0),
-		sort_api_t(0),
-		sort_api_t(0),
-		sort_api_t(0)
+		sort_api_t(0), sort_api_t(0), sort_api_t(0),
+		sort_api_t(0), sort_api_t(0), sort_api_t(0)
 	};
 
 	hxmerge(sort_iter_api_t(left_), sort_iter_api_t(left_ + 3),
@@ -394,23 +381,12 @@ TEST(hxsort_iter_test, hxmerge_iterator_support) {
 		EXPECT_EQ(dest_[i_].value, expected_sorted_[i_]);
 	}
 
-	sort_api_t left_desc_[3] = {
-		sort_api_t(6),
-		sort_api_t(4),
-		sort_api_t(2)
-	};
-	sort_api_t right_desc_[3] = {
-		sort_api_t(5),
-		sort_api_t(3),
-		sort_api_t(1)
-	};
+	// Do it all over again with a GE functor instead.
+	sort_api_t left_desc_[3] = { sort_api_t(6), sort_api_t(4), sort_api_t(2) };
+	sort_api_t right_desc_[3] = { sort_api_t(5), sort_api_t(3), sort_api_t(1) };
 	sort_api_t dest_desc_[6] = {
-		sort_api_t(0),
-		sort_api_t(0),
-		sort_api_t(0),
-		sort_api_t(0),
-		sort_api_t(0),
-		sort_api_t(0)
+		sort_api_t(0), sort_api_t(0), sort_api_t(0),
+		sort_api_t(0), sort_api_t(0), sort_api_t(0)
 	};
 
 	hxmerge(sort_iter_api_t(left_desc_), sort_iter_api_t(left_desc_ + 3),
@@ -420,16 +396,6 @@ TEST(hxsort_iter_test, hxmerge_iterator_support) {
 	const int expected_desc_[6] = { 6, 5, 4, 3, 2, 1 };
 	for(size_t i_ = 0; i_ < 6; ++i_) {
 		EXPECT_EQ(dest_desc_[i_].value, expected_desc_[i_]);
-	}
-
-	for(size_t i_ = 0; i_ < 6; ++i_) {
-		dest_[i_] = sort_api_t(0);
-	}
-	hxmerge(sort_iter_api_t(left_), sort_iter_api_t(left_ + 3),
-		sort_iter_api_t(right_), sort_iter_api_t(right_ + 3),
-		sort_iter_api_t(dest_));
-	for(size_t i_ = 0; i_ < 6; ++i_) {
-		EXPECT_EQ(dest_[i_].value, expected_sorted_[i_]);
 	}
 }
 
@@ -449,28 +415,28 @@ TEST(hxsort_iter_test, hxbinary_search_iterator_support) {
 
 	sort_api_t key_three_(3);
 	sort_iter_api_t result_ = hxbinary_search(begin_, end_, key_three_, sort_iter_value_less);
-	EXPECT_NE(result_, sort_iter_api_t(hxnullptr));
+	EXPECT_NE(result_, end_);
 	EXPECT_EQ((*result_).value, 3);
 
 	sort_api_t key_low_(-5);
 	result_ = hxbinary_search(begin_, end_, key_low_, sort_iter_value_less);
-	EXPECT_NE(result_, sort_iter_api_t(hxnullptr));
+	EXPECT_NE(result_, end_);
 	EXPECT_EQ((*result_).value, -5);
 
 	sort_api_t key_high_(12);
 	result_ = hxbinary_search(begin_, end_, key_high_, sort_iter_value_less);
-	EXPECT_NE(result_, sort_iter_api_t(hxnullptr));
+	EXPECT_NE(result_, end_);
 	EXPECT_EQ((*result_).value, 12);
 
 	sort_api_t missing_(7);
 	result_ = hxbinary_search(begin_, end_, missing_, sort_iter_value_less);
-	EXPECT_EQ(result_, sort_iter_api_t(hxnullptr));
+	EXPECT_EQ(result_, end_);
 
 	result_ = hxbinary_search(begin_, begin_, key_three_, sort_iter_value_less);
-	EXPECT_EQ(result_, sort_iter_api_t(hxnullptr));
+	EXPECT_EQ(result_, end_);
 
 	result_ = hxbinary_search(begin_, end_, key_three_);
-	EXPECT_NE(result_, sort_iter_api_t(hxnullptr));
+	EXPECT_NE(result_, end_);
 	EXPECT_EQ((*result_).value, 3);
 }
 
