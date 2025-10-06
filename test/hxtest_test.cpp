@@ -118,16 +118,16 @@ TEST(hxnew, smoketest) {
 TEST(death_test, fail) {
 	hxlog("EXPECTING_TEST_FAILURE\n");
 	SUCCEED();
-	for(int i = 10; i--;) {
-		FAIL();
-	}
+	FAIL();
 	hxassertrelease(0, "internal_error FAIL() did not return");
 }
 
 TEST(death_test, add_failure) {
 	hxlog("EXPECTING_TEST_FAILURE\n");
 	SUCCEED();
-	ADD_FAILURE() << "This message is intentionally blank.\n";
+	for(int i = 10; i--;) {
+		ADD_FAILURE() << "This message is intentionally blank.\n";
+	}
 }
 
 TEST(death_test, add_failure_at) {

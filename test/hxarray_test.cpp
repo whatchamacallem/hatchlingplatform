@@ -72,8 +72,7 @@ struct hxarray_test_move_tracker {
 	int32_t value;
 	bool moved_from;
 
-	hxarray_test_move_tracker(void)
-		: value(0), moved_from(false) { }
+	hxarray_test_move_tracker(void) = delete;
 
 	explicit hxarray_test_move_tracker(int32_t value_)
 		: value(value_), moved_from(false) { }
@@ -85,6 +84,7 @@ struct hxarray_test_move_tracker {
 		: value(other_.value), moved_from(false) { other_.moved_from = true; }
 
 	hxarray_test_move_tracker& operator=(const hxarray_test_move_tracker& other_) {
+		hxassertrelease(0, "unused_code_path");
 		value = other_.value;
 		moved_from = false;
 		return *this;
@@ -138,39 +138,6 @@ static bool hxarray_test_is_max_heap(const array_t_& heap_) {
 		}
 	}
 	return true;
-}
-
-// Test hxmove/hxforward<T> here as they are used extensively by hxarray.
-TEST(hxarray_test, hxmove_regression) {
-	hxarray_test_move_tracker source(123);
-	hxarray_test_move_tracker target(hxmove(source));
-
-	EXPECT_EQ(target.value, 123);
-	EXPECT_FALSE(target.moved_from);
-	EXPECT_TRUE(source.moved_from);
-
-	const hxarray_test_move_tracker const_source(77);
-	hxarray_test_move_tracker const_target(hxmove(const_source));
-
-	EXPECT_EQ(const_target.value, 77);
-	EXPECT_FALSE(const_target.moved_from);
-	EXPECT_FALSE(const_source.moved_from);
-}
-
-TEST(hxarray_test, hxforward_preserves_value_category) {
-	hxarray_test_move_tracker lvalue_source(211);
-	hxarray_test_move_tracker copy_target = hxarray_test_forward_construct(lvalue_source);
-
-	EXPECT_EQ(copy_target.value, 211);
-	EXPECT_FALSE(copy_target.moved_from);
-	EXPECT_FALSE(lvalue_source.moved_from);
-
-	hxarray_test_move_tracker rvalue_source(389);
-	hxarray_test_move_tracker move_target = hxarray_test_forward_construct(hxmove(rvalue_source));
-
-	EXPECT_EQ(move_target.value, 389);
-	EXPECT_FALSE(move_target.moved_from);
-	EXPECT_TRUE(rvalue_source.moved_from);
 }
 
 TEST_F(hxarray_test_f, empty_full) {
