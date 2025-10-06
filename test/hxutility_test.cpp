@@ -27,12 +27,12 @@ hxutility_enable_if_guard(T_) {
 class hxutility_swap_move_tracker {
 public:
 	explicit hxutility_swap_move_tracker(int value_)
-		: value(value_), moved_from(false) { }
+		: value(value_), moved_from(false), moved_to(false) { }
 
 	hxutility_swap_move_tracker(const hxutility_swap_move_tracker&) = delete;
 
 	hxutility_swap_move_tracker(hxutility_swap_move_tracker&& other_)
-		: value(other_.value), moved_from(false) {
+		: value(other_.value), moved_from(false), moved_to(true) {
 		other_.moved_from = true;
 	}
 
@@ -40,6 +40,7 @@ public:
 	operator=(hxutility_swap_move_tracker&& other_) {
 		value = other_.value;
 		moved_from = false;
+		moved_to = true;
 		other_.moved_from = true;
 		return *this;
 	}
@@ -49,6 +50,7 @@ public:
 
 	int value;
 	bool moved_from;
+	bool moved_to;
 };
 
 struct hxutility_memcpy_record {
@@ -288,12 +290,17 @@ TEST(hxutility_test, hxswap_respects_move_semantics) {
 	hxutility_swap_move_tracker left(1);
 	hxutility_swap_move_tracker right(2);
 
+	EXPECT_FALSE(left.moved_to);
+	EXPECT_FALSE(right.moved_to);
+
 	hxswap(left, right);
 
 	EXPECT_EQ(left.value, 2);
 	EXPECT_EQ(right.value, 1);
 	EXPECT_FALSE(left.moved_from);
 	EXPECT_FALSE(right.moved_from);
+	EXPECT_TRUE(left.moved_to);
+	EXPECT_TRUE(right.moved_to);
 }
 
 TEST(hxutility_test, hxswap_memcpy_exchanges_trivial_objects) {
