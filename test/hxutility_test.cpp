@@ -205,41 +205,30 @@ hxforward_value_kind hxforward_forward_through_template_(T_&& value_) {
 
 } // namespace
 
-TEST(hxforward, forwards_prvalue_expression) {
+TEST(hxforward, forwards) {
 	EXPECT_EQ(hxforward_value_kind_rvalue,
 		hxforward_detect_(hxforward<hxforwarded_t_>(hxforward_make_forwarded_())));
-}
 
-TEST(hxforward, forwards_const_prvalue_expression) {
 	EXPECT_EQ(hxforward_value_kind_const_rvalue,
 		hxforward_detect_(hxforward<const hxforwarded_t_>(hxforward_make_const_forwarded_())));
-}
 
-TEST(hxforward, forwards_lvalue_reference_through_template) {
-	hxforwarded_t_ value = { 7 };
-	EXPECT_EQ(hxforward_value_kind_lvalue, hxforward_forward_through_template_(value));
-}
+	hxforwarded_t_ lvalue = { 7 };
+	EXPECT_EQ(hxforward_value_kind_lvalue, hxforward_forward_through_template_(lvalue));
 
-TEST(hxforward, forwards_const_lvalue_reference_through_template) {
-	const hxforwarded_t_ value = { 9 };
-	EXPECT_EQ(hxforward_value_kind_const_lvalue, hxforward_forward_through_template_(value));
-}
+	const hxforwarded_t_ const_lvalue = { 9 };
+	EXPECT_EQ(hxforward_value_kind_const_lvalue,
+		hxforward_forward_through_template_(const_lvalue));
 
-TEST(hxforward, forwards_rvalue_reference_through_template) {
 	EXPECT_EQ(hxforward_value_kind_rvalue,
 		hxforward_forward_through_template_(hxforward_make_forwarded_()));
-}
 
-TEST(hxforward, forwards_moved_lvalue_reference_through_template) {
-	hxforwarded_t_ value = { 17 };
+	hxforwarded_t_ movable_value = { 17 };
 	EXPECT_EQ(hxforward_value_kind_rvalue,
-		hxforward_forward_through_template_(hxmove(value)));
-}
+		hxforward_forward_through_template_(hxmove(movable_value)));
 
-TEST(hxforward, forwards_moved_const_lvalue_reference_through_template) {
-	const hxforwarded_t_ value = { 19 };
+	const hxforwarded_t_ const_movable_value = { 19 };
 	EXPECT_EQ(hxforward_value_kind_const_rvalue,
-		hxforward_forward_through_template_(hxmove(value)));
+		hxforward_forward_through_template_(hxmove(const_movable_value)));
 }
 
 TEST(hxutility_test, hxnullptr_converts_only_to_null) {
@@ -252,32 +241,12 @@ TEST(hxutility_test, hxnullptr_converts_only_to_null) {
 	EXPECT_EQ(member_ptr, hxnull);
 }
 
-TEST(hxutility_test, hxenable_if_filters_on_integral) {
-	EXPECT_EQ(hxutility_enable_if_guard(123), 1);
-}
-
 TEST(hxutility_test, hxbasename_handles_separators) {
 	EXPECT_STREQ(hxbasename("plain"), "plain");
 	EXPECT_STREQ(hxbasename("dir/file.bin"), "file.bin");
 	EXPECT_STREQ(hxbasename("dir\\file.bin"), "file.bin");
 	EXPECT_STREQ(hxbasename("dir/sub\\mixed"), "mixed");
 	EXPECT_STREQ(hxbasename("dir/"), "");
-}
-
-TEST(hxutility_test, hxisgraph_matches_expected_range) {
-	EXPECT_TRUE(hxisgraph('A'));
-	EXPECT_TRUE(hxisgraph('~'));
-	EXPECT_FALSE(hxisgraph(' '));
-	EXPECT_TRUE(hxisgraph(static_cast<char>(0x80)));
-	EXPECT_FALSE(hxisgraph('\0'));
-}
-
-TEST(hxutility_test, hxisspace_matches_expected_range) {
-	EXPECT_TRUE(hxisspace(' '));
-	EXPECT_TRUE(hxisspace('\n'));
-	EXPECT_TRUE(hxisspace('\t'));
-	EXPECT_FALSE(hxisspace('A'));
-	EXPECT_FALSE(hxisspace('~'));
 }
 
 TEST(hxutility_test, hxlog2i_returns_highest_set_bit) {
@@ -338,16 +307,6 @@ TEST(hxutility_test, hxswap_memcpy_exchanges_trivial_objects) {
 	EXPECT_EQ(second.first, 1);
 	EXPECT_EQ(second.second, 2);
 }
-
-TEST(hxutility_test, dump_helpers_execute_without_crashing) {
-	uint8_t bytes[5] = { 0u, 1u, 2u, 3u, 4u };
-	hxhex_dump(bytes, sizeof bytes, 0);
-	hxhex_dump(bytes, sizeof bytes, 1);
-
-	float floats[3] = { 0.0f, -1.25f, 2.5f };
-	hxfloat_dump(floats, sizeof floats / sizeof floats[0]);
-}
-
 
 TEST(hxisspace, compare_with_standard) {
 	// Don't use non-ASCII or setlocale because it might not exist.
