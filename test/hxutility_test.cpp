@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 #include <ctype.h>
-#include <math.h>
+#include <string.h>
 
 HX_REGISTER_FILENAME_HASH
 
@@ -264,16 +264,34 @@ TEST(hxutility_test, hxlog2i_returns_highest_set_bit) {
 }
 
 TEST(hxutility_test, hxisfinite_detects_special_values) {
-	const float float_infinity = INFINITY;
-	const float float_nan = NAN;
-	const long double long_double_infinity = HUGE_VALL;
+	const uint32_t float_pos_inf_bits = 0x7f800000u;
+	const uint32_t float_neg_inf_bits = 0xff800000u;
+	const uint32_t float_nan_bits = 0x7fc00000u;
+	const uint64_t double_pos_inf_bits = 0x7ff0000000000000ull;
+	const uint64_t double_neg_inf_bits = 0xfff0000000000000ull;
+	const uint64_t double_nan_bits = 0x7ff8000000000000ull;
 
-	EXPECT_TRUE(hxisfinitef(0.0f));
-	EXPECT_FALSE(hxisfinitef(float_infinity));
+	float float_pos_inf, float_neg_inf, float_nan;
+	double double_pos_inf, double_neg_inf, double_nan;
+
+	memcpy(&float_pos_inf, &float_pos_inf_bits, sizeof float_pos_inf);
+	memcpy(&float_neg_inf, &float_neg_inf_bits, sizeof float_neg_inf);
+	memcpy(&float_nan, &float_nan_bits, sizeof float_nan);
+	memcpy(&double_pos_inf, &double_pos_inf_bits, sizeof double_pos_inf);
+	memcpy(&double_neg_inf, &double_neg_inf_bits, sizeof double_neg_inf);
+	memcpy(&double_nan, &double_nan_bits, sizeof double_nan);
+
+	EXPECT_TRUE(hxisfinitef(-0.0f));
+	EXPECT_TRUE(hxisfinitef(1.0f));
+	EXPECT_FALSE(hxisfinitef(float_pos_inf));
+	EXPECT_FALSE(hxisfinitef(float_neg_inf));
 	EXPECT_FALSE(hxisfinitef(float_nan));
 
-	EXPECT_TRUE(hxisfinitel(0.0l));
-	EXPECT_FALSE(hxisfinitel(long_double_infinity));
+	EXPECT_TRUE(hxisfinitel(-0.0));
+	EXPECT_TRUE(hxisfinitel(1.0));
+	EXPECT_FALSE(hxisfinitel(double_pos_inf));
+	EXPECT_FALSE(hxisfinitel(double_neg_inf));
+	EXPECT_FALSE(hxisfinitel(double_nan));
 }
 
 TEST(hxutility_test, arithmetic_helpers_cover_min_max_abs_clamp) {
