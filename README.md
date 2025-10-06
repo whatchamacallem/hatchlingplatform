@@ -122,6 +122,23 @@ gcc, musl-gcc 13.3.0
 gcovr 7.0
 python 3.12.3
 
+The scripted builds exercise the following toolchains, language modes, and
+`HX_RELEASE` combinations:
+
+| Script | Toolchain | Language Modes | `HX_RELEASE` | Notes |
+| --- | --- | --- | --- | --- |
+| `debugbuild.sh` | `clang`/`clang++` | C17, C++20 | 0 | 32-bit debug build with ccache and no exceptions/RTTI. |
+| `testcmake.sh` | `cmake` + default compiler | Project defaults (C/C++) | 0 (default) | Configures Google Test build and runs `hxtest`. |
+| `testcoverage.sh` | `gcc`, `g++` + `--coverage` | C99, C++20 | 0 | Enables `HX_TEST_ERROR_HANDLING=1` and emits `coverage.html`. |
+| `testmatrix.sh` | `gcc`, `clang` (ASan/UBSan) | C99, C17, C++11, C++20 | 0–3 | Sweeps optimization levels and sets `HX_USE_THREADS=level`. |
+handling tests. |
+| `teststrip.sh` | `musl-gcc` (static) | C17, C++11/14/17/20 | 3 | Size-focused static build with allocator/library stripping. |
+| `testwasm.sh` | `emcc` | Emscripten defaults (Clang-based C/C++) | 0 (default) | WebAssembly build with allocator disabled and single-thread mode. |
+
+Supporting scripts such as `clean.sh`, `diff.sh`, and `listsymbols.sh` manage
+workspace cleanup, diff viewing, and symbol inspection without compiling new
+artifacts.
+
 ## License
 
 © 2017-2025 Adrian Johnston. This project is licensed under the terms of the MIT
