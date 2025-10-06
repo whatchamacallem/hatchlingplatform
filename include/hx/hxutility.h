@@ -113,7 +113,7 @@ template<class T_> struct hxremove_reference_<T_&&> { using type = T_; };
 /// hxremove_reference_t<T> - Returns `T` with references removed.
 template<class T_> using hxremove_reference_t = typename hxremove_reference_<T_>::type;
 
-/// Implements `std::true_type`/`std::false_type`.
+/// Implements `std::true_type`/`std::false_type` without going into the weeds.
 struct hxfalse_t { enum { value = 0 }; };
 struct hxtrue_t { enum { value = 1 }; };
 

@@ -9,7 +9,6 @@ HX_REGISTER_FILENAME_HASH
 
 // The global settings object. Constructed by hxinit after some global
 // constructors may have run and before setting up memory management.
-// OS specific source code is required to construct settings earlier.
 // Logging and asserts will default to on until constructed.
 extern "C" { struct hxsettings g_hxsettings; }
 
