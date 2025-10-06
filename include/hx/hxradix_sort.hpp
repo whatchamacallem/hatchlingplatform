@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-/// \file hx/hxradix_sort.hpp `hxradix_sort` is recommended as an `Θ(n)` sorting
+/// \file hx/hxradix_sort.hpp Radix sort is recommended as an Θ(n) sorting
 /// strategy for any fundamental type that is 32 bits or less. This
 /// implementation does not cause code bloat and is the fastest sorting
 /// algorithm available for scalar keys. Radix sort is best when you need
