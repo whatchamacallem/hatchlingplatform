@@ -121,6 +121,10 @@ struct hxtrue_t { enum { value = 1 }; };
 template<typename T_> struct hxis_lvalue_reference : public hxfalse_t { };
 template<typename T_> struct hxis_lvalue_reference<T_&> : public hxtrue_t { };
 
+/// Implements `std::is_rvalue_reference`.
+template<typename T_> struct hxis_rvalue_reference : public hxfalse_t { };
+template<typename T_> struct hxis_rvalue_reference<T_&&> : public hxtrue_t { };
+
 /// Internal. Implements `std::remove_cv`.
 template<class T_> struct hxremove_cv_ { using type = T_; };
 template<class T_> struct hxremove_cv_<const T_> { using type = T_; };
@@ -130,6 +134,45 @@ template<class T_> struct hxremove_cv_<const volatile T_> { using type = T_; };
 /// Removes const and volatile from a type. Implements `std::remove_cv_t`.
 /// This is used to maintain semantic compatibility with the standard.
 template<class T_> using hxremove_cv_t = typename hxremove_cv_<T_>::type;
+
+/// Implements `std::is_void`.
+template<typename T_> struct hxis_void_ : public hxfalse_t { };
+template<> struct hxis_void_<void> : public hxtrue_t { };
+template<typename T_> struct hxis_void : public hxis_void_<hxremove_cv_t<T_>> { };
+
+/// Implements `std::is_null_pointer`.
+template<typename T_> struct hxis_null_pointer_ : public hxfalse_t { };
+template<> struct hxis_null_pointer_<decltype(nullptr)> : public hxtrue_t { };
+template<typename T_>
+struct hxis_null_pointer : public hxis_null_pointer_<hxremove_cv_t<T_>> { };
+
+/// Implements `std::is_integral`.
+template<typename T_> struct hxis_integral_ : public hxfalse_t { };
+template<> struct hxis_integral_<bool> : public hxtrue_t { };
+template<> struct hxis_integral_<char> : public hxtrue_t { };
+template<> struct hxis_integral_<signed char> : public hxtrue_t { };
+template<> struct hxis_integral_<unsigned char> : public hxtrue_t { };
+template<> struct hxis_integral_<short> : public hxtrue_t { };
+template<> struct hxis_integral_<unsigned short> : public hxtrue_t { };
+template<> struct hxis_integral_<int> : public hxtrue_t { };
+template<> struct hxis_integral_<unsigned int> : public hxtrue_t { };
+template<> struct hxis_integral_<long> : public hxtrue_t { };
+template<> struct hxis_integral_<unsigned long> : public hxtrue_t { };
+template<> struct hxis_integral_<long long> : public hxtrue_t { };
+template<> struct hxis_integral_<unsigned long long> : public hxtrue_t { };
+template<typename T_> struct hxis_integral : public hxis_integral_<hxremove_cv_t<T_>> { };
+
+/// Implements `std::is_floating_point`.
+template<typename T_> struct hxis_floating_point_ : public hxfalse_t { };
+template<> struct hxis_floating_point_<float> : public hxtrue_t { };
+template<> struct hxis_floating_point_<double> : public hxtrue_t { };
+template<> struct hxis_floating_point_<long double> : public hxtrue_t { };
+template<typename T_> struct hxis_floating_point : public hxis_floating_point_<hxremove_cv_t<T_>> { };
+
+/// Implements `std::is_array`.
+template<typename T_> struct hxis_array : public hxfalse_t { };
+template<typename T_, size_t size_> struct hxis_array<T_[size_]> : public hxtrue_t { };
+template<typename T_> struct hxis_array<T_[]> : public hxtrue_t { };
 
 /// Internal. Returns `std::is_pointer` as `hxis_pointer_<T>::type` but without
 /// handling cv.
