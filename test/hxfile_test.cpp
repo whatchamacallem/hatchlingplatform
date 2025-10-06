@@ -4,6 +4,7 @@
 
 #include <hx/hxfile.hpp>
 #include <hx/hxtest.hpp>
+#include <hx/hxutility.h>
 
 HX_REGISTER_FILENAME_HASH
 

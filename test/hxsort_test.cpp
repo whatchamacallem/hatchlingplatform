@@ -286,6 +286,7 @@ static bool sort_iter_value_greater(const sort_api_t& lhs_, const sort_api_t& rh
 	return lhs_.value > rhs_.value;
 }
 
+#if HX_CPLUSPLUS >= 201402L // C++14 only.
 template<typename sort_callback_t_>
 static void do_sort_iter_case(const sort_callback_t_& sort_callback_) {
 	const int initial_values_[5] = { 2, 1, 0, 4, -5 };
@@ -349,6 +350,7 @@ TEST(hxsort_iter_test, iterator_support) {
 		hxsort(begin_, end_, less_);
 	});
 }
+#endif // HX_CPLUSPLUS >= 201402L
 
 TEST(hxsort_iter_test, hxmerge_iterator_support) {
 	sort_api_t left_[3] = { sort_api_t(1), sort_api_t(3), sort_api_t(5) };

@@ -240,11 +240,11 @@ TEST(hxforward, forwards) {
 TEST(hxutility_test, hxnullptr_converts_only_to_null) {
 	hxnullptr_t null_object;
 	const int* int_ptr = null_object;
-	EXPECT_EQ(int_ptr, hxnull);
+	EXPECT_EQ(int_ptr, hxnullptr);
 
 	struct hxutility_member_holder { int value; };
 	int hxutility_member_holder::* member_ptr = null_object;
-	EXPECT_EQ(member_ptr, hxnull);
+	EXPECT_EQ(member_ptr, hxnullptr);
 }
 
 TEST(hxutility_test, hxbasename_handles_separators) {

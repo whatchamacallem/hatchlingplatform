@@ -19,6 +19,10 @@
 #endif
 #endif
 
+/// Changing this makes it impossible to link against older versions of the
+/// library. Useful for forcing updates in a binary release process.
+#define hxdetail_ hxdetail1_
+
 #if defined HX_DOXYGEN_PARSER
 /// `HX_CPLUSPLUS` - A version of `__cplusplus` that is defined to `0` when
 /// `__cplusplus` is undefined. Allows use in C preprocessor statements without
