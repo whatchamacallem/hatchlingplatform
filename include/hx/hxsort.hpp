@@ -209,7 +209,7 @@ iterator_t_ hxbinary_search(iterator_t_ begin_, iterator_t_ end_, const value_t_
 			return mid_;
 		}
 	}
-	return hxnull;
+	return hxnullptr;
 }
 
 /// `hxbinary_search` (specialization) - An overload of `hxbinary_search` that

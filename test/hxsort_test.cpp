@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-#include <hx/hxrandom.hpp>
 #include <hx/hxsort.hpp>
 #include <hx/hxrandom.hpp>
-#include <hx/hxtest.hpp>
 #include <hx/hxarray.hpp>
+#include <hx/hxtest.hpp>
+
 #include <limits.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -16,7 +16,7 @@ struct hxmerge_record_t {
 	int key;
 	int ticket;
 
-	bool operator<(const hxmerge_record_t& other_) const noexcept {
+	bool operator<(const hxmerge_record_t& other_) const {
 		return key < other_.key;
 	}
 };
@@ -199,11 +199,11 @@ TEST(hxbinary_search_test, empty_range_returns_null) {
 class sort_api_t {
 public:
 	// This is not used by the sort code.
-    explicit sort_api_t(int value_) noexcept : value(value_) { }
+    explicit sort_api_t(int value_) : value(value_) { }
 
 	// This is what is being used.
 
-    sort_api_t(sort_api_t&& other) noexcept : value(other.value) {
+    sort_api_t(sort_api_t&& other) : value(other.value) {
 		// Callee may leave itself in an unusable state or crash.
 		hxassert(this != &other);
 	}
@@ -212,7 +212,7 @@ public:
 		::memset(&value, 0xefu, sizeof value);
 	}
 
-    sort_api_t& operator=(sort_api_t&& other) noexcept {
+    sort_api_t& operator=(sort_api_t&& other) {
 		// Callee may leave itself in an unusable state or crash.
 		hxassert(this != &other);
 		value = other.value;
@@ -220,7 +220,7 @@ public:
     }
 
 	// Called by hxkey_less below.
-    bool operator<(const sort_api_t& other) const noexcept {
+    bool operator<(const sort_api_t& other) const {
 		// Technically legal but indicates an optimization issue.
 		hxassert(this != &other);
         return value < other.value;
@@ -267,84 +267,37 @@ private:
 
 class sort_iter_api_t {
 public:
-	using difference_type = ptrdiff_t;
-	using value_type = sort_api_t;
-	using pointer = sort_api_t*;
-	using reference = sort_api_t&;
+	explicit sort_iter_api_t(sort_api_t* pointer) : m_pointer(pointer) { }
+	sort_iter_api_t(const sort_iter_api_t& x) = default;
+	sort_iter_api_t& operator=(const sort_iter_api_t& x) = default;
 
-	sort_iter_api_t() noexcept : pointer_(hxnull) { }
-	explicit sort_iter_api_t(pointer pointer_) noexcept : pointer_(pointer_) { }
-	sort_iter_api_t(int null_) noexcept : pointer_(hxnull) {
-		hxassert(null_ == hxnull);
-		(void)null_;
-	}
+	// hxnullptr returned from binary search, not hxnull.
+	sort_iter_api_t(int null_) = delete;
 
-	reference operator*(void) const noexcept {
-		hxassert(pointer_ != hxnull);
-		return *pointer_;
-	}
+	// Require only the standard pointer operations. No array notation.
+	sort_api_t& operator*(void) const { hxassert(m_pointer != hxnull); return *m_pointer; }
+	sort_iter_api_t& operator++(void) { hxassert(m_pointer != hxnull); ++m_pointer; return *this; }
+	sort_iter_api_t operator++(int) { hxassert(m_pointer != hxnull); sort_iter_api_t temp_(*this); ++m_pointer; return temp_; }
+	sort_iter_api_t& operator--(void) { hxassert(m_pointer != hxnull); --m_pointer; return *this; }
+	sort_iter_api_t operator+(ptrdiff_t offset_) const { hxassert(m_pointer != hxnull); return sort_iter_api_t(m_pointer + offset_); }
+	sort_iter_api_t operator-(ptrdiff_t offset_) const { hxassert(m_pointer != hxnull); return sort_iter_api_t(m_pointer - offset_); }
+	ptrdiff_t operator-(const sort_iter_api_t& other_) const { hxassert(m_pointer != hxnull); return m_pointer - other_.m_pointer; }
 
-	sort_iter_api_t& operator++(void) noexcept {
-		++pointer_;
-		return *this;
-	}
-
-	sort_iter_api_t operator++(int) noexcept {
-		sort_iter_api_t temp_(*this);
-		++pointer_;
-		return temp_;
-	}
-
-	sort_iter_api_t& operator--(void) noexcept {
-		--pointer_;
-		return *this;
-	}
-
-	sort_iter_api_t operator+(difference_type offset_) const noexcept {
-		return sort_iter_api_t(pointer_ + offset_);
-	}
-
-	sort_iter_api_t operator-(difference_type offset_) const noexcept {
-		return sort_iter_api_t(pointer_ - offset_);
-	}
-
-	difference_type operator-(const sort_iter_api_t& other_) const noexcept {
-		return pointer_ - other_.pointer_;
-	}
-
-	bool operator==(const sort_iter_api_t& other_) const noexcept {
-		return pointer_ == other_.pointer_;
-	}
-
-	bool operator!=(const sort_iter_api_t& other_) const noexcept {
-		return pointer_ != other_.pointer_;
-	}
-
-	bool operator<(const sort_iter_api_t& other_) const noexcept {
-		return pointer_ < other_.pointer_;
-	}
-
-	bool operator>(const sort_iter_api_t& other_) const noexcept {
-		return pointer_ > other_.pointer_;
-	}
-
-	bool operator<=(const sort_iter_api_t& other_) const noexcept {
-		return pointer_ <= other_.pointer_;
-	}
-
-	bool operator>=(const sort_iter_api_t& other_) const noexcept {
-		return pointer_ >= other_.pointer_;
-	}
-
+	bool operator==(const sort_iter_api_t& other_) const { return m_pointer == other_.m_pointer; }
+	bool operator!=(const sort_iter_api_t& other_) const { return m_pointer != other_.m_pointer; }
+	bool operator<(const sort_iter_api_t& other_) const { return m_pointer < other_.m_pointer; }
+	bool operator>(const sort_iter_api_t& other_) const { return m_pointer > other_.m_pointer; }
+	bool operator<=(const sort_iter_api_t& other_) const { return m_pointer <= other_.m_pointer; }
+	bool operator>=(const sort_iter_api_t& other_) const { return m_pointer >= other_.m_pointer; }
 private:
-	pointer pointer_;
+	sort_api_t* m_pointer;
 };
 
-static bool sort_iter_value_less(const sort_api_t& lhs_, const sort_api_t& rhs_) noexcept {
+static bool sort_iter_value_less(const sort_api_t& lhs_, const sort_api_t& rhs_) {
 	return lhs_.value < rhs_.value;
 }
 
-static bool sort_iter_value_greater(const sort_api_t& lhs_, const sort_api_t& rhs_) noexcept {
+static bool sort_iter_value_greater(const sort_api_t& lhs_, const sort_api_t& rhs_) {
 	return lhs_.value > rhs_.value;
 }
 
@@ -496,28 +449,28 @@ TEST(hxsort_iter_test, hxbinary_search_iterator_support) {
 
 	sort_api_t key_three_(3);
 	sort_iter_api_t result_ = hxbinary_search(begin_, end_, key_three_, sort_iter_value_less);
-	EXPECT_NE(result_, sort_iter_api_t());
+	EXPECT_NE(result_, sort_iter_api_t(hxnullptr));
 	EXPECT_EQ((*result_).value, 3);
 
 	sort_api_t key_low_(-5);
 	result_ = hxbinary_search(begin_, end_, key_low_, sort_iter_value_less);
-	EXPECT_NE(result_, sort_iter_api_t());
+	EXPECT_NE(result_, sort_iter_api_t(hxnullptr));
 	EXPECT_EQ((*result_).value, -5);
 
 	sort_api_t key_high_(12);
 	result_ = hxbinary_search(begin_, end_, key_high_, sort_iter_value_less);
-	EXPECT_NE(result_, sort_iter_api_t());
+	EXPECT_NE(result_, sort_iter_api_t(hxnullptr));
 	EXPECT_EQ((*result_).value, 12);
 
 	sort_api_t missing_(7);
 	result_ = hxbinary_search(begin_, end_, missing_, sort_iter_value_less);
-	EXPECT_EQ(result_, sort_iter_api_t());
+	EXPECT_EQ(result_, sort_iter_api_t(hxnullptr));
 
 	result_ = hxbinary_search(begin_, begin_, key_three_, sort_iter_value_less);
-	EXPECT_EQ(result_, sort_iter_api_t());
+	EXPECT_EQ(result_, sort_iter_api_t(hxnullptr));
 
 	result_ = hxbinary_search(begin_, end_, key_three_);
-	EXPECT_NE(result_, sort_iter_api_t());
+	EXPECT_NE(result_, sort_iter_api_t(hxnullptr));
 	EXPECT_EQ((*result_).value, 3);
 }
 
@@ -608,7 +561,7 @@ TEST(hxbinary_search_test, binary_search_grinder) {
 	for(size_t i=100u; i--; ) {
 		sort_api_t t = (sort_api_t&&)sorted[i]; // Don't pass an address that is in the array.
 		sort_api_t* ptr = hxbinary_search(sorted.begin(), sorted.end(), t);
-		// Assert logical equivalence without using ==. The pointer may point
+		// Assert logical equivalence without using ==. The sort_api_t* may point
 		// elsewhere.
 		EXPECT_TRUE(!(*ptr < t) && !(t < *ptr));
 	}

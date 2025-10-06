@@ -52,7 +52,7 @@ void hxheapsort_heapify_(hxrestrict_t<iterator_t_> begin_, const iterator_t_ end
 /// - `end` : Pointer to one past the last element in the range to heapify.
 /// - `less` : A key comparison functor definining a less-than ordering relationship.
 template<typename iterator_t_, typename less_t_> hxattr_hot
-void hxmake_heap_(hxrestrict_t<iterator_t_> hxrestrict begin_, iterator_t_ end_, const less_t_& less_) {
+void hxmake_heap_(hxrestrict_t<iterator_t_> begin_, iterator_t_ end_, const less_t_& less_) {
 	for(iterator_t_ heap_end_ = begin_ + 1; heap_end_ < end_; ) {
 		iterator_t_ node_ = heap_end_++;
 		iterator_t_ parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
