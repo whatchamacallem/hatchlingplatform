@@ -10,18 +10,18 @@ HX_REGISTER_FILENAME_HASH
 
 #if HX_PROFILE
 
-namespace hxdetail_ {
+namespace {
 
 // ----------------------------------------------------------------------------
 // Console commands
 
-static bool hxprofile_start_command_(void) { hxprofiler_start(); return true; }
+bool hxprofile_start_command_(void) { hxprofiler_start(); return true; }
 
-static bool hxprofile_stop_command_(void) { hxprofiler_stop(); return true; }
+bool hxprofile_stop_command_(void) { hxprofiler_stop(); return true; }
 
-static bool hxprofiler_log_command_(void) { hxprofiler_log(); return true; }
+bool hxprofiler_log_command_(void) { hxprofiler_log(); return true; }
 
-static bool hxprofiler_write_to_chrome_tracing_command_(const char* filename) {
+bool hxprofiler_write_to_chrome_tracing_command_(const char* filename) {
 	hxprofiler_write_to_chrome_tracing(filename);
 	return true;
 }
@@ -31,8 +31,12 @@ hxconsole_command_named(hxprofile_stop_command_, profilestop);
 hxconsole_command_named(hxprofiler_log_command_, profilelog);
 hxconsole_command_named(hxprofiler_write_to_chrome_tracing_command_, profilewrite);
 
+} // namespace {
+
 // ----------------------------------------------------------------------------
 // variables
+
+namespace hxdetail_ {
 
 hxprofiler_internal_ g_hxprofiler_;
 
@@ -76,7 +80,6 @@ void hxprofiler_internal_::write_to_chrome_tracing_(const char* filename) {
 
 	f.print("[\n");
 	if(!m_records.empty()) {
-		// this works for 32-bit hxcycles_t too.
 		const hxcycles_t epoch = m_records[0].m_begin_;
 		for(size_t i = 0; i < m_records.size(); ++i) {
 			const hxprofiler_record_& rec = m_records[i];

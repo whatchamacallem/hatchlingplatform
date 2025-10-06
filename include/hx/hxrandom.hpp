@@ -9,12 +9,15 @@
 #include "hatchling.h"
 
 /// `hxrandom` - 64-bit MMIX LCG. Knuth, D. 2002. (Modified to perturb return so
-/// that all bits are of equal quality.) Performs an automatic cast to any
-/// unsigned integer or floating point value. Usable as a functor or by using
-/// the provided cast operator for your type. Has a period of 2^64 and passes
-/// routine numerical tests with only 8 bytes of state and using simple
-/// arithmetic. Intended for test data or games and not mathematical
-/// applications.
+/// that all bits are of equal quality.)  Uses a floating point multiply instead
+/// of integer modulo when generating numbers in a range. Requires at least
+/// 64-bit integer emulation as well. Performs an automatic cast to any unsigned
+/// integer or floating point value. Operator overloads are provided and they
+/// alow bitwise operations with random numbers that are signed as well. Usable
+/// as a functor or by using the provided cast operator for your type. Has a
+/// period of 2^64 and passes routine numerical tests with only 8 bytes of state
+/// and using simple arithmetic. Intended for test data or games and not
+/// mathematical applications.
 class hxrandom {
 public:
 	/// Constructor to initialize the random number generator.
@@ -37,18 +40,11 @@ public:
 	operator double(void) {
 		return (double)this->generate64() * (1.0 / 18446744073709551616.0); // 0x1p-64;
 	}
-	operator uint8_t(void) {
-		return (uint8_t)this->generate32();
-	}
-	operator uint16_t(void) {
-		return (uint16_t)this->generate32();
-	}
-	operator uint32_t(void) {
-		return this->generate32();
-	}
-	operator uint64_t(void) {
-		return this->generate64();
-	}
+
+	operator uint8_t(void) { return (uint8_t)this->generate32(); }
+	operator uint16_t(void) { return (uint16_t)this->generate32(); }
+	operator uint32_t(void) { return this->generate32(); }
+	operator uint64_t(void) { return this->generate64(); }
 
 	/// Returns a random number in the range [base..base+range).
 	/// `range(0.0f,10.0f)` will return `0.0f` to `9.999f` and not `10.0f`. Uses

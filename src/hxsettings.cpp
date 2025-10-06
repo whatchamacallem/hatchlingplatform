@@ -12,7 +12,7 @@ HX_REGISTER_FILENAME_HASH
 // Logging and asserts will default to on until constructed.
 extern "C" { struct hxsettings g_hxsettings; }
 
-namespace hxdetail_ {
+namespace {
 #if (HX_RELEASE) < 1
 // Confirm the correct number of asserts were triggered and consume the remaining
 // allowance.
@@ -27,7 +27,7 @@ hxconsole_variable_named(g_hxsettings.asserts_to_be_skipped, skipasserts);
 #endif
 
 hxconsole_variable_named(g_hxsettings.log_level, loglevel);
-} // hxdetail_
+} // namespace {
 
 extern "C" void hxsettings_construct(void) {
 	g_hxsettings.log_level = hxloglevel_log;

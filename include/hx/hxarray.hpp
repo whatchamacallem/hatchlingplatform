@@ -149,13 +149,13 @@ public:
 
 	/// Returns true if the predicate returns true for every element and false
 	/// otherwise. Will stop iterating when the predicate returns false.
-	/// - `fn` : A functor returning boolean.
+	/// - `fn` : A functor returning boolean. `!all_of(x)` -> `any_not(x)`.
 	template<typename functor_t_>
 	bool all_of(functor_t_&& fn_) const;
 
 	/// Returns true if the predicate returns true for any element and false
 	/// otherwise. Will stop iterating when the predicate returns true.
-	/// - `fn` : A functor returning boolean.
+	/// - `fn` : A functor returning boolean. `!any_of(x)` -> `none_of(x)`.
 	template<typename functor_t_>
 	bool any_of(functor_t_&& fn_) const;
 

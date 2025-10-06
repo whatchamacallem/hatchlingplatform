@@ -125,14 +125,6 @@ inline void* operator new(size_t, void* ptr_) noexcept { return ptr_; }
 inline void* operator new[](size_t, void* ptr_) noexcept { return ptr_; }
 #endif
 
-// Internal. These talk to hxsystem_allocator_scope directly.
-/// \cond HIDDEN
-namespace hxdetail_ {
-	class hxmemory_allocator_os_heap;
-	class hxmemory_allocator_stack;
-}
-/// \endcond
-
 /// `hxsystem_allocator_scope` - An RAII class to set the current memory manager
 /// allocator for the current scope. It automatically restores the previous
 /// allocator when the scope ends. It also resets stack allocators to their
@@ -172,9 +164,9 @@ public:
 private:
 	// The hxsystem_allocator_* classes are responsible for setting
 	// m_initial_allocation_count_ and m_initial_bytes_allocated_.
-	// This avoids a number of virtual calls.
-	friend class hxdetail_::hxmemory_allocator_os_heap;
-	friend class hxdetail_::hxmemory_allocator_stack;
+	// This avoids a number of potential cache misses.
+	friend inline void hxsystem_allocator_scope_init_(hxsystem_allocator_scope* scope_,
+		size_t allocation_count_, size_t bytes_allocated_);
 
 	// Deleted copy constructor to prevent copying.
 	hxsystem_allocator_scope(const hxsystem_allocator_scope&) = delete;

@@ -40,10 +40,17 @@ hxattr_hot void operator delete[](void* ptr, size_t) noexcept {
 }
 #endif
 
-// hxmalloc_checked_. Always check malloc and halt on failure. This is extremely
-// important with hardware where 0 is a valid address and can be written to with
-// disastrous results.
-hxattr_hot hxattr_noexcept static void* hxmalloc_checked_(size_t size) {
+// Restricts direct access to these variables to this file.
+inline void hxsystem_allocator_scope_init_(hxsystem_allocator_scope* scope_,
+		size_t allocation_count_, size_t bytes_allocated_) {
+	scope_->m_initial_allocation_count_ = allocation_count_;
+	scope_->m_initial_bytes_allocated_ = bytes_allocated_;
+}
+
+// hxmalloc_checked_. Always check malloc and halt on failure. Enforces overall
+// policy against allocation failure handling routines. Also enforces the static
+// analysis contract described by hxattr_allocator.
+hxattr_allocator(free) hxattr_hot hxattr_noexcept static void* hxmalloc_checked_(size_t size) {
 	void* t = ::malloc(size);
 	hxassertrelease(t, "malloc %zu", size);
 #if (HX_RELEASE) >= 3
@@ -67,7 +74,7 @@ static hxmutex s_hxmemory_manager_mutex;
 #define HX_MEMORY_MANAGER_LOCK_() (void)0
 #endif
 
-namespace hxdetail_ {
+namespace {
 
 // ----------------------------------------------------------------------------
 // hxmemory_allocation_header - Used until C++17.
@@ -129,8 +136,7 @@ public:
 	virtual void begin_allocation_scope(hxsystem_allocator_scope* scope,
 		hxsystem_allocator_t new_id) override {
 		(void)scope; (void)new_id;
-		scope->m_initial_allocation_count_ = m_allocation_count;
-		scope->m_initial_bytes_allocated_ = m_bytes_allocated;
+		hxsystem_allocator_scope_init_(scope, m_allocation_count, m_bytes_allocated);
 	}
 	virtual void end_allocation_scope(hxsystem_allocator_scope* scope,
 		hxsystem_allocator_t old_id) override { (void)scope; (void)old_id; }
@@ -231,9 +237,7 @@ public:
 	virtual void begin_allocation_scope(hxsystem_allocator_scope* scope,
 		hxsystem_allocator_t new_id) override {
 			(void)scope; (void)new_id;
-			scope->m_initial_allocation_count_ = m_allocation_count;
-			scope->m_initial_bytes_allocated_ = m_current - m_begin_;
-
+			hxsystem_allocator_scope_init_(scope, m_allocation_count, m_current - m_begin_);
 		}
 	virtual void end_allocation_scope(hxsystem_allocator_scope* scope,
 		hxsystem_allocator_t old_id) override { (void)scope; (void)old_id; }
@@ -474,8 +478,7 @@ void hxmemory_manager::free(void* ptr) {
 	m_memory_allocator_heap.on_free_non_virtual(ptr);
 }
 
-} // hxdetail_
-using namespace hxdetail_;
+} // namespace {
 
 // ----------------------------------------------------------------------------
 // hxsystem_allocator_scope

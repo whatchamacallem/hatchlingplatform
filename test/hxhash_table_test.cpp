@@ -140,6 +140,43 @@ TEST_F(hxhash_table_test, single) {
 	EXPECT_EQ(m_destructed, 2);
 }
 
+TEST_F(hxhash_table_test, map_node_usage) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+
+	typedef hxhash_table_map_node<int32_t, test_object> map_node_t;
+	typedef hxhash_table<map_node_t, 4> Table;
+	{
+		Table table;
+		map_node_t& via_subscript = table[10];
+		EXPECT_EQ(via_subscript.key(), 10);
+		via_subscript.value().id = 123;
+
+		map_node_t* manual = hxnew<map_node_t>(20);
+		manual->value().id = 321;
+		table.insert_node(manual);
+
+		EXPECT_EQ(table.size(), 2u);
+		EXPECT_EQ(table.count(10), 1u);
+		EXPECT_EQ(table.count(20), 1u);
+
+		EXPECT_EQ(&table[10], &via_subscript);
+		const Table& const_table = table;
+		const map_node_t* const_lookup = const_table.find(10);
+		EXPECT_TRUE(const_lookup != hxnull);
+		EXPECT_EQ(const_lookup->value().id, 123);
+
+		map_node_t* manual_lookup = table.find(20);
+		EXPECT_TRUE(manual_lookup != hxnull);
+		EXPECT_EQ(manual_lookup->value().id, 321);
+
+		map_node_t& duplicate_lookup = table.insert_unique(10);
+		EXPECT_EQ(&duplicate_lookup, &via_subscript);
+	}
+
+	EXPECT_EQ(m_constructed, 2);
+	EXPECT_EQ(m_destructed, 2);
+}
+
 TEST_F(hxhash_table_test, multiple) {
 	static const int N = 78;
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
