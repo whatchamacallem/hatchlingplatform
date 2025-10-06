@@ -84,15 +84,16 @@ inline int hxlog2i(size_t i_) {
 // ----------------------------------------------------------------------------
 // C++ SFINAE (Substitution Failure Is Not An Error) based enable_if checks.
 
-/// Implements `std::enable_if`. This is available instead of the `requires`
-/// keyword when backwards compatibility is required. Used by `hxenable_if_t.`
-template<bool condition_, typename type_=void> struct hxenable_if { };
-template<typename type_> struct hxenable_if<true, type_> { using type = type_; };
+/// Internal. Implements `std::enable_if`. This is available instead of the
+/// `requires` keyword when backwards compatibility is required. Used by
+/// `hxenable_if_t.`
+template<bool condition_, typename type_=void> struct hxenable_if_ { };
+template<typename type_> struct hxenable_if_<true, type_> { using type = type_; };
 
 /// `hxenable_if_t<condition>` - Implements `std::enable_if_t`. This is available
 /// instead of the `requires` keyword when backwards compatibility is required.
 template<bool condition_, typename type_=void>
-using hxenable_if_t = typename hxenable_if<condition_, type_>::type;
+using hxenable_if_t = typename hxenable_if_<condition_, type_>::type;
 
 // ----------------------------------------------------------------------------
 // hxnullptr/hxnullptr_t
