@@ -87,8 +87,10 @@ inline int hxlog2i(size_t i_) {
 /// Internal. Implements `std::enable_if`. This is available instead of the
 /// `requires` keyword when backwards compatibility is required. Used by
 /// `hxenable_if_t.`
+/// \cond HIDDEN
 template<bool condition_, typename type_=void> struct hxenable_if_ { };
 template<typename type_> struct hxenable_if_<true, type_> { using type = type_; };
+/// \endcond
 
 /// `hxenable_if_t<condition>` - Implements `std::enable_if_t`. This is available
 /// instead of the `requires` keyword when backwards compatibility is required.
@@ -121,34 +123,40 @@ public:
 // C++ Type Modifiers
 
 /// Internal. Implements `std::remove_cv`.
-template<class T_> struct hxremove_cv_ { using type = T_; };
-template<class T_> struct hxremove_cv_<const T_> { using type = T_; };
-template<class T_> struct hxremove_cv_<volatile T_> { using type = T_; };
-template<class T_> struct hxremove_cv_<const volatile T_> { using type = T_; };
-
-/// Internal. Returns `T` with one pointer layer removed as
-/// `hxremove_pointer_<T>::type`. Used by `hxremove_pointer_t`.
-template<class T_> struct hxremove_pointer_ { using type = T_; };
-template<class T_> struct hxremove_pointer_<T_*> { using type = T_; };
-template<class T_> struct hxremove_pointer_<T_* const> { using type = T_; };
-template<class T_> struct hxremove_pointer_<T_* volatile> { using type = T_; };
-template<class T_> struct hxremove_pointer_<T_* const volatile> { using type = T_; };
-
-/// `hxremove_pointer_t<T>` - Returns `T` with one pointer level removed.
-template<class T_> using hxremove_pointer_t = typename hxremove_pointer_<T_>::type;
+/// \cond HIDDEN
+template<typename T_> struct hxremove_cv_ { using type = T_; };
+template<typename T_> struct hxremove_cv_<const T_> { using type = T_; };
+template<typename T_> struct hxremove_cv_<volatile T_> { using type = T_; };
+template<typename T_> struct hxremove_cv_<const volatile T_> { using type = T_; };
+/// \endcond
 
 /// Removes const and volatile from a type. Implements `std::remove_cv_t`.
 /// This is used to maintain semantic compatibility with the standard.
-template<class T_> using hxremove_cv_t = typename hxremove_cv_<T_>::type;
+template<typename T_> using hxremove_cv_t = typename hxremove_cv_<T_>::type;
+
+/// Internal. Returns `T` with one pointer layer removed as
+/// `hxremove_pointer_<T>::type`. Used by `hxremove_pointer_t`.
+/// \cond HIDDEN
+template<typename T_> struct hxremove_pointer_ { using type = T_; };
+template<typename T_> struct hxremove_pointer_<T_*> { using type = T_; };
+template<typename T_> struct hxremove_pointer_<T_* const> { using type = T_; };
+template<typename T_> struct hxremove_pointer_<T_* volatile> { using type = T_; };
+template<typename T_> struct hxremove_pointer_<T_* const volatile> { using type = T_; };
+/// \endcond
+
+/// `hxremove_pointer_t<T>` - Returns `T` with one pointer level removed.
+template<typename T_> using hxremove_pointer_t = typename hxremove_pointer_<T_>::type;
 
 /// Internal. Returns `T` with references removed as
 /// `hxremove_reference_<T>::type`. Used by `hxremove_reference_t`.
-template<class T_> struct hxremove_reference_       { using type = T_; };
-template<class T_> struct hxremove_reference_<T_&>  { using type = T_; };
-template<class T_> struct hxremove_reference_<T_&&> { using type = T_; };
+/// \cond HIDDEN
+template<typename T_> struct hxremove_reference_       { using type = T_; };
+template<typename T_> struct hxremove_reference_<T_&>  { using type = T_; };
+template<typename T_> struct hxremove_reference_<T_&&> { using type = T_; };
+/// \endcond
 
 /// `hxremove_reference_t<T>` - Returns `T` with references removed.
-template<class T_> using hxremove_reference_t = typename hxremove_reference_<T_>::type;
+template<typename T_> using hxremove_reference_t = typename hxremove_reference_<T_>::type;
 
 // ----------------------------------------------------------------------------
 // C++ Type Traits
@@ -168,14 +176,17 @@ template<typename T_> struct hxis_const : public hxfalse_t { };
 template<typename T_> struct hxis_const<const T_> : public hxtrue_t { };
 
 /// Implements `std::is_floating_point`.
+/// \cond HIDDEN
 template<typename T_> struct hxis_floating_point_ : public hxfalse_t { };
 template<> struct hxis_floating_point_<float> : public hxtrue_t { };
 template<> struct hxis_floating_point_<double> : public hxtrue_t { };
 template<> struct hxis_floating_point_<long double> : public hxtrue_t { };
+/// \endcond
 template<typename T_>
 struct hxis_floating_point : public hxis_floating_point_<hxremove_cv_t<T_>> { };
 
 /// Implements `std::is_integral`.
+/// \cond HIDDEN
 template<typename T_> struct hxis_integral_ : public hxfalse_t { };
 template<> struct hxis_integral_<bool> : public hxtrue_t { };
 template<> struct hxis_integral_<char> : public hxtrue_t { };
@@ -189,6 +200,7 @@ template<> struct hxis_integral_<long> : public hxtrue_t { };
 template<> struct hxis_integral_<unsigned long> : public hxtrue_t { };
 template<> struct hxis_integral_<long long> : public hxtrue_t { };
 template<> struct hxis_integral_<unsigned long long> : public hxtrue_t { };
+/// \endcond
 template<typename T_>
 struct hxis_integral : public hxis_integral_<hxremove_cv_t<T_>> { };
 
@@ -196,28 +208,34 @@ struct hxis_integral : public hxis_integral_<hxremove_cv_t<T_>> { };
 template<typename T_> struct hxis_lvalue_reference : public hxfalse_t { };
 template<typename T_> struct hxis_lvalue_reference<T_&> : public hxtrue_t { };
 
-/// Implements `std::is_null_pointer`.
+/// \cond HIDDEN
 template<typename T_> struct hxis_null_pointer_ : public hxfalse_t { };
 template<> struct hxis_null_pointer_<decltype(nullptr)> : public hxtrue_t { };
+/// \endcond
+/// Implements `std::is_null_pointer`.
 template<typename T_>
 struct hxis_null_pointer : public hxis_null_pointer_<hxremove_cv_t<T_>> { };
 
 /// Internal. Returns `std::is_pointer` as `hxis_pointer_<T>::type` but without
 /// handling cv.
+/// \cond HIDDEN
 template<typename T_> struct hxis_pointer_ : public hxfalse_t { };
 template<typename T_> struct hxis_pointer_<T_*> : public hxtrue_t { };
+/// \endcond
 
 /// Returns whether T is a pointer type as `hxis_pointer_<T>::type`. Implements
 /// `std::is_pointer`.
-template<class T> struct hxis_pointer : hxis_pointer_<hxremove_cv_t<T>> { };
+template<typename T> struct hxis_pointer : hxis_pointer_<hxremove_cv_t<T>> { };
 
 /// Implements `std::is_rvalue_reference`.
 template<typename T_> struct hxis_rvalue_reference : public hxfalse_t { };
 template<typename T_> struct hxis_rvalue_reference<T_&&> : public hxtrue_t { };
 
 /// Implements `std::is_void`.
+/// \cond HIDDEN
 template<typename T_> struct hxis_void_ : public hxfalse_t { };
 template<> struct hxis_void_<void> : public hxtrue_t { };
+/// \endcond
 template<typename T_> struct hxis_void : public hxis_void_<hxremove_cv_t<T_>> { };
 
 // ----------------------------------------------------------------------------
@@ -225,12 +243,14 @@ template<typename T_> struct hxis_void : public hxis_void_<hxremove_cv_t<T_>> { 
 
 /// Internal. Adds the `__restrict` keyword to C++ pointers. Used by
 /// `hxadd_attr_if_ptr_t`.
-template<class T_, int = hxis_pointer<T_>::value> struct hxrestrict_t_;
-template<class T_> struct hxrestrict_t_<T_, 0> { using type = T_; };
-template<class T_> struct hxrestrict_t_<T_, 1> { using type = T_ hxrestrict; };
+/// \cond HIDDEN
+template<typename T_, int = hxis_pointer<T_>::value> struct hxrestrict_t_;
+template<typename T_> struct hxrestrict_t_<T_, 0> { using type = T_; };
+template<typename T_> struct hxrestrict_t_<T_, 1> { using type = T_ hxrestrict; };
+/// \endcond
 
 /// Adds the `__restrict` keyword to C++ pointers. (Non-standard.)
-template<class T_> using hxrestrict_t = typename hxrestrict_t_<T_>::type;
+template<typename T_> using hxrestrict_t = typename hxrestrict_t_<T_>::type;
 
 /// `hxabs` - Returns the absolute value of `x` using a `<` comparison.
 /// - `x` : The value to compute the absolute value for.
@@ -252,11 +272,11 @@ constexpr const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& maximum_
 /// templated forwarding function** where the parameter was declared `T&&` and
 /// `T` was **deduced**. `T` must be explicitly specified. E.g.,
 /// ```cpp
-///   template<class T>
+///   template<typename T>
 ///   void forwards_temp(T&&x) { requires_temp(hxforward<T>(x)); }
 /// ```
 /// This is the `T&&` version of hxforward<T>.
-template<class T_>
+template<typename T_>
 constexpr T_&& hxforward(hxremove_reference_t<T_>&& t) noexcept {
 	static_assert(!hxis_lvalue_reference<T_>::value, "T must be a `T&&` reference.");
 	return static_cast<T_&&>(t);
@@ -264,7 +284,7 @@ constexpr T_&& hxforward(hxremove_reference_t<T_>&& t) noexcept {
 
 /// This is the `T&` version of hxforward<T>. It gets invoked when `T` turns out
 /// to be an l-value. This happens when a `T&` is passed as a `T&&`.
-template<class T_>
+template<typename T_>
 constexpr T_&& hxforward(hxremove_reference_t<T_>& t) noexcept {
 	return static_cast<T_&&>(t);
 }
@@ -284,7 +304,7 @@ constexpr const T_& hxmin(const T_& x_, const T_& y_) { return ((x_) < (y_)) ? (
 /// Implements `std::move`. Converts either a `T&` or a `T&&` to a `T&&`. Do not
 /// specify `T` explicitly as it will not work as expected. This uses the rules
 /// about reference collapsing to handle both `T&` and `T&&`.
-template<class T_>
+template<typename T_>
 constexpr hxremove_reference_t<T_>&& hxmove(T_&& t_) {
 	return static_cast<hxremove_reference_t<T_>&&>(t_);
 }
