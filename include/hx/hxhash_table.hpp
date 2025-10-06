@@ -103,7 +103,7 @@ public:
 
 	const value_t_& value(void) const { return m_value_; }
 	value_t_& value(void) { return m_value_; }
-protected:
+private:
 	value_t_ m_value_;
 };
 
@@ -176,7 +176,9 @@ public:
 
 	protected:
 		// Used by const_iterator.
+		/// \cond HIDDEN
 		node_t_* m_current_node_;
+		/// \endcond
 	};
 
 	/// A mutable iterator that can modify the elements of the hash table.
