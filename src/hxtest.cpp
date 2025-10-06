@@ -43,10 +43,11 @@ bool hxtest_double_eq_(double a_, double b_) {
     return delta_ <= 4u; // 4 ULPs.
 }
 
-// Run tests in well defined alphanumeric order.
 static bool hxtest_case_sort_(const hxtest_case_interface_* a_, const hxtest_case_interface_* b_) {
+	// Run tests by suite name and then by line number. Runs smoke tests before
+	// complex tests in the order written.
 	const int compare_ = ::strcmp(a_->suite_(), b_->suite_());
-	if(compare_ == 0) { return ::strcmp(a_->case_(), b_->case_()) < 0; }
+	if(compare_ == 0) { return a_->line_(), b_->line_(); }
 	return compare_ < 0;
 }
 
