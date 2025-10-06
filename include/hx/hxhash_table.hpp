@@ -3,17 +3,15 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-/// \file hx/hxhash_table.hpp This header implements a hash table that operates
-/// without reallocating memory or copying around data. Ever watched a graphical
-/// visualization of a memory allocator that is being used to allocate hash
-/// tables? A series of allocations that double in size each time is about the
-/// best possible way to fragment memory. So this code expects you to allocate the
-/// largest table you may require in advance. Each bucket is implemented using an
-/// embedded linked list. Hash tables can be used as either an unordered map or
-/// an unordered set and have operations that allow for unique or duplicate keys.
-/// While this interface is designed to be familiar, changes will be required to
-/// switch over code using standard containers. In particular, all modification
-/// of the table is non-standard.
+/// \file hx/hxhash_table.hpp Implements a hash table that operates without
+/// reallocating memory or copying data. Visualizing how a memory allocator
+/// has to serve doubling hash table sizes shows how quickly memory fragments. So
+/// this implementation expects you to allocate the largest table you may need
+/// in advance. Each bucket uses an embedded linked list. Hash tables can act as
+/// either an unordered map or an unordered set and support operations that
+/// allow for unique or duplicate keys. While this interface is designed to feel
+/// familiar, code using standard containers will need some adjustments. In
+/// particular, all table modifications are non-standard.
 ///
 /// Note that any node `T` using key `K` will work as long as it has the following
 /// fields and `K` has an `operator==` or an `hxkey_equal` overload.
@@ -27,18 +25,18 @@
 ///   hxhash_t hash() const;	// Returns hash of key constructed with.
 /// };
 /// ```
-/// `hxhash_table_set_node` and `hxhash_table_map_node` are provided as and
-/// recommended for replacements for `std::unordered_set` and
+/// `hxhash_table_set_node` and `hxhash_table_map_node` are provided and
+/// recommended as replacements for `std::unordered_set` and
 /// `std::unordered_map`. Custom key types will require either an `operator==`
 /// or an `hxkey_equal` overload and will require an `hxkey_hash` overload.
 ///
 /// They might be used as follows:
 /// ```
-/// // An unordered set of allowed or blocked internet address.
+/// // An unordered set of allowed or blocked internet addresses.
 /// typedef hxhash_table<hxhash_table_set_node<ipv6_address_t>> ipv6_set_t;
 ///
-/// // A fixed size unordered map of material identifiers to material
-/// // properties. Allows missing materials to be safely resolved.
+/// // A fixed-size unordered map of material identifiers to material
+/// // properties. Missing materials can be safely resolved.
 /// typedef hxhash_table<hxhash_table_map_node<material_id_t, material_t>, 1024> material_db_t;
 /// ```
 /// `hx/hxhash_table_nodes.hpp` also provides specializations of the `hxhash_table`
@@ -51,7 +49,7 @@
 /// `hxhash_table_set_node` - Optional base class for unordered set entries.
 /// Caches the hash value. Copying and modification are disallowed to protect
 /// the integrity of the hash table. See `hxhash_table_map_node` if you need a
-/// mutable node. The hash table uses duck typing so only the interface is
+/// mutable node. The hash table uses duck typing, so only the interface is
 /// required.
 template<typename key_t_>
 class hxhash_table_set_node {
@@ -73,7 +71,7 @@ public:
 	/// The key and hash identify the `node_t` and should not change once added.
 	const key_t_& key(void) const { return m_key_; }
 
-	/// Hash is not required to be unique
+	/// Hash values are not required to be unique.
 	hxhash_t hash(void) const { return m_hash_; };
 
 private:
@@ -95,7 +93,7 @@ public:
 	typedef key_t_ key_t;
 	typedef value_t_ value_t;
 
-	// `value_t` must default construct when using `operator[]`.
+	// `value_t` must default-construct when using `operator[]`.
 	hxhash_table_map_node(const key_t_& key_) :
 		hxhash_table_set_node<key_t_>(key_) { }
 
@@ -109,13 +107,13 @@ protected:
 	value_t_ m_value_;
 };
 
-/// `hxhash_table` - See the top of this file for description.
+/// `hxhash_table` - See the top of this file for a description.
 ///
 /// `node_t` must be a subclass of `hxhash_table_node` with the interface
-/// described above. If non-zero `table_size_bits` configures the size of the hash
-/// table to be `table_size_bits^2`. Otherwise use `set_table_size_bits` to
-/// configure hash bits dynamically. See `hxdo_not_delete` for situations where
-/// the table does not own the nodes.
+/// described above. If non-zero, `table_size_bits` configures the hash table
+/// size to `2^table_size_bits`. Otherwise use `set_table_size_bits` to configure
+/// hash bits dynamically. See `hxdo_not_delete` for situations where the table
+/// does not own the nodes.
 template<typename node_t_,
 	hxhash_t table_size_bits_=hxallocator_dynamic_capacity,
 	typename deleter_t_=hxdefault_delete>
@@ -290,7 +288,7 @@ public:
 	/// Releases all Nodes matching key and calls `deleter` on every node. Returns
 	/// the number of nodes released. Deleter can be functions with signature `void
 	/// deleter(node_t*)` and functors supporting `operator()(node_t*)` and with an
-	/// `operator bool`. E.g., a free list or a null pointer.
+	/// `operator bool`. e.g., a free list or a null pointer.
 	/// - `key` : The key to search for and remove from the hash table.
 	/// - `deleter` : A function or functor to call on each removed `node_t`.
 	template<typename deleter_override_t_>

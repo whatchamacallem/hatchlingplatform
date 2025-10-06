@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-/// \file hx/hxtest.hpp This is a Google Test-compatable framework for writing unit
-/// tests. It doesn't spam your system memory allocator with string operations
-/// right after an assert fails. Actually, it makes no allocations ever. To
-/// disable this header and switch to testing with `<gtest/gtest.h>` directly use
-/// `-DHX_USE_GOOGLE_TEST=1`. Only core features are provided. This framework only
-/// uses the `operator<` and `operator==` in it's asserts. Compatibility with
+/// \file hx/hxtest.hpp Google Test-compatible framework for writing unit tests.
+/// It does not spam your system memory allocator with string operations right
+/// after an assert fails. Actually, it never allocates. To disable this header and
+/// switch to testing with `<gtest/gtest.h>` directly, use
+/// `-DHX_USE_GOOGLE_TEST=1`. Only core features are provided. This framework
+/// uses only `operator<` and `operator==` in its assertions. Compatibility with
 /// Google Test may require additional relational operators.
 ///
 /// - `TEST(suite, name)` - Defines a test case without a fixture.
@@ -31,7 +31,7 @@
 ///   class MyFixture : public testing::Test {
 ///   public:
 ///	   void SetUp() override { value = 42; }
-///	   void TearDown() override { EXPECT_EQ(value, 0) }
+///	   void TearDown() override { EXPECT_EQ(value, 0); }
 ///	   void set_value(int x) { value = x; }
 ///	   int value;
 ///   };
@@ -42,19 +42,19 @@
 ///	   EXPECT_NE(value, 42);
 ///   }
 /// ```
-/// - Condition Check Macros: (`a` and `b` only require `operator<` and `operator==`.)
+/// - Condition-check macros: (`a` and `b` only require `operator<` and `operator==`.)
 /// ```
-///   EXPECT_TRUE(expr);	  // Checks expr is true
-///   EXPECT_FALSE(expr);	  // Checks expr is false
-///   EXPECT_EQ(a, b);		  // Checks a == b
-///   EXPECT_NE(a, b);		  // Checks a != b
-///   EXPECT_LT(a, b);		  // Checks a < b
-///   EXPECT_GT(a, b);		  // Checks a > b
-///   EXPECT_LE(a, b);		  // Checks a <= b
-///   EXPECT_GE(a, b);		  // Checks a >= b
-///   EXPECT_NEAR(a, b, tol); // Checks |a-b| <= tol
-///   SUCCEED();			  // Marks test as successful
-///   FAIL();				  // Marks test as failed
+///   EXPECT_TRUE(expr);	  // Checks expr is true.
+///   EXPECT_FALSE(expr);	  // Checks expr is false.
+///   EXPECT_EQ(a, b);		  // Checks a == b.
+///   EXPECT_NE(a, b);		  // Checks a != b.
+///   EXPECT_LT(a, b);		  // Checks a < b.
+///   EXPECT_GT(a, b);		  // Checks a > b.
+///   EXPECT_LE(a, b);		  // Checks a <= b.
+///   EXPECT_GE(a, b);		  // Checks a >= b.
+///   EXPECT_NEAR(a, b, tol); // Checks |a - b| <= tol.
+///   SUCCEED();			  // Marks the test as successful.
+///   FAIL();				  // Marks the test as failed.
 /// ```
 /// - `ASSERT_`* macros are equivalent to `EXPECT_`*
 ///
@@ -107,7 +107,7 @@ inline void InitGoogleTest(void) { }
 
 } // namespace testing
 
-/// `HX_TEST_NAME_` - Macro for concatenating 3 arguments into one name.
+/// `HX_TEST_NAME_` - Macro for concatenating three arguments into one name.
 /// Macro parameters will be evaluated before concatenating.
 #define HX_TEST_NAME_(x_, y_, z_) x_ ## y_ ## _ ## z_ ## _
 

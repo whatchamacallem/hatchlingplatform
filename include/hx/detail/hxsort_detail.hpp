@@ -50,7 +50,7 @@ void hxheapsort_heapify_(hxrestrict_t<iterator_t_> begin_, const iterator_t_ end
 /// provided comparator. Should work well for mostly heapified data.
 /// - `begin` : Pointer to the beginning of the range to heapify.
 /// - `end` : Pointer to one past the last element in the range to heapify.
-/// - `less` : A key comparison functor definining a less-than ordering relationship.
+/// - `less` : A key comparison functor defining a less-than ordering relationship.
 template<typename iterator_t_, typename less_t_> hxattr_hot
 void hxmake_heap_(hxrestrict_t<iterator_t_> begin_, iterator_t_ end_, const less_t_& less_) {
 	for(iterator_t_ heap_end_ = begin_ + 1; heap_end_ < end_; ) {
@@ -73,7 +73,7 @@ void hxmake_heap_(hxrestrict_t<iterator_t_> begin_, iterator_t_ end_, const less
 	}
 }
 
-/// Sort `[begin, end)` in-place using Dual-Pivot QuickSort. Based on Java's
+/// Sorts `[begin, end)` in place using dual-pivot quicksort. Based on Java's
 /// `Array.sort` implementation details. Should be resistant to degeneration.
 /// Average time: `Θ(n log n)`, worst time: `Θ(n²)`. This algorithm is only
 /// intended to sort ranges over a minimum length before calling back to the
@@ -81,8 +81,8 @@ void hxmake_heap_(hxrestrict_t<iterator_t_> begin_, iterator_t_ end_, const less
 /// - `begin` : Pointer to the first element in the range.
 /// - `end` : Pointer to one past the last element in the range.
 /// - `less` : Comparison functor.
-/// - `callback` : Callback functor matching `void callback(T* begin, T* end, const
-/// less_t& less, int depth)` for recursive sorting.
+/// - `callback` : Callback functor matching `void callback(T* begin, T* end,
+///   const less_t& less, int depth)` for recursive sorting.
 /// - `depth` : Current recursion depth.
 template<typename iterator_t_, typename less_t_, typename sort_callback_t_>  hxattr_hot
 void hxpartition_sort_(hxrestrict_t<iterator_t_> begin_, iterator_t_ end_, const less_t_& less_,

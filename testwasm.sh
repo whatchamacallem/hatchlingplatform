@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 # This file is licensed under the terms of the LICENSE.md file.
 #
-# After building the emsdk these commands need to be run in the emsdk directory:
+# After building the emsdk, these commands need to be run in the emsdk directory:
 #
 #   ./emsdk activate latest && source ./emsdk_env.sh
 
@@ -40,7 +40,7 @@ emcc -O2 -fpic -sMAIN_MODULE=2 -fno-exceptions -fno-rtti -fdiagnostics-absolute-
 
 if [ "$1" != "--headless" ]; then
 
-	# Start a webserver in the background.
+	# Start a web server in the background.
 	python3 -m http.server 9876 &
 
 	# Launch Chrome if it is installed.
@@ -48,9 +48,9 @@ if [ "$1" != "--headless" ]; then
 		google-chrome http://0.0.0.0:9876/ >/dev/null 2>&1;
 	fi
 
-	# Bring the webserver to the foreground so it can be killed.
+	# Bring the web server to the foreground so it can be killed.
 	fg %$(jobs | grep 'http.server' | sed -E 's/^\[([0-9]+)\].*/\1/')
 fi
 
-# Say goodbye. Make sure the script returns 0.
+# Say goodbye and make sure the script returns 0.
 echo 🐉🐉🐉

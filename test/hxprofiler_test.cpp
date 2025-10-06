@@ -88,7 +88,7 @@ TEST(hxprofiler_profile, single_scope_runs_for_1ms) {
 
 	EXPECT_TRUE(1u == (g_hxprofiler_.records_size_() - start_records));
 
-	// stops the profiler and dumps sample to console:
+	// Stop the profiler and dump the sample to the console.
 	const bool is_ok = hxconsole_exec_line("profilelog");
 	EXPECT_TRUE(is_ok);
 }

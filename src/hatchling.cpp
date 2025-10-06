@@ -14,18 +14,18 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// g_hxisinit. Do not initialize to 0. MSVC actually handles that differently.
+// g_hxisinit should not be zero-initialized; MSVC handles that differently.
 extern "C" { bool g_hxisinit; }
 
 // HX_FLOATING_POINT_TRAPS - Traps (FE_DIVBYZERO|FE_INVALID|FE_OVERFLOW) in
-// debug so you can safely run without checks for them in release. Use
+// debug builds so you can safely run without checks in release builds. Use
 // -DHX_FLOATING_POINT_TRAPS=0 to disable this debug facility. There is no C++
-// standard conforming way to disable floating point error checking. That
+// standard-conforming way to disable floating point error checking; that
 // requires a gcc/clang extension. Using -fno-math-errno and -fno-trapping-math
 // will work if you require C++ conforming accuracy without the overhead of
-// error checking. -ffast-math includes both those switches. You need the math
-// library -lm. Causing or explicit checking for floating point exceptions is
-// not recommended.
+// error checking. -ffast-math includes both of those switches. You need the math
+// library -lm. Triggering or explicitly checking for floating point exceptions
+// is not recommended.
 #if (HX_RELEASE) == 0 && defined __GLIBC__ && !defined __FAST_MATH__
 #include <fenv.h>
 #if !defined HX_FLOATING_POINT_TRAPS
@@ -36,23 +36,21 @@ extern "C" { bool g_hxisinit; }
 #define HX_FLOATING_POINT_TRAPS 0
 #endif
 
-// There are exception handling semantics in use in case they are on. However
-// you are advised to use -fno-exceptions. This library does not provide the
-// exception handling functions expected by the C++ ABI. In this codebase memory
-// allocation cannot fail. And it tries to get you to allocate enough memory for
-// everything in advance. The creation of hxthread.h classes cannot fail. By
-// design there are no exceptions to handle... Although there are lots of
-// asserts.
+// Exception-handling semantics exist in case they are enabled, but you are
+// advised to use -fno-exceptions. This library does not provide the exception
+// handling functions expected by the C++ ABI. In this codebase memory
+// allocation cannot fail, and it encourages allocating enough memory in
+// advance. The creation of hxthread.h classes cannot fail. By design there are
+// no exceptions to handle, although there are many asserts.
 #if (HX_RELEASE) >= 1 && defined __cpp_exceptions && !defined __INTELLISENSE__
 static_assert(0, "Warning: C++ exceptions are not recommended for embedded use.");
 #endif
 
 // ----------------------------------------------------------------------------
-// When not hosted, provide no locking around the initialization of function
-// scope static variables. Provide a release mode assert to enforce that locking
-// is not required. Also provide a release mode assert to enforce that function
-// static constructors do not throw exceptions. Also provides error handling for
-// virtual tables.
+// When not hosted, do not lock around the initialization of function-scope
+// static variables. Provide release-mode asserts to enforce that locking is
+// unnecessary and to ensure function-static constructors do not throw.
+// Also provide error handling for virtual tables.
 
 extern "C" {
 
@@ -72,15 +70,15 @@ int __cxa_guard_acquire(size_t *guard) {
 	if(*guard == 1u) { return 0; }
 
 	// Function scope statics must be initialized before calling worker threads.
-	// Checks if the constructor is already in progress and flags any potential
-	// race condition or reentrance.
+	// Checks whether the constructor is already in progress and flags any
+	// potential race condition or reentrancy.
 	hxassertrelease(*guard != 2u, "__cxa_guard_acquire no function scope static lock");
 	*guard = 2u;
 	return 1; // Signal construction required.
 }
 
 void __cxa_guard_release(size_t *guard) {
-	// Flag constructor as done. Clear in progress flag.
+	// Marks the constructor as done and clears the in-progress flag.
 	*guard = 1u;
 }
 
@@ -100,12 +98,12 @@ void __cxa_pure_virtual(void) {
 #endif
 
 // ----------------------------------------------------------------------------
-// Hook clang's sanitizers in the debugger. This overrides a weak library symbol
-// in the sanitizer support library. This provides clickable error messages
-// in vscode. Unused otherwise.
+// Hooks clang's sanitizers into the debugger by overriding a weak library
+// symbol in the sanitizer support library. This provides clickable error
+// messages in VS Code and is otherwise unused.
 
 void __sanitizer_report_error_summary(const char *error_summary) {
-	// A clickable message has already been printed to standard out.
+	// A clickable message has already been printed to standard output.
 	hxbreakpoint(); (void)error_summary;
 }
 
@@ -114,7 +112,7 @@ void __sanitizer_report_error_summary(const char *error_summary) {
 // ----------------------------------------------------------------------------
 #if (HX_RELEASE) < 1
 
-// Implements HX_REGISTER_FILENAME_HASH in debug. See hxstring_literal_hash.h.
+// Implements HX_REGISTER_FILENAME_HASH in debug builds. See hxstring_literal_hash.h.
 namespace {
 
 class hxhash_string_literal_
@@ -150,7 +148,7 @@ hxhash_t hxregister_string_literal_hash::hash(void) const {
 static bool hxprint_hashes(void) {
 	hxinit();
 
-	// sort by hash.
+	// Sort by hash.
 	hxlogconsole("string literals in hash order:\n");
 	hxsystem_allocator_scope temporary_stack(hxsystem_allocator_temporary_stack);
 
@@ -183,14 +181,14 @@ static bool hxcheck_hash(hxconsolehex_t hash_) {
 	return true;
 }
 
-// use the debug console to emit and check file hashes.
+// Use the debug console to emit and check file hashes.
 hxconsole_command_named(hxprint_hashes, printhashes);
 hxconsole_command_named(hxcheck_hash, checkhash);
 
 #endif
 
 // ----------------------------------------------------------------------------
-// init, shutdown, exit, assert and logging.
+// Initialization, shutdown, exit, assert, and logging.
 
 extern "C"
 void hxinit_internal(void) {
@@ -198,7 +196,7 @@ void hxinit_internal(void) {
 	hxsettings_construct();
 
 #if HX_FLOATING_POINT_TRAPS
-	// You need the math library -lm. This is nonstandard glibc/_GNU_SOURCE.
+	// You need the math library -lm. This is a nonstandard glibc/_GNU_SOURCE extension.
 	::feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 #endif
 
@@ -220,11 +218,11 @@ hxattr_noexcept void hxloghandler_v(hxloglevel_t level, const char* format, va_l
 		return;
 	}
 
-	// vsnprintf leaves a trailing NUL which may be overwritten below.
+	// vsnprintf leaves a trailing NUL that may be overwritten below.
 	char buf[HX_MAX_LINE];
 	int len = ::vsnprintf(buf, HX_MAX_LINE, format, args);
 
-	// Don't try and print the format string as it may be bad.
+	// Do not try to print the format string because it may be invalid.
 	hxassertrelease(len >= 0 && len < (int)HX_MAX_LINE, "vsnprintf");
 
 	hxfile& f = level == hxloglevel_log ? hxout : hxerr;
@@ -239,14 +237,14 @@ hxattr_noexcept void hxloghandler_v(hxloglevel_t level, const char* format, va_l
 	f.write(buf, (size_t)len);
 }
 
-// HX_RELEASE < 3 facilities for testing tear down. Just call _Exit() otherwise.
+// HX_RELEASE < 3 provides facilities for testing teardown. Just call _Exit() otherwise.
 extern "C"
 void hxshutdown(void) {
 	if(g_hxisinit) {
 #if (HX_RELEASE) < 3
 		hxmemory_manager_shut_down();
-		// Try to trap further activity. This will break global destructors that
-		// call hxfree. There isn't an easier way to do leak tracking.
+		// Try to trap further activity. This breaks global destructors that call
+		// hxfree. There is no easier way to track leaks.
 		g_hxisinit = false;
 #endif
 	}
@@ -265,7 +263,7 @@ hxattr_noexcept bool hxasserthandler(const char* file, size_t line) {
 	hxloghandler(hxloglevel_assert, "breakpoint %s(%zu) hash %08zx\n",
 		f, line, (size_t)hxstring_literal_hash_debug(file));
 
-	// return to hxbreakpoint at calling line.
+	// Return to hxbreakpoint at the calling line.
 	return 0;
 }
 #else

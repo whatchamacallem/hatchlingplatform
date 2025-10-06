@@ -41,7 +41,7 @@ done
 # Only process and display the c++20 version.
 strip -o hxtest-strip --strip-unneeded hxtest
 
-# turn off tracing silently and make sure the command returns 0.
+# Turn off tracing silently and make sure the command returns 0.
 { set +o xtrace; } 2> /dev/null
 
 # Prints [  PASSED  ]
@@ -55,7 +55,7 @@ echo ==========================================================================
 ./listsymbols.sh
 
 echo ==========================================================================
-# prints summary stats for the necessary components of the executable.
+# Prints summary stats for the necessary components of the executable.
 size bin/hxtest-strip
 
 echo 🐉🐉🐉

@@ -5,7 +5,7 @@
 
 set -o errexit
 
-# test configuration options in ways that are not varied by the release level
+# Test configuration options in ways that are not varied by the release level
 # during normal testing.
 echo "NOTA BENE: These tests will spew errors and still return successfully."
 ./testmatrix.sh \

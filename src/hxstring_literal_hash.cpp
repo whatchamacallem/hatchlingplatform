@@ -7,7 +7,7 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// hxstring_literal_hash_debug - A run time version of hxstring_literal_hash.
+// hxstring_literal_hash_debug - A runtime version of hxstring_literal_hash.
 
 extern "C"
 hxhash_t hxstring_literal_hash_debug(const char* s) {

@@ -4,7 +4,7 @@
 
 #include "../include/hx/hxutility.h"
 
-// The non-inline utility functions are all in plain C. It is an important test.
+// The non-inline utility functions are written in plain C. That provides an important test.
 
 #if defined __clang__
 __attribute__((no_sanitize("address")))

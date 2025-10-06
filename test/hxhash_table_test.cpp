@@ -94,7 +94,7 @@ TEST_F(hxhash_table_test, single) {
 		hxtest_integer* node = hxnew<hxtest_integer>(k);
 		table.insert_node(node);
 
-		// Operations on a single node
+		// Operations on a single node.
 		EXPECT_TRUE(table.begin() != table.end());
 		EXPECT_TRUE(table.cbegin() != table.cend());
 		EXPECT_TRUE(++table.begin() == table.end());
@@ -119,7 +119,7 @@ TEST_F(hxhash_table_test, single) {
 		EXPECT_TRUE(table.find(k) == hxnull);
 		EXPECT_EQ(table.size(), 0u);
 
-		// Operations after single node was removed
+		// Operations after the single node was removed.
 		EXPECT_EQ(table.size(), 0u);
 		EXPECT_EQ(table.count(k), 0u);
 		EXPECT_TRUE(table.find(k) == hxnull);
@@ -128,12 +128,12 @@ TEST_F(hxhash_table_test, single) {
 		// MODIFIES TABLE
 		EXPECT_TRUE(table[k].key() == k);
 
-		// Operations after a different node was allocated
+		// Operations after a different node was allocated.
 		EXPECT_TRUE(table[k].value.id != node->value.id);
 		EXPECT_EQ(table.size(), 1u);
 		EXPECT_EQ(table.count(k), 1u);
 
-		// MODIFIES TABLE: destructor also frees allocated item.
+		// MODIFIES TABLE: Destructor also frees allocated item.
 		hxdelete(node);
 	}
 	EXPECT_EQ(m_constructed, 2);
@@ -186,7 +186,7 @@ TEST_F(hxhash_table_test, multiple) {
 		Table table;
 		table.set_table_size_bits(5);
 
-		// Insert N elements
+		// Insert N elements.
 		for(int i = 0; i < N; ++i) {
 			EXPECT_EQ(table[i].value.id, i);
 			EXPECT_EQ(table[i].key(), i);

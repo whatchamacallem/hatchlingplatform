@@ -254,7 +254,7 @@ TEST(hxunique_lock, ownership_after_lock) {
 
 TEST(hxthread, join_without_start) {
 	hxthread thread;
-	// Should not be joinable, so nothing to join
+	// Should not be joinable, so nothing to join.
 	EXPECT_FALSE(thread.joinable());
 }
 

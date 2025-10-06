@@ -9,8 +9,8 @@
 #include "hxhash_table.hpp"
 
 /// `hxhash_table_node_integer` - `node_t` for use with `hxhash_table` for integer
-/// types. See documentation of `hxhash_table` for interface. This is a great
-/// example of a `node_t` that doesn't use a base class.
+/// types. See the documentation of `hxhash_table` for the required interface.
+/// This serves as an example of a `node_t` that does not use a base class.
 template<typename key_t_>
 class hxhash_table_node_integer {
 public:
@@ -44,14 +44,14 @@ class hxhash_table_node_string_literal : public hxhash_table_set_node<const char
 public:
 	/// Constructor initializes the node with a string key and computes its hash.
 	/// - `k` : The string key to initialize the node with.
-	 hxattr_nonnull(2) hxhash_table_node_string_literal(const char* k_)
+	hxattr_nonnull(2) hxhash_table_node_string_literal(const char* k_)
 		: hxhash_table_set_node<const char*>(k_) { }
 };
 
 /// `hxhash_table_node_string` - Specialization of `hxhash_table_set_node` for C
-/// strings. Allocates a copy, resulting in a string pool per-hash table. The
-/// key is stored as a pointer to const to keep the hash table code const
-/// correct.
+/// strings. Allocates a copy, resulting in a string pool per hash table. The
+/// key is stored as a pointer to `const` to keep the hash table code
+/// const-correct.
 template <hxsystem_allocator_t allocator_=hxsystem_allocator_heap>
 class hxhash_table_node_string : public hxhash_table_set_node<const char*> {
 public:

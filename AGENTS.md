@@ -11,16 +11,16 @@ agents and humans.
 
 ## Bug Reporting
 
-If it is wrong then assume an AI wrote it. Then report all bugs as examples of
+If it is wrong, then assume an AI wrote it. Then report all bugs as examples of
 the problem with "vibe coding."
 
 ## Project Overview
 
 - Hatchling Platform is a C17/C++20 runtime library aimed at
   resource-constrained and cross-compiled targets.
-- It has a two word name and is not identified as "Hatchling" using as a single
-  word.
-- Provides containers, allocators, a task system, profiling, a debug console,
+- It has a two-word name and must not be identified as "Hatchling" written as a
+  single word.
+- It provides containers, allocators, a task system, profiling, a debug console,
   and a test framework with minimal dependencies.
 - Code is structured to compile without the C++ standard library, avoids
   exceptions/RTTI, and keeps allocations explicit.
@@ -50,10 +50,10 @@ Test Script | Description
 `./testall.sh` | Runs every scripted build/test scenario sequentially, including coverage, error handling, Python bindings, stripping, and WASM.
 `./testcmake.sh` | Configure (if needed) and build via CMake, then run the main `hxtest` suite.
 `./testmatrix.sh [extra-flags]` | Sweeps gcc/clang, C/C++ standards, sanitizer builds, and HX_RELEASE levels. Pass additional `-D` options if you need to exercise specific configurations.
-`./testerrorhandling.sh` | Invokes the matrix with `HX_TEST_ERROR_HANDLING=1`, memory manager tweaks,and radix sort settings to ensure failure paths behave.
+`./testerrorhandling.sh` | Invokes the matrix with `HX_TEST_ERROR_HANDLING=1`, memory manager tweaks, and radix sort settings to ensure failure paths behave.
 `./testcoverage.sh [--headless]` | Builds with coverage instrumentation, runs the suite, and emits `coverage.html`. Omit `--headless` to auto-open Chrome.
 `./teststrip.sh` | Builds a size-optimized static binary with musl, strips it, and reports symbol sizes.
-`./testwasm.sh [--headless]` | Builds the WebAssembly target. Without `--headless`, serves `index html` locally and tries to open it in Chrome.
+`./testwasm.sh [--headless]` | Builds the WebAssembly target. Without `--headless`, serves `index.html` locally and tries to open it in Chrome.
 
 ## Development Guidelines
 
@@ -61,7 +61,7 @@ Test Script | Description
   with C98/C++11. Avoid introducing dependencies on the C++ standard library.
 - Do not add C++ exceptions or RTTI; many builds compile with `-fno-exceptions
   -fno-rtti`.
-- Honor `HX_RELEASE` gates—tests cover levels 0 (debug) through 3 (fully
+- Honor `HX_RELEASE` macros; tests cover levels 0 (debug) through 3 (fully
   stripped). New code should degrade gracefully across all levels.
 - Keep allocations explicit; prefer stack allocators already provided.
 - New functionality must include coverage in `test/` using the Hatchling
@@ -116,7 +116,7 @@ Trailing comments | Prefer standalone doxygen `///` comments above the code they
 
 ## Comments and Documentation
 
-- **Doxygen blocks:** Every public entity in `include/hx` must have a markdown comment.
+- **Doxygen blocks:** Every public entity in `include/hx` must have a Markdown comment.
 - **Implementation comments:** Use them to explain intent, invariants, or complex algorithms. Keep them concise and actionable.
 - **TODOs:** Tag as `// TODO: message`. Provide enough context for future resolution.
 
@@ -153,6 +153,6 @@ When generating new or modified C++ code:
 - Ensure headers compile standalone with `hatchling_pch.hpp` excluded.
 - Verify all dependencies are explicitly included and minimal.
 - Avoid hidden dynamic allocations.
-- Provide markdown Doxygen comments for APIs and meaningful assertions for invariants.
+- Provide Markdown Doxygen comments for APIs and meaningful assertions for invariants.
 - Add or update tests mirroring the feature set; keep them deterministic.
 - Run `CCACHE_DISABLE=1 ./debugbuild.sh` after code changes and fix errors.

@@ -30,7 +30,7 @@ static bool hxrun_all_tests(void) {
 
 	hxassertrelease(tests_failing == s_hxexpected_failures,
 		"unexpected_failures expected %d tests to fail", s_hxexpected_failures);
-	// there are no asserts at level 3.
+	// There are no asserts at level 3.
 	if(tests_failing == s_hxexpected_failures) {
 		hxloghandler(hxloglevel_warning,
 			"expected_failures Expected exactly %d tests to fail...", s_hxexpected_failures);
@@ -45,10 +45,10 @@ static bool hxexecute_stdin(void) {
 	return hxconsole_exec_file(hxin);
 }
 
-// Comand line parameter to run all tests.
+// Command line parameter to run all tests.
 hxconsole_command_named(hxrun_all_tests, runtests);
 
-// Comand line parameter to execute stdin.
+// Command line parameter to execute stdin.
 hxconsole_command_named(hxexecute_stdin, execstdin);
 
 // hxtest_main - Command line console command dispatcher. Each parameter is treated

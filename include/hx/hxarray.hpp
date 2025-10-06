@@ -20,9 +20,9 @@
 ///   `hxarray<char, HX_MAX_LINE> string_buffer("example C string");`
 /// however `operator+=` does not support C strings.
 ///
-/// Please run a memory sanitizer and an undefined behavior sanitizer too. Use a
-/// C array for now if you need `constexpr`. The excessive number of operators
-/// is due to the rules about default operators.
+/// Please run both a memory sanitizer and an undefined behavior sanitizer. Use
+/// a C array for now if you need `constexpr` support. The excessive number of
+/// operators is due to the rules about default operators.
 /// - `T` : Element type stored by the array.
 /// - `capacity` : Maximum element count or `hxallocator_dynamic_capacity` for dynamic storage.
 template<typename T_, size_t capacity_=hxallocator_dynamic_capacity>
@@ -37,7 +37,7 @@ public:
 	/// Publishes the value type.
 	typedef T_ value_type;
 
-	/// Constructs an empty array with a capacity of Capacity. `m_end_` will be 0
+	/// Constructs an empty array with a capacity of `capacity`. `m_end_` will be 0
 	/// if `capacity` is 0.
 	explicit hxarray(void);
 
@@ -46,7 +46,7 @@ public:
 	explicit hxarray(size_t size_);
 
 	/// Constructs an array of a given size by making copies of `x`.
-	/// - `size` : Sets array size as if `resize(size, t)` were called.
+	/// - `size` : Sets array size as if `resize(size, x)` were called.
 	/// - `x` : The `const T&` to be duplicated.
 	explicit hxarray(size_t size_, const T_& x_);
 
@@ -65,21 +65,22 @@ public:
 	/// - `x` : A temporary `Array<T>`.
 	hxarray(hxarray&& x_);
 
-	/// Construct from a C-style array. Usable as an `initializer_list` when
-	/// the `std` namespace is not available. E.g.,
+	/// Constructs from a C-style array. Usable as an `initializer_list` when the
+	/// `std` namespace is not available. e.g.,
 	/// ```cpp
 	/// static const int initial_values[] = { 5, 4, 3 };
 	/// hxarray<int> current_values(initial_values);
 	/// ```
-	/// - `array` : A const array of `array_length` `value_t`.
+	/// - `array` : A const array of `array_length_` `value_type`.
 	template<typename other_value_t_, size_t array_length_>
 	hxarray(const other_value_t_(&array_)[array_length_]);
 
 #if !HX_NO_LIBCXX
 	/// Pass values of `std::initializer_list` as initializers to an array of `T`.
 	/// WARNING: This constructor will override the other constructors when
-	/// uniform initialization is used. E.g., `hxarry<int>x{1,2}` is an array
-	/// containing `{1,2}` and `hxarry<int>x(1,2)` is the array containing `{2}`.
+	/// uniform initialization is used. e.g., `hxarray<int> x{1, 2}` is an array
+	/// containing `{1, 2}` and `hxarray<int> x(1, 2)` is the array containing
+	/// `{2}`.
 	/// - `x` : A `std::initializer_list<other_value_t>`.
 	template <typename other_value_t_>
 	hxarray(std::initializer_list<other_value_t_> x_);
@@ -106,7 +107,7 @@ public:
 	void operator=(hxarray&& x_);
 
 	/// Assign from a C-style array. Usable as an `initializer_list` when
-	/// the `std` namespace is not available. E.g.,
+	/// the `std` namespace is not available. e.g.,
 	/// ```cpp
 	/// static const int initial_values[] = { 5, 4, 3 };
 	/// hxarray<int, 32> current_values(initial_values);
@@ -181,16 +182,16 @@ public:
 	void assign_range(range_t_&& range_);
 #endif
 
-	/// Returns a const reference to the end element in the array.
+	/// Returns a const reference to the last element in the array.
 	const T_& back(void) const;
 
-	/// Returns a reference to the end element in the array.
+	/// Returns a reference to the last element in the array.
 	T_& back(void);
 
 	/// Returns a `const T*` to the beginning of the array.
 	const T_* begin(void) const;
 
-	/// Returns an `T*` to the beginning of the array.
+	/// Returns a `T*` to the beginning of the array.
 	T_* begin(void);
 
 	/// Returns a `const T*` to the beginning of the array (alias for
@@ -212,7 +213,7 @@ public:
 	/// Returns true if the arrays compare as equivalent. This version takes a
 	/// functor for key comparison.
 	/// - `x` : The other array.
-	/// - `equal` : A key comparison functor definining an equivalence relationship.
+	/// - `equal` : A key comparison functor defining an equivalence relationship.
 	template<size_t capacity_x_, typename equal_t_>
 	bool equal(const hxarray<T_, capacity_x_>& x_, const equal_t_& equal_) const;
 
@@ -227,11 +228,11 @@ public:
 	/// Returns a `const T*` to the end of the array.
 	const T_* end(void) const;
 
-	/// Returns an `T*` to the end of the array.
+	/// Returns a `T*` to the end of the array.
 	T_* end(void);
 
 	/// Erases the element indicated. Should not compile with hxnull. Support
-	/// for erasing ranges has not ben added yet.
+	/// for erasing ranges has not been added yet.
 	/// - `pos` : Pointer to the element to erase.
 	void erase(const T_* pos_) hxattr_nonnull(2);
 
@@ -248,7 +249,7 @@ public:
 
 	/// Variant of `erase` that moves the end element down to replace the erased
 	/// element. Should not compile with hxnull. (Non-standard.) Can be used to
-	/// erase elements of an array as it is traversed. E.g.,
+	/// erase elements of an array as it is traversed. e.g.,
 	/// ```cpp
 	/// for(size_t i = a.size(); i--; ) {
 	/// 	if(should_erase(a[i])) {
@@ -259,16 +260,16 @@ public:
 	/// - `pos` : Pointer to the element to erase.
 	void erase_unordered(const T_* pos_) hxattr_nonnull(2);
 
-	/// Variant of `erase` that moves the end element down to replace erased
+	/// Variant of `erase` that moves the end element down to replace the erased
 	/// element. Use `(size_t)0` to write the integer literal 0. (Non-standard.)
 	/// - `index` : The index of the element to erase.
 	void erase_unordered(size_t index_);
 
-	/// Calls a function, lambda or `std::function` on each element.
-	/// (Non-standard.) Lambdas and `std::function` can be provided as
-	/// temporaries and that has to be allowed. The `&&` variant of
+	/// Calls a function, lambda, or `std::function` on each element.
+	/// (Non-standard.) Lambdas and `std::function` instances can be provided as
+	/// temporaries, so that has to be allowed. The `&&` variant of
 	/// `functor_t::operator()` may be selected using `hxmove`. This is the
-	/// standard way to signal to the functor that it is a temporary. E.g.,
+	/// standard way to signal to the functor that it is a temporary. e.g.,
 	/// ```cpp
 	/// hxarray<int> a(3, 0);
 	/// a.for_each([](int& x) { ++x; }); // Produces { 1, 1, 1 }.
@@ -277,30 +278,30 @@ public:
 	template<typename functor_t_>
 	void for_each(functor_t_&& fn_);
 
-	/// Returns a const reference to the begin element in the array.
+	/// Returns a const reference to the first element in the array.
 	const T_& front(void) const;
 
-	/// Returns a reference to the begin element in the array.
+	/// Returns a reference to the first element in the array.
 	T_& front(void);
 
-	/// Returns true when the array is full (size equal capacity).
+	/// Returns true when the array is full (size equals capacity).
 	/// (Non-standard.)
 	bool full(void) const;
 
-	/// Returns a `const T*` to element at the `index` or `hxnull` otherwise.
+	/// Returns a `const T*` to the element at `index` or `hxnull` otherwise.
 	/// - `index` : The 0-based offset of the element.
 	const T_* get(size_t index_) const;
 
-	/// Returns a `T*` to element at the `index` or `hxnull` otherwise.
+	/// Returns a `T*` to the element at `index` or `hxnull` otherwise.
 	/// - `index` : The 0-based offset of the element.
 	T_* get(size_t index_);
 
-	/// Inserts the element at the offset indicated.  Should not compile with
+	/// Inserts the element at the offset indicated. Should not compile with
 	/// `hxnull`. `insert(begin(), x)` and `insert(end(), x)` will work as long as
 	/// the array is allocated. Not intended for objects that are expensive to
-	/// move. Support for inserting ranges has not ben added yet. Consider using
+	/// move. Support for inserting ranges has not been added yet. Consider using
 	/// `emplace_back` for storing large objects.
-	/// - `pos` : Pointer to the location to insert the new element at.
+	/// - `pos` : Pointer to the location where the new element will be inserted.
 	/// - `x` : The new element.
 	template<typename ref_t_>
 	void insert(const T_* pos_, ref_t_&& x_) hxattr_nonnull(2);
@@ -308,22 +309,22 @@ public:
 	/// Inserts the element at the offset indicated. Use `(size_t)0` to write
 	/// the integer literal 0. `insert(begin(), x)` and `insert(end(), x)` will
 	/// work as long as the array is allocated.
-	/// - `index` : Index of the location to insert the new element at.
+	/// - `index` : Index of the location where the new element will be inserted.
 	/// - `x` : The new element.
 	template<typename ref_t_>
 	void insert(size_t index_, ref_t_&& x_);
 
-	/// Returns true if this array compares as less than `x`. Sorts [1] before
-	/// [1,2]. This version takes two functors for key comparison.
+	/// Returns true if this array compares as less than `x`. Sorts `[1]` before
+	/// `[1, 2]`. This version takes two functors for key comparison.
 	/// - `x` : The other array.
-	/// - `less` : A key comparison functor definining a less-than ordering relationship.
-	/// - `equal` : A key comparison functor definining an equivalence relationship.
+	/// - `less` : A key comparison functor defining a less-than ordering relationship.
+	/// - `equal` : A key comparison functor defining an equivalence relationship.
 	template<size_t capacity_x_, typename less_t_, typename equal_t_>
 	bool less(const hxarray<T_, capacity_x_>& x_, const less_t_& less_, const equal_t_& equal_) const;
 
 	/// Returns true if this array compares less than `x` using `hxkey_equal`
 	/// and `hxkey_less`.
-	/// Sorts `[1]` before `[1,2]`.
+	/// Sorts `[1]` before `[1, 2]`.
 	/// - `x` : The other array.
 	template<size_t capacity_x_>
 	bool less(const hxarray<T_, capacity_x_>& x_) const;
@@ -340,24 +341,24 @@ public:
 	/// `push_heap`.
 	void pop_heap(void);
 
-	/// Appends the element to the end of the array. `args_t` may be any types
+	/// Appends an element to the end of the array. `args_t` may be any types
 	/// that can be used to construct `T`. Returns a reference to the new
 	/// element.
-	/// - `x` : The element to add.
+	/// - `args` : Arguments forwarded to `T`'s constructor.
 	template<typename... args_t_>
 	T_& push_back(args_t_&&... args_);
 
 	/// Inserts an element into a max-heap. This implements `std::push_heap` and
 	/// `std::priority_queue` using `hxless` for ordering. See `pop_heap`.
 	/// Returns a reference to the element added.
-	/// - `args` : Arguments forwarded to `T`'s constructor.
+	/// - `arg` : The element to add.
 	template<typename ref_t_>
 	T_& push_heap(ref_t_&& arg_);
 
 	/// Reserves storage for at least the specified number of elements.
 	/// - `size` : The number of elements to reserve storage for.
 	/// - `allocator` : The memory manager ID to use for allocation (default: `hxsystem_allocator_current`)
-	/// - `alignment` : The alignment to for the allocation. (default: `HX_ALIGNMENT`)
+	/// - `alignment` : The alignment for the allocation. (default: `HX_ALIGNMENT`)
 	void reserve(size_t size_,
 			hxsystem_allocator_t allocator_=hxsystem_allocator_current,
 			hxalignment_t alignment_=HX_ALIGNMENT);
@@ -403,15 +404,16 @@ private:
 // arrays as generic keys.
 #if HX_CPLUSPLUS >= 202002L
 
-/// `bool hxequal(hxarray<T>& x, hxarray<T>& y)` - Compares the contents of x
-/// and y for equivalence.
+/// `bool hxequal(hxarray<T>& x, hxarray<T>& y)` - Compares the contents of `x`
+/// and `y` for equivalence.
 template<typename T_, size_t capacity_x_, size_t capacity_y_>
 bool hxkey_equal(const hxarray<T_, capacity_x_>& x_, const hxarray<T_, capacity_y_>& y_) {
     return x_.equal(y_);
 }
 
 /// `bool hxkey_less(hxarray<T>& x, hxarray<T>& y)` - Compares the contents of
-// x and y using hxkey_equal and hxkey_less on each element.
+/// `x` and `y` lexicographically using `hxkey_equal` and `hxkey_less` on each
+/// element.
 template<typename T_, size_t capacity_x_, size_t capacity_y_>
 bool hxkey_less(const hxarray<T_, capacity_x_>& x_, const hxarray<T_, capacity_y_>& y_) {
 	return x_.less(y_);

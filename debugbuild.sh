@@ -19,7 +19,7 @@ if [ "$1" != "--headless" ]; then
 	clear
 fi
 
-# Should detect threading and standard library.
+# Should detect threading and the standard library.
 BUILD="-DHX_RELEASE=0 -O0"
 
 # -Wdate-time is for ccache. -Wno-unused-variable is only for debugging.

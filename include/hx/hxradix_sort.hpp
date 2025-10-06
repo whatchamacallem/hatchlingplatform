@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-/// \file hx/hxradix_sort.hpp hxradix_sort is recommended as an Θ(n) sorting
-/// strategy for any fundamental type that is 32-bits or less. This implementation
-/// does not cause code bloat and is the fastest sorting algorithm available for
-/// scalar keys. Radix sort is best when you need real-time guarantees and have a
-/// massive workload. This is not a toy. It was actually how IBM sorted punch
-/// cards.
+/// \file hx/hxradix_sort.hpp `hxradix_sort` is recommended as an `Θ(n)` sorting
+/// strategy for any fundamental type that is 32 bits or less. This
+/// implementation does not cause code bloat and is the fastest sorting
+/// algorithm available for scalar keys. Radix sort is best when you need
+/// real-time guarantees and have a massive workload. This is not a toy; IBM
+/// actually used it to sort punch cards.
 ///
-/// For example :
+/// For example:
 /// ```cpp
 ///   hxarray<hxradix_sort_key<key_t, example_t>> rs; rs.reserve(size);
 ///   for(uint32_t i = size; i--;) {
@@ -27,19 +27,19 @@
 template<typename key_t_, typename value_t_>
 class hxradix_sort_key {
 public:
-	/// Construct from the required `key_t` type and `value_t*` type.
+	/// Constructs from the required `key_t` type and `value_t*` type.
 	hxradix_sort_key(key_t_ key_, value_t_ value_) { this->set_(key_, value_); }
 
-	/// Set from the required `key_t` type and `value_t*` type.
+	/// Sets from the required `key_t` type and `value_t*` type.
 	void set(key_t_ key_, value_t_ value_) { this->set_(key_, value_); }
 
-	/// Return the stored `value_t*`.
+	/// Returns the stored `value_t*`.
 	const value_t_ get_value(void) const { return m_value_; }
 
-	/// Return the stored `value_t*`.
+	/// Returns the stored `value_t*`.
 	value_t_ get_value(void) { return m_value_; }
 
-	/// Comparison operator for comparision sorting `hxradix_sort_key` objects
+	/// Comparison operator for comparison sorting `hxradix_sort_key` objects
 	/// by key as a fallback for short arrays.
 	bool operator<(hxradix_sort_key x_) const { return m_key_ < x_.m_key_; }
 
@@ -66,7 +66,7 @@ private:
 	void set_(uint32_t key_, value_t_ value_) { m_key_=key_; m_value_=value_; }
 	void set_(float key_, value_t_ value_) {
 		// Reinterpret a float as a signed int in order to use a sign extending
-		// right shift before switching to well defined unsigned bit ops.
+		// right shift before switching to well-defined unsigned bit ops.
 		int32_t t_;
 		::memcpy(&t_, &key_, sizeof t_);
 		m_key_ = (uint32_t)t_ ^ ((uint32_t)(t_ >> 31) | 0x80000000u);
@@ -100,9 +100,9 @@ hxattr_nonnull(1,2) hxattr_hot
 void hxradix_sort_void11(hxradix_sort_key_void* begin_, hxradix_sort_key_void* end_);
 
 /// Sorts an array of `value_t*` by `key_t` using 8-bit digits. `key_t` is the
-/// sort key and `value_t` the value being sorted. Keys of `double`, `int64_t`
+/// sort key and `value_t` the value being sorted. Keys of `double`, `int64_t`,
 /// and `uint64_t` are not supported. `hxradix_sort` scales linearly with the
-/// byte length of the key whereas `hxinsertion_sort` is Θ(n) on mostly sorted
+/// byte-length of the key, whereas `hxinsertion_sort` is Θ(n) on mostly sorted
 /// data.
 template<typename key_t_, typename value_t_> hxattr_nonnull(1,2) hxattr_hot
 void hxradix_sort(hxradix_sort_key<key_t_, value_t_>* begin_, hxradix_sort_key<key_t_, value_t_>* end_) {
@@ -110,9 +110,9 @@ void hxradix_sort(hxradix_sort_key<key_t_, value_t_>* begin_, hxradix_sort_key<k
 }
 
 /// Sorts an array of `value_t*` by `key_t` using 11-bit digits. `key_t` is the
-/// sort key and `value_t` the value being sorted. Keys of `double`, `int64_t`
+/// sort key and `value_t` the value being sorted. Keys of `double`, `int64_t`,
 /// and `uint64_t` are not supported. `hxradix_sort` scales linearly with the
-/// byte length of the key whereas `hxinsertion_sort` is Θ(n) on mostly sorted
+/// byte-length of the key, whereas `hxinsertion_sort` is Θ(n) on mostly sorted
 /// data.
 template<typename key_t_, typename value_t_> hxattr_nonnull(1,2) hxattr_hot
 void hxradix_sort11(hxradix_sort_key<key_t_, value_t_>* begin_, hxradix_sort_key<key_t_, value_t_>* end_) {

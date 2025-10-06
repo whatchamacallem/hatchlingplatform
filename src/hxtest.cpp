@@ -8,11 +8,11 @@
 
 namespace hxdetail_ {
 
-// hxtest_*_eq_ — ULP-based floating point equality (GoogleTest-compatible)
-// Compares IEEE-754 numbers by **Units in the Last Place (ULPs)** with a fixed
-// threshold of **4 ULPs** for gtest’s `EXPECT_FLOAT_EQ` / `EXPECT_DOUBLE_EQ`.
-// Unlike Google Test this fails any non-finite values because comparing test
-/// data with infinity indicates a possible concern.
+// hxtest_*_eq_ - ULP-based floating point equality (GoogleTest-compatible)
+// Compares IEEE-754 numbers by units in the last place (ULPs) with a fixed
+// threshold of 4 ULPs for gtest's `EXPECT_FLOAT_EQ` / `EXPECT_DOUBLE_EQ`.
+// Unlike Google Test, this fails on any non-finite values because comparing
+// test data with infinity indicates a possible issue.
 bool hxtest_float_eq_(float a_, float b_) {
     if (!hxisfinitef(a_) || !hxisfinitef(b_)) { return false; }
     if (a_ == b_) { return true; }
@@ -68,7 +68,7 @@ void hxtest_::add_test_(hxtest_case_interface_* fn_) {
 	}
 }
 
-// message is required to end with an \n. Returns hxdev_null on success and
+// Message is required to end with an \n. Returns hxdev_null on success and
 // hxerr otherwise.
 hxfile& hxtest_::condition_check_(bool condition_, const char* file_, size_t line_, const char* message_, bool is_assert_) {
 	hxassertrelease(m_current_test_, "test_not_started");
@@ -82,7 +82,7 @@ hxfile& hxtest_::condition_check_(bool condition_, const char* file_, size_t lin
 				return hxdev_null;
 			}
 
-		// prints full path error messages that can be clicked on in an ide.
+		// Prints full-path error messages that can be clicked on in an IDE.
 		m_current_test_->case_();
 		m_current_test_->suite_();
 		hxloghandler(hxloglevel_assert, "test_fail %s.%s", m_current_test_->suite_(), m_current_test_->case_());
@@ -114,10 +114,10 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 	m_pass_count_ = m_fail_count_ = 0u;
 	m_total_assert_count_ = 0u;
 
-	// Breaking hxinsertion_sort breaks everything...
+	// Breaking hxinsertion_sort breaks everything.
 	hxinsertion_sort(m_test_cases_, m_test_cases_ + m_num_test_cases_, hxtest_case_sort_);
 
-	// The starting point. Expected to reset to zero after each test.
+	// Starting point. Expected to reset to zero after each test.
 	hxsystem_allocator_scope temporary_stack_base(hxsystem_allocator_temporary_stack);
 
 	hxassertrelease(temporary_stack_base.get_current_allocation_count() == 0u
@@ -178,7 +178,7 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 	else {
 		hxloghandler(hxloglevel_console, "%zu FAILED TEST%s ❌\n", m_fail_count_,
 			m_fail_count_ == 1u ? "" : "S");
-		// Count nothing tested as 1 failure.
+		// Count nothing tested as one failure.
 		m_fail_count_ = hxmax(m_fail_count_, (size_t)1u);
 	}
 	return m_fail_count_;

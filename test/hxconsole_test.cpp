@@ -120,9 +120,9 @@ TEST(hxconsole_test, command_factory) {
 	EXPECT_EQ(c_hxconsole_test_call_flags, (1<<hxconsole_test_type_id_MAX)-1);
 }
 
-// Trigger some asserts and then call EXPECT_FALSE a few times. Show that asserts
-// are hit and can be skipped. And then show that the above test would fail if
-// bad commands were submitted.
+// Trigger some asserts and then call EXPECT_FALSE a few times. This shows that
+// asserts are hit and can be skipped, and that the above test would fail if bad
+// commands were submitted.
 #if HX_TEST_ERROR_HANDLING
 TEST(hxconsole_test, overflow) {
 	hxlogconsole("EXPECTING_TEST_FAILURE\n");
@@ -178,7 +178,7 @@ TEST(hxconsole_test, register_command) {
 	hxlogconsole("EXPECTING_TEST_WARNINGS\n");
 
 	s_hxconsole_test_result_hook = 0.0f;
-	const bool b0 = hxconsole_exec_line("hxconsole_test_register0 77 ..."); // 77 + 3 int8_t string
+	const bool b0 = hxconsole_exec_line("hxconsole_test_register0 77 ..."); // 77 + 3 from the int8_t string.
 	EXPECT_TRUE(b0);
 	EXPECT_EQ(80.0f, s_hxconsole_test_result_hook);
 

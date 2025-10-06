@@ -3,34 +3,35 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-/// \file hx/hxsort.hpp Sorting and searching utilities for hatchling platform.
-/// Provides insertion sort, binary search, and a general purpose sort
-/// implementation. Includes support for template partial specialization
-/// (overloads of `hxkey_equal`, `hxkey_less`, `hxswap`) and functors when defining
-/// custom key operations. Otherwise `T::T(T&&)`, `T::~T()`, `T::operator=(T&&)`,
-/// `T::operator<(const T&)` and `T::operator==(const T&)` are used.
+/// \file hx/hxsort.hpp Sorting and searching utilities for the Hatchling
+/// Platform. Provides insertion sort, binary search, and a general-purpose sort
+/// implementation. Includes support for template partial specializations
+/// (overloads of `hxkey_equal`, `hxkey_less`, `hxswap`) and functors when
+/// defining custom key operations. Otherwise `T::T(T&&)`, `T::~T()`,
+/// `T::operator=(T&&)`, `T::operator<(const T&)`, and `T::operator==(const T&)`
+/// are used.
 ///
 /// `hxradix_sort.hpp` is recommended as an `Θ(n)` sorting strategy for any
-/// fundamental type that is 4-bytes or less. This implementation does not cause
-/// code bloat and is the fastest sorting algorithm available for scalar keys.
-/// Radix sort is best when you need real-time guarantees and have a massive
-/// workload. This is not a toy. It was actually how IBM sorted punch cards.
+/// fundamental type that is four bytes or less. This implementation does not
+/// cause code bloat and is the fastest available algorithm for scalar keys.
+/// Radix sort is best when you need real-time guarantees and have a large
+/// workload. IBM even used it to sort punch cards.
 ///
-/// `hxinsertion_sort` is recommended when you have under a kilobyte of data to
-/// sort and you don't want to add 10k to your executable just to sort it.
-/// `hxheap_sort` may also be useful for keeping code size down while providing
-/// `Θ(n log n)`.
+/// `hxinsertion_sort` is recommended when you have fewer than a kilobyte of
+/// data to sort and you do not want to add 10 KB to your executable just for
+/// sorting. `hxheap_sort` may also help keep code size down while providing
+/// `Θ(n log n)` behavior.
 ///
 /// `hxsort` is meant to be competitive with smaller types and "resistant to
 /// attack." It instantiates about 200 lines of template code.
 ///
-/// If sorting is important to your application then the "cpp-sort" project is
+/// If sorting is important to your application, the "cpp-sort" project is
 /// recommended as a way to study your data and identify the best algorithms for
 /// you: https://github.com/Morwenn/cpp-sort.
 ///
-/// If you do find you need a specific algorithm that isn't here then take a look
-/// at `hxintro_sort_` as an example of how you might compose a new sorting
-/// function built from these routines.
+/// If you ever need a specific algorithm that is not here, take a look at
+/// `hxintro_sort_` as an example of how you might compose a new sorting
+/// function from these routines.
 
 #include "detail/hxsort_detail.hpp"
 
@@ -42,7 +43,7 @@
 /// `T::operator=(T&&)` are used.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
-/// - `less` : A key comparison functor definining a less-than ordering relationship.
+/// - `less` : A key comparison functor defining a less-than ordering relationship.
 template<typename iterator_t_, typename less_t_> hxattr_hot
 void hxinsertion_sort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_) {
 	hxassertmsg(begin_ <= end_, "invalid_iterator");
@@ -81,7 +82,7 @@ void hxinsertion_sort(iterator_t_ begin_, iterator_t_ end_) {
 /// order using the heapsort algorithm.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
-/// - `less` : A key comparison functor definining a less-than ordering relationship.
+/// - `less` : A key comparison functor defining a less-than ordering relationship.
 template<typename iterator_t_, typename less_t_> hxattr_hot
 void hxheapsort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_) {
 	hxrestrict_t<iterator_t_> begin_r_(begin_);
@@ -113,7 +114,7 @@ void hxheapsort(iterator_t_ begin_, iterator_t_ end_) {
 /// of small objects.
 /// - `begin` : Pointer to the beginning of the range to sort.
 /// - `end` : Pointer to one past the last element in the range to sort.
-/// - `less` : A key comparison functor definining a less-than ordering relationship.
+/// - `less` : A key comparison functor defining a less-than ordering relationship.
 template<typename iterator_t_, typename less_t_> hxattr_hot
 void hxsort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_) {
 	hxintro_sort_<iterator_t_>(begin_, end_, less_, 2 * hxlog2i((size_t)(end_ - begin_)));
@@ -179,15 +180,15 @@ void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
 		hxkey_less_function<element_t_, element_t_>());
 }
 
-/// `hxbinary_search` - Performs a binary search in the range [first, last).
+/// `hxbinary_search` - Performs a binary search in the range `[first, last)`.
 /// Returns `end` if the value is not found. Unsorted data will lead to errors.
-/// Non-unique values will be selected from arbitrarily. The compare parameter
-/// is a functor that returns true if the first argument is ordered before (i.e.
+/// Non-unique values will be selected arbitrarily. The comparator parameter is
+/// a functor that returns true if the first argument is ordered before (i.e.,
 /// is less than) the second. The return value is non-standard.
 /// - `begin` : Pointer to the beginning of the range to search.
 /// - `end` : Pointer to one past the last element in the range to search.
 /// - `value` : The value to search for.
-/// - `less` : A key comparison functor definining a less-than ordering relationship. (Optional.)
+/// - `less` : A key comparison functor defining a less-than ordering relationship. (Optional.)
 template<typename iterator_t_, typename value_t_, typename less_t_> hxattr_hot
 iterator_t_ hxbinary_search(iterator_t_ begin_, iterator_t_ end_, const value_t_& value_, const less_t_& less_) {
 	// don't operate on null pointer args. unallocated containers have this.

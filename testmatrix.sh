@@ -4,16 +4,16 @@
 # This file is licensed under the terms of the LICENSE.md file.
 #
 # Tests Hatchling Platform with gcc and clang in a variety of configurations.
-# Tests C99, C17, C++11 and C++17.
+# Tests C99, C17, C++11, and C++17.
 #
 # The -m32 switch enables 32-bit compilation. You will need these packages on Ubuntu:
 #   sudo apt-get install gcc-multilib g++-multilib
 #
-# Adds script args to compiler command line using "$@" so for example calling
+# Adds script arguments to the compiler command line using "$@" so, for example, calling
 #
 #   ./testmatrix.sh -DHX_TEST_ERROR_HANDLING=1
 #
-# will run the tests with HX_TEST_ERROR_HANDLING defined to be 1.
+# will run the tests with HX_TEST_ERROR_HANDLING defined as 1.
 
 set -o errexit
 

@@ -15,7 +15,7 @@ rm -rf ./bin; mkdir ./bin && cd ./bin
 python3 -m venv --system-site-packages python_venv
 . python_venv/bin/activate
 
-# Use the system clang wrapper because clang needs to be installed anyhow.
+# Use the system clang wrapper because clang needs to be installed anyway.
 python3 -c "import clang.cindex; print('clang.cindex is ok...')"
 
 set -o xtrace

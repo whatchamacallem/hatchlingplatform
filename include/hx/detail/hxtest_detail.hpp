@@ -28,7 +28,7 @@ class hxtest_ {
 public:
 	enum {
 #if !defined HX_TEST_MAX_CASES
-		// use -DHX_TEST_MAX_CASES=N to increase.
+		// Use -DHX_TEST_MAX_CASES=N to raise the limit.
 		HX_TEST_MAX_CASES = 1024,
 #endif
 		max_fail_messages_ = 5
@@ -53,7 +53,7 @@ public:
 	hxfile& condition_check_(bool condition_, const char* file_, size_t line_,
 							 const char* message_, bool is_assert_) hxattr_nonnull(3,5);
 
-	// Run tests. test_suite_filter_ must be identical.
+	// Run tests. test_suite_filter_ must match exactly.
 	size_t run_all_tests_(const char* test_suite_filter_=hxnull);
 
 private:

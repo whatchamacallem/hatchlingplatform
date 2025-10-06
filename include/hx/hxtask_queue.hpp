@@ -8,26 +8,26 @@
 #include "hxthread.hpp"
 
 /// `hxtask_queue` - Provides a simple task queue with a worker thread pool.
-/// Implements single threaded task queuing when `HX_USE_THREADS=0`. Executes
+/// Implements single-threaded task queuing when `HX_USE_THREADS=0`. Executes
 /// supplied tasks in arbitrary order without cancellation using an optional
-/// thread pool. Use a separate task graph manager to generate tasks if that is
-/// needed. See `<hx/hxtask.hpp>`.
+/// thread pool. Use a separate task-graph manager to generate tasks if needed.
+/// See `<hx/hxtask.hpp>`.
 class hxtask_queue {
 public:
-	/// Create a new task queue. `thread_pool_size` determines the size of the
-	/// worker thread pool. A thread_pool_size of `0` does not use threads.
+	/// Creates a new task queue. `thread_pool_size` determines the size of the
+	/// worker thread pool. A `thread_pool_size` of `0` does not use threads.
 	explicit hxtask_queue(size_t thread_pool_size_);
 
-	/// Calls wait_for_all before destructing.
+	/// Calls `wait_for_all` before destruction.
 	~hxtask_queue(void);
 
-	/// Queue a task for later execution. Does not delete task after execution.
-	/// Thread safe and callable from running tasks.
+	/// Queues a task for later execution. Does not delete the task after
+	/// execution. Thread-safe and callable from running tasks.
 	/// - `task` : A pointer to the task to be enqueued for execution.
 	void enqueue(hxtask* task_) hxattr_nonnull(2);
 
-	/// The thread calling `wait_for_all` will execute tasks as well. Do not call
-	/// from `hxtask::execute`.
+	/// The thread calling `wait_for_all` executes tasks as well. Do not call from
+	/// `hxtask::execute`.
 	void wait_for_all(void);
 
 private:

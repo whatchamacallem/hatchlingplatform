@@ -5,10 +5,11 @@
 
 #include "../hxallocator.hpp"
 
-// hxhash_table internals. See hxhash_table.h instead
+// hxhash_table internals. See hxhash_table.hpp instead.
 
-// This is a hxhash_table specific subclass of hxallocator. C++98 requires this to be
-// declared outside hxhash_table. The table has a size of 2^table_size_bits_.
+// This is an hxhash_table-specific subclass of hxallocator. C++98 requires it
+// to be declared outside `hxhash_table`. The table has a size of
+// 2^table_size_bits_.
 
 namespace hxdetail_ {
 

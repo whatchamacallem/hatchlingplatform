@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 # This file is licensed under the terms of the LICENSE.md file.
 #
-# Building and running all the tests on Ubuntu 24 LTS requires these packages.
+# Building and running all the tests on Ubuntu 24.04 LTS requires these packages.
 #
 # It should be safe to just run this script on Ubuntu. gdb-multiarch recently
 # became required for vscode to set 32-bit breakpoints reliably. vscode is

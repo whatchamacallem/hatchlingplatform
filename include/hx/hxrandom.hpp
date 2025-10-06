@@ -3,21 +3,20 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-/// \file hx/hxrandom.hpp A random number generator that automatically casts itself
-/// in well defined ways. Useful for test data.
+/// \file hx/hxrandom.hpp Provides a random number generator that automatically
+/// casts itself in well-defined ways. Useful for test data.
 
 #include "hatchling.h"
 
-/// `hxrandom` - 64-bit MMIX LCG. Knuth, D. 2002. (Modified to perturb return so
-/// that all bits are of equal quality.)  Uses a floating point multiply instead
-/// of integer modulo when generating numbers in a range. Requires at least
-/// 64-bit integer emulation as well. Performs an automatic cast to any unsigned
-/// integer or floating point value. Operator overloads are provided and they
-/// alow bitwise operations with random numbers that are signed as well. Usable
-/// as a functor or by using the provided cast operator for your type. Has a
-/// period of 2^64 and passes routine numerical tests with only 8 bytes of state
-/// and using simple arithmetic. Intended for test data or games and not
-/// mathematical applications.
+/// `hxrandom` - 64-bit MMIX LCG. Knuth, D. 2002. (Modified to perturb the return
+/// value so that all bits are of equal quality.) Uses a floating point multiply
+/// instead of integer modulo when generating numbers in a range. Requires at
+/// least 64-bit integer emulation as well. Automatically casts to any unsigned
+/// integer or floating point value. Operator overloads allow bitwise operations
+/// with random numbers that are signed as well. Usable as a functor or via the
+/// provided cast operator for your type. Has a period of `2^64` and passes
+/// routine numerical tests with only eight bytes of state while using simple
+/// arithmetic. Intended for test data or games, not mathematical applications.
 class hxrandom {
 public:
 	/// Constructor to initialize the random number generator.
@@ -26,13 +25,13 @@ public:
 
 	/// Functor returns `hxrandom&` which converts itself to the type it is
 	/// assigned to. Enables traditional syntax.
-	/// E.g., `uint32_t = m_prng(); // Returns [0..2^32).`
-	/// E.g., `double i = m_prng(); // Returns [0..1).`
+	/// e.g., `uint32_t = m_prng(); // Returns [0..2^32).`
+	/// e.g., `double i = m_prng(); // Returns [0..1).`
 	hxrandom& operator()(void) { return *this; }
 
-	/// Automatic cast to unsigned integer or floating point value. Floating
-	/// point results are between [0..1). They can safely be used to generate
-	/// array indicies without overflowing. E.g.,
+	/// Automatically casts to an unsigned integer or floating point value.
+	/// Floating-point results are between `[0..1)`. They can safely be used to
+	/// generate array indices without overflowing. e.g.,
 	/// `unsigned int = m_prng; // Returns [0..UINT_MAX].`
 	operator float(void) {
 		return (float)this->generate32() * (1.0f / 4294967296.0f); // 0x1p-32f
@@ -47,21 +46,20 @@ public:
 	operator uint64_t(void) { return this->generate64(); }
 
 	/// Returns a random number in the range [base..base+range).
-	/// `range(0.0f,10.0f)` will return `0.0f` to `9.999f` and not `10.0f`. Uses
-	/// a floating point multiply instead of a divide. `base` + `size` must not
-	/// overflow type and `size` must be positive.
-	/// - `base` : The beginning of the range. E.g., 0.
-	/// - `size` : Positive size of the range. E.g., 10 elements.
+	/// `range(0.0f,10.0f)` returns `0.0f` to `9.999f` and not `10.0f`. Uses a
+	/// floating point multiply instead of a divide. `base + size` must not
+	/// overflow the type and `size` must be positive.
+	/// - `base` : The beginning of the range. e.g., 0.
+	/// - `size` : Positive size of the range. e.g., 10 elements.
 	template<typename T_> T_ range(T_ base_, T_ size_) {
-		// Use double parameters if you need a bigger size. An emulated floating
-		// point multiply is faster and more stable than integer modulo.
+		// Use double parameters if you need a bigger size. An emulated
+		// floating point multiply is faster and more stable than integer modulo.
 		hxassertmsg((float)size_ < (float)0x01000000, "insufficient_precision %f", (float)size_); // 0x1p24f
 		return base_ + (T_)((float)size_ * (float)*this);
 	}
 	double range(double base_, double size_) {
 		// Use `uint64_t` parameters if you need a bigger size. An emulated
-		// floating point multiply is faster and more stable than integer
-		// modulo.
+		// floating point multiply is faster and more stable than integer modulo.
 		hxassertmsg(size_ < (double)0x40000000000000ll, "insufficient_precision %f", (double)size_); // 0x1p54f
 		return base_ + size_ * (double)*this;
 	}
@@ -75,7 +73,7 @@ public:
 	}
 
 	/// Reads a specified number of random bytes into the provided buffer. The
-	/// sequence generated will be the same as a little endian stream of
+	/// sequence generated matches a little-endian stream of
 	/// `uint32_t` generated using `generate32`.
 	/// - `bytes` : Pointer to the buffer where the random bytes will be stored.
 	/// - `count` : Number of bytes to read.
@@ -99,7 +97,7 @@ public:
 		}
 	}
 
-	/// Returns a pseudo random number in the interval [0..2^32).
+	/// Returns a pseudorandom number in the interval `[0..2^32)`.
 	uint32_t generate32(void) {
 		m_state_ = (uint64_t)0x5851f42d4c957f2dull * m_state_ + (uint64_t)0x14057b7ef767814full;
 
@@ -112,7 +110,7 @@ public:
 		return result_;
 	}
 
-	/// Returns a pseudo random number in the interval [0..2^64).
+	/// Returns a pseudorandom number in the interval `[0..2^64)`.
 	uint64_t generate64(void) {
 		uint64_t result_ = (uint64_t)this->generate32() | ((uint64_t)this->generate32() << 32);
 		return result_;
@@ -130,9 +128,9 @@ template <typename T_> T_ operator&(T_ a_, hxrandom& b_) {
 	return T_((uint32_t)a_ & b_.generate32());
 }
 
-/// `operator&(int64_t a_, hxrandom& b_)` - 64-bit version. Allow a signed
+/// `operator&(int64_t a_, hxrandom& b_)` - 64-bit version. Allows a signed
 /// 64-bit type here because it can be generated without automatically hitting
-/// undefined behaviour.
+/// undefined behavior.
 /// - `a` : Bits to mask off. Undefined behavior when negative.
 /// - `b` : A `hxrandom`.
 inline int64_t operator&(int64_t a_, hxrandom& b_) {
@@ -144,7 +142,7 @@ inline uint64_t operator&(uint64_t a_, hxrandom& b_) {
 	return a_ & b_.generate64();
 }
 
-/// `operator&(T a, hxrandom& b)` - Bitwise & with random T generated from `a`.
+/// `operator&(T a, hxrandom& b)` - Bitwise `&` with random `T` generated from `a`.
 /// - `a` : A `hxrandom`.
 /// - `b` : Bits to mask off. Must be a positive integer.
 template<typename T_> T_ operator&(hxrandom& a_, T_ b_) {
@@ -159,7 +157,7 @@ template<typename T_> T_ operator&=(T_& a_, hxrandom& b_) {
 	return (a_ = a_ & b_);
 }
 
-/// `operator%(hxrandom& a, T_ b)` - Generate an number of type `T` in the range
+/// `operator%(hxrandom& a, T_ b)` - Generates a number of type `T` in the range
 /// `[0..b)`. Works with floating point divisors and uses no actual modulo or
 /// division.
 template<typename T_> T_ operator%(hxrandom& dividend_, T_ divisor_) {

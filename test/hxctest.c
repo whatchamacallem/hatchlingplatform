@@ -17,10 +17,10 @@ bool hxctest_hatchling_h(void) {
 	hxlogconsole("hxlogconsole %d, ", 3);
 	hxlogwarning("hxlogwarning %d", 4);
 	hxassertmsg(1, "hxassertmsg %d", 5);
-	hxassert(1 == 1); // Shouldn't warn as those may be errors.
+	hxassert(1 == 1); // Shouldn't warn because those may be errors.
 	hxassertrelease(1.0, "hxassertrelease %f", 1.0f);
-	hxwarnmsg("true", "not true"); // Cast ptr.
-	return true; // Didn't crash.
+	hxwarnmsg("true", "not true"); // Cast pointer.
+	return true; // Did not crash.
 }
 
 bool hxctest_math(void) {

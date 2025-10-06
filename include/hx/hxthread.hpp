@@ -8,7 +8,7 @@
 /// pthreads for thread synchronization and management. The following classes
 /// are defined:
 ///
-/// - `hxthread_local<T>` (Available single threaded as well.) Provides a C++
+/// - `hxthread_local<T>` (Available single-threaded as well.) Provides a C++
 ///	  template for thread-local storage, allowing each thread to maintain its own
 ///	  instance of a specified type `T`. This class is available for compatibility
 ///	  when threading is off.
@@ -28,7 +28,7 @@
 ///
 /// - `hxthread` (`HX_USE_THREADS` only) Thread wrapper for pthreads. Provides
 ///	  thread creation, joining, and detaching. Ensures threads are not left
-///	  joinable on destruction. Not copyable. Errors are threated as release mode
+///	  joinable on destruction. Not copyable. Errors are treated as release-mode
 ///	  asserts instead of being tracked.
 
 #include "hatchling.h"
@@ -38,7 +38,7 @@
 #include <pthread.h>
 #endif
 
-/// Return the current thread ID. Returns `0` when threads are disabled.
+/// Returns the current thread ID. Returns `0` when threads are disabled.
 inline size_t hxthread_id() {
 #if HX_USE_THREADS
 	return (size_t)::pthread_self();
@@ -53,7 +53,7 @@ inline size_t hxthread_id() {
 template<typename T_>
 class hxthread_local {
 public:
-	/// Construct with default value for each thread.
+	/// Constructs with a default value for each thread.
 	explicit hxthread_local(const T_& default_value_ = T_())
 			: m_default_value_(default_value_) {
 #if HX_USE_THREADS
@@ -62,17 +62,17 @@ public:
 #endif
 	}
 
-	/// Doesn't seem to do much. Frees resources.
+	/// Frees resources.
 	~hxthread_local() {
 #if HX_USE_THREADS
 		::pthread_key_delete(m_key_);
 #endif
 	}
 
-	/// Set the thread local value from `T`.
+	/// Sets the thread-local value from `T`.
 	void operator=(const T_& local_) { *(this->get_local_()) = local_; }
 
-	/// Cast the thread local value to `T`.
+	/// Casts the thread-local value to `T`.
 	operator const T_&() const { return *(this->get_local_()); }
 	operator T_&() { return *(this->get_local_()); }
 
@@ -122,8 +122,8 @@ private:
 /// non-recursive, no error-checking and no translation layer.
 class hxmutex {
 public:
-	/// Constructs a mutex and initializes it. May not return if the mutex cant
-	/// be initialzed correctly. Something is very wrong if this fails.
+	/// Constructs a mutex and initializes it. May not return if the mutex can't
+	/// be initialized correctly. Something is very wrong if this fails.
 	 inline hxmutex(void) {
 		int code_ = ::pthread_mutex_init(&m_mutex_, 0);
 		hxassertrelease(code_ == 0, "pthread_mutex_init %s", ::strerror(code_)); (void)code_;
@@ -135,7 +135,7 @@ public:
 		hxassertmsg(code_ == 0, "pthread_mutex_destroy %s", ::strerror(code_)); (void)code_;
 	}
 
-	/// Locks the mutex. Returns true on success, asserts on invalid arguments
+	/// Locks the mutex. Returns true on success, asserts on invalid arguments,
 	/// and returns false on failure.
 	bool lock(void) {
 		int code_ = ::pthread_mutex_lock(&m_mutex_);
@@ -143,9 +143,9 @@ public:
 		return code_ == 0;
 	}
 
-	/// Unlocks the mutex. Returns true on success, asserts and returns false
-	/// otherwise. It is undefined if you unlock a mutex that you have not locked
-	/// and such an operation may succeed.
+	/// Unlocks the mutex. Returns true on success; asserts and returns false
+	/// otherwise. It is undefined to unlock a mutex that you have not locked, and
+	/// such an operation may succeed.
 	bool unlock(void) {
 		int code_ = ::pthread_mutex_unlock(&m_mutex_);
 		hxassertmsg(code_ == 0, "pthread_mutex_unlock %s", ::strerror(code_));
@@ -168,7 +168,7 @@ private:
 /// Locks the mutex on construction and unlocks on destruction.
 class hxunique_lock {
 public:
-	/// Constructs with option to defer locking.
+	/// Constructs with an option to defer locking.
 	/// - `defer_lock` : If true, does not lock the mutex immediately.
 	hxunique_lock(hxmutex& mtx_, bool defer_lock_=false)
 			: m_mutex_(mtx_), m_owns_(false) {
@@ -286,10 +286,10 @@ public:
 	/// Default constructor. Thread is not started.
 	hxthread() : m_started_(false), m_joined_(false) { }
 
-	/// Constructs and starts a thread with the given function and argument.
-	/// Does not free arg. Any function that takes a single pointer and returns
-	/// a void pointer should work. The return value is ignored but may be unsafe
-	/// to cast to a function with a different return type.
+	/// Constructs and starts a thread with the given function and argument. Does
+	/// not free the argument. Any function that takes a single pointer and
+	/// returns a void pointer should work. The return value is ignored but may be
+	/// unsafe to cast to a function with a different return type.
 	/// - `entry_point` : Function pointer of type: void* fn(T*).
 	/// - `parameter` : T* to pass to the function.
 	template<typename parameter_t_>
@@ -303,10 +303,10 @@ public:
 		hxassertmsg(!this->joinable(), "thread_still_running");
 	}
 
-	/// Starts a thread with the given function and argument. Does not free arg.
-	/// Any function that takes a single `T` pointer and returns a `void` pointer
-	/// should work. The return value is ignored but is required by pthreads
-	/// calling convention.
+	/// Starts a thread with the given function and argument. Does not free the
+	/// argument. Any function that takes a single `T` pointer and returns a
+	/// `void` pointer should work. The return value is ignored but is required by
+	/// the pthread calling convention.
 	/// - `entry_point` : Function pointer of type: void* entry_point(T*).
 	/// - `parameter` : T* to pass to the function.
 	template<typename parameter_t_>

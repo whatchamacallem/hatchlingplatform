@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-/// \file hx/hxallocator.hpp Similar to std::allocator. Allows for static or
+/// \file hx/hxallocator.hpp Similar to `std::allocator`. Supports static or
 /// dynamic allocation.
 
 #include "hatchling.h"
@@ -98,7 +98,7 @@ protected:
 	/// Capacity is set by first call to reserve_storage and may not be extended.
 	/// - `size` : The number of elements of type `T` to allocate space for.
 	/// - `allocator` : The memory manager ID to use for allocation (default: `hxsystem_allocator_current`)
-	/// - `alignment` : The alignment to for the allocation. (default: `HX_ALIGNMENT`)
+	/// - `alignment` : The alignment to use for the allocation. (default: `HX_ALIGNMENT`)
 	void reserve_storage(size_t size_,
 			hxsystem_allocator_t allocator_=hxsystem_allocator_current,
 			hxalignment_t alignment_=HX_ALIGNMENT) {

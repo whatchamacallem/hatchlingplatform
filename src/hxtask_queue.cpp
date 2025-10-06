@@ -8,7 +8,7 @@
 HX_REGISTER_FILENAME_HASH
 
 #if HX_USE_THREADS
-// hxtask_wait_for_tasks_ - This is a worker task waiting for tasks or shutdown.
+// hxtask_wait_for_tasks_ keeps worker threads waiting for tasks or shutdown.
 class hxtask_wait_for_tasks_ {
 public:
 	hxtask_wait_for_tasks_(hxtask_queue* q) : q_(q) {}
@@ -19,9 +19,9 @@ public:
 	hxtask_queue* q_;
 };
 
-// hxtask_wait_for_completion_ - This is a task waiting on all task completion
-// and possibly waiting to shutdown the queue as well. Neither wait states should
-// occur when the queue has already started shutting down.
+// hxtask_wait_for_completion_ waits for all work to complete and may also wait
+// to shut down the queue. Neither wait state should occur after shutdown has
+// started.
 class hxtask_wait_for_completion_ {
 public:
 	hxtask_wait_for_completion_(hxtask_queue* q) : q_(q) {}
@@ -34,7 +34,7 @@ public:
 };
 #endif
 
-// Should abort if exceptions are enabled and
+// Should abort if exceptions are enabled and the thread pool cannot be created.
 hxtask_queue::hxtask_queue(size_t thread_pool_size_)
 	: m_next_task_(hxnull)
 #if HX_USE_THREADS
@@ -109,8 +109,8 @@ void hxtask_queue::wait_for_all(void) {
 			task_->set_next_task(hxnull);
 			task_->set_task_queue(hxnull);
 
-			// Last time this object is touched. It may delete or re-enqueue
-			// itself, we don't care.
+		// This is the last time this object is touched. It may delete or re-enqueue
+		// itself; we don't care.
 			hxprofile_scope(task_->get_label());
 			task_->execute(this);
 		}
@@ -127,11 +127,11 @@ void hxtask_queue::thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_) {
 	hxtask* task_ = hxnull;
 	for(;;) {
 		{
-			// task is executed outside of this RAII lock.
+			// The task executes outside of this RAII lock.
 			hxunique_lock lk_(q_->m_mutex_);
 
 			if(task_) {
-				// Waited to reacquire critical after previous task.
+				// Finished reacquiring the critical section after the previous task.
 				task_ = hxnull;
 				hxassertmsg(q_->m_executing_count_ > 0, "internal_error");
 				if(--q_->m_executing_count_ == 0 && !q_->m_next_task_) {
@@ -141,7 +141,7 @@ void hxtask_queue::thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_) {
 
 			// Workers wait for a next task or run_level_stopped_.
 			if(mode_ == thread_mode_pool_) {
-				// Use predicate for spurious wakeups
+				// Use a predicate to handle spurious wakeups.
 				q_->m_cond_var_new_tasks_.wait(lk_, hxtask_wait_for_tasks_(q_));
 			}
 
@@ -167,8 +167,8 @@ void hxtask_queue::thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_) {
 						q_->m_queue_run_level_ = run_level_stopped_;
 						q_->m_cond_var_new_tasks_.notify_all();
 
-						// This should trigger a release assert in unexpected waiting threads.
-						q_->m_cond_var_completion_.notify_all();
+					// This triggers a release assert in any unexpected waiting threads.
+					q_->m_cond_var_completion_.notify_all();
 					}
 				}
 				return;
@@ -179,9 +179,9 @@ void hxtask_queue::thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_) {
 		task_->set_task_queue(hxnull);
 		hxprofile_scope(task_->get_label());
 
-		// This actually the last time this object is touched. It may delete or
-		// re-enqueue itself. The queue is not locked and completion will not
-		// be reported until after the task is done.
+		// This is actually the last time this object is touched. It may delete or
+		// re-enqueue itself. The queue is not locked and completion is not reported
+		// until after the task is done.
 		task_->execute(q_);
 	}
 }

@@ -45,11 +45,11 @@ public:
 
 	template<typename key_t>
 	void test_range_and_type(uint32_t size, uint32_t mask, key_t offset) {
-		// Generate test data
+		// Generate test data.
 		hxarray<test_object<key_t> > a;
 		generate<key_t>(a, size, mask, offset);
 
-		// Copy and sort test data
+		// Copy and sort the test data.
 		hxarray<test_object<key_t> > b(a);
 		::qsort(b.data(), b.size(), sizeof(test_object<key_t>), q_sort_compare<key_t>);
 
@@ -124,21 +124,21 @@ TEST_F(hxradix_sort_test, null11) {
 }
 
 TEST_F(hxradix_sort_test, uint32) {
-	test_range_and_type<uint32_t>(20u, 0x7fu, 0u); // check insertion sort
+	test_range_and_type<uint32_t>(20u, 0x7fu, 0u); // Check insertion sort.
 	test_range_and_type<uint32_t>(100u, 0x7fu, 0u);
 	test_range_and_type<uint32_t>(1000u, 0x7fffu, 0u);
 	test_range_and_type<uint32_t>(10000u, ~(uint32_t)0, 0u);
 }
 
 TEST_F(hxradix_sort_test, int32) {
-	test_range_and_type<int32_t>(20u, 0x7fu, 0x3f); // check insertion sort
+	test_range_and_type<int32_t>(20u, 0x7fu, 0x3f); // Check insertion sort.
 	test_range_and_type<int32_t>(100u, 0x7fu, 0x3f);
 	test_range_and_type<int32_t>(1000u, 0x7fffu, 0x3fff);
 	test_range_and_type<int32_t>(10000u, ~(uint32_t)0, 0);
 }
 
 TEST_F(hxradix_sort_test, float) {
-	test_range_and_type<float>(200u, 0x7fu, (float)0x3f); // check insertion sort
+	test_range_and_type<float>(200u, 0x7fu, (float)0x3f); // Check insertion sort.
 	test_range_and_type<float>(100u, 0x7fu, (float)0x3f);
 	test_range_and_type<float>(1000u, 0x7fffu, (float)0x3fff);
 	test_range_and_type<float>(10000u, ~(uint32_t)0, 0.0f);

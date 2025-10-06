@@ -16,8 +16,8 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// hxfile - Target will require an implementation of fopen(), fclose(), fread(),
-// fwrite(), fgets() and feof().
+// hxfile - Targets require an implementation of fopen(), fclose(), fread(),
+// fwrite(), fgets(), and feof().
 
 hxfile hxin(stdin, hxfile::in);
 hxfile hxout(stdout, hxfile::out);
@@ -56,7 +56,7 @@ void hxfile::operator=(hxfile&& file_) {
 }
 
 bool hxfile::open(uint8_t mode, const char* filename, ...) {
-	close(); // openv_ assumes closed
+	close(); // openv_ assumes the file is closed.
 
 	va_list args;
 	va_start(args, filename);
@@ -145,7 +145,7 @@ size_t hxfile::write(const void* bytes, size_t byte_count) {
 	hxassertmsg(m_open_mode_ & hxfile::out, "invalid_file");
 
 	if(m_file_pimpl_ == hxnull) {
-		// Writing to null as /dev/null supported.
+		// Writing to null emulates /dev/null support.
 		return byte_count;
 	}
 	const size_t bytes_written = ::fwrite(bytes, 1, byte_count, (FILE*)m_file_pimpl_);
@@ -167,17 +167,17 @@ bool hxfile::get_line(char* buffer, int buffer_size) {
 	if(!result) {
 		m_good_ = false;
 		m_eof_ = (bool)::feof((FILE*)m_file_pimpl_); // 0: not past end.
-		return false; // EOF or error
+		return false; // EOF or error.
 	}
 	return true;
 }
 
-// See vsnprintf to reimplement without FILE* support.
+// See vsnprintf to reimplement this without FILE* support.
 bool hxfile::print(const char* format, ...) {
 	hxassertmsg(m_open_mode_ & hxfile::out, "invalid_file");
 
 	if(m_file_pimpl_ == hxnull) {
-		// Writing to null as /dev/null supported.
+		// Writing to null emulates /dev/null support.
 		return true;
 	}
 
@@ -190,7 +190,7 @@ bool hxfile::print(const char* format, ...) {
 	return len >= 0;
 }
 
-// See vscanf to reimplement without FILE* support.
+// See vscanf to reimplement this without FILE* support.
 int hxfile::scan(const char* format, ...) {
 	hxassertmsg((m_open_mode_ & hxfile::in) && m_file_pimpl_, "invalid_file");
 

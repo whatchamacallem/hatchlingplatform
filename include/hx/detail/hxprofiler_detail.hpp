@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 //
-// hxprofiler_internal_ internals. See hxprofiler.h instead
+// hxprofiler_internal_ internals. See hxprofiler.hpp instead.
 
 #if !defined HX_PROFILE
 #error #include <hx/hxprofiler.h> instead.
@@ -56,7 +56,7 @@ public:
 	void log_();
 	void write_to_chrome_tracing_(const char* filename) hxattr_nonnull(2);
 
-	// For testing
+	// For testing.
 	size_t records_size_(void) { return m_records.size(); }
 	void records_clear_(void) { m_records.clear(); }
 
@@ -89,7 +89,7 @@ public:
 	hxprofiler_scope_internal_(const char* label_string_literal_) hxattr_nonnull(2)
 		: m_label_(label_string_literal_)
 	{
-		// fastest not to check if the profiler is running.
+		// Fastest to avoid checking whether the profiler is running.
 		m_t0_ = hxtime_sample_cycles();
 	}
 

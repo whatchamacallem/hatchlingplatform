@@ -184,7 +184,7 @@ TEST_F(hxtask_queue_test, multiple_reenqueuing) {
 				EXPECT_TRUE(tasks1[k].get_exec_count_() == (k + 1));
 			}
 
-			// Tests reenqueuing in destructor
+			// Tests reenqueuing in the destructor.
 			task_test_t_ tasks2[max_tasks_];
 			{
 				hxtask_queue q(i);

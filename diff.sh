@@ -36,7 +36,7 @@ fi
 FILE_ABSOLUTE=$(realpath -- "$FILE_ARG")
 FILE_RELATIVE=${FILE_ABSOLUTE#"$HX_DIR/"}
 
-TMP_ID=$(git rev-parse --short $COMMIT_ID)
+TMP_ID=$(git rev-parse --short "$COMMIT_ID")
 TMP_FILE=$(mktemp ~/.cache/$TMP_ID.XXXX)
 
 if ! git -C "$HX_DIR" show "$COMMIT_ID:$FILE_RELATIVE" > "$TMP_FILE"; then

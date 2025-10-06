@@ -8,7 +8,7 @@
 HX_REGISTER_FILENAME_HASH
 
 // An unsigned integer used for the histogram. uint32_t or size_t would be a
-// reasonable choice for this.
+// reasonable choice here.
 typedef uint32_t hxhistogram_t;
 
 void hxradix_sort_void(hxradix_sort_key_void* begin, hxradix_sort_key_void* end) {
@@ -23,7 +23,7 @@ void hxradix_sort_void(hxradix_sort_key_void* begin, hxradix_sort_key_void* end)
 
 	hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
 
-	// 2 Working buffers
+	// Two working buffers.
 	hxradix_sort_key_void* hxrestrict buf0 = begin;
 	hxradix_sort_key_void* buf0End = buf0 + size;
 	hxradix_sort_key_void* hxrestrict buf1 = (hxradix_sort_key_void*)hxmalloc(size * sizeof(hxradix_sort_key_void));
@@ -87,7 +87,7 @@ void hxradix_sort_void11(hxradix_sort_key_void* begin, hxradix_sort_key_void* en
 
 	hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
 
-	// 3 Working buffers. Fox extremely large data sets.
+	// Three working buffers for extremely large data sets.
 	hxradix_sort_key_void* hxrestrict buf0 = begin;
 	hxradix_sort_key_void* buf0End = buf0 + size;
 	hxradix_sort_key_void* hxrestrict buf1 = (hxradix_sort_key_void*)hxmalloc(size * sizeof(hxradix_sort_key_void) * 2u);

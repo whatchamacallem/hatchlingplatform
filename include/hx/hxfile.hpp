@@ -16,21 +16,22 @@ extern hxfile hxout;
 /// Global reference to stderr or equivalent.
 extern hxfile hxerr;
 
-/// Global equivalent to /dev/null. May be written to but not read from.
+/// Global equivalent to `/dev/null`. May be written to but not read from.
 extern hxfile hxdev_null;
 
-/// Equivalent to `std::endl` without the flush. Does not change per-platform.
+/// Equivalent to `std::endl` without the flush. Does not vary by platform.
 /// Non-empty POSIX text files must end with `\n`.
 #define hxendl "\n"
 
-/// `hxfile` - Single ownership C++ RAII abstraction for C-style `FILE*` I/O.
+/// `hxfile` - Single-ownership C++ RAII abstraction for C-style `FILE*` I/O.
 /// Provides a mixture of unformatted binary stream operations and formatted
-/// `printf`/`scanf` style I/O. Provides optional error handling. `gcc` is
-/// useful for validating `printf`/`scanf` style arguments. However, memory
-/// imaged data structres are still recommended. Formatted I/O is intended to
-/// use `\0` terminated UTF-8 with no carrige return. `EILSEQ` may occur if
-/// UTF-8 is used in a format string directly. Pass UTF-8 as a %s string arg or
-/// use a real i18n library instead. Uses binary I/O only for portability.
+/// `printf`/`scanf` style I/O, along with optional error handling. `gcc` is
+/// useful for validating `printf`/`scanf` style arguments. However,
+/// memory-imaged data structures are still recommended. Formatted I/O is
+/// intended to use `\0`-terminated UTF-8 with no carriage return. `EILSEQ` may
+/// occur if UTF-8 is used in a format string directly. Pass UTF-8 as a `%s`
+/// string argument or use a real i18n library instead. Uses binary I/O only for
+/// portability.
 ///
 /// Here is the syntax to make a block of code conditional on opening a file.
 /// The filename is also formatted printf style. This is equivalent to Python's
@@ -43,9 +44,9 @@ extern hxfile hxdev_null;
 /// }
 /// ```
 ///
-/// To switch to using a different implementation just use an alternate .cpp
-/// file for your target. Allows for `hxerr` to be a serial port and file I/O
-/// to use a DMA controller.
+/// To switch to a different implementation, use an alternate `.cpp` file for
+/// your target. Allows `hxerr` to be a serial port while file I/O uses a DMA
+/// controller.
 ///
 /// NOTA BENE: `get_position`/`set_position` over 4 GiB is not supported on
 /// Windows. As well, `size_t` is limited to 4 GiB on all 32-bit platforms.
@@ -56,34 +57,34 @@ public:
 	enum open_mode : uint8_t {
 		/// No flags.
 		none = 0u,
-		/// Open for binary reading. E.g., `"rb"`.
+		/// Open for binary reading. e.g., `"rb"`.
 		in = 1u,
 		/// Open for binary writing. Replaces any existing file with an empty
-		/// one even if `in` is used at the same time. E.g., `"wb"`.
+		/// one even if `in` is used at the same time. e.g., `"wb"`.
 		out = 2u,
 		/// By default, any unexpected failure results in an assert. To allow
 		/// reasonably unforeseen asserts to be skipped, set skip_asserts. Bad
 		/// parameters (e.g., writing to a file that is not open, was not opened
 		/// to be written to, or providing a null buffer) will still result in
-		/// assertions. E.g., `"w+b"`.
+		/// assertions. e.g., `"w+b"`.
 		skip_asserts = 4u
 	};
 
-	/// Default constructs as a closed file.
+	/// Default-constructs as a closed file.
 	hxfile(void) {
 		::memset((void*)this, 0x00, sizeof *this);
 	}
 
-	/// Constructor to initialize and open a file with a formatted filename.
-	/// Opens a stream using a formatted filename. Non-standard arg order.
+	/// Constructs and opens a file with a formatted filename. Uses a
+	/// non-standard argument order.
 	hxfile(uint8_t mode_, const char* filename_, ...) hxattr_format_printf(3, 4);
 
-	/// The constructor to initialize the file object with an unowned
-	/// implementation object and a specific mode. No checks. Use `hxin`,
-	/// `hxout`, `hxerr` and `hxdev_null` instead.
+	/// Constructs the file object with an unowned implementation object and a
+	/// specific mode. Performs no checks. Use `hxin`, `hxout`, `hxerr`, and
+	/// `hxdev_null` instead.
 	hxfile(void* file_, uint8_t mode_);
 
-	// Delete usage where the filename comes first like with fopen.
+	// Disallow usage where the filename comes first, like with `fopen`.
 	hxfile(const char* file_, uint8_t mode_=0) = delete;
 
 	// Move constructor. No copy constructor is provided.
@@ -92,15 +93,15 @@ public:
 		::memset((void*)&file_, 0x00, sizeof file_);
 	}
 
-	/// Destructor to ensure the file is closed when the object goes out of
+	/// Destroys the file and ensures it is closed when the object goes out of
 	/// scope.
 	~hxfile();
 
-	/// Move operator=. No assignment operator is provided.
+	/// Move assignment. No copy assignment operator is provided.
 	void operator=(hxfile&& file_);
 
-	/// Checks if the file is open, `EOF` has not been reached and no error
-	/// encountered. See usage example in class doc.
+	/// Checks if the file is open, `EOF` has not been reached, and no error has
+	/// been encountered. See usage example in the class documentation.
 	operator bool(void) const { return m_good_; }
 
 	/// Opens a file with the specified mode and formatted filename.
@@ -116,8 +117,8 @@ public:
 	/// encountered and `no_good` not called.
 	bool good(void) const { return m_good_; }
 
-	/// Flags the file as not being good. Allows the user to report additional
-	/// errors without having to track them. Non-standard.
+	/// Marks the file as not good. Allows the user to report additional errors
+	/// without having to track them. Non-standard.
 	void no_good(void) { m_good_ = false; }
 
 	/// Checks if `EOF` has been reached.
@@ -129,11 +130,11 @@ public:
 	/// Returns the current open mode of the file.
 	uint8_t mode(void) const { return m_open_mode_; }
 
-	/// Returns current position in file if open, 0 otherwise. FILE*
+	/// Returns the current position in the file if open, 0 otherwise. FILE*
 	/// implementation requires a 64-bit long to support 64-bit files.
 	size_t get_pos(void) const;
 
-	/// Sets current position in file. Returns true on success. FILE*
+	/// Sets the current position in the file. Returns true on success. FILE*
 	/// implementation requires a 64-bit long to support 64-bit files.
 	bool set_pos(size_t position_);
 
@@ -149,7 +150,7 @@ public:
 	/// - `count` : Number of bytes to write to the file.
 	size_t write(const void* bytes_, size_t count_) hxattr_nonnull(2) hxattr_hot;
 
-	/// Reads an `\n` or `EOF` terminated character sequence. Allowed to fail on
+	/// Reads a `\n` or `EOF` terminated character sequence. Allowed to fail on
 	/// `EOF` without needing to be `hxfile::skip_asserts`. Automatically
 	/// determines the size of the provided char array.
 	/// - `buffer` : Reference to a char array where the line will be stored.
@@ -158,7 +159,7 @@ public:
 		return this->get_line(buffer_, buffer_size_);
 	}
 
-	/// Reads an `\n` or `EOF` terminated character sequence. Allowed to fail on
+	/// Reads a `\n` or `EOF` terminated character sequence. Allowed to fail on
 	/// `EOF` without needing to be `hxfile::skip_asserts`.
 	/// - `buffer` : Pointer to a char array where the line will be stored.
 	/// - `buffer_size` : Size of the buffer array.
@@ -166,28 +167,28 @@ public:
 
 	/// Writes a formatted UTF-8 string to the file. Uses `printf` conventions.
 	/// Formatting and writing will be skipped when using `hxdev_null`.
-	/// - `format` : Format string, similar to printf.
-	/// - `...` Additional arguments for the format string.
+	/// - `format` : Format string, similar to `printf`.
+	/// - `...` : Additional arguments for the format string.
 	bool print(const char* format_, ...) hxattr_format_printf(2, 3) hxattr_hot;
 
 	/// Reads a formatted UTF-8 string from the file. Uses `scanf` conventions.
-	/// Returns same as scanf. Use `hxfile::skip_asserts` to read until `EOF`.
+	/// Returns the same value as `scanf`. Use `hxfile::skip_asserts` to read until `EOF`.
 	/// Parse errors will set `good` to false.
-	/// - `format` : Format string, similar to scanf.
-	/// - `...` Additional arguments for the format string.
+	/// - `format` : Format string, similar to `scanf`.
+	/// - `...` : Additional arguments for the format string.
 	int scan(const char* format_, ...) hxattr_format_scanf(2, 3) hxattr_hot;
 
-	/// Reads a single unformatted native endian object from the file.
+	/// Reads a single unformatted native-endian object from the file.
 	/// - `t` : Reference to the object where the data will be stored.
 	template<typename T_>
 	bool read1(T_& t_) { return this->read(&t_, sizeof t_) == sizeof t_; }
 
-	/// Writes a single unformatted native endian object to the file.
+	/// Writes a single unformatted native-endian object to the file.
 	/// - `t` : Reference to the object containing the data to write.
 	template<typename T_>
 	bool write1(const T_& t_) { return this->write(&t_, sizeof t_) == sizeof t_; }
 
-	/// Read a single unformatted native endian object from a stream. The
+	/// Reads a single unformatted native-endian object from a stream. The
 	/// operator `>=` is being used instead of `>>` to indicate there is no
 	/// formatting.
 	/// - `t` : Reference to the object where the data will be stored.
@@ -197,7 +198,7 @@ public:
 		return *this;
 	}
 
-	/// Write a single unformatted native endian object to a stream. The
+	/// Writes a single unformatted native-endian object to a stream. The
 	/// operator `<=` is being used instead of `<<` to indicate there is no
 	/// formatting.
 	/// - `t` : Reference to the object containing the data to write.
@@ -218,7 +219,7 @@ public:
 
 	hxfile(const hxfile&) = delete;
 	void operator=(const hxfile&) = delete;
-	template<typename T_> hxfile& operator>>(const T_* t_) = delete; // use >=
+	template<typename T_> hxfile& operator>>(const T_* t_) = delete; // Use >=.
 
 private:
 	// Internal function to open a file with a formatted filename and variable

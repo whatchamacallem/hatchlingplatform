@@ -13,8 +13,8 @@ HX_REGISTER_FILENAME_HASH
 // ----------------------------------------------------------------------------
 // hxconsole_command_table_
 //
-// Compares command lines to static strings. Hashing stops at first non-printing
-// character on command line.
+// Compares command lines to static strings. Hashing stops at the first
+// non-printing character on the command line.
 
 namespace {
 
@@ -30,8 +30,8 @@ class hxconsole_command_table_
 	: public hxhash_table<hxconsole_hash_table_node_, 2, hxdo_not_delete> {
 };
 
-// Wrapped to enforce a construction order dependency. Modification of the table
-// is not thread safe and it is normally constructed before main.
+// Wrapped to enforce a construction-order dependency. Modification of the table
+// is not thread safe, and it is normally constructed before main.
 hxconsole_command_table_& hxconsole_commands_(void) {
 	static hxconsole_command_table_ table_;
 	return table_;
@@ -56,13 +56,13 @@ void hxconsole_deregister(const char* id) {
 }
 
 bool hxconsole_exec_line(const char* command) {
-	// Skip leading whitespace
+	// Skip leading whitespace.
 	const char* pos = command;
 	while(*pos != '\0' && !hxisgraph(*pos)) {
 		++pos;
 	}
 
-	// Skip comments and blank lines
+	// Skip comments and blank lines.
 	if(hxconsole_is_end_of_line_(pos)) {
 		return true;
 	}
@@ -73,7 +73,7 @@ bool hxconsole_exec_line(const char* command) {
 		return false;
 	}
 
-	// Skip command name
+	// Skip the command name.
 	while(hxisgraph(*pos)) {
 		++pos;
 	}
@@ -151,8 +151,8 @@ static bool hxconsole_peek(hxconsolehex_t address, hxconsolenumber_t bytes) {
 	return true;
 }
 
-// Writes bytes from hex value in little endian format (LSB first). hex value is
-// repeated every 8 bytes/64-bits in memory. hex is also 64-bit.
+// Writes bytes from a hex value in little-endian format (LSB first). The value
+// repeats every 8 bytes (64 bits) in memory. The hex input is also 64-bit.
 static bool hxconsole_poke(hxconsolehex_t address_, hxconsolenumber_t bytes_, hxconsolehex_t hex_) {
 	volatile uint8_t* address = address_;
 	uint32_t bytes = bytes_;
@@ -190,5 +190,5 @@ hxconsole_command_named(hxconsole_hex_dump, hexdump);
 hxconsole_command_named(hxconsole_float_dump, floatdump);
 #endif
 
-// Executes commands and settings in file. usage: "exec <filename>"
+// Executes commands and settings in a file. Usage: "exec <filename>".
 hxconsole_command_named(hxconsole_exec_filename, exec);

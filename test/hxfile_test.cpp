@@ -66,11 +66,11 @@ TEST(hxfile_io, missing_file_reports_expectations) {
 }
 
 TEST(hxfile_io, seek_and_read_maintain_state) {
-	// Write a test file. Test get/set_position and read1/write1.
+	// Write a test file to exercise get/set_position and read1/write1.
 
 	struct { uint32_t x; } a { 0xefefefefu }, b { 0x01020304u }, c { 0x0u };
 
-	// Write expected value surrounded by poison.
+	// Write the expected value surrounded by poison.
 	hxfile f(hxfile::in | hxfile::out, "hxfile_test_offset.bin");
 	f.write1(a);
 	f.write1(b);
@@ -89,10 +89,10 @@ TEST(hxfile_io, seek_and_read_maintain_state) {
 }
 
 TEST(hxfile_io, move_copy_and_stream_operators) {
-	// Write a test file. Take the copy operators for a spin.
+	// Write a test file and exercise the copy operators.
 
-	// C++17 Uses "guaranteed copy elision" requiring hxmove here to invoke
-	// the constructor from a temporary correctly.
+	// C++17 uses "guaranteed copy elision," requiring hxmove here to invoke the
+	// constructor from a temporary correctly.
 	hxfile ft(hxfile::out | hxfile::skip_asserts, "hxfile_test_operators.bin");
 	hxfile f(hxmove(ft));
 	EXPECT_FALSE(ft.good());
@@ -134,12 +134,12 @@ TEST(hxfile_io, move_copy_and_stream_operators) {
 	EXPECT_TRUE(f.good());
 	EXPECT_FALSE(f.eof());
 	char t;
-	const size_t extra_byte = f.read(&t, 1); // fails!
+	const size_t extra_byte = f.read(&t, 1); // This call fails.
 	EXPECT_TRUE(f.eof());
 	EXPECT_EQ(extra_byte, 0u);
 	EXPECT_FALSE(f.good());
 	f.clear();
-	EXPECT_TRUE(f.good()); // clear EOF event.
+	EXPECT_TRUE(f.good()); // Clear the EOF event.
 	f.close();
 	EXPECT_FALSE(f.good());
 }

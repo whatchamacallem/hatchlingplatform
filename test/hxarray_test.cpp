@@ -31,7 +31,7 @@ public:
 			id = x.id;
 		}
 		explicit test_object(int32_t x) {
-			hxassert(x >= 0); // User supplied IDs are positive
+			EXPECT_TRUE(x >= 0); // User supplied IDs are positive.
 			++s_hxtest_current->m_constructed;
 			id = x;
 		}
@@ -267,7 +267,7 @@ TEST_F(hxarray_test_f, modification) {
 
 		// 91, 92, -1, -1, -2
 
-		objs.erase_unordered(1); // move end down
+		objs.erase_unordered(1); // Move end down.
 
 		// 91, -2, -1, -1
 
@@ -395,7 +395,7 @@ TEST(hxarray_test, for_each_invokes_functors) {
 	objs.for_each(x);
 	EXPECT_EQ(x.n, 5);
 
-	// Run it empty for correctness
+	// Run it empty for correctness.
 	objs.clear();
 	struct Y { void operator()(int&) const { hxassertmsg(0, "internal error"); } } y;
 	objs.for_each(y);
@@ -479,10 +479,10 @@ TEST_F(hxarray_test_f, resizing) {
 		static const int32_t nums[5] = { 51, 52, 53, 54, 55 };
 
 		hxarray<test_object> objs(12);
-		objs.reserve(10); // reserve less than is being used.
+		objs.reserve(10); // Reserve less than is being used.
 		objs = nums;
 
-		// Use the 2 arg version to delete it.
+		// Use the two-argument version to delete it.
 		objs.resize(3, test_object());
 
 		EXPECT_EQ(objs.size(), 3u);
@@ -523,13 +523,13 @@ TEST_F(hxarray_test_f, assignment) {
 		objs.push_back(to);
 
 		hxarray<test_object> objs2;
-		objs2 = objs; // Assign to same type
+		objs2 = objs; // Assign to the same type.
 
 		hxarray<test_object, 1> objs3;
-		objs3 = objs; // Assign to different type
+		objs3 = objs; // Assign to a different type.
 
-		hxarray<test_object> objs4(objs); // Construct from same type
-		hxarray<test_object, 1> objs5(objs); // Construct from different type
+		hxarray<test_object> objs4(objs); // Construct from the same type.
+		hxarray<test_object, 1> objs5(objs); // Construct from a different type.
 
 		EXPECT_EQ(objs2.size(), 1u);
 		EXPECT_EQ(objs3.size(), 1u);
@@ -689,7 +689,7 @@ TEST(hxarray_test, plus_equals_move_tracker_array) {
 	hxarray<hxarray_test_move_tracker> copy_source;
 	copy_source = appended_values;
 
-	// Confirm the array of temporaries does actually get moved.
+	// Confirm that the array of temporaries actually gets moved.
 	move_target += hxmove(move_source);
 
 	EXPECT_EQ(move_target.size(), 4u);
@@ -705,7 +705,7 @@ TEST(hxarray_test, plus_equals_move_tracker_array) {
 		EXPECT_TRUE(move_source[i].moved_from);
 	}
 
-	// Confirm the lvalue source does not get moved.
+	// Confirm that the lvalue source does not get moved.
 	copy_target += copy_source;
 
 	EXPECT_EQ(copy_target.size(), 4u);
@@ -802,7 +802,7 @@ TEST(hxarray_iterators, cbegin_cend) {
 		const_values.cend());
 }
 
-// std::initializer_list is great for writing test code for an array class...
+// std::initializer_list is great for writing test code for an array class.
 // Not sure what else.
 #if HX_CPLUSPLUS >= 202002L && !HX_NO_LIBCXX
 TEST_F(hxarray_test_f, plus_equals) {
@@ -821,13 +821,13 @@ TEST_F(hxarray_test_f, plus_equals) {
 		EXPECT_TRUE(hxkey_equal(objs, objs3));
 		EXPECT_FALSE(hxkey_less(objs, objs3));
 
-		// Compare inequal length and a temp.
+		// Compare unequal lengths with a temporary.
 		test_object t(440);
 		objs += t;
 		EXPECT_FALSE(hxkey_equal(objs, objs3));
 		EXPECT_TRUE(hxkey_less(objs3, objs));
 
-		// Compare equal length and a non-temp.
+		// Compare equal lengths with a non-temporary.
 		objs.resize(5);
 		objs += test_object(220);
 		EXPECT_FALSE(hxkey_equal(objs, objs3));
@@ -862,10 +862,10 @@ TEST_F(hxarray_test_f, insert) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
 		// The numeric constant zero is also a pointer. It seems more convenient
-		// to allow both indicies and pointers than to worry about it.
+		// to allow both indices and pointers than to worry about it.
 		hxarray<test_object> objs; objs.reserve(5);
 		objs.push_back(test_object(3));
-		objs.insert(objs.begin(), test_object(1)); // Inserting at beginning.
+		objs.insert(objs.begin(), test_object(1)); // Inserting at the beginning.
 		objs.insert(2, test_object(5)); // Inserting past the end.
 
 		hxarray<test_object> expected { 1, 3, 5 };
@@ -878,7 +878,7 @@ TEST_F(hxarray_test_f, insert) {
 		EXPECT_TRUE(hxkey_equal(objs, final_expected));
 	}
 
-	EXPECT_TRUE(check_totals(18)); // <-- This is why we don't use insert.
+	EXPECT_TRUE(check_totals(18)); // <-- This is why we do not use insert.
 }
 #endif
 
@@ -916,12 +916,12 @@ TEST(hxarray_test, initializer_list_brace_support) {
 }
 
 TEST(hxarray_test, temporaries_allow_rvalue_transfers) {
-	// test r-value dynamically allocated temporaries
+	// Test r-value dynamically allocated temporaries.
 	{
 		hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
 
 		hxarray<int> x(hxarray<int>({ 2, 7 }));
-		hxarray<int> y = std::move(x); // should swap
+		hxarray<int> y = std::move(x); // Should swap.
 		hxarray<int> z;
 		hxswap(y, z);
 		EXPECT_TRUE(x.empty());

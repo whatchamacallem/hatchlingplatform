@@ -34,31 +34,31 @@ template<typename sort_callback_t_>
 void do_sort_int_case(const sort_callback_t_& sort_callback_) {
 	int ints[5] = { 2, 1, 0, 4, -5 };
 
-	// sort 0 elements
+	// Sort 0 elements.
 	sort_callback_(ints, ints, sort_int);
 	const int ints1[5] = { 2, 1, 0, 4, -5 };
-	EXPECT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // nothing changed
+	EXPECT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // Nothing changed.
 
-	// sort 1 element
+	// Sort 1 element.
 	sort_callback_(ints, ints + 1, sort_int);
-	EXPECT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // still nothing changed
+	EXPECT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // Still nothing changed.
 
-	// sort 2 elements
+	// Sort 2 elements.
 	sort_callback_(ints, ints + 2, sort_int);
 	const int ints2[5] = { 1, 2, 0, 4, -5 };
 	EXPECT_TRUE(::memcmp(ints, ints2, sizeof ints) == 0);
 
-	// sort all
+	// Sort all elements.
 	sort_callback_(ints, ints + 5, sort_int);
 	const int ints3[5] = { -5, 0, 1, 2, 4 };
 	EXPECT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0);
 
-	// sort reversed
+	// Sort in reverse order.
 	sort_callback_(ints, ints + 5, sort_int_reverse);
 	const int ints4[5] = { 4, 2, 1, 0, -5 };
 	EXPECT_TRUE(::memcmp(ints, ints4, sizeof ints) == 0);
 
-	// sort reversed back to sorted
+	// Sort the reversed array back into ascending order.
 	sort_callback_(ints, ints + 5, sort_int);
 	EXPECT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0);
 }
@@ -126,7 +126,7 @@ TEST(hxbinary_search_test, simple_case) {
 	int ints[5] = { 2, 5, 6, 88, 99 };
 	int* ints_end = ints+5;
 
-	// hxbinary_search returns end when not fond.
+	// hxbinary_search returns end when not found.
 	int* result = hxbinary_search(ints, ints+5, 88, sort_int);
 	EXPECT_TRUE(result != ints_end && *result == 88);
 	const int* cresult = hxbinary_search((const int*)ints, (const int*)ints+5, 2, sort_int);

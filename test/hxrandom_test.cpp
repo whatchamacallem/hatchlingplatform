@@ -11,13 +11,13 @@ HX_REGISTER_FILENAME_HASH
 TEST(hxrandom_test, generation) {
 	hxrandom rng(1u);
 
-	// implicit casts and assignment constructors
+	// Implicit casts and assignment constructors.
 	uint8_t uint8 = rng;
 	uint16_t uint16 = rng;
 	uint32_t uint32 = rng;
 	uint64_t uint64 = rng;
 
-	// functor calls and assignment operators
+	// Functor calls and assignment operators.
 	uint8 = rng();
 	uint16 = rng();
 	uint32 = rng();
@@ -27,11 +27,11 @@ TEST(hxrandom_test, generation) {
 
 	for(int s=10; s--;) {
 
-		// implicit casts and assignment constructors
+		// Implicit casts and assignment constructors.
 		float f = rng;
 		float d = rng;
 
-		// functor calls and assignment operators
+		// Functor calls and assignment operators.
 		f = rng();
 		d = rng();
 
@@ -56,7 +56,7 @@ TEST(hxrandom_test, ops) {
 		char c = 'x'; c &= rng;
 		EXPECT_TRUE((c&~(unsigned char)'x') == (unsigned char)'\0');
 
-		// floating point mod.
+		// Floating-point mod.
 		float f = rng % 255.0f;
 		EXPECT_TRUE(f >= 0.0f && f < 255.0f);
 		double d = rng % 255.0;
@@ -113,7 +113,7 @@ TEST(hxrandom_test, ops) {
 		EXPECT_TRUE((rng%100ll) >= 0ll && (rng()%100ll) < 100ll);
 		EXPECT_TRUE((rng()%100ull) < 100ull);
 
-		// Check that the rng isn't just spitting out zeros.
+		// Check that the RNG isn't just spitting out zeros.
 		EXPECT_TRUE((uint32_t)rng() | (uint32_t)rng());
 	}
 }
@@ -172,7 +172,7 @@ TEST(hxrandom_test, range) {
 		EXPECT_TRUE(rng.range(1000.0f,100.0f) >= 1000.0f && rng.range(1000.0f,100.0f) < 1100.0f);
 		EXPECT_TRUE(rng.range(1000.0,100.0) >= 1000.0 && rng.range(1000.0,100.0) < 1100.0);
 
-		// Check that the rng isn't just spitting out zeros.
+		// Check that the RNG isn't just spitting out zeros.
 		EXPECT_TRUE((uint32_t)rng() | (uint32_t)rng());
 	}
 }
@@ -180,13 +180,13 @@ TEST(hxrandom_test, range) {
 TEST(hxrandom_test, histogram) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(40000);
-	const int buckets = 1 << 10; // 1k buckets
+	const int buckets = 1 << 10; // 1k buckets.
 	const int iters = 1000;
-	const int max = 1100; // 10% above average max.
+	const int max = 1100; // 10% above the average maximum.
 	hxarray<int> hist(buckets, 0);
 
 	for(int i=(buckets*iters); i--;) {
-		// Doesn't require an unsigned type for %. No floating point used.
+		// Doesn't require an unsigned type for %. No floating point math is used.
 		++hist[(size_t)(rng() % (buckets - 1))];
 	}
 	for(size_t i=buckets; i--;) {
@@ -197,13 +197,13 @@ TEST(hxrandom_test, histogram) {
 TEST(hxrandom_test, histogram_f) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(40000);
-	const int buckets = 1000; // 1k buckets
+	const int buckets = 1000; // 1k buckets.
 	const int iters = 1000;
-	const int max = 1150; // 15% above average max.
+	const int max = 1150; // 15% above the average maximum.
 	hxarray<int> hist(buckets, 0);
 
 	for(int i=(buckets*iters); i--;) {
-		// Run the full 64-bit bit double pipeline.
+		// Run the full 64-bit double pipeline.
 		++hist[(size_t)(rng() % (double)buckets)];
 	}
 	for(size_t i=buckets; i--;) {

@@ -34,7 +34,7 @@ hxconsole_command_named(hxprofiler_write_to_chrome_tracing_command_, profilewrit
 } // namespace {
 
 // ----------------------------------------------------------------------------
-// variables
+// Variables
 
 namespace hxdetail_ {
 

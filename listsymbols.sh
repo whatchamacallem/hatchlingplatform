@@ -10,8 +10,8 @@ set -o errexit
 export POSIXLY_CORRECT=1
 
 if [ ! -f bin/hxtest ]; then
-	echo "bin/hxtest not found..."
-	return 2; # file not found.
+	echo "bin/hxtest not found!"
+	return 2; # File not found.
 fi
 
 nm --radix=d --print-size bin/hxtest | awk 'NF == 4 {print $2, $3, $4}' | sort -r | head -n 200 \

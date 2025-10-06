@@ -11,26 +11,26 @@ class hxtask_queue;
 /// at a later time.
 class hxtask {
 public:
-	/// Construct task. `static_label` must be a static string.
+	/// Constructs a task. `static_label` must be a static string.
 	/// - `static_label` : A constant string literal or `null` to label the task.
 	explicit hxtask(const char* static_label_=hxnull)
 		: m_next_task_(hxnull), m_label_(static_label_), m_task_queue_(hxnull) {
 	}
 
-	/// Destructor for the task. Ensures that the task is not owned by
-	/// any exclusive owner when deleted.
+	/// Destroys the task. Ensures that the task is not owned by any exclusive
+	/// owner when deleted.
 	virtual ~hxtask(void) {
 		hxassertrelease(!m_task_queue_, "deleting_queued_task %s", this->get_label());
 	}
 
-	/// Executes the task. This is the main function to be implemented by
-	/// derived classes. This call is the last time this object is touched by
-	/// hxtask_queue. This function may delete or re-enqueue the task. Will also
-	/// be wrapped in `hxprofile_scope(get_label());`
+	/// Executes the task. This is the main function to implement in derived
+	/// classes. This call is the last time this object is touched by
+	/// `hxtask_queue`. The function may delete or re-enqueue the task and is also
+	/// wrapped in `hxprofile_scope(get_label());`
 	/// - `q` : Pointer to the task queue managing this task.
 	virtual void execute(hxtask_queue* q_) = 0;
 
-	/// Returns pointer to the next task, or null if there is no next task.
+	/// Returns a pointer to the next task, or null if there is no next task.
 	hxtask* get_next_task(void) const { return m_next_task_; }
 
 	/// Sets the next task in the linked list.
@@ -44,7 +44,7 @@ public:
 	/// - `x` : A constant string literal or null.
 	void set_label(const char* x_) { m_label_ = x_; }
 
-	/// Sets the task queue which is to be the exclusive owner of the task.
+	/// Sets the task queue that is to be the exclusive owner of the task.
 	/// - `x` : Pointer to the new exclusive owner, or null to clear ownership.
 	void set_task_queue(hxtask_queue* x_) {
 		hxassertrelease((!m_task_queue_ || !x_) && !m_next_task_, "reenqueuing_task %s", this->get_label());

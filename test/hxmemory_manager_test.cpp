@@ -7,9 +7,9 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// Using ASSERT_* instead of EXPECT_* in this file to add coverage for those
-// macros. Memory corruption sounds fatal so sure why not. Some of these tests
-// are designed to fail and use EXPECT_ for those specific tests.
+// Using ASSERT_* instead of EXPECT_* in this file adds coverage for those
+// macros. Memory corruption sounds fatal, so that seems appropriate. Some of
+// these tests are designed to fail and use EXPECT_* for those specific cases.
 
 TEST(hxmemory_manager_test_fn, bytes) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
@@ -107,20 +107,20 @@ public:
 			::memset(ptr1, 0x33, 100);
 			::memset(ptr2, 0x33, 200);
 
-			hxfree(ptr1); // Only free the one.
+			hxfree(ptr1); // Only free one allocation.
 
 			// Prepare to trigger an assert when the scope closes.
 			g_hxsettings.asserts_to_be_skipped = 1;
 		}
-		ASSERT_EQ(g_hxsettings.asserts_to_be_skipped, 0); // hxassert was hit, leak in scope
+		ASSERT_EQ(g_hxsettings.asserts_to_be_skipped, 0); // hxassert was hit; the leak occurred in the scope.
 
 		{
 			hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
 
-			// the allocator knows it has an outstanding allocation
+			// The allocator knows it has an outstanding allocation.
 			ASSERT_EQ(allocator_scope.get_initial_allocation_count(), 1);
 
-			// however the allocated memory was reset.
+			// However, the allocated memory was reset.
 			ASSERT_EQ(allocator_scope.get_initial_bytes_allocated(), 0);
 
 			// Trigger the assert that catches late deletes.
@@ -128,7 +128,7 @@ public:
 			hxfree(ptr2);
 		}
 
-		// hxassert was hit, free after scope closed
+		// hxassert was hit; the free happened after the scope closed.
 		ASSERT_EQ(g_hxsettings.asserts_to_be_skipped, 0);
 
 		g_hxsettings.asserts_to_be_skipped = asserts_allowed;
@@ -145,7 +145,7 @@ TEST_F(hxmemory_manager_test, execute) {
 	// Leak checking requires the memory manager.
 #if !(HX_MEMORY_MANAGER_DISABLE)
 	hxlog("EXPECTING_TEST_FAILURE\n");
-	// Only the temporary stack expects all allocations to be `free`'d.
+	// Only the temporary stack expects all allocations to be freed.
 	test_memory_allocator_leak();
 #endif
 }

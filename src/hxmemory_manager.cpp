@@ -47,8 +47,8 @@ inline void hxsystem_allocator_scope_init_(hxsystem_allocator_scope* scope_,
 	scope_->m_initial_bytes_allocated_ = bytes_allocated_;
 }
 
-// hxmalloc_checked_. Always check malloc and halt on failure. Enforces overall
-// policy against allocation failure handling routines. Also enforces the static
+// hxmalloc_checked_ always checks malloc and halts on failure. It enforces the
+// overall policy against allocation failure handling routines and the static
 // analysis contract described by hxattr_allocator.
 hxattr_allocator(free) hxattr_hot hxattr_noexcept static void* hxmalloc_checked_(size_t size) {
 	void* t = ::malloc(size);
@@ -65,8 +65,8 @@ hxattr_allocator(free) hxattr_hot hxattr_noexcept static void* hxmalloc_checked_
 // HX_MEMORY_MANAGER_DISABLE. See hxsettings.h.
 #if !(HX_MEMORY_MANAGER_DISABLE)
 
-// All pathways are threadsafe by default. In theory locking could be removed
-// if threads avoided sharing allocators. But I don't want to scare anyone.
+// All pathways are thread-safe by default. In theory locking could be removed
+// if threads avoided sharing allocators, but I do not want to scare anyone.
 #if HX_USE_THREADS
 static hxmutex s_hxmemory_manager_mutex;
 #define HX_MEMORY_MANAGER_LOCK_() hxunique_lock memory_manager_lock_(s_hxmemory_manager_mutex)
@@ -82,7 +82,7 @@ namespace {
 class hxmemory_allocation_header {
 public:
 	size_t size;
-	uintptr_t actual; // address actually returned by malloc.
+	uintptr_t actual; // Address actually returned by malloc.
 
 #if (HX_RELEASE) < 2
 	enum : uint32_t {
@@ -156,7 +156,7 @@ public:
 
 		// Round up the size to be a multiple of the alignment so aligned_alloc
 		// doesn't fail. This has to work for every kind of allocation including
-		// a 5 byte string that has default sizeof(void*) alignment.
+		// a 5-byte string that has the default sizeof(void*) alignment.
 		size = (size + (alignment - 1)) & ~((size_t)alignment - 1);
 
 		void* t = ::aligned_alloc(alignment, size);
@@ -165,7 +165,7 @@ public:
 #else
 		// hxmemory_allocation_header has an HX_ALIGNMENT alignment requirement as well.
 		alignment = hxmax(alignment, HX_ALIGNMENT);
-		--alignment; // use as a mask.
+		--alignment; // Use as a mask.
 
 		// Place header immediately before aligned allocation.
 		const uintptr_t actual = (uintptr_t)hxmalloc_checked_(
@@ -178,7 +178,7 @@ public:
 		hdr.sentinel_value = hxmemory_allocation_header::sentinel_value_allocated;
 #endif
 		++m_allocation_count;
-		m_bytes_allocated += size; // ignore overhead
+		m_bytes_allocated += size; // Ignore overhead.
 		m_high_water = hxmax(m_high_water, m_bytes_allocated);
 
 		return (void*)aligned;
@@ -261,7 +261,7 @@ public:
 	}
 
 	hxattr_hot void* allocate_non_virtual(size_t size, hxalignment_t alignment) {
-		--alignment; // use as a mask.
+		--alignment; // Use as a mask.
 		const uintptr_t aligned = (m_current + alignment) & ~(uintptr_t)alignment;
 		if((aligned + size) > m_end_) {
 			return hxnull;
@@ -311,7 +311,7 @@ public:
 		m_high_water = hxmax(m_high_water, m_current);
 
 		// Do not reset m_allocation_count = scope->get_initial_allocation_count()
-		// as that just breaks leak tracking.
+		// because that would break leak tracking.
 
 		const uintptr_t previous_current = m_begin_ + scope->get_initial_bytes_allocated();
 		if((HX_RELEASE) < 1) {
@@ -355,7 +355,7 @@ public:
 private:
 	friend class hxsystem_allocator_scope;
 
-	// NOTA BENE:  The current allocator is a thread local attribute.
+	// NOTA BENE:  The current allocator is a thread-local attribute.
 	static hxthread_local<hxsystem_allocator_t> s_hxcurrent_memory_allocator;
 
 	hxmemory_allocator_base* m_memory_allocators[hxsystem_allocator_current];
@@ -377,7 +377,7 @@ void hxmemory_manager::construct(void) {
 	m_memory_allocators[hxsystem_allocator_permanent] = &m_memory_allocator_permanent;
 	m_memory_allocators[hxsystem_allocator_temporary_stack] = &m_memory_allocator_temporary_stack;
 
-	::new(&m_memory_allocator_heap) hxmemory_allocator_os_heap(); // set vtable ptr.
+	::new(&m_memory_allocator_heap) hxmemory_allocator_os_heap(); // Set vtable pointer.
 	::new(&m_memory_allocator_permanent) hxmemory_allocator_stack();
 	::new(&m_memory_allocator_temporary_stack) hxmemory_allocator_temp_stack();
 
@@ -439,7 +439,7 @@ void* hxmemory_manager::allocate(size_t size, hxsystem_allocator_t id, hxalignme
 		size = 1u; // Enforce unique pointer values.
 	}
 
-	// following code assumes that "alignment-1" is a valid mask of unused bits.
+	// The following code assumes that "alignment-1" is a valid mask of unused bits.
 	if(alignment == 0u) {
 		alignment = 1u;
 	}
@@ -461,7 +461,7 @@ void hxmemory_manager::free(void* ptr) {
 		return;
 	}
 
-	// this path is hard-coded for efficiency.
+	// This path is hard-coded for efficiency.
 	HX_MEMORY_MANAGER_LOCK_();
 
 	if(m_memory_allocator_temporary_stack.contains(ptr)) {
@@ -534,8 +534,8 @@ extern "C"
 hxattr_noexcept void hxfree(void *ptr) {
 	hxassertmsg(g_hxisinit, "not_init memory manager");
 
-	// Nothing allocated from the OS memory manager can be freed here. Not unless
-	// it is wrapped with hxmemory_allocator_os_heap.
+	// Nothing allocated from the OS memory manager can be freed here unless it is
+	// wrapped with hxmemory_allocator_os_heap.
 	s_hxmemory_manager.free(ptr);
 }
 
@@ -548,8 +548,8 @@ void hxmemory_manager_init(void) {
 void hxmemory_manager_shut_down(void) {
 	hxassertmsg(g_hxisinit, "not_init memory manager");
 
-	// Any allocations made while active will crash when free'd. If these are
-	// not fixed you will hit a leak sanitizer elsewhere.
+	// Any allocations made while active will crash when freed. If these are not
+	// fixed you will hit a leak sanitizer elsewhere.
 	const size_t leak_count = s_hxmemory_manager.leak_count();
 	hxassertrelease(leak_count == 0, "memory_leak at shutdown %zu", leak_count); (void)leak_count;
 

@@ -102,7 +102,7 @@ TEST(hxctest, all_tests) {
 	EXPECT_TRUE(hxctest_all());
 }
 
-// Make sure new and delete plausibly exist. Make sure hxnullptr compiles.
+// Verify that new and delete plausibly exist and that hxnullptr compiles.
 TEST(hxnew, smoketest) {
 	unsigned int* t = new unsigned int(3);
 	ASSERT_TRUE(t);
@@ -113,7 +113,7 @@ TEST(hxnew, smoketest) {
 	ASSERT_FALSE(t);
 }
 
-// These two tests test the test framework by failing.
+// These two tests exercise the test framework by failing.
 #if HX_TEST_ERROR_HANDLING
 TEST(death_test, fail) {
 	hxlog("EXPECTING_TEST_FAILURE\n");

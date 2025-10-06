@@ -3,21 +3,22 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-/// \file hx/hxkey.hpp User overloadable key-equal, key-less and key-hash
-/// functions. This code will only use the `==` and `<` operators by default.
-/// That will work with a default or custom `<=>` operator. Alternately these
-/// calls can be overloaded to resolve key operations without global operator
-/// overloads. This code uses C++20 concepts when available and provides no
-/// fallbacks for SFINAE otherwise. Partial specialization will not work before
-/// C++20. As an alternative functors are recommended and supported for complex
-/// use cases as they are relatively easy to debug. See `hxkey_equal_function`
-/// and `hxkey_less_function` for generating default functors.
+/// \file hx/hxkey.hpp User-overloadable key-equal, key-less, and key-hash
+/// functions. By default this code uses only the `==` and `<` operators, which
+/// works with either the default or a custom `<=>` operator. Alternatively,
+/// these functions can be overloaded to resolve key operations without global
+/// operator overloads. This code uses C++20 concepts when available and
+/// provides no fallbacks for SFINAE otherwise. Partial specialization does not
+/// work before C++20. As an alternative, functors are recommended and supported
+/// for complex use cases because they are relatively easy to debug. See
+/// `hxkey_equal_function` and `hxkey_less_function` for generating default
+/// functors.
 
 #include "hatchling.h"
 
 #if HX_CPLUSPLUS >= 202002L
 /// A concept that requires one type to be convertible to another. See usage
-/// below. There are strange rules for how the compiler uses this.
+/// below. The compiler applies some unintuitive rules when evaluating this.
 /// - `from_t` : The source type.
 /// - `to_t` : The target type.
 template<typename from_t_, typename to_t_>
@@ -29,9 +30,9 @@ concept hxconvertible_to = requires(from_t_ (&&from_)()) {
 #endif
 
 /// `hxkey_equal(const A& a, const B& b)` - Returns true if two objects are
-/// equivalent. If your key type doesn't support `operator==` then this function
-/// may need to be overridden for your key type(s). Function overloads are
-/// evaluated when and where the derived container is instantiated and need to
+/// equivalent. If your key type does not support `operator==`, then this
+/// function may need to be overridden for your key type(s). Function overloads
+/// are evaluated when and where the derived container is instantiated and must
 /// be consistently available. Uses `operator==`.
 template<typename A_, typename B_>
 #if HX_CPLUSPLUS >= 202002L
@@ -50,14 +51,14 @@ inline bool hxkey_equal(const char* a_, const char* b_) {
 }
 
 /// Utility for resolving function pointers to `hxkey_equal` from a partially
-/// specialized set of overloaded functions. E.g.,
+/// specialized set of overloaded functions. e.g.,
 /// `hxkey_equal_function<int>()(1, 7)`.
 template<typename A_, typename B_>
 inline bool(*hxkey_equal_function(void))(const A_&, const B_&) {
     return static_cast<bool(*)(const A_&, const B_&)>(hxkey_equal<A_, B_>);
 }
 
-/// `hxkey_less(const T&, const T&)` - User overloadable function for performing
+/// `hxkey_less(const T&, const T&)` - User-overloadable function for performing
 /// comparisons. Invokes `operator<` by default. All the other comparison
 /// operators can be written using `operator<`. However `hxkey_equal` is also used
 /// for efficiency. Returns true if the first object is less than the second.
@@ -73,9 +74,9 @@ constexpr bool hxkey_less(const A_& a_, const B_& b_) {
 }
 
 /// `hxkey_less(const T*, const T*)` - User overloadable function for performing
-/// comparisons. Delegates to `T::operator<` by default. Pointer `<` comparisons are
-/// not available by default because that is undefined behavior unless the
-/// pointers are from the same array. For example the compiler may silently
+/// comparisons. Delegates to `T::operator<` by default. Pointer `<` comparisons
+/// are not available by default because that is undefined behavior unless the
+/// pointers are from the same array. For example, the compiler may silently
 /// ignore comparisons between function pointers.
 /// - `a` : Pointer to the first object.
 /// - `b` : Pointer to the second object.
@@ -97,17 +98,17 @@ inline bool hxkey_less(const char* a_, const char* b_) {
 }
 
 /// Utility for resolving function pointers to `hxkey_less` from a partially
-/// specialized set of overloaded functions. E.g.,
+/// specialized set of overloaded functions. e.g.,
 /// `hxkey_less_function<int>()(78, 77)`.
 template<typename A_, typename B_>
 inline bool (*hxkey_less_function(void))(const A_&, const B_&) {
     return static_cast<bool(*)(const A_&, const B_&)>(hxkey_less<A_, B_>);
 }
 
-/// `hxkey_hash(T)` - Returns the hash of a numeric value. Used by the base
-/// class hash table node. It needs to be overridden for your key type.
-/// Overrides are evaluated when and where the hash table is instantiated. Uses
-/// the well studied hash multiplier taken from Linux's hash.h.
+/// `hxkey_hash(T)` - Returns the hash of a numeric value. Used by the base hash
+/// table node. It must be overridden for your key type. Overrides are evaluated
+/// when and where the hash table is instantiated. Uses the well-studied hash
+/// multiplier taken from Linux's `hash.h`.
 /// - `x` : The input value.
 template<typename T_>
 constexpr hxhash_t hxkey_hash(T_ x_) {
