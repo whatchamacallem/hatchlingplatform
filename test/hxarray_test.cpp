@@ -819,7 +819,7 @@ TEST(hxarray_iterators, cbegin_cend) {
 
 	const hxarray<int, 4u>& const_values = values;
 	const int expected[] = { 1, 3, 5 };
-	const size_t expected_count = sizeof(expected) / sizeof(expected[0]);
+	const size_t expected_count = hxarray_size(expected);
 	size_t index = 0u;
 
 	for (const int* it = const_values.cbegin(); it != const_values.cend(); ++it) {

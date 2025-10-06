@@ -9,6 +9,9 @@
 extern "C" {
 #endif
 
+/// Returns the size of an array.
+#define hxarray_size(x_) (sizeof (x_) / sizeof (x_)[0])
+
 // ----------------------------------------------------------------------------
 // C Utilities
 
@@ -31,15 +34,17 @@ void hxhex_dump(const void* address_, size_t bytes_, int pretty_) hxattr_nonnull
 
 // ----------------------------------------------------------------------------
 // C Inline Utilities
-
 // These inline helpers mirror select <ctype.h> and math functionality.
-/// Returns true if the float `x` is finite (not NaN or ±inf). Implements `isfinitef`.
+
+/// Returns true if the float `x` is finite (not NaN or ±inf). Implements
+/// `isfinitef`.
 inline int hxisfinitef(float x_) {
 	uint32_t u_; memcpy(&u_, &x_, sizeof u_); // An intrinsic.
 	return (u_ & 0x7f800000u) != 0x7f800000u;
 }
 
-/// Returns true if the double `x` is finite (not NaN or ±inf). Implements `isfinitel`.
+/// Returns true if the double `x` is finite (not NaN or ±inf). Implements
+/// `isfinitel`.
 inline int hxisfinitel(double x_) {
 	uint64_t u_; memcpy(&u_, &x_, sizeof u_); // An intrinsic.
 	return (u_ & 0x7ff0000000000000ull) != 0x7ff0000000000000ull;

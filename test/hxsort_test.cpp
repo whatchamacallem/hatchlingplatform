@@ -137,8 +137,8 @@ TEST(hxmergesort_test, preserves_stable_ordering) {
 	};
 	hxmerge_record_t dest[8] = { };
 
-	const size_t left_count = sizeof left / sizeof left[0];
-	const size_t right_count = sizeof right / sizeof right[0];
+	const size_t left_count = hxarray_size(left);
+	const size_t right_count = hxarray_size(right);
 
 	hxmerge(left, left + left_count, right, right + right_count, dest);
 
@@ -162,7 +162,7 @@ TEST(hxmergesort_test, custom_comparator) {
 	const hxmerge_record_t expected[] = {
 		{ 9, 0 }, { 8, 0 }, { 7, 0 }, { 5, 0 }, { 5, 1 }, { 3, 0 }
 	};
-	for(size_t i = 0; i < sizeof expected / sizeof expected[0]; ++i) {
+	for(size_t i = 0; i < hxarray_size(expected); ++i) {
 		EXPECT_EQ(dest[i].key, expected[i].key);
 		EXPECT_EQ(dest[i].ticket, expected[i].ticket);
 	}
