@@ -168,7 +168,7 @@ inline void InitGoogleTest(void) { }
 	void HX_TEST_NAME_(hxtest_f_, suite_fixture_, case_name_)::hxtest_case_subclass_::run_test_f_(void)
 
 /// `int RUN_ALL_TESTS(...)` - Executes all registered test cases.
-/// `...` : An optional const char* matching a specific test suite to run. (Non-standard.)
+/// - `...` : Optional const char* matching a specific test suite to run. (Non-standard.)
 #define RUN_ALL_TESTS(...) hxtest_::dispatcher_().run_all_tests_(__VA_ARGS__)
 
 /// `void SUCCEED(void)` - Marks the current test as successful without any checks.
@@ -185,7 +185,10 @@ inline void InitGoogleTest(void) { }
 #define EXPECT_TRUE(x_) hxtest_::dispatcher_().condition_check_((x_), __FILE__, __LINE__, #x_, false)
 /// `void EXPECT_FALSE(bool)` - Requires that the condition is false.
 #define EXPECT_FALSE(x_) hxtest_::dispatcher_().condition_check_(!(x_), __FILE__, __LINE__, "!" #x_, false)
-/// `void EXPECT_NEAR(T expected, T actual, T absolute_range)` - Requires that two values are within a given range.
+/// `void EXPECT_NEAR(T expected, T actual, T absolute_error)` - Requires that two values are within a given range.
+/// - `expected` : Reference value to compare against.
+/// - `actual` : Value being tested.
+/// - `absolute_error` : Maximum permitted absolute difference.
 #define EXPECT_NEAR(expected_, actual_, absolute_range_) hxtest_::dispatcher_().condition_check_( \
 	(((expected_) < (actual_)) ? ((actual_)-(expected_)) : ((expected_)-(actual_))) <= (absolute_range_), \
 	__FILE__, __LINE__, "abs(" #expected_ "-" #actual_ ") <= " #absolute_range_, false)
@@ -214,7 +217,10 @@ inline void InitGoogleTest(void) { }
 #define ASSERT_TRUE(x_) hxtest_::dispatcher_().condition_check_((x_), __FILE__, __LINE__, #x_, true)
 /// `void ASSERT_FALSE(bool)` - Requires that the condition is false.
 #define ASSERT_FALSE(x_) hxtest_::dispatcher_().condition_check_(!(x_), __FILE__, __LINE__, "!" #x_, true)
-/// `void ASSERT_NEAR(T expected, T actual, T absolute_range)` - Requires that two values are within a given range.
+/// `void ASSERT_NEAR(T expected, T actual, T absolute_error)` - Requires that two values are within a given range.
+/// - `expected` : Reference value to compare against.
+/// - `actual` : Value being tested.
+/// - `absolute_error` : Maximum permitted absolute difference.
 #define ASSERT_NEAR(expected_, actual_, absolute_error_) hxtest_::dispatcher_().condition_check_( \
 	(((expected_) < (actual_)) ? ((actual_)-(expected_)) : ((expected_)-(actual_))) <= (absolute_error_), \
 	__FILE__, __LINE__, "abs(" #expected_ " - " #actual_ ") <= " #absolute_error_, true)
