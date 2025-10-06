@@ -97,8 +97,7 @@ static_assert(hxutility_is_same_<hxremove_cv_<const int>::type, int>::value,
 	"hxremove_cv_ strips const");
 static_assert(hxutility_is_same_<hxremove_cv_<volatile int>::type, int>::value,
 	"hxremove_cv_ strips volatile");
-static_assert(
-	hxutility_is_same_<hxremove_cv_<const volatile int>::type, int>::value,
+static_assert(hxutility_is_same_<hxremove_cv_<const volatile int>::type, int>::value,
 	"hxremove_cv_ strips const volatile");
 static_assert(hxutility_is_same_<hxremove_cv_t<const int>, int>::value,
 	"hxremove_cv_t strips const");
@@ -175,8 +174,7 @@ static_assert(hxis_pointer<int>::value == 0,
 
 static_assert(hxutility_is_same_<hxrestrict_t_<int>::type, int>::value,
 	"hxrestrict_t_ should leave non-pointers untouched");
-static_assert(
-	sizeof(typename hxrestrict_t_<int*>::type) == sizeof(int*),
+static_assert(sizeof(typename hxrestrict_t_<int*>::type) == sizeof(int*),
 	"hxrestrict_t_ should preserve pointer representation");
 static_assert(hxutility_is_same_<hxrestrict_t<int>, int>::value,
 	"hxrestrict_t should leave non-pointers untouched");

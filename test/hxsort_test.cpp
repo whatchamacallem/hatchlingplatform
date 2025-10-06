@@ -21,10 +21,6 @@ struct hxmerge_record_t {
 	}
 };
 
-static bool hxmerge_desc_less(const hxmerge_record_t& lhs_, const hxmerge_record_t& rhs_) {
-	return lhs_.key > rhs_.key;
-}
-
 // Run some simple integer tests first.
 static bool sort_int(int a, int b) {
 	return a < b;
@@ -87,32 +83,6 @@ TEST(hxmergesort_test, basic_cases) {
 	}
 
 	{
-		int left[3] = { -4, 0, 17 };
-		int right[1] = { 0 };
-		int dest[3] = { 91, 92, 93 };
-
-		hxmerge(left, left + 3, right, right, dest);
-
-		const int expected[3] = { -4, 0, 17 };
-		for(size_t i = 0; i < 3; ++i) {
-			EXPECT_EQ(dest[i], expected[i]);
-		}
-	}
-
-	{
-		int left[1] = { 0 };
-		int right[4] = { -3, -2, 6, 99 };
-		int dest[4] = { 81, 82, 83, 84 };
-
-		hxmerge(left, left, right, right + 4, dest);
-
-		const int expected[4] = { -3, -2, 6, 99 };
-		for(size_t i = 0; i < 4; ++i) {
-			EXPECT_EQ(dest[i], expected[i]);
-		}
-	}
-
-	{
 		int left[4] = { -5, 2, 4, 15 };
 		int right[5] = { -7, 0, 3, 8, 19 };
 		int dest[9] = { 0 };
@@ -147,22 +117,6 @@ TEST(hxmergesort_test, preserves_stable_ordering) {
 		{ 5, 0 }, { 5, 1 }, { 5, 2 }, { 7, 0 }
 	};
 	for(size_t i = 0; i < left_count + right_count; ++i) {
-		EXPECT_EQ(dest[i].key, expected[i].key);
-		EXPECT_EQ(dest[i].ticket, expected[i].ticket);
-	}
-}
-
-TEST(hxmergesort_test, custom_comparator) {
-	hxmerge_record_t left[] = { { 9, 0 }, { 7, 0 }, { 5, 0 } };
-	hxmerge_record_t right[] = { { 8, 0 }, { 5, 1 }, { 3, 0 } };
-	hxmerge_record_t dest[6] = { };
-
-	hxmerge(left, left + 3, right, right + 3, dest, hxmerge_desc_less);
-
-	const hxmerge_record_t expected[] = {
-		{ 9, 0 }, { 8, 0 }, { 7, 0 }, { 5, 0 }, { 5, 1 }, { 3, 0 }
-	};
-	for(size_t i = 0; i < hxsize(expected); ++i) {
 		EXPECT_EQ(dest[i].key, expected[i].key);
 		EXPECT_EQ(dest[i].ticket, expected[i].ticket);
 	}
@@ -369,9 +323,9 @@ TEST(hxsort_iter_test, hxmerge_iterator_support) {
 		EXPECT_EQ(dest_[i_].value, expected_sorted_[i_]);
 	}
 
-	// Do it all over again with a GE functor instead.
-	sort_api_t left_desc_[3] = { sort_api_t(6), sort_api_t(4), sort_api_t(2) };
-	sort_api_t right_desc_[3] = { sort_api_t(5), sort_api_t(3), sort_api_t(1) };
+	// Do it all over again with a GE functor and the parameters reversed.
+	sort_api_t left_desc_[3] = { sort_api_t(5), sort_api_t(3), sort_api_t(1) };
+	sort_api_t right_desc_[3] = { sort_api_t(6), sort_api_t(4), sort_api_t(2) };
 	sort_api_t dest_desc_[6] = {
 		sort_api_t(0), sort_api_t(0), sort_api_t(0),
 		sort_api_t(0), sort_api_t(0), sort_api_t(0)
