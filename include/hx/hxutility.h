@@ -9,11 +9,11 @@
 extern "C" {
 #endif
 
-/// Returns the size of an array.
-#define hxarray_size(x_) (sizeof (x_) / sizeof (x_)[0])
-
 // ----------------------------------------------------------------------------
 // C Utilities
+
+/// Returns the size of a C array.
+#define hxsize(x_) (sizeof (x_) / sizeof (x_)[0])
 
 /// `hxbasename` - Returns a pointer to those characters following the last `\\` or
 /// `/` character or path if those are not present.

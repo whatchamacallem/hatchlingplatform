@@ -126,7 +126,7 @@ TEST(hxrandom_test, read_populates_buffer) {
 		0xefu, 0xefu, 0xefu, 0xefu,
 		0xefu
 	};
-	const size_t size = sizeof buffer / sizeof *buffer;
+	const size_t size = hxsize(buffer);
 	const size_t read_count = size - 2; // 7. Intentionally odd.
 
 	rng.read(buffer, read_count);

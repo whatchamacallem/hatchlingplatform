@@ -280,7 +280,7 @@ TEST_F(hxarray_test_f, modification) {
 		static const int32_t nums[5] = { 91, 92, 93, 94, 95 };
 
 		hxarray<test_object> objs;
-		objs.assign(nums, nums + (sizeof nums / sizeof *nums));
+		objs.assign(nums, nums + hxsize(nums));
 		EXPECT_FALSE(objs.empty());
 
 		EXPECT_EQ(objs.capacity(), 5u);
@@ -326,7 +326,7 @@ TEST_F(hxarray_test_f, modification) {
 
 TEST(hxarray_test, push_heap_preserves_heap_property) {
 	static const int values[] = { 3, 7, 1, 9, 5, 8 };
-	const size_t value_count = sizeof values / sizeof *values;
+	const size_t value_count = hxsize(values);
 
 	hxarray<int, 16u> heap;
 	int max_value = INT_MIN;
@@ -345,7 +345,7 @@ TEST(hxarray_test, push_heap_preserves_heap_property) {
 
 TEST(hxarray_test, pop_heap_preserves_heap_on_removal) {
 	static const int values[] = { 5, 12, 3, 7, 9, 4, 15, 5 };
-	const size_t value_count = sizeof values / sizeof *values;
+	const size_t value_count = hxsize(values);
 
 	hxarray<int, 16u> heap;
 	for(size_t index = 0; index < value_count; ++index) {
@@ -407,8 +407,8 @@ TEST_F(hxarray_test_f, emplace_back) {
 TEST(hxarray_test, for_each_invokes_functors) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	static const unsigned char nums[5] = { 91, 92, 93, 94, 95 };
-	hxarray<int> objs;
-	objs.assign(nums, nums + (sizeof nums / sizeof *nums));
+		hxarray<int> objs;
+		objs.assign(nums, nums + hxsize(nums));
 
 	// 91, 92, 93, 94, 95. Lambdas are typically temporaries.
 	objs.for_each([](int& x) { x -= 90; });
@@ -437,8 +437,8 @@ TEST(hxarray_test, for_each_invokes_functors) {
 TEST(hxarray_test, all_of_any_of) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	static const unsigned char nums[5] = { 91, 92, 93, 94, 95 };
-	hxarray<int> objs;
-	objs.assign(nums, nums + (sizeof nums / sizeof *nums));
+		hxarray<int> objs;
+		objs.assign(nums, nums + hxsize(nums));
 
 	EXPECT_TRUE(objs.all_of([](const int& x) { return x > 0; }));
 	EXPECT_FALSE(objs.all_of([](const int& x) { return x < 95; }));
@@ -479,8 +479,8 @@ TEST(hxarray_test, all_of_any_of) {
 TEST(hxarray_test, erase_if) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	static const int nums[5] = { 1, 2, 3, 4, 5 };
-	hxarray<int> objs;
-	objs.assign(nums, nums + (sizeof nums / sizeof *nums));
+		hxarray<int> objs;
+		objs.assign(nums, nums + hxsize(nums));
 
 	int remove_calls = 0;
 	auto remove_even = [&](int& value_) -> bool {
@@ -586,7 +586,7 @@ TEST(hxarray_test, assign_range_from_rvalue) {
 		hxarray_test_move_tracker(9),
 		hxarray_test_move_tracker(13)
 	};
-	const size_t source_count = sizeof source_elements / sizeof *source_elements;
+	const size_t source_count = hxsize(source_elements);
 
 	hxarray<hxarray_test_move_tracker> elements;
 	elements.reserve(source_count);
@@ -607,7 +607,7 @@ TEST(hxarray_test, assign_range_from_const) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	const int32_t assigned_element_ints[] = { 4, 7, 11, 18 };
 	const hxarray<hxarray_test_move_tracker> assigned_elements = assigned_element_ints;
-	const size_t assigned_count = sizeof assigned_element_ints / sizeof *assigned_element_ints;
+	const size_t assigned_count = hxsize(assigned_element_ints);
 
 	hxarray<hxarray_test_move_tracker> elements;
 	elements.reserve(assigned_count + 1u);
@@ -635,7 +635,7 @@ TEST(hxarray_test, assign_range_from_mutable_range) {
 		hxarray_test_move_tracker(3),
 		hxarray_test_move_tracker(5)
 	};
-	const size_t source_count = sizeof source_elements / sizeof *source_elements;
+	const size_t source_count = hxsize(source_elements);
 
 	hxarray<hxarray_test_move_tracker> elements;
 	elements.reserve(source_count);
@@ -819,7 +819,7 @@ TEST(hxarray_iterators, cbegin_cend) {
 
 	const hxarray<int, 4u>& const_values = values;
 	const int expected[] = { 1, 3, 5 };
-	const size_t expected_count = hxarray_size(expected);
+	const size_t expected_count = hxsize(expected);
 	size_t index = 0u;
 
 	for (const int* it = const_values.cbegin(); it != const_values.cend(); ++it) {

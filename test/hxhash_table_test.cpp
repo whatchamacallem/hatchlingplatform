@@ -267,7 +267,7 @@ TEST_F(hxhash_table_test, strings) {
 		"Red","Orange","Yellow",
 		"Green","Cyan","Blue",
 		"Indigo","Violet" };
-	const int sz = sizeof colors / sizeof *colors;
+	const int sz = hxsize(colors);
 
 	{
 		typedef hxhash_table<hxtest_string, 4> Table;

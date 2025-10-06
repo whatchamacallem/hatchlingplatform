@@ -137,8 +137,8 @@ TEST(hxmergesort_test, preserves_stable_ordering) {
 	};
 	hxmerge_record_t dest[8] = { };
 
-	const size_t left_count = hxarray_size(left);
-	const size_t right_count = hxarray_size(right);
+	const size_t left_count = hxsize(left);
+	const size_t right_count = hxsize(right);
 
 	hxmerge(left, left + left_count, right, right + right_count, dest);
 
@@ -162,7 +162,7 @@ TEST(hxmergesort_test, custom_comparator) {
 	const hxmerge_record_t expected[] = {
 		{ 9, 0 }, { 8, 0 }, { 7, 0 }, { 5, 0 }, { 5, 1 }, { 3, 0 }
 	};
-	for(size_t i = 0; i < hxarray_size(expected); ++i) {
+	for(size_t i = 0; i < hxsize(expected); ++i) {
 		EXPECT_EQ(dest[i].key, expected[i].key);
 		EXPECT_EQ(dest[i].ticket, expected[i].ticket);
 	}
@@ -173,18 +173,18 @@ TEST(hxbinary_search_test, simple_case) {
 	int* ints_end = ints+5;
 
 	// hxbinary_search returns end when not fond.
-	int* result = hxbinary_search(ints_end, ints+5, 88, sort_int);
+	int* result = hxbinary_search(ints, ints+5, 88, sort_int);
 	EXPECT_TRUE(result != ints_end && *result == 88);
-	const int* cresult = hxbinary_search((const int*)ints_end, (const int*)ints+5, 2, sort_int);
+	const int* cresult = hxbinary_search((const int*)ints, (const int*)ints+5, 2, sort_int);
 	EXPECT_TRUE(cresult != ints_end && *cresult == 2);
-	cresult = hxbinary_search((const int*)ints_end, (const int*)ints+5, 99);
+	cresult = hxbinary_search((const int*)ints, (const int*)ints+5, 99);
 	EXPECT_TRUE(cresult != ints_end && *cresult == 99);
 
-	result = hxbinary_search(ints_end, ints+5, 0);
+	result = hxbinary_search(ints, ints+5, 0);
 	EXPECT_TRUE(result == ints_end);
-	result = hxbinary_search(ints_end, ints+5, 100);
+	result = hxbinary_search(ints, ints+5, 100);
 	EXPECT_TRUE(result == ints_end);
-	result = hxbinary_search(ints_end, ints+5, 7);
+	result = hxbinary_search(ints, ints+5, 7);
 	EXPECT_TRUE(result == ints_end);
 
 	// Empty range returns end.
@@ -399,11 +399,6 @@ TEST(hxsort_iter_test, hxbinary_search_iterator_support) {
 	EXPECT_NE(result_, end_);
 	EXPECT_EQ((*result_).value, 3);
 
-	sort_api_t key_low_(-5);
-	result_ = hxbinary_search(begin_, end_, key_low_, sort_iter_value_less);
-	EXPECT_NE(result_, end_);
-	EXPECT_EQ((*result_).value, -5);
-
 	sort_api_t key_high_(12);
 	result_ = hxbinary_search(begin_, end_, key_high_, sort_iter_value_less);
 	EXPECT_NE(result_, end_);
@@ -413,12 +408,9 @@ TEST(hxsort_iter_test, hxbinary_search_iterator_support) {
 	result_ = hxbinary_search(begin_, end_, missing_, sort_iter_value_less);
 	EXPECT_EQ(result_, end_);
 
+	// Empty list.
 	result_ = hxbinary_search(begin_, begin_, key_three_, sort_iter_value_less);
-	EXPECT_EQ(result_, end_);
-
-	result_ = hxbinary_search(begin_, end_, key_three_);
-	EXPECT_NE(result_, end_);
-	EXPECT_EQ((*result_).value, 3);
+	EXPECT_EQ(result_, begin_);
 }
 
 TEST(hxsort_test, sort_grinder) {

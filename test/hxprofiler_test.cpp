@@ -6,6 +6,7 @@
 #include <hx/hxtask_queue.hpp>
 #include <hx/hxconsole.hpp>
 #include <hx/hxrandom.hpp>
+#include <hx/hxutility.h>
 
 #include <hx/hxtest.hpp>
 
@@ -23,7 +24,7 @@ static const char* s_hxtest_labels[] = {
 	"Tau",	  "Upsilon", "Phi",
 	"Chi",	  "Psi",	 "Omega"
 };
-static const size_t s_hxtest_num_labels = sizeof s_hxtest_labels / sizeof *s_hxtest_labels;
+static const size_t s_hxtest_num_labels = hxsize(s_hxtest_labels);
 
 namespace {
 
