@@ -120,6 +120,17 @@ template<class T_> struct hxremove_cv_<const T_> { using type = T_; };
 template<class T_> struct hxremove_cv_<volatile T_> { using type = T_; };
 template<class T_> struct hxremove_cv_<const volatile T_> { using type = T_; };
 
+/// Internal. Returns `T` with one pointer layer removed as
+/// `hxremove_pointer_<T>::type`. Used by `hxremove_pointer_t`.
+template<class T_> struct hxremove_pointer_ { using type = T_; };
+template<class T_> struct hxremove_pointer_<T_*> { using type = T_; };
+template<class T_> struct hxremove_pointer_<T_* const> { using type = T_; };
+template<class T_> struct hxremove_pointer_<T_* volatile> { using type = T_; };
+template<class T_> struct hxremove_pointer_<T_* const volatile> { using type = T_; };
+
+/// `hxremove_pointer_t<T>` - Returns `T` with one pointer level removed.
+template<class T_> using hxremove_pointer_t = typename hxremove_pointer_<T_>::type;
+
 /// Removes const and volatile from a type. Implements `std::remove_cv_t`.
 /// This is used to maintain semantic compatibility with the standard.
 template<class T_> using hxremove_cv_t = typename hxremove_cv_<T_>::type;
