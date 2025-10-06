@@ -8,6 +8,7 @@
 #include <hx/hxtest.hpp>
 #include <hx/hxarray.hpp>
 #include <limits.h>
+#include <stddef.h>
 #include <stdio.h>
 
 HX_REGISTER_FILENAME_HASH
@@ -263,6 +264,262 @@ private:
 	bool operator||(const sort_api_t& other) const = delete;
 	bool operator!(void) const = delete;
 };
+
+class sort_iter_api_t {
+public:
+	using difference_type = ptrdiff_t;
+	using value_type = sort_api_t;
+	using pointer = sort_api_t*;
+	using reference = sort_api_t&;
+
+	sort_iter_api_t() noexcept : pointer_(hxnull) { }
+	explicit sort_iter_api_t(pointer pointer_) noexcept : pointer_(pointer_) { }
+	sort_iter_api_t(int null_) noexcept : pointer_(hxnull) {
+		hxassert(null_ == hxnull);
+		(void)null_;
+	}
+
+	reference operator*(void) const noexcept {
+		hxassert(pointer_ != hxnull);
+		return *pointer_;
+	}
+
+	sort_iter_api_t& operator++(void) noexcept {
+		++pointer_;
+		return *this;
+	}
+
+	sort_iter_api_t operator++(int) noexcept {
+		sort_iter_api_t temp_(*this);
+		++pointer_;
+		return temp_;
+	}
+
+	sort_iter_api_t& operator--(void) noexcept {
+		--pointer_;
+		return *this;
+	}
+
+	sort_iter_api_t operator+(difference_type offset_) const noexcept {
+		return sort_iter_api_t(pointer_ + offset_);
+	}
+
+	sort_iter_api_t operator-(difference_type offset_) const noexcept {
+		return sort_iter_api_t(pointer_ - offset_);
+	}
+
+	difference_type operator-(const sort_iter_api_t& other_) const noexcept {
+		return pointer_ - other_.pointer_;
+	}
+
+	bool operator==(const sort_iter_api_t& other_) const noexcept {
+		return pointer_ == other_.pointer_;
+	}
+
+	bool operator!=(const sort_iter_api_t& other_) const noexcept {
+		return pointer_ != other_.pointer_;
+	}
+
+	bool operator<(const sort_iter_api_t& other_) const noexcept {
+		return pointer_ < other_.pointer_;
+	}
+
+	bool operator>(const sort_iter_api_t& other_) const noexcept {
+		return pointer_ > other_.pointer_;
+	}
+
+	bool operator<=(const sort_iter_api_t& other_) const noexcept {
+		return pointer_ <= other_.pointer_;
+	}
+
+	bool operator>=(const sort_iter_api_t& other_) const noexcept {
+		return pointer_ >= other_.pointer_;
+	}
+
+private:
+	pointer pointer_;
+};
+
+static bool sort_iter_value_less(const sort_api_t& lhs_, const sort_api_t& rhs_) noexcept {
+	return lhs_.value < rhs_.value;
+}
+
+static bool sort_iter_value_greater(const sort_api_t& lhs_, const sort_api_t& rhs_) noexcept {
+	return lhs_.value > rhs_.value;
+}
+
+template<typename sort_callback_t_>
+static void do_sort_iter_case(const sort_callback_t_& sort_callback_) {
+	const int initial_values_[5] = { 2, 1, 0, 4, -5 };
+	const int expected_two_[5] = { 1, 2, 0, 4, -5 };
+	const int expected_sorted_[5] = { -5, 0, 1, 2, 4 };
+	const int expected_descending_[5] = { 4, 2, 1, 0, -5 };
+	sort_api_t values_[5] = {
+		sort_api_t(initial_values_[0]),
+		sort_api_t(initial_values_[1]),
+		sort_api_t(initial_values_[2]),
+		sort_api_t(initial_values_[3]),
+		sort_api_t(initial_values_[4])
+	};
+
+	auto reset_ = [&]() {
+		for(size_t i_ = 0; i_ < 5; ++i_) {
+			values_[i_] = sort_api_t(initial_values_[i_]);
+		}
+	};
+
+	auto expect_values_ = [&](const int (&expected_)[5]) {
+		for(size_t i_ = 0; i_ < 5; ++i_) {
+			EXPECT_EQ(values_[i_].value, expected_[i_]);
+		}
+	};
+
+	reset_();
+	sort_callback_(sort_iter_api_t(values_), sort_iter_api_t(values_), sort_iter_value_less);
+	expect_values_(initial_values_);
+
+	reset_();
+	sort_callback_(sort_iter_api_t(values_), sort_iter_api_t(values_ + 1), sort_iter_value_less);
+	expect_values_(initial_values_);
+
+	reset_();
+	sort_callback_(sort_iter_api_t(values_), sort_iter_api_t(values_ + 2), sort_iter_value_less);
+	expect_values_(expected_two_);
+
+	reset_();
+	sort_callback_(sort_iter_api_t(values_), sort_iter_api_t(values_ + 5), sort_iter_value_less);
+	expect_values_(expected_sorted_);
+
+	reset_();
+	sort_callback_(sort_iter_api_t(values_), sort_iter_api_t(values_ + 5), sort_iter_value_greater);
+	expect_values_(expected_descending_);
+
+	sort_callback_(sort_iter_api_t(values_), sort_iter_api_t(values_ + 5), sort_iter_value_less);
+	expect_values_(expected_sorted_);
+}
+
+TEST(hxsort_iter_test, iterator_support) {
+	do_sort_iter_case([](sort_iter_api_t begin_, sort_iter_api_t end_, const auto& less_) {
+		hxinsertion_sort(begin_, end_, less_);
+	});
+
+	do_sort_iter_case([](sort_iter_api_t begin_, sort_iter_api_t end_, const auto& less_) {
+		hxheapsort(begin_, end_, less_);
+	});
+
+	do_sort_iter_case([](sort_iter_api_t begin_, sort_iter_api_t end_, const auto& less_) {
+		hxsort(begin_, end_, less_);
+	});
+}
+
+TEST(hxsort_iter_test, hxmerge_iterator_support) {
+	sort_api_t left_[3] = {
+		sort_api_t(1),
+		sort_api_t(3),
+		sort_api_t(5)
+	};
+	sort_api_t right_[3] = {
+		sort_api_t(2),
+		sort_api_t(4),
+		sort_api_t(6)
+	};
+	sort_api_t dest_[6] = {
+		sort_api_t(0),
+		sort_api_t(0),
+		sort_api_t(0),
+		sort_api_t(0),
+		sort_api_t(0),
+		sort_api_t(0)
+	};
+
+	hxmerge(sort_iter_api_t(left_), sort_iter_api_t(left_ + 3),
+		sort_iter_api_t(right_), sort_iter_api_t(right_ + 3),
+		sort_iter_api_t(dest_), sort_iter_value_less);
+
+	const int expected_sorted_[6] = { 1, 2, 3, 4, 5, 6 };
+	for(size_t i_ = 0; i_ < 6; ++i_) {
+		EXPECT_EQ(dest_[i_].value, expected_sorted_[i_]);
+	}
+
+	sort_api_t left_desc_[3] = {
+		sort_api_t(6),
+		sort_api_t(4),
+		sort_api_t(2)
+	};
+	sort_api_t right_desc_[3] = {
+		sort_api_t(5),
+		sort_api_t(3),
+		sort_api_t(1)
+	};
+	sort_api_t dest_desc_[6] = {
+		sort_api_t(0),
+		sort_api_t(0),
+		sort_api_t(0),
+		sort_api_t(0),
+		sort_api_t(0),
+		sort_api_t(0)
+	};
+
+	hxmerge(sort_iter_api_t(left_desc_), sort_iter_api_t(left_desc_ + 3),
+		sort_iter_api_t(right_desc_), sort_iter_api_t(right_desc_ + 3),
+		sort_iter_api_t(dest_desc_), sort_iter_value_greater);
+
+	const int expected_desc_[6] = { 6, 5, 4, 3, 2, 1 };
+	for(size_t i_ = 0; i_ < 6; ++i_) {
+		EXPECT_EQ(dest_desc_[i_].value, expected_desc_[i_]);
+	}
+
+	for(size_t i_ = 0; i_ < 6; ++i_) {
+		dest_[i_] = sort_api_t(0);
+	}
+	hxmerge(sort_iter_api_t(left_), sort_iter_api_t(left_ + 3),
+		sort_iter_api_t(right_), sort_iter_api_t(right_ + 3),
+		sort_iter_api_t(dest_));
+	for(size_t i_ = 0; i_ < 6; ++i_) {
+		EXPECT_EQ(dest_[i_].value, expected_sorted_[i_]);
+	}
+}
+
+TEST(hxsort_iter_test, hxbinary_search_iterator_support) {
+	sort_api_t values_[7] = {
+		sort_api_t(-5),
+		sort_api_t(-1),
+		sort_api_t(0),
+		sort_api_t(3),
+		sort_api_t(5),
+		sort_api_t(8),
+		sort_api_t(12)
+	};
+
+	sort_iter_api_t begin_(values_);
+	sort_iter_api_t end_(values_ + 7);
+
+	sort_api_t key_three_(3);
+	sort_iter_api_t result_ = hxbinary_search(begin_, end_, key_three_, sort_iter_value_less);
+	EXPECT_NE(result_, sort_iter_api_t());
+	EXPECT_EQ((*result_).value, 3);
+
+	sort_api_t key_low_(-5);
+	result_ = hxbinary_search(begin_, end_, key_low_, sort_iter_value_less);
+	EXPECT_NE(result_, sort_iter_api_t());
+	EXPECT_EQ((*result_).value, -5);
+
+	sort_api_t key_high_(12);
+	result_ = hxbinary_search(begin_, end_, key_high_, sort_iter_value_less);
+	EXPECT_NE(result_, sort_iter_api_t());
+	EXPECT_EQ((*result_).value, 12);
+
+	sort_api_t missing_(7);
+	result_ = hxbinary_search(begin_, end_, missing_, sort_iter_value_less);
+	EXPECT_EQ(result_, sort_iter_api_t());
+
+	result_ = hxbinary_search(begin_, begin_, key_three_, sort_iter_value_less);
+	EXPECT_EQ(result_, sort_iter_api_t());
+
+	result_ = hxbinary_search(begin_, end_, key_three_);
+	EXPECT_NE(result_, sort_iter_api_t());
+	EXPECT_EQ((*result_).value, 3);
+}
 
 TEST(hxsort_test, sort_grinder) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);

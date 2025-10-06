@@ -173,7 +173,7 @@ void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_, iterat
 /// - `dest` : Pointer to the destination range receiving the merged output.
 template<typename iterator_t_> hxattr_hot
 void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
-		iterator_t_ end1_, iterator_t_ hxrestrict dest_) {
+		iterator_t_ end1_, iterator_t_ dest_) {
 	using element_t_ = hxremove_reference_t<decltype(*begin0_)>;
 	hxmerge<iterator_t_>(begin0_, end0_, begin1_, end1_, dest_,
 		hxkey_less_function<element_t_, element_t_>());
