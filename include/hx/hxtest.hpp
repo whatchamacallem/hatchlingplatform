@@ -42,21 +42,39 @@
 ///	   EXPECT_NE(value, 42);
 ///   }
 /// ```
-/// - Condition-check macros: (`a` and `b` only require `operator<` and `operator==`.)
-/// ```
-///   EXPECT_TRUE(expr);	  // Checks expr is true.
-///   EXPECT_FALSE(expr);	  // Checks expr is false.
-///   EXPECT_EQ(a, b);		  // Checks a == b.
-///   EXPECT_NE(a, b);		  // Checks a != b.
-///   EXPECT_LT(a, b);		  // Checks a < b.
-///   EXPECT_GT(a, b);		  // Checks a > b.
-///   EXPECT_LE(a, b);		  // Checks a <= b.
-///   EXPECT_GE(a, b);		  // Checks a >= b.
-///   EXPECT_NEAR(a, b, tol); // Checks |a - b| <= tol.
-///   SUCCEED();			  // Marks the test as successful.
-///   FAIL();				  // Marks the test as failed.
-/// ```
-/// - `ASSERT_`* macros are equivalent to `EXPECT_`*
+/// - Condition-check macros (`a` and `b` only require `operator<` and `operator==`.)
+///   | Macro | Argument Types | Assertion |
+///   | --- | --- | --- |
+///   | `SUCCEED` | `void SUCCEED(void)` | Non-fatal; marks the test as explicitly successful. |
+///   | `FAIL` | `void FAIL(void)` | Fatal; records failure and returns from the test. |
+///   | `ADD_FAILURE` | `void ADD_FAILURE(void)` | Non-fatal; records a failure at the current location. |
+///   | `ADD_FAILURE_AT` | `void ADD_FAILURE_AT(const char*, size_t)` | Non-fatal; records a failure at the provided file and line. |
+///   | `EXPECT_TRUE` | `void EXPECT_TRUE(bool)` | Non-fatal; expects the condition to evaluate to true. |
+///   | `EXPECT_FALSE` | `void EXPECT_FALSE(bool)` | Non-fatal; expects the condition to evaluate to false. |
+///   | `EXPECT_EQ` | `void EXPECT_EQ(T, T)` | Non-fatal; expects both values to compare equal. |
+///   | `EXPECT_NE` | `void EXPECT_NE(T, T)` | Non-fatal; expects both values to compare not equal. |
+///   | `EXPECT_LT` | `void EXPECT_LT(T, T)` | Non-fatal; expects the left operand to be less than the right operand. |
+///   | `EXPECT_GT` | `void EXPECT_GT(T, T)` | Non-fatal; expects the left operand to be greater than the right operand. |
+///   | `EXPECT_LE` | `void EXPECT_LE(T, T)` | Non-fatal; expects the left operand to be less than or equal to the right operand. |
+///   | `EXPECT_GE` | `void EXPECT_GE(T, T)` | Non-fatal; expects the left operand to be greater than or equal to the right operand. |
+///   | `EXPECT_NEAR` | `void EXPECT_NEAR(T, T, T)` | Non-fatal; expects both values to be within the provided absolute tolerance. |
+///   | `EXPECT_FLOAT_EQ` | `void EXPECT_FLOAT_EQ(float, float)` | Non-fatal; expects floats to match within an adaptive tolerance. |
+///   | `EXPECT_DOUBLE_EQ` | `void EXPECT_DOUBLE_EQ(double, double)` | Non-fatal; expects doubles to match within an adaptive tolerance. |
+///   | `EXPECT_STREQ` | `void EXPECT_STREQ(const char*, const char*)` | Non-fatal; expects both C strings to match. |
+///   | `EXPECT_STRNE` | `void EXPECT_STRNE(const char*, const char*)` | Non-fatal; expects both C strings to differ. |
+///   | `ASSERT_TRUE` | `void ASSERT_TRUE(bool)` | Fatal; expects the condition to evaluate to true. |
+///   | `ASSERT_FALSE` | `void ASSERT_FALSE(bool)` | Fatal; expects the condition to evaluate to false. |
+///   | `ASSERT_EQ` | `void ASSERT_EQ(T, T)` | Fatal; expects both values to compare equal. |
+///   | `ASSERT_NE` | `void ASSERT_NE(T, T)` | Fatal; expects both values to compare not equal. |
+///   | `ASSERT_LT` | `void ASSERT_LT(T, T)` | Fatal; expects the left operand to be less than the right operand. |
+///   | `ASSERT_GT` | `void ASSERT_GT(T, T)` | Fatal; expects the left operand to be greater than the right operand. |
+///   | `ASSERT_LE` | `void ASSERT_LE(T, T)` | Fatal; expects the left operand to be less than or equal to the right operand. |
+///   | `ASSERT_GE` | `void ASSERT_GE(T, T)` | Fatal; expects the left operand to be greater than or equal to the right operand. |
+///   | `ASSERT_NEAR` | `void ASSERT_NEAR(T, T, T)` | Fatal; expects both values to be within the provided absolute tolerance. |
+///   | `ASSERT_FLOAT_EQ` | `void ASSERT_FLOAT_EQ(float, float)` | Fatal; expects floats to match within an adaptive tolerance. |
+///   | `ASSERT_DOUBLE_EQ` | `void ASSERT_DOUBLE_EQ(double, double)` | Fatal; expects doubles to match within an adaptive tolerance. |
+///   | `ASSERT_STREQ` | `void ASSERT_STREQ(const char*, const char*)` | Fatal; expects both C strings to match. |
+///   | `ASSERT_STRNE` | `void ASSERT_STRNE(const char*, const char*)` | Fatal; expects both C strings to differ. |
 ///
 /// See: https://google.github.io/googletest/reference/assertions.html
 
