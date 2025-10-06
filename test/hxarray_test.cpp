@@ -810,6 +810,31 @@ TEST(hxarray_test, emplace_back_move_tracker_forwarding) {
 	EXPECT_EQ(elements.size(), 2u);
 }
 
+
+TEST(hxarray_iterators, cbegin_cend) {
+	hxarray<int, 4u> values;
+	values.push_back(1);
+	values.push_back(3);
+	values.push_back(5);
+
+	const hxarray<int, 4u>& const_values = values;
+	const int expected[] = { 1, 3, 5 };
+	const size_t expected_count = sizeof(expected) / sizeof(expected[0]);
+	size_t index = 0u;
+
+	for (const int* it = const_values.cbegin(); it != const_values.cend(); ++it) {
+		ASSERT_LT(index, expected_count);
+		EXPECT_EQ(*it, expected[index]);
+		++index;
+	}
+
+	EXPECT_EQ(index, const_values.size());
+	EXPECT_EQ(const_values.cbegin(), const_values.begin());
+	EXPECT_EQ(const_values.cend(), const_values.end());
+	EXPECT_EQ(const_values.cbegin() + const_values.size(),
+		const_values.cend());
+}
+
 // std::initializer_list is great for writing test code for an array class...
 // Not sure what else.
 #if HX_CPLUSPLUS >= 202002L && !HX_NO_LIBCXX

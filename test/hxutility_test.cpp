@@ -6,6 +6,7 @@
 #include <hx/hxtest.hpp>
 
 #include <stdint.h>
+#include <ctype.h>
 
 HX_REGISTER_FILENAME_HASH
 
@@ -176,6 +177,71 @@ static_assert(hxutility_is_same<hxrestrict_t<int>, int>::value,
 static_assert(sizeof(hxrestrict_t<int*>) == sizeof(int*),
 	"hxrestrict_t should preserve pointer representation");
 
+namespace {
+
+enum hxforward_value_kind {
+	hxforward_value_kind_none,
+	hxforward_value_kind_lvalue,
+	hxforward_value_kind_const_lvalue,
+	hxforward_value_kind_rvalue,
+	hxforward_value_kind_const_rvalue
+};
+
+struct hxforwarded_t_ {
+	int value;
+};
+
+hxforwarded_t_ hxforward_make_forwarded_() { return { 11 }; }
+const hxforwarded_t_ hxforward_make_const_forwarded_() { return { 13 }; }
+hxforward_value_kind hxforward_detect_(hxforwarded_t_&) { return hxforward_value_kind_lvalue; }
+hxforward_value_kind hxforward_detect_(const hxforwarded_t_&) { return hxforward_value_kind_const_lvalue; }
+hxforward_value_kind hxforward_detect_(hxforwarded_t_&&) { return hxforward_value_kind_rvalue; }
+hxforward_value_kind hxforward_detect_(const hxforwarded_t_&&) { return hxforward_value_kind_const_rvalue; }
+
+template<typename T_>
+hxforward_value_kind hxforward_forward_through_template_(T_&& value_) {
+	return hxforward_detect_(hxforward<T_>(value_));
+}
+
+} // namespace
+
+TEST(hxforward, forwards_prvalue_expression) {
+	EXPECT_EQ(hxforward_value_kind_rvalue,
+		hxforward_detect_(hxforward<hxforwarded_t_>(hxforward_make_forwarded_())));
+}
+
+TEST(hxforward, forwards_const_prvalue_expression) {
+	EXPECT_EQ(hxforward_value_kind_const_rvalue,
+		hxforward_detect_(hxforward<const hxforwarded_t_>(hxforward_make_const_forwarded_())));
+}
+
+TEST(hxforward, forwards_lvalue_reference_through_template) {
+	hxforwarded_t_ value = { 7 };
+	EXPECT_EQ(hxforward_value_kind_lvalue, hxforward_forward_through_template_(value));
+}
+
+TEST(hxforward, forwards_const_lvalue_reference_through_template) {
+	const hxforwarded_t_ value = { 9 };
+	EXPECT_EQ(hxforward_value_kind_const_lvalue, hxforward_forward_through_template_(value));
+}
+
+TEST(hxforward, forwards_rvalue_reference_through_template) {
+	EXPECT_EQ(hxforward_value_kind_rvalue,
+		hxforward_forward_through_template_(hxforward_make_forwarded_()));
+}
+
+TEST(hxforward, forwards_moved_lvalue_reference_through_template) {
+	hxforwarded_t_ value = { 17 };
+	EXPECT_EQ(hxforward_value_kind_rvalue,
+		hxforward_forward_through_template_(hxmove(value)));
+}
+
+TEST(hxforward, forwards_moved_const_lvalue_reference_through_template) {
+	const hxforwarded_t_ value = { 19 };
+	EXPECT_EQ(hxforward_value_kind_const_rvalue,
+		hxforward_forward_through_template_(hxmove(value)));
+}
+
 TEST(hxutility_test, hxnullptr_converts_only_to_null) {
 	hxnullptr_t null_object;
 	const int* int_ptr = null_object;
@@ -280,4 +346,35 @@ TEST(hxutility_test, dump_helpers_execute_without_crashing) {
 
 	float floats[3] = { 0.0f, -1.25f, 2.5f };
 	hxfloat_dump(floats, sizeof floats / sizeof floats[0]);
+}
+
+
+TEST(hxisspace, compare_with_standard) {
+	// Don't use non-ASCII or setlocale because it might not exist.
+
+	for (int c = 0; c < 128; ++c) {
+		const bool hx = hxisspace((char)c);
+		const bool st = ::isspace((unsigned char)c) != 0;
+		EXPECT_EQ(hx, st);
+	}
+	for (int c = 128; c < 256; ++c) {
+		const bool hx = hxisspace((char)c);
+		EXPECT_EQ(hx, false);
+	}
+}
+
+TEST(hxisgraph, compare_with_standard) {
+	// Don't use non-ASCII or setlocale because it might not exist.
+
+	for (int c = 0; c <= 255; ++c) {
+		const bool hx = hxisgraph((char)c);
+
+		const bool expected = (c >= 0x21 && c <= 0x7E) || (c >= 0x80);
+		EXPECT_EQ(hx, expected);
+
+		if (c < 0x80) {
+			const bool st = ::isgraph(c) != 0;
+			EXPECT_EQ(hx, st);
+		}
+	}
 }

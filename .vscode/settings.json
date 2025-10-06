@@ -67,6 +67,7 @@
         "lstdc",
         "lubsan",
         "LVALUEREFERENCE",
+        "lvalues",
         "memcpy",
         "mftb",
         "MMIX",
