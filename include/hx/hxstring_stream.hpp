@@ -36,9 +36,6 @@ public:
 
 	bool getline(char* buffer_, int buffer_size_) hxattr_nonnull(2) hxattr_hot;
 
-	bool print(const char* format_, ...) hxattr_format_printf(2, 3) hxattr_hot;
-	int scan(const char* format_, ...) hxattr_format_scanf(2, 3) hxattr_hot;
-
 	template<typename T_>
 	hxstring_stream& operator>=(T_& t_) {
 		this->read(&t_, sizeof t_);
