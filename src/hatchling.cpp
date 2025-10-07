@@ -20,7 +20,7 @@ extern "C" {
 	bool g_hxisinit;
 
 	// See `#define hxversion_` in hxsettings.h for rationale.
-	const long hxversion_ = HATCHLING_VER;
+	const int hxversion_ = HATCHLING_VER;
 }
 
 // HX_FLOATING_POINT_TRAPS - Traps (FE_DIVBYZERO|FE_INVALID|FE_OVERFLOW) in
