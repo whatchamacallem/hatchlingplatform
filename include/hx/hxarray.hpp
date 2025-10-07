@@ -394,8 +394,11 @@ private:
 	// Destroys elements in the range [begin, end).
 	void destruct_(T_* begin_, T_* end_);
 
-	// 1 past the last element.
+protected:
+	/// \cond HIDDEN
+	/// 1 past the last element. Used by `hxstring_stream`.
 	T_* m_end_;
+	/// \endcond
 };
 
 // The array overloads of hxkey_equal, hxkey_less and hxswap are C++20 only.
