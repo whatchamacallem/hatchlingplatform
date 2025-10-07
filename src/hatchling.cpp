@@ -15,7 +15,13 @@
 HX_REGISTER_FILENAME_HASH
 
 // g_hxisinit should not be zero-initialized; MSVC handles that differently.
-extern "C" { bool g_hxisinit; }
+extern "C" {
+	// The platform has been initialized without being shut down.
+	bool g_hxisinit;
+
+	// See `#define hxversion_` in hxsettings.h for rationale.
+	const long hxversion_ = HATCHLING_VER;
+}
 
 // HX_FLOATING_POINT_TRAPS - Traps (FE_DIVBYZERO|FE_INVALID|FE_OVERFLOW) in
 // debug builds so you can safely run without checks in release builds. Use
@@ -191,7 +197,11 @@ hxconsole_command_named(hxcheck_hash, checkhash);
 // Initialization, shutdown, exit, assert, and logging.
 
 extern "C"
-void hxinit_internal(void) {
+void hxinit_internal(int version_) {
+	// Check if compiled in expected_version matches your source.
+	const long expected_version = HATCHLING_VER;
+	hxassertrelease(expected_version == version_, "HATCHLING_VER mismatch.");
+
 	hxassertrelease(!g_hxisinit, "not_init");
 	hxsettings_construct();
 
@@ -245,8 +255,8 @@ void hxshutdown(void) {
 		hxmemory_manager_shut_down();
 		// Try to trap further activity. This breaks global destructors that call
 		// hxfree. There is no easier way to track leaks.
-		g_hxisinit = false;
 #endif
+		g_hxisinit = false;
 	}
 }
 

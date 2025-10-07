@@ -11,7 +11,6 @@
 
 // Make sure this all compiles and runs in C99.
 bool hxctest_hatchling_h(void) {
-	hxinit();
 	hxlog("Smoke testing from C: hxlog %d, ", 1);
 	hxlogrelease("hxlogrelease %d, ", 2);
 	hxlogconsole("hxlogconsole %d, ", 3);

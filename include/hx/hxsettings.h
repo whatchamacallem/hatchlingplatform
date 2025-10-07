@@ -19,20 +19,36 @@
 #endif
 #endif
 
-/// Changing this makes it impossible to link against older versions of the
-/// library. Useful for forcing updates in a binary release process.
-#define hxdetail_ hxdetail1_
-
 #if defined HX_DOXYGEN_PARSER
 /// `HX_CPLUSPLUS` - A version of `__cplusplus` that is defined to `0` when
 /// `__cplusplus` is undefined. Allows use in C preprocessor statements without
 /// warnings when the compiler is configured to warn about undefined macros.
-#define HX_CPLUSPLUS 202002L // Document all supported C++ standards.
+/// Allows configuring doxygen to document all supported C++ standards.
+#define HX_CPLUSPLUS 202002L
 #elif defined __cplusplus
 #define HX_CPLUSPLUS __cplusplus
 #else
 #define HX_CPLUSPLUS 0
 #endif
+
+#if HX_CPLUSPLUS
+extern "C" {
+#endif
+
+/// \cond HIDDEN
+// Rename the hxdetail_ namespace using the version number to something like
+// hx31700_. Also create an identifier that can be used to cause link errors
+// containing the expected version when linking against old code. This is done
+// to force updates in a binary release channel.
+#define hxversion___(prefix_, x_) prefix_ ## x_ ## _
+#define hxversion__(prefix_, x_) hxversion___(prefix_, x_)
+#define hxversion_ hxversion__(hxversion, HATCHLING_VER)
+#define hxdetail_ hxversion__(hx, HATCHLING_VER)
+
+/// `hxversion_` - Renamed to something like `hxversion31700_` in order to
+/// cause link errors with stale binaries. It also contains the version.
+extern const int hxversion_;
+/// \endcond
 
 // ----------------------------------------------------------------------------
 // Target settings for Doxygen. See the Doxyfile. Run doxygen with no args.
@@ -169,17 +185,17 @@
 // Target independent.
 
 /// \cond HIDDEN
-// HX_APPEND_COUNTER2_ - Used to generate unique identifiers. This is weird
+// HX_APPEND_COUNTER__ - Used to generate unique identifiers. This is weird
 // because the ## operator happens before macro arg evaluation and both
 // happen before general macro evaluation.
-#define HX_APPEND_COUNTER2_(x_, y_) x_ ## y_
-// This version does evaluates its macro args.
-#define HX_APPEND_COUNTER1_(x_, y_) HX_APPEND_COUNTER2_(x_, y_)
+#define HX_APPEND_COUNTER__(x_, y_) x_ ## y_
+// This version does evaluate its macro args.
+#define HX_APPEND_COUNTER_(x_, y_) HX_APPEND_COUNTER__(x_, y_)
 /// \endcond
-/// `HX_APPEND_COUNTER` - Generates a unique identifier by appending a unique
-/// number to `x`.
+/// `HX_APPEND_COUNTER` - Generates a semi-unique identifier by appending a
+/// unique number for that translation unit to `x`.
 /// - `x` : A C identifier to be made unique.
-#define HX_APPEND_COUNTER(x_) HX_APPEND_COUNTER1_(x_, __COUNTER__)
+#define HX_APPEND_COUNTER(x_) HX_APPEND_COUNTER_(x_, __COUNTER__)
 
 #if !defined HX_MAX_LINE
 /// `HX_MAX_LINE` - Set to 512. Maximum length for formatted messages printed
@@ -240,10 +256,6 @@
 /// `HX_RADIX_SORT_MIN_SIZE` - Radix sort uses `hxinsertion_sort` below this size.
 /// Set to `32` if not defined.
 #define HX_RADIX_SORT_MIN_SIZE 32u
-#endif
-
-#if HX_CPLUSPLUS
-extern "C" {
 #endif
 
 /// `hxsettings` - Constructed by first call to `hxinit` which happens when or

@@ -15,10 +15,6 @@
 /// Assertion macros `hxassert`, `hxassertmsg`, `hxassertrelease` are provided
 /// for debugging, active when `HX_RELEASE < 3`. `hxinit` initializes the
 /// platform and `hxshutdown` releases resources when `HX_RELEASE < 3`.
-///
-/// Available utilities are: `hxnull`, `hxnullptr`, `hxmove`, `hxforward`,
-/// `hxmin`, `hxmax`, `hxabs`, `hxclamp`, `hxswap`, `hxhex_dump`,
-/// `hxfloat_dump`.
 
 #ifndef __STDC_WANT_LIB_EXT1__
 /// C Standard, Annex K is not portable. Asserts and `hxattr_nonnull` are used
@@ -40,8 +36,9 @@
 #endif
 
 /// `HATCHLING_VER` - Two digit major, minor and patch versions. Odd numbered
-/// minor versions are development branches. Yes, this is actually that old.
-#define HATCHLING_VER 31700l
+/// minor versions are development branches. It is an `int` literal.
+#define HATCHLING_VER 31700
+
 /// `HATCHLING_TAG` - Major, minor and patch version tag name. Odd numbered
 /// minor versions are development branches and their tags end in `-dev`.
 #define HATCHLING_TAG "v3.17.0-dev"
@@ -85,9 +82,11 @@ enum hxloglevel_t {
 #error HX_RELEASE must be [0..3].
 #endif
 
-/// `hxinit` - Initializes the platform. Call hxinit before allocating memory
-/// in a global constructor.
-#define hxinit() (void)(g_hxisinit || (hxinit_internal(), 0))
+/// `hxinit` - Initializes the platform. Designed to trigger a link error when
+/// used against previous versions. `hxversion_` is renamed to encode the
+/// current version. As well, `HATCHLING_VER` is checked against the value
+/// compiled into hxinit_internal.
+#define hxinit() (void)(g_hxisinit || (hxinit_internal(hxversion_), 0))
 
 #if (HX_RELEASE) == 0 // debug facilities
 
@@ -173,15 +172,14 @@ void hxasserthandler(hxhash_t file_, size_t line_) hxattr_noexcept hxattr_noretu
 #endif
 
 /// `hxinit_internal` - Use `hxinit` instead. It checks `g_hxisinit`.
-void hxinit_internal(void) hxattr_cold;
+void hxinit_internal(int version_) hxattr_cold;
 
 /// `g_hxisinit` - Set to true by `hxinit`.
 extern bool g_hxisinit;
 
 /// `hxshutdown` - Terminates service. Releases all resources acquired by the
 /// platform and confirms all memory allocations have been released. `HX_RELEASE
-/// < 3`. Does not clear `g_hxisinit`, shutdown is final. Logging and asserts
-/// are unaffected.
+/// < 3`.
 void hxshutdown(void) hxattr_cold;
 
 /// `hxloghandler` - Enters formatted messages in the system log. This is the

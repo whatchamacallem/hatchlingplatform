@@ -93,6 +93,7 @@ struct hxarray_test_move_tracker {
 	hxarray_test_move_tracker& operator=(hxarray_test_move_tracker&& other_) {
 		value = other_.value;
 		moved_from = false;
+		other_.value = 0xefef; // Poison value moved from.
 		other_.moved_from = true;
 		return *this;
 	}

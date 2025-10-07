@@ -65,16 +65,16 @@ public:
 
 TEST_F(hxhash_table_test, null) {
 		{
-		typedef hxhash_table<hxtest_integer, 4> Table;
-		Table table;
+		typedef hxhash_table<hxtest_integer, 4> table_t;
+		table_t table;
 		EXPECT_EQ(table.size(), 0u);
 
 		EXPECT_TRUE(table.begin() == table.end());
 		EXPECT_TRUE(table.cbegin() == table.cend());
-		EXPECT_TRUE(((const Table&)table).begin() == ((const Table&)table).cend());
+		EXPECT_TRUE(((const table_t&)table).begin() == ((const table_t&)table).cend());
 		EXPECT_FALSE(table.begin() != table.end());
 		EXPECT_FALSE(table.cbegin() != table.cend());
-		EXPECT_FALSE(((const Table&)table).begin() != ((const Table&)table).cend());
+		EXPECT_FALSE(((const table_t&)table).begin() != ((const table_t&)table).cend());
 
 		table.clear();
 		EXPECT_EQ(table.load_factor(), 0.0f);
@@ -89,8 +89,8 @@ TEST_F(hxhash_table_test, single) {
 
 	static const int k = 77;
 	{
-		typedef hxhash_table<hxtest_integer, 4> Table;
-		Table table;
+		typedef hxhash_table<hxtest_integer, 4> table_t;
+		table_t table;
 		hxtest_integer* node = hxnew<hxtest_integer>(k);
 		table.insert_node(node);
 
@@ -106,8 +106,8 @@ TEST_F(hxhash_table_test, single) {
 		EXPECT_TRUE(table.insert_unique(k).value.id == node->value.id);
 		EXPECT_TRUE(table.find(k) == node);
 		EXPECT_TRUE(table.find(k, node) == hxnull);
-		EXPECT_TRUE(((const Table&)table).find(k) == node);
-		EXPECT_TRUE(((const Table&)table).find(k, node) == hxnull);
+		EXPECT_TRUE(((const table_t&)table).find(k) == node);
+		EXPECT_TRUE(((const table_t&)table).find(k, node) == hxnull);
 
 		// MODIFIES TABLE
 		EXPECT_TRUE(table.extract(k) == node);
@@ -123,7 +123,7 @@ TEST_F(hxhash_table_test, single) {
 		EXPECT_EQ(table.size(), 0u);
 		EXPECT_EQ(table.count(k), 0u);
 		EXPECT_TRUE(table.find(k) == hxnull);
-		EXPECT_TRUE(((const Table&)table).find(k) == hxnull);
+		EXPECT_TRUE(((const table_t&)table).find(k) == hxnull);
 
 		// MODIFIES TABLE
 		EXPECT_TRUE(table[k].key() == k);
@@ -144,9 +144,9 @@ TEST_F(hxhash_table_test, map_node_usage) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	typedef hxhash_table_map_node<int32_t, test_object> map_node_t;
-	typedef hxhash_table<map_node_t, 4> Table;
+	typedef hxhash_table<map_node_t, 4> table_t;
 	{
-		Table table;
+		table_t table;
 		map_node_t& via_subscript = table[10];
 		EXPECT_EQ(via_subscript.key(), 10);
 		via_subscript.value().id = 123;
@@ -160,7 +160,7 @@ TEST_F(hxhash_table_test, map_node_usage) {
 		EXPECT_EQ(table.count(20), 1u);
 
 		EXPECT_EQ(&table[10], &via_subscript);
-		const Table& const_table = table;
+		const table_t& const_table = table;
 		const map_node_t* const_lookup = const_table.find(10);
 		EXPECT_TRUE(const_lookup != hxnull);
 		EXPECT_EQ(const_lookup->value().id, 123);
@@ -182,8 +182,8 @@ TEST_F(hxhash_table_test, multiple) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
 		// Table will be overloaded.
-		typedef hxhash_table<hxtest_integer> Table;
-		Table table;
+		typedef hxhash_table<hxtest_integer> table_t;
+		table_t table;
 		table.set_table_size_bits(5);
 
 		// Insert N elements.
@@ -195,8 +195,8 @@ TEST_F(hxhash_table_test, multiple) {
 		// Check properties of N unique keys.
 		int id_histogram[N] = {};
 		EXPECT_EQ(table.size(), N);
-		Table::iterator it = table.begin();
-		Table::iterator cit = table.begin();
+		table_t::iterator it = table.begin();
+		table_t::iterator cit = table.begin();
 		for(int i = 0; i < N; ++i) {
 			hxtest_integer* ti = table.find(i);
 			EXPECT_EQ(ti->value, i);
@@ -307,8 +307,8 @@ TEST_F(hxhash_table_test, strings) {
 	const int sz = hxsize(colors);
 
 	{
-		typedef hxhash_table<hxtest_string, 4> Table;
-		Table table;
+		typedef hxhash_table<hxtest_string, 4> table_t;
+		table_t table;
 
 		for(int i = sz; i--;) {
 			EXPECT_TRUE(::strcmp(table[colors[i]].key(), colors[i]) == 0);
