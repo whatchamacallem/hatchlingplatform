@@ -157,7 +157,7 @@ size_t hxfile::write(const void* bytes, size_t byte_count) {
 	return bytes_written;
 }
 
-bool hxfile::get_line(char* buffer, int buffer_size) {
+bool hxfile::getline(char* buffer, int buffer_size) {
 	hxassertmsg((m_open_mode_ & hxfile::in) && m_file_pimpl_, "invalid_file");
 
 	char* result = ::fgets(buffer, buffer_size, (FILE*)m_file_pimpl_);

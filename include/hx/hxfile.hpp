@@ -155,15 +155,15 @@ public:
 	/// determines the size of the provided char array.
 	/// - `buffer` : Reference to a char array where the line will be stored.
 	template<size_t buffer_size_>
-	bool get_line(char(&buffer_)[buffer_size_]) {
-		return this->get_line(buffer_, buffer_size_);
+	bool getline(char(&buffer_)[buffer_size_]) {
+		return this->getline(buffer_, buffer_size_);
 	}
 
 	/// Reads a `\n` or `EOF` terminated character sequence. Allowed to fail on
 	/// `EOF` without needing to be `hxfile::skip_asserts`.
 	/// - `buffer` : Pointer to a char array where the line will be stored.
 	/// - `buffer_size` : Size of the buffer array.
-	bool get_line(char* buffer_, int buffer_size_) hxattr_nonnull(2) hxattr_hot;
+	bool getline(char* buffer_, int buffer_size_) hxattr_nonnull(2) hxattr_hot;
 
 	/// Writes a formatted UTF-8 string to the file. Uses `printf` conventions.
 	/// Formatting and writing will be skipped when using `hxdev_null`.

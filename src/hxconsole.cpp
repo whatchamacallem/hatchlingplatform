@@ -97,7 +97,7 @@ bool hxconsole_exec_line(const char* command) {
 bool hxconsole_exec_file(hxfile& file) {
 	char buf[HX_MAX_LINE];
 	bool result = true;
-	while(result && file.get_line(buf)) {
+	while(result && file.getline(buf)) {
 		result = hxconsole_exec_line(buf);
 	}
 	return result;
