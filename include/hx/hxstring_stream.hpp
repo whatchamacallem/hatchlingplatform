@@ -67,11 +67,9 @@ public:
 
 private:
 
-	hxarray<char, hxallocator_dynamic_capacity> m_buffer_;
+	hxarray<char, hxallocator_dynamic_capacity> m_buffer_; // Contains capacity.
 	size_t m_size_;
 	size_t m_position_;
-	uint8_t m_open_mode_;
-	bool m_is_open_;
-	bool m_good_;
-	bool m_eof_;
+	bool m_good_; // Has an error been encountered.
+	bool m_eof_; //
 };
