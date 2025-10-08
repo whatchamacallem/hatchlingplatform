@@ -11,16 +11,17 @@
 HX_REGISTER_FILENAME_HASH
 
 TEST(hxstring_stream_test, write_and_read_roundtrip) {
-	hxstring_stream stream_;
-	stream_.reserve(16u);
+	hxstring_stream stream;
+	stream.reserve(16u);
 	const char payload_[] = "abc";
-	EXPECT_EQ(stream_.write(payload_, sizeof payload_ - 1u), 3u);
-	EXPECT_EQ(stream_.get_pos(), 3u);
-	EXPECT_FALSE(stream_.fail());
-	EXPECT_TRUE(stream_.set_pos(0u));
+	EXPECT_EQ(stream.write(payload_, sizeof payload_ - 1u), 3u);
+	EXPECT_EQ(stream.get_pos(), 3u);
+	EXPECT_FALSE(stream.fail());
+	EXPECT_TRUE(stream.set_pos(0u));
 	char buffer_[4];
-	EXPECT_EQ(stream_.read(buffer_, 3u), 3u);
+	EXPECT_EQ(stream.read(buffer_, 3u), 3u);
 	buffer_[3] = '\0';
 	EXPECT_STREQ(buffer_, "abc");
-	EXPECT_TRUE(stream_.eof());
+	EXPECT_FALSE(stream.eof());
+	EXPECT_FALSE(stream.fail());
 }
