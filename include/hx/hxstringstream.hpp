@@ -108,6 +108,7 @@ public:
 			this->m_end_ = m_position_;
 			*m_position_ = '\0';
 		}
+		hxassert(m_position_ < m_end_capacity_);
 		return count_;
 	}
 
