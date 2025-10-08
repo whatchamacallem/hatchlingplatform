@@ -87,7 +87,7 @@ private:
 };
 
 /// Internal. Used to share the implementation with all pointer types.
-typedef hxradix_sort_key<uint32_t, void*> hxradix_sort_key_void;
+using hxradix_sort_key_void = hxradix_sort_key<uint32_t, void*>;
 
 /// Internal. The shared implementation used with all pointer types when sorting
 /// using 8-bit digits.

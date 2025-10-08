@@ -54,7 +54,7 @@
 template<typename key_t_>
 class hxhash_table_set_node {
 public:
-	typedef key_t_ key_t;
+	using key_t = key_t_;
 
 	template<typename ref_t_>
 	hxhash_table_set_node(ref_t_&& key_)
@@ -90,8 +90,8 @@ private:
 template<typename key_t_, typename value_t_>
 class hxhash_table_map_node : public hxhash_table_set_node<key_t_> {
 public:
-	typedef key_t_ key_t;
-	typedef value_t_ value_t;
+	using key_t = key_t_;
+	using value_t = value_t_;
 
 	// `value_t` must default-construct when using `operator[]`.
 	hxhash_table_map_node(const key_t_& key_) :
@@ -119,8 +119,8 @@ template<typename node_t_,
 	typename deleter_t_=hxdefault_delete>
 class hxhash_table {
 public:
-	typedef node_t_ node_t;
-	typedef typename node_t_::key_t key_t;
+	using node_t = node_t_;
+	using key_t = typename node_t_::key_t;
 
 	/// A forward iterator. Iteration is Θ(`n + (1 << table_size_bits)`).
 	/// Iterators are only invalidated by the removal of the `node_t`

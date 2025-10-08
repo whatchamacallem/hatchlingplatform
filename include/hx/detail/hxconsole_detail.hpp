@@ -326,7 +326,7 @@ inline hxhash_t hxkey_equal(hxconsole_hash_table_key_ a_, hxconsole_hash_table_k
 // this is how to write a hash node without including hash table code.
 class hxconsole_hash_table_node_ {
 public:
-	typedef hxconsole_hash_table_key_ key_t;
+	using key_t = hxconsole_hash_table_key_;
 
 	hxconsole_hash_table_node_(hxconsole_hash_table_key_ key_)
 			: m_hash_next_(hxnull), m_key_(key_), m_hash_(hxkey_hash(key_)), m_command_(hxnull) {

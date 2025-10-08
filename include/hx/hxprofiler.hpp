@@ -35,7 +35,7 @@ extern "C" double emscripten_get_now(void);
 /// processor cycles starting from an unspecified origin and wrapping using
 /// unsigned rules. This is intended for profiling, not calendaring. Used by the
 /// following include.
-typedef size_t hxcycles_t;
+using hxcycles_t = size_t;
 
 #if HX_PROFILE
 #include "detail/hxprofiler_detail.hpp"

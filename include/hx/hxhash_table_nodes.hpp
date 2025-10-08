@@ -14,7 +14,7 @@
 template<typename key_t_>
 class hxhash_table_node_integer {
 public:
-	typedef key_t_ key_t;
+	using key_t = key_t_;
 
 	hxhash_table_node_integer(const key_t_& key_) :
 		m_hash_next_(hxnull), m_key_(key_) { }

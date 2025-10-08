@@ -29,13 +29,13 @@ template<typename T_, size_t capacity_=hxallocator_dynamic_capacity>
 class hxarray : public hxallocator<T_, capacity_> {
 public:
 	/// Random access iterator.
-	typedef T_* iterator;
+	using iterator = T_*;
 
 	/// Const random access iterator.
-	typedef const T_* const_iterator;
+	using const_iterator = const T_*;
 
 	/// Publishes the value type.
-	typedef T_ value_type;
+	using value_type = T_;
 
 	/// Constructs an empty array with a capacity of `capacity`. `m_end_` will be 0
 	/// if `capacity` is 0.

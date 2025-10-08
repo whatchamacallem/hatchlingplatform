@@ -16,7 +16,7 @@
 template<typename T_, size_t fixed_capacity_>
 class hxallocator {
 public:
-	typedef T_ value_t;
+	using value_t = T_;
 
 	/// Template specialization below should have been selected.
 	static_assert(fixed_capacity_ > 0u, "Fixed capacity must be > 0.");
@@ -68,7 +68,7 @@ private:
 template<typename T_>
 class hxallocator<T_, hxallocator_dynamic_capacity> {
 public:
-	typedef T_ value_t;
+	using value_t = T_;
 
 	/// Does not allocate until `reserve_storage` is called.
 	hxallocator(void) {

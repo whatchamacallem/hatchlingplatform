@@ -9,7 +9,7 @@ HX_REGISTER_FILENAME_HASH
 
 // An unsigned integer used for the histogram. uint32_t or size_t would be a
 // reasonable choice here.
-typedef uint32_t hxhistogram_t;
+using hxhistogram_t = uint32_t;
 
 void hxradix_sort_void(hxradix_sort_key_void* begin, hxradix_sort_key_void* end) {
 	// Check for size overflowing hxhistogram_t.

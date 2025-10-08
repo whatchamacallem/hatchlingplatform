@@ -64,8 +64,8 @@ public:
 };
 
 TEST_F(hxhash_table_test, null) {
-		{
-		typedef hxhash_table<hxtest_integer, 4> table_t;
+	{
+		using table_t = hxhash_table<hxtest_integer, 4>;
 		table_t table;
 		EXPECT_EQ(table.size(), 0u);
 
@@ -89,7 +89,7 @@ TEST_F(hxhash_table_test, single) {
 
 	static const int k = 77;
 	{
-		typedef hxhash_table<hxtest_integer, 4> table_t;
+		using table_t = hxhash_table<hxtest_integer, 4>;
 		table_t table;
 		hxtest_integer* node = hxnew<hxtest_integer>(k);
 		table.insert_node(node);
@@ -143,8 +143,8 @@ TEST_F(hxhash_table_test, single) {
 TEST_F(hxhash_table_test, map_node_usage) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
-	typedef hxhash_table_map_node<int32_t, test_object> map_node_t;
-	typedef hxhash_table<map_node_t, 4> table_t;
+	using map_node_t = hxhash_table_map_node<int32_t, test_object>;
+	using table_t = hxhash_table<map_node_t, 4>;
 	{
 		table_t table;
 		map_node_t& via_subscript = table[10];
@@ -182,7 +182,7 @@ TEST_F(hxhash_table_test, multiple) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
 		// Table will be overloaded.
-		typedef hxhash_table<hxtest_integer> table_t;
+		using table_t = hxhash_table<hxtest_integer>;
 		table_t table;
 		table.set_table_size_bits(5);
 
@@ -307,7 +307,7 @@ TEST_F(hxhash_table_test, strings) {
 	const int sz = hxsize(colors);
 
 	{
-		typedef hxhash_table<hxtest_string, 4> table_t;
+		using table_t = hxhash_table<hxtest_string, 4>;
 		table_t table;
 
 		for(int i = sz; i--;) {
