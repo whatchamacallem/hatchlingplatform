@@ -3,9 +3,14 @@
 # SPDX-License-Identifier: MIT
 # This file is licensed under the terms of the LICENSE.md file.
 #
-# Run all the build and test scripts for all targets. If bin/hxtest fails, then
-# the tests will stop at that point and it will be available to debug. Any
-# shell command that fails should also stop the test process.
+# If bin/hxtest fails, then the tests will stop at that point and it will be
+# available to debug. Any shell command that fails should also stop the test
+# process.
+
+# XXX
+# rename hx.*_ -> hz.*_ in test/*.cpp
+# assert ! grep hz.*_ left in test.
+
 
 clear
 

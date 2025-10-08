@@ -3,6 +3,10 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
+// XXX
+// *::flush
+// *::fail
+
 #include "hatchling.h"
 
 class hxfile;
@@ -27,11 +31,11 @@ extern hxfile hxdev_null;
 /// Provides a mixture of unformatted binary stream operations and formatted
 /// `printf`/`scanf` style I/O, along with optional error handling. `gcc` is
 /// useful for validating `printf`/`scanf` style arguments. However,
-/// memory-imaged data structures are still recommended. Formatted I/O is
-/// intended to use `\0`-terminated UTF-8 with no carriage return. `EILSEQ` may
-/// occur if UTF-8 is used in a format string directly. Pass UTF-8 as a `%s`
-/// string argument or use a real i18n library instead. Uses binary I/O only for
-/// portability.
+/// memory-imaged data structures are still recommended. And `hxstringstream` is
+/// provided for C++ style formatted text I/O. `hxfile` uses binary I/O only for
+/// portability. It implements the equivalent of the standard `eofbit` and
+/// `failbit` but not the `badbit`. The `failbit` should always be set when the
+/// `eofbit` is set.
 ///
 /// Here is the syntax to make a block of code conditional on opening a file.
 /// The filename is also formatted printf style. This is equivalent to Python's

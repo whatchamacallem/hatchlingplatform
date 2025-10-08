@@ -191,6 +191,8 @@ private:
     bool operator>(const sort_api_t&) const = delete;
     bool operator>=(const sort_api_t&) const = delete;
     bool operator<=(const sort_api_t&) const = delete;
+	bool operator!(void) const = delete;
+	operator bool(void) const = delete;
 };
 
 class sort_iter_api_t {
@@ -228,6 +230,7 @@ private:
 	bool operator&&(const sort_api_t&) const = delete;
 	bool operator||(const sort_api_t&) const = delete;
 	bool operator!(void) const = delete;
+	operator bool(void) const = delete;
 
 	sort_api_t* m_pointer;
 };

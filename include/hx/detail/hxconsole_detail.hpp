@@ -4,10 +4,9 @@
 // This file is licensed under the MIT license found in the LICENSE.md file.
 // hxconsole inline header and a lot of internals. See hxconsole.h.
 
-// This is a little old fashioned but a simple rewrite wouldn't make the
-// template bloat any better. Although this code is still very efficient. In
-// theory a byte code interpreter that understood the target calling
-// convention could shave off 10k from a system with 100s of commands.
+// XXX This needs a rewrite. The new hxstringstream would be a good start but
+// there is still the issue of chasing around code bloat due to parameter
+// permutations.
 
 #include "../hxutility.h"
 

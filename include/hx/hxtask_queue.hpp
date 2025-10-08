@@ -3,6 +3,13 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
+// XXX
+// enqueue_after - tasks submitted before will be assigned a thread before ones
+// added after. make the scheduler dispatch in order by maintaining a tail
+// pointer.
+// enqueue_priority - insert by walking past head pointer until priority is less
+// than nodes found. assert ordered queue property as well.
+
 #include "hatchling.h"
 #include "hxtask.hpp"
 #include "hxthread.hpp"

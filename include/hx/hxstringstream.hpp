@@ -7,6 +7,14 @@
 #include "hxarray.hpp"
 #include <stdio.h>
 
+// XXX
+// - operator>>
+// - strfromf, strfromd, strfroml, strtof, strtod, strtold.
+// - using stuff
+// - flags
+// - operator >>
+// -
+
 /// Provides a `std::stringstream` style file wrapper around a C-style string.
 /// Allows for formatted I/O using the `<<` and `>>` operators. `hxstringstream`
 /// is intended for composing strings before submitting them to something like
@@ -21,16 +29,29 @@
 template<size_t capacity_=hxallocator_dynamic_capacity>
 class hxstringstream : private hxarray<char, capacity_> {
 public:
-	/// A "narrow" UTF-8 character. See hxis_space for UTF-8 handling.
-	using char_t_ = char;
+	/// string_t - Shorthand for a `hxarray<char, capacity>` which is being
+	/// used to store a C-style string.
+	using string_t = hxarray<char, capacity_>;
 
-	/// Used to store a C-style string.
-	using string_t_ = hxarray<char, capacity_>;
+	using string_t::front;
+	using string_t::back;
+	using string_t::data;
+	using string_t::size;
 
-	using string_t_::front;
-	using string_t_::back;
-	using string_t_::data;
-	using string_t_::size;
+	/// Alternate writing modes for `bool`, integers and floating point. Only
+	/// one flag is checked per-type when writing for efficiency. Flags are not
+	/// required when reading back the supported formats.
+	enum flags_t {
+		// Uses `true` and `false` for bool instead of `0` and `1`. (Reads back
+		// any of the 4 values.)
+		boolalpha = 1,
+		// Switches integers from decimal to hexidecimal. Prints hex with `"%#x"`
+		// which adds a leading `0x`. (Reads back either with `"%i"`.)
+		hex = 2,
+		// Switches floating point to hex-float. Uses `"%#a"`. e.g. `0x1f.8p3`.
+		// Preserves bit accuracy and can parsed by scanf with `"%f"`.
+		hexfloat = 4
+	};
 
 	hxstringstream(void) {
 		::memset((void*)this, 0, sizeof(*this));
@@ -51,6 +72,21 @@ public:
 	}
 
 	operator bool(void) const { return !m_failed_; }
+
+	// A constant reference to a `hxarray<char, capacity>` containing the
+	// underlying string. Use `data` instead for a `const char*`.
+	const string_t& str(void) const { return *this; }
+
+	// A non-constant reference to a `hxarray<char, capacity>` containing the
+	// underlying string. Use `data` instead for a `char*`. Moving the `end`
+	// iterator or the `\0` it points to is not supported.
+	string_t& str(void) { return *this; }
+
+	void swap(hxstringstream& x_) { hxswap_memcpy(*this, x_); }
+
+	flags_t flags(void) const { return m_flags; }
+	void set_flags(flags_t flags_) { m_flags |= flags_; }
+	void unset_flags(flags_t flags_) { m_flags &= ~flags_; }
 
 	bool fail(void) const { return m_failed_; }
 
@@ -129,12 +165,16 @@ public:
 	template<size_t buffer_size_>
 	bool getline(char(&buffer_)[buffer_size_]);
 
-	bool getline(char* buffer_, int buffer_size_) hxattr_nonnull(2);
+	bool getline(char* buffer_, int buffer_size_);
 
 	template<size_t string_length_>
 	hxstringstream& operator<<(const char(&str_)[string_length_]) {
 		this->write(str_, string_length_ - 1u);
 		return *this;
+	}
+
+	hxstringstream& operator<<(const char* str_) {
+		this->write(str_, ::strlen(str_)); return *this;
 	}
 
 	hxstringstream& operator<<(bool value_) { return this->write_fundamental_("%d", value_); }
@@ -157,7 +197,7 @@ public:
 		// Unfortunately this requires an allocation, calculating 4 pointers and
 		// a check for null.
 		if(size_ && m_position_ == hxnull) {
-			string_t_::reserve(size_, allocator_, sizeof(char));
+			string_t::reserve(size_, allocator_, sizeof(char));
 			// Reading and writing start at the beginning of a '\0'-terminated string.
 			m_position_ = this->data();
 			m_position_[0] = '\0';
@@ -190,8 +230,9 @@ private:
 		return *this;
 	}
 
-	char* m_position_;
-	char* m_end_capacity_; // Points to the last byte which is '\0'.
+	flags_t m_flags;
 	bool m_failed_; // Has any error been encountered.
 	bool m_eof_;
+	char* m_position_;
+	char* m_end_capacity_; // Points to the last byte which is '\0'.
 };
