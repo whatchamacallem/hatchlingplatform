@@ -396,7 +396,7 @@ private:
 
 protected:
 	/// \cond HIDDEN
-	/// 1 past the last element. Used by `hxstring_stream`.
+	/// 1 past the last element. Used by `hxstringstream`.
 	T_* m_end_;
 	/// \endcond
 };

@@ -10,7 +10,7 @@
 
 HX_REGISTER_FILENAME_HASH
 
-TEST(hxstring_stream_test, write_and_read_roundtrip) {
+TEST(hxstringstream_test, write_and_read_roundtrip) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxstringstream stream;
 	stream.reserve(16u);
@@ -27,7 +27,7 @@ TEST(hxstring_stream_test, write_and_read_roundtrip) {
 	EXPECT_FALSE(stream.fail());
 }
 
-TEST(hxstring_stream_test, write_fundamental_types) {
+TEST(hxstringstream_test, write_fundamental_types) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxstringstream stream;
 	stream.reserve(128u);
@@ -55,4 +55,17 @@ TEST(hxstring_stream_test, write_fundamental_types) {
 	expect_stream(1.25f, "1.25");
 	expect_stream(2.5, "2.5");
 	expect_stream(0.5L, "0.5");
+}
+
+TEST(hxstringstream_test, insertion_uses_full_available_capacity) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	hxstringstream<8u> stream;
+	stream.reserve(8u);
+	stream << 1234567u; // Fits within seven data bytes plus the trailing NUL.
+	EXPECT_FALSE(stream.fail());
+	EXPECT_STREQ(stream.data(), "1234567");
+
+	stream.clear();
+	stream << 123456789u; // Would require nine data bytes; only seven are available.
+	EXPECT_TRUE(stream.fail());
 }
