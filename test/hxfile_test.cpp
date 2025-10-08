@@ -24,7 +24,7 @@ struct hxfile_test_record {
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
 #endif
 
-TEST(hxfile_io, empty_name_rejects_empty_path) {
+TEST(hxfile_test, empty_name_rejects_empty_path) {
 	hxfile f(hxfile::in | hxfile::skip_asserts, "");
 	EXPECT_EQ(f.good(), false);
 	EXPECT_EQ(f.is_open(), false);
@@ -34,7 +34,7 @@ TEST(hxfile_io, empty_name_rejects_empty_path) {
 #pragma GCC diagnostic pop
 #endif
 
-TEST(hxfile_io, read_write_round_trip) {
+TEST(hxfile_test, read_write_round_trip) {
 	if(hxfile f = hxfile(hxfile::in | hxfile::out | hxfile::skip_asserts, "hxfile_test_read_write.txt")) {
 		f << "hxfile_test_read_write.txt";
 
@@ -53,7 +53,7 @@ TEST(hxfile_io, read_write_round_trip) {
 	hxerr << hxendl;
 }
 
-TEST(hxfile_io, missing_file_reports_expectations) {
+TEST(hxfile_test, missing_file_reports_expectations) {
 	hxfile f(hxfile::in | hxfile::skip_asserts, "test_file_does_not_exist_%d", 123);
 	EXPECT_EQ(f.good(), false);
 	EXPECT_EQ(f.is_open(), false);
@@ -65,7 +65,7 @@ TEST(hxfile_io, missing_file_reports_expectations) {
 	hxdev_null << "dev/null should not exist";
 }
 
-TEST(hxfile_io, seek_and_read_maintain_state) {
+TEST(hxfile_test, seek_and_read_maintain_state) {
 	// Write a test file to exercise get/set_position and read1/write1.
 
 	struct { uint32_t x; } a { 0xefefefefu }, b { 0x01020304u }, c { 0x0u };
@@ -88,7 +88,7 @@ TEST(hxfile_io, seek_and_read_maintain_state) {
 	EXPECT_EQ(f.get_pos(), 8u);
 }
 
-TEST(hxfile_io, move_copy_and_stream_operators) {
+TEST(hxfile_test, move_copy_and_stream_operators) {
 	// Write a test file and exercise the copy operators.
 
 	// C++17 uses "guaranteed copy elision," requiring hxmove here to invoke the

@@ -96,7 +96,8 @@ enum hxloglevel_t {
 #define hxlog(...) hxloghandler(hxloglevel_log, __VA_ARGS__)
 
 /// `hxassertmsg(bool x, ...)` - Does not evaluate message args unless condition
-/// fails. This is only evaluated when `HX_RELEASE == 0`.
+/// fails. This is only evaluated when `HX_RELEASE == 0`. Always evaluates to an
+/// expression of type `void`.
 /// - `x` : The condition to evaluate.
 /// - `...` Variadic arguments for the formatted log message.
 #define hxassertmsg(x_, ...) (void)((bool)(x_) \
@@ -104,7 +105,8 @@ enum hxloglevel_t {
 	|| hxbreakpoint())
 
 /// `hxassert(bool x)` - Logs an error and terminates execution if `x` is false.
-/// This is only evaluated when `HX_RELEASE == 0`.
+/// This is only evaluated when `HX_RELEASE == 0`. Always evaluates to an
+/// expression of type `void`.
 /// - `x` : The condition to evaluate.
 #define hxassert(x_) (void)((bool)(x_) \
 	|| (hxloghandler(hxloglevel_assert, #x_), hxasserthandler(__FILE__, __LINE__)) \
@@ -112,7 +114,7 @@ enum hxloglevel_t {
 
 /// `hxassertrelease(bool x, ...)` - Logs an error and terminates execution if
 /// `x` is false up to release level 2. This is only evaluated when `HX_RELEASE
-/// < 3`.
+/// < 3`. Always evaluates to an expression of type `void`.
 /// - `x` : The condition to evaluate.
 /// - `...` Variadic arguments for the formatted log message.
 #define hxassertrelease(x_, ...) (void)((bool)(x_) \

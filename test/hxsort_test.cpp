@@ -63,88 +63,6 @@ void do_sort_int_case(const sort_callback_t_& sort_callback_) {
 	EXPECT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0);
 }
 
-TEST(hxsort_test, sort_int_case) {
-	// Instantiate and pass the sort templates as function pointers.
-	do_sort_int_case(hxinsertion_sort<int*, bool (*)(int, int)>);
-	do_sort_int_case(hxheapsort<int*, bool (*)(int, int)>);
-	do_sort_int_case(hxsort<int*, bool (*)(int, int)>);
-}
-
-TEST(hxmergesort_test, basic_cases) {
-	{
-		int left[1] = { 0 };
-		int right[1] = { 0 };
-		int dest[2] = { 111, 222 };
-
-		hxmerge(left, left, right, right, dest);
-
-		EXPECT_EQ(dest[0], 111);
-		EXPECT_EQ(dest[1], 222);
-	}
-
-	{
-		int left[4] = { -5, 2, 4, 15 };
-		int right[5] = { -7, 0, 3, 8, 19 };
-		int dest[9] = { 0 };
-
-		hxmerge(left, left + 4, right, right + 5, dest);
-
-		const int expected[9] = {
-			-7, -5, 0, 2, 3, 4, 8, 15, 19
-		};
-		for(size_t i = 0; i < 9; ++i) {
-			EXPECT_EQ(dest[i], expected[i]);
-		}
-	}
-}
-
-TEST(hxmergesort_test, preserves_stable_ordering) {
-	hxmerge_record_t left[] = {
-		{ 1, 0 }, { 3, 0 }, { 5, 0 }, { 5, 1 }
-	};
-	hxmerge_record_t right[] = {
-		{ 1, 1 }, { 3, 1 }, { 5, 2 }, { 7, 0 }
-	};
-	hxmerge_record_t dest[8] = { };
-
-	const size_t left_count = hxsize(left);
-	const size_t right_count = hxsize(right);
-
-	hxmerge(left, left + left_count, right, right + right_count, dest);
-
-	const hxmerge_record_t expected[] = {
-		{ 1, 0 }, { 1, 1 }, { 3, 0 }, { 3, 1 },
-		{ 5, 0 }, { 5, 1 }, { 5, 2 }, { 7, 0 }
-	};
-	for(size_t i = 0; i < left_count + right_count; ++i) {
-		EXPECT_EQ(dest[i].key, expected[i].key);
-		EXPECT_EQ(dest[i].ticket, expected[i].ticket);
-	}
-}
-
-TEST(hxbinary_search_test, simple_case) {
-	int ints[5] = { 2, 5, 6, 88, 99 };
-	int* ints_end = ints+5;
-
-	// hxbinary_search returns end when not found.
-	int* result = hxbinary_search(ints, ints+5, 88, sort_int);
-	EXPECT_TRUE(result != ints_end && *result == 88);
-	const int* cresult = hxbinary_search((const int*)ints, (const int*)ints+5, 2, sort_int);
-	EXPECT_TRUE(cresult != ints_end && *cresult == 2);
-	cresult = hxbinary_search((const int*)ints, (const int*)ints+5, 99);
-	EXPECT_TRUE(cresult != ints_end && *cresult == 99);
-
-	result = hxbinary_search(ints, ints+5, 0);
-	EXPECT_TRUE(result == ints_end);
-	result = hxbinary_search(ints, ints+5, 100);
-	EXPECT_TRUE(result == ints_end);
-	result = hxbinary_search(ints, ints+5, 7);
-	EXPECT_TRUE(result == ints_end);
-
-	// Empty range returns end.
-	result = hxbinary_search(ints, ints, 11, sort_int); // Zero size.
-	EXPECT_TRUE(result == ints);
-}
 
 // The sort_api_t tests check for correct use of references to temporaries.
 class sort_api_t {
@@ -294,7 +212,82 @@ static void do_sort_iter_case(const sort_callback_t_& sort_callback_) {
 	expect_values_(expected_sorted_);
 }
 
-TEST(hxsort_iter_test, iterator_support) {
+TEST(hxsort_test, sort_int_case) {
+	// Instantiate and pass the sort templates as function pointers.
+	do_sort_int_case(hxinsertion_sort<int*, bool (*)(int, int)>);
+	do_sort_int_case(hxheapsort<int*, bool (*)(int, int)>);
+	do_sort_int_case(hxsort<int*, bool (*)(int, int)>);
+}
+
+TEST(hxmergesort_test, preserves_stable_ordering) {
+	hxmerge_record_t left[] = {
+		{ 1, 0 }, { 3, 0 }, { 5, 0 }, { 5, 1 }
+	};
+	hxmerge_record_t right[] = {
+		{ 1, 1 }, { 3, 1 }, { 5, 2 }, { 7, 0 }
+	};
+	hxmerge_record_t dest[8] = { };
+
+	const size_t left_count = hxsize(left);
+	const size_t right_count = hxsize(right);
+
+	hxmerge(left, left + left_count, right, right + right_count, dest);
+
+	const hxmerge_record_t expected[] = {
+		{ 1, 0 }, { 1, 1 }, { 3, 0 }, { 3, 1 },
+		{ 5, 0 }, { 5, 1 }, { 5, 2 }, { 7, 0 }
+	};
+	for(size_t i = 0; i < left_count + right_count; ++i) {
+		EXPECT_EQ(dest[i].key, expected[i].key);
+		EXPECT_EQ(dest[i].ticket, expected[i].ticket);
+	}
+}
+
+TEST(hxbinary_search_test, simple_case) {
+	int ints[5] = { 2, 5, 6, 88, 99 };
+	int* ints_end = ints+5;
+
+	// hxbinary_search returns end when not found.
+	int* result = hxbinary_search(ints, ints+5, 88, sort_int);
+	EXPECT_TRUE(result != ints_end && *result == 88);
+	const int* cresult = hxbinary_search((const int*)ints, (const int*)ints+5, 2, sort_int);
+	EXPECT_TRUE(cresult != ints_end && *cresult == 2);
+	cresult = hxbinary_search((const int*)ints, (const int*)ints+5, 99);
+	EXPECT_TRUE(cresult != ints_end && *cresult == 99);
+
+	result = hxbinary_search(ints, ints+5, 0);
+	EXPECT_TRUE(result == ints_end);
+	result = hxbinary_search(ints, ints+5, 100);
+	EXPECT_TRUE(result == ints_end);
+	result = hxbinary_search(ints, ints+5, 7);
+	EXPECT_TRUE(result == ints_end);
+
+	// Empty range returns end.
+	result = hxbinary_search(ints, ints, 11, sort_int); // Zero size.
+	EXPECT_TRUE(result == ints);
+}
+
+TEST(hxbinary_search_test, binary_search_grinder) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	hxrandom rng(4);
+	hxarray<sort_api_t> sorted; sorted.reserve(100);
+
+	for(int i=100; i--; ) {
+		int x = rng.range(0, 100);
+		sorted.push_back(sort_api_t(x));
+	}
+	hxsort(sorted.begin(), sorted.end());
+
+	for(size_t i=100u; i--; ) {
+		sort_api_t t = hxmove(sorted[i]); // Don't pass an address that is in the array.
+		sort_api_t* ptr = hxbinary_search(sorted.begin(), sorted.end(), t);
+		// Assert logical equivalence without using ==. The sort_api_t* may point
+		// elsewhere.
+		EXPECT_TRUE(!(*ptr < t) && !(t < *ptr));
+	}
+}
+
+TEST(hxsort_test, iterator_support) {
 	do_sort_iter_case([](sort_iter_api_t begin_, sort_iter_api_t end_, const auto& less_) {
 		hxinsertion_sort(begin_, end_, less_);
 	});
@@ -309,7 +302,7 @@ TEST(hxsort_iter_test, iterator_support) {
 }
 #endif // HX_CPLUSPLUS >= 201402L
 
-TEST(hxsort_iter_test, hxmerge_iterator_support) {
+TEST(hxsort_test, hxmerge_iterator_support) {
 	sort_api_t left_[3] = { sort_api_t(1), sort_api_t(3), sort_api_t(5) };
 	sort_api_t right_[3] = { sort_api_t(2), sort_api_t(4), sort_api_t(6) };
 	sort_api_t dest_[6] = {
@@ -344,7 +337,7 @@ TEST(hxsort_iter_test, hxmerge_iterator_support) {
 	}
 }
 
-TEST(hxsort_iter_test, hxbinary_search_iterator_support) {
+TEST(hxsort_test, hxbinary_search_iterator_support) {
 	sort_api_t values_[7] = {
 		sort_api_t(-5), sort_api_t(-1), sort_api_t(0), sort_api_t(3),
 		sort_api_t(5), sort_api_t(8), sort_api_t(12)
@@ -442,25 +435,5 @@ TEST(hxsort_test, sort_grinder_generic) {
 			EXPECT_EQ(histogram[j], 0);
 		}
 		sorted.clear();
-	}
-}
-
-TEST(hxbinary_search_test, binary_search_grinder) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
-	hxrandom rng(4);
-	hxarray<sort_api_t> sorted; sorted.reserve(100);
-
-	for(int i=100; i--; ) {
-		int x = rng.range(0, 100);
-		sorted.push_back(sort_api_t(x));
-	}
-	hxsort(sorted.begin(), sorted.end());
-
-	for(size_t i=100u; i--; ) {
-		sort_api_t t = (sort_api_t&&)sorted[i]; // Don't pass an address that is in the array.
-		sort_api_t* ptr = hxbinary_search(sorted.begin(), sorted.end(), t);
-		// Assert logical equivalence without using ==. The sort_api_t* may point
-		// elsewhere.
-		EXPECT_TRUE(!(*ptr < t) && !(t < *ptr));
 	}
 }

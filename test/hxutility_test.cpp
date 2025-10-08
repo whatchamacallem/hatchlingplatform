@@ -139,7 +139,15 @@ hxforward_value_kind hxforward_forward_through_template_(T_&& value_) {
 
 } // namespace
 
-TEST(hxforward, forwards) {
+TEST(hxutility_test, hxabs_double) {
+	const double negative = -42.75;
+	const double positive = 42.75;
+	EXPECT_DOUBLE_EQ(hxabs(negative), positive);
+	EXPECT_DOUBLE_EQ(hxabs(positive), positive);
+	EXPECT_DOUBLE_EQ(hxabs(-0.0), -0.0);
+}
+
+TEST(hxutility_test, hxforward) {
 	EXPECT_EQ(hxforward_value_kind_rvalue,
 		hxforward_detect_(hxforward<hxforwarded_t_>(hxforward_make_forwarded_())));
 
@@ -246,7 +254,7 @@ TEST(hxutility_test, hxswap_memcpy) {
 	EXPECT_EQ(second.second, 2);
 }
 
-TEST(hxisspace, compare_with_standard) {
+TEST(hxutility_test, hxisspace) {
 	// Don't use non-ASCII or setlocale because it might not exist.
 
 	for (int c = 0; c < 128; ++c) {
@@ -260,7 +268,7 @@ TEST(hxisspace, compare_with_standard) {
 	}
 }
 
-TEST(hxisgraph, compare_with_standard) {
+TEST(hxutility_test, hxisgraph) {
 	// Don't use non-ASCII or setlocale because it might not exist.
 
 	for (int c = 0; c <= 255; ++c) {

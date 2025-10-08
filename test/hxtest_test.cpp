@@ -35,19 +35,19 @@ void hxtest_relational_(T a, T b) {
 
 } // namespace {
 
-TEST(hxtest_macros, relational) {
+TEST(hxtest_test, relational) {
 	hxtest_relational_<int>(-1, 0);
 	hxtest_relational_<long>(-5, -4);
 	hxtest_relational_<long long>(-9, -8);
 	hxtest_relational_<unsigned int>(1u, 2u);
 	hxtest_relational_<unsigned long>(5ul, 6ul);
 	hxtest_relational_<unsigned long long>(11ull, 12ull);
-	hxtest_relational_<int8_t>(static_cast<int8_t>(-12), static_cast<int8_t>(-11));
-	hxtest_relational_<uint8_t>(static_cast<uint8_t>(3), static_cast<uint8_t>(4));
-	hxtest_relational_<int16_t>(static_cast<int16_t>(-301), static_cast<int16_t>(-300));
-	hxtest_relational_<uint16_t>(static_cast<uint16_t>(7), static_cast<uint16_t>(8));
-	hxtest_relational_<int32_t>(static_cast<int32_t>(-70001), static_cast<int32_t>(-70000));
-	hxtest_relational_<uint32_t>(static_cast<uint32_t>(100), static_cast<uint32_t>(101));
+	hxtest_relational_<int8_t>((int8_t)-12, (int8_t)-11);
+	hxtest_relational_<uint8_t>((uint8_t)3, (uint8_t)4);
+	hxtest_relational_<int16_t>((int16_t)-301, (int16_t)-300);
+	hxtest_relational_<uint16_t>((uint16_t)7, (uint16_t)8);
+	hxtest_relational_<int32_t>((int32_t)-70001, (int32_t)-70000);
+	hxtest_relational_<uint32_t>((uint32_t)100, (uint32_t)101);
 	hxtest_relational_<float>(-0.00002f, -0.00001f);
 	hxtest_relational_<double>(0.0, 1.0);
 
@@ -56,7 +56,7 @@ TEST(hxtest_macros, relational) {
 }
 
 // These avoid knowing anything about the implementation.
-TEST(hxtest_macros, float_eq) {
+TEST(hxtest_test, float_eq) {
 	const float third = 1.0f / 3.0f;
 	ASSERT_FLOAT_EQ(third + third + third, 1.0f);
 
@@ -72,7 +72,7 @@ TEST(hxtest_macros, float_eq) {
 	ASSERT_FLOAT_EQ(a * a, 0.01f);
 }
 
-TEST(hxtest_macros, double_eq) {
+TEST(hxtest_test, double_eq) {
 	const double third = 1.0 / 3.0;
 	ASSERT_DOUBLE_EQ(third + third + third, 1.0);
 
@@ -88,41 +88,27 @@ TEST(hxtest_macros, double_eq) {
 	ASSERT_DOUBLE_EQ(a * a, 0.01);
 }
 
-TEST(hxabs, double_values) {
-	const double negative = -42.75;
-	const double positive = 42.75;
-	EXPECT_DOUBLE_EQ(hxabs(negative), positive);
-	EXPECT_DOUBLE_EQ(hxabs(positive), positive);
-	EXPECT_DOUBLE_EQ(hxabs(-0.0), -0.0);
-}
-
 // Run all the C tests.
-TEST(hxctest, all_tests) {
+TEST(hxtest_test, all_tests) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	EXPECT_TRUE(hxctest_all());
 }
 
-// Verify that new and delete plausibly exist and that hxnullptr compiles.
-TEST(hxnew, smoketest) {
-	unsigned int* t = new unsigned int(3);
-	ASSERT_TRUE(t);
-	hxassertrelease(t, "new"); // Should be impossible.
-	*t = 0xdeadbeefu;
-	delete t;
-	t = hxnullptr;
-	ASSERT_FALSE(t);
+// Another "nothing asserted" test case.
+TEST(hxtest_test, succeed) {
+	SUCCEED();
 }
 
 // These two tests exercise the test framework by failing.
 #if HX_TEST_ERROR_HANDLING
-TEST(death_test, fail) {
+TEST(hxtest_error_handling, fail) {
 	hxlog("EXPECTING_TEST_FAILURE\n");
 	SUCCEED();
 	FAIL();
 	hxassertrelease(0, "internal_error FAIL() did not return");
 }
 
-TEST(death_test, add_failure) {
+TEST(hxtest_error_handling, add_failure) {
 	hxlog("EXPECTING_TEST_FAILURE\n");
 	SUCCEED();
 	for(int i = 10; i--;) {
@@ -130,18 +116,13 @@ TEST(death_test, add_failure) {
 	}
 }
 
-TEST(death_test, add_failure_at) {
+TEST(hxtest_error_handling, add_failure_at) {
 	hxlog("EXPECTING_TEST_FAILURE\n");
 	SUCCEED();
 	ADD_FAILURE_AT("fake_file.cpp", 10000) << "This message is also intentionally blank.\n";
 }
 
-TEST(death_test, nothing_asserted) {
+TEST(hxtest_error_handling, nothing_asserted) {
 	hxlog("EXPECTING_TEST_FAILURE\n");
 }
 #endif
-
-// Another "nothing asserted" test case.
-TEST(death_test, succeed) {
-	SUCCEED();
-}

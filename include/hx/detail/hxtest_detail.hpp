@@ -6,12 +6,20 @@
 #include "../hxfile.hpp"
 #include "../hxsort.hpp"
 
-static_assert(!HX_USE_GOOGLE_TEST, "Do not include this file directly.");
+static_assert(!HX_USE_GOOGLE_TEST, "Internal. Do not include this file directly.");
 
 namespace hxdetail_ {
 
+// Internal. 4 ULPs float comparison.
 bool hxtest_float_eq_(float a_, float b_);
+
+// Internal. 4 ULPs double comparison.
 bool hxtest_double_eq_(double a_, double b_);
+
+// Internal. A strcmp wrapper. This would crash anyway. The macro adds a console
+// diagnostic and a breakpoint on the right line.
+#define hxtest_str_eq_(a_, b_) \
+	(hxassertrelease((a_) && (b_), "strcmp Null arg."), ::strcmp((a_), (b_))==0)
 
 // hxtest_case_interface_ - Internal. Used to interrogate and dispatch tests.
 class hxtest_case_interface_ {

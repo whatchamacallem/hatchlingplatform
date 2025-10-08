@@ -209,9 +209,9 @@ inline void InitGoogleTest(void) { }
 /// `void EXPECT_DOUBLE_EQ(double a, double b)` - Requires doubles for equality within a scaled tolerance.
 #define EXPECT_DOUBLE_EQ(a_, b_) hxtest_::dispatcher_().condition_check_(hxtest_double_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " ~= " #b_, false)
 /// `void EXPECT_STREQ(const char* a, const char* b)` - Requires that two C strings are equal, without checking null pointers.
-#define EXPECT_STREQ(a_, b_) hxtest_::dispatcher_().condition_check_(::strcmp((a_), (b_)) == 0, __FILE__, __LINE__, #a_ " == " #b_, false)
+#define EXPECT_STREQ(a_, b_) hxtest_::dispatcher_().condition_check_(hxtest_str_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " == " #b_, false)
 /// `void EXPECT_STRNE(const char* a, const char* b)` - Requires that two C strings differ, without checking null pointers.
-#define EXPECT_STRNE(a_, b_) hxtest_::dispatcher_().condition_check_(::strcmp((a_), (b_)) != 0, __FILE__, __LINE__, #a_ " != " #b_, false)
+#define EXPECT_STRNE(a_, b_) hxtest_::dispatcher_().condition_check_(!hxtest_str_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " != " #b_, false)
 /// `void ASSERT_TRUE(bool)` - Requires that the condition is true.
 #define ASSERT_TRUE(x_) hxtest_::dispatcher_().condition_check_((x_), __FILE__, __LINE__, #x_, true)
 /// `void ASSERT_FALSE(bool)` - Requires that the condition is false.
@@ -240,8 +240,8 @@ inline void InitGoogleTest(void) { }
 /// `void ASSERT_DOUBLE_EQ(double a, double b)` - Requires doubles for equality within a scaled tolerance.
 #define ASSERT_DOUBLE_EQ(a_, b_) hxtest_::dispatcher_().condition_check_(hxtest_double_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " ~= " #b_, true)
 /// `void ASSERT_STREQ(const char* a, const char* b)` - Requires that two C strings are equal, without checking null pointers.
-#define ASSERT_STREQ(a_, b_) hxtest_::dispatcher_().condition_check_(::strcmp((a_), (b_)) == 0, __FILE__, __LINE__, #a_ " == " #b_, true)
+#define ASSERT_STREQ(a_, b_) hxtest_::dispatcher_().condition_check_(hxtest_str_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " == " #b_, true)
 /// `void ASSERT_STRNE(const char* a, const char* b)` - Requires that two C strings differ, without checking null pointers.
-#define ASSERT_STRNE(a_, b_) hxtest_::dispatcher_().condition_check_(::strcmp((a_), (b_)) != 0, __FILE__, __LINE__, #a_ " != " #b_, true)
+#define ASSERT_STRNE(a_, b_) hxtest_::dispatcher_().condition_check_(hxtest_str_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " != " #b_, true)
 
 #endif // !HX_USE_GOOGLE_TEST

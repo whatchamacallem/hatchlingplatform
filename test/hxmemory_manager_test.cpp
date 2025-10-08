@@ -11,7 +11,18 @@ HX_REGISTER_FILENAME_HASH
 // macros. Memory corruption sounds fatal, so that seems appropriate. Some of
 // these tests are designed to fail and use EXPECT_* for those specific cases.
 
-TEST(hxmemory_manager_test_fn, bytes) {
+// Verify that new and delete plausibly exist and that hxnullptr compiles.
+TEST(hxmemory_manager_test, hxnew) {
+	unsigned int* t = new unsigned int(3);
+	ASSERT_TRUE(t);
+	hxassertrelease(t, "new"); // Should be impossible.
+	*t = 0xdeadbeefu;
+	delete t;
+	t = hxnullptr;
+	ASSERT_FALSE(t);
+}
+
+TEST(hxmemory_manager_test, bytes) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	for(size_t i=10u; i--;) {
 		void* p = hxmalloc(i);
@@ -21,11 +32,25 @@ TEST(hxmemory_manager_test_fn, bytes) {
 	}
 }
 
-TEST(hxmemory_manager_test_fn, string_duplicate) {
+TEST(hxmemory_manager_test, string_duplicate) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	char* p = hxstring_duplicate("str");
 	ASSERT_TRUE(p != hxnull);
-	ASSERT_TRUE(::strcmp(p, "str") == 0);
+	EXPECT_STREQ(p, "str");
+	hxfree(p);
+}
+
+TEST(hxmemory_manager_test, temp_overflow) {
+	hxlogconsole("EXPECTING_TEST_WARNINGS\n");
+
+	// There is no policy against using the debug heap in release.
+	void* p = hxmalloc_ext(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1, hxsystem_allocator_temporary_stack, 0u);
+	ASSERT_TRUE(p != hxnull);
+	hxfree(p);
+
+	hxsystem_allocator_scope temp(hxsystem_allocator_temporary_stack);
+	p = hxmalloc(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1);
+	ASSERT_TRUE(p != hxnull);
 	hxfree(p);
 }
 
@@ -33,7 +58,7 @@ TEST(hxmemory_manager_test_fn, string_duplicate) {
 
 // This test case documents a contract between the system allocators and the
 // rest of the program.
-class hxmemory_manager_test :
+class hxmemory_manager_test_f :
 	public testing::Test
 {
 public:
@@ -136,7 +161,7 @@ public:
 	}
 };
 
-TEST_F(hxmemory_manager_test, execute) {
+TEST_F(hxmemory_manager_test_f, execute) {
 	// The API should still work while stubbed out.
 	for(size_t i = 0; i < hxsystem_allocator_current; ++i) {
 		test_memory_allocator_normal((hxsystem_allocator_t)i);
@@ -145,23 +170,10 @@ TEST_F(hxmemory_manager_test, execute) {
 	// Leak checking requires the memory manager.
 #if !(HX_MEMORY_MANAGER_DISABLE)
 	hxlog("EXPECTING_TEST_FAILURE\n");
-	// Only the temporary stack expects all allocations to be freed.
+
+	// Only the temporary stack asserts all allocations are to be freed.
 	test_memory_allocator_leak();
 #endif
-}
-
-TEST(hxmemory_manager_test_fn, temp_overflow) {
-	hxlogconsole("EXPECTING_TEST_WARNINGS\n");
-
-	// There is no policy against using the debug heap in release.
-	void* p = hxmalloc_ext(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1, hxsystem_allocator_temporary_stack, 0u);
-	ASSERT_TRUE(p != hxnull);
-	hxfree(p);
-
-	hxsystem_allocator_scope temp(hxsystem_allocator_temporary_stack);
-	p = hxmalloc(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1);
-	ASSERT_TRUE(p != hxnull);
-	hxfree(p);
 }
 
 #endif // !HX_MEMORY_MANAGER_DISABLE

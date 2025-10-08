@@ -311,7 +311,7 @@ TEST_F(hxhash_table_test, strings) {
 		table_t table;
 
 		for(int i = sz; i--;) {
-			EXPECT_TRUE(::strcmp(table[colors[i]].key(), colors[i]) == 0);
+			EXPECT_STREQ(table[colors[i]].key(), colors[i]);
 		}
 		EXPECT_TRUE(table.find("Cyan") != hxnull);
 		EXPECT_TRUE(table.find("Pink") == hxnull);
