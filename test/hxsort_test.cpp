@@ -12,14 +12,6 @@
 #include <stdio.h>
 
 HX_REGISTER_FILENAME_HASH
-struct hxmerge_record_t {
-	int key;
-	int ticket;
-
-	bool operator<(const hxmerge_record_t& other_) const {
-		return key < other_.key;
-	}
-};
 
 // Run some simple integer tests first.
 static bool sort_int(int a, int b) {
@@ -219,21 +211,30 @@ TEST(hxsort_test, sort_int_case) {
 	do_sort_int_case(hxsort<int*, bool (*)(int, int)>);
 }
 
-TEST(hxmergesort_test, preserves_stable_ordering) {
-	hxmerge_record_t left[] = {
+TEST(hxmerge_test, preserves_stable_ordering) {
+	struct hxmerge_test_record_t {
+		int key;
+		int ticket;
+
+		bool operator<(const hxmerge_test_record_t& other_) const {
+			return key < other_.key;
+		}
+	};
+
+	hxmerge_test_record_t left[] = {
 		{ 1, 0 }, { 3, 0 }, { 5, 0 }, { 5, 1 }
 	};
-	hxmerge_record_t right[] = {
+	hxmerge_test_record_t right[] = {
 		{ 1, 1 }, { 3, 1 }, { 5, 2 }, { 7, 0 }
 	};
-	hxmerge_record_t dest[8] = { };
+	hxmerge_test_record_t dest[8] = { };
 
 	const size_t left_count = hxsize(left);
 	const size_t right_count = hxsize(right);
 
 	hxmerge(left, left + left_count, right, right + right_count, dest);
 
-	const hxmerge_record_t expected[] = {
+	const hxmerge_test_record_t expected[] = {
 		{ 1, 0 }, { 1, 1 }, { 3, 0 }, { 3, 1 },
 		{ 5, 0 }, { 5, 1 }, { 5, 2 }, { 7, 0 }
 	};

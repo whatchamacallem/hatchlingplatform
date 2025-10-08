@@ -8,17 +8,6 @@
 
 HX_REGISTER_FILENAME_HASH
 
-namespace {
-
-struct hxfile_test_record {
-	uint32_t a;
-	int16_t b;
-	uint8_t c;
-	int8_t d;
-};
-
-} // namespace
-
 #if defined __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
@@ -90,6 +79,14 @@ TEST(hxfile_test, seek_and_read_maintain_state) {
 
 TEST(hxfile_test, move_copy_and_stream_operators) {
 	// Write a test file and exercise the copy operators.
+
+	class hxfile_test_record {
+	public:
+		uint32_t a;
+		int16_t b;
+		uint8_t c;
+		int8_t d;
+	};
 
 	// C++17 uses "guaranteed copy elision," requiring hxmove here to invoke the
 	// constructor from a temporary correctly.

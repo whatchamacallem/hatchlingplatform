@@ -121,16 +121,17 @@ enum hxforward_value_kind {
 	hxforward_value_kind_const_rvalue
 };
 
-struct hxforwarded_t_ {
+class hxutility_test_forward_t_ {
+public:
 	int value;
 };
 
-hxforwarded_t_ hxforward_make_forwarded_() { return { 11 }; }
-const hxforwarded_t_ hxforward_make_const_forwarded_() { return { 13 }; }
-hxforward_value_kind hxforward_detect_(hxforwarded_t_&) { return hxforward_value_kind_lvalue; }
-hxforward_value_kind hxforward_detect_(const hxforwarded_t_&) { return hxforward_value_kind_const_lvalue; }
-hxforward_value_kind hxforward_detect_(hxforwarded_t_&&) { return hxforward_value_kind_rvalue; }
-hxforward_value_kind hxforward_detect_(const hxforwarded_t_&&) { return hxforward_value_kind_const_rvalue; }
+hxutility_test_forward_t_ hxforward_make_forwarded_() { return { 11 }; }
+const hxutility_test_forward_t_ hxforward_make_const_forwarded_() { return { 13 }; }
+hxforward_value_kind hxforward_detect_(hxutility_test_forward_t_&) { return hxforward_value_kind_lvalue; }
+hxforward_value_kind hxforward_detect_(const hxutility_test_forward_t_&) { return hxforward_value_kind_const_lvalue; }
+hxforward_value_kind hxforward_detect_(hxutility_test_forward_t_&&) { return hxforward_value_kind_rvalue; }
+hxforward_value_kind hxforward_detect_(const hxutility_test_forward_t_&&) { return hxforward_value_kind_const_rvalue; }
 
 template<typename T_>
 hxforward_value_kind hxforward_forward_through_template_(T_&& value_) {
@@ -149,26 +150,26 @@ TEST(hxutility_test, hxabs_double) {
 
 TEST(hxutility_test, hxforward) {
 	EXPECT_EQ(hxforward_value_kind_rvalue,
-		hxforward_detect_(hxforward<hxforwarded_t_>(hxforward_make_forwarded_())));
+		hxforward_detect_(hxforward<hxutility_test_forward_t_>(hxforward_make_forwarded_())));
 
 	EXPECT_EQ(hxforward_value_kind_const_rvalue,
-		hxforward_detect_(hxforward<const hxforwarded_t_>(hxforward_make_const_forwarded_())));
+		hxforward_detect_(hxforward<const hxutility_test_forward_t_>(hxforward_make_const_forwarded_())));
 
-	hxforwarded_t_ lvalue = { 7 };
+	hxutility_test_forward_t_ lvalue = { 7 };
 	EXPECT_EQ(hxforward_value_kind_lvalue, hxforward_forward_through_template_(lvalue));
 
-	const hxforwarded_t_ const_lvalue = { 9 };
+	const hxutility_test_forward_t_ const_lvalue = { 9 };
 	EXPECT_EQ(hxforward_value_kind_const_lvalue,
 		hxforward_forward_through_template_(const_lvalue));
 
 	EXPECT_EQ(hxforward_value_kind_rvalue,
 		hxforward_forward_through_template_(hxforward_make_forwarded_()));
 
-	hxforwarded_t_ movable_value = { 17 };
+	hxutility_test_forward_t_ movable_value = { 17 };
 	EXPECT_EQ(hxforward_value_kind_rvalue,
 		hxforward_forward_through_template_(hxmove(movable_value)));
 
-	const hxforwarded_t_ const_movable_value = { 19 };
+	const hxutility_test_forward_t_ const_movable_value = { 19 };
 	EXPECT_EQ(hxforward_value_kind_const_rvalue,
 		hxforward_forward_through_template_(hxmove(const_movable_value)));
 }

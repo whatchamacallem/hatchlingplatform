@@ -68,7 +68,8 @@ public:
 	int32_t m_next_id;
 };
 
-struct hxarray_test_move_tracker {
+class hxarray_test_move_tracker {
+public:
 	int32_t value;
 	bool moved_from;
 
