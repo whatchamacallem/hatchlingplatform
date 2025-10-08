@@ -28,8 +28,8 @@ public:
 	}
 
 	~hxstringstream(void) {
-		// Check the guard '\0' byte at the end of the array.
-		hxassert(!m_end_capacity_ || m_end_capacity_[0] == '\0');
+		// Use the last byte as a guard word.
+		hxassert(!m_end_capacity_ || *(m_end_capacity_ - 1) == '\0');
 	}
 
 	void operator=(hxstringstream&& other_) {
@@ -67,10 +67,11 @@ public:
 		return true;
 	}
 
-	// This is for reading binary data and not scanning text data. May read
-	// embedded '\0'. Does not '\0'-terminate the sequence of bytes read unless
-	// the `\0` at the end of the string is requested. Does not perform a
-	// partial read. Allows reading the '\0' at the end of the string.
+	// This is for reading binary data and not scanning text data. It may be
+	// used to read the trailing '\0' at the end of the string. Any other
+	// embedded '\0' characters will be copied as well. Does not '\0'-terminate
+	// the sequence of bytes read unless the `\0` at the end of the string is
+	// requested. Does not perform a partial read.
 	size_t read(char* bytes_, size_t count_) hxattr_nonnull(2) hxattr_hot {
 		hxassertmsg(this->data(), "hxstringstream Not allocated.");
 
@@ -87,14 +88,17 @@ public:
 	}
 
 	/// Writes an array of `count` characters of binary data. Any included '\0'
-	/// characters will be embedded in the stream. As a non-standard extension,
-	/// a '\0' will be appended if the end of the string stream is written to or
-	/// overwritten. Room is required for the trailing '\0'.
+	/// characters will be embedded in the stream. A '\0' will be appended
+	/// beyond the end of the string if the end of the string is written to or
+	/// overwritten. Capacity is required for the trailing '\0', however it is
+	/// not include in the size and is pointed to by the `hxstringstream::end`
+	/// iterator and will be overwritten by the next write.
 	size_t write(const char* bytes_, size_t count_) hxattr_nonnull(2) hxattr_hot {
 		hxassertmsg(this->data(), "hxstringstream Not allocated.");
 
-		size_t available_capacity = (size_t)(m_end_capacity_ - m_position_);
-		if(count_ > available_capacity) {
+		size_t available_capacity_ = (size_t)(m_end_capacity_ - m_position_);
+		// Equal length is a problem due to the '\0'.
+		if(count_ >= available_capacity_) {
 			m_failed_ = true;
 			return 0u;
 		}
@@ -140,11 +144,10 @@ public:
 			m_position_ = this->data();
 			if(m_position_ != hxnull) {
 				m_position_[0] = '\0';
-				m_end_capacity_ = m_position_ + this->capacity() - 1;
-#if HX_RELEASE == 0
-				// This a second guard byte at the end of the array.
-				m_end_capacity_[0] = '\0';
-#endif
+				m_end_capacity_ = m_position_ + this->capacity();
+				// This is in case vsnprintf stops printing right before the last
+				// character and does not add a '\0'.
+				*(m_end_capacity_ - 1) = '\0';
 			}
 		}
 	}
@@ -155,19 +158,19 @@ public:
 
 private:
 	hxstringstream& write_fundamental_(const char* format_, ...) {
-		const size_t available_capacity = (size_t)(m_end_capacity_ - m_position_);
+		const size_t available_capacity_ = (size_t)(m_end_capacity_ - m_position_);
+		hxassert(available_capacity_ > 0u); // Room for trailing '\0' remains.
 		va_list args_;
 		va_start(args_, format_);
-		const int count_ = ::vsnprintf(m_position_, available_capacity, format_, args_);
+		const int count_ = ::vsnprintf(m_position_, available_capacity_, format_, args_);
 		va_end(args_);
-		if(count_ > 0) {
-			m_position_ += count_;
-			hxassert(*m_position_ == '\0'); // vsnprintf added a NUL.
-			this->m_end_ = m_position_;
-		}
-		else {
+		if((size_t)count_ >= available_capacity_) {
 			m_failed_ = true;
+			return *this;
 		}
+		m_position_ += (size_t)count_;
+		hxassert(*m_position_ == '\0'); // vsnprintf added a NUL.
+		this->m_end_ = m_position_;
 		return *this;
 	}
 

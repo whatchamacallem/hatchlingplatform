@@ -3,10 +3,9 @@
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
 #include <hx/hxstringstream.hpp>
+#include <hx/hxstringstream.hpp>
 #include <hx/hxtest.hpp>
-#include <hx/hxutility.h>
 
-#include <string.h>
 
 HX_REGISTER_FILENAME_HASH
 
@@ -66,6 +65,6 @@ TEST(hxstringstream_test, insertion_uses_full_available_capacity) {
 	EXPECT_STREQ(stream.data(), "1234567");
 
 	stream.clear();
-	stream << 123456789u; // Would require nine data bytes; only seven are available.
+	stream << 12345678u; // Would require 8 non-NULL bytes; only seven are available.
 	EXPECT_TRUE(stream.fail());
 }
