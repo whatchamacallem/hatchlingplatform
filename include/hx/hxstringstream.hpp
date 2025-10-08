@@ -10,10 +10,11 @@
 #include <stdio.h>
 
 /// A `hxstringstream` with a non-zero capacity always contains a valid '\0'
-/// terminated C-style string. This is because all modification is required to
-/// preserve the '\0' terminator at the end of the string. However reads and
-/// writes are possible before the end of the string. A successful read of the
-/// final character does not set `eof`.
+/// terminated C-style string. The '\0' is not included in the size and is
+/// pointed directly to by the `hxstringstream::end` iterator. All modification
+/// is required to preserve the '\0' termination of the string.
+/// However reads and writes are possible before the end of the string. A
+/// successful read of the final character does not set `eof`.
 template<size_t capacity_=hxallocator_dynamic_capacity>
 class hxstringstream : public hxarray<char, capacity_> {
 public:
@@ -27,7 +28,8 @@ public:
 	}
 
 	~hxstringstream(void) {
-		hxassert(m_end_capacity_[0] == '\0'); // Guard byte.
+		// Check the guard '\0' byte at the end of the array.
+		hxassert(!m_end_capacity_ || m_end_capacity_[0] == '\0');
 	}
 
 	void operator=(hxstringstream&& other_) {
@@ -65,13 +67,15 @@ public:
 		return true;
 	}
 
-	// Does not '\0'-terminate the sequence of bytes read. Does not perform a
-	// partial read. This is for reading binary data and not scanning text data.
+	// This is for reading binary data and not scanning text data. May read
+	// embedded '\0'. Does not '\0'-terminate the sequence of bytes read unless
+	// the `\0` at the end of the string is requested. Does not perform a
+	// partial read. Allows reading the '\0' at the end of the string.
 	size_t read(char* bytes_, size_t count_) hxattr_nonnull(2) hxattr_hot {
 		hxassertmsg(this->data(), "hxstringstream Not allocated.");
 
-		// May or may not read '\0'.
-		size_t available_ = (size_t)(this->m_end_ - m_position_);
+		// Allow reading size + 1 because of the '\0'.
+		size_t available_ = (size_t)(this->m_end_ - m_position_) + 1u;
 		if(count_ > available_) {
 			m_failed_ = true;
 			m_eof_ = true;
@@ -134,10 +138,14 @@ public:
 		if(m_position_ == hxnull) {
 			// Reading and writing start at the beginning of a '\0'-terminated string.
 			m_position_ = this->data();
-			m_position_[0] = '\0';
-			// This adds a second guard byte at the end of the array.
-			m_end_capacity_ = m_position_ + this->capacity() - 1;
-			m_end_capacity_[0] = '\0';
+			if(m_position_ != hxnull) {
+				m_position_[0] = '\0';
+				m_end_capacity_ = m_position_ + this->capacity() - 1;
+#if HX_RELEASE == 0
+				// This a second guard byte at the end of the array.
+				m_end_capacity_[0] = '\0';
+#endif
+			}
 		}
 	}
 
