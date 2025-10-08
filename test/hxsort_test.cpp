@@ -7,10 +7,6 @@
 #include <hx/hxarray.hpp>
 #include <hx/hxtest.hpp>
 
-#include <limits.h>
-#include <stddef.h>
-#include <stdio.h>
-
 HX_REGISTER_FILENAME_HASH
 
 // Run some simple integer tests first.

@@ -7,8 +7,6 @@
 
 #include "hxctest.h"
 
-#include <ctype.h>
-
 HX_REGISTER_FILENAME_HASH
 
 namespace {

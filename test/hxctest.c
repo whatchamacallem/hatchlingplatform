@@ -6,8 +6,8 @@
 
 #include "hxctest.h"
 
+// This is not a normal dependency of Hatchling Platform.
 #include <stdio.h>
-
 
 // Make sure this all compiles and runs in C99.
 bool hxctest_hatchling_h(void) {

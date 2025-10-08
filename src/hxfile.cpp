@@ -7,6 +7,8 @@
 
 #include "../include/hx/hxfile.hpp"
 
+// These are only dependencies of the Hatchling Platform here. This is to allow
+// reimplementation.
 #include <stdio.h>
 #include <errno.h>
 

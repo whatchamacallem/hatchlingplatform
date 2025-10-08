@@ -10,9 +10,6 @@
 
 #include "hxctest.h"
 
-// Nothing else in hx depends on this.
-#include <ctype.h>
-
 HX_REGISTER_FILENAME_HASH
 
 int hxtest_main(int argc, char**argv);

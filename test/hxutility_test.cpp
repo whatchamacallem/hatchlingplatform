@@ -5,9 +5,8 @@
 #include <hx/hxutility.h>
 #include <hx/hxtest.hpp>
 
-#include <stdint.h>
+// This is not a normal dependency of Hatchling Platform.
 #include <ctype.h>
-#include <string.h>
 
 HX_REGISTER_FILENAME_HASH
 
