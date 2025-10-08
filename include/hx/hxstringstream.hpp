@@ -5,19 +5,33 @@
 
 #include "hatchling.h"
 #include "hxarray.hpp"
-#include "hxutility.h"
-
 #include <stdio.h>
 
-/// A `hxstringstream` with a non-zero capacity always contains a valid '\0'
-/// terminated C-style string. The '\0' is not included in the size and is
-/// pointed directly to by the `hxstringstream::end` iterator. All modification
-/// is required to preserve the '\0' termination of the string.
-/// However reads and writes are possible before the end of the string. A
-/// successful read of the final character does not set `eof`.
+/// Provides a `std::stringstream` style file wrapper around a C-style string.
+/// Allows for formatted I/O using the `<<` and `>>` operators. `hxstringstream`
+/// is intended for composing strings before submitting them to something like
+/// hxfile that has more overhead. A `hxstringstream` with a non-zero capacity
+/// always contains a valid '\0' terminated C-style string. The '\0' is not
+/// included in the size and is pointed directly to by the `hxstringstream::end`
+/// iterator. All modification is required to preserve the '\0' termination of
+/// the string. However, reads and writes are possible before the end of the
+/// string. A successful read of the final `\0` is allowed and does not set
+/// `eof`. Writing in the middle of the stream will truncate it which is
+/// non-standard.
 template<size_t capacity_=hxallocator_dynamic_capacity>
-class hxstringstream : public hxarray<char, capacity_> {
+class hxstringstream : private hxarray<char, capacity_> {
 public:
+	/// A "narrow" UTF-8 character. See hxis_space for UTF-8 handling.
+	using char_t_ = char;
+
+	/// Used to store a C-style string.
+	using string_t_ = hxarray<char, capacity_>;
+
+	using string_t_::front;
+	using string_t_::back;
+	using string_t_::data;
+	using string_t_::size;
+
 	hxstringstream(void) {
 		::memset((void*)this, 0, sizeof(*this));
 	}
@@ -114,7 +128,8 @@ public:
 
 	template<size_t buffer_size_>
 	bool getline(char(&buffer_)[buffer_size_]);
-	bool getline(char* buffer_, int buffer_size_) hxattr_nonnull(2) hxattr_hot;
+
+	bool getline(char* buffer_, int buffer_size_) hxattr_nonnull(2);
 
 	template<size_t string_length_>
 	hxstringstream& operator<<(const char(&str_)[string_length_]) {
@@ -139,17 +154,17 @@ public:
 	hxstringstream& operator<<(long double value_) { return this->write_fundamental_("%Lg", value_); }
 
 	void reserve(size_t size_, hxsystem_allocator_t allocator_=hxsystem_allocator_current) {
-		hxarray<char, capacity_>::reserve(size_, allocator_, sizeof(char));
-		if(m_position_ == hxnull) {
+		// Unfortunately this requires an allocation, calculating 4 pointers and
+		// a check for null.
+		if(size_ && m_position_ == hxnull) {
+			string_t_::reserve(size_, allocator_, sizeof(char));
 			// Reading and writing start at the beginning of a '\0'-terminated string.
 			m_position_ = this->data();
-			if(m_position_ != hxnull) {
-				m_position_[0] = '\0';
-				m_end_capacity_ = m_position_ + this->capacity();
-				// This is in case vsnprintf stops printing right before the last
-				// character and does not add a '\0'.
-				*(m_end_capacity_ - 1) = '\0';
-			}
+			m_position_[0] = '\0';
+			m_end_capacity_ = m_position_ + this->capacity();
+			// This is in case vsnprintf stops printing right before the last
+			// character and does not add a '\0'.
+			*(m_end_capacity_ - 1) = '\0';
 		}
 	}
 
