@@ -41,7 +41,7 @@ typedef uint32_t hxhash_t;
 /// and `checkhash`.
 class hxregister_string_literal_hash {
 public:
-	typedef hxhash_t key_t;
+	using key_t = hxhash_t;
 
 	// permanently adds object to hxstring_literal_hashes_.
 	hxregister_string_literal_hash(const char* str_);
