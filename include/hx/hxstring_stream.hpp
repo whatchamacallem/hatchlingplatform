@@ -7,6 +7,8 @@
 #include "hxarray.hpp"
 #include "hxutility.h"
 
+#include <stdio.h>
+
 /// A valid `hxstring_stream` with a non-zero capacity always contains a valid
 /// '\0' terminated UTF-8 C-style string. That means `*strstr.end() == '\0'` as a
 /// pre-condition and a post-condition of every operation. However reads and
@@ -60,7 +62,7 @@ public:
 	}
 
 	// Does not '\0'-terminate the sequence of bytes read. This is for lower
-	// level use and not reading strings. (TODO.)
+	// level use and not reading strings. (XXX.)
 	size_t read(char* bytes_, size_t count_) hxattr_nonnull(2) hxattr_hot {
 		hxassertmsg((size_t)(m_position_ - this->data()) <= this->size(), "hxstring_stream Invalid read.");
 
@@ -104,6 +106,36 @@ public:
 		return *this;
 	}
 
+	hxstring_stream& operator<<(bool value_) { return this->write_fundamental_("%d", (int)value_); }
+
+	hxstring_stream& operator<<(char value_) { return this->write_fundamental_("%c", (int)value_); }
+
+	hxstring_stream& operator<<(signed char value_) { return this->write_fundamental_("%hhd", (int)value_); }
+
+	hxstring_stream& operator<<(unsigned char value_) { return this->write_fundamental_("%hhu", (unsigned int)value_); }
+
+	hxstring_stream& operator<<(short value_) { return this->write_fundamental_("%hd", (int)value_); }
+
+	hxstring_stream& operator<<(unsigned short value_) { return this->write_fundamental_("%hu", (unsigned int)value_); }
+
+	hxstring_stream& operator<<(int value_) { return this->write_fundamental_("%d", value_); }
+
+	hxstring_stream& operator<<(unsigned int value_) { return this->write_fundamental_("%u", value_); }
+
+	hxstring_stream& operator<<(long value_) { return this->write_fundamental_("%ld", value_); }
+
+	hxstring_stream& operator<<(unsigned long value_) { return this->write_fundamental_("%lu", value_); }
+
+	hxstring_stream& operator<<(long long value_) { return this->write_fundamental_("%lld", value_); }
+
+	hxstring_stream& operator<<(unsigned long long value_) { return this->write_fundamental_("%llu", value_); }
+
+	hxstring_stream& operator<<(float value_) { return this->write_fundamental_("%g", (double)value_); }
+
+	hxstring_stream& operator<<(double value_) { return this->write_fundamental_("%g", value_); }
+
+	hxstring_stream& operator<<(long double value_) { return this->write_fundamental_("%Lg", value_); }
+
 	void reserve(size_t size_, hxsystem_allocator_t allocator_=hxsystem_allocator_current) {
 		hxarray<char, capacity_>::reserve(size_, allocator_, sizeof(char));
 		m_position_ = this->m_end_;
@@ -115,8 +147,19 @@ public:
 	template<typename T_> hxstring_stream& operator>>(const T_* t_) = delete;
 
 private:
+	constexpr size_t numeric_buffer_size_ = 64u;
 	hxarray<char, hxallocator_dynamic_capacity> m_buffer_; // Contains capacity.
 	char* m_position_;
 	bool m_failed_; // Has any error been encountered.
 	bool m_eof_; //
+
+	template<typename... args_t_>
+	hxstring_stream& write_fundamental_(const char* format_, args_t_... args_) {
+		char buffer_[numeric_buffer_size_];
+		const int count_ = ::snprintf(buffer_, numeric_buffer_size_, format_, args_...);
+		if(count_ > 0) {
+			this->write(buffer_, count_);
+		}
+		return *this;
+	}
 };
