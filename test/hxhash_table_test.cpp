@@ -8,26 +8,26 @@
 
 HX_REGISTER_FILENAME_HASH
 
-static class hxhash_table_test* s_hxtest_current = 0;
+static class hxhash_table_test_f* s_hxtest_current = 0;
 
-class hxhash_table_test :
+class hxhash_table_test_f :
 	public testing::Test
 {
 public:
-	class test_object {
+	class hxtest_object {
 	public:
-		test_object(void) {
+		hxtest_object(void) {
 			++s_hxtest_current->m_constructed;
 			id = s_hxtest_current->m_next_id++;
 		}
-		~test_object(void) {
+		~hxtest_object(void) {
 			++s_hxtest_current->m_destructed;
 			id = -1;
 		}
 
-		void operator=(const test_object& x) { id = x.id; }
+		void operator=(const hxtest_object& x) { id = x.id; }
 		void operator=(int32_t x) { id = x; }
-		bool operator==(const test_object& x) const { return id == x.id; }
+		bool operator==(const hxtest_object& x) const { return id == x.id; }
 		bool operator==(int32_t x) const { return id == x; }
 
 		operator float(void) const { return (float)id; }
@@ -38,23 +38,23 @@ public:
 	class hxtest_integer : public hxhash_table_node_integer<int32_t> {
 	public:
 		hxtest_integer(int32_t k) : hxhash_table_node_integer(k) { }
-		test_object value;
+		hxtest_object value;
 	};
 
 	class hxtest_string : public hxhash_table_node_string<hxsystem_allocator_temporary_stack> {
 	public:
 		hxtest_string(const char* k) : hxhash_table_node_string(k) { }
-		test_object value;
+		hxtest_object value;
 	};
 
-	hxhash_table_test(void) {
+	hxhash_table_test_f(void) {
 		hxassert(s_hxtest_current == hxnull);
 		m_constructed = 0;
 		m_destructed = 0;
 		m_next_id = 0;
 		s_hxtest_current = this;
 	}
-	~hxhash_table_test(void) {
+	~hxhash_table_test_f(void) {
 		s_hxtest_current = 0;
 	}
 
@@ -63,7 +63,7 @@ public:
 	int32_t m_next_id;
 };
 
-TEST_F(hxhash_table_test, null) {
+TEST_F(hxhash_table_test_f, null) {
 	{
 		using table_t = hxhash_table<hxtest_integer, 4>;
 		table_t table;
@@ -84,7 +84,7 @@ TEST_F(hxhash_table_test, null) {
 	EXPECT_EQ(m_destructed, 0);
 }
 
-TEST_F(hxhash_table_test, single) {
+TEST_F(hxhash_table_test_f, single) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	static const int k = 77;
@@ -140,10 +140,10 @@ TEST_F(hxhash_table_test, single) {
 	EXPECT_EQ(m_destructed, 2);
 }
 
-TEST_F(hxhash_table_test, map_node_usage) {
+TEST_F(hxhash_table_test_f, map_node_usage) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
-	using map_node_t = hxhash_table_map_node<int32_t, test_object>;
+	using map_node_t = hxhash_table_map_node<int32_t, hxtest_object>;
 	using table_t = hxhash_table<map_node_t, 4>;
 	{
 		table_t table;
@@ -177,7 +177,7 @@ TEST_F(hxhash_table_test, map_node_usage) {
 	EXPECT_EQ(m_destructed, 2);
 }
 
-TEST_F(hxhash_table_test, multiple) {
+TEST_F(hxhash_table_test_f, multiple) {
 	static const int N = 78;
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
@@ -297,7 +297,7 @@ TEST_F(hxhash_table_test, multiple) {
 	EXPECT_EQ(m_destructed, 2*N);
 }
 
-TEST_F(hxhash_table_test, strings) {
+TEST_F(hxhash_table_test_f, strings) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	static const char* colors[] = {

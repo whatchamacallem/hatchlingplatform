@@ -7,7 +7,7 @@
 
 HX_REGISTER_FILENAME_HASH
 
-class hxtask_queue_test :
+class hxtask_queue_test_f :
 	public testing::Test
 {
 public:
@@ -16,11 +16,11 @@ public:
 		max_tasks_ = 20
 	};
 
-	~hxtask_queue_test(void) {
+	~hxtask_queue_test_f(void) {
 	}
-	class task_test_t_ : public hxtask {
+	class hxtask_test_t_ : public hxtask {
 	public:
-		task_test_t_() : m_exec_count_(0), m_reenqueue_count_(0) { }
+		hxtask_test_t_() : m_exec_count_(0), m_reenqueue_count_(0) { }
 
 		virtual void execute(hxtask_queue* q) override {
 			++m_exec_count_;
@@ -39,7 +39,7 @@ public:
 	};
 };
 
-TEST_F(hxtask_queue_test, nop) {
+TEST_F(hxtask_queue_test_f, nop) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	for(size_t i = 0; i <= max_pool_; ++i) {
@@ -54,12 +54,12 @@ TEST_F(hxtask_queue_test, nop) {
 	EXPECT_TRUE(true);
 }
 
-TEST_F(hxtask_queue_test, single) {
+TEST_F(hxtask_queue_test_f, single) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	for(size_t i = 0; i <= max_pool_; ++i) {
-		task_test_t_ task0;
-		task_test_t_ task1;
+		hxtask_test_t_ task0;
+		hxtask_test_t_ task1;
 		{
 			hxtask_queue q(i);
 			q.enqueue(&task0);
@@ -70,7 +70,7 @@ TEST_F(hxtask_queue_test, single) {
 		EXPECT_TRUE(task0.get_exec_count_() == 1);
 		EXPECT_TRUE(task1.get_exec_count_() == 1);
 
-		task_test_t_ task2;
+		hxtask_test_t_ task2;
 		{
 			hxtask_queue q(i);
 			q.enqueue(&task2);
@@ -79,12 +79,12 @@ TEST_F(hxtask_queue_test, single) {
 	}
 }
 
-TEST_F(hxtask_queue_test, single_stepping) {
+TEST_F(hxtask_queue_test_f, single_stepping) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	for(size_t i = 0; i <= max_pool_; ++i) {
 		for(size_t j = 1; j < max_tasks_; ++j) {
-			task_test_t_ task0;
+			hxtask_test_t_ task0;
 			{
 				hxtask_queue q(i);
 				for(size_t k = 1; k <= j; ++k) {
@@ -98,14 +98,14 @@ TEST_F(hxtask_queue_test, single_stepping) {
 	}
 }
 
-TEST_F(hxtask_queue_test, multiple) {
+TEST_F(hxtask_queue_test_f, multiple) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	for(size_t i = 0; i <= max_pool_; ++i) {
 		for(size_t j = 1; j < max_tasks_; ++j) {
 
-			task_test_t_ tasks0[max_tasks_];
-			task_test_t_ tasks1[max_tasks_];
+			hxtask_test_t_ tasks0[max_tasks_];
+			hxtask_test_t_ tasks1[max_tasks_];
 			{
 				hxtask_queue q(i);
 				for(size_t k = 0; k <= j; ++k) {
@@ -122,7 +122,7 @@ TEST_F(hxtask_queue_test, multiple) {
 				EXPECT_TRUE(tasks1[k].get_exec_count_() == 1);
 			}
 
-			task_test_t_ tasks2[max_tasks_];
+			hxtask_test_t_ tasks2[max_tasks_];
 			{
 				hxtask_queue q(i);
 				for(size_t k = 0; k <= j; ++k) {
@@ -136,13 +136,13 @@ TEST_F(hxtask_queue_test, multiple) {
 	}
 }
 
-TEST_F(hxtask_queue_test, multiple_stepping) {
+TEST_F(hxtask_queue_test_f, multiple_stepping) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	for(size_t i = 0; i <= max_pool_; ++i) {
 		for(size_t j = 1; j < max_tasks_; ++j) {
 
-			task_test_t_ tasks0[max_tasks_];
+			hxtask_test_t_ tasks0[max_tasks_];
 			{
 				hxtask_queue q(i);
 				for(size_t k = 1; k <= j; ++k) {
@@ -159,14 +159,14 @@ TEST_F(hxtask_queue_test, multiple_stepping) {
 	}
 }
 
-TEST_F(hxtask_queue_test, multiple_reenqueuing) {
+TEST_F(hxtask_queue_test_f, multiple_reenqueuing) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	for(size_t i = 0; i <= max_pool_; ++i) {
 		for(size_t j = 1; j < max_tasks_; ++j) {
 
-			task_test_t_ tasks0[max_tasks_];
-			task_test_t_ tasks1[max_tasks_];
+			hxtask_test_t_ tasks0[max_tasks_];
+			hxtask_test_t_ tasks1[max_tasks_];
 			{
 				hxtask_queue q(i);
 				for(size_t k = 0; k <= j; ++k) {
@@ -185,7 +185,7 @@ TEST_F(hxtask_queue_test, multiple_reenqueuing) {
 			}
 
 			// Tests reenqueuing in the destructor.
-			task_test_t_ tasks2[max_tasks_];
+			hxtask_test_t_ tasks2[max_tasks_];
 			{
 				hxtask_queue q(i);
 				for(size_t k = 0; k <= j; ++k) {

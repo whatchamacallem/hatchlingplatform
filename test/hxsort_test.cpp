@@ -64,24 +64,24 @@ void do_sort_int_case(const sort_callback_t_& sort_callback_) {
 }
 
 
-// The sort_api_t tests check for correct use of references to temporaries.
-class sort_api_t {
+// The hxsort_test_api_t tests check for correct use of references to temporaries.
+class hxsort_test_api_t {
 public:
 	// This is not used by the sort code.
-    explicit sort_api_t(int value_) : value(value_) { }
+    explicit hxsort_test_api_t(int value_) : value(value_) { }
 
 	// This is what is being used.
 
-    sort_api_t(sort_api_t&& other) : value(other.value) {
+    hxsort_test_api_t(hxsort_test_api_t&& other) : value(other.value) {
 		// Callee may leave itself in an unusable state or crash.
 		hxassert(this != &other);
 	}
 
-	~sort_api_t() {
+	~hxsort_test_api_t() {
 		::memset(&value, 0xefu, sizeof value);
 	}
 
-    sort_api_t& operator=(sort_api_t&& other) {
+    hxsort_test_api_t& operator=(hxsort_test_api_t&& other) {
 		// Callee may leave itself in an unusable state or crash.
 		hxassert(this != &other);
 		value = other.value;
@@ -89,7 +89,7 @@ public:
     }
 
 	// Called by hxkey_less below.
-    bool operator<(const sort_api_t& other) const {
+    bool operator<(const hxsort_test_api_t& other) const {
 		// Technically legal but indicates an optimization issue.
 		hxassert(this != &other);
         return value < other.value;
@@ -100,64 +100,64 @@ public:
 private:
 	// This is what is not being used.
 
-	sort_api_t() = delete;
-    sort_api_t(const sort_api_t&) = delete;
+	hxsort_test_api_t() = delete;
+    hxsort_test_api_t(const hxsort_test_api_t&) = delete;
 	// Did you use hxmove?
-    sort_api_t& operator=(const sort_api_t&) = delete;
-    bool operator==(const sort_api_t&) const = delete;
-    bool operator!=(const sort_api_t&) const = delete;
-    bool operator>(const sort_api_t&) const = delete;
-    bool operator>=(const sort_api_t&) const = delete;
-    bool operator<=(const sort_api_t&) const = delete;
+    hxsort_test_api_t& operator=(const hxsort_test_api_t&) = delete;
+    bool operator==(const hxsort_test_api_t&) const = delete;
+    bool operator!=(const hxsort_test_api_t&) const = delete;
+    bool operator>(const hxsort_test_api_t&) const = delete;
+    bool operator>=(const hxsort_test_api_t&) const = delete;
+    bool operator<=(const hxsort_test_api_t&) const = delete;
 	bool operator!(void) const = delete;
 	operator bool(void) const = delete;
 };
 
-class sort_iter_api_t {
+class hxsort_test_iter_api_t {
 public:
-	explicit sort_iter_api_t(sort_api_t* pointer) : m_pointer(pointer) { }
-	sort_iter_api_t(const sort_iter_api_t& x) = default;
-	sort_iter_api_t& operator=(const sort_iter_api_t& x) = default;
+	explicit hxsort_test_iter_api_t(hxsort_test_api_t* pointer) : m_pointer(pointer) { }
+	hxsort_test_iter_api_t(const hxsort_test_iter_api_t& x) = default;
+	hxsort_test_iter_api_t& operator=(const hxsort_test_iter_api_t& x) = default;
 
 	// Require only the standard pointer operations. No array notation.
-	sort_api_t& operator*(void) const { hxassert(m_pointer != hxnull); return *m_pointer; }
+	hxsort_test_api_t& operator*(void) const { hxassert(m_pointer != hxnull); return *m_pointer; }
 
-	sort_iter_api_t& operator++(void) { hxassert(m_pointer != hxnull); ++m_pointer; return *this; }
-	sort_iter_api_t operator++(int) { hxassert(m_pointer != hxnull); sort_iter_api_t temp_(*this); ++m_pointer; return temp_; }
-	sort_iter_api_t& operator--(void) { hxassert(m_pointer != hxnull); --m_pointer; return *this; }
-	sort_iter_api_t operator+(ptrdiff_t offset_) const { hxassert(m_pointer != hxnull); return sort_iter_api_t(m_pointer + offset_); }
-	sort_iter_api_t operator-(ptrdiff_t offset_) const { hxassert(m_pointer != hxnull); return sort_iter_api_t(m_pointer - offset_); }
-	ptrdiff_t operator-(const sort_iter_api_t& other_) const { hxassert(m_pointer != hxnull); return m_pointer - other_.m_pointer; }
+	hxsort_test_iter_api_t& operator++(void) { hxassert(m_pointer != hxnull); ++m_pointer; return *this; }
+	hxsort_test_iter_api_t operator++(int) { hxassert(m_pointer != hxnull); hxsort_test_iter_api_t temp_(*this); ++m_pointer; return temp_; }
+	hxsort_test_iter_api_t& operator--(void) { hxassert(m_pointer != hxnull); --m_pointer; return *this; }
+	hxsort_test_iter_api_t operator+(ptrdiff_t offset_) const { hxassert(m_pointer != hxnull); return hxsort_test_iter_api_t(m_pointer + offset_); }
+	hxsort_test_iter_api_t operator-(ptrdiff_t offset_) const { hxassert(m_pointer != hxnull); return hxsort_test_iter_api_t(m_pointer - offset_); }
+	ptrdiff_t operator-(const hxsort_test_iter_api_t& other_) const { hxassert(m_pointer != hxnull); return m_pointer - other_.m_pointer; }
 
-	bool operator==(const sort_iter_api_t& other_) const { return m_pointer == other_.m_pointer; }
-	bool operator!=(const sort_iter_api_t& other_) const { return m_pointer != other_.m_pointer; }
-	bool operator<(const sort_iter_api_t& other_) const { return m_pointer < other_.m_pointer; }
-	bool operator>(const sort_iter_api_t& other_) const { return m_pointer > other_.m_pointer; }
-	bool operator<=(const sort_iter_api_t& other_) const { return m_pointer <= other_.m_pointer; }
-	bool operator>=(const sort_iter_api_t& other_) const { return m_pointer >= other_.m_pointer; }
+	bool operator==(const hxsort_test_iter_api_t& other_) const { return m_pointer == other_.m_pointer; }
+	bool operator!=(const hxsort_test_iter_api_t& other_) const { return m_pointer != other_.m_pointer; }
+	bool operator<(const hxsort_test_iter_api_t& other_) const { return m_pointer < other_.m_pointer; }
+	bool operator>(const hxsort_test_iter_api_t& other_) const { return m_pointer > other_.m_pointer; }
+	bool operator<=(const hxsort_test_iter_api_t& other_) const { return m_pointer <= other_.m_pointer; }
+	bool operator>=(const hxsort_test_iter_api_t& other_) const { return m_pointer >= other_.m_pointer; }
 private:
 	// This is what is not being used.
 
 	// Not hxnull, hxnullptr. Return the "end" instead.
-	sort_iter_api_t(int null) = delete;
-	sort_iter_api_t(hxnullptr_t null) = delete;
+	hxsort_test_iter_api_t(int null) = delete;
+	hxsort_test_iter_api_t(hxnullptr_t null) = delete;
 	void operator[](int index) const = delete;
 
-    sort_api_t& operator+=(const sort_api_t&) = delete;
-    sort_api_t& operator-=(const sort_api_t&) = delete;
-	bool operator&&(const sort_api_t&) const = delete;
-	bool operator||(const sort_api_t&) const = delete;
+    hxsort_test_api_t& operator+=(const hxsort_test_api_t&) = delete;
+    hxsort_test_api_t& operator-=(const hxsort_test_api_t&) = delete;
+	bool operator&&(const hxsort_test_api_t&) const = delete;
+	bool operator||(const hxsort_test_api_t&) const = delete;
 	bool operator!(void) const = delete;
 	operator bool(void) const = delete;
 
-	sort_api_t* m_pointer;
+	hxsort_test_api_t* m_pointer;
 };
 
-static bool sort_iter_value_less(const sort_api_t& lhs_, const sort_api_t& rhs_) {
+static bool sort_iter_value_less(const hxsort_test_api_t& lhs_, const hxsort_test_api_t& rhs_) {
 	return lhs_.value < rhs_.value;
 }
 
-static bool sort_iter_value_greater(const sort_api_t& lhs_, const sort_api_t& rhs_) {
+static bool sort_iter_value_greater(const hxsort_test_api_t& lhs_, const hxsort_test_api_t& rhs_) {
 	return lhs_.value > rhs_.value;
 }
 
@@ -168,17 +168,17 @@ static void do_sort_iter_case(const sort_callback_t_& sort_callback_) {
 	const int expected_two_[5] = { 1, 2, 0, 4, -5 };
 	const int expected_sorted_[5] = { -5, 0, 1, 2, 4 };
 	const int expected_descending_[5] = { 4, 2, 1, 0, -5 };
-	sort_api_t values_[5] = {
-		sort_api_t(initial_values_[0]),
-		sort_api_t(initial_values_[1]),
-		sort_api_t(initial_values_[2]),
-		sort_api_t(initial_values_[3]),
-		sort_api_t(initial_values_[4])
+	hxsort_test_api_t values_[5] = {
+		hxsort_test_api_t(initial_values_[0]),
+		hxsort_test_api_t(initial_values_[1]),
+		hxsort_test_api_t(initial_values_[2]),
+		hxsort_test_api_t(initial_values_[3]),
+		hxsort_test_api_t(initial_values_[4])
 	};
 
 	auto reset_ = [&]() {
 		for(size_t i_ = 0; i_ < 5; ++i_) {
-			values_[i_] = sort_api_t(initial_values_[i_]);
+			values_[i_] = hxsort_test_api_t(initial_values_[i_]);
 		}
 	};
 
@@ -189,26 +189,26 @@ static void do_sort_iter_case(const sort_callback_t_& sort_callback_) {
 	};
 
 	reset_();
-	sort_callback_(sort_iter_api_t(values_), sort_iter_api_t(values_), sort_iter_value_less);
+	sort_callback_(hxsort_test_iter_api_t(values_), hxsort_test_iter_api_t(values_), sort_iter_value_less);
 	expect_values_(initial_values_);
 
 	reset_();
-	sort_callback_(sort_iter_api_t(values_), sort_iter_api_t(values_ + 1), sort_iter_value_less);
+	sort_callback_(hxsort_test_iter_api_t(values_), hxsort_test_iter_api_t(values_ + 1), sort_iter_value_less);
 	expect_values_(initial_values_);
 
 	reset_();
-	sort_callback_(sort_iter_api_t(values_), sort_iter_api_t(values_ + 2), sort_iter_value_less);
+	sort_callback_(hxsort_test_iter_api_t(values_), hxsort_test_iter_api_t(values_ + 2), sort_iter_value_less);
 	expect_values_(expected_two_);
 
 	reset_();
-	sort_callback_(sort_iter_api_t(values_), sort_iter_api_t(values_ + 5), sort_iter_value_less);
+	sort_callback_(hxsort_test_iter_api_t(values_), hxsort_test_iter_api_t(values_ + 5), sort_iter_value_less);
 	expect_values_(expected_sorted_);
 
 	reset_();
-	sort_callback_(sort_iter_api_t(values_), sort_iter_api_t(values_ + 5), sort_iter_value_greater);
+	sort_callback_(hxsort_test_iter_api_t(values_), hxsort_test_iter_api_t(values_ + 5), sort_iter_value_greater);
 	expect_values_(expected_descending_);
 
-	sort_callback_(sort_iter_api_t(values_), sort_iter_api_t(values_ + 5), sort_iter_value_less);
+	sort_callback_(hxsort_test_iter_api_t(values_), hxsort_test_iter_api_t(values_ + 5), sort_iter_value_less);
 	expect_values_(expected_sorted_);
 }
 
@@ -270,49 +270,49 @@ TEST(hxbinary_search_test, simple_case) {
 TEST(hxbinary_search_test, binary_search_grinder) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(4);
-	hxarray<sort_api_t> sorted; sorted.reserve(100);
+	hxarray<hxsort_test_api_t> sorted; sorted.reserve(100);
 
 	for(int i=100; i--; ) {
 		int x = rng.range(0, 100);
-		sorted.push_back(sort_api_t(x));
+		sorted.push_back(hxsort_test_api_t(x));
 	}
 	hxsort(sorted.begin(), sorted.end());
 
 	for(size_t i=100u; i--; ) {
-		sort_api_t t = hxmove(sorted[i]); // Don't pass an address that is in the array.
-		sort_api_t* ptr = hxbinary_search(sorted.begin(), sorted.end(), t);
-		// Assert logical equivalence without using ==. The sort_api_t* may point
+		hxsort_test_api_t t = hxmove(sorted[i]); // Don't pass an address that is in the array.
+		hxsort_test_api_t* ptr = hxbinary_search(sorted.begin(), sorted.end(), t);
+		// Assert logical equivalence without using ==. The hxsort_test_api_t* may point
 		// elsewhere.
 		EXPECT_TRUE(!(*ptr < t) && !(t < *ptr));
 	}
 }
 
 TEST(hxsort_test, iterator_support) {
-	do_sort_iter_case([](sort_iter_api_t begin_, sort_iter_api_t end_, const auto& less_) {
+	do_sort_iter_case([](hxsort_test_iter_api_t begin_, hxsort_test_iter_api_t end_, const auto& less_) {
 		hxinsertion_sort(begin_, end_, less_);
 	});
 
-	do_sort_iter_case([](sort_iter_api_t begin_, sort_iter_api_t end_, const auto& less_) {
+	do_sort_iter_case([](hxsort_test_iter_api_t begin_, hxsort_test_iter_api_t end_, const auto& less_) {
 		hxheapsort(begin_, end_, less_);
 	});
 
-	do_sort_iter_case([](sort_iter_api_t begin_, sort_iter_api_t end_, const auto& less_) {
+	do_sort_iter_case([](hxsort_test_iter_api_t begin_, hxsort_test_iter_api_t end_, const auto& less_) {
 		hxsort(begin_, end_, less_);
 	});
 }
 #endif // HX_CPLUSPLUS >= 201402L
 
 TEST(hxsort_test, hxmerge_iterator_support) {
-	sort_api_t left_[3] = { sort_api_t(1), sort_api_t(3), sort_api_t(5) };
-	sort_api_t right_[3] = { sort_api_t(2), sort_api_t(4), sort_api_t(6) };
-	sort_api_t dest_[6] = {
-		sort_api_t(0), sort_api_t(0), sort_api_t(0),
-		sort_api_t(0), sort_api_t(0), sort_api_t(0)
+	hxsort_test_api_t left_[3] = { hxsort_test_api_t(1), hxsort_test_api_t(3), hxsort_test_api_t(5) };
+	hxsort_test_api_t right_[3] = { hxsort_test_api_t(2), hxsort_test_api_t(4), hxsort_test_api_t(6) };
+	hxsort_test_api_t dest_[6] = {
+		hxsort_test_api_t(0), hxsort_test_api_t(0), hxsort_test_api_t(0),
+		hxsort_test_api_t(0), hxsort_test_api_t(0), hxsort_test_api_t(0)
 	};
 
-	hxmerge(sort_iter_api_t(left_), sort_iter_api_t(left_ + 3),
-		sort_iter_api_t(right_), sort_iter_api_t(right_ + 3),
-		sort_iter_api_t(dest_), sort_iter_value_less);
+	hxmerge(hxsort_test_iter_api_t(left_), hxsort_test_iter_api_t(left_ + 3),
+		hxsort_test_iter_api_t(right_), hxsort_test_iter_api_t(right_ + 3),
+		hxsort_test_iter_api_t(dest_), sort_iter_value_less);
 
 	const int expected_sorted_[6] = { 1, 2, 3, 4, 5, 6 };
 	for(size_t i_ = 0; i_ < 6; ++i_) {
@@ -320,16 +320,16 @@ TEST(hxsort_test, hxmerge_iterator_support) {
 	}
 
 	// Do it all over again with a GE functor and the parameters reversed.
-	sort_api_t left_desc_[3] = { sort_api_t(5), sort_api_t(3), sort_api_t(1) };
-	sort_api_t right_desc_[3] = { sort_api_t(6), sort_api_t(4), sort_api_t(2) };
-	sort_api_t dest_desc_[6] = {
-		sort_api_t(0), sort_api_t(0), sort_api_t(0),
-		sort_api_t(0), sort_api_t(0), sort_api_t(0)
+	hxsort_test_api_t left_desc_[3] = { hxsort_test_api_t(5), hxsort_test_api_t(3), hxsort_test_api_t(1) };
+	hxsort_test_api_t right_desc_[3] = { hxsort_test_api_t(6), hxsort_test_api_t(4), hxsort_test_api_t(2) };
+	hxsort_test_api_t dest_desc_[6] = {
+		hxsort_test_api_t(0), hxsort_test_api_t(0), hxsort_test_api_t(0),
+		hxsort_test_api_t(0), hxsort_test_api_t(0), hxsort_test_api_t(0)
 	};
 
-	hxmerge(sort_iter_api_t(left_desc_), sort_iter_api_t(left_desc_ + 3),
-		sort_iter_api_t(right_desc_), sort_iter_api_t(right_desc_ + 3),
-		sort_iter_api_t(dest_desc_), sort_iter_value_greater);
+	hxmerge(hxsort_test_iter_api_t(left_desc_), hxsort_test_iter_api_t(left_desc_ + 3),
+		hxsort_test_iter_api_t(right_desc_), hxsort_test_iter_api_t(right_desc_ + 3),
+		hxsort_test_iter_api_t(dest_desc_), sort_iter_value_greater);
 
 	const int expected_desc_[6] = { 6, 5, 4, 3, 2, 1 };
 	for(size_t i_ = 0; i_ < 6; ++i_) {
@@ -338,25 +338,25 @@ TEST(hxsort_test, hxmerge_iterator_support) {
 }
 
 TEST(hxsort_test, hxbinary_search_iterator_support) {
-	sort_api_t values_[7] = {
-		sort_api_t(-5), sort_api_t(-1), sort_api_t(0), sort_api_t(3),
-		sort_api_t(5), sort_api_t(8), sort_api_t(12)
+	hxsort_test_api_t values_[7] = {
+		hxsort_test_api_t(-5), hxsort_test_api_t(-1), hxsort_test_api_t(0), hxsort_test_api_t(3),
+		hxsort_test_api_t(5), hxsort_test_api_t(8), hxsort_test_api_t(12)
 	};
 
-	sort_iter_api_t begin_(values_);
-	sort_iter_api_t end_(values_ + 7);
+	hxsort_test_iter_api_t begin_(values_);
+	hxsort_test_iter_api_t end_(values_ + 7);
 
-	sort_api_t key_three_(3);
-	sort_iter_api_t result_ = hxbinary_search(begin_, end_, key_three_, sort_iter_value_less);
+	hxsort_test_api_t key_three_(3);
+	hxsort_test_iter_api_t result_ = hxbinary_search(begin_, end_, key_three_, sort_iter_value_less);
 	EXPECT_NE(result_, end_);
 	EXPECT_EQ((*result_).value, 3);
 
-	sort_api_t key_high_(12);
+	hxsort_test_api_t key_high_(12);
 	result_ = hxbinary_search(begin_, end_, key_high_, sort_iter_value_less);
 	EXPECT_NE(result_, end_);
 	EXPECT_EQ((*result_).value, 12);
 
-	sort_api_t missing_(7);
+	hxsort_test_api_t missing_(7);
 	result_ = hxbinary_search(begin_, end_, missing_, sort_iter_value_less);
 	EXPECT_EQ(result_, end_);
 
@@ -369,18 +369,18 @@ TEST(hxsort_test, sort_grinder) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(2);
 	size_t max_size_mask = 0x7f;
-	hxarray<sort_api_t> insertion_sorted; insertion_sorted.reserve(max_size_mask);
-	hxarray<sort_api_t> heap_sorted; heap_sorted.reserve(max_size_mask);
-	hxarray<sort_api_t> generic_sorted; generic_sorted.reserve(max_size_mask);
+	hxarray<hxsort_test_api_t> insertion_sorted; insertion_sorted.reserve(max_size_mask);
+	hxarray<hxsort_test_api_t> heap_sorted; heap_sorted.reserve(max_size_mask);
+	hxarray<hxsort_test_api_t> generic_sorted; generic_sorted.reserve(max_size_mask);
 
 	for(int i=12; i--; ) {
 		// Set up the arrays to be sorted.
 		size_t size = (max_size_mask >> i) & rng;
 		for(size_t j=size; j--;) {
-			insertion_sorted.push_back(sort_api_t(rng.range(100, 200)));
+			insertion_sorted.push_back(hxsort_test_api_t(rng.range(100, 200)));
 			// Use the && constructor and not the const& one.
-			heap_sorted.push_back(sort_api_t(0));
-			generic_sorted.push_back(sort_api_t(0));
+			heap_sorted.push_back(hxsort_test_api_t(0));
+			generic_sorted.push_back(hxsort_test_api_t(0));
 		}
 
 		::memcpy((void*)heap_sorted.data(), insertion_sorted.data(), insertion_sorted.size_bytes());
@@ -404,7 +404,7 @@ TEST(hxsort_test, sort_grinder_generic) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(3);
 	size_t max_size_mask = 0xffff;
-	hxarray<sort_api_t> sorted; sorted.reserve(max_size_mask);
+	hxarray<hxsort_test_api_t> sorted; sorted.reserve(max_size_mask);
 	hxarray<int> histogram(20000, 0);
 
 	for(int i=10; i--; ) {
@@ -416,7 +416,7 @@ TEST(hxsort_test, sort_grinder_generic) {
 		}
 		for(size_t j=size; j--;) {
 			int x = rng.range(10000, 10000);
-			sorted.push_back(sort_api_t(x));
+			sorted.push_back(hxsort_test_api_t(x));
 			++histogram[(size_t)x];
 		}
 

@@ -19,31 +19,31 @@ class hxarray_test_f :
 	public testing::Test
 {
 public:
-	class test_object {
+	class hxtest_object {
 	public:
-		test_object(void) {
+		hxtest_object(void) {
 			++s_hxtest_current->m_constructed;
 			id = s_hxtest_current->m_next_id--;
 		}
 
-		test_object(const test_object& x) {
+		hxtest_object(const hxtest_object& x) {
 			++s_hxtest_current->m_constructed;
 			id = x.id;
 		}
-		explicit test_object(int32_t x) {
+		explicit hxtest_object(int32_t x) {
 			EXPECT_TRUE(x >= 0); // User supplied IDs are positive.
 			++s_hxtest_current->m_constructed;
 			id = x;
 		}
-		~test_object(void) {
+		~hxtest_object(void) {
 			++s_hxtest_current->m_destructed;
 			id = -1;
 		}
 
-		void operator=(const test_object& x) { id = x.id; }
+		void operator=(const hxtest_object& x) { id = x.id; }
 		bool operator==(int32_t x) const { return id == x; }
-		bool operator==(const test_object& x) const { return id == x.id; }
-		bool operator<(const test_object& x) const { return id < x.id; }
+		bool operator==(const hxtest_object& x) const { return id == x.id; }
+		bool operator<(const hxtest_object& x) const { return id < x.id; }
 
 		int32_t id;
 	};
@@ -143,13 +143,13 @@ static bool hxarray_test_is_max_heap(const array_t_& heap_) {
 
 TEST_F(hxarray_test_f, empty_full) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
-	hxarray<test_object, hxallocator_dynamic_capacity> a;
+	hxarray<hxtest_object, hxallocator_dynamic_capacity> a;
 	EXPECT_TRUE(a.empty());
 	EXPECT_TRUE(a.full());
 	a.reserve(1);
 	EXPECT_TRUE(a.empty());
 	EXPECT_TRUE(!a.full());
-	a.push_back(test_object());
+	a.push_back(hxtest_object());
 	EXPECT_TRUE(!a.empty());
 	EXPECT_TRUE(a.full());
 	a.pop_back();
@@ -159,17 +159,17 @@ TEST_F(hxarray_test_f, empty_full) {
 
 TEST_F(hxarray_test_f, allocators) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
-	hxarray<test_object> objs_dynamic;
+	hxarray<hxtest_object> objs_dynamic;
 	objs_dynamic.reserve(10u);
-	hxarray<test_object, 10u> objs_static;
+	hxarray<hxtest_object, 10u> objs_static;
 
 	EXPECT_EQ(objs_dynamic.size(), 0u);
 	EXPECT_EQ(objs_static.size(), 0u);
 
-	objs_dynamic.push_back(test_object(20));
-	objs_dynamic.push_back(test_object(21));
-	objs_static.push_back(test_object(20));
-	objs_static.push_back(test_object(21));
+	objs_dynamic.push_back(hxtest_object(20));
+	objs_dynamic.push_back(hxtest_object(21));
+	objs_static.push_back(hxtest_object(20));
+	objs_static.push_back(hxtest_object(21));
 
 	EXPECT_EQ(objs_dynamic.size(), 2u);
 	EXPECT_EQ(objs_dynamic[0], 20);
@@ -188,22 +188,22 @@ TEST_F(hxarray_test_f, iteration) {
 	{
 		static const int32_t nums[3] = { 21, 22, 23 };
 
-		hxarray<test_object, 10u> objs;
-		objs.push_back(test_object(nums[0]));
-		objs.push_back(test_object(nums[1]));
-		objs.push_back(test_object(nums[2]));
+		hxarray<hxtest_object, 10u> objs;
+		objs.push_back(hxtest_object(nums[0]));
+		objs.push_back(hxtest_object(nums[1]));
+		objs.push_back(hxtest_object(nums[2]));
 
-		const hxarray<test_object, 10u>& cobjs = objs;
+		const hxarray<hxtest_object, 10u>& cobjs = objs;
 
 		uint32_t counter = 0u;
-		for(hxarray<test_object, 10u>::iterator it = objs.begin(); it != objs.end(); ++it) {
+		for(hxarray<hxtest_object, 10u>::iterator it = objs.begin(); it != objs.end(); ++it) {
 			EXPECT_EQ(it->id, objs[counter].id);
 			EXPECT_EQ(it->id, nums[counter]);
 			++counter;
 		}
 
 		counter = 0u;
-		for(hxarray<test_object, 10u>::const_iterator it = cobjs.begin();
+		for(hxarray<hxtest_object, 10u>::const_iterator it = cobjs.begin();
 				it != cobjs.end(); ++it) {
 			EXPECT_EQ(it->id, objs[counter].id);
 			EXPECT_EQ(it->id, nums[counter]);
@@ -221,11 +221,11 @@ TEST_F(hxarray_test_f, iteration) {
 
 TEST_F(hxarray_test_f, get) {
 	{
-		hxarray<test_object, 4u> objs; objs.reserve(4u);
+		hxarray<hxtest_object, 4u> objs; objs.reserve(4u);
 		objs.emplace_back(10);
 		objs.emplace_back(20);
 
-		const hxarray<test_object, 4u>& cobjs = objs;
+		const hxarray<hxtest_object, 4u>& cobjs = objs;
 
 		EXPECT_EQ(objs.get(0), objs.begin());
 		EXPECT_EQ(objs.get(1), objs.begin() + 1);
@@ -247,7 +247,7 @@ TEST_F(hxarray_test_f, modification) {
 	{
 		static const int32_t nums[5] = { 91, 92, 93, 94, 95 };
 
-		hxarray<test_object> objs;
+		hxarray<hxtest_object> objs;
 		objs.assign(nums, nums + hxsize(nums));
 		EXPECT_FALSE(objs.empty());
 
@@ -260,9 +260,9 @@ TEST_F(hxarray_test_f, modification) {
 		objs.pop_back();
 		objs.pop_back();
 
-		test_object to;
+		hxtest_object to;
 		objs.push_back(to);
-		objs.push_back((const test_object&)to);
+		objs.push_back((const hxtest_object&)to);
 
 		objs.emplace_back();
 
@@ -275,7 +275,7 @@ TEST_F(hxarray_test_f, modification) {
 		EXPECT_EQ(objs.size(), 4);
 
 		static const int32_t nums_2[1] = { 99 };
-		hxarray<test_object> objs2;
+		hxarray<hxtest_object> objs2;
 		objs2.assign(nums_2, nums_2 + 1);
 		objs += objs2;
 
@@ -349,19 +349,19 @@ TEST(hxarray_test, pop_heap_preserves_heap_on_removal) {
 TEST_F(hxarray_test_f, emplace_back) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
-		hxarray<test_object> objs;
+		hxarray<hxtest_object> objs;
 		objs.reserve(3u);
 
-		test_object& default_inserted = objs.emplace_back();
+		hxtest_object& default_inserted = objs.emplace_back();
 		EXPECT_EQ(objs.data(), &default_inserted);
 		EXPECT_EQ(default_inserted.id, -1);
 
-		test_object original(42);
-		test_object& copy_inserted = objs.emplace_back(original);
+		hxtest_object original(42);
+		hxtest_object& copy_inserted = objs.emplace_back(original);
 		EXPECT_EQ(objs.data() + 1, &copy_inserted);
 		EXPECT_EQ(copy_inserted.id, original.id);
 
-		test_object& value_inserted = objs.emplace_back(77);
+		hxtest_object& value_inserted = objs.emplace_back(77);
 		EXPECT_EQ(objs.data() + 2, &value_inserted);
 		EXPECT_EQ(value_inserted.id, 77);
 
@@ -479,12 +479,12 @@ TEST_F(hxarray_test_f, resizing) {
 	{
 		static const int32_t nums[5] = { 51, 52, 53, 54, 55 };
 
-		hxarray<test_object> objs(12);
+		hxarray<hxtest_object> objs(12);
 		objs.reserve(10); // Reserve less than is being used.
 		objs = nums;
 
 		// Use the two-argument version to delete it.
-		objs.resize(3, test_object());
+		objs.resize(3, hxtest_object());
 
 		EXPECT_EQ(objs.size(), 3u);
 		EXPECT_EQ(objs[0].id, 51);
@@ -516,21 +516,21 @@ TEST_F(hxarray_test_f, resizing) {
 TEST_F(hxarray_test_f, assignment) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
-		hxarray<test_object> objs;
+		hxarray<hxtest_object> objs;
 		objs.reserve(1);
 
-		test_object to;
+		hxtest_object to;
 		to.id = 67;
 		objs.push_back(to);
 
-		hxarray<test_object> objs2;
+		hxarray<hxtest_object> objs2;
 		objs2 = objs; // Assign to the same type.
 
-		hxarray<test_object, 1> objs3;
+		hxarray<hxtest_object, 1> objs3;
 		objs3 = objs; // Assign to a different type.
 
-		hxarray<test_object> objs4(objs); // Construct from the same type.
-		hxarray<test_object, 1> objs5(objs); // Construct from a different type.
+		hxarray<hxtest_object> objs4(objs); // Construct from the same type.
+		hxarray<hxtest_object, 1> objs5(objs); // Construct from a different type.
 
 		EXPECT_EQ(objs2.size(), 1u);
 		EXPECT_EQ(objs3.size(), 1u);
@@ -809,28 +809,28 @@ TEST(hxarray_iterators, cbegin_cend) {
 TEST_F(hxarray_test_f, plus_equals) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
-		hxarray<test_object> objs;
+		hxarray<hxtest_object> objs;
 		objs.reserve(10);
 
-		objs += hxarray<test_object>{ 1, 7, 11 };
+		objs += hxarray<hxtest_object>{ 1, 7, 11 };
 
-		hxarray<test_object> objs2 { 10, 70, 110 };
+		hxarray<hxtest_object> objs2 { 10, 70, 110 };
 		objs += objs2;
 
-		hxarray<test_object> objs3 { 1, 7, 11, 10, 70, 110 };
+		hxarray<hxtest_object> objs3 { 1, 7, 11, 10, 70, 110 };
 
 		EXPECT_TRUE(hxkey_equal(objs, objs3));
 		EXPECT_FALSE(hxkey_less(objs, objs3));
 
 		// Compare unequal lengths with a temporary.
-		test_object t(440);
+		hxtest_object t(440);
 		objs += t;
 		EXPECT_FALSE(hxkey_equal(objs, objs3));
 		EXPECT_TRUE(hxkey_less(objs3, objs));
 
 		// Compare equal lengths with a non-temporary.
 		objs.resize(5);
-		objs += test_object(220);
+		objs += hxtest_object(220);
 		EXPECT_FALSE(hxkey_equal(objs, objs3));
 		EXPECT_TRUE(hxkey_less(objs3, objs));
 	}
@@ -841,12 +841,12 @@ TEST_F(hxarray_test_f, plus_equals) {
 TEST_F(hxarray_test_f, erase) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
-		hxarray<test_object> objs { 1, 2, 3, 4, 5 };
+		hxarray<hxtest_object> objs { 1, 2, 3, 4, 5 };
 		objs.erase(1);
 		objs.erase(objs.begin() + 2);
 
 		static const int expected_values[] = { 1, 3, 5 };
-		hxarray<test_object> expected(expected_values);
+		hxarray<hxtest_object> expected(expected_values);
 		EXPECT_TRUE(hxkey_equal(objs, expected));
 
 		objs.erase(objs.begin());
@@ -864,18 +864,18 @@ TEST_F(hxarray_test_f, insert) {
 	{
 		// The numeric constant zero is also a pointer. It seems more convenient
 		// to allow both indices and pointers than to worry about it.
-		hxarray<test_object> objs; objs.reserve(5);
-		objs.push_back(test_object(3));
-		objs.insert(objs.begin(), test_object(1)); // Inserting at the beginning.
-		objs.insert(2, test_object(5)); // Inserting past the end.
+		hxarray<hxtest_object> objs; objs.reserve(5);
+		objs.push_back(hxtest_object(3));
+		objs.insert(objs.begin(), hxtest_object(1)); // Inserting at the beginning.
+		objs.insert(2, hxtest_object(5)); // Inserting past the end.
 
-		hxarray<test_object> expected { 1, 3, 5 };
+		hxarray<hxtest_object> expected { 1, 3, 5 };
 		EXPECT_TRUE(hxkey_equal(objs, expected));
 
-		objs.insert(1, test_object(2));
-		objs.insert(3, test_object(4));
+		objs.insert(1, hxtest_object(2));
+		objs.insert(3, hxtest_object(4));
 
-		hxarray<test_object> final_expected { 1, 2, 3, 4, 5 };
+		hxarray<hxtest_object> final_expected { 1, 2, 3, 4, 5 };
 		EXPECT_TRUE(hxkey_equal(objs, final_expected));
 	}
 

@@ -242,6 +242,6 @@ inline void InitGoogleTest(void) { }
 /// `void ASSERT_STREQ(const char* a, const char* b)` - Requires that two C strings are equal, without checking null pointers.
 #define ASSERT_STREQ(a_, b_) hxtest_::dispatcher_().condition_check_(hxtest_str_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " == " #b_, true)
 /// `void ASSERT_STRNE(const char* a, const char* b)` - Requires that two C strings differ, without checking null pointers.
-#define ASSERT_STRNE(a_, b_) hxtest_::dispatcher_().condition_check_(hxtest_str_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " != " #b_, true)
+#define ASSERT_STRNE(a_, b_) hxtest_::dispatcher_().condition_check_(!hxtest_str_eq_((a_), (b_)), __FILE__, __LINE__, #a_ " != " #b_, true)
 
 #endif // !HX_USE_GOOGLE_TEST
