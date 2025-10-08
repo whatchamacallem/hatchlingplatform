@@ -107,33 +107,19 @@ public:
 	}
 
 	hxstring_stream& operator<<(bool value_) { return this->write_fundamental_("%d", (int)value_); }
-
 	hxstring_stream& operator<<(char value_) { return this->write_fundamental_("%c", (int)value_); }
-
 	hxstring_stream& operator<<(signed char value_) { return this->write_fundamental_("%hhd", (int)value_); }
-
 	hxstring_stream& operator<<(unsigned char value_) { return this->write_fundamental_("%hhu", (unsigned int)value_); }
-
 	hxstring_stream& operator<<(short value_) { return this->write_fundamental_("%hd", (int)value_); }
-
 	hxstring_stream& operator<<(unsigned short value_) { return this->write_fundamental_("%hu", (unsigned int)value_); }
-
 	hxstring_stream& operator<<(int value_) { return this->write_fundamental_("%d", value_); }
-
 	hxstring_stream& operator<<(unsigned int value_) { return this->write_fundamental_("%u", value_); }
-
 	hxstring_stream& operator<<(long value_) { return this->write_fundamental_("%ld", value_); }
-
 	hxstring_stream& operator<<(unsigned long value_) { return this->write_fundamental_("%lu", value_); }
-
 	hxstring_stream& operator<<(long long value_) { return this->write_fundamental_("%lld", value_); }
-
 	hxstring_stream& operator<<(unsigned long long value_) { return this->write_fundamental_("%llu", value_); }
-
 	hxstring_stream& operator<<(float value_) { return this->write_fundamental_("%g", (double)value_); }
-
 	hxstring_stream& operator<<(double value_) { return this->write_fundamental_("%g", value_); }
-
 	hxstring_stream& operator<<(long double value_) { return this->write_fundamental_("%Lg", value_); }
 
 	void reserve(size_t size_, hxsystem_allocator_t allocator_=hxsystem_allocator_current) {
@@ -147,19 +133,25 @@ public:
 	template<typename T_> hxstring_stream& operator>>(const T_* t_) = delete;
 
 private:
-	constexpr size_t numeric_buffer_size_ = 64u;
-	hxarray<char, hxallocator_dynamic_capacity> m_buffer_; // Contains capacity.
-	char* m_position_;
-	bool m_failed_; // Has any error been encountered.
-	bool m_eof_; //
+	static constexpr size_t c_numeric_buffer_size_ = 64u;
 
 	template<typename... args_t_>
 	hxstring_stream& write_fundamental_(const char* format_, args_t_... args_) {
-		char buffer_[numeric_buffer_size_];
-		const int count_ = ::snprintf(buffer_, numeric_buffer_size_, format_, args_...);
+		// XXX
+		const size_t available_capacity = this->capacity() - (size_t)(m_position_ - this->data());
+		if(available_capacity < c_numeric_buffer_size_) {
+			m_failed_ = true;
+			return *this;
+		}
+		const int count_ = ::snprintf(m_position_, available_capacity, format_, args_...);
 		if(count_ > 0) {
-			this->write(buffer_, count_);
+			m_position_ += count_;
 		}
 		return *this;
 	}
+
+	hxarray<char, hxallocator_dynamic_capacity> m_buffer_; // Contains capacity.
+	char* m_position_;
+	bool m_failed_; // Has any error been encountered.
+	bool m_eof_;
 };
