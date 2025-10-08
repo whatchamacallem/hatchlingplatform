@@ -14,13 +14,12 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// g_hxisinit should not be zero-initialized; MSVC handles that differently.
+// g_hxinit_ver_ should not be explicitly zero-initialized; MSVC handles that
+// differently.
 extern "C" {
-	// The platform has been initialized without being shut down.
-	bool g_hxisinit;
-
-	// See `#define hxversion_` in hxsettings.h for rationale.
-	const int hxversion_ = HATCHLING_VER;
+	// If non-zero the platform has been initialized without being shut down.
+	// See `#define g_hxinit_ver_` in hxsettings.h for rationale.
+	int g_hxinit_ver_; // Static initialize to 0.
 }
 
 // HX_FLOATING_POINT_TRAPS - Traps (FE_DIVBYZERO|FE_INVALID|FE_OVERFLOW) in
@@ -198,20 +197,23 @@ hxconsole_command_named(hxcheck_hash, checkhash);
 
 extern "C"
 void hxinit_internal(int version_) {
-	// Check if compiled in expected_version matches your source.
+	// Check if compiled in expected_version matches callers.
 	const long expected_version = HATCHLING_VER;
 	hxassertrelease(expected_version == version_, "HATCHLING_VER mismatch.");
+	hxassertrelease(!g_hxinit_ver_ || g_hxinit_ver_ == version_, "HATCHLING_VER mismatch.");
+	(void)version_; (void)expected_version;
 
-	hxassertrelease(!g_hxisinit, "not_init");
-	hxsettings_construct();
+	if(!g_hxinit_ver_) {
+		hxsettings_construct();
 
 #if HX_FLOATING_POINT_TRAPS
-	// You need the math library -lm. This is a nonstandard glibc/_GNU_SOURCE extension.
-	::feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+		// You need the math library -lm. This is a nonstandard glibc/_GNU_SOURCE extension.
+		::feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 #endif
 
-	hxmemory_manager_init();
-	g_hxisinit = true;
+		hxmemory_manager_init();
+		g_hxinit_ver_ = HATCHLING_VER;
+	}
 }
 
 extern "C"
@@ -224,7 +226,7 @@ hxattr_noexcept void hxloghandler(hxloglevel_t level, const char* format, ...) {
 
 extern "C"
 hxattr_noexcept void hxloghandler_v(hxloglevel_t level, const char* format, va_list args) {
-	if(g_hxisinit && g_hxsettings.log_level > level) {
+	if(g_hxinit_ver_ && g_hxsettings.log_level > level) {
 		return;
 	}
 
@@ -250,13 +252,13 @@ hxattr_noexcept void hxloghandler_v(hxloglevel_t level, const char* format, va_l
 // HX_RELEASE < 3 provides facilities for testing teardown. Just call _Exit() otherwise.
 extern "C"
 void hxshutdown(void) {
-	if(g_hxisinit) {
+	if(g_hxinit_ver_) {
 #if (HX_RELEASE) < 3
 		hxmemory_manager_shut_down();
 		// Try to trap further activity. This breaks global destructors that call
 		// hxfree. There is no easier way to track leaks.
 #endif
-		g_hxisinit = false;
+		g_hxinit_ver_ = false;
 	}
 }
 
@@ -264,7 +266,7 @@ void hxshutdown(void) {
 extern "C"
 hxattr_noexcept bool hxasserthandler(const char* file, size_t line) {
 	const char* f = hxbasename(file);
-	if(g_hxisinit && g_hxsettings.asserts_to_be_skipped > 0) {
+	if(g_hxinit_ver_ && g_hxsettings.asserts_to_be_skipped > 0) {
 		--g_hxsettings.asserts_to_be_skipped;
 		hxloghandler(hxloglevel_assert, "skipped %s(%zu) hash %08zx",
 			f, line, (size_t)hxstring_literal_hash_debug(file));

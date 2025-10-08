@@ -82,11 +82,13 @@ enum hxloglevel_t {
 #error HX_RELEASE must be [0..3].
 #endif
 
-/// `hxinit` - Initializes the platform. Designed to trigger a link error when
-/// used against previous versions. `hxversion_` is renamed to encode the
-/// current version. As well, `HATCHLING_VER` is checked against the value
-/// compiled into hxinit_internal.
-#define hxinit() (void)(g_hxisinit || (hxinit_internal(hxversion_), 0))
+/// `hxinit` - Initializes the platform if needed. Does a quick version check to
+/// determine if the platform is already correctly initialized first. Designed
+/// to trigger a link error when used against previous versions. It uses
+/// `g_hxinit_ver_` which is renamed to encode the current version. See
+/// `g_hxinit_ver_`. As well, `HATCHLING_VER` is checked against the value
+/// hxinit_internal was compiled with.
+#define hxinit() (void)(g_hxinit_ver_ == HATCHLING_VER || (hxinit_internal(HATCHLING_VER), 0))
 
 #if (HX_RELEASE) == 0 // debug facilities
 
@@ -173,11 +175,14 @@ void hxasserthandler(hxhash_t file_, size_t line_) hxattr_noexcept hxattr_noretu
 #define hxassertrelease(x_, ...) ((void)0)
 #endif
 
-/// `hxinit_internal` - Use `hxinit` instead. It checks `g_hxisinit`.
+/// `hxinit_internal` - Internal. Use `hxinit` instead. It checks `g_hxinit_ver_`.
 void hxinit_internal(int version_) hxattr_cold;
 
-/// `g_hxisinit` - Set to true by `hxinit`.
-extern bool g_hxisinit;
+/// `g_hxinit_ver_` - Internal. Set to current library version by `hxinit`. This is
+/// renamed in settings.h to contain the library version in order to cause
+/// meaningful link errors when linked against stale binaries. The linker
+/// symbol should look like `g_hxinit_ver31700_`.
+extern int g_hxinit_ver_;
 
 /// `hxshutdown` - Terminates service. Releases all resources acquired by the
 /// platform and confirms all memory allocations have been released. `HX_RELEASE

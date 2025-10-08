@@ -15,7 +15,7 @@ HX_REGISTER_FILENAME_HASH
 int hxtest_main(int argc, char**argv);
 
 static bool hxrun_all_tests(void) {
-	hxlogconsole("hatchling platform 🐉🐉🐉 " HATCHLING_TAG "\n");
+	hxlogconsole("hatchling platform 🐉🐉🐉 " HATCHLING_TAG " %d\n", g_hxinit_ver_);
 	hxlogconsole("release: %d profile: %d\n", (int)(HX_RELEASE), (int)(HX_PROFILE));
 
 	// RUN_ALL_TESTS is a Google Test symbol.

@@ -52,15 +52,15 @@ void hxinsertion_sort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_
 	if(begin_ == end_) { return; }
 	hxrestrict_t<iterator_t_> begin_r_(begin_);
 
-	for(iterator_t_ i_ = begin_r_, j_ = begin_r_ + 1; j_ < end_; i_ = j_++) {
+	for(iterator_t_ i_ = begin_r_, j_ = begin_r_ + (ptrdiff_t)1; j_ < end_; i_ = j_++) {
 		if(!less_(*i_, *j_)) {
 			// Default value construct. Use hxmove instead of hxswap because it
 			// should be more efficient for simple types. Complex types will
 			// require an T::operator=(T&&) to be efficient.
 			auto t_ = hxmove(*j_);
 			*j_ = hxmove(*i_);
-			while(begin_r_ < i_ && !less_(*(i_-1), t_)) {
-				*i_ = hxmove(*(i_-1));
+			while(begin_r_ < i_ && !less_(*(i_-(ptrdiff_t)1), t_)) {
+				*i_ = hxmove(*(i_-(ptrdiff_t)1));
 				--i_;
 			}
 			*i_ = hxmove(t_);
@@ -92,7 +92,7 @@ void hxheapsort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_) {
 
 	// Swaps the largest values to the end of the array. These two implement
 	// std::pop_heap with __restrict added as well.
-	for(iterator_t_ it_ = end_ - 1; it_ > begin_r_; --it_) {
+	for(iterator_t_ it_ = end_ - (ptrdiff_t)1; it_ > begin_r_; --it_) {
 		hxswap(*begin_r_, *it_);
 		hxheapsort_heapify_<iterator_t_>(begin_r_, it_, less_);
 	}
@@ -201,7 +201,7 @@ iterator_t_ hxbinary_search(iterator_t_ begin_, iterator_t_ end_, const value_t_
 	while(first_ < last_) {
 		iterator_t_ mid_ = first_ + ((last_ - first_) >> 1);
 		if(less_(*mid_, value_)) {
-			first_ = mid_ + 1;
+			first_ = mid_ + (ptrdiff_t)1;
 		}
 		else if(less_(value_, *mid_)) {
 			last_ = mid_;

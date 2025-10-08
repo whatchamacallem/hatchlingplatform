@@ -4,12 +4,12 @@
 
 #include <hx/hatchling.h>
 #include <hx/hxtest.hpp>
+#include <hx/hxutility.h>
 
 HX_REGISTER_FILENAME_HASH
 
 // Using ASSERT_* instead of EXPECT_* in this file adds coverage for those
-// macros. Memory corruption sounds fatal, so that seems appropriate. Some of
-// these tests are designed to fail and use EXPECT_* for those specific cases.
+// macros. Memory corruption sounds fatal, so that seems appropriate.
 
 // Verify that new and delete plausibly exist and that hxnullptr compiles.
 TEST(hxmemory_manager_test, hxnew) {
@@ -36,7 +36,7 @@ TEST(hxmemory_manager_test, string_duplicate) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	char* p = hxstring_duplicate("str");
 	ASSERT_TRUE(p != hxnull);
-	EXPECT_STREQ(p, "str");
+	ASSERT_STREQ(p, "str");
 	hxfree(p);
 }
 

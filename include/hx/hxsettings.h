@@ -23,8 +23,13 @@
 /// `HX_CPLUSPLUS` - A version of `__cplusplus` that is defined to `0` when
 /// `__cplusplus` is undefined. Allows use in C preprocessor statements without
 /// warnings when the compiler is configured to warn about undefined macros.
-/// Allows configuring doxygen to document all supported C++ standards.
-#define HX_CPLUSPLUS 202002L
+///
+/// -  C++11: 201103L
+/// -  C++14: 201402L
+/// -  C++17: 201703L
+/// -  C++20: 202002L
+/// -  C++23: 202302L
+#define HX_CPLUSPLUS 202002L // Sets C++ version for Doxygen parser.
 #elif defined __cplusplus
 #define HX_CPLUSPLUS __cplusplus
 #else
@@ -40,14 +45,10 @@ extern "C" {
 // hx31700_. Also create an identifier that can be used to cause link errors
 // containing the expected version when linking against old code. This is done
 // to force updates in a binary release channel.
-#define hxversion___(prefix_, x_) prefix_ ## x_ ## _
-#define hxversion__(prefix_, x_) hxversion___(prefix_, x_)
-#define hxversion_ hxversion__(hxversion, HATCHLING_VER)
-#define hxdetail_ hxversion__(hx, HATCHLING_VER)
-
-/// `hxversion_` - Renamed to something like `hxversion31700_` in order to
-/// cause link errors with stale binaries. It also contains the version.
-extern const int hxversion_;
+#define hxversion__(prefix_, x_) prefix_ ## x_ ## _
+#define hxversion_(prefix_, x_) hxversion__(prefix_, x_)
+#define g_hxinit_ver_ hxversion_(g_hxinit_ver, HATCHLING_VER)
+#define hxdetail_ hxversion_(hx, HATCHLING_VER)
 /// \endcond
 
 // ----------------------------------------------------------------------------

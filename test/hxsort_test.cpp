@@ -9,49 +9,6 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// Run some simple integer tests first.
-static bool sort_int(int a, int b) {
-	return a < b;
-}
-
-static bool sort_int_reverse(int a, int b) {
-	return a > b;
-}
-
-template<typename sort_callback_t_>
-void do_sort_int_case(const sort_callback_t_& sort_callback_) {
-	int ints[5] = { 2, 1, 0, 4, -5 };
-
-	// Sort 0 elements.
-	sort_callback_(ints, ints, sort_int);
-	const int ints1[5] = { 2, 1, 0, 4, -5 };
-	EXPECT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // Nothing changed.
-
-	// Sort 1 element.
-	sort_callback_(ints, ints + 1, sort_int);
-	EXPECT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // Still nothing changed.
-
-	// Sort 2 elements.
-	sort_callback_(ints, ints + 2, sort_int);
-	const int ints2[5] = { 1, 2, 0, 4, -5 };
-	EXPECT_TRUE(::memcmp(ints, ints2, sizeof ints) == 0);
-
-	// Sort all elements.
-	sort_callback_(ints, ints + 5, sort_int);
-	const int ints3[5] = { -5, 0, 1, 2, 4 };
-	EXPECT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0);
-
-	// Sort in reverse order.
-	sort_callback_(ints, ints + 5, sort_int_reverse);
-	const int ints4[5] = { 4, 2, 1, 0, -5 };
-	EXPECT_TRUE(::memcmp(ints, ints4, sizeof ints) == 0);
-
-	// Sort the reversed array back into ascending order.
-	sort_callback_(ints, ints + 5, sort_int);
-	EXPECT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0);
-}
-
-
 // The hxsort_test_api_t tests check for correct use of references to temporaries.
 class hxsort_test_api_t {
 public:
@@ -149,7 +106,186 @@ static bool sort_iter_value_greater(const hxsort_test_api_t& lhs_, const hxsort_
 	return lhs_.value > rhs_.value;
 }
 
+TEST(hxsort_test, hxmerge_iterator_support) {
+	hxsort_test_api_t left_[3] = { hxsort_test_api_t(1), hxsort_test_api_t(3), hxsort_test_api_t(5) };
+	hxsort_test_api_t right_[3] = { hxsort_test_api_t(2), hxsort_test_api_t(4), hxsort_test_api_t(6) };
+	hxsort_test_api_t dest_[6] = {
+		hxsort_test_api_t(0), hxsort_test_api_t(0), hxsort_test_api_t(0),
+		hxsort_test_api_t(0), hxsort_test_api_t(0), hxsort_test_api_t(0)
+	};
+
+	hxmerge(hxsort_test_iter_api_t(left_), hxsort_test_iter_api_t(left_ + 3),
+		hxsort_test_iter_api_t(right_), hxsort_test_iter_api_t(right_ + 3),
+		hxsort_test_iter_api_t(dest_), sort_iter_value_less);
+
+	const int expected_sorted_[6] = { 1, 2, 3, 4, 5, 6 };
+	for(size_t i_ = 0; i_ < 6; ++i_) {
+		EXPECT_EQ(dest_[i_].value, expected_sorted_[i_]);
+	}
+
+	// Do it all over again with a GE functor and the parameters reversed.
+	hxsort_test_api_t left_desc_[3] = { hxsort_test_api_t(5), hxsort_test_api_t(3), hxsort_test_api_t(1) };
+	hxsort_test_api_t right_desc_[3] = { hxsort_test_api_t(6), hxsort_test_api_t(4), hxsort_test_api_t(2) };
+	hxsort_test_api_t dest_desc_[6] = {
+		hxsort_test_api_t(0), hxsort_test_api_t(0), hxsort_test_api_t(0),
+		hxsort_test_api_t(0), hxsort_test_api_t(0), hxsort_test_api_t(0)
+	};
+
+	hxmerge(hxsort_test_iter_api_t(left_desc_), hxsort_test_iter_api_t(left_desc_ + 3),
+		hxsort_test_iter_api_t(right_desc_), hxsort_test_iter_api_t(right_desc_ + 3),
+		hxsort_test_iter_api_t(dest_desc_), sort_iter_value_greater);
+
+	const int expected_desc_[6] = { 6, 5, 4, 3, 2, 1 };
+	for(size_t i_ = 0; i_ < 6; ++i_) {
+		EXPECT_EQ(dest_desc_[i_].value, expected_desc_[i_]);
+	}
+}
+
+TEST(hxsort_test, hxbinary_search_iterator_support) {
+	hxsort_test_api_t values_[7] = {
+		hxsort_test_api_t(-5), hxsort_test_api_t(-1), hxsort_test_api_t(0), hxsort_test_api_t(3),
+		hxsort_test_api_t(5), hxsort_test_api_t(8), hxsort_test_api_t(12)
+	};
+
+	hxsort_test_iter_api_t begin_(values_);
+	hxsort_test_iter_api_t end_(values_ + 7);
+
+	hxsort_test_api_t key_three_(3);
+	hxsort_test_iter_api_t result_ = hxbinary_search(begin_, end_, key_three_, sort_iter_value_less);
+	EXPECT_NE(result_, end_);
+	EXPECT_EQ((*result_).value, 3);
+
+	hxsort_test_api_t key_high_(12);
+	result_ = hxbinary_search(begin_, end_, key_high_, sort_iter_value_less);
+	EXPECT_NE(result_, end_);
+	EXPECT_EQ((*result_).value, 12);
+
+	hxsort_test_api_t missing_(7);
+	result_ = hxbinary_search(begin_, end_, missing_, sort_iter_value_less);
+	EXPECT_EQ(result_, end_);
+
+	// Empty list.
+	result_ = hxbinary_search(begin_, begin_, key_three_, sort_iter_value_less);
+	EXPECT_EQ(result_, begin_);
+}
+
+TEST(hxsort_test, sort_grinder) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	hxrandom rng(2);
+	size_t max_size_mask = 0x7f;
+	hxarray<hxsort_test_api_t> insertion_sorted; insertion_sorted.reserve(max_size_mask);
+	hxarray<hxsort_test_api_t> heap_sorted; heap_sorted.reserve(max_size_mask);
+	hxarray<hxsort_test_api_t> generic_sorted; generic_sorted.reserve(max_size_mask);
+
+	for(int i=12; i--; ) {
+		// Set up the arrays to be sorted.
+		size_t size = (max_size_mask >> i) & rng;
+		for(size_t j=size; j--;) {
+			insertion_sorted.push_back(hxsort_test_api_t(rng.range(100, 200)));
+			// Use the && constructor and not the const& one.
+			heap_sorted.push_back(hxsort_test_api_t(0));
+			generic_sorted.push_back(hxsort_test_api_t(0));
+		}
+
+		::memcpy((void*)heap_sorted.data(), insertion_sorted.data(), insertion_sorted.size_bytes());
+		::memcpy((void*)generic_sorted.data(), insertion_sorted.data(), insertion_sorted.size_bytes());
+
+		hxinsertion_sort(insertion_sorted.begin(), insertion_sorted.end());
+		hxheapsort(heap_sorted.begin(), heap_sorted.end());
+		hxsort(generic_sorted.begin(), generic_sorted.end());
+
+		// Compare the three results to confirm they are sorted.
+		ASSERT_EQ(::memcmp(insertion_sorted.data(), heap_sorted.data(), insertion_sorted.size_bytes()), 0);
+		ASSERT_EQ(::memcmp(insertion_sorted.data(), generic_sorted.data(), insertion_sorted.size_bytes()), 0);
+
+		insertion_sorted.clear();
+		heap_sorted.clear();
+		generic_sorted.clear();
+	}
+}
+
+TEST(hxsort_test, sort_grinder_generic) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	hxrandom rng(3);
+	size_t max_size_mask = 0xffff;
+	hxarray<hxsort_test_api_t> sorted; sorted.reserve(max_size_mask);
+	hxarray<int> histogram(20000, 0);
+
+	for(int i=10; i--; ) {
+		// Pick random values of increasing maximum value up to 2^16 and keep a
+		// count of them.
+		size_t size = (max_size_mask >> i) & rng;
+		if(size <= 16) {
+			continue;
+		}
+		for(size_t j=size; j--;) {
+			int x = rng.range(10000, 10000);
+			sorted.push_back(hxsort_test_api_t(x));
+			++histogram[(size_t)x];
+		}
+
+		hxsort(sorted.begin(), sorted.end());
+
+		// Check that all values are accounted for starting with the last one.
+		// Confirm sort order with (j <= j+1) while walking down to the first
+		// value. Note size > 16.
+		--histogram[(size_t)sorted[size - 1].value];
+		for(size_t j=size - 1u; j--;) {
+			--histogram[(size_t)sorted[j].value];
+			// Use pointers just to show that they are dereferenced by hxkey_less.
+			EXPECT_FALSE(hxkey_less(sorted.get(j + 1), sorted.get(j)));
+		}
+		for(size_t j=20000u; j-- > 10000u;) {
+			EXPECT_EQ(histogram[j], 0);
+		}
+		sorted.clear();
+	}
+}
+
 #if HX_CPLUSPLUS >= 201402L // C++14 only.
+
+// Run some simple integer tests first.
+static bool sort_int(int a, int b) {
+	return a < b;
+}
+
+static bool sort_int_reverse(int a, int b) {
+	return a > b;
+}
+
+template<typename sort_callback_t_>
+void do_sort_int_case(const sort_callback_t_& sort_callback_) {
+	int ints[5] = { 2, 1, 0, 4, -5 };
+
+	// Sort 0 elements.
+	sort_callback_(ints, ints, sort_int);
+	const int ints1[5] = { 2, 1, 0, 4, -5 };
+	EXPECT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // Nothing changed.
+
+	// Sort 1 element.
+	sort_callback_(ints, ints + 1, sort_int);
+	EXPECT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // Still nothing changed.
+
+	// Sort 2 elements.
+	sort_callback_(ints, ints + 2, sort_int);
+	const int ints2[5] = { 1, 2, 0, 4, -5 };
+	EXPECT_TRUE(::memcmp(ints, ints2, sizeof ints) == 0);
+
+	// Sort all elements.
+	sort_callback_(ints, ints + 5, sort_int);
+	const int ints3[5] = { -5, 0, 1, 2, 4 };
+	EXPECT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0);
+
+	// Sort in reverse order.
+	sort_callback_(ints, ints + 5, sort_int_reverse);
+	const int ints4[5] = { 4, 2, 1, 0, -5 };
+	EXPECT_TRUE(::memcmp(ints, ints4, sizeof ints) == 0);
+
+	// Sort the reversed array back into ascending order.
+	sort_callback_(ints, ints + 5, sort_int);
+	EXPECT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0);
+}
+
 template<typename sort_callback_t_>
 static void do_sort_iter_case(const sort_callback_t_& sort_callback_) {
 	const int initial_values_[5] = { 2, 1, 0, 4, -5 };
@@ -298,139 +434,3 @@ TEST(hxsort_test, iterator_support) {
 	});
 }
 #endif // HX_CPLUSPLUS >= 201402L
-
-TEST(hxsort_test, hxmerge_iterator_support) {
-	hxsort_test_api_t left_[3] = { hxsort_test_api_t(1), hxsort_test_api_t(3), hxsort_test_api_t(5) };
-	hxsort_test_api_t right_[3] = { hxsort_test_api_t(2), hxsort_test_api_t(4), hxsort_test_api_t(6) };
-	hxsort_test_api_t dest_[6] = {
-		hxsort_test_api_t(0), hxsort_test_api_t(0), hxsort_test_api_t(0),
-		hxsort_test_api_t(0), hxsort_test_api_t(0), hxsort_test_api_t(0)
-	};
-
-	hxmerge(hxsort_test_iter_api_t(left_), hxsort_test_iter_api_t(left_ + 3),
-		hxsort_test_iter_api_t(right_), hxsort_test_iter_api_t(right_ + 3),
-		hxsort_test_iter_api_t(dest_), sort_iter_value_less);
-
-	const int expected_sorted_[6] = { 1, 2, 3, 4, 5, 6 };
-	for(size_t i_ = 0; i_ < 6; ++i_) {
-		EXPECT_EQ(dest_[i_].value, expected_sorted_[i_]);
-	}
-
-	// Do it all over again with a GE functor and the parameters reversed.
-	hxsort_test_api_t left_desc_[3] = { hxsort_test_api_t(5), hxsort_test_api_t(3), hxsort_test_api_t(1) };
-	hxsort_test_api_t right_desc_[3] = { hxsort_test_api_t(6), hxsort_test_api_t(4), hxsort_test_api_t(2) };
-	hxsort_test_api_t dest_desc_[6] = {
-		hxsort_test_api_t(0), hxsort_test_api_t(0), hxsort_test_api_t(0),
-		hxsort_test_api_t(0), hxsort_test_api_t(0), hxsort_test_api_t(0)
-	};
-
-	hxmerge(hxsort_test_iter_api_t(left_desc_), hxsort_test_iter_api_t(left_desc_ + 3),
-		hxsort_test_iter_api_t(right_desc_), hxsort_test_iter_api_t(right_desc_ + 3),
-		hxsort_test_iter_api_t(dest_desc_), sort_iter_value_greater);
-
-	const int expected_desc_[6] = { 6, 5, 4, 3, 2, 1 };
-	for(size_t i_ = 0; i_ < 6; ++i_) {
-		EXPECT_EQ(dest_desc_[i_].value, expected_desc_[i_]);
-	}
-}
-
-TEST(hxsort_test, hxbinary_search_iterator_support) {
-	hxsort_test_api_t values_[7] = {
-		hxsort_test_api_t(-5), hxsort_test_api_t(-1), hxsort_test_api_t(0), hxsort_test_api_t(3),
-		hxsort_test_api_t(5), hxsort_test_api_t(8), hxsort_test_api_t(12)
-	};
-
-	hxsort_test_iter_api_t begin_(values_);
-	hxsort_test_iter_api_t end_(values_ + 7);
-
-	hxsort_test_api_t key_three_(3);
-	hxsort_test_iter_api_t result_ = hxbinary_search(begin_, end_, key_three_, sort_iter_value_less);
-	EXPECT_NE(result_, end_);
-	EXPECT_EQ((*result_).value, 3);
-
-	hxsort_test_api_t key_high_(12);
-	result_ = hxbinary_search(begin_, end_, key_high_, sort_iter_value_less);
-	EXPECT_NE(result_, end_);
-	EXPECT_EQ((*result_).value, 12);
-
-	hxsort_test_api_t missing_(7);
-	result_ = hxbinary_search(begin_, end_, missing_, sort_iter_value_less);
-	EXPECT_EQ(result_, end_);
-
-	// Empty list.
-	result_ = hxbinary_search(begin_, begin_, key_three_, sort_iter_value_less);
-	EXPECT_EQ(result_, begin_);
-}
-
-TEST(hxsort_test, sort_grinder) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
-	hxrandom rng(2);
-	size_t max_size_mask = 0x7f;
-	hxarray<hxsort_test_api_t> insertion_sorted; insertion_sorted.reserve(max_size_mask);
-	hxarray<hxsort_test_api_t> heap_sorted; heap_sorted.reserve(max_size_mask);
-	hxarray<hxsort_test_api_t> generic_sorted; generic_sorted.reserve(max_size_mask);
-
-	for(int i=12; i--; ) {
-		// Set up the arrays to be sorted.
-		size_t size = (max_size_mask >> i) & rng;
-		for(size_t j=size; j--;) {
-			insertion_sorted.push_back(hxsort_test_api_t(rng.range(100, 200)));
-			// Use the && constructor and not the const& one.
-			heap_sorted.push_back(hxsort_test_api_t(0));
-			generic_sorted.push_back(hxsort_test_api_t(0));
-		}
-
-		::memcpy((void*)heap_sorted.data(), insertion_sorted.data(), insertion_sorted.size_bytes());
-		::memcpy((void*)generic_sorted.data(), insertion_sorted.data(), insertion_sorted.size_bytes());
-
-		hxinsertion_sort(insertion_sorted.begin(), insertion_sorted.end());
-		hxheapsort(heap_sorted.begin(), heap_sorted.end());
-		hxsort(generic_sorted.begin(), generic_sorted.end());
-
-		// Compare the three results to confirm they are sorted.
-		ASSERT_EQ(::memcmp(insertion_sorted.data(), heap_sorted.data(), insertion_sorted.size_bytes()), 0);
-		ASSERT_EQ(::memcmp(insertion_sorted.data(), generic_sorted.data(), insertion_sorted.size_bytes()), 0);
-
-		insertion_sorted.clear();
-		heap_sorted.clear();
-		generic_sorted.clear();
-	}
-}
-
-TEST(hxsort_test, sort_grinder_generic) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
-	hxrandom rng(3);
-	size_t max_size_mask = 0xffff;
-	hxarray<hxsort_test_api_t> sorted; sorted.reserve(max_size_mask);
-	hxarray<int> histogram(20000, 0);
-
-	for(int i=10; i--; ) {
-		// Pick random values of increasing maximum value up to 2^16 and keep a
-		// count of them.
-		size_t size = (max_size_mask >> i) & rng;
-		if(size <= 16) {
-			continue;
-		}
-		for(size_t j=size; j--;) {
-			int x = rng.range(10000, 10000);
-			sorted.push_back(hxsort_test_api_t(x));
-			++histogram[(size_t)x];
-		}
-
-		hxsort(sorted.begin(), sorted.end());
-
-		// Check that all values are accounted for starting with the last one.
-		// Confirm sort order with (j <= j+1) while walking down to the first
-		// value. Note size > 16.
-		--histogram[(size_t)sorted[size - 1].value];
-		for(size_t j=size - 1u; j--;) {
-			--histogram[(size_t)sorted[j].value];
-			// Use pointers just to show that they are dereferenced by hxkey_less.
-			EXPECT_FALSE(hxkey_less(sorted.get(j + 1), sorted.get(j)));
-		}
-		for(size_t j=20000u; j-- > 10000u;) {
-			EXPECT_EQ(histogram[j], 0);
-		}
-		sorted.clear();
-	}
-}

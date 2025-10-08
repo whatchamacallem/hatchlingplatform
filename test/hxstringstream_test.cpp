@@ -35,6 +35,7 @@ TEST(hxstringstream_test, capacity_off_by_1) {
 	EXPECT_TRUE(stream.eof());
 }
 
+#if HX_CPLUSPLUS >= 201703L // C++17 only.
 TEST(hxstringstream_test, write_fundamental_types) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxstringstream stream;
@@ -64,3 +65,4 @@ TEST(hxstringstream_test, write_fundamental_types) {
 	expect_stream(2.5, "2.5");
 	expect_stream(0.5L, "0.5");
 }
+#endif // HX_CPLUSPLUS >= 201402L
