@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-#include <hx/hxstring_stream.hpp>
+#include <hx/hxstringstream.hpp>
 #include <hx/hxtest.hpp>
 #include <hx/hxutility.h>
 
@@ -11,7 +11,8 @@
 HX_REGISTER_FILENAME_HASH
 
 TEST(hxstring_stream_test, write_and_read_roundtrip) {
-	hxstring_stream stream;
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	hxstringstream stream;
 	stream.reserve(16u);
 	const char payload_[] = "abc";
 	EXPECT_EQ(stream.write(payload_, sizeof payload_ - 1u), 3u);
@@ -27,7 +28,8 @@ TEST(hxstring_stream_test, write_and_read_roundtrip) {
 }
 
 TEST(hxstring_stream_test, write_fundamental_types) {
-	hxstring_stream stream;
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	hxstringstream stream;
 	stream.reserve(128u);
 	stream.clear();
 

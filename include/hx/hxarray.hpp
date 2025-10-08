@@ -872,9 +872,7 @@ template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::reserve(size_t size_,
 		hxsystem_allocator_t allocator_,
 		hxalignment_t alignment_) {
-	T_* prev = this->data();
 	this->reserve_storage(size_, allocator_, alignment_);
-	hxassertmsg(!prev || prev == this->data(), "reallocation_disallowed"); (void)prev;
 	if(m_end_ == hxnull) {
 		m_end_ = this->data();
 	}
