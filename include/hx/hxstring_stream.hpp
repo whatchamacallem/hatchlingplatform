@@ -62,7 +62,7 @@ public:
 	// Does not '\0'-terminate the sequence of bytes read. This is for lower
 	// level use and not reading strings. (TODO.)
 	size_t read(char* bytes_, size_t count_) hxattr_nonnull(2) hxattr_hot {
-		hxassertmsg((size_t)(m_position_ - this->data()) < this->size(), "hxstring_stream unallocated");
+		hxassertmsg((size_t)(m_position_ - this->data()) <= this->size(), "hxstring_stream Invalid read.");
 
 		// May or may not read '\0'.
 		size_t available_ = (size_t)(this->m_end_ - m_position_);
@@ -78,11 +78,13 @@ public:
 
 	/// '\0'-terminates the stored buffer after appending the sequence of bytes read.
 	size_t write(const char* bytes_, size_t count_) hxattr_nonnull(2) hxattr_hot {
-		hxassertmsg((size_t)(m_position_ - this->data()) < this->size(), "hxstring_stream unallocated");
+		hxassertmsg((size_t)(m_position_ - this->data()) <= this->size(), "hxstring_stream Invalid write.");
 
-		// The -1 is to reserve space for the required trailing '\0'.
-		size_t available_capacity = capacity_ - (size_t)(m_position_ - this->data()) - 1;
-		if(count_ > available_capacity) {
+		// XXX.
+		size_t available_capacity = this->capacity() - (size_t)(m_position_ - this->data());
+
+		// The >= is used to reserve space for the required trailing '\0'.
+		if(count_ >= available_capacity) {
 			m_failed_ = true;
 			return 0u;
 		}
