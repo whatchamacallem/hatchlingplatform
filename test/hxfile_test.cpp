@@ -57,7 +57,7 @@ TEST(hxfile_test, missing_file_reports_expectations) {
 TEST(hxfile_test, seek_and_read_maintain_state) {
 	// Write a test file to exercise get/set_position and read1/write1.
 
-	struct { uint32_t x; } a { 0xefefefefu }, b { 0x01020304u }, c { 0x0u };
+	struct hxfile_test_arbitrary_t { uint32_t x; } a { 0xefefefefu }, b { 0x01020304u }, c { 0x0u };
 
 	// Write the expected value surrounded by poison.
 	hxfile f(hxfile::in | hxfile::out, "hxfile_test_offset.bin");

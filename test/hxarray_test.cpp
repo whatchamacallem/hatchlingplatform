@@ -393,13 +393,13 @@ TEST(hxarray_test, for_each_invokes_functors) {
 	EXPECT_EQ(objs_ref[4], 5);
 
 	// Count the objects with a non-temporary functor.
-	struct X { int n; X() : n(0) { }; void operator()(int&) { ++n; } } x;
+	struct hxarray_test_x_t { int n; hxarray_test_x_t() : n(0) { }; void operator()(int&) { ++n; } } x;
 	objs.for_each(x);
 	EXPECT_EQ(x.n, 5);
 
 	// Run it empty for correctness.
 	objs.clear();
-	struct Y { void operator()(int&) const { hxassertmsg(0, "internal error"); } } y;
+	struct hxarray_test_y_t { void operator()(int&) const { hxassertmsg(0, "internal error"); } } y;
 	objs.for_each(y);
 }
 
@@ -804,8 +804,8 @@ TEST(hxarray_iterators, cbegin_cend) {
 		const_values.cend());
 }
 
-// std::initializer_list is great for writing test code for an array class.
-// Not sure what else.
+// std::initializer_list is great for writing test code for hxarray. Not sure
+// what else it is useful for besides test data.
 #if HX_CPLUSPLUS >= 202002L && !HX_NO_LIBCXX
 TEST_F(hxarray_test_f, plus_equals) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);

@@ -176,8 +176,8 @@ TEST(hxutility_test, hxnullptr_converts_only_to_null) {
 	const int* int_ptr = null_object;
 	EXPECT_EQ(int_ptr, hxnullptr);
 
-	struct hxutility_member_holder { int value; };
-	int hxutility_member_holder::* member_ptr = null_object;
+	struct hxutility_test_member_holder { int value; };
+	int hxutility_test_member_holder::* member_ptr = null_object;
 	EXPECT_EQ(member_ptr, hxnullptr);
 }
 
@@ -239,7 +239,7 @@ TEST(hxutility_test, arithmetic_helpers_cover_min_max_abs_clamp) {
 }
 
 TEST(hxutility_test, hxswap_memcpy) {
-	struct hxutility_memcpy_record {
+	struct hxutility_test_memcpy_record {
 		int32_t first;
 		int32_t second;
 	} first = { 1, 2 }, second = { 3, 4 };
