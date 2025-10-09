@@ -8,165 +8,28 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// ----------------------------------------------------------------------------
-// hxconsole_test::Command_factory
-
 namespace {
-	enum hxconsole_test_type_id : uint8_t {
-		hxconsole_test_type_id_Void,
-		hxconsole_test_type_id_Char,
-		hxconsole_test_type_id_Short,
-		hxconsole_test_type_id_Int,
-		hxconsole_test_type_id_Bool,
-		hxconsole_test_type_id_UChar,
-		hxconsole_test_type_id_UShort,
-		hxconsole_test_type_id_UInt,
-		hxconsole_test_type_id_Float,
-		hxconsole_test_type_id_LongLong,
-		hxconsole_test_type_id_ULongLong,
-		hxconsole_test_type_id_Double,
-		hxconsole_test_type_id_MAX
-	};
+float s_hxconsole_test_result_hook = 0.0f;
 
-	int32_t c_hxconsole_test_call_flags = 0;
-
-	const int8_t c_hxconsole_test_expectedChar = 123;
-	const int16_t c_hxconsole_test_expectedShort = -234;
-	const int32_t c_hxconsole_test_expectedInt = -345;
-	const bool c_hxconsole_test_expectedBool = true;
-	const uint8_t c_hxconsole_test_expectedUChar = 12;
-	const uint16_t c_hxconsole_test_expectedUShort = 2345;
-	const uint32_t c_hxconsole_test_expectedUInt = 3456;
-	const float c_hxconsole_test_expectedFloat = 6.78f;
-
-	const int64_t c_hxconsole_test_expectedLongLong = 56789ll;
-	const uint64_t c_hxconsole_test_expectedULongLong = 67890ull;
-	const double c_hxconsole_test_expectedDouble = 7.89;
-
-	template<typename T>
-	void hxconsole_test_type_check_t(T t, hxconsole_test_type_id id, T expected) {
-		c_hxconsole_test_call_flags |= 1 << (int32_t)id;
-		EXPECT_EQ(t, expected);
-	}
-	void hxconsole_test_type_check_t(float t, hxconsole_test_type_id id, float expected) {
-		c_hxconsole_test_call_flags |= 1 << (int32_t)id;
-		EXPECT_NEAR(expected, t, 0.00001f); // This loses precision with -ffast-math.
-	}
-
-#define hxconsole_test_type_check(T, t) \
-	hxconsole_test_type_check_t(t, hxconsole_test_type_id_##T, c_hxconsole_test_expected##T)
-
-	bool hxconsole_test_fn0(void) {
-		c_hxconsole_test_call_flags |= 1 << (int32_t)hxconsole_test_type_id_Void;
-		return true;
-	}
-
-	bool hxconsole_test_fn1(hxconsolenumber_t a0) {
-		hxconsole_test_type_check(Char, (int8_t)a0);
-		return true;
-	}
-
-	bool hxconsole_test_fn2(hxconsolenumber_t a0, hxconsolenumber_t a1) {
-		hxconsole_test_type_check(Short, (int16_t)a0);
-		hxconsole_test_type_check(Int, (int32_t)a1);
-		return true;
-	}
-
-	bool hxconsole_test_fn3(hxconsolenumber_t a0, hxconsolenumber_t a1) {
-		hxconsole_test_type_check(Bool, (bool)a0);
-		hxconsole_test_type_check(UChar, (uint8_t)a1);
-		return true;
-	}
-
-	bool hxconsole_test_fn4(hxconsolenumber_t a0, hxconsolenumber_t a1, hxconsolenumber_t a2, hxconsolenumber_t a3) {
-		hxconsole_test_type_check(UShort, (uint16_t)a0);
-		hxconsole_test_type_check(UInt, (uint32_t)a1);
-		hxconsole_test_type_check(UInt, (uint32_t)a2);
-		hxconsole_test_type_check(Float, (float)a3);
-		return 4;
-	}
-	bool hxconsole_test_fn8(hxconsolenumber_t a0, hxconsolenumber_t a1, hxconsolenumber_t a2) {
-		hxconsole_test_type_check(LongLong, (int64_t)a0);
-		hxconsole_test_type_check(ULongLong, (uint64_t)a1);
-		hxconsole_test_type_check(Double, (double)a2);
-		return true;
-	}
-
-#undef hxconsole_test_type_check
-} // namespace
-
-TEST(hxconsole_test, command_factory) {
-	hxlogconsole("EXPECTING_TEST_WARNINGS\n");
-	c_hxconsole_test_call_flags = 0;
-
-	EXPECT_TRUE(hxconsole_command_factory_(hxconsole_test_fn0).execute_(""));
-	EXPECT_FALSE(hxconsole_command_factory_(hxconsole_test_fn0).execute_("unexpected text"));
-
-	EXPECT_TRUE(hxconsole_command_factory_(hxconsole_test_fn1).execute_("123"));
-	EXPECT_TRUE(hxconsole_command_factory_(hxconsole_test_fn2).execute_("-234 -345"));
-
-	EXPECT_TRUE(hxconsole_command_factory_(hxconsole_test_fn3).execute_("1 12"));
-
-	// This will pass because 2 is a valid bool.
-	EXPECT_TRUE(hxconsole_command_factory_(hxconsole_test_fn3).execute_("2 12"));
-
-	EXPECT_TRUE(hxconsole_command_factory_(hxconsole_test_fn4).execute_("2345 3456 3456 6.78"));
-	EXPECT_FALSE(hxconsole_command_factory_(hxconsole_test_fn4).execute_("$*"));
-
-	EXPECT_TRUE(hxconsole_command_factory_(hxconsole_test_fn8).execute_("56789 67890 7.89"));
-	EXPECT_FALSE(hxconsole_command_factory_(hxconsole_test_fn8).execute_("56d789 67890 7.89"));
-
-	// Check that all flags have been set.
-	EXPECT_EQ(c_hxconsole_test_call_flags, (1<<hxconsole_test_type_id_MAX)-1);
+bool hxconsole_test_register0(hxconsolenumber_t a0, const char* a1) {
+	s_hxconsole_test_result_hook = (float)a0 + (float)::strlen(a1);
+	return true;
 }
 
-// Trigger some asserts and then call EXPECT_FALSE a few times. This shows that
-// asserts are hit and can be skipped, and that the above test would fail if bad
-// commands were submitted.
-#if HX_TEST_ERROR_HANDLING
-TEST(hxconsole_test, overflow) {
-	hxlogconsole("EXPECTING_TEST_FAILURE\n");
-#if (HX_RELEASE) < 1
-	// Test that asserts are triggered by overflow.
-	hxconsole_exec_line("skipasserts 2");
-#endif
-
-	// These will all EXPECT_FALSE due to parameter mismatch.
-	hxconsole_command_factory_(hxconsole_test_fn1).execute_("256");
-	hxconsole_command_factory_(hxconsole_test_fn2).execute_("32768 -345");
-
-#if (HX_RELEASE) < 1
-	// Test that asserts are triggered by overflow.
-	hxassertmsg(hxconsole_exec_line("checkasserts"), "expected more asserts");
-#endif
+bool hxconsole_test_register1(hxconsolenumber_t a0) {
+	s_hxconsole_test_result_hook = a0;
+	return true;
 }
-#endif // HX_TEST_ERROR_HANDLING
 
-// ----------------------------------------------------------------------------
-// hxconsole_test::Register_command
+bool hxconsole_test_register2(hxconsolenumber_t a0) {
+	s_hxconsole_test_result_hook = a0;
+	return true;
+}
 
-namespace {
-	float s_hxconsole_test_result_hook = 0.0f;
-
-	bool hxconsole_test_register0(hxconsolenumber_t a0, const char* a1) {
-		s_hxconsole_test_result_hook = (float)a0 + (float)::strlen(a1);
-		return true;
-	}
-
-	bool hxconsole_test_register1(hxconsolenumber_t a0) {
-		s_hxconsole_test_result_hook = a0;
-		return true;
-	}
-
-	bool hxconsole_test_register2(hxconsolenumber_t a0) {
-		s_hxconsole_test_result_hook = a0;
-		return true;
-	}
-
-	bool hxconsole_test_register3(hxconsolenumber_t, hxconsolenumber_t a1) {
-		s_hxconsole_test_result_hook = a1;
-		return true;
-	}
+bool hxconsole_test_register3(hxconsolenumber_t, hxconsolenumber_t a1) {
+	s_hxconsole_test_result_hook = a1;
+	return true;
+}
 } // namespace
 
 hxconsole_command(hxconsole_test_register0);

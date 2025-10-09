@@ -12,7 +12,7 @@ HX_REGISTER_FILENAME_HASH
 namespace {
 
 template<typename T>
-void hxtest_relational_(T a, T b) {
+void hxtest_relational(T a, T b) {
 	ASSERT_EQ(a, a);
 	ASSERT_GE(a, a);
 	ASSERT_GE(b, a);
@@ -34,20 +34,20 @@ void hxtest_relational_(T a, T b) {
 } // namespace {
 
 TEST(hxtest_test, relational) {
-	hxtest_relational_<int>(-1, 0);
-	hxtest_relational_<long>(-5, -4);
-	hxtest_relational_<long long>(-9, -8);
-	hxtest_relational_<unsigned int>(1u, 2u);
-	hxtest_relational_<unsigned long>(5ul, 6ul);
-	hxtest_relational_<unsigned long long>(11ull, 12ull);
-	hxtest_relational_<int8_t>((int8_t)-12, (int8_t)-11);
-	hxtest_relational_<uint8_t>((uint8_t)3, (uint8_t)4);
-	hxtest_relational_<int16_t>((int16_t)-301, (int16_t)-300);
-	hxtest_relational_<uint16_t>((uint16_t)7, (uint16_t)8);
-	hxtest_relational_<int32_t>((int32_t)-70001, (int32_t)-70000);
-	hxtest_relational_<uint32_t>((uint32_t)100, (uint32_t)101);
-	hxtest_relational_<float>(-0.00002f, -0.00001f);
-	hxtest_relational_<double>(0.0, 1.0);
+	hxtest_relational<int>(-1, 0);
+	hxtest_relational<long>(-5, -4);
+	hxtest_relational<long long>(-9, -8);
+	hxtest_relational<unsigned int>(1u, 2u);
+	hxtest_relational<unsigned long>(5ul, 6ul);
+	hxtest_relational<unsigned long long>(11ull, 12ull);
+	hxtest_relational<int8_t>((int8_t)-12, (int8_t)-11);
+	hxtest_relational<uint8_t>((uint8_t)3, (uint8_t)4);
+	hxtest_relational<int16_t>((int16_t)-301, (int16_t)-300);
+	hxtest_relational<uint16_t>((uint16_t)7, (uint16_t)8);
+	hxtest_relational<int32_t>((int32_t)-70001, (int32_t)-70000);
+	hxtest_relational<uint32_t>((uint32_t)100, (uint32_t)101);
+	hxtest_relational<float>(-0.00002f, -0.00001f);
+	hxtest_relational<double>(0.0, 1.0);
 
 	ASSERT_STREQ("a", "a");
 	ASSERT_STRNE("a", "b");

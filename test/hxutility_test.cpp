@@ -12,35 +12,33 @@ HX_REGISTER_FILENAME_HASH
 
 namespace {
 
-template<typename A_, typename B_> struct hxutility_is_same_ { enum { value = 0 }; };
-template<typename A_> struct hxutility_is_same_<A_, A_> { enum { value = 1 }; };
+template<typename A, typename B> struct hxutility_test_is_same { enum { value = 0 }; };
+template<typename A> struct hxutility_test_is_same<A, A> { enum { value = 1 }; };
 
 } // namespace
 
 static_assert(hxfalse_t::value == 0, "hxfalse_t must report false");
 static_assert(hxtrue_t::value == 1, "hxtrue_t must report true");
 
-static_assert(hxutility_is_same_<hxenable_if_<true, int>::type, int>::value,
-	"hxenable_if_<true> must expose the requested type");
-static_assert(hxutility_is_same_<hxenable_if_t<true, int>, int>::value,
+static_assert(hxutility_test_is_same<hxenable_if_t<true, int>, int>::value,
 	"hxenable_if_t<true> must expose the requested type");
 
-static_assert(hxutility_is_same_<hxremove_reference_t<int>, int>::value,
-	"hxremove_reference_ leaves non-references untouched");
-static_assert(hxutility_is_same_<hxremove_reference_t<int&>, int>::value,
+static_assert(hxutility_test_is_same<hxremove_reference_t<int>, int>::value,
+	"hxremove_reference leaves non-references untouched");
+static_assert(hxutility_test_is_same<hxremove_reference_t<int&>, int>::value,
 	"hxremove_reference_t strips lvalue references");
-static_assert(hxutility_is_same_<hxremove_reference_t<int&&>, int>::value,
+static_assert(hxutility_test_is_same<hxremove_reference_t<int&&>, int>::value,
 	"hxremove_reference_t strips rvalue references");
 
-static_assert(hxutility_is_same_<hxremove_pointer_t<int*>, int>::value,
-	"hxremove_pointer_ should strip pointers");
-static_assert(hxutility_is_same_<hxremove_pointer_t<int* const>, int>::value,
-	"hxremove_pointer_ should ignore const pointers");
-static_assert(hxutility_is_same_<hxremove_pointer_t<const int*>, const int>::value,
-	"hxremove_pointer_ should leave pointed-to qualifiers");
-static_assert(hxutility_is_same_<hxremove_pointer_t<int* volatile>, int>::value,
+static_assert(hxutility_test_is_same<hxremove_pointer_t<int*>, int>::value,
+	"hxremove_pointer should strip pointers");
+static_assert(hxutility_test_is_same<hxremove_pointer_t<int* const>, int>::value,
+	"hxremove_pointer should ignore const pointers");
+static_assert(hxutility_test_is_same<hxremove_pointer_t<const int*>, const int>::value,
+	"hxremove_pointer should leave pointed-to qualifiers");
+static_assert(hxutility_test_is_same<hxremove_pointer_t<int* volatile>, int>::value,
 	"hxremove_pointer_t should ignore volatile pointers");
-static_assert(hxutility_is_same_<hxremove_pointer_t<int>, int>::value,
+static_assert(hxutility_test_is_same<hxremove_pointer_t<int>, int>::value,
 	"hxremove_pointer_t should leave non-pointers untouched");
 
 static_assert(hxis_lvalue_reference<int&>::value == 1,
@@ -52,13 +50,13 @@ static_assert(hxis_rvalue_reference<int&&>::value == 1,
 static_assert(hxis_rvalue_reference<int&>::value == 0,
 	"hxis_rvalue_reference should reject lvalues");
 
-static_assert(hxutility_is_same_<hxremove_cv_t<int>, int>::value,
+static_assert(hxutility_test_is_same<hxremove_cv_t<int>, int>::value,
 	"hxremove_cv_t leaves plain types untouched");
-static_assert(hxutility_is_same_<hxremove_cv_<const volatile int>::type, int>::value,
-	"hxremove_cv_ strips const volatile");
-static_assert(hxutility_is_same_<hxremove_cv_t<const int>, int>::value,
+static_assert(hxutility_test_is_same<hxremove_cv_t<const volatile int>, int>::value,
+	"hxremove_cv strips const volatile");
+static_assert(hxutility_test_is_same<hxremove_cv_t<const int>, int>::value,
 	"hxremove_cv_t strips const");
-static_assert(hxutility_is_same_<hxremove_cv_t<volatile int>, int>::value,
+static_assert(hxutility_test_is_same<hxremove_cv_t<volatile int>, int>::value,
 	"hxremove_cv_t strips volatile");
 
 static_assert(hxis_const<int>::value == 0, "hxis_const should reject mutable");
@@ -105,36 +103,36 @@ static_assert(hxis_pointer<const int*>::value == 1,
 static_assert(hxis_pointer<int>::value == 0,
 	"hxis_pointer should reject non-pointers");
 
-static_assert(hxutility_is_same_<hxrestrict_t<int>, int>::value,
+static_assert(hxutility_test_is_same<hxrestrict_t<int>, int>::value,
 	"hxrestrict_t should leave non-pointers untouched");
 static_assert(sizeof(hxrestrict_t<int*>) == sizeof(int*),
 	"hxrestrict_t should preserve pointer representation");
 
 namespace {
 
-enum hxforward_value_kind {
-	hxforward_value_kind_none,
-	hxforward_value_kind_lvalue,
-	hxforward_value_kind_const_lvalue,
-	hxforward_value_kind_rvalue,
-	hxforward_value_kind_const_rvalue
+enum hxutility_test_forward {
+	hxutility_test_forward_none,
+	hxutility_test_forward_lvalue,
+	hxutility_test_forward_const_lvalue,
+	hxutility_test_forward_rvalue,
+	hxutility_test_forward_const_rvalue
 };
 
-class hxutility_test_forward_t_ {
+class hxutility_test_forward_t {
 public:
 	int value;
 };
 
-hxutility_test_forward_t_ hxforward_make_forwarded_() { return { 11 }; }
-const hxutility_test_forward_t_ hxforward_make_const_forwarded_() { return { 13 }; }
-hxforward_value_kind hxforward_detect_(hxutility_test_forward_t_&) { return hxforward_value_kind_lvalue; }
-hxforward_value_kind hxforward_detect_(const hxutility_test_forward_t_&) { return hxforward_value_kind_const_lvalue; }
-hxforward_value_kind hxforward_detect_(hxutility_test_forward_t_&&) { return hxforward_value_kind_rvalue; }
-hxforward_value_kind hxforward_detect_(const hxutility_test_forward_t_&&) { return hxforward_value_kind_const_rvalue; }
+hxutility_test_forward_t hxutility_test_forward_make_forwarded() { return { 11 }; }
+const hxutility_test_forward_t hxutility_test_forward_make_const_forwarded() { return { 13 }; }
+hxutility_test_forward hxutility_test_forward_detect(hxutility_test_forward_t&) { return hxutility_test_forward_lvalue; }
+hxutility_test_forward hxutility_test_forward_detect(const hxutility_test_forward_t&) { return hxutility_test_forward_const_lvalue; }
+hxutility_test_forward hxutility_test_forward_detect(hxutility_test_forward_t&&) { return hxutility_test_forward_rvalue; }
+hxutility_test_forward hxutility_test_forward_detect(const hxutility_test_forward_t&&) { return hxutility_test_forward_const_rvalue; }
 
-template<typename T_>
-hxforward_value_kind hxforward_forward_through_template_(T_&& value_) {
-	return hxforward_detect_(hxforward<T_>(value_));
+template<typename T>
+hxutility_test_forward hxutility_test_forward_through_template(T&& value) {
+	return hxutility_test_forward_detect(hxforward<T>(value));
 }
 
 } // namespace
@@ -148,29 +146,29 @@ TEST(hxutility_test, hxabs_double) {
 }
 
 TEST(hxutility_test, hxforward) {
-	EXPECT_EQ(hxforward_value_kind_rvalue,
-		hxforward_detect_(hxforward<hxutility_test_forward_t_>(hxforward_make_forwarded_())));
+	EXPECT_EQ(hxutility_test_forward_rvalue,
+		hxutility_test_forward_detect(hxforward<hxutility_test_forward_t>(hxutility_test_forward_make_forwarded())));
 
-	EXPECT_EQ(hxforward_value_kind_const_rvalue,
-		hxforward_detect_(hxforward<const hxutility_test_forward_t_>(hxforward_make_const_forwarded_())));
+	EXPECT_EQ(hxutility_test_forward_const_rvalue,
+		hxutility_test_forward_detect(hxforward<const hxutility_test_forward_t>(hxutility_test_forward_make_const_forwarded())));
 
-	hxutility_test_forward_t_ lvalue = { 7 };
-	EXPECT_EQ(hxforward_value_kind_lvalue, hxforward_forward_through_template_(lvalue));
+	hxutility_test_forward_t lvalue = { 7 };
+	EXPECT_EQ(hxutility_test_forward_lvalue, hxutility_test_forward_through_template(lvalue));
 
-	const hxutility_test_forward_t_ const_lvalue = { 9 };
-	EXPECT_EQ(hxforward_value_kind_const_lvalue,
-		hxforward_forward_through_template_(const_lvalue));
+	const hxutility_test_forward_t const_lvalue = { 9 };
+	EXPECT_EQ(hxutility_test_forward_const_lvalue,
+		hxutility_test_forward_through_template(const_lvalue));
 
-	EXPECT_EQ(hxforward_value_kind_rvalue,
-		hxforward_forward_through_template_(hxforward_make_forwarded_()));
+	EXPECT_EQ(hxutility_test_forward_rvalue,
+		hxutility_test_forward_through_template(hxutility_test_forward_make_forwarded()));
 
-	hxutility_test_forward_t_ movable_value = { 17 };
-	EXPECT_EQ(hxforward_value_kind_rvalue,
-		hxforward_forward_through_template_(hxmove(movable_value)));
+	hxutility_test_forward_t movable_value = { 17 };
+	EXPECT_EQ(hxutility_test_forward_rvalue,
+		hxutility_test_forward_through_template(hxmove(movable_value)));
 
-	const hxutility_test_forward_t_ const_movable_value = { 19 };
-	EXPECT_EQ(hxforward_value_kind_const_rvalue,
-		hxforward_forward_through_template_(hxmove(const_movable_value)));
+	const hxutility_test_forward_t const_movable_value = { 19 };
+	EXPECT_EQ(hxutility_test_forward_const_rvalue,
+		hxutility_test_forward_through_template(hxmove(const_movable_value)));
 }
 
 TEST(hxutility_test, hxnullptr_converts_only_to_null) {

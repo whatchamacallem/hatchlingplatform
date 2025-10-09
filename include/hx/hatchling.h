@@ -90,7 +90,7 @@ enum hxloglevel_t {
 /// hxinit_internal was compiled with.
 #define hxinit() (void)(g_hxinit_ver_ == HATCHLING_VER || (hxinit_internal(HATCHLING_VER), 0))
 
-#if (HX_RELEASE) == 0 // debug facilities
+#if (HX_RELEASE) == 0 // These are debug facilities.
 
 /// `hxlog(...)` - Enters formatted messages in the system log. Does not add a
 /// newline. This is only evaluated when `HX_RELEASE == 0`.

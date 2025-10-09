@@ -8,7 +8,7 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// Using ASSERT_* instead of EXPECT_* in this file adds coverage for those
+// Using ASSERT* instead of EXPECT* in this file adds coverage for those
 // macros. Memory corruption sounds fatal, so that seems appropriate.
 
 // Verify that new and delete plausibly exist and that hxnullptr compiles.
@@ -44,7 +44,7 @@ TEST(hxmemory_manager_test, temp_overflow) {
 	hxlogconsole("EXPECTING_TEST_WARNINGS\n");
 
 	// There is no policy against using the debug heap in release.
-	void* p = hxmalloc_ext(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1, hxsystem_allocator_temporary_stack, 0u);
+	void* p = hxmalloc_ext(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1, hxsystem_allocator_temporary_stack, 1u);
 	ASSERT_TRUE(p != hxnull);
 	hxfree(p);
 

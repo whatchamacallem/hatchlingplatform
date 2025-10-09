@@ -30,17 +30,17 @@ namespace {
 
 class hxprofiler_task_test : public hxtask {
 public:
-	hxprofiler_task_test() : m_target_ms_(0.0f), m_accumulator_(0) { }
+	hxprofiler_task_test() : m_target_ms(0.0f), m_accumulator(0) { }
 
 	void construct(const char* label, float target_ms) {
 		set_label(label);
-		m_target_ms_ = target_ms;
-		m_accumulator_ = 0;
+		m_target_ms = target_ms;
+		m_accumulator = 0;
 	}
 
 	virtual void execute(hxtask_queue* q) override {
 		(void)q;
-		generate_scopes(m_target_ms_);
+		generate_scopes(m_target_ms);
 	}
 
 	virtual void generate_scopes(float target_ms) {
@@ -57,9 +57,9 @@ public:
 
 		while((double)delta * hxmilliseconds_per_cycle < target_ms) {
 			// Perform work that might not be optimized away by the compiler.
-			const uint32_t ops = (m_accumulator_ & 0xf) + 1;
+			const uint32_t ops = (m_accumulator & 0xf) + 1;
 			for(uint32_t i = 0; i < ops; ++i) {
-				m_accumulator_ ^= (uint32_t)m_test_prng_;
+				m_accumulator ^= (uint32_t)m_test_prng;
 			}
 
 			// Unsigned arithmetic handles clock wrapping correctly.
@@ -68,9 +68,9 @@ public:
 	}
 
 private:
-	float m_target_ms_;
-	uint32_t m_accumulator_;
-	hxrandom m_test_prng_;
+	float m_target_ms;
+	uint32_t m_accumulator;
+	hxrandom m_test_prng;
 };
 
 } // namespace
@@ -78,15 +78,12 @@ private:
 TEST(hxprofiler_test, single_scope_runs_for_1ms) {
 	hxprofiler_start();
 
-	const size_t start_records = g_hxprofiler_.records_size_();
 	{
 		hxprofile_scope("1 ms");
 		hxprofiler_task_test one;
 		one.construct("1 ms", 1.0f);
 		one.execute(hxnull);
 	}
-
-	EXPECT_TRUE(1u == (g_hxprofiler_.records_size_() - start_records));
 
 	// Stop the profiler and dump the sample to the console.
 	const bool is_ok = hxconsole_exec_line("profilelog");
@@ -108,9 +105,8 @@ TEST(hxprofiler_test, write_to_chrome_tracing_command) {
 	}
 	q.wait_for_all();
 
-	EXPECT_TRUE(90u == g_hxprofiler_.records_size_());
-
-	hxconsole_exec_line("profilewrite profile.json");
+	const bool is_ok = hxconsole_exec_line("profilewrite profile.json");
+	EXPECT_TRUE(is_ok);
 	hxprofiler_log();
 }
 

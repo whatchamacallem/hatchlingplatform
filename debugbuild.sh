@@ -51,6 +51,8 @@ done
 
 ccache clang++ $BUILD $FLAGS *.o -lpthread -lstdc++ -lm -o hxtest
 
-ccache --show-stats
+if [ "$1" != "--headless" ]; then
+	ccache --show-stats
+fi
 
 echo 🐉🐉🐉

@@ -7,11 +7,6 @@
 # available to debug. Any shell command that fails should also stop the test
 # process.
 
-# XXX
-# rename hx.*_ -> hz.*_ in test/*.cpp
-# assert ! grep hz.*_ left in test.
-
-
 clear
 
 echo "
@@ -34,7 +29,17 @@ $(tput sgr 0)
 "
 
 # Delete files matching .gitignore and reset ccache.
-./clean.sh
+./clean.sh  --headless
+
+# The test directory should not use names ending with an underscore. Those names
+# are reserved for internal symbols. Two underscores are allowed. This policy
+# allows policing changes in internal/external visibility. Symbols ending with
+# an underscore are not intended to be used externally and may change without
+# notice.
+if grep -REn --include='*.cpp' -E '(^|[^[:alnum:]_])[[:alpha:]_][[:alnum:]_]*[[:alnum:]]_([^[:alnum:]_]|$)' test 1>&2; then
+  echo "error: Found a C identifier ending with '_' in test/*.cpp." >&2
+  exit 1
+fi
 
 set -o errexit -o xtrace
 

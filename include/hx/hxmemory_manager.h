@@ -89,7 +89,10 @@ void hxfree(void* ptr_) hxattr_noexcept hxattr_hot;
 
 /// `hxmalloc` - Allocates memory of the specified size using the default memory
 /// manager. A C++ overload optionally provides the same arguments as
-/// `hxmalloc_ext`. Will not return on failure.
+/// `hxmalloc_ext`. Will not return on failure. NOTA BENE: It is undefined
+/// behavior to compare pointers to different allocations. This is consistent
+/// with the C++ standard. Allocations of size 0 may or may not return the same
+/// pointer as previous allocations.
 /// - `size` : The size of the memory to allocate.
 /// - `allocator`(C++ only): The memory manager ID to use for allocation. (Default is
 ///   `hxsystem_allocator_current`.)

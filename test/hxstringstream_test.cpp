@@ -22,15 +22,15 @@ TEST(hxstringstream_test, capacity_off_by_1) {
 	EXPECT_TRUE(stream.fail());
 
 	stream.clear();
-	const char payload_[] = "abcdefg";
-	EXPECT_EQ(stream.write(payload_, sizeof payload_ - 1u), 7u);
+	const char payload[] = "abcdefg";
+	EXPECT_EQ(stream.write(payload, sizeof payload - 1u), 7u);
 	EXPECT_TRUE(stream.set_pos(0u));
-	char buffer_[8];
-	EXPECT_EQ(stream.read(buffer_, sizeof buffer_), sizeof buffer_);
-	EXPECT_STREQ(buffer_, "abcdefg");
+	char buffer[8];
+	EXPECT_EQ(stream.read(buffer, sizeof buffer), sizeof buffer);
+	EXPECT_STREQ(buffer, "abcdefg");
 	EXPECT_FALSE(stream.fail());
 	EXPECT_FALSE(stream.eof());
-	EXPECT_EQ(stream.read(buffer_, 1u), 0u);
+	EXPECT_EQ(stream.read(buffer, 1u), 0u);
 	EXPECT_TRUE(stream.fail());
 	EXPECT_TRUE(stream.eof());
 }
@@ -42,10 +42,10 @@ TEST(hxstringstream_test, write_fundamental_types) {
 	stream.reserve(128u);
 	stream.clear();
 
-	auto expect_stream = [&](auto value_, const char* expected_) {
+	auto expect_stream = [&](auto value, const char* expected) {
 		stream.clear();
-		stream << value_;
-		EXPECT_STREQ(stream.data(), expected_);
+		stream << value;
+		EXPECT_STREQ(stream.data(), expected);
 	};
 
 	expect_stream(true, "1");

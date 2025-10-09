@@ -127,10 +127,11 @@ inline void InitGoogleTest(void) { }
 
 } // namespace testing
 
-// `HX_TEST_NAME_` - Macro for concatenating three arguments into one name.
-// Macro parameters will be evaluated before concatenating.
 /// \cond HIDDEN
-#define HX_TEST_NAME_(x_, y_, z_) x_ ## y_ ## _ ## z_ ## _
+/// `HX_TEST_NAME_` - Macro for concatenating three arguments into one name.
+/// Macro parameters will be evaluated before concatenating. This will not
+/// evaluate the macro `_` or the macro `__`.
+#define HX_TEST_NAME_(x_, y_, z_) x_ ## y_ ## __ ## z_ ## _
 /// \endcond
 
 /// `TEST(suite_name, case_name)` - Google Test reimplementation. Defines a test

@@ -61,7 +61,7 @@ const char* hxbasename(const char* path) {
 
 char* hxstring_duplicate(const char* string, enum hxsystem_allocator_t id) {
 	const size_t len = strlen(string);
-	char* temp = (char*)hxmalloc_ext(len + 1, id, 0u);
+	char* temp = (char*)hxmalloc_ext(len + 1, id, 1u);
 	memcpy(temp, string, len + 1);
 	return temp;
 }

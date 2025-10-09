@@ -21,9 +21,8 @@ public:
 	bool* ready;
 	int* woken;
 
-	hxthread_test_parameters_t(hxmutex* mutex_, hxcondition_variable* condition_variable_,
-								bool* ready_, int* woken_)
-		: mutex(mutex_), condition_variable(condition_variable_), ready(ready_), woken(woken_) { }
+	hxthread_test_parameters_t(hxmutex* m, hxcondition_variable* cv, bool* r, int* w)
+		: mutex(m), condition_variable(cv), ready(r), woken(w) { }
 };
 
 class hxthread_test_predicate_wait_for_zero {
@@ -77,23 +76,23 @@ int hxthread_local_destructor_count = 0;
 
 class hxthread_test_thread_local_destructor {
 public:
-	hxthread_test_thread_local_destructor(bool track=false) : track_(track) { }
+	hxthread_test_thread_local_destructor(bool x=false) : track(x) { }
 
 	~hxthread_test_thread_local_destructor() {
-		if(track_) {
+		if(track) {
 			hxunique_lock lock(hxthread_local_destructor_mutex);
 			++hxthread_local_destructor_count;
 		}
 	}
 
-	bool track_;
+	bool track;
 };
 
 hxthread_local<hxthread_test_thread_local_destructor> hxthread_local_destructor_tls;
 
 void* hxthread_local_destructor_thread(int*) {
 	hxthread_test_thread_local_destructor& tracker = hxthread_local_destructor_tls;
-	tracker.track_ = true;
+	tracker.track = true;
 	return hxnull;
 }
 

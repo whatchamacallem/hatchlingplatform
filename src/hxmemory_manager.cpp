@@ -273,8 +273,10 @@ public:
 	}
 
 	hxattr_hot void on_free_non_virtual(void* ptr) {
+		// Use <= because a valid outstanding allocation of size 0 could have
+		// been made at m_current.
 		hxassertmsg(m_allocation_count > 0 && (uintptr_t)ptr >= m_begin_
-			&& (uintptr_t)ptr < m_current, "bad_free %s", m_label_);
+			&& (uintptr_t)ptr <= m_current, "bad_free %s", m_label_);
 		--m_allocation_count; (void)ptr;
 		return;
 	}
@@ -430,29 +432,35 @@ void hxmemory_manager::end_allocation_scope(
 	s_hxcurrent_memory_allocator = previous_id;
 }
 
+// NOTA BENE: It is undefined behavior to compare pointers to different
+// allocations. This is consistent with the C++ standard. Allocations of size 0
+// may or may not return the same pointer as previous allocations.
 void* hxmemory_manager::allocate(size_t size, hxsystem_allocator_t id, hxalignment_t alignment) {
 	if(id == hxsystem_allocator_current) {
 		id = s_hxcurrent_memory_allocator;
 	}
 
-	if(size == 0u) {
-		size = 1u; // Enforce unique pointer values.
-	}
+	// Size 0 allocations are only logged as a warning. Size zero is tested and
+	// expected to work without overhead.
+	hxwarnmsg(size != 0u, "allocation_error Size 0 allocation.");
 
-	// The following code assumes that "alignment-1" is a valid mask of unused bits.
-	if(alignment == 0u) {
-		alignment = 1u;
-	}
-
-	hxassertmsg(((alignment - 1u) & (alignment)) == 0u, \
-		"alignment_error not pow2 %zu", (size_t)alignment);
+	// Provide an alignment of 1 for strings and unaligned allocations. The
+	// following code assumes that "alignment-1" is a valid mask of unused bits
+	// and not a mask containing every bit.
+	hxassertmsg(alignment != 0u, "alignment_error Allocate with alignment 1 and not 0.");
+	hxassertmsg(((alignment - 1u) & alignment) == 0u,
+		"alignment_error Not pow2 %zu.", (size_t)alignment);
 
 	HX_MEMORY_MANAGER_LOCK_();
 	void* ptr = get_allocator(id).allocate(size, alignment);
+
 	hxassertmsg(((uintptr_t)ptr & (alignment - (uintptr_t)1)) == 0,
 		"alignment_error wrong %zx from %d", (size_t)(uintptr_t)ptr, id);
+
 	if(ptr) { return ptr; }
-	hxlogwarning("overflowing_to_heap %s size %zu", get_allocator(id).label(), size);
+
+	// Will not return null.
+	hxlogwarning("allocation_error %s size %zu", get_allocator(id).label(), size);
 	return m_memory_allocator_heap.allocate(size, alignment);
 }
 

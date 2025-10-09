@@ -75,67 +75,67 @@ public:
 
 	hxarray_test_move_tracker(void) = delete;
 
-	explicit hxarray_test_move_tracker(int32_t value_)
-		: value(value_), moved_from(false) { }
+	explicit hxarray_test_move_tracker(int32_t x)
+		: value(x), moved_from(false) { }
 
-	hxarray_test_move_tracker(const hxarray_test_move_tracker& other_)
-		: value(other_.value), moved_from(false) { }
+	hxarray_test_move_tracker(const hxarray_test_move_tracker& other)
+		: value(other.value), moved_from(false) { }
 
-	hxarray_test_move_tracker(hxarray_test_move_tracker&& other_)
-		: value(other_.value), moved_from(false) { other_.moved_from = true; }
+	hxarray_test_move_tracker(hxarray_test_move_tracker&& other)
+		: value(other.value), moved_from(false) { other.moved_from = true; }
 
-	hxarray_test_move_tracker& operator=(const hxarray_test_move_tracker& other_) {
+	hxarray_test_move_tracker& operator=(const hxarray_test_move_tracker& other) {
 		hxassertrelease(0, "unused_code_path");
-		value = other_.value;
+		value = other.value;
 		moved_from = false;
 		return *this;
 	}
 
-	hxarray_test_move_tracker& operator=(hxarray_test_move_tracker&& other_) {
-		value = other_.value;
+	hxarray_test_move_tracker& operator=(hxarray_test_move_tracker&& other) {
+		value = other.value;
 		moved_from = false;
-		other_.value = 0xefef; // Poison value moved from.
-		other_.moved_from = true;
+		other.value = 0xefef; // Poison value moved from.
+		other.moved_from = true;
 		return *this;
 	}
 
-	bool operator==(const hxarray_test_move_tracker& other_) const {
-		return value == other_.value && moved_from == other_.moved_from;
+	bool operator==(const hxarray_test_move_tracker& other) const {
+		return value == other.value && moved_from == other.moved_from;
 	}
 };
 
-template<typename T_>
-static hxarray_test_move_tracker hxarray_test_forward_construct(T_&& tracker_) {
-	return hxarray_test_move_tracker(hxforward<T_>(tracker_));
+template<typename T>
+static hxarray_test_move_tracker hxarray_test_forward_construct(T&& tracker) {
+	return hxarray_test_move_tracker(hxforward<T>(tracker));
 }
 
 template<typename T>
 class hxarray_test_pointer_range {
 public:
 	hxarray_test_pointer_range(T* b, T* e)
-		: begin_(b), end_(e) { }
+		: begin_ptr(b), end_ptr(e) { }
 
-	T* begin() { return begin_; }
-	T* end() { return end_; }
+	T* begin() { return begin_ptr; }
+	T* end() { return end_ptr; }
 
-	const T& operator[](size_t index_) const { return begin_[index_]; }
-	T& operator[](size_t index_) { return begin_[index_]; }
+	const T& operator[](size_t index) const { return begin_ptr[index]; }
+	T& operator[](size_t index) { return begin_ptr[index]; }
 
 private:
-	T* begin_;
-	T* end_;
+	T* begin_ptr;
+	T* end_ptr;
 };
 
-template<typename array_t_>
-static bool hxarray_test_is_max_heap(const array_t_& heap_) {
-	const size_t size_ = heap_.size();
-	for(size_t parent_ = 0; parent_ != size_; ++parent_) {
-		const size_t left_ = (parent_ << 1) + 1;
-		const size_t right_ = left_ + 1;
-		if(left_ < size_ && hxkey_less(heap_[parent_], heap_[left_])) {
+template<typename array_t>
+static bool hxarray_test_is_max_heap(const array_t& heap) {
+	const size_t size = heap.size();
+	for(size_t parent = 0; parent != size; ++parent) {
+		const size_t left = (parent << 1) + 1;
+		const size_t right = left + 1;
+		if(left < size && hxkey_less(heap[parent], heap[left])) {
 			return false;
 		}
-		if(right_ < size_ && hxkey_less(heap_[parent_], heap_[right_])) {
+		if(right < size && hxkey_less(heap[parent], heap[right])) {
 			return false;
 		}
 	}
@@ -413,25 +413,25 @@ TEST(hxarray_test, all_of_any_of) {
 	EXPECT_FALSE(objs.all_of([](const int& x) { return x < 95; }));
 
 	int all_calls = 0;
-	auto all_counter = [&](const int& value_) -> bool {
+	auto all_counter = [&](const int& value) -> bool {
 		++all_calls;
-		return value_ < 93;
+		return value < 93;
 	};
 	EXPECT_FALSE(objs.all_of(all_counter));
 	EXPECT_EQ(all_calls, 3);
 
 	int any_calls = 0;
-	auto any_counter = [&](const int& value_) -> bool {
+	auto any_counter = [&](const int& value) -> bool {
 		++any_calls;
-		return value_ == 94;
+		return value == 94;
 	};
 	EXPECT_TRUE(objs.any_of(any_counter));
 	EXPECT_EQ(any_calls, 4);
 
 	int miss_calls = 0;
-	auto miss_counter = [&](const int& value_) -> bool {
+	auto miss_counter = [&](const int& value) -> bool {
 		++miss_calls;
-		return value_ == -1;
+		return value == -1;
 	};
 	EXPECT_FALSE(objs.any_of(miss_counter));
 	EXPECT_EQ(miss_calls, 5);
@@ -452,9 +452,9 @@ TEST(hxarray_test, erase_if) {
 		objs.assign(nums, nums + hxsize(nums));
 
 	int remove_calls = 0;
-	auto remove_even = [&](int& value_) -> bool {
+	auto remove_even = [&](int& value) -> bool {
 		++remove_calls;
-		return (value_ & 1) == 0;
+		return (value & 1) == 0;
 	};
 	EXPECT_EQ(objs.erase_if(remove_even), 2u);
 	EXPECT_EQ(remove_calls, 5);
@@ -464,7 +464,7 @@ TEST(hxarray_test, erase_if) {
 		EXPECT_EQ(objs[i], expected[i]);
 	}
 
-	EXPECT_EQ(objs.erase_if([](int value_) { return value_ == 1; }), 1u);
+	EXPECT_EQ(objs.erase_if([](int x) { return x == 1; }), 1u);
 	EXPECT_EQ(objs.size(), 2u);
 
 	objs.clear();

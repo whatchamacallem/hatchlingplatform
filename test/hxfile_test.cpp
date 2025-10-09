@@ -43,7 +43,7 @@ TEST(hxfile_test, read_write_round_trip) {
 }
 
 TEST(hxfile_test, missing_file_reports_expectations) {
-	hxfile f(hxfile::in | hxfile::skip_asserts, "test_file_does_not_exist_%d", 123);
+	hxfile f(hxfile::in | hxfile::skip_asserts, "test-file-does-not-exist-%d", 123);
 	EXPECT_EQ(f.good(), false);
 	EXPECT_EQ(f.is_open(), false);
 

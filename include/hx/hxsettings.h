@@ -41,10 +41,11 @@ extern "C" {
 #endif
 
 /// \cond HIDDEN
-// Rename the hxdetail_ namespace using the version number to something like
-// hx31700_. Also create an identifier that can be used to cause link errors
-// containing the expected version when linking against old code. This is done
-// to force updates in a binary release channel.
+/// Rename the hxdetail_ namespace using the version number to something like
+/// `hx31700_`. Also create an identifier that can be used to cause link errors
+/// containing the expected version when linking against old code. This is done
+/// to force updates in a binary release channel. This will not
+// evaluate the macro `_`.
 #define hxversion__(prefix_, x_) prefix_ ## x_ ## _
 #define hxversion_(prefix_, x_) hxversion__(prefix_, x_)
 #define g_hxinit_ver_ hxversion_(g_hxinit_ver, HATCHLING_VER)
