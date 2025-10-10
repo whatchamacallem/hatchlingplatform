@@ -317,7 +317,7 @@ inline hxhash_t hxkey_hash(hxconsole_hash_table_key_ k_) {
 	return x_;
 }
 
-// A version of ::strcmp that stops at whitespace or NUL.
+// A version of ::strcmp that stops at the first non-graphical characters.
 inline hxhash_t hxkey_equal(hxconsole_hash_table_key_ a_, hxconsole_hash_table_key_ b_) {
 	while(hxisgraph(*a_.str_) && *a_.str_ == *b_.str_) { ++a_.str_; ++b_.str_; }
 	return !hxisgraph(*a_.str_) && !hxisgraph(*b_.str_);
