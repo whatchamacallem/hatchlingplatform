@@ -54,7 +54,8 @@ purposes:
 
 - **Profiling System**: Uses processor cycle sampling to create a hierarchical
   timeline capture compatible with Chrome's `about://tracing` viewer (navigation
-  uses W, A, S, and D keys). One line of assembly may be needed for exotic hardware.
+  uses W, A, S, and D keys). One line of assembly may be needed for exotic
+  hardware.
 
 - **Memory Management**: RAII-based abstraction layer supporting various
   allocation strategies, particularly valuable for applications where crashing
@@ -78,34 +79,42 @@ purposes:
   cache-coherent and pre-allocated nature of this programming style, there is
   little need for more than an array class.
 
-- **Algorithms**: `hxradix_sort` is provided for Θ(n) sorting. See `<hx/hxsort.h>`
-  for comparison based sorting and lookup.
+- **Algorithms**: `hxradix_sort` is provided for Θ(n) sorting. See
+  `<hx/hxsort.h>` for comparison based sorting and lookup.
 
-- **Performance Focus**: This is systems code. Everything has to be
-  well optimized and cache-coherent without causing code bloat. This codebase
-  avoids exceptions and RTTI for efficiency. Exceptions will be caught by the test
+- **Performance Focus**: This is systems code. Everything has to be well
+  optimized and cache-coherent without causing code bloat. This codebase avoids
+  exceptions and RTTI for efficiency. Exceptions will be caught by the test
   driver and the console if they are enabled.
 
-- **C99 Compatibility**: Logging, asserts, and memory management are available in
-  plain C99 via `<hx/hatchling.h>`.
+- **C99 Compatibility**: Logging, asserts, and memory management are available
+  in plain C99 via `<hx/hatchling.h>`.
 
 - **64-bit Ready**: Designed for both 32-bit and 64-bit targets.
 
+It is hard to compete with `printf`/`scanf` for code size and speed. Take a look
+at the **[{fmt}](https://fmt.dev)** project for a micro-optimized version of
+`std::format` that is as efficient.
+
 ## Documentation
 
-Running the command `doxygen` with no arguments will generate `docs/html/index.html`.
-The markdown source for the documentation is in the header files at
-`include/hx/` and is readable as-is. A modern editor should also show the docs
-in a mouseover box.
+Running the command `doxygen` with no arguments will generate
+`docs/html/index.html`. The markdown source for the documentation is in the
+header files at `include/hx/` and is readable as-is. A modern editor should also
+show the docs in a mouseover box.
 
-Also see `AGENTS.md` for a human-readable contributors' guide intended for both humans and AI.
+Also see `AGENTS.md` for a human-readable contributors' guide intended for both
+humans and AI.
 
 ## Other Projects
 
-- musl libc - <https://musl.libc.org/> This is the recommended C library for use
-  with Hatchling Platform in a freestanding environment.
-- etl - <https://github.com/ETLCPP/etl> A header-only embedded template library.
-  The ETL is larger and approaches the complexity of the standard library.
+- **[Embedded Template Library](https://github.com/ETLCPP/etl)** - The ETL is a
+  header-only embedded containers and algorithms library. The ETL is larger and
+  approaches the complexity of the standard library.
+- **[{fmt}](https://fmt.dev)** - Has a micro-optimized version of `std::format`.
+  Also has nice features like console colors and a fast `printf` too.
+- **[musl libc](https://musl.libc.org/)** - This is the recommended C library
+  for use with Hatchling Platform in a freestanding environment.
 
 ## Tested Environments
 
@@ -113,14 +122,13 @@ Every compiler warning flag should be safe to enable. The reference environment
 is Ubuntu 24.04 LTS. The Windows build was dropped because it wasn't being
 tested, but it should be easy to resurrect.
 
-c99 c17 c++11 c++14 c++17 c++20
-clang 18.1.3 (including sanitizers)
-cmake 3.28.3
-doxygen 1.9.8
-emcc 4.0.5
-gcc, musl-gcc 13.3.0
-gcovr 7.0
-python 3.12.3
+- c99 c17 c++11 c++14 c++17 c++20
+- clang 18.1.3 (including sanitizers)
+- cmake 3.28.3
+- doxygen 1.9.8
+- emcc 4.0.5
+- gcc, musl-gcc 13.3.0
+- gcovr 7.0
 
 The scripted builds exercise the following toolchains, language modes, and
 `HX_RELEASE` combinations:
