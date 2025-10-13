@@ -154,11 +154,19 @@ public:
 	template<typename functor_t_>
 	bool all_of(functor_t_&& fn_) const;
 
+	/// A non-const version of `all_of`.
+	template<typename functor_t_>
+	bool all_of(functor_t_&& fn_);
+
 	/// Returns true if the predicate returns true for any element and false
 	/// otherwise. Will stop iterating when the predicate returns true.
 	/// - `fn` : A functor returning boolean. `!any_of(x)` -> `none_of(x)`.
 	template<typename functor_t_>
 	bool any_of(functor_t_&& fn_) const;
+
+	/// A non-const version of `any_of`.
+	template<typename functor_t_>
+	bool any_of(functor_t_&& fn_);
 
 	/// Assigns elements from a range defined by random access iterators.
 	/// `iter_t::operator-` is required.
@@ -570,8 +578,30 @@ bool hxarray<T_, capacity_>::all_of(functor_t_&& fn_) const {
 
 template<typename T_, size_t capacity_>
 template<typename functor_t_>
+bool hxarray<T_, capacity_>::all_of(functor_t_&& fn_) {
+	for(T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
+		if(!hxforward<functor_t_>(fn_)(*it_)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+template<typename T_, size_t capacity_>
+template<typename functor_t_>
 bool hxarray<T_, capacity_>::any_of(functor_t_&& fn_) const {
 	for(const T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
+		if(hxforward<functor_t_>(fn_)(*it_)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+template<typename T_, size_t capacity_>
+template<typename functor_t_>
+bool hxarray<T_, capacity_>::any_of(functor_t_&& fn_) {
+	for(T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
 		if(hxforward<functor_t_>(fn_)(*it_)) {
 			return true;
 		}

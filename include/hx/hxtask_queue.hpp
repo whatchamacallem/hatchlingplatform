@@ -22,6 +22,22 @@
 /// See `<hx/hxtask.hpp>`.
 class hxtask_queue {
 public:
+	/// `task_record_t` - Iterated over by `all_of`, `any_of` and `erase_if`.
+	/// This also allows examining the state of the scheduler in the debugger
+	/// watch window.
+	class task_record_t {
+	public:
+		hxtask* task;
+		int priority;
+
+		bool operator<(const task_record_t& x_) const { return this->priority < x_.priority; }
+
+#if (HX_RELEASE) == 0
+		const char* label;
+		~task_record_t() { ::memset((void*)this, 0x00, sizeof *this); }
+#endif
+	};
+
 	/// Creates a new task queue. `task_queue_size` reserves storage for enqueued
 	/// tasks. `thread_pool_size` determines the size of the worker thread pool.
 	/// A `thread_pool_size` of `0` does not use threads.
@@ -45,18 +61,18 @@ public:
 	/// iterating when the predicate returns false.
 	/// - `fn` : A functor returning boolean. `!all_of(x)` -> `any_not(x)`.
 	template<typename functor_t_>
-	bool all_of(functor_t_&& fn_);
+	bool all_of(functor_t_&& fn_) const;
 
 	/// Locks the queue and calls `fn` on each task. Returns true if the
 	/// predicate returns true for any element and false otherwise. Will stop
 	/// iterating when the predicate returns true.
 	/// - `fn` : A functor returning boolean. `!any_of(x)` -> `none_of(x)`.
 	template<typename functor_t_>
-	bool any_of(functor_t_&& fn_);
+	bool any_of(functor_t_&& fn_) const;
 
 	/// Locks the queue and calls `fn` on each task. Removes queued tasks for
-	/// which `fn` evaluates true.
-	/// - `fn` : Predicate accepting a `task_record_t_&`.
+	/// which `fn` evaluates true. Do not modify a `task_record_t` directly.
+	/// - `fn` : Predicate accepting a `task_record_t&`.
 	template<typename functor_t_>
 	size_t erase_if(functor_t_&& fn_);
 
@@ -64,19 +80,7 @@ private:
 	hxtask_queue(const hxtask_queue&) = delete;
 	void operator=(const hxtask_queue&) = delete;
 
-	// This allows examining the state of the scheduler in the watch window.
-	struct task_record_t_ {
-		hxtask* task_;
-		int priority_;
-		bool operator<(const task_record_t_& x_) const { return this->priority_ < x_.priority_; }
-
-#if (HX_RELEASE) == 0
-		const char* label_;
-		~task_record_t_() { ::memset((void*)this, 0x00, sizeof *this); }
-#endif
-	};
-
-	hxarray<task_record_t_> m_tasks_;
+	hxarray<task_record_t> m_tasks_;
 
 #if HX_USE_THREADS
 	friend class hxtask_wait_for_tasks_;
@@ -98,7 +102,7 @@ private:
 	run_level_t_ m_queue_run_level_;
 	size_t m_thread_pool_size_;
 	hxthread* m_threads_;
-	hxmutex m_mutex_;
+	mutable hxmutex m_mutex_;
 	hxcondition_variable m_cond_var_new_tasks_;
 	hxcondition_variable m_cond_var_completion_;
 	int32_t m_executing_count_;
@@ -106,7 +110,7 @@ private:
 };
 
 template<typename functor_t_>
-bool hxtask_queue::all_of(functor_t_&& fn_) {
+bool hxtask_queue::all_of(functor_t_&& fn_) const {
 #if HX_USE_THREADS
 	hxunique_lock lock_(m_mutex_);
 #endif
@@ -114,7 +118,7 @@ bool hxtask_queue::all_of(functor_t_&& fn_) {
 }
 
 template<typename functor_t_>
-bool hxtask_queue::any_of(functor_t_&& fn_) {
+bool hxtask_queue::any_of(functor_t_&& fn_) const {
 #if HX_USE_THREADS
 	hxunique_lock lock_(m_mutex_);
 #endif
