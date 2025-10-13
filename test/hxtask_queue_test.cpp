@@ -208,7 +208,7 @@ TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
 
 	bool visited[3] = { false, false, false };
 	size_t visit_count = 0;
-	q.for_each([&](hxtask_queue::task_record_t& record) {
+	q.for_each([&](hxtask_queue::record_t& record) {
 		++visit_count;
 		if(record.task == &tasks[0]) {
 			visited[0] = true;
@@ -223,24 +223,24 @@ TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
 		EXPECT_TRUE(visited[i]);
 	}
 
-	bool all_priority_non_negative = q.all_of([](const hxtask_queue::task_record_t& record) {
+	bool all_priority_non_negative = q.all_of([](const hxtask_queue::record_t& record) {
 		return record.priority >= 0;
 	});
 	EXPECT_TRUE(all_priority_non_negative);
 
-	bool any_high_priority = q.any_of([](const hxtask_queue::task_record_t& record) {
+	bool any_high_priority = q.any_of([](const hxtask_queue::record_t& record) {
 		return record.priority > 8;
 	});
 	EXPECT_TRUE(any_high_priority);
 
-	size_t removed_low_priority = q.erase_if([](const hxtask_queue::task_record_t& record) {
+	size_t removed_low_priority = q.erase_if([](const hxtask_queue::record_t& record) {
 		return record.priority < 4;
 	});
 	EXPECT_TRUE(removed_low_priority == 1);
 	EXPECT_TRUE(q.size() == 2u);
 	EXPECT_TRUE(!q.full());
 
-	bool any_remaining_low_priority = q.any_of([](const hxtask_queue::task_record_t& record) {
+	bool any_remaining_low_priority = q.any_of([](const hxtask_queue::record_t& record) {
 		return record.priority < 4;
 	});
 	EXPECT_TRUE(!any_remaining_low_priority);

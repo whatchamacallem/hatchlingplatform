@@ -77,7 +77,7 @@ hxtask_queue::~hxtask_queue(void) {
 }
 
 void hxtask_queue::enqueue(hxtask* task, int priority) {
-	task_record_t entry = { task, priority
+	record_t entry = { task, priority
 #if (HX_RELEASE) == 0
 		, task->get_label()
 #endif

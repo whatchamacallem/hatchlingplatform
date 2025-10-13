@@ -15,19 +15,19 @@
 /// See `<hx/hxtask.hpp>`.
 class hxtask_queue {
 public:
-	/// `task_record_t` - Iterated over by `all_of`, `any_of` and `erase_if`.
-	/// This also allows examining the state of the scheduler in the debugger
+	/// `record_t` - Iterated over by `all_of`, `any_of` and `erase_if`.
+	/// This also allows examining the state of the queue in the debugger
 	/// watch window.
-	class task_record_t {
+	class record_t {
 	public:
 		hxtask* task;
 		int priority;
 
-		bool operator<(const task_record_t& x_) const { return this->priority < x_.priority; }
+		bool operator<(const record_t& x_) const { return this->priority < x_.priority; }
 
 #if (HX_RELEASE) == 0
 		const char* label;
-		~task_record_t() { ::memset((void*)this, 0x00, sizeof *this); }
+		~record_t() { ::memset((void*)this, 0x00, sizeof *this); }
 #endif
 	};
 
@@ -41,14 +41,16 @@ public:
 
 	/// Locks the queue and calls `fn` on each task. Returns true if the
 	/// predicate returns true for every element and false otherwise. Will stop
-	/// iterating when the predicate returns false.
+	/// iterating when the predicate returns false. Use `for_each` to modify
+	/// priorities.
 	/// - `fn` : A functor returning boolean. `!all_of(x)` -> `any_not(x)`.
 	template<typename functor_t_>
 	bool all_of(functor_t_&& fn_) const;
 
 	/// Locks the queue and calls `fn` on each task. Returns true if the
 	/// predicate returns true for any element and false otherwise. Will stop
-	/// iterating when the predicate returns true.
+	/// iterating when the predicate returns true. Use `for_each` to modify
+	/// priorities.
 	/// - `fn` : A functor returning boolean. `!any_of(x)` -> `none_of(x)`.
 	template<typename functor_t_>
 	bool any_of(functor_t_&& fn_) const;
@@ -66,14 +68,21 @@ public:
 	void enqueue(hxtask* task_, int priority_=0) hxattr_nonnull(2);
 
 	/// Locks the queue and calls `fn` on each task. Removes queued tasks for
-	/// which `fn` evaluates true. Do not modify a `task_record_t` directly.
-	/// - `fn` : Predicate accepting a `task_record_t&`.
+	/// which `fn` evaluates true. Do not modify a `record_t` directly.
+	/// - `fn` : Predicate accepting a `record_t&`.
 	template<typename functor_t_>
 	size_t erase_if(functor_t_&& fn_);
 
-	/// Locks the queue and calls `fn` on each task. Invokes `fn` for every
-	/// queued task without altering the queue.
-	/// - `fn` : Functor accepting a `task_record_t&`.
+	/// Locks the queue and calls `fn` on each task record.
+	/// - `fn` : Functor accepting a `record_t&`.
+	template<typename functor_t_>
+	void for_each(functor_t_&& fn_) const;
+
+	/// Non-const version of `for_each`. This version will perform `make_heap`
+	/// on the queue after calling `fn` on each task record. Reestablishing the
+	/// heap allows rescheduling everything by adjusting
+	/// `record_t::priority` in a lambda. For faster iteration on a
+	/// non-const queue use `all_of` with a functor returning true.
 	template<typename functor_t_>
 	void for_each(functor_t_&& fn_);
 
@@ -94,7 +103,7 @@ private:
 	hxtask_queue(const hxtask_queue&) = delete;
 	void operator=(const hxtask_queue&) = delete;
 
-	hxarray<task_record_t> m_tasks_;
+	hxarray<record_t> m_tasks_;
 
 #if HX_USE_THREADS
 	friend class hxtask_wait_for_tasks_;
@@ -162,11 +171,23 @@ size_t hxtask_queue::erase_if(functor_t_&& fn_) {
 }
 
 template<typename functor_t_>
+void hxtask_queue::for_each(functor_t_&& fn_) const {
+#if HX_USE_THREADS
+	hxunique_lock lock_(m_mutex_);
+#endif
+	m_tasks_.for_each(hxforward<functor_t_>(fn_));
+}
+
+template<typename functor_t_>
 void hxtask_queue::for_each(functor_t_&& fn_) {
 #if HX_USE_THREADS
 	hxunique_lock lock_(m_mutex_);
 #endif
 	m_tasks_.for_each(hxforward<functor_t_>(fn_));
+
+	// Restore the heap property. Use "all_of" for a faster const function.
+	hxmake_heap_(m_tasks_.begin(), m_tasks_.end(),
+		hxkey_less_function<record_t, record_t>());
 }
 
 inline bool hxtask_queue::full(void) const {
