@@ -331,4 +331,8 @@ TEST(hxtask_queue_test, for_each_reschedules_queue) {
 	// Run them.
 	q.wait_for_all();
 	EXPECT_TRUE(write_index == task_count);
+	EXPECT_TRUE(execution_order[0] == 2);
+	EXPECT_TRUE(execution_order[1] == 0);
+	EXPECT_TRUE(execution_order[2] == 3);
+	EXPECT_TRUE(execution_order[3] == 1);
 }
