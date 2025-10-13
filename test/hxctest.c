@@ -50,7 +50,7 @@ bool hxctest_swap(void) {
 
 bool hxctest_memory(void) {
 	// Try triggering a memory sanitizer.
-	void* b33 = hxmalloc_ext(33, hxsystem_allocator_temporary_stack, 16);
+	void* b33 = hxmalloc_ext(33, hxsystem_allocator_temporary_stack, sizeof(size_t));
 
 	char* t = hxstring_duplicate("_est", hxsystem_allocator_temporary_stack);
 	t[0] = 't';

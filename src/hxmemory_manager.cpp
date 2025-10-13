@@ -579,7 +579,7 @@ hxattr_noexcept void* hxmalloc(size_t size) {
 extern "C"
 hxattr_noexcept void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, hxalignment_t alignment) {
 	(void)id; (void)alignment;
-	hxassertmsg(alignment <= HX_ALIGNMENT, "alignment_error Memory manager is disabled.");
+	hxassertmsg(alignment <= HX_ALIGNMENT, "alignment_error Memory manager disabled: %zu", (size_t)alignment);
 	return hxmalloc_checked_(size);
 }
 
