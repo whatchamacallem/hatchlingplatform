@@ -291,6 +291,10 @@ public:
 	/// ```
 	/// - `fn` : A functor.
 	template<typename functor_t_>
+	void for_each(functor_t_&& fn_) const;
+
+	/// Non-const version of `for_each`.
+	template<typename functor_t_>
 	void for_each(functor_t_&& fn_);
 
 	/// Returns a const reference to the first element in the array.
@@ -781,6 +785,14 @@ template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::erase_unordered(size_t index_) {
 	hxassertmsg(index_ < this->size(), "invalid_index %zu", index_);
 	this->erase_unordered(this->data() + index_);
+}
+
+template<typename T_, size_t capacity_>
+template<typename functor_t_>
+void hxarray<T_, capacity_>::for_each(functor_t_&& fn_) const {
+	for(const T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
+		hxforward<functor_t_>(fn_)(*it_);
+	}
 }
 
 template<typename T_, size_t capacity_>

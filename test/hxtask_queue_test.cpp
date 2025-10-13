@@ -262,3 +262,73 @@ TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
 	q.wait_for_all();
 	EXPECT_TRUE(!executed_flags[2]);
 }
+
+TEST(hxtask_queue_test, for_each_reschedules_queue) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+
+	class hxtask_queue_reschedule_task_t : public hxtask {
+	public:
+		void configure(size_t index, int* execution_order, size_t* write_index) {
+			task_index_ = index;
+			execution_order_ = execution_order;
+			write_index_ = write_index;
+		}
+
+		virtual void execute(hxtask_queue*) override {
+			hxassertmsg(execution_order_, "reschedule_task_unconfigured");
+			hxassertmsg(write_index_, "reschedule_task_unconfigured");
+			size_t slot = (*write_index_)++;
+			execution_order_[slot] = (int)task_index_;
+		}
+
+		size_t get_index(void) const { return task_index_; }
+
+	private:
+		size_t task_index_ = 0;
+		int* execution_order_ = hxnull;
+		size_t* write_index_ = hxnull;
+	};
+
+	constexpr size_t task_count = 4;
+
+	hxtask_queue_reschedule_task_t tasks[task_count];
+	int execution_order[task_count] = { -1, -1, -1, -1 };
+	size_t write_index = 0;
+
+	const int initial_priorities[task_count] = { 0, 0, 0, 0 };
+	const int rescheduled_priorities[task_count] = { 4, -3, 9, 1 };
+
+	// Queue the tasks as priority 0.
+	hxtask_queue q(task_count, 0);
+	for(size_t i = 0; i < task_count; ++i) {
+		tasks[i].configure(i, execution_order, &write_index);
+		q.enqueue(&tasks[i], initial_priorities[i]);
+	}
+
+	// Reschedule them.
+	size_t mutate_count = 0;
+	q.for_each([&](hxtask_queue::record_t& record) {
+		hxtask_queue_reschedule_task_t* task =
+			static_cast<hxtask_queue_reschedule_task_t*>(record.task);
+		size_t index = task->get_index();
+		record.priority = rescheduled_priorities[index];
+		++mutate_count;
+	});
+	EXPECT_TRUE(mutate_count == task_count);
+
+	// Check they are rescheduled.
+	size_t verify_count = 0;
+	const hxtask_queue& const_q = q;
+	const_q.for_each([&](const hxtask_queue::record_t& record) {
+		const hxtask_queue_reschedule_task_t* task =
+			static_cast<const hxtask_queue_reschedule_task_t*>(record.task);
+		size_t index = task->get_index();
+		EXPECT_TRUE(record.priority == rescheduled_priorities[index]);
+		++verify_count;
+	});
+	EXPECT_TRUE(verify_count == task_count);
+
+	// Run them.
+	q.wait_for_all();
+	EXPECT_TRUE(write_index == task_count);
+}
