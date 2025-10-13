@@ -201,6 +201,28 @@ TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
 	q.enqueue(&tasks[1], 10);
 	q.enqueue(&tasks[2], 1);
 
+	EXPECT_TRUE(q.max_size() == 3u);
+	EXPECT_TRUE(q.size() == 3u);
+	EXPECT_TRUE(q.full());
+	EXPECT_TRUE(!q.empty());
+
+	bool visited[3] = { false, false, false };
+	size_t visit_count = 0;
+	q.for_each([&](hxtask_queue::task_record_t& record) {
+		++visit_count;
+		if(record.task == &tasks[0]) {
+			visited[0] = true;
+		} else if(record.task == &tasks[1]) {
+			visited[1] = true;
+		} else if(record.task == &tasks[2]) {
+			visited[2] = true;
+		}
+	});
+	EXPECT_TRUE(visit_count == 3u);
+	for(size_t i = 0; i < 3; ++i) {
+		EXPECT_TRUE(visited[i]);
+	}
+
 	bool all_priority_non_negative = q.all_of([](const hxtask_queue::task_record_t& record) {
 		return record.priority >= 0;
 	});
@@ -215,6 +237,8 @@ TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
 		return record.priority < 4;
 	});
 	EXPECT_TRUE(removed_low_priority == 1);
+	EXPECT_TRUE(q.size() == 2u);
+	EXPECT_TRUE(!q.full());
 
 	bool any_remaining_low_priority = q.any_of([](const hxtask_queue::task_record_t& record) {
 		return record.priority < 4;
@@ -222,8 +246,19 @@ TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
 	EXPECT_TRUE(!any_remaining_low_priority);
 
 	q.wait_for_all();
+	EXPECT_TRUE(q.empty());
 
 	EXPECT_TRUE(executed_flags[0]);
 	EXPECT_TRUE(executed_flags[1]);
+	EXPECT_TRUE(!executed_flags[2]);
+
+	executed_flags[2] = false;
+	q.enqueue(&tasks[2], 7);
+	EXPECT_TRUE(q.size() == 1u);
+	EXPECT_TRUE(!q.empty());
+	q.clear();
+	EXPECT_TRUE(q.size() == 0u);
+	EXPECT_TRUE(q.empty());
+	q.wait_for_all();
 	EXPECT_TRUE(!executed_flags[2]);
 }
