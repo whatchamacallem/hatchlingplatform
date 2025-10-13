@@ -178,3 +178,58 @@ TEST(hxtask_queue_test, priority_ordering_single_threaded) {
 		EXPECT_TRUE(execution_order[i] == expected[i]);
 	}
 }
+
+TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+
+	class hxtask_queue_predicate_task_t : public hxtask {
+	public:
+		void configure(bool* executed_flag_) {
+			executed_flag = executed_flag_;
+		}
+
+		virtual void execute(hxtask_queue*) override {
+			*executed_flag = true;
+		}
+
+	private:
+		bool* executed_flag = hxnull;
+	};
+
+	bool executed_flags[3] = { false, false, false };
+	hxtask_queue_predicate_task_t tasks[3];
+	for(size_t i = 0; i < 3; ++i) {
+		tasks[i].configure(&executed_flags[i]);
+	}
+
+	hxtask_queue q(3, 0);
+	q.enqueue(&tasks[0], 5);
+	q.enqueue(&tasks[1], 10);
+	q.enqueue(&tasks[2], 1);
+
+	bool all_priority_non_negative = q.all_of([](const hxtask_queue::task_record_t& record_) {
+		return record_.priority >= 0;
+	});
+	EXPECT_TRUE(all_priority_non_negative);
+
+	bool any_high_priority = q.any_of([](const hxtask_queue::task_record_t& record_) {
+		return record_.priority > 8;
+	});
+	EXPECT_TRUE(any_high_priority);
+
+	size_t removed_low_priority = q.erase_if([](const hxtask_queue::task_record_t& record_) {
+		return record_.priority < 4;
+	});
+	EXPECT_TRUE(removed_low_priority == 1);
+
+	bool any_remaining_low_priority = q.any_of([](const hxtask_queue::task_record_t& record_) {
+		return record_.priority < 4;
+	});
+	EXPECT_TRUE(!any_remaining_low_priority);
+
+	q.wait_for_all();
+
+	EXPECT_TRUE(executed_flags[0]);
+	EXPECT_TRUE(executed_flags[1]);
+	EXPECT_TRUE(!executed_flags[2]);
+}

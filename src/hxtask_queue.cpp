@@ -77,7 +77,6 @@ hxtask_queue::~hxtask_queue(void) {
 }
 
 void hxtask_queue::enqueue(hxtask* task, int priority) {
-	task->set_task_queue(this);
 	task_record_t entry = { task, priority
 #if (HX_RELEASE) == 0
 		, task->get_label()
@@ -110,7 +109,6 @@ void hxtask_queue::wait_for_all(void) {
 		while(!m_tasks_.empty()) {
 			hxtask* task = m_tasks_.front().task;
 			m_tasks_.pop_heap();
-			task->set_task_queue(hxnull);
 
 			// This is the last time this object is touched. It may delete or
 			// re-enqueue itself; we don't care.
@@ -178,7 +176,6 @@ void hxtask_queue::thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_) {
 			}
 		}
 
-		task->set_task_queue(hxnull);
 		hxprofile_scope(task->get_label());
 
 		// This is actually the last time this object is touched. It may delete or
