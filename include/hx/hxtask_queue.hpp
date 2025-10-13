@@ -84,6 +84,12 @@ public:
 	template<typename functor_t_>
 	size_t erase_if(functor_t_&& fn_);
 
+	/// Locks the queue and calls `fn` on each task. Invokes `fn` for every
+	/// queued task without altering the queue.
+	/// - `fn` : Functor accepting a `task_record_t&`.
+	template<typename functor_t_>
+	void for_each(functor_t_&& fn_);
+
 private:
 	hxtask_queue(const hxtask_queue&) = delete;
 	void operator=(const hxtask_queue&) = delete;
@@ -139,6 +145,14 @@ size_t hxtask_queue::erase_if(functor_t_&& fn_) {
 	hxunique_lock lock_(m_mutex_);
 #endif
 	return m_tasks_.erase_if_heap(hxforward<functor_t_>(fn_));
+}
+
+template<typename functor_t_>
+void hxtask_queue::for_each(functor_t_&& fn_) {
+#if HX_USE_THREADS
+	hxunique_lock lock_(m_mutex_);
+#endif
+	m_tasks_.for_each(hxforward<functor_t_>(fn_));
 }
 
 inline void hxtask_queue::clear(void) {
