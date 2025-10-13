@@ -39,31 +39,6 @@ public:
 	/// Calls `wait_for_all` before destruction.
 	~hxtask_queue(void);
 
-	/// Queues a task for later execution. Does not delete the task after
-	/// execution. Thread-safe and callable from running tasks.
-	/// - `task` : A pointer to the task to be enqueued for execution.
-	/// - `priority` : Optional priority for scheduling. Higher values run sooner.
-	void enqueue(hxtask* task_, int priority_=0) hxattr_nonnull(2);
-
-	/// The thread calling `wait_for_all` executes tasks as well. Do not call from
-	/// `hxtask::execute`.
-	void wait_for_all(void);
-
-	/// Removes all queued tasks without executing them. Thread-safe.
-	void clear(void);
-
-	/// Returns true when no tasks are queued. Thread-safe.
-	bool empty(void) const;
-
-	/// Returns the number of queued tasks. Thread-safe.
-	size_t size(void) const;
-
-	/// Returns the maximum number of tasks that can be queued.
-	size_t max_size(void) const;
-
-	/// Returns true if the queue capacity has been reached.
-	bool full(void) const;
-
 	/// Locks the queue and calls `fn` on each task. Returns true if the
 	/// predicate returns true for every element and false otherwise. Will stop
 	/// iterating when the predicate returns false.
@@ -78,6 +53,18 @@ public:
 	template<typename functor_t_>
 	bool any_of(functor_t_&& fn_) const;
 
+	/// Removes all queued tasks without executing them. Thread-safe.
+	void clear(void);
+
+	/// Returns true when no tasks are queued. Thread-safe.
+	bool empty(void) const;
+
+	/// Queues a task for later execution. Does not delete the task after
+	/// execution. Thread-safe and callable from running tasks.
+	/// - `task` : A pointer to the task to be enqueued for execution.
+	/// - `priority` : Optional priority for scheduling. Higher values run sooner.
+	void enqueue(hxtask* task_, int priority_=0) hxattr_nonnull(2);
+
 	/// Locks the queue and calls `fn` on each task. Removes queued tasks for
 	/// which `fn` evaluates true. Do not modify a `task_record_t` directly.
 	/// - `fn` : Predicate accepting a `task_record_t&`.
@@ -89,6 +76,19 @@ public:
 	/// - `fn` : Functor accepting a `task_record_t&`.
 	template<typename functor_t_>
 	void for_each(functor_t_&& fn_);
+
+	/// Returns true if the queue capacity has been reached.
+	bool full(void) const;
+
+	/// Returns the maximum number of tasks that can be queued.
+	size_t max_size(void) const;
+
+	/// Returns the number of queued tasks. Thread-safe.
+	size_t size(void) const;
+
+	/// The thread calling `wait_for_all` executes tasks as well. Do not call from
+	/// `hxtask::execute`.
+	void wait_for_all(void);
 
 private:
 	hxtask_queue(const hxtask_queue&) = delete;
@@ -139,6 +139,20 @@ bool hxtask_queue::any_of(functor_t_&& fn_) const {
 	return m_tasks_.any_of(hxforward<functor_t_>(fn_));
 }
 
+inline void hxtask_queue::clear(void) {
+#if HX_USE_THREADS
+	hxunique_lock lock_(m_mutex_);
+#endif
+	m_tasks_.clear();
+}
+
+inline bool hxtask_queue::empty(void) const {
+#if HX_USE_THREADS
+	hxunique_lock lock_(m_mutex_);
+#endif
+	return m_tasks_.empty();
+}
+
 template<typename functor_t_>
 size_t hxtask_queue::erase_if(functor_t_&& fn_) {
 #if HX_USE_THREADS
@@ -155,25 +169,11 @@ void hxtask_queue::for_each(functor_t_&& fn_) {
 	m_tasks_.for_each(hxforward<functor_t_>(fn_));
 }
 
-inline void hxtask_queue::clear(void) {
+inline bool hxtask_queue::full(void) const {
 #if HX_USE_THREADS
 	hxunique_lock lock_(m_mutex_);
 #endif
-	m_tasks_.clear();
-}
-
-inline bool hxtask_queue::empty(void) const {
-#if HX_USE_THREADS
-	hxunique_lock lock_(m_mutex_);
-#endif
-	return m_tasks_.empty();
-}
-
-inline size_t hxtask_queue::size(void) const {
-#if HX_USE_THREADS
-	hxunique_lock lock_(m_mutex_);
-#endif
-	return m_tasks_.size();
+	return m_tasks_.full();
 }
 
 inline size_t hxtask_queue::max_size(void) const {
@@ -183,9 +183,9 @@ inline size_t hxtask_queue::max_size(void) const {
 	return m_tasks_.max_size();
 }
 
-inline bool hxtask_queue::full(void) const {
+inline size_t hxtask_queue::size(void) const {
 #if HX_USE_THREADS
 	hxunique_lock lock_(m_mutex_);
 #endif
-	return m_tasks_.full();
+	return m_tasks_.size();
 }
