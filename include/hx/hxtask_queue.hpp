@@ -14,8 +14,10 @@
 /// level. See `<hx/hxtask.hpp>`.
 class hxtask_queue {
 public:
-	/// `record_t` - Iterated over by `all_of`, `any_of` and `erase_if`.
-	/// This also allows examining the state of the queue in the debugger
+	/// `record_t` - Iterated over by `all_of`, `any_of`, `erase_if` and
+	/// `for_each`. Functors passed to either of `erase_if` or `for_each` can
+	/// modify their `record_t` functor args in order to re-prioritize the
+	/// queue. This also allows examining the state of the queue in the debugger
 	/// watch window.
 	class record_t {
 	public:

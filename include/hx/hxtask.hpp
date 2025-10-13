@@ -12,7 +12,7 @@ class hxtask_queue;
 class hxtask {
 public:
 	/// A virtual destructor.
-	virtual ~hxtask(void) { }
+	virtual ~hxtask( ) { }
 
 	/// Executes the task. This is the main function to implement in derived
 	/// classes. This call is the last time this object is touched by the

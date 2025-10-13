@@ -35,8 +35,8 @@
 #include <stdbool.h>
 #endif
 
-/// `int HATCHLING_VER` - Two digit major, minor and patch versions. Odd numbered
-/// minor versions are development branches.
+/// `int HATCHLING_VER` - One digit major, and two digit minor and patch
+/// versions. Odd numbered minor versions are development branches.
 #define HATCHLING_VER 31900
 
 /// `HATCHLING_TAG` - Major, minor and patch version tag name. Odd numbered
