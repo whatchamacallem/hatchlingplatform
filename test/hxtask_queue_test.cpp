@@ -133,50 +133,40 @@ TEST_F(hxtask_queue_test_f, multiple_reenqueuing) {
 	}
 }
 
-TEST_F(hxtask_queue_test_f, priority_ordering_single_threaded) {
+TEST(hxtask_queue_test, priority_ordering_single_threaded) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
-	class priority_task_t : public hxtask {
+	class hxtask_queue_test_task_t : public hxtask {
 	public:
-		priority_task_t() : order_(hxnull), index_(hxnull), priority_value_(0) { }
-
-		void configure(int* order, size_t* index) {
-			order_ = order;
-			index_ = index;
+		void configure(int* o, size_t* i, int p) {
+			execution_order = o;
+			write_index = i;
+			priority_value = p;
 		}
 
-		void set_priority_value(int priority) {
-			priority_value_ = priority;
-		}
-
-		virtual void execute(hxtask_queue* q) override {
-			(void)q;
-			hxassertmsg(order_, "priority_task_unconfigured");
-			hxassertmsg(index_, "priority_task_unconfigured");
-			size_t slot = (*index_)++;
-			order_[slot] = priority_value_;
+		virtual void execute(hxtask_queue*) override {
+			hxassertmsg(execution_order, "priority_task_unconfigured");
+			hxassertmsg(write_index, "priority_task_unconfigured");
+			size_t slot = (*write_index)++;
+			execution_order[slot] = priority_value;
 		}
 
 	private:
-		int* order_;
-		size_t* index_;
-		int priority_value_;
+		int* execution_order = hxnull;
+		size_t* write_index = hxnull;
+		int priority_value = 0;
 	};
 
 	constexpr size_t task_count = 5;
 	int execution_order[task_count] = { 0, 0, 0, 0, 0 };
 	size_t write_index = 0;
-	priority_task_t tasks[task_count];
-
-	for(size_t i = 0; i < task_count; ++i) {
-		tasks[i].configure(execution_order, &write_index);
-	}
+	hxtask_queue_test_task_t tasks[task_count];
 
 	const int priorities[task_count] = { 1, 3, -5, 2, 10 };
 
-	hxtask_queue q(max_tasks, 0);
+	hxtask_queue q(task_count, 0);
 	for(size_t i = 0; i < task_count; ++i) {
-		tasks[i].set_priority_value(priorities[i]);
+		tasks[i].configure(execution_order, &write_index, priorities[i]);
 		q.enqueue(&tasks[i], priorities[i]);
 	}
 	q.wait_for_all();
