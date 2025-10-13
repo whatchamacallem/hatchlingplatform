@@ -33,10 +33,12 @@ public:
 	hxprofiler_task_test() : m_target_ms(0.0f), m_accumulator(0) { }
 
 	void construct(const char* label, float target_ms) {
-		set_label(label);
+		m_label = label;
 		m_target_ms = target_ms;
 		m_accumulator = 0;
 	}
+
+	virtual const char* get_label(void) const override { return m_label; }
 
 	virtual void execute(hxtask_queue* q) override {
 		(void)q;
@@ -71,6 +73,7 @@ private:
 	float m_target_ms;
 	uint32_t m_accumulator;
 	hxrandom m_test_prng;
+	const char* m_label;
 };
 
 } // namespace

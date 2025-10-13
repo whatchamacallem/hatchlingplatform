@@ -76,20 +76,25 @@ hxtask_queue::~hxtask_queue(void) {
 	}
 }
 
-void hxtask_queue::enqueue(hxtask* task_) {
-	task_->set_task_queue(this);
+void hxtask_queue::enqueue(hxtask* task, int priority) {
+	task->set_task_queue(this);
+	task_record_t_ entry = { task, priority
+#if (HX_RELEASE) == 0
+		, task->get_label()
+#endif
+	};
 
 #if HX_USE_THREADS
 	if(m_thread_pool_size_ > 0) {
 		hxunique_lock lock_(m_mutex_);
 		hxassertrelease(m_queue_run_level_ == run_level_running_, "stopped_queue");
-		m_tasks_.push_heap(task_);
+		m_tasks_.push_heap(entry);
 		m_cond_var_new_tasks_.notify_one();
 	}
 	else
 #endif
 	{
-		m_tasks_.push_heap(task_);
+		m_tasks_.push_heap(entry);
 	}
 }
 
@@ -103,14 +108,14 @@ void hxtask_queue::wait_for_all(void) {
 #endif
 	{
 		while(!m_tasks_.empty()) {
-			hxtask* task_ = m_tasks_.front();
+			hxtask* task = m_tasks_.front().task_;
 			m_tasks_.pop_heap();
-			task_->set_task_queue(hxnull);
+			task->set_task_queue(hxnull);
 
-		// This is the last time this object is touched. It may delete or re-enqueue
-		// itself; we don't care.
-			hxprofile_scope(task_->get_label());
-			task_->execute(this);
+			// This is the last time this object is touched. It may delete or
+			// re-enqueue itself; we don't care.
+			hxprofile_scope(task->get_label());
+			task->execute(this);
 		}
 	}
 }
@@ -122,15 +127,15 @@ void* hxtask_queue::thread_task_loop_entry_(hxtask_queue* q_) {
 }
 
 void hxtask_queue::thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_) {
-	hxtask* task_ = hxnull;
+	hxtask* task = hxnull;
 	for(;;) {
 		{
 			// The task executes outside of this RAII lock.
 			hxunique_lock lk_(q_->m_mutex_);
 
-			if(task_) {
+			if(task) {
 				// Finished reacquiring the critical section after the previous task.
-				task_ = hxnull;
+				task = hxnull;
 				hxassertmsg(q_->m_executing_count_ > 0, "internal_error");
 				if(--q_->m_executing_count_ == 0 && q_->m_tasks_.empty()) {
 					q_->m_cond_var_completion_.notify_all();
@@ -145,7 +150,7 @@ void hxtask_queue::thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_) {
 
 			// Waiting threads contribute to the work.
 			if(!q_->m_tasks_.empty()) {
-				task_ = q_->m_tasks_.front();
+				task = q_->m_tasks_.front().task_;
 				q_->m_tasks_.pop_heap();
 				++q_->m_executing_count_;
 			}
@@ -173,13 +178,13 @@ void hxtask_queue::thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_) {
 			}
 		}
 
-		task_->set_task_queue(hxnull);
-		hxprofile_scope(task_->get_label());
+		task->set_task_queue(hxnull);
+		hxprofile_scope(task->get_label());
 
 		// This is actually the last time this object is touched. It may delete or
 		// re-enqueue itself. The queue is not locked and completion is not reported
 		// until after the task is done.
-		task_->execute(q_);
+		task->execute(q_);
 	}
 }
 #endif

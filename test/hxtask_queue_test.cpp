@@ -138,11 +138,15 @@ TEST_F(hxtask_queue_test_f, priority_ordering_single_threaded) {
 
 	class priority_task_t : public hxtask {
 	public:
-		priority_task_t() : order_(hxnull), index_(hxnull) { }
+		priority_task_t() : order_(hxnull), index_(hxnull), priority_value_(0) { }
 
 		void configure(int* order, size_t* index) {
 			order_ = order;
 			index_ = index;
+		}
+
+		void set_priority_value(int priority) {
+			priority_value_ = priority;
 		}
 
 		virtual void execute(hxtask_queue* q) override {
@@ -150,12 +154,13 @@ TEST_F(hxtask_queue_test_f, priority_ordering_single_threaded) {
 			hxassertmsg(order_, "priority_task_unconfigured");
 			hxassertmsg(index_, "priority_task_unconfigured");
 			size_t slot = (*index_)++;
-			order_[slot] = this->get_priority();
+			order_[slot] = priority_value_;
 		}
 
 	private:
 		int* order_;
 		size_t* index_;
+		int priority_value_;
 	};
 
 	constexpr size_t task_count = 5;
@@ -171,8 +176,8 @@ TEST_F(hxtask_queue_test_f, priority_ordering_single_threaded) {
 
 	hxtask_queue q(max_tasks, 0);
 	for(size_t i = 0; i < task_count; ++i) {
-		tasks[i].set_priority(priorities[i]);
-		q.enqueue(&tasks[i]);
+		tasks[i].set_priority_value(priorities[i]);
+		q.enqueue(&tasks[i], priorities[i]);
 	}
 	q.wait_for_all();
 

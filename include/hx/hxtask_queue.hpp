@@ -22,8 +22,9 @@
 /// See `<hx/hxtask.hpp>`.
 class hxtask_queue {
 public:
-	/// Creates a new task queue. `thread_pool_size` determines the size of the
-	/// worker thread pool. A `thread_pool_size` of `0` does not use threads.
+	/// Creates a new task queue. `task_queue_size` reserves storage for enqueued
+	/// tasks. `thread_pool_size` determines the size of the worker thread pool.
+	/// A `thread_pool_size` of `0` does not use threads.
 	explicit hxtask_queue(size_t task_queue_size_, size_t thread_pool_size_);
 
 	/// Calls `wait_for_all` before destruction.
@@ -32,7 +33,8 @@ public:
 	/// Queues a task for later execution. Does not delete the task after
 	/// execution. Thread-safe and callable from running tasks.
 	/// - `task` : A pointer to the task to be enqueued for execution.
-	void enqueue(hxtask* task_) hxattr_nonnull(2);
+	/// - `priority` : Optional priority for scheduling. Higher values run sooner.
+	void enqueue(hxtask* task_, int priority_=0) hxattr_nonnull(2);
 
 	/// The thread calling `wait_for_all` executes tasks as well. Do not call from
 	/// `hxtask::execute`.
@@ -42,7 +44,19 @@ private:
 	hxtask_queue(const hxtask_queue&) = delete;
 	void operator=(const hxtask_queue&) = delete;
 
-	hxarray<hxtask*> m_tasks_;
+	// This allows examining the state of the scheduler in the watch window.
+	struct task_record_t_ {
+		hxtask* task_;
+		int priority_;
+		bool operator<(const task_record_t_& x_) const { return this->priority_ < x_.priority_; }
+
+#if (HX_RELEASE) == 0
+		const char* label_;
+		~task_record_t_() { ::memset((void*)this, 0x00, sizeof *this); }
+#endif
+	};
+
+	hxarray<task_record_t_> m_tasks_;
 
 #if HX_USE_THREADS
 	friend class hxtask_wait_for_tasks_;
