@@ -347,6 +347,43 @@ TEST(hxarray_test, pop_heap_preserves_heap_on_removal) {
 	}
 }
 
+TEST(hxarray_test, erase_if_heap_removes_matching_values) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+
+	static const int values[] = { 14, 3, 7, 2, 9, 5, 8, 1, 6 };
+	const size_t value_count = hxsize(values);
+
+	hxarray<int, 16u> heap;
+	size_t expected_removed = 0u;
+	for(size_t index = 0; index < value_count; ++index) {
+		if((values[index] & 1) == 0) {
+			++expected_removed;
+		}
+		heap.push_heap(values[index]);
+	}
+
+	EXPECT_TRUE(hxarray_test_is_max_heap(heap));
+
+	const size_t removed = heap.erase_if_heap([](int value) -> bool {
+		return (value & 1) == 0;
+	});
+	EXPECT_EQ(removed, expected_removed);
+	EXPECT_EQ(heap.size(), value_count - expected_removed);
+	EXPECT_TRUE(hxarray_test_is_max_heap(heap));
+
+	int previous = INT_MAX;
+	while(!heap.empty()) {
+		const int root = heap.front();
+		EXPECT_EQ(root & 1, 1);
+		EXPECT_LE(root, previous);
+		previous = root;
+		heap.pop_heap();
+	}
+
+	EXPECT_TRUE(heap.empty());
+	EXPECT_EQ(heap.erase_if_heap([](int) { return false; }), 0u);
+}
+
 TEST_F(hxarray_test_f, emplace_back) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
