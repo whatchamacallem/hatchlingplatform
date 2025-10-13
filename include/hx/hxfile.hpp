@@ -176,7 +176,7 @@ public:
 
 	/// Writes a formatted UTF-8 string to the file. Uses `printf` conventions.
 	/// Formatting and writing will be skipped when using `hxdev_null`. Does not
-	/// modify the failure flag because it is not clear from `::vfprintf`.
+	/// modify the failure flag because it is not clear from `vfprintf`.
 	/// - `format` : Format string, similar to `printf`.
 	/// - `...` : Additional arguments for the format string.
 	bool print(const char* format_, ...) hxattr_format_printf(2, 3) hxattr_hot;

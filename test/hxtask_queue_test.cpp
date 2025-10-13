@@ -182,7 +182,7 @@ TEST(hxtask_queue_test, priority_ordering_single_threaded) {
 TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
-	class hxtask_queue_predicate_task_t : public hxtask {
+	class hxtask_queue_test_predicate_task_t : public hxtask {
 	public:
 		void configure(bool* f) { executed_flag = f; }
 		virtual void execute(hxtask_queue*) override { *executed_flag = true; }
@@ -191,7 +191,7 @@ TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
 	};
 
 	bool executed_flags[3] = { false, false, false };
-	hxtask_queue_predicate_task_t tasks[3];
+	hxtask_queue_test_predicate_task_t tasks[3];
 	for(size_t i = 0; i < 3; ++i) {
 		tasks[i].configure(&executed_flags[i]);
 	}
@@ -266,32 +266,30 @@ TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
 TEST(hxtask_queue_test, for_each_reschedules_queue) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
-	class hxtask_queue_reschedule_task_t : public hxtask {
+	class hxtask_queue_test_reschedule_task_t : public hxtask {
 	public:
-		void configure(size_t index, int* execution_order, size_t* write_index) {
-			task_index_ = index;
-			execution_order_ = execution_order;
-			write_index_ = write_index;
+		void configure(size_t i, int* e, size_t* w) {
+			task_index = i;
+			execution_order = e;
+			write_index = w;
 		}
 
 		virtual void execute(hxtask_queue*) override {
-			hxassertmsg(execution_order_, "reschedule_task_unconfigured");
-			hxassertmsg(write_index_, "reschedule_task_unconfigured");
-			size_t slot = (*write_index_)++;
-			execution_order_[slot] = (int)task_index_;
+			size_t slot = (*write_index)++;
+			execution_order[slot] = (int)task_index;
 		}
 
-		size_t get_index(void) const { return task_index_; }
+		size_t get_index(void) const { return task_index; }
 
 	private:
-		size_t task_index_ = 0;
-		int* execution_order_ = hxnull;
-		size_t* write_index_ = hxnull;
+		size_t task_index = 0;
+		int* execution_order = hxnull;
+		size_t* write_index = hxnull;
 	};
 
 	constexpr size_t task_count = 4;
 
-	hxtask_queue_reschedule_task_t tasks[task_count];
+	hxtask_queue_test_reschedule_task_t tasks[task_count];
 	int execution_order[task_count] = { -1, -1, -1, -1 };
 	size_t write_index = 0;
 
@@ -308,8 +306,8 @@ TEST(hxtask_queue_test, for_each_reschedules_queue) {
 	// Reschedule them.
 	size_t mutate_count = 0;
 	q.for_each([&](hxtask_queue::record_t& record) {
-		hxtask_queue_reschedule_task_t* task =
-			static_cast<hxtask_queue_reschedule_task_t*>(record.task);
+		hxtask_queue_test_reschedule_task_t* task =
+			static_cast<hxtask_queue_test_reschedule_task_t*>(record.task);
 		size_t index = task->get_index();
 		record.priority = rescheduled_priorities[index];
 		++mutate_count;
@@ -320,8 +318,8 @@ TEST(hxtask_queue_test, for_each_reschedules_queue) {
 	size_t verify_count = 0;
 	const hxtask_queue& const_q = q;
 	const_q.for_each([&](const hxtask_queue::record_t& record) {
-		const hxtask_queue_reschedule_task_t* task =
-			static_cast<const hxtask_queue_reschedule_task_t*>(record.task);
+		const hxtask_queue_test_reschedule_task_t* task =
+			static_cast<const hxtask_queue_test_reschedule_task_t*>(record.task);
 		size_t index = task->get_index();
 		EXPECT_TRUE(record.priority == rescheduled_priorities[index]);
 		++verify_count;

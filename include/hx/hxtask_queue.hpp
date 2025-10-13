@@ -8,11 +8,10 @@
 #include "hxtask.hpp"
 #include "hxthread.hpp"
 
-/// `hxtask_queue` - Provides a simple task queue with a worker thread pool.
-/// Implements single-threaded task queuing when `HX_USE_THREADS=0`. Executes
-/// supplied tasks in arbitrary order without cancellation using an optional
-/// thread pool. Use a separate task-graph manager to generate tasks if needed.
-/// See `<hx/hxtask.hpp>`.
+/// `hxtask_queue` - Provides a priority queue of tasks and a worker thread pool.
+/// Implements single-threaded task queuing when `HX_USE_THREADS=0`. Does not
+/// support scheduling tasks that are not read to run. Handle that at a higher
+/// level. See `<hx/hxtask.hpp>`.
 class hxtask_queue {
 public:
 	/// `record_t` - Iterated over by `all_of`, `any_of` and `erase_if`.
@@ -68,7 +67,9 @@ public:
 	void enqueue(hxtask* task_, int priority_=0) hxattr_nonnull(2);
 
 	/// Locks the queue and calls `fn` on each task. Removes queued tasks for
-	/// which `fn` evaluates true. Do not modify a `record_t` directly.
+	/// which `fn` evaluates true. The `record_t&` passed to `erase_if` may be
+	/// modified and the tasks will be re-prioritized according to their new
+	/// priorities.
 	/// - `fn` : Predicate accepting a `record_t&`.
 	template<typename functor_t_>
 	size_t erase_if(functor_t_&& fn_);
@@ -95,8 +96,9 @@ public:
 	/// Returns the number of queued tasks. Thread-safe.
 	size_t size(void) const;
 
-	/// The thread calling `wait_for_all` executes tasks as well. Do not call from
-	/// `hxtask::execute`.
+	/// Execute remaining tasks. The thread calling `wait_for_all` executes
+	/// tasks as well. Intended to be called by the thread that owns the queue
+	/// and must not be called from `hxtask::execute`.
 	void wait_for_all(void);
 
 private:
@@ -167,7 +169,14 @@ size_t hxtask_queue::erase_if(functor_t_&& fn_) {
 #if HX_USE_THREADS
 	hxunique_lock lock_(m_mutex_);
 #endif
-	return m_tasks_.erase_if_heap(hxforward<functor_t_>(fn_));
+	size_t erased_ = m_tasks_.erase_if(hxforward<functor_t_>(fn_));
+	if(erased_ != 0u) {
+		// Restore the heap property all at once. Allows erase_if to modify
+		// priority at the same time.
+		hxmake_heap_(m_tasks_.begin(), m_tasks_.end(),
+			hxkey_less_function<record_t, record_t>());
+	}
+	return erased_;
 }
 
 template<typename functor_t_>
