@@ -31,6 +31,8 @@ TEST(hxfile_test, read_write_round_trip) {
 		EXPECT_EQ(f.fail(), false);
 		EXPECT_EQ(f.is_open(), true);
 		EXPECT_EQ(f, true);
+		EXPECT_TRUE(f.flush());
+		EXPECT_FALSE(f.fail());
 	}
 	else {
 		FAIL();
@@ -39,9 +41,13 @@ TEST(hxfile_test, read_write_round_trip) {
 	hxout << "smoke test hxout" << ".";
 	hxout.print("..");
 	hxout << hxendl;
+	EXPECT_TRUE(hxout.flush());
+	EXPECT_FALSE(hxout.fail());
 	hxerr << "smoke test hxerr" << ".";
 	hxerr.print("..");
 	hxerr << hxendl;
+	EXPECT_TRUE(hxerr.flush());
+	EXPECT_FALSE(hxerr.fail());
 }
 
 TEST(hxfile_test, missing_file_reports_expectations) {

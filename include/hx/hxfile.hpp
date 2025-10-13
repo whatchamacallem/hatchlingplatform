@@ -3,9 +3,6 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-// XXX
-// *::flush
-
 #include "hatchling.h"
 
 class hxfile;
@@ -155,6 +152,10 @@ public:
 	/// - `bytes` : Pointer to the buffer containing the bytes to write.
 	/// - `count` : Number of bytes to write to the file.
 	size_t write(const void* bytes_, size_t count_) hxattr_nonnull(2) hxattr_hot;
+
+	/// Flushes buffered output to the underlying file. Safe to call on
+	/// `hxdev_null`. Does not reset the failure flag to false on success.
+	bool flush(void) hxattr_hot;
 
 	/// Reads a `\n` or `EOF` terminated character sequence. Allowed to fail on
 	/// `EOF` without needing to be `hxfile::skip_asserts`. Encountering `EOF`

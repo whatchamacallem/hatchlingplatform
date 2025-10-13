@@ -157,6 +157,18 @@ size_t hxfile::write(const void* bytes, size_t byte_count) {
 	return bytes_written;
 }
 
+bool hxfile::flush(void) {
+	hxassertmsg(m_open_mode_ & hxfile::out, "invalid_file");
+	if(m_file_pimpl_ == hxnull) {
+		return true;
+	}
+
+	const int result = ::fflush((FILE*)m_file_pimpl_);
+	hxassertmsg((result == 0) || (m_open_mode_ & hxfile::skip_asserts),
+		"fflush %s", ::strerror(errno));
+	return result == 0;
+}
+
 bool hxfile::getline(char* buffer, int buffer_size) {
 	hxassertmsg((m_open_mode_ & hxfile::in) && m_file_pimpl_, "invalid_file");
 
