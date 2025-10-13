@@ -731,7 +731,7 @@ size_t hxarray<T_, capacity_>::erase_if_heap(functor_t_&& fn_) {
 		if(hxforward<functor_t_>(fn_)(data_[index_])) {
 			this->erase_unordered(index_);
 			++removed_;
-			hxdetail_::hxheapsort_heapify_(data_, m_end_, hxkey_less_function<T_, T_>());
+			hxdetail_::hxheapsort_heapify_(data_ + index_, m_end_, hxkey_less_function<T_, T_>());
 		}
 	}
 	return removed_;

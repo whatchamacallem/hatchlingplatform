@@ -40,6 +40,26 @@ public:
 	/// `hxtask::execute`.
 	void wait_for_all(void);
 
+	/// Locks the queue and calls `fn` on each task. Returns true if the
+	/// predicate returns true for every element and false otherwise. Will stop
+	/// iterating when the predicate returns false.
+	/// - `fn` : A functor returning boolean. `!all_of(x)` -> `any_not(x)`.
+	template<typename functor_t_>
+	bool all_of(functor_t_&& fn_);
+
+	/// Locks the queue and calls `fn` on each task. Returns true if the
+	/// predicate returns true for any element and false otherwise. Will stop
+	/// iterating when the predicate returns true.
+	/// - `fn` : A functor returning boolean. `!any_of(x)` -> `none_of(x)`.
+	template<typename functor_t_>
+	bool any_of(functor_t_&& fn_);
+
+	/// Locks the queue and calls `fn` on each task. Removes queued tasks for
+	/// which `fn` evaluates true.
+	/// - `fn` : Predicate accepting a `task_record_t_&`.
+	template<typename functor_t_>
+	size_t erase_if(functor_t_&& fn_);
+
 private:
 	hxtask_queue(const hxtask_queue&) = delete;
 	void operator=(const hxtask_queue&) = delete;
@@ -84,3 +104,27 @@ private:
 	int32_t m_executing_count_;
 #endif
 };
+
+template<typename functor_t_>
+bool hxtask_queue::all_of(functor_t_&& fn_) {
+#if HX_USE_THREADS
+	hxunique_lock lock_(m_mutex_);
+#endif
+	return m_tasks_.all_of(hxforward<functor_t_>(fn_));
+}
+
+template<typename functor_t_>
+bool hxtask_queue::any_of(functor_t_&& fn_) {
+#if HX_USE_THREADS
+	hxunique_lock lock_(m_mutex_);
+#endif
+	return m_tasks_.any_of(hxforward<functor_t_>(fn_));
+}
+
+template<typename functor_t_>
+size_t hxtask_queue::erase_if(functor_t_&& fn_) {
+#if HX_USE_THREADS
+	hxunique_lock lock_(m_mutex_);
+#endif
+	return m_tasks_.erase_if_heap(hxforward<functor_t_>(fn_));
+}
