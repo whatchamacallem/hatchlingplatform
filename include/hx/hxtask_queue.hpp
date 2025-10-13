@@ -49,6 +49,21 @@ public:
 	/// `hxtask::execute`.
 	void wait_for_all(void);
 
+	/// Removes all queued tasks without executing them. Thread-safe.
+	void clear(void);
+
+	/// Returns true when no tasks are queued. Thread-safe.
+	bool empty(void) const;
+
+	/// Returns the number of queued tasks. Thread-safe.
+	size_t size(void) const;
+
+	/// Returns the maximum number of tasks that can be queued.
+	size_t max_size(void) const;
+
+	/// Returns true if the queue capacity has been reached.
+	bool full(void) const;
+
 	/// Locks the queue and calls `fn` on each task. Returns true if the
 	/// predicate returns true for every element and false otherwise. Will stop
 	/// iterating when the predicate returns false.
@@ -124,4 +139,39 @@ size_t hxtask_queue::erase_if(functor_t_&& fn_) {
 	hxunique_lock lock_(m_mutex_);
 #endif
 	return m_tasks_.erase_if_heap(hxforward<functor_t_>(fn_));
+}
+
+inline void hxtask_queue::clear(void) {
+#if HX_USE_THREADS
+	hxunique_lock lock_(m_mutex_);
+#endif
+	m_tasks_.clear();
+}
+
+inline bool hxtask_queue::empty(void) const {
+#if HX_USE_THREADS
+	hxunique_lock lock_(m_mutex_);
+#endif
+	return m_tasks_.empty();
+}
+
+inline size_t hxtask_queue::size(void) const {
+#if HX_USE_THREADS
+	hxunique_lock lock_(m_mutex_);
+#endif
+	return m_tasks_.size();
+}
+
+inline size_t hxtask_queue::max_size(void) const {
+#if HX_USE_THREADS
+	hxunique_lock lock_(m_mutex_);
+#endif
+	return m_tasks_.max_size();
+}
+
+inline bool hxtask_queue::full(void) const {
+#if HX_USE_THREADS
+	hxunique_lock lock_(m_mutex_);
+#endif
+	return m_tasks_.full();
 }
