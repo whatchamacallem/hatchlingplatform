@@ -97,7 +97,7 @@ TEST(hxprofiler_test, write_to_chrome_tracing_command) {
 	hxprofiler_stop();
 	hxconsole_exec_line("profilestart");
 
-	hxtask_queue q(2u);
+	hxtask_queue q(s_hxtest_num_labels, 2u);
 	hxprofiler_task_test tasks[s_hxtest_num_labels];
 	for(size_t i = s_hxtest_num_labels; i--; ) {
 		tasks[i].construct(s_hxtest_labels[i], (float)i);

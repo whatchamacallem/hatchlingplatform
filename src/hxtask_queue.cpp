@@ -13,7 +13,7 @@ class hxtask_wait_for_tasks_ {
 public:
 	hxtask_wait_for_tasks_(hxtask_queue* q) : q_(q) {}
 	bool operator()(void) const {
-		return q_->m_next_task_
+		return !q_->m_tasks_.empty()
 			|| q_->m_queue_run_level_ == hxtask_queue::run_level_stopped_;
 	}
 	hxtask_queue* q_;
@@ -28,22 +28,23 @@ public:
 	bool operator()(void) const {
 		hxassertmsg(q_->m_queue_run_level_ == hxtask_queue::run_level_running_,
 			"threading_error");
-		return q_->m_next_task_ == hxnull && q_->m_executing_count_ == 0;
+		return q_->m_tasks_.empty() && q_->m_executing_count_ == 0;
 	}
 	hxtask_queue* q_;
 };
 #endif
 
 // Should abort if exceptions are enabled and the thread pool cannot be created.
-hxtask_queue::hxtask_queue(size_t thread_pool_size_)
-	: m_next_task_(hxnull)
+hxtask_queue::hxtask_queue(size_t task_queue_size_, size_t thread_pool_size_)
 #if HX_USE_THREADS
-	, m_queue_run_level_(run_level_running_)
+	: m_queue_run_level_(run_level_running_)
 	, m_thread_pool_size_(thread_pool_size_)
 	, m_threads_(hxnull)
 	, m_executing_count_(0)
 #endif
 {
+	m_tasks_.reserve(task_queue_size_);
+
 	(void)thread_pool_size_;
 #if HX_USE_THREADS
 	if(m_thread_pool_size_ > 0) {
@@ -82,15 +83,13 @@ void hxtask_queue::enqueue(hxtask* task_) {
 	if(m_thread_pool_size_ > 0) {
 		hxunique_lock lock_(m_mutex_);
 		hxassertrelease(m_queue_run_level_ == run_level_running_, "stopped_queue");
-		task_->set_next_task(m_next_task_);
-		m_next_task_ = task_;
+		m_tasks_.push_heap(task_);
 		m_cond_var_new_tasks_.notify_one();
 	}
 	else
 #endif
 	{
-		task_->set_next_task(m_next_task_);
-		m_next_task_ = task_;
+		m_tasks_.push_heap(task_);
 	}
 }
 
@@ -103,10 +102,9 @@ void hxtask_queue::wait_for_all(void) {
 	else
 #endif
 	{
-		while(m_next_task_) {
-			hxtask* task_ = m_next_task_;
-			m_next_task_ = task_->get_next_task();
-			task_->set_next_task(hxnull);
+		while(!m_tasks_.empty()) {
+			hxtask* task_ = m_tasks_.front();
+			m_tasks_.pop_heap();
 			task_->set_task_queue(hxnull);
 
 		// This is the last time this object is touched. It may delete or re-enqueue
@@ -134,7 +132,7 @@ void hxtask_queue::thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_) {
 				// Finished reacquiring the critical section after the previous task.
 				task_ = hxnull;
 				hxassertmsg(q_->m_executing_count_ > 0, "internal_error");
-				if(--q_->m_executing_count_ == 0 && !q_->m_next_task_) {
+				if(--q_->m_executing_count_ == 0 && q_->m_tasks_.empty()) {
 					q_->m_cond_var_completion_.notify_all();
 				}
 			}
@@ -146,9 +144,9 @@ void hxtask_queue::thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_) {
 			}
 
 			// Waiting threads contribute to the work.
-			if(q_->m_next_task_) {
-				task_ = q_->m_next_task_;
-				q_->m_next_task_ = task_->get_next_task();
+			if(!q_->m_tasks_.empty()) {
+				task_ = q_->m_tasks_.front();
+				q_->m_tasks_.pop_heap();
 				++q_->m_executing_count_;
 			}
 			else {
@@ -175,7 +173,6 @@ void hxtask_queue::thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_) {
 			}
 		}
 
-		task_->set_next_task(hxnull);
 		task_->set_task_queue(hxnull);
 		hxprofile_scope(task_->get_label());
 

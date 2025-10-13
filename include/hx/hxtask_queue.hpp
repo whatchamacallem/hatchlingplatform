@@ -11,6 +11,7 @@
 // than nodes found. assert ordered queue property as well.
 
 #include "hatchling.h"
+#include "hxarray.hpp"
 #include "hxtask.hpp"
 #include "hxthread.hpp"
 
@@ -23,7 +24,7 @@ class hxtask_queue {
 public:
 	/// Creates a new task queue. `thread_pool_size` determines the size of the
 	/// worker thread pool. A `thread_pool_size` of `0` does not use threads.
-	explicit hxtask_queue(size_t thread_pool_size_);
+	explicit hxtask_queue(size_t task_queue_size_, size_t thread_pool_size_);
 
 	/// Calls `wait_for_all` before destruction.
 	~hxtask_queue(void);
@@ -41,7 +42,7 @@ private:
 	hxtask_queue(const hxtask_queue&) = delete;
 	void operator=(const hxtask_queue&) = delete;
 
-	hxtask* m_next_task_;
+	hxarray<hxtask*> m_tasks_;
 
 #if HX_USE_THREADS
 	friend class hxtask_wait_for_tasks_;
