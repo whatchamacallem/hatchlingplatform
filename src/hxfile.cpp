@@ -33,11 +33,8 @@ hxfile hxdev_null((void*)0, hxfile::out);
 
 // In this version the file is a FILE*.
 hxfile::hxfile(void* file_, uint8_t mode) : hxfile() {
+	m_file_pimpl_ = file_; // does not own.
 	m_open_mode_ = mode;
-	if(file_) {
-		m_file_pimpl_ = file_; // does not own.
-		m_good_ = true;
-	}
 }
 
 hxfile::hxfile(uint8_t mode, const char* filename, ...) : hxfile() {
@@ -94,9 +91,9 @@ bool hxfile::openv_(uint8_t mode, const char* filename, va_list args) {
 	hxassertrelease(m_file_pimpl_ || (mode & hxfile::skip_asserts),
 		"fopen %s %s: %s", buf, m, ::strerror(errno));
 
-	m_owns_ = m_file_pimpl_ != hxnull;
-	m_good_ = m_owns_;
-	return m_good_;
+	m_fail_ = m_file_pimpl_ == hxnull;
+	m_owns_ = !m_fail_;
+	return !m_fail_;
 }
 
 void hxfile::close(void) {
@@ -107,7 +104,7 @@ void hxfile::close(void) {
 }
 
 void hxfile::clear(void) {
-	m_good_ = m_file_pimpl_ != hxnull;
+	m_fail_ = false;
 	m_eof_ = false;
 	if(m_file_pimpl_) {
 		::clearerr((FILE*)m_file_pimpl_);
@@ -123,9 +120,9 @@ size_t hxfile::get_pos(void) const {
 bool hxfile::set_pos(size_t position_) {
 	hxassertmsg(m_file_pimpl_, "invalid_file");
 	// Requires a 64-bit long to support 64-bit files.
-	m_good_ = ::fseek((FILE*)m_file_pimpl_, (long)position_, 0) == 0;
-	m_eof_ = !m_good_;
-	return m_good_;
+	m_fail_ = ::fseek((FILE*)m_file_pimpl_, (long)position_, 0) != 0;
+	m_eof_ = m_fail_;
+	return !m_fail_;
 }
 
 size_t hxfile::read(void* bytes, size_t byte_count) {
@@ -137,7 +134,7 @@ size_t hxfile::read(void* bytes, size_t byte_count) {
 		"fread expected %zu != actual %zu: %s", byte_count, bytes_read, ::strerror(errno));
 
 	if(byte_count != bytes_read) {
-		m_good_ = false;
+		m_fail_ = true;
 		m_eof_ = ::feof((FILE*)m_file_pimpl_);
 	}
 	return bytes_read;
@@ -155,7 +152,8 @@ size_t hxfile::write(const void* bytes, size_t byte_count) {
 	hxassertmsg((byte_count == bytes_written) || (m_open_mode_ & hxfile::skip_asserts),
 		"fwrite expected %zu != actual %zu: %s", byte_count, bytes_written, ::strerror(errno));
 
-	m_good_ = byte_count == bytes_written; // Can restore goodness.
+	// Can restore goodness.
+	m_fail_ = byte_count != bytes_written;
 	return bytes_written;
 }
 
@@ -167,7 +165,7 @@ bool hxfile::getline(char* buffer, int buffer_size) {
 	hxassertmsg(!::ferror((FILE*)m_file_pimpl_), "fgets %s", ::strerror(errno));
 
 	if(!result) {
-		m_good_ = false;
+		m_fail_ = false;
 		m_eof_ = (bool)::feof((FILE*)m_file_pimpl_); // 0: not past end.
 		return false; // EOF or error.
 	}
@@ -204,7 +202,7 @@ int hxfile::scan(const char* format, ...) {
 	hxassertrelease(items_scanned != EOF || (m_open_mode_ & hxfile::skip_asserts), "vfscanf %s", ::strerror(errno));
 
 	if(items_scanned == EOF) {
-		m_good_ = false;
+		m_fail_ = false;
 		m_eof_ = (bool)::feof((FILE*)m_file_pimpl_);
 	}
 	return items_scanned;

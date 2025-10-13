@@ -15,8 +15,9 @@ HX_REGISTER_FILENAME_HASH
 
 TEST(hxfile_test, empty_name_rejects_empty_path) {
 	hxfile f(hxfile::in | hxfile::skip_asserts, "");
-	EXPECT_EQ(f.good(), false);
+	EXPECT_EQ(f.fail(), true);
 	EXPECT_EQ(f.is_open(), false);
+	EXPECT_EQ(f, false);
 }
 
 #if defined __GNUC__
@@ -27,8 +28,9 @@ TEST(hxfile_test, read_write_round_trip) {
 	if(hxfile f = hxfile(hxfile::in | hxfile::out | hxfile::skip_asserts, "hxfile_test_read_write.txt")) {
 		f << "hxfile_test_read_write.txt";
 
-		EXPECT_EQ(f.good(), true);
+		EXPECT_EQ(f.fail(), false);
 		EXPECT_EQ(f.is_open(), true);
+		EXPECT_EQ(f, true);
 	}
 	else {
 		FAIL();
@@ -44,7 +46,7 @@ TEST(hxfile_test, read_write_round_trip) {
 
 TEST(hxfile_test, missing_file_reports_expectations) {
 	hxfile f(hxfile::in | hxfile::skip_asserts, "test-file-does-not-exist-%d", 123);
-	EXPECT_EQ(f.good(), false);
+	EXPECT_EQ(f.fail(), true);
 	EXPECT_EQ(f.is_open(), false);
 
 	// EXPECT_EQ should return hxdev_null.
@@ -67,10 +69,10 @@ TEST(hxfile_test, seek_and_read_maintain_state) {
 
 	EXPECT_EQ(f.get_pos(), 12u);
 	f.set_pos(4);
-	EXPECT_TRUE(f.good());
+	EXPECT_TRUE(!f.fail());
 	EXPECT_FALSE(f.eof());
 	f.read1(c);
-	EXPECT_TRUE(f.good());
+	EXPECT_TRUE(!f.fail());
 	EXPECT_FALSE(f.eof());
 
 	EXPECT_EQ(b.x, c.x);
@@ -92,14 +94,15 @@ TEST(hxfile_test, move_copy_and_stream_operators) {
 	// constructor from a temporary correctly.
 	hxfile ft(hxfile::out | hxfile::skip_asserts, "hxfile_test_operators.bin");
 	hxfile f(hxmove(ft));
-	EXPECT_FALSE(ft.good());
+	EXPECT_TRUE(!ft.is_open());
+	EXPECT_TRUE(f.is_open());
 	hxfile_test_record x { 77777u, -555, 77u, -55 };
 	int a = -3;
 
 	f <= x <= a;
 	f.print("(%d,%d)", 30, 70);
 
-	EXPECT_TRUE(f.good());
+	EXPECT_TRUE(!f.fail());
 	EXPECT_FALSE(f.eof());
 	f.close();
 
@@ -107,8 +110,8 @@ TEST(hxfile_test, move_copy_and_stream_operators) {
 
 	ft.open(hxfile::in | hxfile::skip_asserts, "hxfile_test_operators.bin");
 	f = hxmove(ft);
-	EXPECT_TRUE(f.good());
-	EXPECT_FALSE(ft.good());
+	EXPECT_TRUE(!ft.is_open());
+	EXPECT_TRUE(f.is_open());
 
 	hxfile_test_record y;
 	::memset(&y, 0x00, sizeof y);
@@ -128,15 +131,15 @@ TEST(hxfile_test, move_copy_and_stream_operators) {
 	EXPECT_EQ(thirty, 30);
 	EXPECT_EQ(seventy, 70);
 
-	EXPECT_TRUE(f.good());
+	EXPECT_TRUE(!f.fail());
 	EXPECT_FALSE(f.eof());
 	char t;
 	const size_t extra_byte = f.read(&t, 1); // This call fails.
 	EXPECT_TRUE(f.eof());
 	EXPECT_EQ(extra_byte, 0u);
-	EXPECT_FALSE(f.good());
+	EXPECT_TRUE(f.fail());
 	f.clear();
-	EXPECT_TRUE(f.good()); // Clear the EOF event.
+	EXPECT_TRUE(!f.fail()); // Clear the EOF event.
 	f.close();
-	EXPECT_FALSE(f.good());
+	EXPECT_TRUE(!f.is_open());
 }

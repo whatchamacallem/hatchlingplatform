@@ -106,8 +106,8 @@ bool hxconsole_exec_file(hxfile& file) {
 bool hxconsole_exec_filename(const char* filename) {
 	// Please don't assert.
 	hxfile file(hxfile::in|hxfile::skip_asserts, "%s", filename);
-	hxwarnmsg(file.is_open(), "cannot open: %s", filename);
-	if(file.is_open()) {
+	hxwarnmsg(file, "cannot open: %s", filename);
+	if(file) {
 		const bool is_ok = hxconsole_exec_file(file);
 		hxwarnmsg(is_ok, "encountering errors: %s", filename);
 		return is_ok;

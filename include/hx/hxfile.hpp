@@ -5,7 +5,6 @@
 
 // XXX
 // *::flush
-// *::fail
 
 #include "hatchling.h"
 
@@ -106,7 +105,7 @@ public:
 
 	/// Checks if the file is open, `EOF` has not been reached, and no error has
 	/// been encountered. See usage example in the class documentation.
-	operator bool(void) const { return m_good_; }
+	operator bool(void) const { return m_file_pimpl_ && !m_fail_; }
 
 	/// Opens a file with the specified mode and formatted filename.
 	bool open(uint8_t mode_, const char* filename_, ...) hxattr_format_printf(3, 4);
@@ -118,17 +117,18 @@ public:
 	bool is_open(void) const { return m_file_pimpl_ != hxnull; }
 
 	/// Checks if the file is open, `EOF` has not been reached, no error
-	/// encountered and `no_good` not called.
-	bool good(void) const { return m_good_; }
+	/// encountered and `set_fail` not called.
+	bool fail(void) const { return m_fail_; }
 
 	/// Marks the file as not good. Allows the user to report additional errors
 	/// without having to track them. Non-standard.
-	void no_good(void) { m_good_ = false; }
+	void set_fail(void) { m_fail_ = true; }
 
 	/// Checks if `EOF` has been reached.
 	bool eof(void) const { return m_eof_; }
 
-	/// Resets the goodness and `EOF` flags. Required after `EOF` is encountered.
+	/// Resets the failure and `EOF` flags. This is required to clear `EOF`
+	/// after `EOF` is encountered.
 	void clear(void);
 
 	/// Returns the current open mode of the file.
@@ -139,24 +139,27 @@ public:
 	size_t get_pos(void) const;
 
 	/// Sets the current position in the file. Returns true on success. FILE*
-	/// implementation requires a 64-bit long to support 64-bit files.
+	/// implementation requires a 64-bit long to support 64-bit files. Resets
+	/// the failure flag to false on success.
 	bool set_pos(size_t position_);
 
 	/// Reads a specified number of bytes from the file into the provided
-	/// buffer.
+	/// buffer. Does not reset the failure flag to false on success.
 	/// - `bytes` : Pointer to the buffer where the read bytes will be stored.
 	/// - `count` : Number of bytes to read from the file.
 	size_t read(void* bytes_, size_t count_) hxattr_nonnull(2) hxattr_hot;
 
 	/// Writes a specified number of bytes from the provided buffer to the file.
-	/// Writing will be skipped when using `hxdev_null`.
+	/// Writing will be skipped when using `hxdev_null`. Resets the failure flag
+	/// to false on success.
 	/// - `bytes` : Pointer to the buffer containing the bytes to write.
 	/// - `count` : Number of bytes to write to the file.
 	size_t write(const void* bytes_, size_t count_) hxattr_nonnull(2) hxattr_hot;
 
 	/// Reads a `\n` or `EOF` terminated character sequence. Allowed to fail on
-	/// `EOF` without needing to be `hxfile::skip_asserts`. Automatically
-	/// determines the size of the provided char array.
+	/// `EOF` without needing to be `hxfile::skip_asserts`. Encountering `EOF`
+	/// also sets the failure flag. Automatically determines the size of the
+	/// provided char array.
 	/// - `buffer` : Reference to a char array where the line will be stored.
 	template<size_t buffer_size_>
 	bool getline(char(&buffer_)[buffer_size_]) {
@@ -164,20 +167,23 @@ public:
 	}
 
 	/// Reads a `\n` or `EOF` terminated character sequence. Allowed to fail on
-	/// `EOF` without needing to be `hxfile::skip_asserts`.
+	/// `EOF` without needing to be `hxfile::skip_asserts`. Encountering `EOF`
+	/// also sets the failure flag.
 	/// - `buffer` : Pointer to a char array where the line will be stored.
 	/// - `buffer_size` : Size of the buffer array.
 	bool getline(char* buffer_, int buffer_size_) hxattr_nonnull(2) hxattr_hot;
 
 	/// Writes a formatted UTF-8 string to the file. Uses `printf` conventions.
-	/// Formatting and writing will be skipped when using `hxdev_null`.
+	/// Formatting and writing will be skipped when using `hxdev_null`. Does not
+	/// modify the failure flag because it is not clear from `::vfprintf`.
 	/// - `format` : Format string, similar to `printf`.
 	/// - `...` : Additional arguments for the format string.
 	bool print(const char* format_, ...) hxattr_format_printf(2, 3) hxattr_hot;
 
 	/// Reads a formatted UTF-8 string from the file. Uses `scanf` conventions.
 	/// Returns the same value as `scanf`. Use `hxfile::skip_asserts` to read until `EOF`.
-	/// Parse errors will set `good` to false.
+	/// Parse errors will set `good` to false. Will set the failure flag and check `EOF`
+	/// on a return value of `EOF` from `vfscanf`.
 	/// - `format` : Format string, similar to `scanf`.
 	/// - `...` : Additional arguments for the format string.
 	int scan(const char* format_, ...) hxattr_format_scanf(2, 3) hxattr_hot;
@@ -233,6 +239,6 @@ private:
 	void* m_file_pimpl_;   // FILE* file pointer.
 	uint8_t m_open_mode_;  // Current open_mode flags.
 	bool m_owns_;  		   // Indicates if the FILE* is owned.
-	bool m_good_; 		   // Indicates is open, not EOF nor errors.
+	bool m_fail_; 		   // Indicates EOF, file errors and user errors.
 	bool m_eof_;  		   // Indicates EOF.
 };

@@ -4,9 +4,9 @@
 // This file is licensed under the MIT license found in the LICENSE.md file.
 // hxconsole inline header and a lot of internals. See hxconsole.h.
 
-// XXX This needs a rewrite. The new hxstringstream would be a good start but
-// there is still the issue of chasing around code bloat due to parameter
-// permutations.
+// NOTE: This needs a rewrite using pack expressions. operator<< turns out to
+//       be bloated/slow compared to fmt::format. However, using format would
+//       require
 
 #include "../hxutility.h"
 
