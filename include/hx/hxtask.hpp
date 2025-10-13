@@ -16,8 +16,8 @@ public:
 
 	/// Executes the task. This is the main function to implement in derived
 	/// classes. This call is the last time this object is touched by the
-	/// `hxtask_queue`. The function may delete or re-enqueue the task and is also
-	/// wrapped in `hxprofile_scope(get_label());`
+	/// `hxtask_queue`. An `execute` override may delete or re-enqueue the
+	/// `this` pointer. It is also wrapped in a `hxprofiler` scope when called.
 	/// - `q` : Pointer to the task queue managing this task.
 	virtual void execute(hxtask_queue* q_) = 0;
 
