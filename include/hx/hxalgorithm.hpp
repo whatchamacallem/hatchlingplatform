@@ -3,10 +3,9 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-/// \file hx/hxalgorithm.hpp Sorting and searching utilities for the Hatchling
-/// Platform. Provides insertion sort, binary search, and a general-purpose sort
-/// implementation. Includes support for template partial specializations
-/// (overloads of `hxkey_equal`, `hxkey_less`, `hxswap`) and functors when
+/// \file hx/hxalgorithm.hpp Sorting, searching and set utilities for the
+/// Hatchling Platform. Provides insertion sort, binary search, and a
+/// general-purpose sort implementation. Includes support for functors when
 /// defining custom key operations. Otherwise `T::T(T&&)`, `T::~T()`,
 /// `T::operator=(T&&)`, `T::operator<(const T&)`, and `T::operator==(const T&)`
 /// are used.
@@ -16,6 +15,11 @@
 /// cause code bloat and is the fastest available algorithm for scalar keys.
 /// Radix sort is best when you need real-time guarantees and have a large
 /// workload. IBM even used it to sort punch cards.
+///
+/// Use of `operator<=>` is not implemented yet. This codebase tries to only use
+/// `operator<` and `operator==`. However, there may be some advantages to using
+/// `operator<=>` when searching for a complex object with an expensive
+/// `operator<`.
 ///
 /// `hxinsertion_sort` is recommended when you have fewer than a kilobyte of
 /// data to sort and you do not want to add 10 KB to your executable just for
