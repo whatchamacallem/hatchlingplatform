@@ -737,12 +737,12 @@ T_* hxarray<T_, capacity_>::begin(void) {
 
 template<typename T_, size_t capacity_>
 const T_* hxarray<T_, capacity_>::binary_search(const T_& value_) const {
-	return hxbinary_search<const T_*>(this->data(), m_end_, value_, hxkey_less_function<T_>());
+	return hxbinary_search<const T_*>(this->data(), m_end_, value_, hxkey_less_function<const T_&>());
 }
 
 template<typename T_, size_t capacity_>
 T_* hxarray<T_, capacity_>::binary_search(const T_& value_) {
-	return hxbinary_search<T_*>(this->data(), m_end_, value_, hxkey_less_function<T_>());
+	return hxbinary_search<T_*>(this->data(), m_end_, value_, hxkey_less_function<const T_&>());
 }
 
 template<typename T_, size_t capacity_>
