@@ -248,8 +248,7 @@ TEST_F(hxarray_test_f, modification) {
 	{
 		static const int32_t nums[5] = { 91, 92, 93, 94, 95 };
 
-		hxarray<hxtest_object> objs;
-		objs.assign(nums, nums + hxsize(nums));
+		hxarray<hxtest_object> objs(nums);
 		EXPECT_FALSE(objs.empty());
 
 		EXPECT_EQ(objs.capacity(), 5u);
@@ -276,8 +275,7 @@ TEST_F(hxarray_test_f, modification) {
 		EXPECT_EQ(objs.size(), 4);
 
 		static const int32_t nums_2[1] = { 99 };
-		hxarray<hxtest_object> objs2;
-		objs2.assign(nums_2, nums_2 + 1);
+		hxarray<hxtest_object> objs2(nums_2);
 		objs += objs2;
 
 		// 91, -2, -1, -1, 99
@@ -396,8 +394,7 @@ TEST(hxarray_test, make_heap_builds_max_heap) {
 
 TEST(hxarray_test, insertion_sort_orders_elements) {
 	static const int unsorted[] = { 9, 2, 7, 4, 4, 1 };
-	hxarray<int, 6> values;
-	values.assign(unsorted, unsorted + hxsize(unsorted));
+	hxarray<int, 6> values(unsorted);
 
 	values.insertion_sort();
 
@@ -409,8 +406,7 @@ TEST(hxarray_test, insertion_sort_orders_elements) {
 
 TEST(hxarray_test, sort_orders_elements) {
 	static const int unsorted[] = { 13, -5, 7, 0, 13, 2 };
-	hxarray<int, 6> values;
-	values.assign(unsorted, unsorted + hxsize(unsorted));
+	hxarray<int, 6> values(unsorted);
 
 	values.sort();
 
@@ -449,8 +445,7 @@ TEST_F(hxarray_test_f, emplace_back) {
 TEST(hxarray_test, for_each_invokes_functors) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	static const unsigned char nums[5] = { 91, 92, 93, 94, 95 };
-		hxarray<int> objs;
-		objs.assign(nums, nums + hxsize(nums));
+	hxarray<int> objs(nums);
 
 	// 91, 92, 93, 94, 95. Lambdas are typically temporaries.
 	objs.for_each([](int& x) { x -= 90; });
@@ -479,8 +474,7 @@ TEST(hxarray_test, for_each_invokes_functors) {
 TEST(hxarray_test, all_of_any_of) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	static const unsigned char nums[5] = { 91, 92, 93, 94, 95 };
-		hxarray<int> objs;
-		objs.assign(nums, nums + hxsize(nums));
+	hxarray<int> objs(nums);
 
 	EXPECT_TRUE(objs.all_of([](const int& x) { return x > 0; }));
 	EXPECT_FALSE(objs.all_of([](const int& x) { return x < 95; }));
@@ -520,8 +514,7 @@ TEST(hxarray_test, all_of_any_of) {
 
 TEST(hxarray_test, binary_search) {
 	static const int sorted_values[] = { 1, 3, 5, 7, 9 };
-	hxarray<int, 5> values;
-	values.assign(sorted_values, sorted_values + hxsize(sorted_values));
+	hxarray<int, 5> values(sorted_values);
 
 	const int* const_missing = ((const hxarray<int, 5>&)values).binary_search(4);
 	EXPECT_EQ(const_missing, values.end());
@@ -534,8 +527,7 @@ TEST(hxarray_test, binary_search) {
 
 TEST(hxarray_test, find_returns_first_match) {
 	static const int values_source[] = { 2, 4, 4, 8, 16 };
-	hxarray<int, 5> values;
-	values.assign(values_source, values_source + hxsize(values_source));
+	hxarray<int, 5> values(values_source);
 
 	const int* const_pos = ((const hxarray<int, 5>&)values).find(4);
 	EXPECT_EQ(const_pos, values.begin() + 1);
@@ -550,8 +542,7 @@ TEST(hxarray_test, find_returns_first_match) {
 TEST(hxarray_test, erase_if) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	static const int nums[5] = { 1, 2, 3, 4, 5 };
-		hxarray<int> objs;
-		objs.assign(nums, nums + hxsize(nums));
+	hxarray<int> objs(nums);
 
 	int remove_calls = 0;
 	auto remove_even = [&](int& value) -> bool {
