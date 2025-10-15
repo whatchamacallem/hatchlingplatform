@@ -71,7 +71,7 @@ public:
 	/// `std` namespace is not available. e.g.,
 	/// ```cpp
 	/// static const int initial_values[] = { 5, 4, 3 };
-	/// hxarray<int> current_values(initial_values);
+	/// hxarray<int, 32u> current_values(initial_values);
 	/// ```
 	/// - `array` : A const array of `array_length_` `value_type`.
 	template<typename other_value_t_, size_t array_length_>
@@ -112,7 +112,7 @@ public:
 	/// the `std` namespace is not available. e.g.,
 	/// ```cpp
 	/// static const int initial_values[] = { 5, 4, 3 };
-	/// hxarray<int, 32> current_values(initial_values);
+	/// hxarray<int, 32u> current_values(initial_values);
 	/// ```
 	/// - `array` : A const array of `array_length` `value_t`.
 	template<typename other_value_t_, size_t array_length_>
@@ -281,7 +281,7 @@ public:
 	/// number of erased elements. e.g.,
 	/// ```cpp
 	/// // Erase all the 10s in a heap.
-	/// ints.erase_if([](const int& value) -> bool { return value == 10; });
+	/// ints.erase_if_heap([](const int& value) -> bool { return value == 10; });
 	/// ```
 	/// - `fn` : A functor returning boolean.
 	template<typename functor_t_>
@@ -289,7 +289,7 @@ public:
 
 	/// Variant of `erase` that moves the end element down to replace the erased
 	/// element. Should not compile with hxnull. (Non-standard.) Can be used to
-	/// erase elements of an array as it is traversed. e.g.,
+	/// erase elements of an array as it is traversed as follows:
 	/// ```cpp
 	/// for(size_t i = a.size(); i--; ) {
 	/// 	if(should_erase(a[i])) {
