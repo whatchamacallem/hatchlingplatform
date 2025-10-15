@@ -1018,6 +1018,30 @@ TEST_F(hxarray_test_f, insert) {
 }
 #endif
 
+TEST(hxarray_test, memcpy_clones_contents) {
+	hxarray<unsigned char,5> source;
+	source.resize(5u);
+	unsigned char index = 0u;
+	for(auto& it : source) { it = ++index; }
+
+	hxarray<unsigned char,5> destination;
+	destination.memcpy(source);
+
+	EXPECT_EQ(destination.size(), source.size());
+	while(index--) {
+		EXPECT_EQ(destination[index], source[index]);
+	}
+}
+
+TEST(hxarray_test, memset_sets_bytes) {
+	hxarray<unsigned char,6> bytes;
+	bytes.resize(6u, 0u);
+	bytes.memset(0xab);
+	for(size_t index = 0u; index < bytes.size(); ++index) {
+		EXPECT_EQ((int)bytes[index], 0xab);
+	}
+}
+
 TEST(hxarray_test, c_strings) {
 	hxarray<char, HX_MAX_LINE> z("prefix array 1");
 	while(z[0] != 'a') {

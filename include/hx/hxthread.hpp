@@ -30,6 +30,8 @@
 ///	  thread creation, joining, and detaching. Ensures threads are not left
 ///	  joinable on destruction. Not copyable. Errors are treated as release-mode
 ///	  asserts instead of being tracked.
+///
+/// For atomics consider `<stdatomic.h>`. It is the same as `std::atomic`.
 
 #include "hatchling.h"
 

@@ -407,6 +407,15 @@ public:
 	/// standard way to report that reallocation is not allowed.
 	size_t max_size(void) const;
 
+	/// Copies another `hxarray` using `memcpy`.
+	/// - `x` : The other array.
+	template <size_t capacity_x_>
+	void memcpy(const hxarray<T_, capacity_x_>& x_);
+
+	/// Calls `memset` on the array. The default fill byte is `0x00`.
+	/// - `byte` : The byte that is repeated. May be a negative char value.
+	void memset(int byte_=0x00);
+
 	/// Removes the end element from the array.
 	void pop_back(void);
 
@@ -1003,6 +1012,18 @@ size_t hxarray<T_, capacity_>::max_size(void) const {
 }
 
 template<typename T_, size_t capacity_>
+template<size_t capacity_x_>
+void hxarray<T_, capacity_>::memcpy(const hxarray<T_, capacity_x_>& x_) {
+	this->resize(x_.size());
+	::memcpy((void*)this->data(), x_.data(), x_.size_bytes());
+}
+
+template<typename T_, size_t capacity_>
+void hxarray<T_, capacity_>::memset(int byte_) {
+	::memset((void*)this->data(), byte_, this->size_bytes());
+}
+
+template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::pop_back(void) {
 	hxassertmsg(!this->empty(), "stack_underflow");
 	(--m_end_)->~T_();
@@ -1065,8 +1086,9 @@ void hxarray<T_, capacity_>::resize(size_t size_) {
 	T_* end_ = this->data() + size_;
 	if(size_ >= this->size()) {
 		while(m_end_ != end_) {
-			// This version uses a default constructor.
-			::new(this->push_back_unconstructed_()) T_();
+			// This version uses a default constructor. Note "T_()" is not being
+			// called. That would default initialize arrays of integers to zero.
+			::new(this->push_back_unconstructed_()) T_;
 		}
 	}
 	else {
