@@ -17,6 +17,10 @@
 #include "hatchling.h"
 #include "hxutility.h"
 
+// Used for readability.
+using hxcstring_ = char*;
+using hxccstring_ = const char*;
+
 #if HX_CPLUSPLUS >= 202002L
 /// A concept that requires one type to be convertible to another. See usage
 /// below. The compiler applies some unintuitive rules when evaluating this.
@@ -47,12 +51,12 @@ constexpr bool hxkey_equal(const A_& a_, const B_& b_) {
 /// Returns true if two C strings are equal (`strcmp(a, b) == 0`).
 /// - `a` : The first C string.
 /// - `b` : The second C string.
-inline bool hxkey_equal(const char* a_, const char* b_) {
+inline bool hxkey_equal(const hxccstring_& a_, const hxccstring_& b_) {
     return ::strcmp(a_, b_) == 0;
 }
 
 /// Non-const overload.
-inline bool hxkey_equal(char* a_, char* b_) {
+inline bool hxkey_equal(const hxcstring_& a_, const hxcstring_& b_) {
     return ::strcmp(a_, b_) == 0;
 }
 
@@ -100,12 +104,12 @@ constexpr bool hxkey_less(const A_* a_, const B_* b_) {
 /// stable ordering without looking up a locale. Uses (`strcmp(a, b) < 0`).
 /// - `a` : The first C string.
 /// - `b` : The second C string.
-inline bool hxkey_less(const char* a_, const char* b_) {
+inline bool hxkey_less(const hxccstring_& a_, const hxccstring_& b_) {
     return ::strcmp(a_, b_) < 0;
 }
 
 /// Non-const overload.
-inline bool hxkey_less(char* a_, char* b_) {
+inline bool hxkey_less(const hxcstring_& a_, const hxcstring_& b_) {
     return ::strcmp(a_, b_) < 0;
 }
 
