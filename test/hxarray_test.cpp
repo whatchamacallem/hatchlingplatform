@@ -471,6 +471,33 @@ TEST(hxarray_test, for_each_invokes_functors) {
 	objs.for_each(y);
 }
 
+TEST(hxarray_test, generate_n_appends_functor_results) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	hxarray<int> values;
+	values.reserve(6u);
+
+	values.push_back(42);
+
+	int next_value = 5;
+	int call_count = 0;
+	values.generate_n(3u, [&]() -> int {
+		++call_count;
+		return next_value++;
+	});
+
+	EXPECT_EQ(call_count, 3);
+	EXPECT_EQ(values.size(), 4u);
+	EXPECT_EQ(values[0], 42);
+	EXPECT_EQ(values[1], 5);
+	EXPECT_EQ(values[2], 6);
+	EXPECT_EQ(values[3], 7);
+
+	values.generate_n(0u, []() -> int {
+		hxassertmsg(0, "generate_n invoked for zero size");
+		return 0;
+	});
+}
+
 TEST(hxarray_test, all_of_any_of) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	static const unsigned char nums[5] = { 91, 92, 93, 94, 95 };

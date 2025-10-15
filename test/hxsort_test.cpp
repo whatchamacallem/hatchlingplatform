@@ -346,9 +346,9 @@ TEST(hxsort_test, sort_int_case) {
 TEST(hxset_algorithms_test, int_pointer_ranges) {
 	int left[] = { 1, 3, 5, 7 };
 	int right[] = { 3, 4, 7, 9 };
-	int dest_union[8] = { 0 };
-	int dest_intersection[4] = { 0 };
-	int dest_difference[4] = { 0 };
+	int dest_union[8] = { };
+	int dest_intersection[4] = { };
+	int dest_difference[4] = { };
 
 	auto expect_range = [](const int* begin, const int* end, const int* expected) {
 		for(const int* it = begin; it != end; ++it, ++expected) {
