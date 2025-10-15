@@ -3,7 +3,7 @@
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
 #include "../include/hx/hxradix_sort.hpp"
-#include "../include/hx/hxsort.hpp"
+#include "../include/hx/hxalgorithm.hpp"
 
 HX_REGISTER_FILENAME_HASH
 

@@ -8,7 +8,7 @@
 #include "../include/hx/hxfile.hpp"
 #include "../include/hx/hxhash_table_nodes.hpp"
 #include "../include/hx/hxprofiler.hpp"
-#include "../include/hx/hxsort.hpp"
+#include "../include/hx/hxalgorithm.hpp"
 
 #include <stdio.h> // vsnprintf only.
 

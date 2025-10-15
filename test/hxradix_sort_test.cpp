@@ -4,7 +4,7 @@
 
 #include <hx/hxradix_sort.hpp>
 #include <hx/hxrandom.hpp>
-#include <hx/hxsort.hpp>
+#include <hx/hxalgorithm.hpp>
 #include <hx/hxarray.hpp>
 #include <hx/hxmemory_manager.h>
 #include <hx/hxtest.hpp>

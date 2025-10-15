@@ -4,7 +4,7 @@
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
 #include "../hxfile.hpp"
-#include "../hxsort.hpp"
+#include "../hxalgorithm.hpp"
 
 static_assert(!HX_USE_GOOGLE_TEST, "Internal. Do not include this file directly.");
 

@@ -21,6 +21,6 @@
 #include "hxhash_table_nodes.hpp"
 #include "hxkey.hpp"
 #include "hxprofiler.hpp" // Uses platform-specific includes.
-#include "hxsort.hpp"
+#include "hxalgorithm.hpp"
 #include "hxtest.hpp"     // Optional: Google Test <gtest/gtest.h>
 #include "hxthread.hpp"   // Optional: { errno.h, pthread.h }

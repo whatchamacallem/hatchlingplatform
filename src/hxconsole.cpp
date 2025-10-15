@@ -5,7 +5,7 @@
 #include "../include/hx/hxconsole.hpp"
 #include "../include/hx/hxfile.hpp"
 #include "../include/hx/hxhash_table.hpp"
-#include "../include/hx/hxsort.hpp"
+#include "../include/hx/hxalgorithm.hpp"
 #include "../include/hx/hxarray.hpp"
 
 HX_REGISTER_FILENAME_HASH

@@ -5,7 +5,7 @@
 
 #include "hxallocator.hpp"
 #include "hxkey.hpp"
-#include "hxsort.hpp"
+#include "hxalgorithm.hpp"
 
 #if !HX_NO_LIBCXX
 #include <initializer_list>
@@ -16,7 +16,7 @@
 /// type so that you get compile errors and a debug symbols that use plain C++
 /// pointers instead. There are exhaustive asserts. `hxarray` uses the
 /// `hxkey_less` and `hxkey_equal` overloads. They default to using operators
-/// `<` and `==`. See `hxsort.hpp` for functor versions of the algorithms here.
+/// `<` and `==`. See `hxalgorithm.hpp` for functor versions of the algorithms here.
 ///
 /// `hxarray` can be constructed from C string literals as follows:
 ///   `hxarray<char, HX_MAX_LINE> string_buffer("example C string");`

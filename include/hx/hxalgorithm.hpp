@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
-/// \file hx/hxsort.hpp Sorting and searching utilities for the Hatchling
+/// \file hx/hxalgorithm.hpp Sorting and searching utilities for the Hatchling
 /// Platform. Provides insertion sort, binary search, and a general-purpose sort
 /// implementation. Includes support for template partial specializations
 /// (overloads of `hxkey_equal`, `hxkey_less`, `hxswap`) and functors when
