@@ -164,10 +164,10 @@ template<typename T_> using hxremove_cvref_t = hxremove_cv_t<hxremove_reference_
 // ----------------------------------------------------------------------------
 // C++ Type Traits
 
-/// Implements `std::false_type`.
-struct hxfalse_t { enum { value = 0 }; };
 /// Implements `std::true_type`.
 struct hxtrue_t { enum { value = 1 }; };
+/// Implements `std::false_type`.
+struct hxfalse_t { enum { value = 0 }; };
 
 /// Implements `std::is_array`.
 template<typename T_> struct hxis_array : public hxfalse_t { };
@@ -233,6 +233,10 @@ template<typename T> struct hxis_pointer : hxis_pointer_<hxremove_cv_t<T>> { };
 /// Implements `std::is_rvalue_reference`.
 template<typename T_> struct hxis_rvalue_reference : public hxfalse_t { };
 template<typename T_> struct hxis_rvalue_reference<T_&&> : public hxtrue_t { };
+
+/// Implements `std::is_same`.
+template<typename A_, typename B_> struct hxis_same : public hxfalse_t { };
+template<typename A_> struct hxis_same<A_, A_> : public hxtrue_t { };
 
 /// Implements `std::is_void`.
 /// \cond HIDDEN

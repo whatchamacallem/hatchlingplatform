@@ -10,35 +10,28 @@
 
 HX_REGISTER_FILENAME_HASH
 
-namespace {
-
-template<typename A, typename B> struct hxutility_test_is_same { enum { value = 0 }; };
-template<typename A> struct hxutility_test_is_same<A, A> { enum { value = 1 }; };
-
-} // namespace
-
 static_assert(hxfalse_t::value == 0, "hxfalse_t must report false");
 static_assert(hxtrue_t::value == 1, "hxtrue_t must report true");
 
-static_assert(hxutility_test_is_same<hxenable_if_t<true, int>, int>::value,
+static_assert(hxis_same<hxenable_if_t<true, int>, int>::value,
 	"hxenable_if_t<true> must expose the requested type");
 
-static_assert(hxutility_test_is_same<hxremove_reference_t<int>, int>::value,
+static_assert(hxis_same<hxremove_reference_t<int>, int>::value,
 	"hxremove_reference leaves non-references untouched");
-static_assert(hxutility_test_is_same<hxremove_reference_t<int&>, int>::value,
+static_assert(hxis_same<hxremove_reference_t<int&>, int>::value,
 	"hxremove_reference_t strips lvalue references");
-static_assert(hxutility_test_is_same<hxremove_reference_t<int&&>, int>::value,
+static_assert(hxis_same<hxremove_reference_t<int&&>, int>::value,
 	"hxremove_reference_t strips rvalue references");
 
-static_assert(hxutility_test_is_same<hxremove_pointer_t<int*>, int>::value,
+static_assert(hxis_same<hxremove_pointer_t<int*>, int>::value,
 	"hxremove_pointer should strip pointers");
-static_assert(hxutility_test_is_same<hxremove_pointer_t<int* const>, int>::value,
+static_assert(hxis_same<hxremove_pointer_t<int* const>, int>::value,
 	"hxremove_pointer should ignore const pointers");
-static_assert(hxutility_test_is_same<hxremove_pointer_t<const int*>, const int>::value,
+static_assert(hxis_same<hxremove_pointer_t<const int*>, const int>::value,
 	"hxremove_pointer should leave pointed-to qualifiers");
-static_assert(hxutility_test_is_same<hxremove_pointer_t<int* volatile>, int>::value,
+static_assert(hxis_same<hxremove_pointer_t<int* volatile>, int>::value,
 	"hxremove_pointer_t should ignore volatile pointers");
-static_assert(hxutility_test_is_same<hxremove_pointer_t<int>, int>::value,
+static_assert(hxis_same<hxremove_pointer_t<int>, int>::value,
 	"hxremove_pointer_t should leave non-pointers untouched");
 
 static_assert(hxis_lvalue_reference<int&>::value == 1,
@@ -50,13 +43,13 @@ static_assert(hxis_rvalue_reference<int&&>::value == 1,
 static_assert(hxis_rvalue_reference<int&>::value == 0,
 	"hxis_rvalue_reference should reject lvalues");
 
-static_assert(hxutility_test_is_same<hxremove_cv_t<int>, int>::value,
+static_assert(hxis_same<hxremove_cv_t<int>, int>::value,
 	"hxremove_cv_t leaves plain types untouched");
-static_assert(hxutility_test_is_same<hxremove_cv_t<const volatile int>, int>::value,
+static_assert(hxis_same<hxremove_cv_t<const volatile int>, int>::value,
 	"hxremove_cv strips const volatile");
-static_assert(hxutility_test_is_same<hxremove_cv_t<const int>, int>::value,
+static_assert(hxis_same<hxremove_cv_t<const int>, int>::value,
 	"hxremove_cv_t strips const");
-static_assert(hxutility_test_is_same<hxremove_cv_t<volatile int>, int>::value,
+static_assert(hxis_same<hxremove_cv_t<volatile int>, int>::value,
 	"hxremove_cv_t strips volatile");
 
 static_assert(hxis_const<int>::value == 0, "hxis_const should reject mutable");
@@ -103,7 +96,7 @@ static_assert(hxis_pointer<const int*>::value == 1,
 static_assert(hxis_pointer<int>::value == 0,
 	"hxis_pointer should reject non-pointers");
 
-static_assert(hxutility_test_is_same<hxrestrict_t<int>, int>::value,
+static_assert(hxis_same<hxrestrict_t<int>, int>::value,
 	"hxrestrict_t should leave non-pointers untouched");
 static_assert(sizeof(hxrestrict_t<int*>) == sizeof(int*),
 	"hxrestrict_t should preserve pointer representation");
