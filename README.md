@@ -92,6 +92,9 @@ purposes:
 
 - **64-bit Ready**: Designed for both 32-bit and 64-bit targets.
 
+- **AI Friendly**: Things with the same name as the standard generally work the
+  same way as the standard. This means that AI has been trained on similar designs and will recognize this codebase and use it properly.
+
 It is hard to compete with `printf`/`scanf` for code size and speed. Take a look
 at the **[{fmt}](https://fmt.dev)** project for a micro-optimized version of
 `std::format` that is as efficient.

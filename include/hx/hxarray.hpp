@@ -5,7 +5,7 @@
 
 #include "hxallocator.hpp"
 #include "hxkey.hpp"
-#include "detail/hxsort_detail.hpp"
+#include "hxsort.hpp"
 
 #if !HX_NO_LIBCXX
 #include <initializer_list>
@@ -202,6 +202,16 @@ public:
 	/// Returns a `T*` to the beginning of the array.
 	T_* begin(void);
 
+	/// Performs a binary search using `hxkey_less`. Returns `end()` when not
+	/// found.
+	/// - `value` : The value to locate.
+	const T_* binary_search(const T_& value_) const;
+
+	/// Non-const version. Performs a binary search using `hxkey_less`. Returns
+	/// `end()` when not found.
+	/// - `value` : The value to locate.
+	T_* binary_search(const T_& value_);
+
 	/// Returns a `const T*` to the beginning of the array (alias for
 	/// begin()).
 	const T_* cbegin(void) const;
@@ -280,6 +290,15 @@ public:
 	/// - `index` : The index of the element to erase.
 	void erase_unordered(size_t index_);
 
+	/// Finds the first occurrence of `value` using `hxkey_equal`.
+	/// Returns `end()` if no element matches.
+	/// - `value` : The value to locate.
+	const T_* find(const T_& value_) const;
+
+	/// Non-const version of `find` using `hxkey_equal`.
+	/// - `value` : The value to locate.
+	T_* find(const T_& value_);
+
 	/// Calls a function, lambda, or `std::function` on each element.
 	/// (Non-standard.) Lambdas and `std::function` instances can be provided as
 	/// temporaries, so that has to be allowed. The `&&` variant of
@@ -333,6 +352,10 @@ public:
 	template<typename ref_t_>
 	void insert(size_t index_, ref_t_&& x_);
 
+	/// Sorts the array with insertion sort using `hxkey_less`. (Non-standard.)
+	/// - `less` : A key comparison functor defining a less-than ordering relationship.
+	void insertion_sort(void);
+
 	/// Returns true if this array compares as less than `x`. Sorts `[1]` before
 	/// `[1, 2]`. This version takes two functors for key comparison.
 	/// - `x` : The other array.
@@ -347,6 +370,10 @@ public:
 	/// - `x` : The other array.
 	template<size_t capacity_x_>
 	bool less(const hxarray<T_, capacity_x_>& x_) const;
+
+	/// Converts the array into a max-heap using `hxkey_less`. (Non-standard.)
+	/// - `less` : A key comparison functor defining a less-than ordering relationship.
+	void make_heap(void);
 
 	/// Returns the capacity of the array or 0 if unallocated. This is the
 	/// standard way to report that reallocation is not allowed.
@@ -399,6 +426,10 @@ public:
 
 	/// Returns the number of bytes in the array. (Non-standard.)
 	size_t size_bytes(void) const;
+
+	/// Sorts the array using `hxkey_less`. (Non-standard.)
+	/// - `less` : A key comparison functor defining a less-than ordering relationship.
+	void sort(void);
 
 	/// Swap contents with a temporary array. Only works with
 	/// `hxallocator_dynamic_capacity`. Dynamically allocated arrays are swapped
@@ -668,6 +699,16 @@ T_* hxarray<T_, capacity_>::begin(void) {
 }
 
 template<typename T_, size_t capacity_>
+const T_* hxarray<T_, capacity_>::binary_search(const T_& value_) const {
+	return hxbinary_search<const T_*>(this->data(), m_end_, value_, hxkey_less_function<T_, T_>());
+}
+
+template<typename T_, size_t capacity_>
+T_* hxarray<T_, capacity_>::binary_search(const T_& value_) {
+	return hxbinary_search<T_*>(this->data(), m_end_, value_, hxkey_less_function<T_, T_>());
+}
+
+template<typename T_, size_t capacity_>
 const T_* hxarray<T_, capacity_>::cbegin(void) const {
 	return this->data();
 }
@@ -788,6 +829,26 @@ void hxarray<T_, capacity_>::erase_unordered(size_t index_) {
 }
 
 template<typename T_, size_t capacity_>
+const T_* hxarray<T_, capacity_>::find(const T_& value_) const {
+	for(const T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
+		if(hxkey_equal(*it_, value_)) {
+			return it_;
+		}
+	}
+	return m_end_;
+}
+
+template<typename T_, size_t capacity_>
+T_* hxarray<T_, capacity_>::find(const T_& value_) {
+	for(T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
+		if(hxkey_equal(*it_, value_)) {
+			return it_;
+		}
+	}
+	return m_end_;
+}
+
+template<typename T_, size_t capacity_>
 template<typename functor_t_>
 void hxarray<T_, capacity_>::for_each(functor_t_&& fn_) const {
 	for(const T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
@@ -860,6 +921,11 @@ void hxarray<T_, capacity_>::insert(size_t index_, ref_t_&& x_) {
 }
 
 template<typename T_, size_t capacity_>
+void hxarray<T_, capacity_>::insertion_sort(void) {
+	hxinsertion_sort<T_*>(this->data(), m_end_, hxkey_less_function<T_, T_>());
+}
+
+template<typename T_, size_t capacity_>
 template<size_t capacity_x_, typename less_t_, typename equal_t_>
 bool hxarray<T_, capacity_>::less(const hxarray<T_, capacity_x_>& x_, const less_t_& less_, const equal_t_& equal_) const {
 	const size_t size_ = hxmin(this->size(), x_.size());
@@ -878,6 +944,11 @@ template<typename T_, size_t capacity_>
 template<size_t capacity_x_>
 bool hxarray<T_, capacity_>::less(const hxarray<T_, capacity_x_>& x_) const {
 	return this->less(x_, hxkey_less_function<T_, T_>(), hxkey_equal_function<T_, T_>());
+}
+
+template<typename T_, size_t capacity_>
+void hxarray<T_, capacity_>::make_heap(void) {
+	hxdetail_::hxmake_heap_<T_*>(this->data(), m_end_, hxkey_less_function<T_, T_>());
 }
 
 template<typename T_, size_t capacity_>
@@ -982,6 +1053,11 @@ size_t hxarray<T_, capacity_>::size(void) const {
 template<typename T_, size_t capacity_>
 size_t hxarray<T_, capacity_>::size_bytes(void) const {
 	return sizeof(T_) * (size_t)(m_end_ - this->data());
+}
+
+template<typename T_, size_t capacity_>
+void hxarray<T_, capacity_>::sort(void) {
+	hxsort<T_*>(this->data(), m_end_, hxkey_less_function<T_, T_>());
 }
 
 template<typename T_, size_t capacity_>

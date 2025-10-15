@@ -384,6 +384,42 @@ TEST(hxarray_test, erase_if_heap_removes_matching_values) {
 	EXPECT_EQ(heap.erase_if_heap([](int) { return false; }), 0u);
 }
 
+TEST(hxarray_test, make_heap_builds_max_heap) {
+	static const int values[] = { 12, 3, 17, 8, 5, 14, 6 };
+	hxarray<int, 7> heap;
+	heap.assign(values, values + hxsize(values));
+
+	heap.make_heap();
+	EXPECT_TRUE(hxarray_test_is_max_heap(heap));
+	EXPECT_EQ(heap.front(), 17);
+}
+
+TEST(hxarray_test, insertion_sort_orders_elements) {
+	static const int unsorted[] = { 9, 2, 7, 4, 4, 1 };
+	hxarray<int, 6> values;
+	values.assign(unsorted, unsorted + hxsize(unsorted));
+
+	values.insertion_sort();
+
+	static const int expected[] = { 1, 2, 4, 4, 7, 9 };
+	for(size_t index = 0; index < hxsize(expected); ++index) {
+		EXPECT_EQ(values[index], expected[index]);
+	}
+}
+
+TEST(hxarray_test, sort_orders_elements) {
+	static const int unsorted[] = { 13, -5, 7, 0, 13, 2 };
+	hxarray<int, 6> values;
+	values.assign(unsorted, unsorted + hxsize(unsorted));
+
+	values.sort();
+
+	static const int expected[] = { -5, 0, 2, 7, 13, 13 };
+	for(size_t index = 0; index < hxsize(expected); ++index) {
+		EXPECT_EQ(values[index], expected[index]);
+	}
+}
+
 TEST_F(hxarray_test_f, emplace_back) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
@@ -480,6 +516,35 @@ TEST(hxarray_test, all_of_any_of) {
 	};
 	EXPECT_TRUE(objs.all_of(empty_predicate));
 	EXPECT_FALSE(objs.any_of(empty_predicate));
+}
+
+TEST(hxarray_test, binary_search) {
+	static const int sorted_values[] = { 1, 3, 5, 7, 9 };
+	hxarray<int, 5> values;
+	values.assign(sorted_values, sorted_values + hxsize(sorted_values));
+
+	const int* const_missing = ((const hxarray<int, 5>&)values).binary_search(4);
+	EXPECT_EQ(const_missing, values.end());
+
+	int* mutable_found = values.binary_search(7);
+	EXPECT_EQ(mutable_found, values.begin() + 3);
+
+	EXPECT_EQ(values.binary_search(2), values.end());
+}
+
+TEST(hxarray_test, find_returns_first_match) {
+	static const int values_source[] = { 2, 4, 4, 8, 16 };
+	hxarray<int, 5> values;
+	values.assign(values_source, values_source + hxsize(values_source));
+
+	const int* const_pos = ((const hxarray<int, 5>&)values).find(4);
+	EXPECT_EQ(const_pos, values.begin() + 1);
+
+	const int* const_missing = ((const hxarray<int, 5>&)values).find(32);
+	EXPECT_EQ(const_missing, values.end());
+
+	int* mutable_pos = values.find(8);
+	EXPECT_EQ(mutable_pos, values.begin() + 3);
 }
 
 TEST(hxarray_test, erase_if) {
