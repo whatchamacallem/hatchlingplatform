@@ -480,27 +480,24 @@ TEST(hxarray_test, all_of_any_of) {
 	EXPECT_FALSE(objs.all_of([](const int& x) { return x < 95; }));
 
 	int all_calls = 0;
-	auto all_counter = [&](const int& value) -> bool {
+	EXPECT_FALSE(objs.all_of([&](const int& value) -> bool {
 		++all_calls;
 		return value < 93;
-	};
-	EXPECT_FALSE(objs.all_of(all_counter));
+	}));
 	EXPECT_EQ(all_calls, 3);
 
 	int any_calls = 0;
-	auto any_counter = [&](const int& value) -> bool {
+	EXPECT_TRUE(objs.any_of([&](const int& value) -> bool {
 		++any_calls;
 		return value == 94;
-	};
-	EXPECT_TRUE(objs.any_of(any_counter));
+	}));
 	EXPECT_EQ(any_calls, 4);
 
 	int miss_calls = 0;
-	auto miss_counter = [&](const int& value) -> bool {
+	EXPECT_FALSE(objs.any_of([&](const int& value) -> bool {
 		++miss_calls;
 		return value == -1;
-	};
-	EXPECT_FALSE(objs.any_of(miss_counter));
+	}));
 	EXPECT_EQ(miss_calls, 5);
 
 	objs.clear();
@@ -542,7 +539,7 @@ TEST(hxarray_test, find_returns_first_match) {
 TEST(hxarray_test, erase_if) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	static const int nums[5] = { 1, 2, 3, 4, 5 };
-	hxarray<int> objs(nums);
+	hxarray<int, 5> objs(nums);
 
 	int remove_calls = 0;
 	auto remove_even = [&](int& value) -> bool {
@@ -872,7 +869,6 @@ TEST(hxarray_test, emplace_back_move_tracker_forwarding) {
 	EXPECT_EQ(elements.size(), 2u);
 }
 
-
 TEST(hxarray_iterators, cbegin_cend) {
 	hxarray<int, 4u> values;
 	values.push_back(1);
@@ -884,7 +880,7 @@ TEST(hxarray_iterators, cbegin_cend) {
 	const size_t expected_count = hxsize(expected);
 	size_t index = 0u;
 
-	for (const int* it = const_values.cbegin(); it != const_values.cend(); ++it) {
+	for (hxarray<int, 4u>::const_iterator it = const_values.cbegin(); it != const_values.cend(); ++it) {
 		ASSERT_LT(index, expected_count);
 		EXPECT_EQ(*it, expected[index]);
 		++index;
@@ -893,8 +889,7 @@ TEST(hxarray_iterators, cbegin_cend) {
 	EXPECT_EQ(index, const_values.size());
 	EXPECT_EQ(const_values.cbegin(), const_values.begin());
 	EXPECT_EQ(const_values.cend(), const_values.end());
-	EXPECT_EQ(const_values.cbegin() + const_values.size(),
-		const_values.cend());
+	EXPECT_EQ(const_values.cbegin() + const_values.size(), const_values.cend());
 }
 
 // std::initializer_list is great for writing test code for hxarray. Not sure
@@ -977,19 +972,7 @@ TEST_F(hxarray_test_f, insert) {
 }
 #endif
 
-TEST(hxarray_test, c_initializer_list) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
-	int i0[] = { 2, 7 };
-	hxarray<int, 2> x(i0);
-	EXPECT_EQ(x[1], 7);
-
-	int i1[] = { 12, 17 };
-	hxarray<int> y(i1);
-	EXPECT_EQ(y[1], 17);
-
-	y = i0;
-	EXPECT_EQ(y[1], 7);
-
+TEST(hxarray_test, c_strings) {
 	hxarray<char, HX_MAX_LINE> z("prefix array 1");
 	while(z[0] != 'a') {
 		z.erase((size_t)0);
@@ -1009,20 +992,17 @@ TEST(hxarray_test, initializer_list_brace_support) {
 	hxarray<int> y { 12, 17 };
 	EXPECT_EQ(y[1], 17);
 }
-
-TEST(hxarray_test, temporaries_allow_rvalue_transfers) {
-	// Test r-value dynamically allocated temporaries.
-	{
-		hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
-
-		hxarray<int> x(hxarray<int>({ 2, 7 }));
-		hxarray<int> y = std::move(x); // Should swap.
-		hxarray<int> z;
-		hxswap(y, z);
-		EXPECT_TRUE(x.empty());
-		EXPECT_TRUE(y.empty());
-		EXPECT_EQ(z[0], 2);
-		EXPECT_EQ(z[1], 7);
-	}
-}
 #endif
+
+TEST(hxarray_test, swaps) {
+	hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
+
+	hxarray<int> x(hxarray<int>({ 2, 7 }));
+	hxarray<int> y = hxmove(x); // Should swap.
+	hxarray<int> z;
+	hxswap(y, z);
+	EXPECT_TRUE(x.empty());
+	EXPECT_TRUE(y.empty());
+	EXPECT_EQ(z[0], 2);
+	EXPECT_EQ(z[1], 7);
+}

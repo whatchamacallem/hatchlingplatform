@@ -151,7 +151,13 @@ public:
 	void operator+=(hxarray<T_, capacity_x_>&& x_);
 
 	/// Returns true if the predicate returns true for every element and false
-	/// otherwise. Will stop iterating when the predicate returns false.
+	/// otherwise. Will stop iterating when the predicate returns false. e.g.,
+	/// ```cpp
+	/// // Assert an array of ints contains all 10s.
+	/// EXPECT_TRUE(ints.all_of([&](const int& value) -> bool {
+	///   return value == 10;
+	/// }));
+	/// ```
 	/// - `fn` : A functor returning boolean. `!all_of(x)` -> `any_not(x)`.
 	template<typename functor_t_>
 	bool all_of(functor_t_&& fn_) const;
@@ -161,7 +167,13 @@ public:
 	bool all_of(functor_t_&& fn_);
 
 	/// Returns true if the predicate returns true for any element and false
-	/// otherwise. Will stop iterating when the predicate returns true.
+	/// otherwise. Will stop iterating when the predicate returns true. e.g.,
+	/// ```cpp
+	/// // Assert an array of ints contains at least one 10.
+	/// EXPECT_TRUE(ints.any_of([&](const int& value) -> bool {
+	///   return value == 10;
+	/// }));
+	/// ```
 	/// - `fn` : A functor returning boolean. `!any_of(x)` -> `none_of(x)`.
 	template<typename functor_t_>
 	bool any_of(functor_t_&& fn_) const;
@@ -255,14 +267,22 @@ public:
 
 	/// Removes elements for which the predicate returns true. (Non-standard.)
 	/// Equivalent to calling `erase_unordered` inside a reverse loop. Returns
-	/// the number of erased elements.
+	/// the number of erased elements. e.g.,
+	/// ```cpp
+	/// // Erase all the 10s in an array.
+	/// ints.erase_if([](const int& value) -> bool { return value == 10; });
+	/// ```
 	/// - `fn` : A functor returning boolean.
 	template<typename functor_t_>
 	size_t erase_if(functor_t_&& fn_);
 
 	/// Removes elements for which the predicate returns true while preserving
 	/// the max-heap property maintained by `push_heap`/`pop_heap`. Returns the
-	/// number of erased elements.
+	/// number of erased elements. e.g.,
+	/// ```cpp
+	/// // Erase all the 10s in a heap.
+	/// ints.erase_if([](const int& value) -> bool { return value == 10; });
+	/// ```
 	/// - `fn` : A functor returning boolean.
 	template<typename functor_t_>
 	size_t erase_if_heap(functor_t_&& fn_);
@@ -414,7 +434,6 @@ public:
 	size_t size_bytes(void) const;
 
 	/// Sorts the array using `hxkey_less`. (Non-standard.)
-	/// - `less` : A key comparison functor defining a less-than ordering relationship.
 	void sort(void);
 
 	/// Swap contents with a temporary array. Only works with
