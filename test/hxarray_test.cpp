@@ -577,9 +577,11 @@ TEST(hxarray_test, find_returns_first_match) {
 	});
 	EXPECT_EQ(mutable_predicate, values.begin() + 3);
 
+#if HX_CPLUSPLUS >= 202002L
 	if(int* t = values.find_if([](int& value) { return value == 8; }); t == values.end()) {
 		ADD_FAILURE();
 	}
+#endif
 }
 
 TEST(hxarray_test, erase_if) {

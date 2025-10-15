@@ -17,9 +17,11 @@
 #include "hatchling.h"
 #include "hxutility.h"
 
+/// \cond HIDDEN
 // Used for readability.
+using hxcstring_const_ = const char*;
 using hxcstring_ = char*;
-using hxccstring_ = const char*;
+/// \endcond
 
 #if HX_CPLUSPLUS >= 202002L
 /// A concept that requires one type to be convertible to another. See usage
@@ -51,7 +53,7 @@ constexpr bool hxkey_equal(const A_& a_, const B_& b_) {
 /// Returns true if two C strings are equal (`strcmp(a, b) == 0`).
 /// - `a` : The first C string.
 /// - `b` : The second C string.
-inline bool hxkey_equal(const hxccstring_& a_, const hxccstring_& b_) {
+inline bool hxkey_equal(const hxcstring_const_& a_, const hxcstring_const_& b_) {
     return ::strcmp(a_, b_) == 0;
 }
 
@@ -84,27 +86,12 @@ constexpr bool hxkey_less(const A_& a_, const B_& b_) {
     return a_ < b_;
 }
 
-/// `hxkey_less(const T*, const T*)` - User overloadable function for performing
-/// comparisons. Delegates to `T::operator<` by default. Pointer `<` comparisons
-/// are not available by default because that is undefined behavior unless the
-/// pointers are from the same array. For example, the compiler may silently
-/// ignore comparisons between function pointers.
-/// - `a` : Pointer to the first object.
-/// - `b` : Pointer to the second object.
-template<typename A_, typename B_>
-#if HX_CPLUSPLUS >= 202002L
-requires requires(const A_* a_, const B_* b_) { { hxkey_less(*a_, *b_) } -> hxconvertible_to<bool>; }
-#endif
-constexpr bool hxkey_less(const A_* a_, const B_* b_) {
-    return hxkey_less(*a_, *b_);
-}
-
 /// `hxkey_less(const char*, const char*)` - Returns true if the first C string
 /// is lexicographically less than the second by ASCII. UTF-8 is assigned a
 /// stable ordering without looking up a locale. Uses (`strcmp(a, b) < 0`).
 /// - `a` : The first C string.
 /// - `b` : The second C string.
-inline bool hxkey_less(const hxccstring_& a_, const hxccstring_& b_) {
+inline bool hxkey_less(const hxcstring_const_& a_, const hxcstring_const_& b_) {
     return ::strcmp(a_, b_) < 0;
 }
 
