@@ -47,7 +47,12 @@ constexpr bool hxkey_equal(const A_& a_, const B_& b_) {
 /// Returns true if two C strings are equal (`strcmp(a, b) == 0`).
 /// - `a` : The first C string.
 /// - `b` : The second C string.
-inline bool hxkey_equal(const char* const& a_, const char* const& b_) {
+inline bool hxkey_equal(const char* a_, const char* b_) {
+    return ::strcmp(a_, b_) == 0;
+}
+
+/// Non-const overload.
+inline bool hxkey_equal(char* a_, char* b_) {
     return ::strcmp(a_, b_) == 0;
 }
 
@@ -57,7 +62,7 @@ inline bool hxkey_equal(const char* const& a_, const char* const& b_) {
 template<typename T_>
 inline bool(*hxkey_equal_function(void))(const hxremove_cvref_t<T_>&, const hxremove_cvref_t<T_>&) {
 	return static_cast<bool(*)(const hxremove_cvref_t<T_>&, const hxremove_cvref_t<T_>&)>
-        (hxkey_equal<const hxremove_cvref_t<T_>&, const hxremove_cvref_t<T_>&>);
+        (&hxkey_equal);
 }
 
 /// `hxkey_less(const T&, const T&)` - User-overloadable function for performing
@@ -95,7 +100,12 @@ constexpr bool hxkey_less(const A_* a_, const B_* b_) {
 /// stable ordering without looking up a locale. Uses (`strcmp(a, b) < 0`).
 /// - `a` : The first C string.
 /// - `b` : The second C string.
-inline bool hxkey_less(const char* const& a_, const char* const& b_) {
+inline bool hxkey_less(const char* a_, const char* b_) {
+    return ::strcmp(a_, b_) < 0;
+}
+
+/// Non-const overload.
+inline bool hxkey_less(char* a_, char* b_) {
     return ::strcmp(a_, b_) < 0;
 }
 
@@ -105,7 +115,7 @@ inline bool hxkey_less(const char* const& a_, const char* const& b_) {
 template<typename T_>
 inline bool (*hxkey_less_function(void))(const hxremove_cvref_t<T_>&, const hxremove_cvref_t<T_>&) {
     return static_cast<bool(*)(const hxremove_cvref_t<T_>&, const hxremove_cvref_t<T_>&)>
-        (hxkey_less<const hxremove_cvref_t<T_>&, const hxremove_cvref_t<T_>&>);
+        (&hxkey_less);
 }
 
 /// `hxkey_hash(T)` - Returns the hash of a numeric value. Used by the base hash
