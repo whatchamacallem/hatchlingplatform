@@ -15,6 +15,7 @@
 /// functors.
 
 #include "hatchling.h"
+#include "hxutility.h"
 
 #if HX_CPLUSPLUS >= 202002L
 /// A concept that requires one type to be convertible to another. See usage
@@ -36,7 +37,7 @@ concept hxconvertible_to = requires(from_t_ (&&from_)()) {
 /// be consistently available. Uses `operator==`.
 template<typename A_, typename B_>
 #if HX_CPLUSPLUS >= 202002L
-requires requires(A_ a_, B_ b_) { { a_ == b_ } -> hxconvertible_to<bool>; }
+requires requires(const A_& a_, const B_& b_) { { a_ == b_ } -> hxconvertible_to<bool>; }
 #endif
 constexpr bool hxkey_equal(const A_& a_, const B_& b_) {
     return a_ == b_;
@@ -46,16 +47,17 @@ constexpr bool hxkey_equal(const A_& a_, const B_& b_) {
 /// Returns true if two C strings are equal (`strcmp(a, b) == 0`).
 /// - `a` : The first C string.
 /// - `b` : The second C string.
-inline bool hxkey_equal(const char* a_, const char* b_) {
+inline bool hxkey_equal(const char* const& a_, const char* const& b_) {
     return ::strcmp(a_, b_) == 0;
 }
 
 /// Utility for resolving function pointers to `hxkey_equal` from a partially
 /// specialized set of overloaded functions. e.g.,
 /// `hxkey_equal_function<int>()(1, 7)`.
-template<typename A_, typename B_>
-inline bool(*hxkey_equal_function(void))(const A_&, const B_&) {
-    return static_cast<bool(*)(const A_&, const B_&)>(hxkey_equal<A_, B_>);
+template<typename T_>
+inline bool(*hxkey_equal_function(void))(const hxremove_cvref_t<T_>&, const hxremove_cvref_t<T_>&) {
+	return static_cast<bool(*)(const hxremove_cvref_t<T_>&, const hxremove_cvref_t<T_>&)>
+        (hxkey_equal<const hxremove_cvref_t<T_>&, const hxremove_cvref_t<T_>&>);
 }
 
 /// `hxkey_less(const T&, const T&)` - User-overloadable function for performing
@@ -67,7 +69,7 @@ inline bool(*hxkey_equal_function(void))(const A_&, const B_&) {
 /// - `b` : The second object.
 template<typename A_, typename B_>
 #if HX_CPLUSPLUS >= 202002L
-requires requires(A_ a_, B_ b_) { { a_ < b_ } -> hxconvertible_to<bool>; }
+requires requires(const A_& a_, const B_& b_) { { a_ < b_ } -> hxconvertible_to<bool>; }
 #endif
 constexpr bool hxkey_less(const A_& a_, const B_& b_) {
     return a_ < b_;
@@ -82,7 +84,7 @@ constexpr bool hxkey_less(const A_& a_, const B_& b_) {
 /// - `b` : Pointer to the second object.
 template<typename A_, typename B_>
 #if HX_CPLUSPLUS >= 202002L
-requires requires(A_ a_, B_ b_) { { hxkey_less(a_, b_) } -> hxconvertible_to<bool>; }
+requires requires(const A_* a_, const B_* b_) { { hxkey_less(*a_, *b_) } -> hxconvertible_to<bool>; }
 #endif
 constexpr bool hxkey_less(const A_* a_, const B_* b_) {
     return hxkey_less(*a_, *b_);
@@ -93,16 +95,17 @@ constexpr bool hxkey_less(const A_* a_, const B_* b_) {
 /// stable ordering without looking up a locale. Uses (`strcmp(a, b) < 0`).
 /// - `a` : The first C string.
 /// - `b` : The second C string.
-inline bool hxkey_less(const char* a_, const char* b_) {
+inline bool hxkey_less(const char* const& a_, const char* const& b_) {
     return ::strcmp(a_, b_) < 0;
 }
 
 /// Utility for resolving function pointers to `hxkey_less` from a partially
 /// specialized set of overloaded functions. e.g.,
 /// `hxkey_less_function<int>()(78, 77)`.
-template<typename A_, typename B_>
-inline bool (*hxkey_less_function(void))(const A_&, const B_&) {
-    return static_cast<bool(*)(const A_&, const B_&)>(hxkey_less<A_, B_>);
+template<typename T_>
+inline bool (*hxkey_less_function(void))(const hxremove_cvref_t<T_>&, const hxremove_cvref_t<T_>&) {
+    return static_cast<bool(*)(const hxremove_cvref_t<T_>&, const hxremove_cvref_t<T_>&)>
+        (hxkey_less<const hxremove_cvref_t<T_>&, const hxremove_cvref_t<T_>&>);
 }
 
 /// `hxkey_hash(T)` - Returns the hash of a numeric value. Used by the base hash

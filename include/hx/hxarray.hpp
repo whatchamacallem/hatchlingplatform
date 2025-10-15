@@ -737,12 +737,12 @@ T_* hxarray<T_, capacity_>::begin(void) {
 
 template<typename T_, size_t capacity_>
 const T_* hxarray<T_, capacity_>::binary_search(const T_& value_) const {
-	return hxbinary_search<const T_*>(this->data(), m_end_, value_, hxkey_less_function<T_, T_>());
+	return hxbinary_search<const T_*>(this->data(), m_end_, value_, hxkey_less_function<T_>());
 }
 
 template<typename T_, size_t capacity_>
 T_* hxarray<T_, capacity_>::binary_search(const T_& value_) {
-	return hxbinary_search<T_*>(this->data(), m_end_, value_, hxkey_less_function<T_, T_>());
+	return hxbinary_search<T_*>(this->data(), m_end_, value_, hxkey_less_function<T_>());
 }
 
 template<typename T_, size_t capacity_>
@@ -837,7 +837,7 @@ size_t hxarray<T_, capacity_>::erase_if_heap(functor_t_&& fn_) {
 		if(hxforward<functor_t_>(fn_)(data_[index_])) {
 			this->erase_unordered(index_);
 			++removed_;
-			hxdetail_::hxheapsort_heapify_(data_ + index_, m_end_, hxkey_less_function<T_, T_>());
+			hxdetail_::hxheapsort_heapify_(data_ + index_, m_end_, hxkey_less_function<T_>());
 		}
 	}
 	return removed_;
@@ -983,7 +983,7 @@ void hxarray<T_, capacity_>::insert(size_t index_, ref_t_&& x_) {
 
 template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::insertion_sort(void) {
-	hxinsertion_sort<T_*>(this->data(), m_end_, hxkey_less_function<T_, T_>());
+	hxinsertion_sort<T_*>(this->data(), m_end_, hxkey_less_function<T_>());
 }
 
 template<typename T_, size_t capacity_>
@@ -1003,7 +1003,7 @@ bool hxarray<T_, capacity_>::less(const hxarray<T_, capacity_x_>& x_) const {
 
 template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::make_heap(void) {
-	hxdetail_::hxmake_heap_<T_*>(this->data(), m_end_, hxkey_less_function<T_, T_>());
+	hxdetail_::hxmake_heap_<T_*>(this->data(), m_end_, hxkey_less_function<T_>());
 }
 
 template<typename T_, size_t capacity_>
@@ -1040,7 +1040,7 @@ void hxarray<T_, capacity_>::pop_heap(void) {
 	}
 	*begin_ = hxmove(*m_end_);
 	m_end_->~T_();
-	hxdetail_::hxheapsort_heapify_(begin_, m_end_, hxkey_less_function<T_, T_>());
+	hxdetail_::hxheapsort_heapify_(begin_, m_end_, hxkey_less_function<T_>());
 }
 
 template<typename T_, size_t capacity_>
@@ -1125,7 +1125,7 @@ size_t hxarray<T_, capacity_>::size_bytes(void) const {
 
 template<typename T_, size_t capacity_>
 void hxarray<T_, capacity_>::sort(void) {
-	hxsort<T_*>(this->data(), m_end_, hxkey_less_function<T_, T_>());
+	hxsort<T_*>(this->data(), m_end_, hxkey_less_function<T_>());
 }
 
 template<typename T_, size_t capacity_>

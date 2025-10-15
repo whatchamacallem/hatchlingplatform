@@ -175,8 +175,7 @@ size_t hxtask_queue::erase_if(functor_t_&& fn_) {
 	if(erased_ != 0u) {
 		// Restore the heap property all at once. Allows erase_if to modify
 		// priority at the same time.
-		hxmake_heap_(m_tasks_.begin(), m_tasks_.end(),
-			hxkey_less_function<record_t, record_t>());
+		hxmake_heap_(m_tasks_.begin(), m_tasks_.end(), hxkey_less_function<record_t>());
 	}
 	return erased_;
 }
@@ -197,8 +196,7 @@ void hxtask_queue::for_each(functor_t_&& fn_) {
 	m_tasks_.for_each(hxforward<functor_t_>(fn_));
 
 	// Restore the heap property. Use "all_of" for a faster const function.
-	hxmake_heap_(m_tasks_.begin(), m_tasks_.end(),
-		hxkey_less_function<record_t, record_t>());
+	hxmake_heap_(m_tasks_.begin(), m_tasks_.end(), hxkey_less_function<record_t>());
 }
 
 inline bool hxtask_queue::full(void) const {

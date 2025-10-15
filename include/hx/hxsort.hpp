@@ -74,8 +74,7 @@ void hxinsertion_sort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename iterator_t_> hxattr_hot
 void hxinsertion_sort(iterator_t_ begin_, iterator_t_ end_) {
-	using element_t_ = hxremove_reference_t<decltype(*begin_)>;
-	hxinsertion_sort<iterator_t_>(begin_, end_, hxkey_less_function<element_t_, element_t_>());
+	hxinsertion_sort<iterator_t_>(begin_, end_, hxkey_less_function<decltype(*begin_)>());
 }
 
 /// `hxheapsort` - Sorts the elements in the range `[begin, end)` in comparison
@@ -104,8 +103,7 @@ void hxheapsort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_) {
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename iterator_t_> hxattr_hot
 void hxheapsort(iterator_t_ begin_, iterator_t_ end_) {
-	using element_t_ = hxremove_reference_t<decltype(*begin_)>;
-	hxheapsort<iterator_t_>(begin_, end_, hxkey_less_function<element_t_, element_t_>());
+	hxheapsort<iterator_t_>(begin_, end_, hxkey_less_function<decltype(*begin_)>());
 }
 
 /// `hxsort` - A general purpose sort routine using `T::T()`, `T::~T()`,
@@ -126,8 +124,7 @@ void hxsort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_) {
 /// - `end` : Pointer to one past the last element in the range to sort.
 template<typename iterator_t_> hxattr_hot
 void hxsort(iterator_t_ begin_, iterator_t_ end_) {
-	using element_t_ = hxremove_reference_t<decltype(*begin_)>;
-	hxintro_sort_<iterator_t_>(begin_, end_, hxkey_less_function<element_t_, element_t_>(),
+	hxintro_sort_<iterator_t_>(begin_, end_, hxkey_less_function<decltype(*begin_)>(),
 		2 * hxlog2i((size_t)(end_ - begin_)));
 }
 
@@ -175,9 +172,8 @@ void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_, iterat
 template<typename iterator_t_> hxattr_hot
 void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
 		iterator_t_ end1_, iterator_t_ dest_) {
-	using element_t_ = hxremove_reference_t<decltype(*begin0_)>;
 	hxmerge<iterator_t_>(begin0_, end0_, begin1_, end1_, dest_,
-		hxkey_less_function<element_t_, element_t_>());
+		hxkey_less_function<decltype(*begin0_)>());
 }
 
 /// `hxset_union` - Forms the union of two ordered ranges `[begin0, end0)` and
@@ -233,9 +229,8 @@ iterator_t_ hxset_union(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begi
 template<typename iterator_t_> hxattr_hot
 iterator_t_ hxset_union(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
 		iterator_t_ end1_, iterator_t_ dest_) {
-	using element_t_ = hxremove_reference_t<decltype(*begin0_)>;
 	return hxset_union<iterator_t_>(begin0_, end0_, begin1_, end1_, dest_,
-		hxkey_less_function<element_t_, element_t_>());
+		hxkey_less_function<decltype(*begin0_)>());
 }
 
 /// `hxset_intersection` - Forms the intersection of two ordered ranges
@@ -285,9 +280,8 @@ iterator_t_ hxset_intersection(iterator_t_ begin0_, iterator_t_ end0_, iterator_
 template<typename iterator_t_> hxattr_hot
 iterator_t_ hxset_intersection(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
 		iterator_t_ end1_, iterator_t_ dest_) {
-	using element_t_ = hxremove_reference_t<decltype(*begin0_)>;
 	return hxset_intersection<iterator_t_>(begin0_, end0_, begin1_, end1_, dest_,
-		hxkey_less_function<element_t_, element_t_>());
+		hxkey_less_function<decltype(*begin0_)>());
 }
 
 /// `hxset_difference` - Forms the difference of two ordered ranges
@@ -340,9 +334,8 @@ iterator_t_ hxset_difference(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_
 template<typename iterator_t_> hxattr_hot
 iterator_t_ hxset_difference(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
 		iterator_t_ end1_, iterator_t_ dest_) {
-	using element_t_ = hxremove_reference_t<decltype(*begin0_)>;
 	return hxset_difference<iterator_t_>(begin0_, end0_, begin1_, end1_, dest_,
-		hxkey_less_function<element_t_, element_t_>());
+		hxkey_less_function<decltype(*begin0_)>());
 }
 
 /// `hxbinary_search` - Performs a binary search in the range `[first, last)`.
@@ -385,6 +378,6 @@ iterator_t_ hxbinary_search(iterator_t_ begin_, iterator_t_ end_, const value_t_
 /// - `value` : The value to search for.
 template<typename iterator_t_, typename value_t_> hxattr_hot
 iterator_t_ hxbinary_search(iterator_t_ begin_, iterator_t_ end_, const value_t_& value_) {
-	using element_t_ = hxremove_reference_t<decltype(*begin_)>;
-	return hxbinary_search<iterator_t_>(begin_, end_, value_, hxkey_less_function<element_t_, element_t_>());
+	return hxbinary_search<iterator_t_>(begin_, end_, value_,
+		hxkey_less_function<decltype(*begin_)>());
 }

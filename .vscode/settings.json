@@ -23,6 +23,7 @@
         "constness",
         "ctypes",
         "ctypeslib",
+        "cvref",
         "debugbuild",
         "demangle",
         "Demangled",
