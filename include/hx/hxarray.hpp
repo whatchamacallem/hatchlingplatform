@@ -424,16 +424,17 @@ public:
 	void swap(hxarray& x_);
 
 private:
+	/// \cond HIDDEN
+
 	// Returns a pointer for use with placement new.
 	void* push_back_unconstructed_(void);
 
 	// Destroys elements in the range [begin, end).
 	void destruct_(T_* begin_, T_* end_);
 
-protected:
-	/// \cond HIDDEN
-	/// 1 past the last element. Used by `hxstringstream`.
+	// 1 past the last element.
 	T_* m_end_;
+
 	/// \endcond
 };
 
