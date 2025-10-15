@@ -14,7 +14,9 @@
 /// `hxarray` - Implements both `std::vector` and `std::inplace_vector` with a
 /// chunk added a few things unimplemented. Uses raw pointers as an iterator
 /// type so that you get compile errors and a debug symbols that use plain C++
-/// pointers instead. There are exhaustive asserts.
+/// pointers instead. There are exhaustive asserts. `hxarray` uses the
+/// `hxkey_less` and `hxkey_equal` overloads. They default to using operators
+/// `<` and `==`. See `hxsort.hpp` for functor versions of the algorithms here.
 ///
 /// `hxarray` can be constructed from C string literals as follows:
 ///   `hxarray<char, HX_MAX_LINE> string_buffer("example C string");`
@@ -228,13 +230,6 @@ public:
 	template<typename... args_t_>
 	T_& emplace_back(args_t_&&... args_);
 
-	/// Returns true if the arrays compare as equivalent. This version takes a
-	/// functor for key comparison.
-	/// - `x` : The other array.
-	/// - `equal` : A key comparison functor defining an equivalence relationship.
-	template<size_t capacity_x_, typename equal_t_>
-	bool equal(const hxarray<T_, capacity_x_>& x_, const equal_t_& equal_) const;
-
 	/// Returns true if the arrays compare equivalent using `hxkey_equal`.
 	/// - `x` : The other array.
 	template<size_t capacity_x_>
@@ -356,17 +351,8 @@ public:
 	/// - `less` : A key comparison functor defining a less-than ordering relationship.
 	void insertion_sort(void);
 
-	/// Returns true if this array compares as less than `x`. Sorts `[1]` before
-	/// `[1, 2]`. This version takes two functors for key comparison.
-	/// - `x` : The other array.
-	/// - `less` : A key comparison functor defining a less-than ordering relationship.
-	/// - `equal` : A key comparison functor defining an equivalence relationship.
-	template<size_t capacity_x_, typename less_t_, typename equal_t_>
-	bool less(const hxarray<T_, capacity_x_>& x_, const less_t_& less_, const equal_t_& equal_) const;
-
 	/// Returns true if this array compares less than `x` using `hxkey_equal`
-	/// and `hxkey_less`.
-	/// Sorts `[1]` before `[1, 2]`.
+	/// and `hxkey_less`. Sorts `[1]` before `[1, 2]`.
 	/// - `x` : The other array.
 	template<size_t capacity_x_>
 	bool less(const hxarray<T_, capacity_x_>& x_) const;
@@ -731,24 +717,18 @@ T_& hxarray<T_, capacity_>::emplace_back(args_t_&&... args_) {
 }
 
 template<typename T_, size_t capacity_>
-template<size_t capacity_x_, typename equal_t_>
-bool hxarray<T_, capacity_>::equal(const hxarray<T_, capacity_x_>& x_, const equal_t_& equal_) const {
+template<size_t capacity_x_>
+bool hxarray<T_, capacity_>::equal(const hxarray<T_, capacity_x_>& x_) const {
 	if(this->size() != x_.size()) {
 		return false;
 	}
 	for(const T_* it0_ = this->data(), *it1_ = x_.data(), *end_ = m_end_;
 			it0_ != end_; ++it0_, ++it1_) {
-		if(!equal_(*it0_, *it1_)) {
+		if(!hxkey_equal(*it0_, *it1_)) {
 			return false;
 		}
 	}
 	return true;
-}
-
-template<typename T_, size_t capacity_>
-template<size_t capacity_x_>
-bool hxarray<T_, capacity_>::equal(const hxarray<T_, capacity_x_>& x_) const {
-	return this->equal(x_, hxkey_equal_function<T_, T_>());
 }
 
 template<typename T_, size_t capacity_>
@@ -926,24 +906,18 @@ void hxarray<T_, capacity_>::insertion_sort(void) {
 }
 
 template<typename T_, size_t capacity_>
-template<size_t capacity_x_, typename less_t_, typename equal_t_>
-bool hxarray<T_, capacity_>::less(const hxarray<T_, capacity_x_>& x_, const less_t_& less_, const equal_t_& equal_) const {
+template<size_t capacity_x_>
+bool hxarray<T_, capacity_>::less(const hxarray<T_, capacity_x_>& x_) const {
 	const size_t size_ = hxmin(this->size(), x_.size());
 	for(const T_* it0_ = this->data(), *it1_ = x_.data(), *end_ = it0_ + size_;
 			it0_ != end_; ++it0_, ++it1_) {
 		// Use `a == b` instead of `a < b && b < a` for performance.
-		if(!equal_(*it0_, *it1_)) {
-			return less_(*it0_, *it1_);
+		if(!hxkey_equal(*it0_, *it1_)) {
+			return hxkey_less(*it0_, *it1_);
 		}
 	}
 	// Order the prefix before the other.
 	return this->size() < x_.size();
-}
-
-template<typename T_, size_t capacity_>
-template<size_t capacity_x_>
-bool hxarray<T_, capacity_>::less(const hxarray<T_, capacity_x_>& x_) const {
-	return this->less(x_, hxkey_less_function<T_, T_>(), hxkey_equal_function<T_, T_>());
 }
 
 template<typename T_, size_t capacity_>
