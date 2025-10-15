@@ -314,6 +314,22 @@ public:
 	/// - `value` : The value to locate.
 	T_* find(const T_& value_);
 
+	/// Finds the first element for which the predicate returns true. Returns
+	/// `end()` if no element matches. e.g.,
+	/// ```cpp
+	/// // Search for a 10 and check if it was found.
+	/// if(int* t = ints.find_if([](int& x) { return x == 10; }); t != ints.end()) {
+	///   // ... Process the 10.
+	/// }
+	/// ```
+	/// - `fn` : A functor returning boolean.
+	template<typename functor_t_>
+	const T_* find_if(functor_t_&& fn_) const;
+
+	/// Non-const version of `find_if`.
+	template<typename functor_t_>
+	T_* find_if(functor_t_&& fn_);
+
 	/// Calls a function, lambda, or `std::function` on each element.
 	/// (Non-standard.) Lambdas and `std::function` instances can be provided as
 	/// temporaries, so that has to be allowed. The `&&` variant of
@@ -842,6 +858,28 @@ template<typename T_, size_t capacity_>
 T_* hxarray<T_, capacity_>::find(const T_& value_) {
 	for(T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
 		if(hxkey_equal(*it_, value_)) {
+			return it_;
+		}
+	}
+	return m_end_;
+}
+
+template<typename T_, size_t capacity_>
+template<typename functor_t_>
+const T_* hxarray<T_, capacity_>::find_if(functor_t_&& fn_) const {
+	for(const T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
+		if(hxforward<functor_t_>(fn_)(*it_)) {
+			return it_;
+		}
+	}
+	return m_end_;
+}
+
+template<typename T_, size_t capacity_>
+template<typename functor_t_>
+T_* hxarray<T_, capacity_>::find_if(functor_t_&& fn_) {
+	for(T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
+		if(hxforward<functor_t_>(fn_)(*it_)) {
 			return it_;
 		}
 	}

@@ -35,7 +35,7 @@ TEST(hxfile_test, read_write_round_trip) {
 		EXPECT_FALSE(f.fail());
 	}
 	else {
-		FAIL();
+		ADD_FAILURE();
 	}
 
 	hxout << "smoke test hxout" << ".";

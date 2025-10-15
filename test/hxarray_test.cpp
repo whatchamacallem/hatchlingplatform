@@ -534,6 +534,25 @@ TEST(hxarray_test, find_returns_first_match) {
 
 	int* mutable_pos = values.find(8);
 	EXPECT_EQ(mutable_pos, values.begin() + 3);
+
+	const int* const_predicate = ((const hxarray<int, 5>&)values).find_if([](int value) {
+		return value >= 8;
+	});
+	EXPECT_EQ(const_predicate, values.begin() + 3);
+
+	const int* const_predicate_missing = ((const hxarray<int, 5>&)values).find_if([](int value) {
+		return value < 0;
+	});
+	EXPECT_EQ(const_predicate_missing, values.end());
+
+	int* mutable_predicate = values.find_if([](int& value) {
+		return (value & 1) == 0 && value > 4;
+	});
+	EXPECT_EQ(mutable_predicate, values.begin() + 3);
+
+	if(int* t = values.find_if([](int& value) { return value == 8; }); t == values.end()) {
+		ADD_FAILURE();
+	}
 }
 
 TEST(hxarray_test, erase_if) {

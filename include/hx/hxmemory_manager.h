@@ -134,7 +134,8 @@ inline void* operator new[](size_t, void* ptr_) noexcept { return ptr_; }
 /// initial offsets thereby freeing any allocations made during the lifetime of
 /// this object. NOTA BENE: Two threads cannot share a stack allocator using
 /// this mechanism without due caution. Wait for worker tasks to complete before
-/// freeing their temporary allocations.
+/// freeing their temporary allocations. The closest thing in the standard is
+/// `std::scoped_allocator_adaptor` and it is a template nightmare.
 class hxsystem_allocator_scope
 {
 public:
