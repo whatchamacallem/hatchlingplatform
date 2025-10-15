@@ -180,6 +180,171 @@ void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
 		hxkey_less_function<element_t_, element_t_>());
 }
 
+/// `hxset_union` - Forms the union of two ordered ranges `[begin0, end0)` and
+/// `[begin1, end1)` into `dest`. Duplicate keys appear once in the output. The
+/// input arrays must not overlap the destination array.
+///
+/// Assumes both ranges are ordered by the `less` functor.
+/// - `begin0` : Pointer to the beginning of the first ordered range.
+/// - `end0` : Pointer to one past the last element of the first ordered range.
+/// - `begin1` : Pointer to the beginning of the second ordered range.
+/// - `end1` : Pointer to one past the last element of the second ordered range.
+/// - `dest` : Pointer to the destination range receiving the union.
+/// - `less` : Comparator defining the less-than ordering relationship.
+/// Returns a pointer to one past the last element written.
+template<typename iterator_t_, typename less_t_> hxattr_hot
+iterator_t_ hxset_union(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_, iterator_t_ end1_,
+		iterator_t_ dest_, const less_t_& less_) {
+	hxassertmsg(begin0_ <= end0_ && begin1_ <= end1_, "invalid_iterator");
+	hxrestrict_t<iterator_t_> dest_r_(dest_);
+
+	while(begin0_ != end0_ && begin1_ != end1_) {
+		if(less_(*begin1_, *begin0_)) {
+			*dest_r_++ = hxmove(*begin1_++);
+		}
+		else if(less_(*begin0_, *begin1_)) {
+			*dest_r_++ = hxmove(*begin0_++);
+		}
+		else {
+			*dest_r_++ = hxmove(*begin0_++);
+			++begin1_;
+		}
+	}
+
+	while(begin0_ != end0_) {
+		*dest_r_++ = hxmove(*begin0_++);
+	}
+	while(begin1_ != end1_) {
+		*dest_r_++ = hxmove(*begin1_++);
+	}
+	return dest_r_;
+}
+
+/// `hxset_union` (specialization) - Forms the union of two ordered ranges
+/// `[begin0, end0)` and `[begin1, end1)` into `dest` using `hxless`.
+/// Duplicate keys appear once in the output. The input arrays must not overlap
+/// the destination array.
+/// - `begin0` : Pointer to the beginning of the first ordered range.
+/// - `end0` : Pointer to one past the last element of the first ordered range.
+/// - `begin1` : Pointer to the beginning of the second ordered range.
+/// - `end1` : Pointer to one past the last element of the second ordered range.
+/// - `dest` : Pointer to the destination range receiving the union.
+/// Returns a pointer to one past the last element written.
+template<typename iterator_t_> hxattr_hot
+iterator_t_ hxset_union(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
+		iterator_t_ end1_, iterator_t_ dest_) {
+	using element_t_ = hxremove_reference_t<decltype(*begin0_)>;
+	return hxset_union<iterator_t_>(begin0_, end0_, begin1_, end1_, dest_,
+		hxkey_less_function<element_t_, element_t_>());
+}
+
+/// `hxset_intersection` - Forms the intersection of two ordered ranges
+/// `[begin0, end0)` and `[begin1, end1)` into `dest`. Only keys present in both
+/// ranges appear in the output. The input arrays must not overlap the
+/// destination array.
+///
+/// Assumes both ranges are ordered by the `less` functor.
+/// - `begin0` : Pointer to the beginning of the first ordered range.
+/// - `end0` : Pointer to one past the last element of the first ordered range.
+/// - `begin1` : Pointer to the beginning of the second ordered range.
+/// - `end1` : Pointer to one past the last element of the second ordered range.
+/// - `dest` : Pointer to the destination range receiving the intersection.
+/// - `less` : Comparator defining the less-than ordering relationship.
+/// Returns a pointer to one past the last element written.
+template<typename iterator_t_, typename less_t_> hxattr_hot
+iterator_t_ hxset_intersection(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
+		iterator_t_ end1_, iterator_t_ dest_, const less_t_& less_) {
+	hxassertmsg(begin0_ <= end0_ && begin1_ <= end1_, "invalid_iterator");
+	hxrestrict_t<iterator_t_> dest_r_(dest_);
+
+	while(begin0_ != end0_ && begin1_ != end1_) {
+		if(less_(*begin0_, *begin1_)) {
+			++begin0_;
+		}
+		else if(less_(*begin1_, *begin0_)) {
+			++begin1_;
+		}
+		else {
+			*dest_r_++ = hxmove(*begin0_++);
+			++begin1_;
+		}
+	}
+	return dest_r_;
+}
+
+/// `hxset_intersection` (specialization) - Forms the intersection of two
+/// ordered ranges `[begin0, end0)` and `[begin1, end1)` into `dest` using
+/// `hxless`. Only keys present in both ranges appear in the output. The input
+/// arrays must not overlap the destination array.
+/// - `begin0` : Pointer to the beginning of the first ordered range.
+/// - `end0` : Pointer to one past the last element of the first ordered range.
+/// - `begin1` : Pointer to the beginning of the second ordered range.
+/// - `end1` : Pointer to one past the last element of the second ordered range.
+/// - `dest` : Pointer to the destination range receiving the intersection.
+/// Returns a pointer to one past the last element written.
+template<typename iterator_t_> hxattr_hot
+iterator_t_ hxset_intersection(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
+		iterator_t_ end1_, iterator_t_ dest_) {
+	using element_t_ = hxremove_reference_t<decltype(*begin0_)>;
+	return hxset_intersection<iterator_t_>(begin0_, end0_, begin1_, end1_, dest_,
+		hxkey_less_function<element_t_, element_t_>());
+}
+
+/// `hxset_difference` - Forms the difference of two ordered ranges
+/// `[begin0, end0)` and `[begin1, end1)` into `dest`. The output contains keys
+/// that appear in the first range but not the second. The input arrays must
+/// not overlap the destination array.
+///
+/// Assumes both ranges are ordered by the `less` functor.
+/// - `begin0` : Pointer to the beginning of the first ordered range.
+/// - `end0` : Pointer to one past the last element of the first ordered range.
+/// - `begin1` : Pointer to the beginning of the second ordered range.
+/// - `end1` : Pointer to one past the last element of the second ordered range.
+/// - `dest` : Pointer to the destination range receiving the difference.
+/// - `less` : Comparator defining the less-than ordering relationship.
+/// Returns a pointer to one past the last element written.
+template<typename iterator_t_, typename less_t_> hxattr_hot
+iterator_t_ hxset_difference(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
+		iterator_t_ end1_, iterator_t_ dest_, const less_t_& less_) {
+	hxassertmsg(begin0_ <= end0_ && begin1_ <= end1_, "invalid_iterator");
+	hxrestrict_t<iterator_t_> dest_r_(dest_);
+
+	while(begin0_ != end0_ && begin1_ != end1_) {
+		if(less_(*begin0_, *begin1_)) {
+			*dest_r_++ = hxmove(*begin0_++);
+		}
+		else if(less_(*begin1_, *begin0_)) {
+			++begin1_;
+		}
+		else {
+			++begin0_;
+			++begin1_;
+		}
+	}
+	while(begin0_ != end0_) {
+		*dest_r_++ = hxmove(*begin0_++);
+	}
+	return dest_r_;
+}
+
+/// `hxset_difference` (specialization) - Forms the difference of two ordered
+/// ranges `[begin0, end0)` and `[begin1, end1)` into `dest` using `hxless`.
+/// The output contains keys that appear in the first range but not the second.
+/// The input arrays must not overlap the destination array.
+/// - `begin0` : Pointer to the beginning of the first ordered range.
+/// - `end0` : Pointer to one past the last element of the first ordered range.
+/// - `begin1` : Pointer to the beginning of the second ordered range.
+/// - `end1` : Pointer to one past the last element of the second ordered range.
+/// - `dest` : Pointer to the destination range receiving the difference.
+/// Returns a pointer to one past the last element written.
+template<typename iterator_t_> hxattr_hot
+iterator_t_ hxset_difference(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
+		iterator_t_ end1_, iterator_t_ dest_) {
+	using element_t_ = hxremove_reference_t<decltype(*begin0_)>;
+	return hxset_difference<iterator_t_>(begin0_, end0_, begin1_, end1_, dest_,
+		hxkey_less_function<element_t_, element_t_>());
+}
+
 /// `hxbinary_search` - Performs a binary search in the range `[first, last)`.
 /// Returns `end` if the value is not found. Unsorted data will lead to errors.
 /// Non-unique values will be selected arbitrarily. The comparator parameter is

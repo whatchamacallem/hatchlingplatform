@@ -343,6 +343,35 @@ TEST(hxsort_test, sort_int_case) {
 	do_sort_int_case(hxsort<int*, bool (*)(int, int)>);
 }
 
+TEST(hxset_algorithms_test, int_pointer_ranges) {
+	int left[] = { 1, 3, 5, 7 };
+	int right[] = { 3, 4, 7, 9 };
+	int dest_union[8] = { 0 };
+	int dest_intersection[4] = { 0 };
+	int dest_difference[4] = { 0 };
+
+	auto expect_range = [](const int* begin, const int* end, const int* expected) {
+		for(const int* it = begin; it != end; ++it, ++expected) {
+			EXPECT_EQ(*it, *expected);
+		}
+	};
+
+	int* union_end = hxset_union(left, left + hxsize(left), right, right + hxsize(right), dest_union);
+	const int expected_union[] = { 1, 3, 4, 5, 7, 9 };
+	EXPECT_EQ(union_end - dest_union, (ptrdiff_t)hxsize(expected_union));
+	expect_range(dest_union, union_end, expected_union);
+
+	int* intersection_end = hxset_intersection(left, left + hxsize(left), right, right + hxsize(right), dest_intersection);
+	const int expected_intersection[] = { 3, 7 };
+	EXPECT_EQ(intersection_end - dest_intersection, (ptrdiff_t)hxsize(expected_intersection));
+	expect_range(dest_intersection, intersection_end, expected_intersection);
+
+	int* difference_end = hxset_difference(left, left + hxsize(left), right, right + hxsize(right), dest_difference);
+	const int expected_difference[] = { 1, 5 };
+	EXPECT_EQ(difference_end - dest_difference, (ptrdiff_t)hxsize(expected_difference));
+	expect_range(dest_difference, difference_end, expected_difference);
+}
+
 TEST(hxmerge_test, preserves_stable_ordering) {
 	struct hxmerge_test_record_t {
 		int key;
