@@ -47,6 +47,11 @@ public:
 		hxtest_object value;
 	};
 
+	class hxtest_string_literal : public hxhash_table_node_string_literal {
+	public:
+		hxtest_string_literal(const char* k) : hxhash_table_node_string_literal(k) { }
+	};
+
 	hxhash_table_test_f(void) {
 		hxassert(s_hxtest_current == hxnull);
 		m_constructed = 0;
@@ -319,4 +324,30 @@ TEST_F(hxhash_table_test_f, strings) {
 	}
 	EXPECT_EQ(m_constructed, sz);
 	EXPECT_EQ(m_destructed, sz);
+}
+
+TEST_F(hxhash_table_test_f, string_literal_nodes) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+
+	static const char* const literals[] = {
+		"Crimson", "Teal", "Magenta", "Gold"
+	};
+
+	using table_t = hxhash_table<hxtest_string_literal, 4>;
+	table_t table;
+
+	for(unsigned int i = 0; i < hxsize(literals); ++i) {
+		hxtest_string_literal& entry = table[literals[i]];
+		EXPECT_EQ(table.find(literals[i]), &entry);
+		EXPECT_EQ(&table.insert_unique(literals[i]), &entry);
+
+		EXPECT_TRUE(entry.key() == literals[i]);
+		EXPECT_STREQ(entry.key(), literals[i]);
+		EXPECT_EQ(entry.hash(), hxkey_hash(literals[i]));
+		EXPECT_EQ(table.count(literals[i]), 1u);
+	}
+
+	EXPECT_EQ(table.size(), (size_t)hxsize(literals));
+	EXPECT_FALSE(table.find("Crimson") == hxnull);
+	EXPECT_TRUE(table.find("Cerulean") == hxnull);
 }

@@ -13,7 +13,6 @@
         "bitfield",
         "ccache",
         "CFLAGS",
-        "checkasserts",
         "checkhash",
         "cindex",
         "clib",
