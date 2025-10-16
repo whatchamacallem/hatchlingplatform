@@ -200,7 +200,8 @@ public:
 	/// Assigns elements from a temporary range. This overload enables moving the
 	/// range elements into the array when forwarding rvalues.
 	/// - `range` : The range to move elements from.
-	template <typename range_t_, typename=hxenable_if_t<!hxis_lvalue_reference<range_t_>::value>>
+	template <typename range_t_>
+	requires(!hxis_lvalue_reference<range_t_>::value)
 	void assign_range(range_t_&& range_);
 #endif
 
@@ -707,7 +708,8 @@ void hxarray<T_, capacity_>::assign_range(range_t_& range_) {
 }
 
 template<typename T_, size_t capacity_>
-template<typename range_t_, typename>
+template<typename range_t_>
+requires(!hxis_lvalue_reference<range_t_>::value)
 void hxarray<T_, capacity_>::assign_range(range_t_&& range_) {
 	this->clear();
 	// Sorry, std::begin and std::end may not exist.
