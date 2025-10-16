@@ -223,12 +223,12 @@ public:
 	const T_* binary_search(const T_& value_) const;
 
 	/// Non-const version. Performs a binary search using `hxkey_less`. Returns
-	/// `end()` when not found.
+	/// `end` when not found.
 	/// - `value` : The value to locate.
 	T_* binary_search(const T_& value_);
 
 	/// Returns a `const T*` to the beginning of the array (alias for
-	/// begin()).
+	/// `begin`).
 	const T_* cbegin(void) const;
 
 	/// Returns a `const T*` to the end of the array.
@@ -307,7 +307,7 @@ public:
 	void erase_unordered(size_t index_);
 
 	/// Finds the first occurrence of `value` using `hxkey_equal`.
-	/// Returns `end()` if no element matches.
+	/// Returns `end` if no element matches.
 	/// - `value` : The value to locate.
 	const T_* find(const T_& value_) const;
 
@@ -316,7 +316,7 @@ public:
 	T_* find(const T_& value_);
 
 	/// Finds the first element for which the predicate returns true. Returns
-	/// `end()` if no element matches. e.g.,
+	/// `end` if no element matches. e.g.,
 	/// ```cpp
 	/// // Search for a 10 and check if it was found.
 	/// if(int* t = ints.find_if([](int& x) { return x == 10; }); t != ints.end()) {
