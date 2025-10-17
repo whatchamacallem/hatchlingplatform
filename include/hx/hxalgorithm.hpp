@@ -133,7 +133,7 @@ void hxsort(iterator_t_ begin_, iterator_t_ end_) {
 }
 
 /// `hxmerge` - Performs a stable merge sort of two ordered ranges `[begin0,
-/// end0)` and `[begin1, end1)` -> `dest`. The input arrays must not overlap the
+/// end0)` and `[begin1, end1)` -> `output`. The input arrays must not overlap the
 /// destination array.
 ///
 /// Assumes both `[begin0, end0)` and `[begin1, end1)` are ordered by the `less`
@@ -169,14 +169,14 @@ void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_, iterat
 }
 
 /// `hxmerge` (specialization) - Performs a stable merge sort of two ordered
-/// ranges `[begin0, end0)` and `[begin1, end1)` -> `dest`. The input arrays
+/// ranges `[begin0, end0)` and `[begin1, end1)` -> `output`. The input arrays
 /// must not overlap the destination array. Assumes both `[begin0, end0)` and
 /// `[begin1, end1)` are ordered by `hxless(a,b)`.
 /// - `begin0` : Pointer to the beginning of the first ordered range to merge.
 /// - `end0` : Pointer to one past the last element of the first ordered range.
 /// - `begin1` : Pointer to the beginning of the second ordered range to merge.
 /// - `end1` : Pointer to one past the last element of the second ordered range.
-/// - `dest` : Pointer to the destination range receiving the merged output.
+/// - `output` : Pointer to the destination range receiving the merged output.
 template<typename iterator_t_> hxattr_hot
 void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
 		iterator_t_ end1_, iterator_t_ output_) {
@@ -185,7 +185,7 @@ void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
 }
 
 /// `hxset_union` - Forms the union of two ordered ranges `[begin0, end0)` and
-/// `[begin1, end1)` into `dest`. Duplicate keys appear once in the output. The
+/// `[begin1, end1)` into `output`. Duplicate keys appear once in the output. The
 /// input arrays must not overlap the destination array.
 ///
 /// Assumes both ranges are ordered by the `less` functor.
@@ -193,7 +193,7 @@ void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
 /// - `end0` : Pointer to one past the last element of the first ordered range.
 /// - `begin1` : Pointer to the beginning of the second ordered range.
 /// - `end1` : Pointer to one past the last element of the second ordered range.
-/// - `dest` : Pointer to the destination range receiving the union.
+/// - `output` : Pointer to the destination range receiving the union.
 /// - `less` : Comparator defining the less-than ordering relationship.
 /// Returns a pointer to one past the last element written.
 template<typename iterator_t_, typename less_t_> hxattr_hot
@@ -229,14 +229,14 @@ iterator_t_ hxset_union(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begi
 }
 
 /// `hxset_union` (specialization) - Forms the union of two ordered ranges
-/// `[begin0, end0)` and `[begin1, end1)` into `dest` using `hxless`.
+/// `[begin0, end0)` and `[begin1, end1)` into `output` using `hxless`.
 /// Duplicate keys appear once in the output. The input arrays must not overlap
 /// the destination array.
 /// - `begin0` : Pointer to the beginning of the first ordered range.
 /// - `end0` : Pointer to one past the last element of the first ordered range.
 /// - `begin1` : Pointer to the beginning of the second ordered range.
 /// - `end1` : Pointer to one past the last element of the second ordered range.
-/// - `dest` : Pointer to the destination range receiving the union.
+/// - `output` : Pointer to the destination range receiving the union.
 /// Returns a pointer to one past the last element written.
 template<typename iterator_t_> hxattr_hot
 iterator_t_ hxset_union(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
@@ -246,7 +246,7 @@ iterator_t_ hxset_union(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begi
 }
 
 /// `hxset_intersection` - Forms the intersection of two ordered ranges
-/// `[begin0, end0)` and `[begin1, end1)` into `dest`. Only keys present in both
+/// `[begin0, end0)` and `[begin1, end1)` into `output`. Only keys present in both
 /// ranges appear in the output. The input arrays must not overlap the
 /// destination array.
 ///
@@ -255,7 +255,7 @@ iterator_t_ hxset_union(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begi
 /// - `end0` : Pointer to one past the last element of the first ordered range.
 /// - `begin1` : Pointer to the beginning of the second ordered range.
 /// - `end1` : Pointer to one past the last element of the second ordered range.
-/// - `dest` : Pointer to the destination range receiving the intersection.
+/// - `output` : Pointer to the destination range receiving the intersection.
 /// - `less` : Comparator defining the less-than ordering relationship.
 /// Returns a pointer to one past the last element written.
 template<typename iterator_t_, typename less_t_> hxattr_hot
@@ -280,14 +280,14 @@ iterator_t_ hxset_intersection(iterator_t_ begin0_, iterator_t_ end0_, iterator_
 }
 
 /// `hxset_intersection` (specialization) - Forms the intersection of two
-/// ordered ranges `[begin0, end0)` and `[begin1, end1)` into `dest` using
+/// ordered ranges `[begin0, end0)` and `[begin1, end1)` into `output` using
 /// `hxless`. Only keys present in both ranges appear in the output. The input
 /// arrays must not overlap the destination array.
 /// - `begin0` : Pointer to the beginning of the first ordered range.
 /// - `end0` : Pointer to one past the last element of the first ordered range.
 /// - `begin1` : Pointer to the beginning of the second ordered range.
 /// - `end1` : Pointer to one past the last element of the second ordered range.
-/// - `dest` : Pointer to the destination range receiving the intersection.
+/// - `output` : Pointer to the destination range receiving the intersection.
 /// Returns a pointer to one past the last element written.
 template<typename iterator_t_> hxattr_hot
 iterator_t_ hxset_intersection(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
@@ -297,7 +297,7 @@ iterator_t_ hxset_intersection(iterator_t_ begin0_, iterator_t_ end0_, iterator_
 }
 
 /// `hxset_difference` - Forms the difference of two ordered ranges
-/// `[begin0, end0)` and `[begin1, end1)` into `dest`. The output contains keys
+/// `[begin0, end0)` and `[begin1, end1)` into `output`. The output contains keys
 /// that appear in the first range but not the second. The input arrays must
 /// not overlap the destination array.
 ///
@@ -306,7 +306,7 @@ iterator_t_ hxset_intersection(iterator_t_ begin0_, iterator_t_ end0_, iterator_
 /// - `end0` : Pointer to one past the last element of the first ordered range.
 /// - `begin1` : Pointer to the beginning of the second ordered range.
 /// - `end1` : Pointer to one past the last element of the second ordered range.
-/// - `dest` : Pointer to the destination range receiving the difference.
+/// - `output` : Pointer to the destination range receiving the difference.
 /// - `less` : Comparator defining the less-than ordering relationship.
 /// Returns a pointer to one past the last element written.
 template<typename iterator_t_, typename less_t_> hxattr_hot
@@ -335,14 +335,14 @@ iterator_t_ hxset_difference(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_
 }
 
 /// `hxset_difference` (specialization) - Forms the difference of two ordered
-/// ranges `[begin0, end0)` and `[begin1, end1)` into `dest` using `hxless`.
+/// ranges `[begin0, end0)` and `[begin1, end1)` into `output` using `hxless`.
 /// The output contains keys that appear in the first range but not the second.
 /// The input arrays must not overlap the destination array.
 /// - `begin0` : Pointer to the beginning of the first ordered range.
 /// - `end0` : Pointer to one past the last element of the first ordered range.
 /// - `begin1` : Pointer to the beginning of the second ordered range.
 /// - `end1` : Pointer to one past the last element of the second ordered range.
-/// - `dest` : Pointer to the destination range receiving the difference.
+/// - `output` : Pointer to the destination range receiving the difference.
 /// Returns a pointer to one past the last element written.
 template<typename iterator_t_> hxattr_hot
 iterator_t_ hxset_difference(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
