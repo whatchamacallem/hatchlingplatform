@@ -343,8 +343,8 @@ TEST(hxsort_test, sort_int_case) {
 }
 
 TEST(hxset_algorithms_test, int_pointer_ranges) {
-	int left[] = { 1, 3, 5, 7 };
-	int right[] = { 3, 4, 7, 9 };
+	const int left[] = { 1, 3, 5, 7 };
+	const int right[] = { 3, 4, 7, 9 };
 	int dest_union[8] = { };
 	int dest_intersection[4] = { };
 	int dest_difference[4] = { };
@@ -381,56 +381,50 @@ TEST(hxset_algorithms_test, hxarray_output_iterator_support) {
 		}
 	};
 
-	int merge_left[] = { 1, 3, 5 };
-	int merge_right[] = { 2, 4, 6 };
+	const int left[] = { 1, 3, 5 };
+	const int right[] = { 2, 4, 6 };
 	hxarray<int> merge_output;
-	merge_output.reserve(hxsize(merge_left) + hxsize(merge_right) + 1u);
+	merge_output.reserve(hxsize(left) + hxsize(right) + 1u);
 	merge_output.push_back(0);
 
-	hxmerge<int*, hxarray<int>&>(merge_left+0, merge_left + hxsize(merge_left),
-		merge_right+0, merge_right + hxsize(merge_right),
+	hxmerge<int*, hxarray<int>&>(left+0, left + hxsize(left),
+		right+0, right + hxsize(right),
 		merge_output);
 	merge_output.pop_back();
 
 	const int expected_merge[] = { 1, 2, 3, 4, 5, 6 };
 	expect_hxarray(merge_output, expected_merge, hxsize(expected_merge));
 
-	int union_left[] = { 1, 3, 5, 7 };
-	int union_right[] = { 3, 4, 7, 9 };
 	hxarray<int> union_output;
-	union_output.reserve(hxsize(union_left) + hxsize(union_right) + 1u);
+	union_output.reserve(hxsize(left) + hxsize(right) + 1u);
 	union_output.push_back(0);
 
-	hxset_union<int*, hxarray<int>&>(union_left+0, union_left + hxsize(union_left),
-		union_right+0, union_right + hxsize(union_right),
+	hxset_union<int*, hxarray<int>&>(left+0, left + hxsize(left),
+		right+0, right + hxsize(right),
 		union_output);
 	union_output.pop_back();
 
 	const int expected_union[] = { 1, 3, 4, 5, 7, 9 };
 	expect_hxarray(union_output, expected_union, hxsize(expected_union));
 
-	int intersection_left[] = { 1, 3, 5, 7 };
-	int intersection_right[] = { 3, 4, 7, 9 };
 	hxarray<int> intersection_output;
-	intersection_output.reserve(hxsize(intersection_left) + 1u);
+	intersection_output.reserve(hxsize(left) + 1u);
 	intersection_output.push_back(0);
 
-	hxset_intersection<int*, hxarray<int>&>(intersection_left+0, intersection_left + hxsize(intersection_left),
-		intersection_right+0, intersection_right + hxsize(intersection_right),
+	hxset_intersection<int*, hxarray<int>&>(left+0, left + hxsize(left),
+		right+0, right + hxsize(right),
 		intersection_output);
 	intersection_output.pop_back();
 
 	const int expected_intersection[] = { 3, 7 };
 	expect_hxarray(intersection_output, expected_intersection, hxsize(expected_intersection));
 
-	int difference_left[] = { 1, 3, 5, 7 };
-	int difference_right[] = { 3, 4, 7, 9 };
 	hxarray<int> difference_output;
-	difference_output.reserve(hxsize(difference_left) + 1u);
+	difference_output.reserve(hxsize(left) + 1u);
 	difference_output.push_back(0);
 
-	hxset_difference<int*, hxarray<int>&>(difference_left+0, difference_left + hxsize(difference_left),
-		difference_right+0, difference_right + hxsize(difference_right),
+	hxset_difference<int*, hxarray<int>&>(left+0, left + hxsize(left),
+		right+0, right + hxsize(right),
 		difference_output);
 	difference_output.pop_back();
 
