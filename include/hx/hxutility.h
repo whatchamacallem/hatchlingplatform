@@ -109,7 +109,8 @@ public:
 	template<typename T_> constexpr operator T_*() const { return 0; }
 	/// Null `T` member function pointer.
 	template<typename T_, typename M_> constexpr operator M_ T_::*() const { return 0; }
-	/// No address-of operator.
+private:
+	// No address-of operator.
 	void operator&() const = delete;
 };
 

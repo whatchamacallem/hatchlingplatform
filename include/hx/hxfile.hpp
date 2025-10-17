@@ -84,7 +84,7 @@ public:
 	/// `hxdev_null` instead.
 	hxfile(void* file_, uint8_t mode_);
 
-	// Disallow usage where the filename comes first, like with `fopen`.
+	/// Disallow usage where the filename comes first, like with `fopen`.
 	hxfile(const char* file_, uint8_t mode_=0) = delete;
 
 	// Move constructor. No copy constructor is provided.
@@ -228,11 +228,11 @@ public:
 		return *this;
 	}
 
+private:
 	hxfile(const hxfile&) = delete;
 	void operator=(const hxfile&) = delete;
 	template<typename T_> hxfile& operator>>(const T_* t_) = delete; // Use >=.
 
-private:
 	// Internal function to open a file with a formatted filename and variable
 	// arguments.
 	bool openv_(uint8_t mode_, const char* format_, va_list args_);
