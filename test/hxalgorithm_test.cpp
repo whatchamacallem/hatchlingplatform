@@ -355,23 +355,25 @@ TEST(hxset_algorithms_test, int_pointer_ranges) {
 		}
 	};
 
-	int* union_end = hxset_union(left, left + hxsize(left), right, right + hxsize(right), dest_union);
+	int* union_end = hxset_union(left+0, left + hxsize(left), right+0, right + hxsize(right), dest_union+0);
 	const int expected_union[] = { 1, 3, 4, 5, 7, 9 };
 	EXPECT_EQ(union_end - dest_union, (ptrdiff_t)hxsize(expected_union));
 	expect_range(dest_union, union_end, expected_union);
 
-	int* intersection_end = hxset_intersection(left, left + hxsize(left), right, right + hxsize(right), dest_intersection);
+	int* intersection_end = hxset_intersection(left+0, left + hxsize(left), right+0, right + hxsize(right), dest_intersection+0);
 	const int expected_intersection[] = { 3, 7 };
 	EXPECT_EQ(intersection_end - dest_intersection, (ptrdiff_t)hxsize(expected_intersection));
 	expect_range(dest_intersection, intersection_end, expected_intersection);
 
-	int* difference_end = hxset_difference(left, left + hxsize(left), right, right + hxsize(right), dest_difference);
+	int* difference_end = hxset_difference(left+0, left + hxsize(left), right+0, right + hxsize(right), dest_difference+0);
 	const int expected_difference[] = { 1, 5 };
 	EXPECT_EQ(difference_end - dest_difference, (ptrdiff_t)hxsize(expected_difference));
 	expect_range(dest_difference, difference_end, expected_difference);
 }
 
 TEST(hxset_algorithms_test, hxarray_output_iterator_support) {
+	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+
 	auto expect_hxarray = [](const hxarray<int>& actual, const int* expected, size_t count) {
 		ASSERT_EQ(actual.size(), count);
 		for(size_t i = 0; i < count; ++i) {
@@ -385,8 +387,8 @@ TEST(hxset_algorithms_test, hxarray_output_iterator_support) {
 	merge_output.reserve(hxsize(merge_left) + hxsize(merge_right) + 1u);
 	merge_output.push_back(0);
 
-	hxmerge(merge_left, merge_left + hxsize(merge_left),
-		merge_right, merge_right + hxsize(merge_right),
+	hxmerge<int*, hxarray<int>&>(merge_left+0, merge_left + hxsize(merge_left),
+		merge_right+0, merge_right + hxsize(merge_right),
 		merge_output);
 	merge_output.pop_back();
 
@@ -399,8 +401,8 @@ TEST(hxset_algorithms_test, hxarray_output_iterator_support) {
 	union_output.reserve(hxsize(union_left) + hxsize(union_right) + 1u);
 	union_output.push_back(0);
 
-	hxset_union(union_left, union_left + hxsize(union_left),
-		union_right, union_right + hxsize(union_right),
+	hxset_union<int*, hxarray<int>&>(union_left+0, union_left + hxsize(union_left),
+		union_right+0, union_right + hxsize(union_right),
 		union_output);
 	union_output.pop_back();
 
@@ -413,8 +415,8 @@ TEST(hxset_algorithms_test, hxarray_output_iterator_support) {
 	intersection_output.reserve(hxsize(intersection_left) + 1u);
 	intersection_output.push_back(0);
 
-	hxset_intersection(intersection_left, intersection_left + hxsize(intersection_left),
-		intersection_right, intersection_right + hxsize(intersection_right),
+	hxset_intersection<int*, hxarray<int>&>(intersection_left+0, intersection_left + hxsize(intersection_left),
+		intersection_right+0, intersection_right + hxsize(intersection_right),
 		intersection_output);
 	intersection_output.pop_back();
 
@@ -427,8 +429,8 @@ TEST(hxset_algorithms_test, hxarray_output_iterator_support) {
 	difference_output.reserve(hxsize(difference_left) + 1u);
 	difference_output.push_back(0);
 
-	hxset_difference(difference_left, difference_left + hxsize(difference_left),
-		difference_right, difference_right + hxsize(difference_right),
+	hxset_difference<int*, hxarray<int>&>(difference_left+0, difference_left + hxsize(difference_left),
+		difference_right+0, difference_right + hxsize(difference_right),
 		difference_output);
 	difference_output.pop_back();
 
@@ -457,7 +459,7 @@ TEST(hxmerge_test, preserves_stable_ordering) {
 	const size_t left_count = hxsize(left);
 	const size_t right_count = hxsize(right);
 
-	hxmerge(left, left + left_count, right, right + right_count, dest);
+	hxmerge(left+0, left + left_count, right+0, right + right_count, dest+0);
 
 	const hxmerge_test_record_t expected[] = {
 		{ 1, 0 }, { 1, 1 }, { 3, 0 }, { 3, 1 },
