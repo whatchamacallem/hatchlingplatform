@@ -392,9 +392,8 @@ TEST_F(hxarray_test_f, emplace_back) {
 		hxtest_object original(42);
 		hxtest_object& move_inserted = objs.emplace_back(hxmove(original));
 		EXPECT_EQ(objs.data() + 1, &move_inserted);
-		EXPECT_EQ(move_inserted.id, original.id);
-		EXPECT_TRUE(move_inserted.moved_from);
-		EXPECT_FALSE(original.moved_from);
+		EXPECT_FALSE(move_inserted.moved_from);
+		EXPECT_TRUE(original.moved_from);
 
 		hxtest_object& value_inserted = objs.emplace_back(77);
 		EXPECT_EQ(objs.data() + 2, &value_inserted);
