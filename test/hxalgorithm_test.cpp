@@ -371,6 +371,71 @@ TEST(hxset_algorithms_test, int_pointer_ranges) {
 	expect_range(dest_difference, difference_end, expected_difference);
 }
 
+TEST(hxset_algorithms_test, hxarray_output_iterator_support) {
+	auto expect_hxarray = [](const hxarray<int>& actual, const int* expected, size_t count) {
+		ASSERT_EQ(actual.size(), count);
+		for(size_t i = 0; i < count; ++i) {
+			EXPECT_EQ(actual[i], expected[i]);
+		}
+	};
+
+	int merge_left[] = { 1, 3, 5 };
+	int merge_right[] = { 2, 4, 6 };
+	hxarray<int> merge_output;
+	merge_output.reserve(hxsize(merge_left) + hxsize(merge_right) + 1u);
+	merge_output.push_back(0);
+
+	hxmerge(merge_left, merge_left + hxsize(merge_left),
+		merge_right, merge_right + hxsize(merge_right),
+		merge_output);
+	merge_output.pop_back();
+
+	const int expected_merge[] = { 1, 2, 3, 4, 5, 6 };
+	expect_hxarray(merge_output, expected_merge, hxsize(expected_merge));
+
+	int union_left[] = { 1, 3, 5, 7 };
+	int union_right[] = { 3, 4, 7, 9 };
+	hxarray<int> union_output;
+	union_output.reserve(hxsize(union_left) + hxsize(union_right) + 1u);
+	union_output.push_back(0);
+
+	hxset_union(union_left, union_left + hxsize(union_left),
+		union_right, union_right + hxsize(union_right),
+		union_output);
+	union_output.pop_back();
+
+	const int expected_union[] = { 1, 3, 4, 5, 7, 9 };
+	expect_hxarray(union_output, expected_union, hxsize(expected_union));
+
+	int intersection_left[] = { 1, 3, 5, 7 };
+	int intersection_right[] = { 3, 4, 7, 9 };
+	hxarray<int> intersection_output;
+	intersection_output.reserve(hxsize(intersection_left) + 1u);
+	intersection_output.push_back(0);
+
+	hxset_intersection(intersection_left, intersection_left + hxsize(intersection_left),
+		intersection_right, intersection_right + hxsize(intersection_right),
+		intersection_output);
+	intersection_output.pop_back();
+
+	const int expected_intersection[] = { 3, 7 };
+	expect_hxarray(intersection_output, expected_intersection, hxsize(expected_intersection));
+
+	int difference_left[] = { 1, 3, 5, 7 };
+	int difference_right[] = { 3, 4, 7, 9 };
+	hxarray<int> difference_output;
+	difference_output.reserve(hxsize(difference_left) + 1u);
+	difference_output.push_back(0);
+
+	hxset_difference(difference_left, difference_left + hxsize(difference_left),
+		difference_right, difference_right + hxsize(difference_right),
+		difference_output);
+	difference_output.pop_back();
+
+	const int expected_difference[] = { 1, 5 };
+	expect_hxarray(difference_output, expected_difference, hxsize(expected_difference));
+}
+
 TEST(hxmerge_test, preserves_stable_ordering) {
 	struct hxmerge_test_record_t {
 		int key;
