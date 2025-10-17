@@ -16,11 +16,6 @@
 /// Radix sort is best when you need real-time guarantees and have a large
 /// workload. IBM even used it to sort punch cards.
 ///
-/// Use of `operator<=>` is not implemented yet. This codebase tries to only use
-/// `operator<` and `operator==`. However, there may be some advantages to using
-/// `operator<=>` when searching for a complex object with an expensive
-/// `operator<`.
-///
 /// `hxinsertion_sort` is recommended when you have fewer than a kilobyte of
 /// data to sort and you do not want to add 10 KB to your executable just for
 /// sorting. `hxheap_sort` may also help keep code size down while providing
