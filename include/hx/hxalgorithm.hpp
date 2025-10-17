@@ -37,7 +37,7 @@
 /// `hxintro_sort_` as an example of how you might compose a new sorting
 /// function from these routines.
 
-#include "detail/hxsort_detail.hpp"
+#include "detail/hxalgorithm_detail.hpp"
 
 /// `hxinsertion_sort` - Sorts the elements in the range `[begin, end)` in
 /// comparison order using the insertion sort algorithm. The `end` parameter
@@ -56,7 +56,7 @@ void hxinsertion_sort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_
 	if(begin_ == end_) { return; }
 	hxrestrict_t<iterator_t_> begin_r_(begin_);
 
-	for(iterator_t_ i_ = begin_r_, j_ = begin_r_ + (ptrdiff_t)1; j_ < end_; i_ = j_++) {
+	for(iterator_t_ i_ = begin_r_, j_ = begin_r_ + (ptrdiff_t)1; j_ < end_; i_ = j_, ++j_) {
 		if(!less_(*i_, *j_)) {
 			// Default value construct. Use hxmove instead of hxswap because it
 			// should be more efficient for simple types. Complex types will
@@ -151,16 +151,20 @@ void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_, iterat
 	hxrestrict_t<iterator_t_> output_r_(output_);
     while (begin0_ != end0_ && begin1_ != end1_) {
         if (less_(*begin1_, *begin0_)) {
-            *output_r_++ = hxmove(*begin1_++);
+            *output_r_ = hxmove(*begin1_);
+            ++output_r_; ++begin1_;
         } else {
-            *output_r_++ = hxmove(*begin0_++);
+            *output_r_ = hxmove(*begin0_);
+            ++output_r_; ++begin0_;
         }
     }
     while (begin0_ != end0_) {
-        *output_r_++ = hxmove(*begin0_++);
+        *output_r_ = hxmove(*begin0_);
+        ++output_r_; ++begin0_;
     }
     while (begin1_ != end1_) {
-        *output_r_++ = hxmove(*begin1_++);
+        *output_r_ = hxmove(*begin1_);
+        ++output_r_; ++begin1_;
     }
 }
 
@@ -200,22 +204,26 @@ iterator_t_ hxset_union(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begi
 
 	while(begin0_ != end0_ && begin1_ != end1_) {
 		if(less_(*begin1_, *begin0_)) {
-			*output_r_++ = hxmove(*begin1_++);
+			*output_r_ = hxmove(*begin1_);
+			++output_r_; ++begin1_;
 		}
 		else if(less_(*begin0_, *begin1_)) {
-			*output_r_++ = hxmove(*begin0_++);
+			*output_r_ = hxmove(*begin0_);
+			++output_r_; ++begin0_;
 		}
 		else {
-			*output_r_++ = hxmove(*begin0_++);
-			++begin1_;
+			*output_r_ = hxmove(*begin0_);
+			++output_r_; ++begin0_; ++begin1_;
 		}
 	}
 
 	while(begin0_ != end0_) {
-		*output_r_++ = hxmove(*begin0_++);
+		*output_r_ = hxmove(*begin0_);
+		++output_r_; ++begin0_;
 	}
 	while(begin1_ != end1_) {
-		*output_r_++ = hxmove(*begin1_++);
+		*output_r_ = hxmove(*begin1_);
+		++output_r_; ++begin1_;
 	}
 	return output_r_;
 }
@@ -264,8 +272,8 @@ iterator_t_ hxset_intersection(iterator_t_ begin0_, iterator_t_ end0_, iterator_
 			++begin1_;
 		}
 		else {
-			*output_r_++ = hxmove(*begin0_++);
-			++begin1_;
+			*output_r_ = hxmove(*begin0_);
+			++output_r_; ++begin0_; ++begin1_;
 		}
 	}
 	return output_r_;
@@ -309,18 +317,19 @@ iterator_t_ hxset_difference(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_
 
 	while(begin0_ != end0_ && begin1_ != end1_) {
 		if(less_(*begin0_, *begin1_)) {
-			*output_r_++ = hxmove(*begin0_++);
+			*output_r_ = hxmove(*begin0_);
+			++output_r_; ++begin0_;
 		}
 		else if(less_(*begin1_, *begin0_)) {
 			++begin1_;
 		}
 		else {
-			++begin0_;
-			++begin1_;
+			++begin0_; ++begin1_;
 		}
 	}
 	while(begin0_ != end0_) {
-		*output_r_++ = hxmove(*begin0_++);
+		*output_r_ = hxmove(*begin0_);
+		++output_r_; ++begin0_;
 	}
 	return output_r_;
 }
@@ -359,7 +368,6 @@ iterator_t_ hxbinary_search(iterator_t_ begin_, iterator_t_ end_, const value_t_
 
 	iterator_t_ first_ = begin_;
 	iterator_t_ last_ = end_;
-
 	while(first_ < last_) {
 		iterator_t_ mid_ = first_ + ((last_ - first_) >> 1);
 		if(less_(*mid_, value_)) {

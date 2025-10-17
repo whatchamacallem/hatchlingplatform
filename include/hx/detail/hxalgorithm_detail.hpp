@@ -54,7 +54,8 @@ void hxheapsort_heapify_(hxrestrict_t<iterator_t_> begin_, const iterator_t_ end
 template<typename iterator_t_, typename less_t_> hxattr_hot
 void hxmake_heap_(hxrestrict_t<iterator_t_> begin_, iterator_t_ end_, const less_t_& less_) {
 	for(iterator_t_ heap_end_ = begin_ + (ptrdiff_t)1; heap_end_ < end_; ) {
-		iterator_t_ node_ = heap_end_++;
+		iterator_t_ node_ = heap_end_;
+		++heap_end_;
 		iterator_t_ parent_ = begin_ + ((node_ - begin_ - (ptrdiff_t)1) >> 1);
 		if(less_(*parent_, *node_)) {
 			auto value_ = hxmove(*node_);
