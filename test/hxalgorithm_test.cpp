@@ -9,24 +9,26 @@
 
 HX_REGISTER_FILENAME_HASH
 
-// The hxsort_test_api_t tests check for correct use of references to temporaries.
-class hxsort_test_api_t {
+namespace {
+
+// The hxhxalgorithm_test_ref_tracker_t tests check for correct use of references to temporaries.
+class hxhxalgorithm_test_ref_tracker_t {
 public:
 	// This is not used by the sort code.
-    explicit hxsort_test_api_t(int x) : value(x) { }
+    explicit hxhxalgorithm_test_ref_tracker_t(int x) : value(x) { }
 
 	// This is what is being used.
 
-    hxsort_test_api_t(hxsort_test_api_t&& other) : value(other.value) {
+    hxhxalgorithm_test_ref_tracker_t(hxhxalgorithm_test_ref_tracker_t&& other) : value(other.value) {
 		// Callee may leave itself in an unusable state or crash.
 		hxassert(this != &other);
 	}
 
-	~hxsort_test_api_t() {
+	~hxhxalgorithm_test_ref_tracker_t() {
 		::memset(&value, 0xefu, sizeof value);
 	}
 
-    hxsort_test_api_t& operator=(hxsort_test_api_t&& other) {
+    hxhxalgorithm_test_ref_tracker_t& operator=(hxhxalgorithm_test_ref_tracker_t&& other) {
 		// Callee may leave itself in an unusable state or crash.
 		hxassert(this != &other);
 		value = other.value;
@@ -34,7 +36,7 @@ public:
     }
 
 	// Called by hxkey_less below.
-    bool operator<(const hxsort_test_api_t& other) const {
+    bool operator<(const hxhxalgorithm_test_ref_tracker_t& other) const {
 		// Technically legal but indicates an optimization issue.
 		hxassert(this != &other);
         return value < other.value;
@@ -45,78 +47,83 @@ public:
 private:
 	// This is what is not being used.
 
-	hxsort_test_api_t() = delete;
-    hxsort_test_api_t(const hxsort_test_api_t&) = delete;
+	hxhxalgorithm_test_ref_tracker_t() = delete;
+    hxhxalgorithm_test_ref_tracker_t(const hxhxalgorithm_test_ref_tracker_t&) = delete;
 	// Did you use hxmove?
-    hxsort_test_api_t& operator=(const hxsort_test_api_t&) = delete;
-    bool operator==(const hxsort_test_api_t&) const = delete;
-    bool operator!=(const hxsort_test_api_t&) const = delete;
-    bool operator>(const hxsort_test_api_t&) const = delete;
-    bool operator>=(const hxsort_test_api_t&) const = delete;
-    bool operator<=(const hxsort_test_api_t&) const = delete;
+    hxhxalgorithm_test_ref_tracker_t& operator=(const hxhxalgorithm_test_ref_tracker_t&) = delete;
+    bool operator==(const hxhxalgorithm_test_ref_tracker_t&) const = delete;
+    bool operator!=(const hxhxalgorithm_test_ref_tracker_t&) const = delete;
+    bool operator>(const hxhxalgorithm_test_ref_tracker_t&) const = delete;
+    bool operator>=(const hxhxalgorithm_test_ref_tracker_t&) const = delete;
+    bool operator<=(const hxhxalgorithm_test_ref_tracker_t&) const = delete;
 	bool operator!(void) const = delete;
 	operator bool(void) const = delete;
 };
 
-class hxsort_test_iter_api_t {
+class hxhxalgorithm_test_iter_api_t {
 public:
-	explicit hxsort_test_iter_api_t(hxsort_test_api_t* pointer) : m_pointer(pointer) { }
-	hxsort_test_iter_api_t(const hxsort_test_iter_api_t& x) = default;
-	hxsort_test_iter_api_t& operator=(const hxsort_test_iter_api_t& x) = default;
+	explicit hxhxalgorithm_test_iter_api_t(hxhxalgorithm_test_ref_tracker_t* pointer) : m_pointer(pointer) { }
+	hxhxalgorithm_test_iter_api_t(const hxhxalgorithm_test_iter_api_t& x) = default;
+	hxhxalgorithm_test_iter_api_t& operator=(const hxhxalgorithm_test_iter_api_t& x) = default;
 
 	// Require only the standard pointer operations. No array notation.
-	hxsort_test_api_t& operator*(void) const { hxassert(m_pointer != hxnull); return *m_pointer; }
+	hxhxalgorithm_test_ref_tracker_t& operator*(void) const { hxassert(m_pointer != hxnull); return *m_pointer; }
 
-	hxsort_test_iter_api_t& operator++(void) { hxassert(m_pointer != hxnull); ++m_pointer; return *this; }
-	hxsort_test_iter_api_t operator++(int) { hxassert(m_pointer != hxnull); hxsort_test_iter_api_t temp(*this); ++m_pointer; return temp; }
-	hxsort_test_iter_api_t& operator--(void) { hxassert(m_pointer != hxnull); --m_pointer; return *this; }
-	hxsort_test_iter_api_t operator+(ptrdiff_t offset) const { hxassert(m_pointer != hxnull); return hxsort_test_iter_api_t(m_pointer + offset); }
-	hxsort_test_iter_api_t operator-(ptrdiff_t offset) const { hxassert(m_pointer != hxnull); return hxsort_test_iter_api_t(m_pointer - offset); }
-	ptrdiff_t operator-(const hxsort_test_iter_api_t& other) const { hxassert(m_pointer != hxnull); return m_pointer - other.m_pointer; }
+	hxhxalgorithm_test_iter_api_t& operator++(void) { hxassert(m_pointer != hxnull); ++m_pointer; return *this; }
+	hxhxalgorithm_test_iter_api_t& operator--(void) { hxassert(m_pointer != hxnull); --m_pointer; return *this; }
+	hxhxalgorithm_test_iter_api_t operator+(ptrdiff_t offset) const { hxassert(m_pointer != hxnull); return hxhxalgorithm_test_iter_api_t(m_pointer + offset); }
+	hxhxalgorithm_test_iter_api_t operator-(ptrdiff_t offset) const { hxassert(m_pointer != hxnull); return hxhxalgorithm_test_iter_api_t(m_pointer - offset); }
+	ptrdiff_t operator-(const hxhxalgorithm_test_iter_api_t& other) const { hxassert(m_pointer != hxnull); return m_pointer - other.m_pointer; }
 
-	bool operator==(const hxsort_test_iter_api_t& other) const { return m_pointer == other.m_pointer; }
-	bool operator!=(const hxsort_test_iter_api_t& other) const { return m_pointer != other.m_pointer; }
-	bool operator<(const hxsort_test_iter_api_t& other) const { return m_pointer < other.m_pointer; }
-	bool operator>(const hxsort_test_iter_api_t& other) const { return m_pointer > other.m_pointer; }
-	bool operator<=(const hxsort_test_iter_api_t& other) const { return m_pointer <= other.m_pointer; }
-	bool operator>=(const hxsort_test_iter_api_t& other) const { return m_pointer >= other.m_pointer; }
+	bool operator==(const hxhxalgorithm_test_iter_api_t& other) const { return m_pointer == other.m_pointer; }
+	bool operator!=(const hxhxalgorithm_test_iter_api_t& other) const { return m_pointer != other.m_pointer; }
+	bool operator<(const hxhxalgorithm_test_iter_api_t& other) const { return m_pointer < other.m_pointer; }
+	bool operator>(const hxhxalgorithm_test_iter_api_t& other) const { return m_pointer > other.m_pointer; }
+	bool operator<=(const hxhxalgorithm_test_iter_api_t& other) const { return m_pointer <= other.m_pointer; }
+	bool operator>=(const hxhxalgorithm_test_iter_api_t& other) const { return m_pointer >= other.m_pointer; }
 private:
 	// This is what is not being used.
 
 	// Not hxnull, hxnullptr. Return the "end" instead.
-	hxsort_test_iter_api_t(int null) = delete;
-	hxsort_test_iter_api_t(hxnullptr_t null) = delete;
+	hxhxalgorithm_test_iter_api_t(int null) = delete;
+	hxhxalgorithm_test_iter_api_t(hxnullptr_t null) = delete;
 	void operator[](int index) const = delete;
 
-    hxsort_test_api_t& operator+=(const hxsort_test_api_t&) = delete;
-    hxsort_test_api_t& operator-=(const hxsort_test_api_t&) = delete;
-	bool operator&&(const hxsort_test_api_t&) const = delete;
-	bool operator||(const hxsort_test_api_t&) const = delete;
+	// No post-increment or -decrement.
+	hxhxalgorithm_test_iter_api_t operator++(int) = delete;
+	hxhxalgorithm_test_iter_api_t operator--(int) = delete;
+
+    hxhxalgorithm_test_ref_tracker_t& operator+=(const hxhxalgorithm_test_ref_tracker_t&) = delete;
+    hxhxalgorithm_test_ref_tracker_t& operator-=(const hxhxalgorithm_test_ref_tracker_t&) = delete;
+	bool operator&&(const hxhxalgorithm_test_ref_tracker_t&) const = delete;
+	bool operator||(const hxhxalgorithm_test_ref_tracker_t&) const = delete;
 	bool operator!(void) const = delete;
 	operator bool(void) const = delete;
 
-	hxsort_test_api_t* m_pointer;
+	hxhxalgorithm_test_ref_tracker_t* m_pointer;
 };
 
-static bool sort_iter_value_less(const hxsort_test_api_t& lhs, const hxsort_test_api_t& rhs) {
+bool sort_iter_value_less(const hxhxalgorithm_test_ref_tracker_t& lhs, const hxhxalgorithm_test_ref_tracker_t& rhs) {
 	return lhs.value < rhs.value;
 }
 
-static bool sort_iter_value_greater(const hxsort_test_api_t& lhs, const hxsort_test_api_t& rhs) {
+bool sort_iter_value_greater(const hxhxalgorithm_test_ref_tracker_t& lhs, const hxhxalgorithm_test_ref_tracker_t& rhs) {
 	return lhs.value > rhs.value;
 }
 
-TEST(hxsort_test, hxmerge_iterator_support) {
-	hxsort_test_api_t left[3] = { hxsort_test_api_t(1), hxsort_test_api_t(3), hxsort_test_api_t(5) };
-	hxsort_test_api_t right[3] = { hxsort_test_api_t(2), hxsort_test_api_t(4), hxsort_test_api_t(6) };
-	hxsort_test_api_t dest[6] = {
-		hxsort_test_api_t(0), hxsort_test_api_t(0), hxsort_test_api_t(0),
-		hxsort_test_api_t(0), hxsort_test_api_t(0), hxsort_test_api_t(0)
+} // namespace {
+
+TEST(hxhxalgorithm_test, hxmerge_iterator_support) {
+	hxhxalgorithm_test_ref_tracker_t left[3] = { hxhxalgorithm_test_ref_tracker_t(1), hxhxalgorithm_test_ref_tracker_t(3), hxhxalgorithm_test_ref_tracker_t(5) };
+	hxhxalgorithm_test_ref_tracker_t right[3] = { hxhxalgorithm_test_ref_tracker_t(2), hxhxalgorithm_test_ref_tracker_t(4), hxhxalgorithm_test_ref_tracker_t(6) };
+	hxhxalgorithm_test_ref_tracker_t dest[6] = {
+		hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(0),
+		hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(0)
 	};
 
-	hxmerge(hxsort_test_iter_api_t(left), hxsort_test_iter_api_t(left + 3),
-		hxsort_test_iter_api_t(right), hxsort_test_iter_api_t(right + 3),
-		hxsort_test_iter_api_t(dest), sort_iter_value_less);
+	hxmerge(hxhxalgorithm_test_iter_api_t(left), hxhxalgorithm_test_iter_api_t(left + 3),
+		hxhxalgorithm_test_iter_api_t(right), hxhxalgorithm_test_iter_api_t(right + 3),
+		hxhxalgorithm_test_iter_api_t(dest), sort_iter_value_less);
 
 	const int expected_sorted[6] = { 1, 2, 3, 4, 5, 6 };
 	for(size_t i = 0; i < 6; ++i) {
@@ -124,16 +131,16 @@ TEST(hxsort_test, hxmerge_iterator_support) {
 	}
 
 	// Do it all over again with a GE functor and the parameters reversed.
-	hxsort_test_api_t left_desc[3] = { hxsort_test_api_t(5), hxsort_test_api_t(3), hxsort_test_api_t(1) };
-	hxsort_test_api_t right_desc[3] = { hxsort_test_api_t(6), hxsort_test_api_t(4), hxsort_test_api_t(2) };
-	hxsort_test_api_t dest_desc[6] = {
-		hxsort_test_api_t(0), hxsort_test_api_t(0), hxsort_test_api_t(0),
-		hxsort_test_api_t(0), hxsort_test_api_t(0), hxsort_test_api_t(0)
+	hxhxalgorithm_test_ref_tracker_t left_desc[3] = { hxhxalgorithm_test_ref_tracker_t(5), hxhxalgorithm_test_ref_tracker_t(3), hxhxalgorithm_test_ref_tracker_t(1) };
+	hxhxalgorithm_test_ref_tracker_t right_desc[3] = { hxhxalgorithm_test_ref_tracker_t(6), hxhxalgorithm_test_ref_tracker_t(4), hxhxalgorithm_test_ref_tracker_t(2) };
+	hxhxalgorithm_test_ref_tracker_t dest_desc[6] = {
+		hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(0),
+		hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(0)
 	};
 
-	hxmerge(hxsort_test_iter_api_t(left_desc), hxsort_test_iter_api_t(left_desc + 3),
-		hxsort_test_iter_api_t(right_desc), hxsort_test_iter_api_t(right_desc + 3),
-		hxsort_test_iter_api_t(dest_desc), sort_iter_value_greater);
+	hxmerge(hxhxalgorithm_test_iter_api_t(left_desc), hxhxalgorithm_test_iter_api_t(left_desc + 3),
+		hxhxalgorithm_test_iter_api_t(right_desc), hxhxalgorithm_test_iter_api_t(right_desc + 3),
+		hxhxalgorithm_test_iter_api_t(dest_desc), sort_iter_value_greater);
 
 	const int expected_desc[6] = { 6, 5, 4, 3, 2, 1 };
 	for(size_t i = 0; i < 6; ++i) {
@@ -141,26 +148,26 @@ TEST(hxsort_test, hxmerge_iterator_support) {
 	}
 }
 
-TEST(hxsort_test, hxbinary_search_iterator_support) {
-	hxsort_test_api_t values[7] = {
-		hxsort_test_api_t(-5), hxsort_test_api_t(-1), hxsort_test_api_t(0), hxsort_test_api_t(3),
-		hxsort_test_api_t(5), hxsort_test_api_t(8), hxsort_test_api_t(12)
+TEST(hxhxalgorithm_test, hxbinary_search_iterator_support) {
+	hxhxalgorithm_test_ref_tracker_t values[7] = {
+		hxhxalgorithm_test_ref_tracker_t(-5), hxhxalgorithm_test_ref_tracker_t(-1), hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(3),
+		hxhxalgorithm_test_ref_tracker_t(5), hxhxalgorithm_test_ref_tracker_t(8), hxhxalgorithm_test_ref_tracker_t(12)
 	};
 
-	hxsort_test_iter_api_t begin(values);
-	hxsort_test_iter_api_t end(values + 7);
+	hxhxalgorithm_test_iter_api_t begin(values);
+	hxhxalgorithm_test_iter_api_t end(values + 7);
 
-	hxsort_test_api_t key_three(3);
-	hxsort_test_iter_api_t result = hxbinary_search(begin, end, key_three, sort_iter_value_less);
+	hxhxalgorithm_test_ref_tracker_t key_three(3);
+	hxhxalgorithm_test_iter_api_t result = hxbinary_search(begin, end, key_three, sort_iter_value_less);
 	EXPECT_NE(result, end);
 	EXPECT_EQ((*result).value, 3);
 
-	hxsort_test_api_t key_high(12);
+	hxhxalgorithm_test_ref_tracker_t key_high(12);
 	result = hxbinary_search(begin, end, key_high, sort_iter_value_less);
 	EXPECT_NE(result, end);
 	EXPECT_EQ((*result).value, 12);
 
-	hxsort_test_api_t missing(7);
+	hxhxalgorithm_test_ref_tracker_t missing(7);
 	result = hxbinary_search(begin, end, missing, sort_iter_value_less);
 	EXPECT_EQ(result, end);
 
@@ -169,22 +176,22 @@ TEST(hxsort_test, hxbinary_search_iterator_support) {
 	EXPECT_EQ(result, begin);
 }
 
-TEST(hxsort_test, sort_grinder) {
+TEST(hxhxalgorithm_test, sort_grinder) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(2);
 	size_t max_size_mask = 0x7f;
-	hxarray<hxsort_test_api_t> insertion_sorted; insertion_sorted.reserve(max_size_mask);
-	hxarray<hxsort_test_api_t> heap_sorted; heap_sorted.reserve(max_size_mask);
-	hxarray<hxsort_test_api_t> generic_sorted; generic_sorted.reserve(max_size_mask);
+	hxarray<hxhxalgorithm_test_ref_tracker_t> insertion_sorted; insertion_sorted.reserve(max_size_mask);
+	hxarray<hxhxalgorithm_test_ref_tracker_t> heap_sorted; heap_sorted.reserve(max_size_mask);
+	hxarray<hxhxalgorithm_test_ref_tracker_t> generic_sorted; generic_sorted.reserve(max_size_mask);
 
 	for(int i=12; i--; ) {
 		// Set up the arrays to be sorted.
 		size_t size = (max_size_mask >> i) & rng;
 		for(size_t j=size; j--;) {
-			insertion_sorted.push_back(hxsort_test_api_t(rng.range(100, 200)));
+			insertion_sorted.push_back(hxhxalgorithm_test_ref_tracker_t(rng.range(100, 200)));
 			// Use the && constructor and not the const& one.
-			heap_sorted.push_back(hxsort_test_api_t(0));
-			generic_sorted.push_back(hxsort_test_api_t(0));
+			heap_sorted.push_back(hxhxalgorithm_test_ref_tracker_t(0));
+			generic_sorted.push_back(hxhxalgorithm_test_ref_tracker_t(0));
 		}
 
 		::memcpy((void*)heap_sorted.data(), insertion_sorted.data(), insertion_sorted.size_bytes());
@@ -204,11 +211,11 @@ TEST(hxsort_test, sort_grinder) {
 	}
 }
 
-TEST(hxsort_test, sort_grinder_generic) {
+TEST(hxhxalgorithm_test, sort_grinder_generic) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(3);
 	size_t max_size_mask = 0xffff;
-	hxarray<hxsort_test_api_t> sorted; sorted.reserve(max_size_mask);
+	hxarray<hxhxalgorithm_test_ref_tracker_t> sorted; sorted.reserve(max_size_mask);
 	hxarray<int> histogram(20000, 0);
 
 	for(int i=10; i--; ) {
@@ -220,7 +227,7 @@ TEST(hxsort_test, sort_grinder_generic) {
 		}
 		for(size_t j=size; j--;) {
 			int x = rng.range(10000, 10000);
-			sorted.push_back(hxsort_test_api_t(x));
+			sorted.push_back(hxhxalgorithm_test_ref_tracker_t(x));
 			++histogram[(size_t)x];
 		}
 
@@ -243,12 +250,15 @@ TEST(hxsort_test, sort_grinder_generic) {
 
 #if HX_CPLUSPLUS >= 201402L // C++14 only.
 
+// ==> TEST(hxhxalgorithm_test, sort_int_case).
+namespace {
+
 // Run some simple integer tests first.
-static bool sort_int(int a, int b) {
+bool sort_int(int a, int b) {
 	return a < b;
 }
 
-static bool sort_int_reverse(int a, int b) {
+bool sort_int_reverse(int a, int b) {
 	return a > b;
 }
 
@@ -285,57 +295,9 @@ void do_sort_int_case(const sort_callback_t& sort_callback) {
 	EXPECT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0);
 }
 
-template<typename sort_callback_t>
-static void do_sort_iter_case(const sort_callback_t& sort_callback) {
-	const int initial_values[5] = { 2, 1, 0, 4, -5 };
-	const int expected_two[5] = { 1, 2, 0, 4, -5 };
-	const int expected_sorted[5] = { -5, 0, 1, 2, 4 };
-	const int expected_descending[5] = { 4, 2, 1, 0, -5 };
-	hxsort_test_api_t values[5] = {
-		hxsort_test_api_t(initial_values[0]),
-		hxsort_test_api_t(initial_values[1]),
-		hxsort_test_api_t(initial_values[2]),
-		hxsort_test_api_t(initial_values[3]),
-		hxsort_test_api_t(initial_values[4])
-	};
+} // namespace {
 
-	auto reset = [&]() {
-		for(size_t i = 0; i < 5; ++i) {
-			values[i] = hxsort_test_api_t(initial_values[i]);
-		}
-	};
-
-	auto expect_values = [&](const int (&expected)[5]) {
-		for(size_t i = 0; i < 5; ++i) {
-			EXPECT_EQ(values[i].value, expected[i]);
-		}
-	};
-
-	reset();
-	sort_callback(hxsort_test_iter_api_t(values), hxsort_test_iter_api_t(values), sort_iter_value_less);
-	expect_values(initial_values);
-
-	reset();
-	sort_callback(hxsort_test_iter_api_t(values), hxsort_test_iter_api_t(values + 1), sort_iter_value_less);
-	expect_values(initial_values);
-
-	reset();
-	sort_callback(hxsort_test_iter_api_t(values), hxsort_test_iter_api_t(values + 2), sort_iter_value_less);
-	expect_values(expected_two);
-
-	reset();
-	sort_callback(hxsort_test_iter_api_t(values), hxsort_test_iter_api_t(values + 5), sort_iter_value_less);
-	expect_values(expected_sorted);
-
-	reset();
-	sort_callback(hxsort_test_iter_api_t(values), hxsort_test_iter_api_t(values + 5), sort_iter_value_greater);
-	expect_values(expected_descending);
-
-	sort_callback(hxsort_test_iter_api_t(values), hxsort_test_iter_api_t(values + 5), sort_iter_value_less);
-	expect_values(expected_sorted);
-}
-
-TEST(hxsort_test, sort_int_case) {
+TEST(hxhxalgorithm_test, sort_int_case) {
 	// Instantiate and pass the sort templates as function pointers.
 	do_sort_int_case(hxinsertion_sort<int*, bool (*)(int, int)>);
 	do_sort_int_case(hxheapsort<int*, bool (*)(int, int)>);
@@ -381,54 +343,47 @@ TEST(hxset_algorithms_test, hxarray_output_iterator_support) {
 		}
 	};
 
-	const int left[] = { 1, 3, 5 };
-	const int right[] = { 2, 4, 6 };
+	const int left[] = { 1, 2, 4 };
+	const int right[] = { 2, 4, 5 };
+
+	// hxmerge
 	hxarray<int> merge_output;
 	merge_output.reserve(hxsize(left) + hxsize(right) + 1u);
 	merge_output.push_back(0);
-
-	hxmerge<int*, hxarray<int>&>(left+0, left + hxsize(left),
+	hxmerge<const int*, hxarray<int>&>(left+0, left + hxsize(left),
 		right+0, right + hxsize(right),
 		merge_output);
-	merge_output.pop_back();
-
-	const int expected_merge[] = { 1, 2, 3, 4, 5, 6 };
+	const int expected_merge[] = { 0, 1, 2, 2, 4, 4, 5 };
 	expect_hxarray(merge_output, expected_merge, hxsize(expected_merge));
 
+	// hxset_union
 	hxarray<int> union_output;
 	union_output.reserve(hxsize(left) + hxsize(right) + 1u);
 	union_output.push_back(0);
-
-	hxset_union<int*, hxarray<int>&>(left+0, left + hxsize(left),
+	hxset_union<const int*, hxarray<int>&>(left+0, left + hxsize(left),
 		right+0, right + hxsize(right),
 		union_output);
-	union_output.pop_back();
-
-	const int expected_union[] = { 1, 3, 4, 5, 7, 9 };
+	const int expected_union[] = { 0, 1, 2, 4, 5 };
 	expect_hxarray(union_output, expected_union, hxsize(expected_union));
 
+	// hxset_intersection
 	hxarray<int> intersection_output;
 	intersection_output.reserve(hxsize(left) + 1u);
 	intersection_output.push_back(0);
-
-	hxset_intersection<int*, hxarray<int>&>(left+0, left + hxsize(left),
+	hxset_intersection<const int*, hxarray<int>&>(left+0, left + hxsize(left),
 		right+0, right + hxsize(right),
 		intersection_output);
-	intersection_output.pop_back();
-
-	const int expected_intersection[] = { 3, 7 };
+	const int expected_intersection[] = { 0, 2, 4 };
 	expect_hxarray(intersection_output, expected_intersection, hxsize(expected_intersection));
 
+	// hxset_difference
 	hxarray<int> difference_output;
 	difference_output.reserve(hxsize(left) + 1u);
 	difference_output.push_back(0);
-
-	hxset_difference<int*, hxarray<int>&>(left+0, left + hxsize(left),
+	hxset_difference<const int*, hxarray<int>&>(left+0, left + hxsize(left),
 		right+0, right + hxsize(right),
 		difference_output);
-	difference_output.pop_back();
-
-	const int expected_difference[] = { 1, 5 };
+	const int expected_difference[] = { 0, 1 };
 	expect_hxarray(difference_output, expected_difference, hxsize(expected_difference));
 }
 
@@ -492,33 +447,84 @@ TEST(hxbinary_search_test, simple_case) {
 TEST(hxbinary_search_test, binary_search_grinder) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(4);
-	hxarray<hxsort_test_api_t> sorted; sorted.reserve(100);
+	hxarray<hxhxalgorithm_test_ref_tracker_t> sorted; sorted.reserve(100);
 
 	for(int i=100; i--; ) {
 		int x = rng.range(0, 100);
-		sorted.push_back(hxsort_test_api_t(x));
+		sorted.push_back(hxhxalgorithm_test_ref_tracker_t(x));
 	}
 	hxsort(sorted.begin(), sorted.end());
 
 	for(size_t i=100u; i--; ) {
-		hxsort_test_api_t t = hxmove(sorted[i]); // Don't pass an address that is in the array.
-		hxsort_test_api_t* ptr = hxbinary_search(sorted.begin(), sorted.end(), t);
-		// Assert logical equivalence without using ==. The hxsort_test_api_t* may point
+		hxhxalgorithm_test_ref_tracker_t t = hxmove(sorted[i]); // Don't pass an address that is in the array.
+		hxhxalgorithm_test_ref_tracker_t* ptr = hxbinary_search(sorted.begin(), sorted.end(), t);
+		// Assert logical equivalence without using ==. The hxhxalgorithm_test_ref_tracker_t* may point
 		// elsewhere.
 		EXPECT_TRUE(!(*ptr < t) && !(t < *ptr));
 	}
 }
 
-TEST(hxsort_test, iterator_support) {
-	do_sort_iter_case([](hxsort_test_iter_api_t begin, hxsort_test_iter_api_t end, const auto& less) {
+// ==> TEST(hxhxalgorithm_test, iterator_support).
+template<typename sort_callback_t>
+static void do_sort_iter_case(const sort_callback_t& sort_callback) {
+	const int initial_values[5] = { 2, 1, 0, 4, -5 };
+	const int expected_two[5] = { 1, 2, 0, 4, -5 };
+	const int expected_sorted[5] = { -5, 0, 1, 2, 4 };
+	const int expected_descending[5] = { 4, 2, 1, 0, -5 };
+	hxhxalgorithm_test_ref_tracker_t values[5] = {
+		hxhxalgorithm_test_ref_tracker_t(initial_values[0]),
+		hxhxalgorithm_test_ref_tracker_t(initial_values[1]),
+		hxhxalgorithm_test_ref_tracker_t(initial_values[2]),
+		hxhxalgorithm_test_ref_tracker_t(initial_values[3]),
+		hxhxalgorithm_test_ref_tracker_t(initial_values[4])
+	};
+
+	auto reset = [&]() {
+		for(size_t i = 0; i < 5; ++i) {
+			values[i] = hxhxalgorithm_test_ref_tracker_t(initial_values[i]);
+		}
+	};
+
+	auto expect_values = [&](const int (&expected)[5]) {
+		for(size_t i = 0; i < 5; ++i) {
+			EXPECT_EQ(values[i].value, expected[i]);
+		}
+	};
+
+	reset();
+	sort_callback(hxhxalgorithm_test_iter_api_t(values), hxhxalgorithm_test_iter_api_t(values), sort_iter_value_less);
+	expect_values(initial_values);
+
+	reset();
+	sort_callback(hxhxalgorithm_test_iter_api_t(values), hxhxalgorithm_test_iter_api_t(values + 1), sort_iter_value_less);
+	expect_values(initial_values);
+
+	reset();
+	sort_callback(hxhxalgorithm_test_iter_api_t(values), hxhxalgorithm_test_iter_api_t(values + 2), sort_iter_value_less);
+	expect_values(expected_two);
+
+	reset();
+	sort_callback(hxhxalgorithm_test_iter_api_t(values), hxhxalgorithm_test_iter_api_t(values + 5), sort_iter_value_less);
+	expect_values(expected_sorted);
+
+	reset();
+	sort_callback(hxhxalgorithm_test_iter_api_t(values), hxhxalgorithm_test_iter_api_t(values + 5), sort_iter_value_greater);
+	expect_values(expected_descending);
+
+	sort_callback(hxhxalgorithm_test_iter_api_t(values), hxhxalgorithm_test_iter_api_t(values + 5), sort_iter_value_less);
+	expect_values(expected_sorted);
+}
+
+TEST(hxhxalgorithm_test, iterator_support) {
+	do_sort_iter_case([](hxhxalgorithm_test_iter_api_t begin, hxhxalgorithm_test_iter_api_t end, const auto& less) {
 		hxinsertion_sort(begin, end, less);
 	});
 
-	do_sort_iter_case([](hxsort_test_iter_api_t begin, hxsort_test_iter_api_t end, const auto& less) {
+	do_sort_iter_case([](hxhxalgorithm_test_iter_api_t begin, hxhxalgorithm_test_iter_api_t end, const auto& less) {
 		hxheapsort(begin, end, less);
 	});
 
-	do_sort_iter_case([](hxsort_test_iter_api_t begin, hxsort_test_iter_api_t end, const auto& less) {
+	do_sort_iter_case([](hxhxalgorithm_test_iter_api_t begin, hxhxalgorithm_test_iter_api_t end, const auto& less) {
 		hxsort(begin, end, less);
 	});
 }
