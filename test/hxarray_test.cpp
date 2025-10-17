@@ -24,27 +24,51 @@ public:
 		hxtest_object(void) {
 			++s_hxtest_current->m_constructed;
 			id = s_hxtest_current->m_next_id--;
+			moved_from = false;
 		}
 
 		hxtest_object(const hxtest_object& x) {
 			++s_hxtest_current->m_constructed;
 			id = x.id;
+			moved_from = false;
 		}
 		explicit hxtest_object(int32_t x) {
 			EXPECT_TRUE(x >= 0); // User supplied IDs are positive.
 			++s_hxtest_current->m_constructed;
 			id = x;
+			moved_from = false;
+		}
+		hxtest_object(hxtest_object&& x) {
+			++s_hxtest_current->m_constructed;
+			id = x.id;
+			moved_from = false;
+			x.id = 0xefef; // Poison value;
+			x.moved_from = true;
 		}
 		~hxtest_object(void) {
 			++s_hxtest_current->m_destructed;
-			id = -1;
+			id = 0xefef; // Poison value;
+			moved_from = true;
 		}
 
-		void operator=(const hxtest_object& x) { id = x.id; }
+		void operator=(const hxtest_object& x) {
+			hxassert(this != &x);
+			id = x.id;
+			moved_from = false;
+		}
+		hxtest_object& operator=(hxtest_object&& x) {
+			hxassert(this != &x);
+			id = x.id;
+			moved_from = false;
+			x.id = 0xefef;
+			x.moved_from = true;
+			return *this;
+		}
 		bool operator==(int32_t x) const { return id == x; }
 		bool operator==(const hxtest_object& x) const { return id == x.id; }
 		bool operator<(const hxtest_object& x) const { return id < x.id; }
 
+		bool moved_from;
 		int32_t id;
 	};
 
@@ -67,47 +91,6 @@ public:
 	size_t m_destructed;
 	int32_t m_next_id;
 };
-
-class hxarray_test_move_tracker {
-public:
-	int32_t value;
-	bool moved_from;
-
-	hxarray_test_move_tracker(void) = delete;
-
-	explicit hxarray_test_move_tracker(int32_t x)
-		: value(x), moved_from(false) { }
-
-	hxarray_test_move_tracker(const hxarray_test_move_tracker& other)
-		: value(other.value), moved_from(false) { }
-
-	hxarray_test_move_tracker(hxarray_test_move_tracker&& other)
-		: value(other.value), moved_from(false) { other.moved_from = true; }
-
-	hxarray_test_move_tracker& operator=(const hxarray_test_move_tracker& other) {
-		hxassertrelease(0, "unused_code_path");
-		value = other.value;
-		moved_from = false;
-		return *this;
-	}
-
-	hxarray_test_move_tracker& operator=(hxarray_test_move_tracker&& other) {
-		value = other.value;
-		moved_from = false;
-		other.value = 0xefef; // Poison value moved from.
-		other.moved_from = true;
-		return *this;
-	}
-
-	bool operator==(const hxarray_test_move_tracker& other) const {
-		return value == other.value && moved_from == other.moved_from;
-	}
-};
-
-template<typename T>
-static hxarray_test_move_tracker hxarray_test_forward_construct(T&& tracker) {
-	return hxarray_test_move_tracker(hxforward<T>(tracker));
-}
 
 template<typename T>
 class hxarray_test_pointer_range {
@@ -152,37 +135,11 @@ TEST_F(hxarray_test_f, empty_full) {
 	EXPECT_TRUE(!a.full());
 	a.push_back(hxtest_object());
 	EXPECT_TRUE(!a.empty());
+	EXPECT_FALSE(a[0].moved_from);
 	EXPECT_TRUE(a.full());
 	a.pop_back();
 	EXPECT_TRUE(a.empty());
 	EXPECT_TRUE(!a.full());
-}
-
-TEST_F(hxarray_test_f, allocators) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
-	hxarray<hxtest_object> objs_dynamic;
-	objs_dynamic.reserve(10u);
-	hxarray<hxtest_object, 10u> objs_static;
-
-	EXPECT_EQ(objs_dynamic.size(), 0u);
-	EXPECT_EQ(objs_static.size(), 0u);
-
-	objs_dynamic.push_back(hxtest_object(20));
-	objs_dynamic.push_back(hxtest_object(21));
-	objs_static.push_back(hxtest_object(20));
-	objs_static.push_back(hxtest_object(21));
-
-	EXPECT_EQ(objs_dynamic.size(), 2u);
-	EXPECT_EQ(objs_dynamic[0], 20);
-	EXPECT_EQ(objs_dynamic[1], 21);
-	EXPECT_EQ(objs_static.size(), 2u);
-	EXPECT_EQ(objs_static[0], 20);
-	EXPECT_EQ(objs_static[1], 21);
-
-	objs_dynamic.clear();
-	objs_static.clear();
-
-	EXPECT_TRUE(check_totals(8));
 }
 
 TEST_F(hxarray_test_f, iteration) {
@@ -200,6 +157,7 @@ TEST_F(hxarray_test_f, iteration) {
 		for(hxarray<hxtest_object, 10u>::iterator it = objs.begin(); it != objs.end(); ++it) {
 			EXPECT_EQ(it->id, objs[counter].id);
 			EXPECT_EQ(it->id, nums[counter]);
+			EXPECT_FALSE(objs[counter].moved_from);
 			++counter;
 		}
 
@@ -208,6 +166,7 @@ TEST_F(hxarray_test_f, iteration) {
 				it != cobjs.end(); ++it) {
 			EXPECT_EQ(it->id, objs[counter].id);
 			EXPECT_EQ(it->id, nums[counter]);
+			EXPECT_FALSE(cobjs[counter].moved_from);
 			++counter;
 		}
 
@@ -286,6 +245,9 @@ TEST_F(hxarray_test_f, modification) {
 		EXPECT_EQ(objs[2].id, -1);
 		EXPECT_EQ(objs[3].id, -1);
 		EXPECT_EQ(objs[4].id, 99);
+		for(size_t i = 0u; i < objs.size(); ++i) {
+			EXPECT_FALSE(objs[i].moved_from);
+		}
 	}
 
 	EXPECT_TRUE(check_totals(11));
@@ -425,15 +387,19 @@ TEST_F(hxarray_test_f, emplace_back) {
 		hxtest_object& default_inserted = objs.emplace_back();
 		EXPECT_EQ(objs.data(), &default_inserted);
 		EXPECT_EQ(default_inserted.id, -1);
+		EXPECT_FALSE(default_inserted.moved_from);
 
 		hxtest_object original(42);
-		hxtest_object& copy_inserted = objs.emplace_back(original);
-		EXPECT_EQ(objs.data() + 1, &copy_inserted);
-		EXPECT_EQ(copy_inserted.id, original.id);
+		hxtest_object& move_inserted = objs.emplace_back(hxmove(original));
+		EXPECT_EQ(objs.data() + 1, &move_inserted);
+		EXPECT_EQ(move_inserted.id, original.id);
+		EXPECT_TRUE(move_inserted.moved_from);
+		EXPECT_FALSE(original.moved_from);
 
 		hxtest_object& value_inserted = objs.emplace_back(77);
 		EXPECT_EQ(objs.data() + 2, &value_inserted);
 		EXPECT_EQ(value_inserted.id, 77);
+		EXPECT_FALSE(value_inserted.moved_from);
 
 		EXPECT_EQ(objs.size(), 3u);
 		EXPECT_EQ(objs.back().id, 77);
@@ -628,6 +594,9 @@ TEST_F(hxarray_test_f, resizing) {
 		EXPECT_EQ(objs.size(), 3u);
 		EXPECT_EQ(objs[0].id, 51);
 		EXPECT_EQ(objs[2].id, 53);
+		for(size_t i = 0u; i < objs.size(); ++i) {
+			EXPECT_FALSE(objs[i].moved_from);
+		}
 
 		objs.resize(4u);
 
@@ -636,10 +605,14 @@ TEST_F(hxarray_test_f, resizing) {
 		EXPECT_EQ(objs[2].id, 53);
 		EXPECT_EQ(objs[3].id, -14);
 		EXPECT_EQ(objs.capacity(), 12u);
+		for(size_t i = 0u; i < objs.size(); ++i) {
+			EXPECT_FALSE(objs[i].moved_from);
+		}
 
 		objs.resize(10u);
 		EXPECT_EQ(objs.size(), 10u);
 		EXPECT_EQ(objs[9].id, -20);
+		EXPECT_FALSE(objs[9].moved_from);
 
 		EXPECT_FALSE(objs.empty());
 		objs.clear();
@@ -686,41 +659,41 @@ TEST_F(hxarray_test_f, assignment) {
 }
 
 #if HX_CPLUSPLUS >= 202002L
-TEST(hxarray_test, assign_range_from_rvalue) {
+TEST_F(hxarray_test_f, assign_range_from_rvalue) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
-	static hxarray_test_move_tracker source_elements[] = {
-		hxarray_test_move_tracker(5),
-		hxarray_test_move_tracker(9),
-		hxarray_test_move_tracker(13)
+	hxtest_object source_elements[] = {
+		hxtest_object(5),
+		hxtest_object(9),
+		hxtest_object(13)
 	};
 	const size_t source_count = hxsize(source_elements);
 
-	hxarray<hxarray_test_move_tracker> elements;
+	hxarray<hxtest_object> elements;
 	elements.reserve(source_count);
 	elements.assign_range(hxarray_test_pointer_range(
 		source_elements, source_elements + source_count));
 
 	EXPECT_EQ(elements.size(), source_count);
-	EXPECT_EQ(elements[0].value, 5);
-	EXPECT_EQ(elements[1].value, 9);
-	EXPECT_EQ(elements[2].value, 13);
+	EXPECT_EQ(elements[0].id, 5);
+	EXPECT_EQ(elements[1].id, 9);
+	EXPECT_EQ(elements[2].id, 13);
 	for(size_t i = 0u; i < source_count; ++i) {
 		EXPECT_FALSE(elements[i].moved_from);
 		EXPECT_TRUE(source_elements[i].moved_from);
 	}
 }
 
-TEST(hxarray_test, assign_range_from_const) {
+TEST_F(hxarray_test_f, assign_range_from_const) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	const int32_t assigned_element_ints[] = { 4, 7, 11, 18 };
-	const hxarray<hxarray_test_move_tracker> assigned_elements = assigned_element_ints;
+	const hxarray<hxtest_object> assigned_elements = assigned_element_ints;
 	const size_t assigned_count = hxsize(assigned_element_ints);
 
-	hxarray<hxarray_test_move_tracker> elements;
+	hxarray<hxtest_object> elements;
 	elements.reserve(assigned_count + 1u);
-	elements.push_back(91);
+	elements.push_back(hxtest_object(91));
 
-	hxarray_test_pointer_range<const hxarray_test_move_tracker> range(
+	hxarray_test_pointer_range<const hxtest_object> range(
 		assigned_elements.begin(), assigned_elements.end());
 	elements.assign_range(range);
 
@@ -735,26 +708,26 @@ TEST(hxarray_test, assign_range_from_const) {
 	}
 }
 
-TEST(hxarray_test, assign_range_from_mutable_range) {
+TEST_F(hxarray_test_f, assign_range_from_mutable_range) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
-	static hxarray_test_move_tracker source_elements[] = {
-		hxarray_test_move_tracker(2),
-		hxarray_test_move_tracker(3),
-		hxarray_test_move_tracker(5)
+	hxtest_object source_elements[] = {
+		hxtest_object(2),
+		hxtest_object(3),
+		hxtest_object(5)
 	};
 	const size_t source_count = hxsize(source_elements);
 
-	hxarray<hxarray_test_move_tracker> elements;
+	hxarray<hxtest_object> elements;
 	elements.reserve(source_count);
 
-	hxarray_test_pointer_range<hxarray_test_move_tracker> range(
+	hxarray_test_pointer_range<hxtest_object> range(
 		source_elements, source_elements + source_count);
 	elements.assign_range(range);
 
 	EXPECT_EQ(elements.size(), source_count);
-	EXPECT_EQ(elements[0].value, 2);
-	EXPECT_EQ(elements[1].value, 3);
-	EXPECT_EQ(elements[2].value, 5);
+	EXPECT_EQ(elements[0].id, 2);
+	EXPECT_EQ(elements[1].id, 3);
+	EXPECT_EQ(elements[2].id, 5);
 	for(size_t i = 0u; i < source_count; ++i) {
 		EXPECT_FALSE(elements[i].moved_from);
 		EXPECT_FALSE(source_elements[i].moved_from);
@@ -762,81 +735,81 @@ TEST(hxarray_test, assign_range_from_mutable_range) {
 }
 #endif
 
-TEST(hxarray_test, push_back_move_tracker) {
+TEST_F(hxarray_test_f, push_back_move_tracker) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
-	hxarray_test_move_tracker source(42);
-	hxarray<hxarray_test_move_tracker> elements;
+	hxtest_object source(42);
+	hxarray<hxtest_object> elements;
 	elements.reserve(3u);
 	elements.push_back(hxmove(source));
 
 	EXPECT_EQ(elements.size(), 1u);
-	EXPECT_EQ(elements[0].value, 42);
+	EXPECT_EQ(elements[0].id, 42);
 	EXPECT_FALSE(elements[0].moved_from);
 	EXPECT_TRUE(source.moved_from);
 
 	// Confirm the array does not get moved.
-	hxarray_test_move_tracker other(84);
-	elements.push_back(other);
+	hxtest_object x(84);
+	elements.push_back(x);
 
 	EXPECT_EQ(elements.size(), 2u);
-	EXPECT_EQ(elements[1].value, 84);
+	EXPECT_EQ(elements[1].id, 84);
 	EXPECT_FALSE(elements[0].moved_from);
 	EXPECT_FALSE(elements[1].moved_from);
-	EXPECT_FALSE(other.moved_from);
+	EXPECT_FALSE(x.moved_from);
 }
 
-TEST(hxarray_test, plus_equals_move_tracker_element) {
+TEST_F(hxarray_test_f, plus_equals_move_tracker_element) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
-	hxarray_test_move_tracker source(5);
-	hxarray<hxarray_test_move_tracker> elements;
+	hxtest_object source(5);
+	hxarray<hxtest_object> elements;
 	elements.reserve(3u);
 	elements += hxmove(source);
 
 	EXPECT_EQ(elements.size(), 1u);
-	EXPECT_EQ(elements[0].value, 5);
+	EXPECT_EQ(elements[0].id, 5);
 	EXPECT_FALSE(elements[0].moved_from);
 	EXPECT_TRUE(source.moved_from);
 
 	// Confirm the array does not get moved.
-	hxarray_test_move_tracker other(11);
-	elements += other;
+	hxtest_object x(11);
+	elements += x;
 
 	EXPECT_EQ(elements.size(), 2u);
-	EXPECT_EQ(elements[1].value, 11);
+	EXPECT_EQ(elements[1].id, 11);
 	EXPECT_FALSE(elements[0].moved_from);
 	EXPECT_FALSE(elements[1].moved_from);
-	EXPECT_FALSE(other.moved_from);
+	EXPECT_FALSE(x.moved_from);
 }
 
-TEST(hxarray_test, plus_equals_move_tracker_array) {
+TEST_F(hxarray_test_f, plus_equals_move_tracker_array) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
-	hxarray_test_move_tracker initial(1);
+	hxtest_object initial(1);
 	static const int32_t appended_values[] = { 3, 5, 7 };
 
-	hxarray<hxarray_test_move_tracker> move_target;
+	hxarray<hxtest_object> move_target;
 	move_target.reserve(5u);
 	move_target.push_back(initial);
 
-	hxarray<hxarray_test_move_tracker> copy_target;
+	hxarray<hxtest_object> copy_target;
 	copy_target.reserve(5u);
 	copy_target.push_back(initial);
 
 	EXPECT_FALSE(initial.moved_from);
 
-	hxarray<hxarray_test_move_tracker> move_source;
+	hxarray<hxtest_object> move_source;
 	move_source = appended_values;
 
-	hxarray<hxarray_test_move_tracker> copy_source;
+	hxarray<hxtest_object> copy_source;
 	copy_source = appended_values;
 
 	// Confirm that the array of temporaries actually gets moved.
 	move_target += hxmove(move_source);
 
 	EXPECT_EQ(move_target.size(), 4u);
-	EXPECT_EQ(move_target[0].value, 1);
-	EXPECT_EQ(move_target[1].value, 3);
-	EXPECT_EQ(move_target[2].value, 5);
-	EXPECT_EQ(move_target[3].value, 7);
+	EXPECT_EQ(move_target[0].id, 1);
+	EXPECT_EQ(move_target[1].id, 3);
+	EXPECT_EQ(move_target[2].id, 5);
+	EXPECT_EQ(move_target[3].id, 7);
 	for(size_t i = 0u; i < move_target.size(); ++i) {
 		EXPECT_FALSE(move_target[i].moved_from);
 	}
@@ -849,10 +822,10 @@ TEST(hxarray_test, plus_equals_move_tracker_array) {
 	copy_target += copy_source;
 
 	EXPECT_EQ(copy_target.size(), 4u);
-	EXPECT_EQ(copy_target[0].value, 1);
-	EXPECT_EQ(copy_target[1].value, 3);
-	EXPECT_EQ(copy_target[2].value, 5);
-	EXPECT_EQ(copy_target[3].value, 7);
+	EXPECT_EQ(copy_target[0].id, 1);
+	EXPECT_EQ(copy_target[1].id, 3);
+	EXPECT_EQ(copy_target[2].id, 5);
+	EXPECT_EQ(copy_target[3].id, 7);
 	for(size_t i = 0u; i < copy_target.size(); ++i) {
 		EXPECT_FALSE(copy_target[i].moved_from);
 	}
@@ -862,55 +835,55 @@ TEST(hxarray_test, plus_equals_move_tracker_array) {
 	}
 }
 
-TEST(hxarray_test, insert_move_tracker_move_and_copy) {
+TEST_F(hxarray_test_f, insert_move_tracker_move_and_copy) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
-	hxarray<hxarray_test_move_tracker> elements;
+	hxarray<hxtest_object> elements;
 	elements.reserve(4u);
 
-	hxarray_test_move_tracker initial(10);
+	hxtest_object initial(10);
 	elements.push_back(initial);
 	EXPECT_FALSE(initial.moved_from);
 
-	hxarray_test_move_tracker move_source(20);
+	hxtest_object move_source(20);
 	elements.insert(elements.begin(), hxmove(move_source));
 
 	EXPECT_EQ(elements.size(), 2u);
-	EXPECT_EQ(elements[0].value, 20);
-	EXPECT_EQ(elements[1].value, 10);
+	EXPECT_EQ(elements[0].id, 20);
+	EXPECT_EQ(elements[1].id, 10);
 	EXPECT_TRUE(move_source.moved_from);
 	EXPECT_FALSE(elements[0].moved_from);
 	EXPECT_FALSE(elements[1].moved_from);
 
-	hxarray_test_move_tracker copy_source(30);
+	hxtest_object copy_source(30);
 	elements.insert(2u, copy_source);
 
 	EXPECT_EQ(elements.size(), 3u);
-	EXPECT_EQ(elements[0].value, 20);
-	EXPECT_EQ(elements[1].value, 10);
-	EXPECT_EQ(elements[2].value, 30);
+	EXPECT_EQ(elements[0].id, 20);
+	EXPECT_EQ(elements[1].id, 10);
+	EXPECT_EQ(elements[2].id, 30);
 	EXPECT_FALSE(copy_source.moved_from);
 	for(size_t i = 0u; i < elements.size(); ++i) {
 		EXPECT_FALSE(elements[i].moved_from);
 	}
 }
 
-TEST(hxarray_test, emplace_back_move_tracker_forwarding) {
+TEST_F(hxarray_test_f, emplace_back_move_tracker_forwarding) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
-	hxarray<hxarray_test_move_tracker> elements;
+	hxarray<hxtest_object> elements;
 	elements.reserve(3u);
 
-	hxarray_test_move_tracker copy_source(40);
-	hxarray_test_move_tracker move_source(50);
+	hxtest_object copy_source(40);
+	hxtest_object move_source(50);
 
-	hxarray_test_move_tracker& copy_inserted = elements.emplace_back(copy_source);
+	hxtest_object& copy_inserted = elements.emplace_back(copy_source);
 	EXPECT_EQ(&copy_inserted, &elements[0]);
-	EXPECT_EQ(elements[0].value, 40);
+	EXPECT_EQ(elements[0].id, 40);
 	EXPECT_FALSE(elements[0].moved_from);
 	EXPECT_FALSE(copy_source.moved_from);
 
-	hxarray_test_move_tracker& move_inserted = elements.emplace_back(hxmove(move_source));
+	hxtest_object& move_inserted = elements.emplace_back(hxmove(move_source));
 	EXPECT_EQ(&move_inserted, &elements[1]);
-	EXPECT_EQ(elements[1].value, 50);
+	EXPECT_EQ(elements[1].id, 50);
 	EXPECT_FALSE(elements[1].moved_from);
 	EXPECT_TRUE(move_source.moved_from);
 
@@ -1008,12 +981,18 @@ TEST_F(hxarray_test_f, insert) {
 
 		hxarray<hxtest_object> expected { 1, 3, 5 };
 		EXPECT_TRUE(hxkey_equal(objs, expected));
+		for(size_t i = 0u; i < objs.size(); ++i) {
+			EXPECT_FALSE(objs[i].moved_from);
+		}
 
 		objs.insert(1, hxtest_object(2));
 		objs.insert(3, hxtest_object(4));
 
 		hxarray<hxtest_object> final_expected { 1, 2, 3, 4, 5 };
 		EXPECT_TRUE(hxkey_equal(objs, final_expected));
+		for(size_t i = 0u; i < objs.size(); ++i) {
+			EXPECT_FALSE(objs[i].moved_from);
+		}
 	}
 
 	EXPECT_TRUE(check_totals(18)); // <-- This is why we do not use insert.

@@ -46,6 +46,8 @@
 #include "hxkey.hpp"
 #include "hxutility.h"
 
+// XXX: Move to a d-list and implement tbl::erase(node_t*)?
+
 /// `hxhash_table_set_node` - Optional base class for unordered set entries.
 /// Caches the hash value. Copying and modification are disallowed to protect
 /// the integrity of the hash table. See `hxhash_table_map_node` if you need a
