@@ -175,8 +175,8 @@ void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_, iterat
 /// - `dest` : Pointer to the destination range receiving the merged output.
 template<typename iterator_t_> hxattr_hot
 void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
-		iterator_t_ end1_, iterator_t_ dest_) {
-	hxmerge<iterator_t_>(begin0_, end0_, begin1_, end1_, dest_,
+		iterator_t_ end1_, iterator_t_ output_) {
+	hxmerge<iterator_t_>(begin0_, end0_, begin1_, end1_, output_,
 		hxkey_less_function<decltype(*begin0_)>());
 }
 
@@ -194,30 +194,30 @@ void hxmerge(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
 /// Returns a pointer to one past the last element written.
 template<typename iterator_t_, typename less_t_> hxattr_hot
 iterator_t_ hxset_union(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_, iterator_t_ end1_,
-		iterator_t_ dest_, const less_t_& less_) {
+		iterator_t_ output_, const less_t_& less_) {
 	hxassertmsg(begin0_ <= end0_ && begin1_ <= end1_, "invalid_iterator");
-	hxrestrict_t<iterator_t_> dest_r_(dest_);
+	hxrestrict_t<iterator_t_> output_r_(output_);
 
 	while(begin0_ != end0_ && begin1_ != end1_) {
 		if(less_(*begin1_, *begin0_)) {
-			*dest_r_++ = hxmove(*begin1_++);
+			*output_r_++ = hxmove(*begin1_++);
 		}
 		else if(less_(*begin0_, *begin1_)) {
-			*dest_r_++ = hxmove(*begin0_++);
+			*output_r_++ = hxmove(*begin0_++);
 		}
 		else {
-			*dest_r_++ = hxmove(*begin0_++);
+			*output_r_++ = hxmove(*begin0_++);
 			++begin1_;
 		}
 	}
 
 	while(begin0_ != end0_) {
-		*dest_r_++ = hxmove(*begin0_++);
+		*output_r_++ = hxmove(*begin0_++);
 	}
 	while(begin1_ != end1_) {
-		*dest_r_++ = hxmove(*begin1_++);
+		*output_r_++ = hxmove(*begin1_++);
 	}
-	return dest_r_;
+	return output_r_;
 }
 
 /// `hxset_union` (specialization) - Forms the union of two ordered ranges
@@ -232,8 +232,8 @@ iterator_t_ hxset_union(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begi
 /// Returns a pointer to one past the last element written.
 template<typename iterator_t_> hxattr_hot
 iterator_t_ hxset_union(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
-		iterator_t_ end1_, iterator_t_ dest_) {
-	return hxset_union<iterator_t_>(begin0_, end0_, begin1_, end1_, dest_,
+		iterator_t_ end1_, iterator_t_ output_) {
+	return hxset_union<iterator_t_>(begin0_, end0_, begin1_, end1_, output_,
 		hxkey_less_function<decltype(*begin0_)>());
 }
 
@@ -252,9 +252,9 @@ iterator_t_ hxset_union(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begi
 /// Returns a pointer to one past the last element written.
 template<typename iterator_t_, typename less_t_> hxattr_hot
 iterator_t_ hxset_intersection(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
-		iterator_t_ end1_, iterator_t_ dest_, const less_t_& less_) {
+		iterator_t_ end1_, iterator_t_ output_, const less_t_& less_) {
 	hxassertmsg(begin0_ <= end0_ && begin1_ <= end1_, "invalid_iterator");
-	hxrestrict_t<iterator_t_> dest_r_(dest_);
+	hxrestrict_t<iterator_t_> output_r_(output_);
 
 	while(begin0_ != end0_ && begin1_ != end1_) {
 		if(less_(*begin0_, *begin1_)) {
@@ -264,11 +264,11 @@ iterator_t_ hxset_intersection(iterator_t_ begin0_, iterator_t_ end0_, iterator_
 			++begin1_;
 		}
 		else {
-			*dest_r_++ = hxmove(*begin0_++);
+			*output_r_++ = hxmove(*begin0_++);
 			++begin1_;
 		}
 	}
-	return dest_r_;
+	return output_r_;
 }
 
 /// `hxset_intersection` (specialization) - Forms the intersection of two
@@ -283,8 +283,8 @@ iterator_t_ hxset_intersection(iterator_t_ begin0_, iterator_t_ end0_, iterator_
 /// Returns a pointer to one past the last element written.
 template<typename iterator_t_> hxattr_hot
 iterator_t_ hxset_intersection(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
-		iterator_t_ end1_, iterator_t_ dest_) {
-	return hxset_intersection<iterator_t_>(begin0_, end0_, begin1_, end1_, dest_,
+		iterator_t_ end1_, iterator_t_ output_) {
+	return hxset_intersection<iterator_t_>(begin0_, end0_, begin1_, end1_, output_,
 		hxkey_less_function<decltype(*begin0_)>());
 }
 
@@ -303,13 +303,13 @@ iterator_t_ hxset_intersection(iterator_t_ begin0_, iterator_t_ end0_, iterator_
 /// Returns a pointer to one past the last element written.
 template<typename iterator_t_, typename less_t_> hxattr_hot
 iterator_t_ hxset_difference(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
-		iterator_t_ end1_, iterator_t_ dest_, const less_t_& less_) {
+		iterator_t_ end1_, iterator_t_ output_, const less_t_& less_) {
 	hxassertmsg(begin0_ <= end0_ && begin1_ <= end1_, "invalid_iterator");
-	hxrestrict_t<iterator_t_> dest_r_(dest_);
+	hxrestrict_t<iterator_t_> output_r_(output_);
 
 	while(begin0_ != end0_ && begin1_ != end1_) {
 		if(less_(*begin0_, *begin1_)) {
-			*dest_r_++ = hxmove(*begin0_++);
+			*output_r_++ = hxmove(*begin0_++);
 		}
 		else if(less_(*begin1_, *begin0_)) {
 			++begin1_;
@@ -320,9 +320,9 @@ iterator_t_ hxset_difference(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_
 		}
 	}
 	while(begin0_ != end0_) {
-		*dest_r_++ = hxmove(*begin0_++);
+		*output_r_++ = hxmove(*begin0_++);
 	}
-	return dest_r_;
+	return output_r_;
 }
 
 /// `hxset_difference` (specialization) - Forms the difference of two ordered
@@ -337,8 +337,8 @@ iterator_t_ hxset_difference(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_
 /// Returns a pointer to one past the last element written.
 template<typename iterator_t_> hxattr_hot
 iterator_t_ hxset_difference(iterator_t_ begin0_, iterator_t_ end0_, iterator_t_ begin1_,
-		iterator_t_ end1_, iterator_t_ dest_) {
-	return hxset_difference<iterator_t_>(begin0_, end0_, begin1_, end1_, dest_,
+		iterator_t_ end1_, iterator_t_ output_) {
+	return hxset_difference<iterator_t_>(begin0_, end0_, begin1_, end1_, output_,
 		hxkey_less_function<decltype(*begin0_)>());
 }
 

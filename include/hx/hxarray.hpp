@@ -150,6 +150,16 @@ public:
 	template <size_t capacity_x_>
 	void operator+=(hxarray<T_, capacity_x_>&& x_);
 
+	/// Allows array to be used an output iterator similar to
+	/// `std::output_iterator` but with the set operations in hxalgorithm.hpp.
+	/// Make sure it is passed as a reference type.
+	T_& operator*(void) { return this->back(); }
+
+	/// Allows array to be used an output iterator similar to
+	/// `std::output_iterator` but with the set operations in hxalgorithm.hpp.
+	/// Make sure it is passed as a reference type.
+	T_& operator++(void) { return this->push_back(); }
+
 	/// Returns true if the predicate returns true for every element and false
 	/// otherwise. Will stop iterating when the predicate returns false. e.g.,
 	/// ```cpp
