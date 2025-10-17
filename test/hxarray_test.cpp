@@ -80,6 +80,7 @@ public:
 		s_hxtest_current = this;
 	}
 	~hxarray_test_f(void) {
+		hxassertrelease(m_constructed == m_destructed, "hxarray_test_f Test object lifecycle error.");
 		s_hxtest_current = 0;
 	}
 
