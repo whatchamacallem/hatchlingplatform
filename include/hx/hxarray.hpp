@@ -7,12 +7,16 @@
 #include "hxkey.hpp"
 #include "hxalgorithm.hpp"
 
+#if !HX_NO_LIBCXX
+#include <initializer_list>
+#endif
+
 #if HX_CPLUSPLUS >= 202002L
 
 /// Concept smoke testing the `hxarray` element. Any kind of constructor or
 /// assignment operator may or may not be required depending on use. All
-/// operators required should be reasonably predictable. Only the destructor is
-/// tested here.
+/// operator usage should be reasonably predictable. Only the destructor is
+/// explicitly required.
 template<typename T_>
 concept hxarray_concept_ = requires(T_& x_) {
 	sizeof(T_);
@@ -22,16 +26,29 @@ concept hxarray_concept_ = requires(T_& x_) {
 #define hxarray_concept_ typename
 #endif
 
-#if !HX_NO_LIBCXX
-#include <initializer_list>
-#endif
+/// \cond HIDDEN
+// Internal. Extends the array using placement new when assigned to.
+template<typename array_t_>
+struct hxarray_back_inserter_ {
+	hxarray_back_inserter_(array_t_& x_) : that_(x_) { }
+	template<typename arg_t_>
+	array_t_::value_type& operator=(arg_t_&& arg_) {
+		return *::new(that_.push_back_unconstructed_())
+			array_t_::value_type(hxforward<arg_t_>(arg_));
+	}
+	// No address-of operator. It wouldn't be what was expected.
+	void operator&() const = delete;
+	array_t_& that_;
+};
+/// \endcond
 
-/// `hxarray` - Implements both `std::vector` and `std::inplace_vector` with a
-/// chunk added a few things unimplemented. Uses raw pointers as an iterator
-/// type so that you get compile errors and a debug symbols that use plain C++
-/// pointers instead. There are exhaustive asserts. `hxarray` uses the
-/// `hxkey_less` and `hxkey_equal` overloads. They default to using operators
-/// `<` and `==`. See `hxalgorithm.hpp` for functor versions of the algorithms here.
+/// `hxarray` - Implements `std::vector`, `std::inplace_vector` and
+/// `std::back_insert_iterator` with a chunk added a few things unimplemented.
+/// Uses raw pointers as an iterator type so that you get compile errors and
+/// debug symbols that use plain C++ pointers instead. There are exhaustive
+/// asserts. `hxarray` uses the `hxkey_less` and `hxkey_equal` overloads. They
+/// default to using operators `<` and `==`. See `hxalgorithm.hpp` for functor
+/// versions of the algorithms here.
 ///
 /// `hxarray` can be constructed from C string literals as follows:
 ///   `hxarray<char, HX_MAX_LINE> string_buffer("example C string");`
@@ -165,17 +182,23 @@ public:
 	template <size_t capacity_x_>
 	void operator+=(hxarray<T_, capacity_x_>&& x_);
 
-	/// Allows an array to be passed as a reference and then used as an output
-	/// iterator similar to `std::back_insert_iterator`. This operator is used
-	/// to grow the array instead of the assignment operator. See
-	/// `hxalgorithm.hpp` for usage.
-	T_& operator*(void) { return this->push_back(); }
+	/// Used to write code with pointer semantics that writes to either a
+	/// pointer or a hxarray. Allows an array to be passed as a reference and
+	/// then used as an output iterator similar to `std::back_insert_iterator`.
+	/// This operator is used to grow the array while `operator++` is ignored.
+	/// Uses a single call to placement new when copying.
+	hxarray_back_inserter_<hxarray<T_, capacity_>> operator*(void) {
+		return hxarray_back_inserter_<hxarray<T_, capacity_>>(*this);
+	}
 
 	/// Allows an array to be passed as a reference and then used as an output
 	/// iterator similar to `std::back_insert_iterator`. This operator doesn't
 	/// do anything but allow the container to be used with pointer sematics.
 	/// See `hxalgorithm.hpp` for usage.
 	hxarray& operator++(void) { return *this; }
+
+	/// Postfix version.
+	hxarray& operator++(int) { return *this; }
 
 	/// Returns true if the predicate returns true for every element and false
 	/// otherwise. Will stop iterating when the predicate returns false. e.g.,
@@ -289,7 +312,8 @@ public:
 	/// - `pos` : Pointer to the element to erase.
 	void erase(const T_* pos_) hxattr_nonnull(2);
 
-	/// Erases the element indicated. Use `(size_t)0` to write the integer literal 0.
+	/// Erases the element indicated. Use `(size_t)0` to write the integer
+	/// literal 0.
 	/// - `index` : Index of the element to erase.
 	void erase(size_t index_);
 
@@ -502,16 +526,16 @@ public:
 	void swap(hxarray& x_);
 
 private:
+	friend hxarray_back_inserter_<hxarray<T_, capacity_>>;
+
 	// Returns a pointer for use with placement new.
 	void* push_back_unconstructed_(void);
 
 	// Destroys elements in the range [begin, end).
 	void destruct_(T_* begin_, T_* end_);
 
-	/// \cond HIDDEN
 	// 1 past the last element.
 	T_* m_end_;
-	/// \endcond
 };
 
 // The array overloads of hxkey_equal, hxkey_less and hxswap are C++20 only.
