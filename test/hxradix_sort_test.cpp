@@ -55,11 +55,13 @@ public:
 
 		// Radix sort using 8-bit digits.
 
+		// "A key-value pair used with radix sort. Only 32-bit or smaller fixed size key types supported." Prepare key/value envelope.
 		hxarray<hxradix_sort_key<key_t, hxtest_object<key_t>*>> rs; rs.reserve(size);
 		for(uint32_t i = size; i--;) {
 			rs.emplace_back(a[i].id, &a[i]);
 		}
 
+		// 8-bit digit run.
 		hxradix_sort(rs.begin(), rs.end());
 
 		EXPECT_EQ(b.size(), size);
@@ -76,6 +78,7 @@ public:
 			rs.push_back(hxradix_sort_key<key_t, hxtest_object<key_t>*>(a[i].id, &a[i]));
 		}
 
+		// 11-bit digit variant covers wider buckets while keeping linear scaling.
 		hxradix_sort11(rs.begin(), rs.end());
 
 		EXPECT_EQ(b.size(), size);
@@ -95,12 +98,14 @@ TEST_F(hxradix_sort_test_f, null) {
 	hxarray<hxradix_sort_key<uint32_t, const char*>> rs;
 	rs.reserve(1u);
 
+	// Empty span remains untouched.
 	hxradix_sort(rs.begin(), rs.end());
 	EXPECT_EQ(rs.size(), 0u);
 	EXPECT_TRUE(rs.empty());
 
 	rs.push_back(hxradix_sort_key<uint32_t, const char*>(123u, "s"));
 
+	// Single element run ensures output preserves { key=123u, value="s" }.
 	hxradix_sort(rs.begin(), rs.end());
 	EXPECT_EQ(rs.size(), 1u);
 	EXPECT_EQ(rs[0].get_value()[0], 's');
@@ -111,12 +116,14 @@ TEST_F(hxradix_sort_test_f, null11) {
 	hxarray<hxradix_sort_key<uint32_t, const char*>> rs;
 	rs.reserve(1u);
 
+	// 11-bit digit version should no-op on empty range.
 	hxradix_sort11(rs.begin(), rs.end());
 	EXPECT_EQ(rs.size(), 0u);
 	EXPECT_TRUE(rs.empty());
 
 	rs.push_back(hxradix_sort_key<uint32_t, const char*>(123u, "s"));
 
+	// Single element remains stable while exercising wider-digit path.
 	hxradix_sort11(rs.begin(), rs.end());
 	EXPECT_EQ(rs.size(), 1u);
 	EXPECT_EQ(rs[0].get_value()[0], 's');

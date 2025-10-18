@@ -44,10 +44,15 @@ TEST_F(hxtask_queue_test_f, nop) {
 
 	for(size_t i = 0; i <= max_pool; ++i) {
 		{
+			// "Creates a new task queue. task_queue_size reserves storage ...
+			// thread_pool_size of 0 does not use threads." Smoke test
+			// construction/destruction.
 			hxtask_queue q(1, i);
 		}
 		{
 			hxtask_queue q(1, i);
+			// "Execute remaining tasks. The thread calling wait_for_all
+			// executes tasks as well."
 			q.wait_for_all();
 		}
 	}
@@ -62,16 +67,18 @@ TEST_F(hxtask_queue_test_f, multiple) {
 
 			hxtask_test_t tasks0[max_tasks];
 			hxtask_test_t tasks1[max_tasks];
-			{
-				hxtask_queue q(max_tasks, i);
-				for(size_t k = 0; k <= j; ++k) {
-					q.enqueue(&tasks0[k]);
-				}
-				q.wait_for_all();
-				for(size_t k = 0; k <= j; ++k) {
-					q.enqueue(&tasks1[k]);
-					EXPECT_TRUE(tasks0[k].get_exec_count() == 1);
-				}
+		{
+			hxtask_queue q(max_tasks, i);
+			for(size_t k = 0; k <= j; ++k) {
+				// "Queues a task for later execution. Does not delete the task
+				// after execution." Populate initial batch.
+				q.enqueue(&tasks0[k]);
+			}
+			q.wait_for_all();
+			for(size_t k = 0; k <= j; ++k) {
+				q.enqueue(&tasks1[k]);
+				EXPECT_TRUE(tasks0[k].get_exec_count() == 1);
+			}
 			}
 			for(size_t k = 0; k <= j; ++k) {
 				EXPECT_TRUE(tasks0[k].get_exec_count() == 1);
@@ -103,6 +110,8 @@ TEST_F(hxtask_queue_test_f, multiple_reenqueuing) {
 			{
 				hxtask_queue q(max_tasks, i);
 				for(size_t k = 0; k <= j; ++k) {
+					// Reenqueue count uses execute to push itself back onto
+					// queue.
 					tasks0[k].set_reenqueue_count(k);
 					q.enqueue(&tasks0[k]);
 				}
@@ -167,6 +176,8 @@ TEST(hxtask_queue_test, priority_ordering_single_threaded) {
 	hxtask_queue q(task_count, 0);
 	for(size_t i = 0; i < task_count; ++i) {
 		tasks[i].configure(execution_order, &write_index, priorities[i]);
+		// Optional priority schedules higher values sooner (single-threaded
+		// pool here).
 		q.enqueue(&tasks[i], priorities[i]);
 	}
 	q.wait_for_all();
@@ -208,6 +219,7 @@ TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
 
 	bool visited[3] = { false, false, false };
 	size_t visit_count = 0;
+	// "Locks the queue and calls fn on each task record.""
 	q.for_each([&](hxtask_queue::record_t& record) {
 		++visit_count;
 		if(record.task == &tasks[0]) {
@@ -223,16 +235,19 @@ TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
 		EXPECT_TRUE(visited[i]);
 	}
 
+	// "Returns true if the predicate returns true for every element."
 	bool all_priority_non_negative = q.all_of([](const hxtask_queue::record_t& record) {
 		return record.priority >= 0;
 	});
 	EXPECT_TRUE(all_priority_non_negative);
 
+	// "Returns true if the predicate returns true for any element."
 	bool any_high_priority = q.any_of([](const hxtask_queue::record_t& record) {
 		return record.priority > 8;
 	});
 	EXPECT_TRUE(any_high_priority);
 
+	// "Locks the queue and calls fn on each task record." Remove low priorities.
 	size_t removed_low_priority = q.erase_if([](const hxtask_queue::record_t& record) {
 		return record.priority < 4;
 	});
@@ -256,6 +271,7 @@ TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
 	q.enqueue(&tasks[2], 7);
 	EXPECT_TRUE(q.size() == 1u);
 	EXPECT_TRUE(!q.empty());
+	// "Removes all queued tasks without executing them."
 	q.clear();
 	EXPECT_TRUE(q.size() == 0u);
 	EXPECT_TRUE(q.empty());
@@ -305,6 +321,7 @@ TEST(hxtask_queue_test, for_each_reschedules_queue) {
 
 	// Reschedule them.
 	size_t mutate_count = 0;
+	// Mutating for_each updates priorities in place before execution.
 	q.for_each([&](hxtask_queue::record_t& record) {
 		hxtask_queue_test_reschedule_task_t* task =
 			static_cast<hxtask_queue_test_reschedule_task_t*>(record.task);
@@ -317,6 +334,7 @@ TEST(hxtask_queue_test, for_each_reschedules_queue) {
 	// Check they are rescheduled.
 	size_t verify_count = 0;
 	const hxtask_queue& const_q = q;
+	// Const overload should observe adjusted priorities without mutating.
 	const_q.for_each([&](const hxtask_queue::record_t& record) {
 		const hxtask_queue_test_reschedule_task_t* task =
 			static_cast<const hxtask_queue_test_reschedule_task_t*>(record.task);

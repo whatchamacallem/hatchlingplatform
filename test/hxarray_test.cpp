@@ -188,6 +188,8 @@ TEST_F(hxarray_test_f, get) {
 
 		const hxarray<hxtest_object, 4u>& cobjs = objs;
 
+		// "Returns a const T* to the element at index or hxnull otherwise." Validate lookups
+		// for indices { 0, 1, 2 } on mutable + const views.
 		EXPECT_EQ(objs.get(0), objs.begin());
 		EXPECT_EQ(objs.get(1), objs.begin() + 1);
 		EXPECT_EQ(objs.get(2), hxnullptr);

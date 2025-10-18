@@ -124,11 +124,15 @@ TEST(hxhxalgorithm_test, hxmerge_iterator_support) {
 		tracker_t(0), tracker_t(0), tracker_t(0)
 	};
 
+	// "Performs a stable merge sort of two ordered ranges [begin0, end0) and"
+	// "[begin1, end1) -> output."
+	//   /-\ ascending merge: { 1, 3, 5 } + { 2, 4, 6 } => { 1, 2, 3, 4, 5, 6 }
 	hxmerge(hxhxalgorithm_test_iter_api_t(left), hxhxalgorithm_test_iter_api_t(left + 3),
 		hxhxalgorithm_test_iter_api_t(right), hxhxalgorithm_test_iter_api_t(right + 3),
 		hxhxalgorithm_test_iter_api_t(dest), sort_iter_value_less);
 
 	const int expected_sorted[6] = { 1, 2, 3, 4, 5, 6 };
+	// Confirm merged buffer now tracks { 1, 2, 3, 4, 5, 6 } without disturbing tickets.
 	for(size_t i = 0; i < 6; ++i) {
 		EXPECT_EQ(dest[i].value, expected_sorted[i]);
 	}
@@ -141,11 +145,15 @@ TEST(hxhxalgorithm_test, hxmerge_iterator_support) {
 		tracker_t(0), tracker_t(0), tracker_t(0)
 	};
 
+	// "Assumes both [begin0, end0) and [begin1, end1) are ordered by the less functor."
+	//   \-/ descending merge inputs { 5, 3, 1 } & { 6, 4, 2 } with greater-than
+	//   ensure stable output { 6, 5, 4, 3, 2, 1 }
 	hxmerge(hxhxalgorithm_test_iter_api_t(left_desc), hxhxalgorithm_test_iter_api_t(left_desc + 3),
 		hxhxalgorithm_test_iter_api_t(right_desc), hxhxalgorithm_test_iter_api_t(right_desc + 3),
 		hxhxalgorithm_test_iter_api_t(dest_desc), sort_iter_value_greater);
 
 	const int expected_desc[6] = { 6, 5, 4, 3, 2, 1 };
+	// Ensure reverse-ordered comparison places tickets into { 6, 5, 4, 3, 2, 1 } without swaps.
 	for(size_t i = 0; i < 6; ++i) {
 		EXPECT_EQ(dest_desc[i].value, expected_desc[i]);
 	}
@@ -162,6 +170,8 @@ TEST(hxhxalgorithm_test, hxbinary_search_iterator_support) {
 	hxhxalgorithm_test_iter_api_t begin(values);
 	hxhxalgorithm_test_iter_api_t end(values + 7);
 
+	// "Performs a binary search in the range [first, last)." Confirm hits stay
+	// in-bounds for { 3, 12 } without aliasing iterators.
 	tracker_t key_three(3);
 	hxhxalgorithm_test_iter_api_t result = hxbinary_search(begin, end, key_three, sort_iter_value_less);
 	EXPECT_NE(result, end);
@@ -172,6 +182,8 @@ TEST(hxhxalgorithm_test, hxbinary_search_iterator_support) {
 	EXPECT_NE(result, end);
 	EXPECT_EQ((*result).value, 12);
 
+	// "Returns end if the value is not found." Validate misses { 7 } including
+	// the degenerate case -> empty range.
 	tracker_t missing(7);
 	result = hxbinary_search(begin, end, missing, sort_iter_value_less);
 	EXPECT_EQ(result, end);
@@ -275,7 +287,8 @@ template<typename sort_callback_t>
 void do_sort_int_case(const sort_callback_t& sort_callback) {
 	int ints[5] = { 2, 1, 0, 4, -5 };
 
-	// Sort 0 elements.
+	// "The end parameter points just past the end of the array." Confirm size 0
+	// and size 1 ranges keep { 2, 1, 0, 4, -5 } untouched.
 	sort_callback(ints, ints, sort_int);
 	const int ints1[5] = { 2, 1, 0, 4, -5 };
 	EXPECT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // Nothing changed.
@@ -284,22 +297,24 @@ void do_sort_int_case(const sort_callback_t& sort_callback) {
 	sort_callback(ints, ints + 1, sort_int);
 	EXPECT_TRUE(::memcmp(ints, ints1, sizeof ints) == 0); // Still nothing changed.
 
-	// Sort 2 elements.
+	// "Sorts the elements in the range [begin, end) in comparison order using the insertion sort algorithm."
+	// Expect head slice -> { 1, 2 } while tail remains { 0, 4, -5 }.
 	sort_callback(ints, ints + 2, sort_int);
 	const int ints2[5] = { 1, 2, 0, 4, -5 };
 	EXPECT_TRUE(::memcmp(ints, ints2, sizeof ints) == 0);
 
-	// Sort all elements.
+	// "This version is intended for sorting large numbers of small objects."
+	// Whole array ascends into { -5, 0, 1, 2, 4 }. Sorts all elements.
 	sort_callback(ints, ints + 5, sort_int);
 	const int ints3[5] = { -5, 0, 1, 2, 4 };
 	EXPECT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0);
 
-	// Sort in reverse order.
+	// Ensure reversed comparator yields { 4, 2, 1, 0, -5 } before restoring order.
 	sort_callback(ints, ints + 5, sort_int_reverse);
 	const int ints4[5] = { 4, 2, 1, 0, -5 };
 	EXPECT_TRUE(::memcmp(ints, ints4, sizeof ints) == 0);
 
-	// Sort the reversed array back into ascending order.
+	// Run one more ascending pass to confirm stability: { -5, 0, 1, 2, 4 }.
 	sort_callback(ints, ints + 5, sort_int);
 	EXPECT_TRUE(::memcmp(ints, ints3, sizeof ints) == 0);
 }
@@ -326,16 +341,22 @@ TEST(hxset_algorithms_test, int_pointer_ranges) {
 		}
 	};
 
+	// "Forms the union of two ordered ranges [begin0, end0) and [begin1, end1) into output."
+	//   [1 3 5 7] | [3 4 7 9] => { 1, 3, 4, 5, 7, 9 }
 	int* union_end = hxset_union(left+0, left + hxsize(left), right+0, right + hxsize(right), dest_union+0);
 	const int expected_union[] = { 1, 3, 4, 5, 7, 9 };
 	EXPECT_EQ(union_end - dest_union, (ptrdiff_t)hxsize(expected_union));
 	expect_range(dest_union, union_end, expected_union);
 
+	// "Only keys present in both ranges appear in the output."
+	//   [1 3 5 7] & [3 4 7 9] => { 3, 7 }
 	int* intersection_end = hxset_intersection(left+0, left + hxsize(left), right+0, right + hxsize(right), dest_intersection+0);
 	const int expected_intersection[] = { 3, 7 };
 	EXPECT_EQ(intersection_end - dest_intersection, (ptrdiff_t)hxsize(expected_intersection));
 	expect_range(dest_intersection, intersection_end, expected_intersection);
 
+	// "The output contains keys that appear in the first range but not the second."
+	//   [1 3 5 7] - [3 4 7 9] => { 1, 5 }
 	int* difference_end = hxset_difference(left+0, left + hxsize(left), right+0, right + hxsize(right), dest_difference+0);
 	const int expected_difference[] = { 1, 5 };
 	EXPECT_EQ(difference_end - dest_difference, (ptrdiff_t)hxsize(expected_difference));
@@ -361,6 +382,8 @@ TEST(hxset_algorithms_test, hxarray_output_iterator_support) {
 	hxarray<tracker_t> merge_output;
 	merge_output.reserve(hxsize(left) + hxsize(right) + 1u);
 	merge_output.push_back(tracker_t(0));
+	// "Passing a hxarray as an output iterator ... will append to the array."
+	//   seed { 0 } then merge -> { 0, 1, 2, 2, 4, 4, 5 }
 	hxmerge(left+0, left + hxsize(left),
 		right+0, right + hxsize(right), merge_output);
 	const int expected_merge[] = { 0, 1, 2, 2, 4, 4, 5 };
@@ -370,6 +393,8 @@ TEST(hxset_algorithms_test, hxarray_output_iterator_support) {
 	hxarray<tracker_t> union_output;
 	union_output.reserve(hxsize(left) + hxsize(right) + 1u);
 	union_output.push_back(tracker_t(0));
+	// "Passing a hxarray as an output iterator ... will append to the array."
+	//   union payload extends { 0 } => { 0, 1, 2, 4, 5 }
 	hxset_union(left+0, left + hxsize(left),
 		right+0, right + hxsize(right), union_output);
 	const int expected_union[] = { 0, 1, 2, 4, 5 };
@@ -379,6 +404,8 @@ TEST(hxset_algorithms_test, hxarray_output_iterator_support) {
 	hxarray<tracker_t> intersection_output;
 	intersection_output.reserve(hxsize(left) + 1u);
 	intersection_output.push_back(tracker_t(0));
+	// "Only keys present in both ranges appear in the output."
+	//   sentinel { 0 } + overlap { 2, 4 } => { 0, 2, 4 }
 	hxset_intersection(left+0, left + hxsize(left),
 		right+0, right + hxsize(right), intersection_output);
 	const int expected_intersection[] = { 0, 2, 4 };
@@ -388,6 +415,8 @@ TEST(hxset_algorithms_test, hxarray_output_iterator_support) {
 	hxarray<tracker_t> difference_output;
 	difference_output.reserve(hxsize(left) + 1u);
 	difference_output.push_back(tracker_t(0));
+	// "The output contains keys that appear in the first range but not the second."
+	//   sentinel { 0 } + diff { 1 } => { 0, 1 }
 	hxset_difference(left+0, left + hxsize(left),
 		right+0, right + hxsize(right), difference_output);
 	const int expected_difference[] = { 0, 1 };
@@ -415,12 +444,15 @@ TEST(hxmerge_test, preserves_stable_ordering) {
 	const size_t left_count = hxsize(left);
 	const size_t right_count = hxsize(right);
 
+	// "Performs a stable merge sort of two ordered ranges [begin0, end0) and"
+	// "[begin1, end1) -> output." Verify equal keys keep ticket order.
 	hxmerge(left+0, left + left_count, right+0, right + right_count, dest+0);
 
 	const hxmerge_test_record_t expected[] = {
 		{ 1, 0 }, { 1, 1 }, { 3, 0 }, { 3, 1 },
 		{ 5, 0 }, { 5, 1 }, { 5, 2 }, { 7, 0 }
 	};
+	// Stable result should read {(1,0), (1,1), (3,0), (3,1), (5,0), (5,1), (5,2), (7,0)} top-to-bottom.
 	for(size_t i = 0; i < left_count + right_count; ++i) {
 		EXPECT_EQ(dest[i].key, expected[i].key);
 		EXPECT_EQ(dest[i].ticket, expected[i].ticket);
@@ -431,6 +463,8 @@ TEST(hxbinary_search_test, simple_case) {
 	int ints[5] = { 2, 5, 6, 88, 99 };
 	int* ints_end = ints+5;
 
+	// "Performs a binary search in the range [first, last)." Expect hits { 88, 2, 99 }
+	// across const and mutable pointers, then confirm misses fall to the end iterator.
 	// hxbinary_search returns end when not found.
 	int* result = hxbinary_search(ints, ints+5, 88, sort_int);
 	EXPECT_TRUE(result != ints_end && *result == 88);
@@ -446,6 +480,7 @@ TEST(hxbinary_search_test, simple_case) {
 	result = hxbinary_search(ints, ints+5, 7);
 	EXPECT_TRUE(result == ints_end);
 
+	// Size 0 range: begin == end so the return points at the sentinel.
 	// Empty range returns end.
 	result = hxbinary_search(ints, ints, 11, sort_int); // Zero size.
 	EXPECT_TRUE(result == ints);
@@ -462,8 +497,11 @@ TEST(hxbinary_search_test, binary_search_grinder) {
 		int x = rng.range(0, 100);
 		sorted.push_back(tracker_t(x));
 	}
+	// "Unsorted data will lead to errors." Force ascending order before the grinder.
 	hxsort(sorted.begin(), sorted.end());
 
+	// Every resident value should be rediscovered: pointer equality relaxed to
+	// value comparison avoids aliasing when duplicates exist.
 	for(size_t i=100u; i--; ) {
 		tracker_t t = hxmove(sorted[i]); // Don't pass an address that is in the array.
 		tracker_t* ptr = hxbinary_search(sorted.begin(), sorted.end(), t);
@@ -502,6 +540,8 @@ static void do_sort_iter_case(const sort_callback_t& sort_callback) {
 		}
 	};
 
+	// "The end parameter points just past the last element in the range to sort."
+	// Iterator wrapper should keep { 2, 1, 0, 4, -5 } unchanged for sizes 0 and 1.
 	reset();
 	sort_callback(hxhxalgorithm_test_iter_api_t(values), hxhxalgorithm_test_iter_api_t(values), sort_iter_value_less);
 	expect_values(initial_values);
@@ -510,23 +550,31 @@ static void do_sort_iter_case(const sort_callback_t& sort_callback) {
 	sort_callback(hxhxalgorithm_test_iter_api_t(values), hxhxalgorithm_test_iter_api_t(values + 1), sort_iter_value_less);
 	expect_values(initial_values);
 
+	// "Requires only the standard pointer operations. No array notation."
+	// Confirm head slice { 2, 1 } becomes { 1, 2 } with iterator arithmetic.
 	reset();
 	sort_callback(hxhxalgorithm_test_iter_api_t(values), hxhxalgorithm_test_iter_api_t(values + 2), sort_iter_value_less);
 	expect_values(expected_two);
 
+	// "Sorts the elements in the range [begin, end) in comparison order using the insertion sort algorithm."
+	// Iterator facade should deliver { -5, 0, 1, 2, 4 }.
 	reset();
 	sort_callback(hxhxalgorithm_test_iter_api_t(values), hxhxalgorithm_test_iter_api_t(values + 5), sort_iter_value_less);
 	expect_values(expected_sorted);
 
+	// Ensure alternate comparator flips to { 4, 2, 1, 0, -5 } before restoring order.
 	reset();
 	sort_callback(hxhxalgorithm_test_iter_api_t(values), hxhxalgorithm_test_iter_api_t(values + 5), sort_iter_value_greater);
 	expect_values(expected_descending);
 
+	// One more ascending pass confirms iterator facade remains stable.
 	sort_callback(hxhxalgorithm_test_iter_api_t(values), hxhxalgorithm_test_iter_api_t(values + 5), sort_iter_value_less);
 	expect_values(expected_sorted);
 }
 
 TEST(hxhxalgorithm_test, iterator_support) {
+	// Exercise iterator facade with insertion, heap, and hybrid strategies to
+	// guarantee the adapter satisfies each contract.
 	do_sort_iter_case([](hxhxalgorithm_test_iter_api_t begin, hxhxalgorithm_test_iter_api_t end, const auto& less) {
 		hxinsertion_sort(begin, end, less);
 	});

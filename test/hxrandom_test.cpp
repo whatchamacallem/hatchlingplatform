@@ -11,13 +11,15 @@ HX_REGISTER_FILENAME_HASH
 TEST(hxrandom_test, generation) {
 	hxrandom rng(1u);
 
-	// Implicit casts and assignment constructors.
+	// "Automatically casts to an unsigned integer or floating point value."
+	// Capture direct conversions.
 	uint8_t uint8 = rng;
 	uint16_t uint16 = rng;
 	uint32_t uint32 = rng;
 	uint64_t uint64 = rng;
 
-	// Functor calls and assignment operators.
+	// "Functor returns hxrandom& which converts itself to the type it is
+	// assigned to." Invoke call operator before assignment.
 	uint8 = rng();
 	uint16 = rng();
 	uint32 = rng();
@@ -27,11 +29,12 @@ TEST(hxrandom_test, generation) {
 
 	for(int s=10; s--;) {
 
-		// Implicit casts and assignment constructors.
+		// "Automatically casts to an unsigned integer or floating point value."
+		// Grab floats in [0..1).
 		float f = rng;
 		float d = rng;
 
-		// Functor calls and assignment operators.
+		// Call operator should yield same distribution via implicit conversion.
 		f = rng();
 		d = rng();
 
@@ -48,7 +51,8 @@ TEST(hxrandom_test, generation) {
 TEST(hxrandom_test, ops) {
 	hxrandom rng(20000);
 	for(int s=100; s--;) {
-		// T &= rng
+		// "Bitwise &= with random T generated from hxrandom." Exercises bounded
+		// masks on signed/unsigned types.
 		int i = 255; i &= rng;
 		EXPECT_TRUE(i >= 0 && i < 256);
 
@@ -58,7 +62,8 @@ TEST(hxrandom_test, ops) {
 		char c = 'x'; c &= rng;
 		EXPECT_TRUE((c&~(unsigned char)'x') == (unsigned char)'\0');
 
-		// Floating-point mod.
+		// "Generates a number of type T in the range [0, divisor)." Floating
+		// modulus uses operator% overloads.
 		float f = rng % 255.0f;
 		EXPECT_TRUE(f >= 0.0f && f < 255.0f);
 		double d = rng % 255.0;
@@ -131,6 +136,8 @@ TEST(hxrandom_test, read_populates_buffer) {
 	const size_t size = hxsize(buffer);
 	const size_t read_count = size - 2; // 7. Intentionally odd.
 
+	// "Reads a specified number of random bytes into the provided buffer."
+	// Little-endian stream should match manual generate32 sequence.
 	rng.read(buffer, read_count);
 
 	hxrandom verifier(0x654321u);
@@ -164,6 +171,8 @@ TEST(hxrandom_test, read_populates_buffer) {
 TEST(hxrandom_test, range) {
 	hxrandom rng(30000);
 	for(int s=100; s--;) {
+		// "Returns a random number in the range [base..base+range)." Validate
+		// overloads across integral and floating types.
 		EXPECT_TRUE(rng.range('a', (char)10) >= 'a' && rng.range('a', (char)10) < (char)('a' + 10));
 		EXPECT_TRUE(rng.range(1000,100) >= 1000 && rng.range(1000,100) < 1100);
 		EXPECT_TRUE(rng.range(1000u,100u) >= 1000u && rng.range(1000u,100u) < 1100u);

@@ -139,6 +139,7 @@ TEST(hxutility_test, hxabs_double) {
 }
 
 TEST(hxutility_test, hxforward) {
+	// Ensure forwarding preserves value category and constness.
 	EXPECT_EQ(hxutility_test_forward_rvalue,
 		hxutility_test_forward_detect(hxforward<hxutility_test_forward_t>(hxutility_test_forward_make_forwarded())));
 
@@ -165,6 +166,7 @@ TEST(hxutility_test, hxforward) {
 }
 
 TEST(hxutility_test, hxnullptr_converts_only_to_null) {
+	// "An instance of a class that will only convert to a null pointer."
 	hxnullptr_t null_object;
 	const int* int_ptr = null_object;
 	EXPECT_EQ(int_ptr, hxnullptr);
@@ -175,6 +177,8 @@ TEST(hxutility_test, hxnullptr_converts_only_to_null) {
 }
 
 TEST(hxutility_test, hxbasename_handles_separators) {
+	// "Returns a pointer to those characters following the last \\ or /." Check
+	// ASCII separator handling.
 	EXPECT_STREQ(hxbasename("plain"), "plain");
 	EXPECT_STREQ(hxbasename("dir/file.bin"), "file.bin");
 	EXPECT_STREQ(hxbasename("dir\\file.bin"), "file.bin");
@@ -183,6 +187,8 @@ TEST(hxutility_test, hxbasename_handles_separators) {
 }
 
 TEST(hxutility_test, hxlog2i_returns_highest_set_bit) {
+	// "Returns log2(n) as an integer which is the power of 2 of the largest bit
+	// in n."
 	EXPECT_EQ(hxlog2i(1u), 0);
 	EXPECT_EQ(hxlog2i(2u), 1);
 	EXPECT_EQ(hxlog2i(3u), 1);
@@ -208,6 +214,7 @@ TEST(hxutility_test, hxisfinite_detects_special_values) {
 	memcpy(&double_neg_inf, &double_neg_inf_bits, sizeof double_neg_inf);
 	memcpy(&double_nan, &double_nan_bits, sizeof double_nan);
 
+	// Finite helpers should accept -0/+1 and reject +/-inf and NaN bit patterns.
 	EXPECT_TRUE(hxisfinitef(-0.0f));
 	EXPECT_TRUE(hxisfinitef(1.0f));
 	EXPECT_FALSE(hxisfinitef(float_pos_inf));
@@ -237,6 +244,7 @@ TEST(hxutility_test, hxswap_memcpy) {
 		int32_t second;
 	} first = { 1, 2 }, second = { 3, 4 };
 
+	// "Exchanges the contents of x and y using memcpy and a temporary buffer."
 	hxswap_memcpy(first, second);
 
 	EXPECT_EQ(first.first, 3);
@@ -246,8 +254,8 @@ TEST(hxutility_test, hxswap_memcpy) {
 }
 
 TEST(hxutility_test, hxisspace) {
-	// Don't use non-ASCII or setlocale because it might not exist.
-
+	// Don't use non-ASCII or setlocale because it might not exist. Classifier
+	// treats ASCII 0x21-0x7e and all >=0x80 as printable.
 	for (int c = 0; c < 128; ++c) {
 		const bool hx = hxisspace((char)c);
 		const bool st = ::isspace((unsigned char)c) != 0;
@@ -260,8 +268,8 @@ TEST(hxutility_test, hxisspace) {
 }
 
 TEST(hxutility_test, hxisgraph) {
-	// Don't use non-ASCII or setlocale because it might not exist.
-
+	// Don't use non-ASCII or setlocale because it might not exist. Classifier
+	// treats ASCII 0x21-0x7e and all >=0x80 as printable.
 	for (int c = 0; c <= 255; ++c) {
 		const bool hx = hxisgraph((char)c);
 

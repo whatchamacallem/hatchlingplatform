@@ -79,9 +79,11 @@ private:
 } // namespace
 
 TEST(hxprofiler_test, single_scope_runs_for_1ms) {
+	// "Clears samples and begins sampling."
 	hxprofiler_start();
 
 	{
+		// "Records scoped samples keyed by a string literal." Nest worker that spins ~1 ms.
 		hxprofile_scope("1 ms");
 		hxprofiler_task_test one;
 		one.construct("1 ms", 1.0f);
@@ -100,16 +102,20 @@ TEST(hxprofiler_test, write_to_chrome_tracing_command) {
 	hxprofiler_stop();
 	hxconsole_exec_line("profilestart");
 
+	// Create queue sized to labels with 2 worker threads.
 	hxtask_queue q(s_hxtest_num_labels, 2u);
 	hxprofiler_task_test tasks[s_hxtest_num_labels];
 	for(size_t i = s_hxtest_num_labels; i--; ) {
 		tasks[i].construct(s_hxtest_labels[i], (float)i);
 		q.enqueue(tasks + i);
 	}
+	// "Execute remaining tasks. The thread calling wait_for_all executes tasks as well."
 	q.wait_for_all();
 
+	// profilewrite emits Chrome tracing JSON.
 	const bool is_ok = hxconsole_exec_line("profilewrite profile.json");
 	EXPECT_TRUE(is_ok);
+	// "Stops sampling and writes samples to the system log."
 	hxprofiler_log();
 }
 

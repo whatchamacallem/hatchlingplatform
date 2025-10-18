@@ -34,6 +34,7 @@ TEST(hxmemory_manager_test, bytes) {
 
 TEST(hxmemory_manager_test, string_duplicate) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	// "Allocates a copy of a string using the specified allocator." Duplicate literal into temp arena then release.
 	char* p = hxstring_duplicate("str");
 	ASSERT_TRUE(p != hxnull);
 	ASSERT_STREQ(p, "str");
@@ -43,12 +44,16 @@ TEST(hxmemory_manager_test, string_duplicate) {
 TEST(hxmemory_manager_test, temp_overflow) {
 	hxlogconsole("EXPECTING_TEST_WARNINGS\n");
 
-	// There is no policy against using the debug heap in release.
+	// "Allocates memory of the specified size with a specific allocator and
+	// alignment." Request temp_stack byte-count { budget + 1 } using explicit
+	// alignment.
 	void* p = hxmalloc_ext(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1, hxsystem_allocator_temporary_stack, 1u);
 	ASSERT_TRUE(p != hxnull);
 	hxfree(p);
 
 	hxsystem_allocator_scope temp(hxsystem_allocator_temporary_stack);
+	// Fallback path through default allocator should still succeed for { budget
+	// + 1 } bytes.
 	p = hxmalloc(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1);
 	ASSERT_TRUE(p != hxnull);
 	hxfree(p);
@@ -66,15 +71,17 @@ public:
 		uintptr_t start_count;
 		uintptr_t start_bytes;
 
-		{
-			hxsystem_allocator_scope allocator_scope(id);
+	{
+		hxsystem_allocator_scope allocator_scope(id);
 
+			// "Gets the number of allocations made when this scope was entered." Snapshot counters for later diff.
 			start_count = allocator_scope.get_initial_allocation_count();
 			start_bytes = allocator_scope.get_initial_bytes_allocated();
 
 			{
 				// Google Test spams new/delete with std::string operations.
 				hxsystem_allocator_scope gtest_spam_guard(hxsystem_allocator_heap);
+				// "Gets the total number of allocations outstanding for this memory allocator." Expect no incidental churn before our own allocations.
 				ASSERT_EQ(allocator_scope.get_current_allocation_count(), start_count);
 				ASSERT_EQ(allocator_scope.get_current_bytes_allocated(), start_bytes);
 			}
@@ -86,6 +93,7 @@ public:
 
 			{
 				hxsystem_allocator_scope gtest_spam_guard(hxsystem_allocator_heap);
+				// Check delta counters: 2x allocations should advance outstanding count while preserving initial snapshot.
 				ASSERT_EQ(allocator_scope.get_initial_allocation_count(), start_count);
 				ASSERT_EQ(allocator_scope.get_current_allocation_count(), 2u + start_count);
 				if(allocator_scope.get_current_bytes_allocated() != 0) {
@@ -105,6 +113,7 @@ public:
 
 		// hxsystem_allocator_permanent does not free.
 		if(id != hxsystem_allocator_permanent) {
+			// Fresh scope should be reset to original counters once previous block exits.
 			hxsystem_allocator_scope allocator_scope(id);
 
 			hxsystem_allocator_scope gtest_spam_guard(hxsystem_allocator_heap);

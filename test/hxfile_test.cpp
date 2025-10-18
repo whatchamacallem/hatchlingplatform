@@ -14,6 +14,7 @@ HX_REGISTER_FILENAME_HASH
 #endif
 
 TEST(hxfile_test, empty_name_rejects_empty_path) {
+	// "Constructs and opens a file with a formatted filename." Empty path under skip_asserts should trip failure.
 	hxfile f(hxfile::in | hxfile::skip_asserts, "");
 	EXPECT_EQ(f.fail(), true);
 	EXPECT_EQ(f.is_open(), false);
@@ -73,10 +74,12 @@ TEST(hxfile_test, seek_and_read_maintain_state) {
 	f.write1(b);
 	f.write1(a);
 
+	// "Returns the current position in the file." After 3 structs expect 12 bytes, then seek into middle block.
 	EXPECT_EQ(f.get_pos(), 12u);
 	f.set_pos(4);
 	EXPECT_TRUE(!f.fail());
 	EXPECT_FALSE(f.eof());
+	// "Reads a single unformatted native-endian object from the file." Confirm middle payload survives.
 	f.read1(c);
 	EXPECT_TRUE(!f.fail());
 	EXPECT_FALSE(f.eof());
@@ -99,13 +102,16 @@ TEST(hxfile_test, move_copy_and_stream_operators) {
 	// C++17 uses "guaranteed copy elision," requiring hxmove here to invoke the
 	// constructor from a temporary correctly.
 	hxfile ft(hxfile::out | hxfile::skip_asserts, "hxfile_test_operators.bin");
+	// "Move constructor. No copy constructor is provided." Source handle closes once transferred.
 	hxfile f(hxmove(ft));
 	EXPECT_TRUE(!ft.is_open());
 	EXPECT_TRUE(f.is_open());
 	hxfile_test_record x { 77777u, -555, 77u, -55 };
 	int a = -3;
 
+	// "Writes a single unformatted native-endian object to a stream." Chain writes for struct+int payload.
 	f <= x <= a;
+	// "Writes a formatted UTF-8 string to the file." Append text payload for later scan.
 	f.print("(%d,%d)", 30, 70);
 
 	EXPECT_TRUE(!f.fail());
@@ -114,6 +120,7 @@ TEST(hxfile_test, move_copy_and_stream_operators) {
 
 	// Read the test file and verify.
 
+	// "Opens a file with the specified mode and formatted filename." Rehydrate into fresh handle.
 	ft.open(hxfile::in | hxfile::skip_asserts, "hxfile_test_operators.bin");
 	f = hxmove(ft);
 	EXPECT_TRUE(!ft.is_open());
@@ -125,9 +132,12 @@ TEST(hxfile_test, move_copy_and_stream_operators) {
 	int thirty = 0;
 	int seventy = 0;
 
+	// "Reads a single unformatted native-endian object from a stream." Recover struct + trailing int.
 	f >= y >= b;
+	// "Reads a formatted UTF-8 string from the file. Uses scanf conventions." Parse text footer.
 	f.scan("(%d,%d)", &thirty, &seventy);
 
+	// Expect struct contents -> { 77777u, -555, 77u, -55 } and trailing int -3.
 	EXPECT_EQ(y.a, 77777u);
 	EXPECT_EQ(y.b, -555);
 	EXPECT_EQ(y.c, 77u);
@@ -144,6 +154,7 @@ TEST(hxfile_test, move_copy_and_stream_operators) {
 	EXPECT_TRUE(f.eof());
 	EXPECT_EQ(extra_byte, 0u);
 	EXPECT_TRUE(f.fail());
+	// "Resets the failure and EOF flags." Clear after synthetic EOF before final close.
 	f.clear();
 	EXPECT_TRUE(!f.fail()); // Clear the EOF event.
 	f.close();

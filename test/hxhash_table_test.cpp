@@ -74,6 +74,7 @@ TEST_F(hxhash_table_test_f, null) {
 		table_t table;
 		EXPECT_EQ(table.size(), 0u);
 
+		// "Returns an iterator pointing to the beginning of the hash table." Empty table => begin == end and load factor 0.
 		EXPECT_TRUE(table.begin() == table.end());
 		EXPECT_TRUE(table.cbegin() == table.cend());
 		EXPECT_TRUE(((const table_t&)table).begin() == ((const table_t&)table).cend());
@@ -81,6 +82,7 @@ TEST_F(hxhash_table_test_f, null) {
 		EXPECT_FALSE(table.cbegin() != table.cend());
 		EXPECT_FALSE(((const table_t&)table).begin() != ((const table_t&)table).cend());
 
+		// "Removes all nodes and calls deleter_t::operator() on every node." Clearing untouched table keeps load factor { 0.0 }.
 		table.clear();
 		EXPECT_EQ(table.load_factor(), 0.0f);
 
@@ -97,9 +99,10 @@ TEST_F(hxhash_table_test_f, single) {
 		using table_t = hxhash_table<hxtest_integer, 4>;
 		table_t table;
 		hxtest_integer* node = hxnew<hxtest_integer>(k);
+		// "Inserts a node_t into the hash table, allowing duplicate keys." Seed table with manual node.
 		table.insert_node(node);
 
-		// Operations on a single node.
+		// "Returns a node containing key if any or allocates and returns a new one." Iterator + count checks confirm single-entry semantics.
 		EXPECT_TRUE(table.begin() != table.end());
 		EXPECT_TRUE(table.cbegin() != table.cend());
 		EXPECT_TRUE(++table.begin() == table.end());
@@ -109,17 +112,19 @@ TEST_F(hxhash_table_test_f, single) {
 		EXPECT_TRUE(table[k].key() == k);
 		EXPECT_TRUE(table[k].value.id == node->value.id);
 		EXPECT_TRUE(table.insert_unique(k).value.id == node->value.id);
+		// Lookup stack: find() returns { node }, subsequent cursor with previous skips duplicates.
 		EXPECT_TRUE(table.find(k) == node);
 		EXPECT_TRUE(table.find(k, node) == hxnull);
 		EXPECT_TRUE(((const table_t&)table).find(k) == node);
 		EXPECT_TRUE(((const table_t&)table).find(k, node) == hxnull);
 
-		// MODIFIES TABLE
+		// "Removes and returns the first node_t with the given key." Ensure repeated calls -> { node, hxnull }.
 		EXPECT_TRUE(table.extract(k) == node);
 		EXPECT_TRUE(table.extract(k) == hxnull);
 
 		table.insert_node(node);
 		EXPECT_TRUE(table.find(k) == node);
+		// "Clears the hash table without deleting any Nodes." After release_all(), find returns hxnull while node still alive.
 		table.release_all();
 		EXPECT_TRUE(table.find(k) == hxnull);
 		EXPECT_EQ(table.size(), 0u);
@@ -152,12 +157,14 @@ TEST_F(hxhash_table_test_f, map_node_usage) {
 	using table_t = hxhash_table<map_node_t, 4>;
 	{
 		table_t table;
+		// "value_t must default-construct when using subscripting." Confirm key 10 spawns default map entry { value.id = 0 } before assignment.
 		map_node_t& via_subscript = table[10];
 		EXPECT_EQ(via_subscript.key(), 10);
 		via_subscript.value().id = 123;
 
 		map_node_t* manual = hxnew<map_node_t>(20);
 		manual->value().id = 321;
+		// Link external allocation through insert_node to co-exist with subscript entry.
 		table.insert_node(manual);
 
 		EXPECT_EQ(table.size(), 2u);
@@ -174,6 +181,7 @@ TEST_F(hxhash_table_test_f, map_node_usage) {
 		EXPECT_TRUE(manual_lookup != hxnull);
 		EXPECT_EQ(manual_lookup->value().id, 321);
 
+		// Duplicate insert returns same storage -> verifies uniqueness guard.
 		map_node_t& duplicate_lookup = table.insert_unique(10);
 		EXPECT_EQ(&duplicate_lookup, &via_subscript);
 	}
@@ -189,9 +197,10 @@ TEST_F(hxhash_table_test_f, multiple) {
 		// Table will be overloaded.
 		using table_t = hxhash_table<hxtest_integer>;
 		table_t table;
+		// "Use set_table_size_bits to configure hash bits dynamically." Force 2^5 buckets before load test.
 		table.set_table_size_bits(5);
 
-		// Insert N elements.
+		// Subscript pipeline seeds keys { 0..N-1 } with value.id mirroring the key.
 		for(int i = 0; i < N; ++i) {
 			EXPECT_EQ(table[i].value.id, i);
 			EXPECT_EQ(table[i].key(), i);
@@ -264,7 +273,7 @@ TEST_F(hxhash_table_test_f, multiple) {
 			EXPECT_EQ(key_histogram[i], 4);
 		}
 
-		// Check that keys are distributed such that no bucket has more than 2x average.
+		// "Returns the average number of Nodes per bucket." Ensure load_max stays within 2x mean occupancy.
 		EXPECT_TRUE((table.load_factor() * 2.0f) > (float)table.load_max());
 
 		// Erase keys [0..N/2), remove 1 of 2 of keys [N/2..N)
@@ -315,6 +324,7 @@ TEST_F(hxhash_table_test_f, strings) {
 		using table_t = hxhash_table<hxtest_string, 4>;
 		table_t table;
 
+		// "Allocates a copy, resulting in a string pool per hash table."
 		for(int i = sz; i--;) {
 			EXPECT_STREQ(table[colors[i]].key(), colors[i]);
 		}
@@ -337,6 +347,7 @@ TEST_F(hxhash_table_test_f, string_literal_nodes) {
 	table_t table;
 
 	for(unsigned int i = 0; i < hxsize(literals); ++i) {
+		// "Specialization of hxhash_table_set_node for static C strings." Literal keys stay owned externally while lookups remain stable.
 		hxtest_string_literal& entry = table[literals[i]];
 		EXPECT_EQ(table.find(literals[i]), &entry);
 		EXPECT_EQ(&table.insert_unique(literals[i]), &entry);

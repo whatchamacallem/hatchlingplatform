@@ -100,6 +100,7 @@ void* hxthread_local_destructor_thread(int*) {
 
 TEST(hxthread_test_unique_lock, basic_lock_unlock) {
 	hxmutex mutex;
+	// "std::unique_lock style RAII-style unique lock for hxmutex." Acquire and release.
 	hxunique_lock lock(mutex);
 	EXPECT_TRUE(lock.owns_lock());
 	lock.unlock();
@@ -108,6 +109,7 @@ TEST(hxthread_test_unique_lock, basic_lock_unlock) {
 
 TEST(hxthread_test_mutex, double_lock_unlock) {
 	hxmutex mutex;
+	// "std::mutex style wrapper for pthreads." lock()/unlock() should succeed repeatedly.
 	EXPECT_TRUE(mutex.lock());
 	EXPECT_TRUE(mutex.unlock());
 	EXPECT_TRUE(mutex.lock());
@@ -151,6 +153,8 @@ TEST(hxthread_test_unique_lock, mutexreference) {
 
 TEST(hxthread_test_condition_variable, notify_no_waiters) {
 	hxcondition_variable condition_variable;
+	// "std::condition_variable style condition variable wrapper for pthreads."
+	// notify_* should succeed even without waiters.
 	EXPECT_TRUE(condition_variable.notify_one());
 	EXPECT_TRUE(condition_variable.notify_all());
 }
@@ -165,6 +169,8 @@ TEST(hxthread_test_condition_variable, wait_predicate) {
 	hxcondition_variable condition_variable;
 	hxunique_lock lock(mutex);
 	int value = 0;
+	// "Waits until the predicate returns true." With value already 0 we drop
+	// through immediately.
 	condition_variable.wait(lock, hxthread_test_predicate_wait_for_zero(&value));
 	SUCCEED();
 }
@@ -178,6 +184,7 @@ TEST(hxthread_test_condition_variable, notify_one_wakes_waiter) {
 	{
 		hxunique_lock lock(mutex);
 		ready = true;
+		// "Notifies one waiting thread." Wake single consumer.
 		condition_variable.notify_one();
 	}
 	thread.join();
@@ -196,6 +203,7 @@ TEST(hxthread_test_condition_variable, notify_all_wakes_waiters) {
 	{
 		hxunique_lock lock(mutex);
 		ready = true;
+		// "Notifies all waiting threads." Both sleepers should bump woken count.
 		condition_variable.notify_all();
 	}
 	thread1.join();
@@ -207,6 +215,8 @@ TEST(hxthread_test_thread, start_and_join) {
 	int shared = 0;
 	hxmutex mutex;
 	hxthread_test_simple_parameters_t argument = {&mutex, &shared};
+	// "std::thread style thread wrapper for pthreads." Launch worker increments
+	// shared state under mutex.
 	hxthread thread(&hxthread_test_func_increment, &argument);
 	EXPECT_TRUE(thread.joinable());
 	thread.join();
@@ -306,6 +316,8 @@ TEST(hxthread_test_thread_local, destroy_local_runs_on_thread_exit) {
 	}
 
 	int dummy=0;
+	// "Provides a C++ template for thread-local storage" — destructor should
+	// fire when thread exits.
 	hxthread thread(&hxthread_local_destructor_thread, &dummy);
 	thread.join();
 

@@ -49,12 +49,15 @@ TEST(hxtest_test, relational) {
 	hxtest_relational<float>(-0.00002f, -0.00001f);
 	hxtest_relational<double>(0.0, 1.0);
 
+	// "Requires that two C strings are equal, without checking null pointers."
 	ASSERT_STREQ("a", "a");
 	ASSERT_STRNE("a", "b");
 }
 
 // These avoid knowing anything about the implementation.
 TEST(hxtest_test, float_eq) {
+	// "Checks floats for equality within a scaled tolerance." Cover a handful
+	// of representative cases.
 	const float third = 1.0f / 3.0f;
 	ASSERT_FLOAT_EQ(third + third + third, 1.0f);
 
@@ -71,6 +74,8 @@ TEST(hxtest_test, float_eq) {
 }
 
 TEST(hxtest_test, double_eq) {
+	// "Checks doubles for equality within a scaled tolerance." Mirror float
+	// coverage using double path.
 	const double third = 1.0 / 3.0;
 	ASSERT_DOUBLE_EQ(third + third + third, 1.0);
 
