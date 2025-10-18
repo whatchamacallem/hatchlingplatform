@@ -8,14 +8,15 @@
 #include "hxalgorithm.hpp"
 
 #if HX_CPLUSPLUS >= 202002L
-/// Concept capturing the element requirements for `hxarray`. Everything else is
-/// optional.
+
+/// Concept smoke testing the `hxarray` element. Any kind of constructor or
+/// assignment operator may or may not be required depending on use. All
+/// operators required should be reasonably predictable. Only the destructor is
+/// tested here.
 template<typename T_>
-concept hxarray_concept_ = requires(T_ value_, T_ other_value_) {
+concept hxarray_concept_ = requires(T_& x_) {
 	sizeof(T_);
-	{ T_(hxmove(value_)) };
-	{ value_ = hxmove(other_value_) };
-	{ value_.~T_() };
+	{ x_.~T_() };
 };
 #else
 #define hxarray_concept_ typename
