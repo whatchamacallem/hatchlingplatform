@@ -31,20 +31,20 @@ concept hxarray_concept_ = requires(T_& x_) {
 template<typename array_t_>
 class hxarray_back_inserter_ {
 public:
+	// Internal. Extends the array using placement new when assigned to.
 	template<typename arg_t_>
 	typename array_t_::value_type& operator=(arg_t_&& arg_) {
-		return *::new(m_that_.push_back_unconstructed_())
-			typename array_t_::value_type(hxforward<arg_t_>(arg_));
+		return m_x_.push_back(hxforward<arg_t_>(arg_));
 	}
 private:
 	friend array_t_;
 	// Internal use only.
-	hxarray_back_inserter_(array_t_& x_) : m_that_(x_) { }
+	hxarray_back_inserter_(array_t_& x_) : m_x_(x_) { }
 	// Use `operator=` to add a an element and return a reference.
 	hxarray_back_inserter_(const hxarray_back_inserter_& x_) = delete;
 	// No address-of operator. It wouldn't be what was expected.
 	void operator&(void) const = delete;
-	array_t_& m_that_;
+	array_t_& m_x_;
 };
 /// \endcond
 
@@ -146,8 +146,8 @@ public:
 	/// - `x` : A temporary Array<T>.
 	void operator=(hxarray&& x_);
 
-	/// Assign from a C-style array. Usable as an `initializer_list` when
-	/// the `std` namespace is not available. e.g.,
+	/// Assign from a C-style array. Usable as an `initializer_list` when the
+	/// `std` namespace is not available. e.g.,
 	/// ```cpp
 	/// static const int initial_values[] = { 5, 4, 3 };
 	/// hxarray<int, 32u> current_values(initial_values);
@@ -530,8 +530,6 @@ public:
 	void swap(hxarray& x_);
 
 private:
-	friend hxarray_back_inserter_<hxarray<T_, capacity_>>;
-
 	// Returns a pointer for use with placement new.
 	void* push_back_unconstructed_(void);
 
@@ -804,7 +802,8 @@ void hxarray<T_, capacity_>::clear(void) {
 template<hxarray_concept_ T_, size_t capacity_>
 template<typename... args_t_>
 T_& hxarray<T_, capacity_>::emplace_back(args_t_&&... args_) {
-	return *::new(this->push_back_unconstructed_()) T_(hxforward<args_t_>(args_)...);
+	hxassertmsg(!this->full(), "stack_overflow");
+	return *::new(m_end_++) T_(hxforward<args_t_>(args_)...);
 }
 
 template<hxarray_concept_ T_, size_t capacity_>
@@ -1061,7 +1060,8 @@ void hxarray<T_, capacity_>::pop_heap(void) {
 template<hxarray_concept_ T_, size_t capacity_>
 template<typename... args_t_>
 T_& hxarray<T_, capacity_>::push_back(args_t_&&... args_) {
-	return *::new(this->push_back_unconstructed_()) T_(hxforward<args_t_>(args_)...);
+	hxassertmsg(!this->full(), "stack_overflow");
+	return *::new(m_end_++) T_(hxforward<args_t_>(args_)...);
 }
 
 template<hxarray_concept_ T_, size_t capacity_>
