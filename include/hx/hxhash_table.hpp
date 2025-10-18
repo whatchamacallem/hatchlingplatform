@@ -4,13 +4,13 @@
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
 /// \file hx/hxhash_table.hpp Implements a hash table that operates without
-/// reallocating memory or copying data. Visualizing how a memory allocator
-/// has to serve doubling hash table sizes shows how quickly memory fragments. So
+/// reallocating memory or copying data. Visualizing how a memory allocator has
+/// to serve doubling hash table sizes shows how quickly memory fragments. So
 /// this implementation expects you to allocate the largest table you may need
-/// in advance. Each bucket uses an embedded singly-linked list. Hash tables can act as
-/// either an unordered map or an unordered set and support operations that
-/// allow for unique or duplicate keys. While this interface is designed to feel
-/// familiar, code using standard containers will need some adjustments. In
+/// in advance. Each bucket uses an embedded singly-linked list. Hash tables can
+/// act as either an unordered map or an unordered set and support operations
+/// that allow for unique or duplicate keys. While this interface is designed to
+/// feel familiar, code using standard containers will need some adjustments. In
 /// particular, table modification is non-standard. Iterators are provided but
 /// are not used to modify the table.
 ///
