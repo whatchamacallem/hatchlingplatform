@@ -11,7 +11,7 @@ HX_REGISTER_FILENAME_HASH
 
 namespace {
 
-// The hxhxalgorithm_test_ref_tracker_t tests check for correct use of references to temporaries.
+// Checks API use and correct use of references to temporaries.
 class hxhxalgorithm_test_ref_tracker_t {
 public:
 	// This is not used by the sort code.
@@ -115,11 +115,13 @@ bool sort_iter_value_greater(const hxhxalgorithm_test_ref_tracker_t& lhs, const 
 } // namespace {
 
 TEST(hxhxalgorithm_test, hxmerge_iterator_support) {
-	hxhxalgorithm_test_ref_tracker_t left[3] = { hxhxalgorithm_test_ref_tracker_t(1), hxhxalgorithm_test_ref_tracker_t(3), hxhxalgorithm_test_ref_tracker_t(5) };
-	hxhxalgorithm_test_ref_tracker_t right[3] = { hxhxalgorithm_test_ref_tracker_t(2), hxhxalgorithm_test_ref_tracker_t(4), hxhxalgorithm_test_ref_tracker_t(6) };
-	hxhxalgorithm_test_ref_tracker_t dest[6] = {
-		hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(0),
-		hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(0)
+	using tracker_t = hxhxalgorithm_test_ref_tracker_t;
+
+	tracker_t left[3] = { tracker_t(1), tracker_t(3), tracker_t(5) };
+	tracker_t right[3] = { tracker_t(2), tracker_t(4), tracker_t(6) };
+	tracker_t dest[6] = {
+		tracker_t(0), tracker_t(0), tracker_t(0),
+		tracker_t(0), tracker_t(0), tracker_t(0)
 	};
 
 	hxmerge(hxhxalgorithm_test_iter_api_t(left), hxhxalgorithm_test_iter_api_t(left + 3),
@@ -132,11 +134,11 @@ TEST(hxhxalgorithm_test, hxmerge_iterator_support) {
 	}
 
 	// Do it all over again with a GE functor and the parameters reversed.
-	hxhxalgorithm_test_ref_tracker_t left_desc[3] = { hxhxalgorithm_test_ref_tracker_t(5), hxhxalgorithm_test_ref_tracker_t(3), hxhxalgorithm_test_ref_tracker_t(1) };
-	hxhxalgorithm_test_ref_tracker_t right_desc[3] = { hxhxalgorithm_test_ref_tracker_t(6), hxhxalgorithm_test_ref_tracker_t(4), hxhxalgorithm_test_ref_tracker_t(2) };
-	hxhxalgorithm_test_ref_tracker_t dest_desc[6] = {
-		hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(0),
-		hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(0)
+	tracker_t left_desc[3] = { tracker_t(5), tracker_t(3), tracker_t(1) };
+	tracker_t right_desc[3] = { tracker_t(6), tracker_t(4), tracker_t(2) };
+	tracker_t dest_desc[6] = {
+		tracker_t(0), tracker_t(0), tracker_t(0),
+		tracker_t(0), tracker_t(0), tracker_t(0)
 	};
 
 	hxmerge(hxhxalgorithm_test_iter_api_t(left_desc), hxhxalgorithm_test_iter_api_t(left_desc + 3),
@@ -150,25 +152,27 @@ TEST(hxhxalgorithm_test, hxmerge_iterator_support) {
 }
 
 TEST(hxhxalgorithm_test, hxbinary_search_iterator_support) {
-	hxhxalgorithm_test_ref_tracker_t values[7] = {
-		hxhxalgorithm_test_ref_tracker_t(-5), hxhxalgorithm_test_ref_tracker_t(-1), hxhxalgorithm_test_ref_tracker_t(0), hxhxalgorithm_test_ref_tracker_t(3),
-		hxhxalgorithm_test_ref_tracker_t(5), hxhxalgorithm_test_ref_tracker_t(8), hxhxalgorithm_test_ref_tracker_t(12)
+	using tracker_t = hxhxalgorithm_test_ref_tracker_t;
+
+	tracker_t values[7] = {
+		tracker_t(-5), tracker_t(-1), tracker_t(0), tracker_t(3),
+		tracker_t(5), tracker_t(8), tracker_t(12)
 	};
 
 	hxhxalgorithm_test_iter_api_t begin(values);
 	hxhxalgorithm_test_iter_api_t end(values + 7);
 
-	hxhxalgorithm_test_ref_tracker_t key_three(3);
+	tracker_t key_three(3);
 	hxhxalgorithm_test_iter_api_t result = hxbinary_search(begin, end, key_three, sort_iter_value_less);
 	EXPECT_NE(result, end);
 	EXPECT_EQ((*result).value, 3);
 
-	hxhxalgorithm_test_ref_tracker_t key_high(12);
+	tracker_t key_high(12);
 	result = hxbinary_search(begin, end, key_high, sort_iter_value_less);
 	EXPECT_NE(result, end);
 	EXPECT_EQ((*result).value, 12);
 
-	hxhxalgorithm_test_ref_tracker_t missing(7);
+	tracker_t missing(7);
 	result = hxbinary_search(begin, end, missing, sort_iter_value_less);
 	EXPECT_EQ(result, end);
 
@@ -178,21 +182,23 @@ TEST(hxhxalgorithm_test, hxbinary_search_iterator_support) {
 }
 
 TEST(hxhxalgorithm_test, sort_grinder) {
+	using tracker_t = hxhxalgorithm_test_ref_tracker_t;
+
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(2);
 	size_t max_size_mask = 0x7f;
-	hxarray<hxhxalgorithm_test_ref_tracker_t> insertion_sorted; insertion_sorted.reserve(max_size_mask);
-	hxarray<hxhxalgorithm_test_ref_tracker_t> heap_sorted; heap_sorted.reserve(max_size_mask);
-	hxarray<hxhxalgorithm_test_ref_tracker_t> generic_sorted; generic_sorted.reserve(max_size_mask);
+	hxarray<tracker_t> insertion_sorted; insertion_sorted.reserve(max_size_mask);
+	hxarray<tracker_t> heap_sorted; heap_sorted.reserve(max_size_mask);
+	hxarray<tracker_t> generic_sorted; generic_sorted.reserve(max_size_mask);
 
 	for(int i=12; i--; ) {
 		// Set up the arrays to be sorted.
 		size_t size = (max_size_mask >> i) & rng;
 		for(size_t j=size; j--;) {
-			insertion_sorted.push_back(hxhxalgorithm_test_ref_tracker_t(rng.range(100, 200)));
+			insertion_sorted.push_back(tracker_t(rng.range(100, 200)));
 			// Use the && constructor and not the const& one.
-			heap_sorted.push_back(hxhxalgorithm_test_ref_tracker_t(0));
-			generic_sorted.push_back(hxhxalgorithm_test_ref_tracker_t(0));
+			heap_sorted.push_back(tracker_t(0));
+			generic_sorted.push_back(tracker_t(0));
 		}
 
 		::memcpy((void*)heap_sorted.data(), insertion_sorted.data(), insertion_sorted.size_bytes());
@@ -213,10 +219,12 @@ TEST(hxhxalgorithm_test, sort_grinder) {
 }
 
 TEST(hxhxalgorithm_test, sort_grinder_generic) {
+	using tracker_t = hxhxalgorithm_test_ref_tracker_t;
+
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(3);
 	size_t max_size_mask = 0xffff;
-	hxarray<hxhxalgorithm_test_ref_tracker_t> sorted; sorted.reserve(max_size_mask);
+	hxarray<tracker_t> sorted; sorted.reserve(max_size_mask);
 	hxarray<int> histogram(20000, 0);
 
 	for(int i=10; i--; ) {
@@ -228,7 +236,7 @@ TEST(hxhxalgorithm_test, sort_grinder_generic) {
 		}
 		for(size_t j=size; j--;) {
 			int x = rng.range(10000, 10000);
-			sorted.push_back(hxhxalgorithm_test_ref_tracker_t(x));
+			sorted.push_back(tracker_t(x));
 			++histogram[(size_t)x];
 		}
 
@@ -335,55 +343,53 @@ TEST(hxset_algorithms_test, int_pointer_ranges) {
 }
 
 TEST(hxset_algorithms_test, hxarray_output_iterator_support) {
+	using tracker_t = hxhxalgorithm_test_ref_tracker_t;
+
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
-	auto expect_hxarray = [](const hxarray<int>& actual, const int* expected, size_t count) {
+	auto expect_hxarray = [](const hxarray<tracker_t>& actual, const int* expected, size_t count) {
 		ASSERT_EQ(actual.size(), count);
 		for(size_t i = 0; i < count; ++i) {
-			EXPECT_EQ(actual[i], expected[i]);
+			EXPECT_EQ(actual[i].value, expected[i]);
 		}
 	};
 
-	const int left[] = { 1, 2, 4 };
-	const int right[] = { 2, 4, 5 };
+	tracker_t left[] = { tracker_t(1), tracker_t(2), tracker_t(4) };
+	tracker_t right[] = { tracker_t(2), tracker_t(4), tracker_t(5) };
 
 	// hxmerge
-	hxarray<int> merge_output;
+	hxarray<tracker_t> merge_output;
 	merge_output.reserve(hxsize(left) + hxsize(right) + 1u);
-	merge_output.push_back(0);
-	hxmerge<const int*, hxarray<int>&>(left+0, left + hxsize(left),
-		right+0, right + hxsize(right),
-		merge_output);
+	merge_output.push_back(tracker_t(0));
+	hxmerge(left+0, left + hxsize(left),
+		right+0, right + hxsize(right), merge_output);
 	const int expected_merge[] = { 0, 1, 2, 2, 4, 4, 5 };
 	expect_hxarray(merge_output, expected_merge, hxsize(expected_merge));
 
 	// hxset_union
-	hxarray<int> union_output;
+	hxarray<tracker_t> union_output;
 	union_output.reserve(hxsize(left) + hxsize(right) + 1u);
-	union_output.push_back(0);
-	hxset_union<const int*, hxarray<int>&>(left+0, left + hxsize(left),
-		right+0, right + hxsize(right),
-		union_output);
+	union_output.push_back(tracker_t(0));
+	hxset_union(left+0, left + hxsize(left),
+		right+0, right + hxsize(right), union_output);
 	const int expected_union[] = { 0, 1, 2, 4, 5 };
 	expect_hxarray(union_output, expected_union, hxsize(expected_union));
 
 	// hxset_intersection
-	hxarray<int> intersection_output;
+	hxarray<tracker_t> intersection_output;
 	intersection_output.reserve(hxsize(left) + 1u);
-	intersection_output.push_back(0);
-	hxset_intersection<const int*, hxarray<int>&>(left+0, left + hxsize(left),
-		right+0, right + hxsize(right),
-		intersection_output);
+	intersection_output.push_back(tracker_t(0));
+	hxset_intersection(left+0, left + hxsize(left),
+		right+0, right + hxsize(right), intersection_output);
 	const int expected_intersection[] = { 0, 2, 4 };
 	expect_hxarray(intersection_output, expected_intersection, hxsize(expected_intersection));
 
 	// hxset_difference
-	hxarray<int> difference_output;
+	hxarray<tracker_t> difference_output;
 	difference_output.reserve(hxsize(left) + 1u);
-	difference_output.push_back(0);
-	hxset_difference<const int*, hxarray<int>&>(left+0, left + hxsize(left),
-		right+0, right + hxsize(right),
-		difference_output);
+	difference_output.push_back(tracker_t(0));
+	hxset_difference(left+0, left + hxsize(left),
+		right+0, right + hxsize(right), difference_output);
 	const int expected_difference[] = { 0, 1 };
 	expect_hxarray(difference_output, expected_difference, hxsize(expected_difference));
 }
@@ -446,20 +452,22 @@ TEST(hxbinary_search_test, simple_case) {
 }
 
 TEST(hxbinary_search_test, binary_search_grinder) {
+	using tracker_t = hxhxalgorithm_test_ref_tracker_t;
+
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(4);
-	hxarray<hxhxalgorithm_test_ref_tracker_t> sorted; sorted.reserve(100);
+	hxarray<tracker_t> sorted; sorted.reserve(100);
 
 	for(int i=100; i--; ) {
 		int x = rng.range(0, 100);
-		sorted.push_back(hxhxalgorithm_test_ref_tracker_t(x));
+		sorted.push_back(tracker_t(x));
 	}
 	hxsort(sorted.begin(), sorted.end());
 
 	for(size_t i=100u; i--; ) {
-		hxhxalgorithm_test_ref_tracker_t t = hxmove(sorted[i]); // Don't pass an address that is in the array.
-		hxhxalgorithm_test_ref_tracker_t* ptr = hxbinary_search(sorted.begin(), sorted.end(), t);
-		// Assert logical equivalence without using ==. The hxhxalgorithm_test_ref_tracker_t* may point
+		tracker_t t = hxmove(sorted[i]); // Don't pass an address that is in the array.
+		tracker_t* ptr = hxbinary_search(sorted.begin(), sorted.end(), t);
+		// Assert logical equivalence without using ==. The tracker_t* may point
 		// elsewhere.
 		EXPECT_TRUE(!(*ptr < t) && !(t < *ptr));
 	}
@@ -468,21 +476,23 @@ TEST(hxbinary_search_test, binary_search_grinder) {
 // ==> TEST(hxhxalgorithm_test, iterator_support).
 template<typename sort_callback_t>
 static void do_sort_iter_case(const sort_callback_t& sort_callback) {
+	using tracker_t = hxhxalgorithm_test_ref_tracker_t;
+
 	const int initial_values[5] = { 2, 1, 0, 4, -5 };
 	const int expected_two[5] = { 1, 2, 0, 4, -5 };
 	const int expected_sorted[5] = { -5, 0, 1, 2, 4 };
 	const int expected_descending[5] = { 4, 2, 1, 0, -5 };
-	hxhxalgorithm_test_ref_tracker_t values[5] = {
-		hxhxalgorithm_test_ref_tracker_t(initial_values[0]),
-		hxhxalgorithm_test_ref_tracker_t(initial_values[1]),
-		hxhxalgorithm_test_ref_tracker_t(initial_values[2]),
-		hxhxalgorithm_test_ref_tracker_t(initial_values[3]),
-		hxhxalgorithm_test_ref_tracker_t(initial_values[4])
+	tracker_t values[5] = {
+		tracker_t(initial_values[0]),
+		tracker_t(initial_values[1]),
+		tracker_t(initial_values[2]),
+		tracker_t(initial_values[3]),
+		tracker_t(initial_values[4])
 	};
 
 	auto reset = [&]() {
 		for(size_t i = 0; i < 5; ++i) {
-			values[i] = hxhxalgorithm_test_ref_tracker_t(initial_values[i]);
+			values[i] = tracker_t(initial_values[i]);
 		}
 	};
 
