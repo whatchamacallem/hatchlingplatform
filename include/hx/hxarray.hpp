@@ -40,8 +40,11 @@ private:
 	friend array_t_;
 	// Internal use only.
 	hxarray_back_inserter_(array_t_& x_) : m_x_(x_) { }
-	// Use `operator=` to add a an element and return a reference.
+#if HX_CPLUSPLUS >= 201703L
+	// Use `operator=` to add a an element and return a reference. Copy elision
+	// is C++17.
 	hxarray_back_inserter_(const hxarray_back_inserter_& x_) = delete;
+#endif
 	// No address-of operator. It wouldn't be what was expected.
 	void operator&(void) const = delete;
 	array_t_& m_x_;
@@ -1054,7 +1057,7 @@ void hxarray<T_, capacity_>::pop_heap(void) {
 	}
 	*begin_ = hxmove(*m_end_);
 	m_end_->~T_();
-	hxdetail_::hxheapsort_heapify_(begin_, begin_, m_end_, hxkey_less_function<T_>());
+	hxdetail_::hxheapsort_heapify_(this->data(), begin_, m_end_, hxkey_less_function<T_>());
 }
 
 template<hxarray_concept_ T_, size_t capacity_>
