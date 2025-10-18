@@ -861,7 +861,7 @@ size_t hxarray<T_, capacity_>::erase_if_heap(functor_t_&& fn_) {
 		if(hxforward<functor_t_>(fn_)(data_[index_])) {
 			this->erase_unordered(index_);
 			++removed_;
-			hxdetail_::hxheapsort_heapify_(data_ + index_, m_end_, hxkey_less_function<T_>());
+			hxdetail_::hxheapsort_heapify_(data_, data_ + index_, m_end_, hxkey_less_function<T_>());
 		}
 	}
 	return removed_;
@@ -1054,7 +1054,7 @@ void hxarray<T_, capacity_>::pop_heap(void) {
 	}
 	*begin_ = hxmove(*m_end_);
 	m_end_->~T_();
-	hxdetail_::hxheapsort_heapify_(begin_, m_end_, hxkey_less_function<T_>());
+	hxdetail_::hxheapsort_heapify_(begin_, begin_, m_end_, hxkey_less_function<T_>());
 }
 
 template<hxarray_concept_ T_, size_t capacity_>

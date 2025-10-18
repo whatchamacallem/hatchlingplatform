@@ -23,8 +23,8 @@ enum : ptrdiff_t { hxpartition_sort_cutoff_ = 32 };
 /// - `current` : Pointer to the current element being heapified.
 /// - `less` : Comparison functor.
 template<typename iterator_t_, typename less_t_> hxattr_hot
-void hxheapsort_heapify_(hxrestrict_t<iterator_t_> begin_, const iterator_t_ end_, const less_t_& less_) {
-	iterator_t_ current_ = begin_;
+void hxheapsort_heapify_(const iterator_t_ begin_, hxrestrict_t<iterator_t_> current_,
+		const iterator_t_ end_, const less_t_& less_) {
 	for(;;) {
 		iterator_t_ left_ = begin_ + (((current_ - begin_) << 1) + (ptrdiff_t)1);
 		if(left_ >= end_) {
