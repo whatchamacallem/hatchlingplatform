@@ -51,8 +51,9 @@
 /// Concept capturing the interface requirements for `hxhash_table` nodes.
 template<typename node_t_>
 concept hxhash_table_concept_ =
-	requires { typename node_t_::key_t; } &&
 	requires(node_t_& node_, const node_t_& const_node_) {
+		sizeof(node_t_);
+		sizeof(typename node_t_::key_t);
 		{ node_.hash_next() = (void*)hxnull } -> hxconvertible_to<void*&>;
 		{ const_node_.hash_next() } -> hxconvertible_to<void*>;
 		{ const_node_.key() } -> hxconvertible_to<const typename node_t_::key_t&>;
