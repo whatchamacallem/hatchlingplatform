@@ -111,7 +111,7 @@ public:
 	template<typename T_, typename M_> constexpr operator M_ T_::*() const { return 0; }
 private:
 	// No address-of operator.
-	void operator&() const = delete;
+	void operator&(void) const = delete;
 };
 
 /// `hxnullptr` - An instance of a class that will only convert to a null

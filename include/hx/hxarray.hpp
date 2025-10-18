@@ -29,16 +29,24 @@ concept hxarray_concept_ = requires(T_& x_) {
 /// \cond HIDDEN
 // Internal. Extends the array using placement new when assigned to.
 template<typename array_t_>
-struct hxarray_back_inserter_ {
-	hxarray_back_inserter_(array_t_& x_) : that_(x_) { }
+class hxarray_back_inserter_ {
+public:
 	template<typename arg_t_>
 	typename array_t_::value_type& operator=(arg_t_&& arg_) {
 		return *::new(that_.push_back_unconstructed_())
 			typename array_t_::value_type(hxforward<arg_t_>(arg_));
 	}
 private:
+	friend array_t_;
+
+	// Internal use only.
+	hxarray_back_inserter_(array_t_& x_) : that_(x_) { }
+
+	// Use `operator=` to add a an element and return a reference.
+	hxarray_back_inserter_(const hxarray_back_inserter_& x_) = delete;
+
 	// No address-of operator. It wouldn't be what was expected.
-	void operator&() const = delete;
+	void operator&(void) const = delete;
 	array_t_& that_;
 };
 /// \endcond
@@ -69,7 +77,7 @@ public:
 	/// Const random access iterator.
 	using const_iterator = const T_*;
 
-	/// Publishes the value type.
+	/// Publishes the value type. Doesn't end with `_t` because of the standard.
 	using value_type = T_;
 
 	/// Constructs an empty array with a capacity of `capacity`. `m_end_` will be 0
@@ -188,9 +196,7 @@ public:
 	/// then used as an output iterator similar to `std::back_insert_iterator`.
 	/// This operator is used to grow the array while `operator++` is ignored.
 	/// Uses a single call to placement new when copying.
-	hxarray_back_inserter_<hxarray<T_, capacity_>> operator*(void) {
-		return hxarray_back_inserter_<hxarray<T_, capacity_>>(*this);
-	}
+	hxarray_back_inserter_<hxarray<T_, capacity_>> operator*(void);
 
 	/// Allows an array to be passed as a reference and then used as an output
 	/// iterator similar to `std::back_insert_iterator`. This operator doesn't
@@ -289,7 +295,7 @@ public:
 	void clear(void);
 
 	/// Emplaces an element at the end of the array using forwarded arguments.
-	/// Returns a reference to the new element.
+	/// Returns a reference to the new element. Exactly the same as `push_back`.
 	/// - `args` : Arguments forwarded to `T`'s constructor.
 	template<typename... args_t_>
 	T_& emplace_back(args_t_&&... args_);
@@ -479,7 +485,7 @@ public:
 
 	/// Appends an element to the end of the array. `args_t` may be any types
 	/// that can be used to construct `T`. Returns a reference to the new
-	/// element.
+	/// element. Exactly the same as `emplace_back`.
 	/// - `args` : Arguments forwarded to `T`'s constructor.
 	template<typename... args_t_>
 	T_& push_back(args_t_&&... args_);
@@ -686,6 +692,11 @@ void hxarray<T_, capacity_>::operator+=(hxarray<T_, capacity_x_>&& x_) {
 	for(T_* hxrestrict it_ = x_.data(), *end_ = x_.end(); it_ != end_; ++it_) {
 		::new(this->push_back_unconstructed_()) T_(hxmove(*it_));
 	}
+}
+
+template<hxarray_concept_ T_, size_t capacity_>
+hxarray_back_inserter_<hxarray<T_, capacity_>> hxarray<T_, capacity_>::operator*(void) {
+	return hxarray_back_inserter_<hxarray<T_, capacity_>>(*this);
 }
 
 template<hxarray_concept_ T_, size_t capacity_>
