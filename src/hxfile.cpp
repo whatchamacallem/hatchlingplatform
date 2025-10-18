@@ -177,7 +177,7 @@ bool hxfile::getline(char* buffer, int buffer_size) {
 	hxassertmsg(!::ferror((FILE*)m_file_pimpl_), "fgets %s", ::strerror(errno));
 
 	if(!result) {
-		m_fail_ = false;
+		m_fail_ = true;
 		m_eof_ = (bool)::feof((FILE*)m_file_pimpl_); // 0: not past end.
 		return false; // EOF or error.
 	}
@@ -214,7 +214,7 @@ int hxfile::scan(const char* format, ...) {
 	hxassertrelease(items_scanned != EOF || (m_open_mode_ & hxfile::skip_asserts), "vfscanf %s", ::strerror(errno));
 
 	if(items_scanned == EOF) {
-		m_fail_ = false;
+		m_fail_ = true;
 		m_eof_ = (bool)::feof((FILE*)m_file_pimpl_);
 	}
 	return items_scanned;

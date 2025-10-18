@@ -112,12 +112,11 @@ public:
 	/// Checks if the file is open.
 	bool is_open(void) const { return m_file_pimpl_ != hxnull; }
 
-	/// Checks if the file is open, `EOF` has not been reached, no error
-	/// encountered and `set_fail` not called.
+	/// Checks if an error has been encountered, EOF set or `set_fail` called.
 	bool fail(void) const { return m_fail_; }
 
-	/// Marks the file as not good. Allows the user to report additional errors
-	/// without having to track them. Non-standard.
+	/// Marks the file as having encountered a failure. Allows the user to
+	/// report additional errors without having to track them. Non-standard.
 	void set_fail(void) { m_fail_ = true; }
 
 	/// Checks if `EOF` has been reached.
