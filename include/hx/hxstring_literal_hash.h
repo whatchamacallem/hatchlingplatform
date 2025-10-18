@@ -43,12 +43,18 @@ class hxregister_string_literal_hash {
 public:
 	using key_t = hxhash_t;
 
-	// permanently adds object to hxstring_literal_hashes_.
+	/// Registers the provided string literal and stores its hash.
+	/// - `str` : Null-terminated C-style string literal.
 	hxregister_string_literal_hash(const char* str_);
+	/// Returns the node pointer.
 	void* hash_next(void) const { return m_hash_next_; }
+	/// Returns a reference to the node pointer.
 	void*& hash_next(void) { return m_hash_next_; }
+	/// Returns the cached key.
 	hxhash_t key(void) const { return m_hash_; };
-	hxhash_t hash(void) const; /// this is rehashed.
+	/// Returns the hash of the string literal.
+	hxhash_t hash(void) const;
+	/// Returns the address of the string literal.
 	const char* str(void) const { return m_str_; }
 
 private:

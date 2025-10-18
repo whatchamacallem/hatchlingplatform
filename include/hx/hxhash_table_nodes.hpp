@@ -16,15 +16,19 @@ class hxhash_table_node_integer {
 public:
 	using key_t = key_t_;
 
+	/// Constructs a node wrapping the key.
+	/// - `key` : Key value represented by the node.
 	hxhash_table_node_integer(const key_t_& key_) :
 		m_hash_next_(hxnull), m_key_(key_) { }
 
-	/// Boilerplate for `hxhash_table`.
+	/// Returns the next node pointer in the bucket's embedded linked list.
 	void* hash_next(void) const { return m_hash_next_; }
+	/// Returns a reference to the next node pointer so callers can mutate it.
 	void*& hash_next(void) { return m_hash_next_; }
 
 	/// The key and hash identify the `node_t` and should not change once added.
 	const key_t_& key(void) const { return m_key_; }
+	/// Returns the hash associated with the stored key.
 	hxhash_t hash(void) const { return hxkey_hash(m_key_); };
 
 private:

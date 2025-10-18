@@ -73,6 +73,8 @@ class hxhash_table_set_node {
 public:
 	using key_t = key_t_;
 
+	/// Constructs a node from the key and caches its hash for reuse.
+	/// - `key` : Key used to identify the node.
 	template<typename ref_t_>
 	hxhash_table_set_node(ref_t_&& key_)
 		: m_hash_next_(hxnull), m_key_(hxforward<ref_t_>(key_))
@@ -81,14 +83,16 @@ public:
 		m_hash_ = hxkey_hash(m_key_);
 	}
 
-	/// Boilerplate required by `hxhash_table`.
+	/// Returns the node pointer used by the table's embedded linked list.
 	void* hash_next(void) const { return m_hash_next_; }
+	/// Returns a reference to the node pointer so callers can mutate it.
 	void*& hash_next(void) { return m_hash_next_; }
 
 	/// The key and hash identify the `node_t` and should not change once added.
 	const key_t_& key(void) const { return m_key_; }
 
-	/// Hash values are not required to be unique.
+	/// Returns the cached hash value for the stored key. Hash values are not
+	/// required to be unique.
 	hxhash_t hash(void) const { return m_hash_; };
 
 private:
@@ -110,15 +114,22 @@ public:
 	using key_t = key_t_;
 	using value_t = value_t_;
 
-	// `value_t` must default-construct when using `operator[]`.
+	/// Default-initializes a node. `value_t` must default-construct when
+	/// accessed via `operator[]`.
+	/// - `key` : Key used to identify the node.
 	hxhash_table_map_node(const key_t_& key_) :
 		hxhash_table_set_node<key_t_>(key_) { }
 
+	/// Constructs a node whose value is copy- or move-initialized.
+	/// - `key` : Key used to identify the node.
+	/// - `value` : Value forwarded into storage.
 	template<typename ref_t_>
 	hxhash_table_map_node(const key_t_& key_, ref_t_&& value_) :
 		hxhash_table_set_node<key_t_>(key_), m_value_(hxforward<ref_t_>(value_)) { }
 
+	/// Returns the stored value.
 	const value_t_& value(void) const { return m_value_; }
+	/// Returns the stored value, allowing mutation.
 	value_t_& value(void) { return m_value_; }
 private:
 	value_t_ m_value_;
