@@ -32,6 +32,7 @@ public:
 		// Callee may leave itself in an unusable state or crash.
 		hxassert(this != &other);
 		value = other.value;
+		other.value = 0xefef;
         return *this;
     }
 
