@@ -80,7 +80,7 @@ purposes:
   little need for more than an array class.
 
 - **Algorithms**: `hxradix_sort` is provided for Θ(n) sorting. See
-  `<hx/hxsort.h>` for comparison based sorting and lookup.
+  `<hx/hxalgorithm.h>` for comparison based sorting and lookup.
 
 - **Performance Focus**: This is systems code. Everything has to be well
   optimized and cache-coherent without causing code bloat. This codebase avoids

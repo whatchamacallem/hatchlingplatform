@@ -7,8 +7,7 @@
 /// or for parsing configuration files. Output is directed to the system log
 /// with `hxloglevel_console`.
 ///
-/// Needs to be re-written with the following parser:
-/// `template<class... Ts> bool parse(hxstringstream ss, str Ts&... xs) { return (( ss >> xs) && ...);}`
+/// Needs to be re-written with pack expressions and `{fmt}` or something.
 ///
 /// A remote console requires forwarding commands to the target and reporting
 /// the system log back. Configuration files only need file I/O. C-style calls

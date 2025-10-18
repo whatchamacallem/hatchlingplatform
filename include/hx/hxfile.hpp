@@ -27,11 +27,10 @@ extern hxfile hxdev_null;
 /// Provides a mixture of unformatted binary stream operations and formatted
 /// `printf`/`scanf` style I/O, along with optional error handling. `gcc` is
 /// useful for validating `printf`/`scanf` style arguments. However,
-/// memory-imaged data structures are still recommended. And `hxstringstream` is
-/// provided for C++ style formatted text I/O. `hxfile` uses binary I/O only for
-/// portability. It implements the equivalent of the standard `eofbit` and
-/// `failbit` but not the `badbit`. The `failbit` should always be set when the
-/// `eofbit` is set.
+/// memory-imaged data structures are still recommended. `hxfile` uses binary
+/// I/O only for portability. It implements the equivalent of the standard
+/// `eofbit` and `failbit` but not the `badbit`. The `failbit` should always be
+/// set when the `eofbit` is set.
 ///
 /// Here is the syntax to make a block of code conditional on opening a file.
 /// The filename is also formatted printf style. This is equivalent to Python's
