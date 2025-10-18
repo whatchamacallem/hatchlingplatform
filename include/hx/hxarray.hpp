@@ -36,6 +36,7 @@ struct hxarray_back_inserter_ {
 		return *::new(that_.push_back_unconstructed_())
 			typename array_t_::value_type(hxforward<arg_t_>(arg_));
 	}
+private:
 	// No address-of operator. It wouldn't be what was expected.
 	void operator&() const = delete;
 	array_t_& that_;
