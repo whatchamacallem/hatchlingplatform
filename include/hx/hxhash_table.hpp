@@ -46,6 +46,21 @@
 #include "hxkey.hpp"
 #include "hxutility.h"
 
+#if HX_CPLUSPLUS >= 202002L
+/// Concept capturing the interface requirements for `hxhash_table` nodes.
+template<typename node_t_>
+concept hxhash_table_concept_ =
+	requires { typename node_t_::key_t; } &&
+	requires(node_t_& node_, const node_t_& const_node_) {
+		{ node_.hash_next() = (void*)hxnull } -> hxconvertible_to<void*&>;
+		{ const_node_.hash_next() } -> hxconvertible_to<void*>;
+		{ const_node_.key() } -> hxconvertible_to<const typename node_t_::key_t&>;
+		{ const_node_.hash() } -> hxconvertible_to<hxhash_t>;
+	};
+#else
+#define hxhash_table_concept_ typename
+#endif
+
 // XXX: Move to a d-list and implement tbl::erase(node_t*)?
 
 /// `hxhash_table_set_node` - Optional base class for unordered set entries.
@@ -116,7 +131,7 @@ private:
 /// size to `2^table_size_bits`. Otherwise use `set_table_size_bits` to configure
 /// hash bits dynamically. See `hxdo_not_delete` for situations where the table
 /// does not own the nodes.
-template<typename node_t_,
+template<hxhash_table_concept_ node_t_,
 	hxhash_t table_size_bits_=hxallocator_dynamic_capacity,
 	typename deleter_t_=hxdefault_delete>
 class hxhash_table {
@@ -349,7 +364,7 @@ private:
 	hxhash_table_internal_allocator_<node_t_, table_size_bits_> m_table_;
 };
 
-template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+template<hxhash_table_concept_ node_t_, hxhash_t table_size_bits_, typename deleter_t_>
 inline node_t_& hxhash_table<node_t_, table_size_bits_, deleter_t_>::insert_unique(
 	const typename node_t_::key_t& key_,
 	hxsystem_allocator_t allocator_,
@@ -368,7 +383,7 @@ inline node_t_& hxhash_table<node_t_, table_size_bits_, deleter_t_>::insert_uniq
 	return *n_;
 }
 
-template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+template<hxhash_table_concept_ node_t_, hxhash_t table_size_bits_, typename deleter_t_>
 inline void hxhash_table<node_t_, table_size_bits_, deleter_t_>::insert_node(node_t_* ptr_)
 {
 	hxassertmsg(this->find(ptr_->key()) != ptr_, "container_reinsert");
@@ -379,7 +394,7 @@ inline void hxhash_table<node_t_, table_size_bits_, deleter_t_>::insert_node(nod
 	++m_size_;
 }
 
-template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+template<hxhash_table_concept_ node_t_, hxhash_t table_size_bits_, typename deleter_t_>
 inline node_t_* hxhash_table<node_t_, table_size_bits_, deleter_t_>::find(
 	const typename node_t_::key_t& key_, const node_t_* previous_)
 {
@@ -402,7 +417,7 @@ inline node_t_* hxhash_table<node_t_, table_size_bits_, deleter_t_>::find(
 	return hxnull;
 }
 
-template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+template<hxhash_table_concept_ node_t_, hxhash_t table_size_bits_, typename deleter_t_>
 inline size_t hxhash_table<node_t_, table_size_bits_, deleter_t_>::count(
 	const typename node_t_::key_t& key_) const
 {
@@ -416,7 +431,7 @@ inline size_t hxhash_table<node_t_, table_size_bits_, deleter_t_>::count(
 	return total_;
 }
 
-template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+template<hxhash_table_concept_ node_t_, hxhash_t table_size_bits_, typename deleter_t_>
 inline node_t_* hxhash_table<node_t_, table_size_bits_, deleter_t_>::extract(
 	const typename node_t_::key_t& key_)
 {
@@ -434,7 +449,7 @@ inline node_t_* hxhash_table<node_t_, table_size_bits_, deleter_t_>::extract(
 	return hxnull;
 }
 
-template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+template<hxhash_table_concept_ node_t_, hxhash_t table_size_bits_, typename deleter_t_>
 template<typename deleter_override_t_>
 inline size_t hxhash_table<node_t_, table_size_bits_, deleter_t_>::erase(
 	const typename node_t_::key_t& key_, const deleter_override_t_& deleter_)
@@ -458,7 +473,7 @@ inline size_t hxhash_table<node_t_, table_size_bits_, deleter_t_>::erase(
 	return count_;
 }
 
-template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+template<hxhash_table_concept_ node_t_, hxhash_t table_size_bits_, typename deleter_t_>
 template<typename deleter_override_t_>
 inline void hxhash_table<node_t_, table_size_bits_, deleter_t_>::clear(
 	const deleter_override_t_& deleter_)
@@ -484,7 +499,7 @@ inline void hxhash_table<node_t_, table_size_bits_, deleter_t_>::clear(
 	}
 }
 
-template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+template<hxhash_table_concept_ node_t_, hxhash_t table_size_bits_, typename deleter_t_>
 inline void hxhash_table<node_t_, table_size_bits_, deleter_t_>::release_all(void)
 {
 	if(m_size_ != 0u) {
@@ -493,7 +508,7 @@ inline void hxhash_table<node_t_, table_size_bits_, deleter_t_>::release_all(voi
 	}
 }
 
-template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+template<hxhash_table_concept_ node_t_, hxhash_t table_size_bits_, typename deleter_t_>
 inline size_t hxhash_table<node_t_, table_size_bits_, deleter_t_>::load_max(void) const
 {
 	size_t maximum_ = 0u;
@@ -508,7 +523,7 @@ inline size_t hxhash_table<node_t_, table_size_bits_, deleter_t_>::load_max(void
 	return maximum_;
 }
 
-template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+template<hxhash_table_concept_ node_t_, hxhash_t table_size_bits_, typename deleter_t_>
 inline node_t_** hxhash_table<node_t_, table_size_bits_, deleter_t_>::get_bucket_head_(hxhash_t hash_)
 {
 	hxhash_t index_ = hash_ >> (hxhash_bits - m_table_.get_table_size_bits());
@@ -516,7 +531,7 @@ inline node_t_** hxhash_table<node_t_, table_size_bits_, deleter_t_>::get_bucket
 	return m_table_.data() + index_;
 }
 
-template<typename node_t_, hxhash_t table_size_bits_, typename deleter_t_>
+template<hxhash_table_concept_ node_t_, hxhash_t table_size_bits_, typename deleter_t_>
 inline const node_t_*const* hxhash_table<node_t_, table_size_bits_, deleter_t_>::get_bucket_head_(hxhash_t hash_) const
 {
 	hxhash_t index_ = hash_ >> (hxhash_bits - m_table_.get_table_size_bits());

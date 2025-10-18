@@ -11,14 +11,14 @@
 /// Concept capturing the element requirements for `hxarray`. Everything else is
 /// optional.
 template<typename T_>
-concept hxarray_concept = requires(T_ value_, T_ other_value_) {
+concept hxarray_concept_ = requires(T_ value_, T_ other_value_) {
 	sizeof(T_);
 	{ T_(hxmove(value_)) };
 	{ value_ = hxmove(other_value_) };
 	{ value_.~T_() };
 };
 #else
-#define hxarray_concept typename
+#define hxarray_concept_ typename
 #endif
 
 #if !HX_NO_LIBCXX
@@ -41,7 +41,7 @@ concept hxarray_concept = requires(T_ value_, T_ other_value_) {
 /// operators is due to the rules about default operators.
 /// - `T` : Element type stored by the array.
 /// - `capacity` : Maximum element count or `hxallocator_dynamic_capacity` for dynamic storage.
-template<hxarray_concept T_, size_t capacity_=hxallocator_dynamic_capacity>
+template<hxarray_concept_ T_, size_t capacity_=hxallocator_dynamic_capacity>
 class hxarray : public hxallocator<T_, capacity_> {
 public:
 	/// Random access iterator.
@@ -545,31 +545,31 @@ void hxswap(hxarray<T_, hxallocator_dynamic_capacity>& x_,
 
 #endif // HX_CPLUSPLUS >= 202002L
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 hxarray<T_, capacity_>::hxarray(void) : m_end_(this->data()) { }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 hxarray<T_, capacity_>::hxarray(size_t size_) : hxarray() {
 	this->resize(size_);
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 hxarray<T_, capacity_>::hxarray(size_t size_, const T_& x_) : hxarray() {
 	this->resize(size_, x_);
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 hxarray<T_, capacity_>::hxarray(const hxarray& x_) : hxarray() {
 	this->assign<const T_*>(x_.data(), x_.m_end_);
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<size_t capacity_x_>
 hxarray<T_, capacity_>::hxarray(const hxarray<T_, capacity_x_>& x_) : hxarray() {
 	this->assign<const T_*>(x_.data(), x_.end());
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 hxarray<T_, capacity_>::hxarray(hxarray&& x_) : hxarray() {
 	static_assert(capacity_ == hxallocator_dynamic_capacity,
 		"Capacity hxallocator_dynamic_capacity required for temporaries.");
@@ -577,73 +577,73 @@ hxarray<T_, capacity_>::hxarray(hxarray&& x_) : hxarray() {
 	::memset((void*)&x_, 0x00, sizeof x_);
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename other_value_t_, size_t array_length_>
 hxarray<T_, capacity_>::hxarray(const other_value_t_(&array_)[array_length_]) : hxarray() {
 	this->assign(array_ + 0, array_ + array_length_);
 }
 
 #if !HX_NO_LIBCXX
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename other_value_t_>
 hxarray<T_, capacity_>::hxarray(std::initializer_list<other_value_t_> x_) : hxarray() {
 	this->assign(x_.begin(), x_.end());
 }
 #endif
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 hxarray<T_, capacity_>::~hxarray(void) {
 	this->destruct_(this->data(), m_end_);
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::operator=(const hxarray& x_) {
 	hxassertmsg((const void*)this != (const void*)&x_, "invalid_reference Assignment to self.");
 	this->assign<const T_*>(x_.data(), x_.m_end_);
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<size_t capacity_x_>
 void hxarray<T_, capacity_>::operator=(const hxarray<T_, capacity_x_>& x_) {
 	hxassertmsg((const void*)this != (const void*)&x_, "invalid_reference Assignment to self.");
 	this->assign<const T_*>(x_.data(), x_.end());
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::operator=(hxarray&& x_) {
 	hxassertmsg((const void*)this != (const void*)&x_, "invalid_reference Assignment to self.");
 	this->swap(x_);
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename other_value_t_, size_t array_length_>
 void hxarray<T_, capacity_>::operator=(const other_value_t_(&array_)[array_length_]) {
 	this->assign(array_ + 0, array_ + array_length_);
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 const T_& hxarray<T_, capacity_>::operator[](size_t index_) const {
 	hxassertmsg(index_ < this->size(), "invalid_index %zu", index_);
 	return this->data()[index_];
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 T_& hxarray<T_, capacity_>::operator[](size_t index_) {
 	hxassertmsg(index_ < this->size(), "invalid_index %zu", index_);
 	return this->data()[index_];
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::operator+=(const T_& x_) {
 	::new(this->push_back_unconstructed_()) T_(x_);
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::operator+=(T_&& x_) {
 	::new(this->push_back_unconstructed_()) T_(hxmove(x_));
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<size_t capacity_x_>
 void hxarray<T_, capacity_>::operator+=(const hxarray<T_, capacity_x_>& x_) {
 	hxassertmsg((const void*)this != (const void*)&x_, "invalid_reference Assignment to self.");
@@ -652,7 +652,7 @@ void hxarray<T_, capacity_>::operator+=(const hxarray<T_, capacity_x_>& x_) {
 	}
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<size_t capacity_x_>
 void hxarray<T_, capacity_>::operator+=(hxarray<T_, capacity_x_>&& x_) {
 	hxassertmsg((const void*)this != (const void*)&x_, "invalid_reference Assignment to self.");
@@ -662,7 +662,7 @@ void hxarray<T_, capacity_>::operator+=(hxarray<T_, capacity_x_>&& x_) {
 	}
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename functor_t_>
 bool hxarray<T_, capacity_>::all_of(functor_t_&& fn_) const {
 	for(const T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
@@ -673,7 +673,7 @@ bool hxarray<T_, capacity_>::all_of(functor_t_&& fn_) const {
 	return true;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename functor_t_>
 bool hxarray<T_, capacity_>::all_of(functor_t_&& fn_) {
 	for(T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
@@ -684,7 +684,7 @@ bool hxarray<T_, capacity_>::all_of(functor_t_&& fn_) {
 	return true;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename functor_t_>
 bool hxarray<T_, capacity_>::any_of(functor_t_&& fn_) const {
 	for(const T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
@@ -695,7 +695,7 @@ bool hxarray<T_, capacity_>::any_of(functor_t_&& fn_) const {
 	return false;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename functor_t_>
 bool hxarray<T_, capacity_>::any_of(functor_t_&& fn_) {
 	for(T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
@@ -706,7 +706,7 @@ bool hxarray<T_, capacity_>::any_of(functor_t_&& fn_) {
 	return false;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename iter_t_>
 void hxarray<T_, capacity_>::assign(iter_t_ begin_, iter_t_ end_) {
 	hxassertmsg((end_ - begin_) >= 0, "invalid_iterator");
@@ -720,20 +720,20 @@ void hxarray<T_, capacity_>::assign(iter_t_ begin_, iter_t_ end_) {
 	m_end_ = it0_;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 const T_& hxarray<T_, capacity_>::back(void) const {
 	hxassertmsg(!this->empty(), "invalid_reference");
 	return m_end_[-1];
 }
 
 #if HX_CPLUSPLUS >= 202002L
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename range_t_>
 void hxarray<T_, capacity_>::assign_range(range_t_& range_) {
 	this->assign(range_.begin(), range_.end());
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename range_t_>
 requires(!hxis_lvalue_reference<range_t_>::value)
 void hxarray<T_, capacity_>::assign_range(range_t_&& range_) {
@@ -745,55 +745,55 @@ void hxarray<T_, capacity_>::assign_range(range_t_&& range_) {
 }
 #endif
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 T_& hxarray<T_, capacity_>::back(void) {
 	hxassertmsg(!this->empty(), "invalid_reference");
 	return m_end_[-1];
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 const T_* hxarray<T_, capacity_>::begin(void) const {
 	return this->data();
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 T_* hxarray<T_, capacity_>::begin(void) {
 	return this->data();
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 const T_* hxarray<T_, capacity_>::binary_search(const T_& value_) const {
 	return hxbinary_search<const T_*>(this->data(), m_end_, value_, hxkey_less_function<const T_&>());
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 T_* hxarray<T_, capacity_>::binary_search(const T_& value_) {
 	return hxbinary_search<T_*>(this->data(), m_end_, value_, hxkey_less_function<const T_&>());
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 const T_* hxarray<T_, capacity_>::cbegin(void) const {
 	return this->data();
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 const T_* hxarray<T_, capacity_>::cend(void) const {
 	return m_end_;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::clear(void) {
 	this->destruct_(this->data(), m_end_);
 	m_end_ = this->data();
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename... args_t_>
 T_& hxarray<T_, capacity_>::emplace_back(args_t_&&... args_) {
 	return *::new(this->push_back_unconstructed_()) T_(hxforward<args_t_>(args_)...);
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<size_t capacity_x_>
 bool hxarray<T_, capacity_>::equal(const hxarray<T_, capacity_x_>& x_) const {
 	if(this->size() != x_.size()) {
@@ -808,22 +808,22 @@ bool hxarray<T_, capacity_>::equal(const hxarray<T_, capacity_x_>& x_) const {
 	return true;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 bool hxarray<T_, capacity_>::empty(void) const {
 	return m_end_ == this->data();
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 const T_* hxarray<T_, capacity_>::end(void) const {
 	return m_end_;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 T_* hxarray<T_, capacity_>::end(void) {
 	return m_end_;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::erase(const T_* pos_) {
 	hxassertmsg(pos_ >= this->data() && pos_ < m_end_, "invalid_iterator");
 	while((pos_ + 1) != m_end_) {
@@ -834,13 +834,13 @@ void hxarray<T_, capacity_>::erase(const T_* pos_) {
 	(--m_end_)->~T_();
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::erase(size_t index_) {
 	hxassertmsg(index_ < this->size(), "invalid_index %zu", index_);
 	this->erase(this->data() + index_);
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename functor_t_>
 size_t hxarray<T_, capacity_>::erase_if(functor_t_&& fn_) {
 	size_t removed_ = 0u;
@@ -854,7 +854,7 @@ size_t hxarray<T_, capacity_>::erase_if(functor_t_&& fn_) {
 	return removed_;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename functor_t_>
 size_t hxarray<T_, capacity_>::erase_if_heap(functor_t_&& fn_) {
 	size_t removed_ = 0u;
@@ -869,7 +869,7 @@ size_t hxarray<T_, capacity_>::erase_if_heap(functor_t_&& fn_) {
 	return removed_;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::erase_unordered(const T_* pos_) {
 	hxassertmsg(pos_ >= this->data() && pos_ < m_end_, "invalid_iterator");
 	if(pos_ != --m_end_) {
@@ -879,13 +879,13 @@ void hxarray<T_, capacity_>::erase_unordered(const T_* pos_) {
 	m_end_->~T_();
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::erase_unordered(size_t index_) {
 	hxassertmsg(index_ < this->size(), "invalid_index %zu", index_);
 	this->erase_unordered(this->data() + index_);
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 const T_* hxarray<T_, capacity_>::find(const T_& value_) const {
 	for(const T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
 		if(hxkey_equal(*it_, value_)) {
@@ -895,7 +895,7 @@ const T_* hxarray<T_, capacity_>::find(const T_& value_) const {
 	return m_end_;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 T_* hxarray<T_, capacity_>::find(const T_& value_) {
 	for(T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
 		if(hxkey_equal(*it_, value_)) {
@@ -905,7 +905,7 @@ T_* hxarray<T_, capacity_>::find(const T_& value_) {
 	return m_end_;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename functor_t_>
 const T_* hxarray<T_, capacity_>::find_if(functor_t_&& fn_) const {
 	for(const T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
@@ -916,7 +916,7 @@ const T_* hxarray<T_, capacity_>::find_if(functor_t_&& fn_) const {
 	return m_end_;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename functor_t_>
 T_* hxarray<T_, capacity_>::find_if(functor_t_&& fn_) {
 	for(T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
@@ -927,7 +927,7 @@ T_* hxarray<T_, capacity_>::find_if(functor_t_&& fn_) {
 	return m_end_;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename functor_t_>
 void hxarray<T_, capacity_>::for_each(functor_t_&& fn_) const {
 	for(const T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
@@ -935,7 +935,7 @@ void hxarray<T_, capacity_>::for_each(functor_t_&& fn_) const {
 	}
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename functor_t_>
 void hxarray<T_, capacity_>::for_each(functor_t_&& fn_) {
 	for(T_* it_ = this->data(), *end_ = m_end_; it_ != end_; ++it_) {
@@ -943,24 +943,24 @@ void hxarray<T_, capacity_>::for_each(functor_t_&& fn_) {
 	}
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 const T_& hxarray<T_, capacity_>::front(void) const {
 	hxassertmsg(!this->empty(), "invalid_reference");
 	return *this->data();
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 T_& hxarray<T_, capacity_>::front(void) {
 	hxassertmsg(!this->empty(), "invalid_reference");
 	return *this->data();
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 bool hxarray<T_, capacity_>::full(void) const {
 	return m_end_ == this->data() + this->capacity();
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename functor_t_>
 void hxarray<T_, capacity_>::generate_n(size_t size_, functor_t_&& fn_) {
 	while(size_--) {
@@ -968,19 +968,19 @@ void hxarray<T_, capacity_>::generate_n(size_t size_, functor_t_&& fn_) {
 	}
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 const T_* hxarray<T_, capacity_>::get(size_t index_) const {
 	// Casting a signed index is well defined. Comparing pointers would be undefined.
 	return index_ < this->size() ? this->data() + index_ : hxnull;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 T_* hxarray<T_, capacity_>::get(size_t index_) {
 	// Casting a signed index is well defined. Comparing pointers would be undefined.
 	return index_ < this->size() ? this->data() + index_ : hxnull;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename ref_t_>
 void hxarray<T_, capacity_>::insert(const T_* pos_, ref_t_&& x_) {
 	hxassertmsg(pos_ >= this->data() && pos_ <= m_end_, "invalid_insert");
@@ -1000,19 +1000,19 @@ void hxarray<T_, capacity_>::insert(const T_* pos_, ref_t_&& x_) {
 	}
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename ref_t_>
 void hxarray<T_, capacity_>::insert(size_t index_, ref_t_&& x_) {
 	hxassertmsg(index_ <= this->size(), "invalid_index %zu", index_);
 	this->insert(this->data() + index_, hxforward<ref_t_>(x_));
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::insertion_sort(void) {
 	hxinsertion_sort<T_*>(this->data(), m_end_, hxkey_less_function<T_>());
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<size_t capacity_x_>
 bool hxarray<T_, capacity_>::less(const hxarray<T_, capacity_x_>& x_) const {
 	const size_t size_ = hxmin(this->size(), x_.size());
@@ -1027,35 +1027,35 @@ bool hxarray<T_, capacity_>::less(const hxarray<T_, capacity_x_>& x_) const {
 	return this->size() < x_.size();
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::make_heap(void) {
 	hxdetail_::hxmake_heap_<T_*>(this->data(), m_end_, hxkey_less_function<T_>());
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 size_t hxarray<T_, capacity_>::max_size(void) const {
 	return this->capacity();
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<size_t capacity_x_>
 void hxarray<T_, capacity_>::memcpy(const hxarray<T_, capacity_x_>& x_) {
 	this->resize(x_.size());
 	::memcpy((void*)this->data(), x_.data(), x_.size_bytes());
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::memset(int byte_) {
 	::memset((void*)this->data(), byte_, this->size_bytes());
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::pop_back(void) {
 	hxassertmsg(!this->empty(), "stack_underflow");
 	(--m_end_)->~T_();
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::pop_heap(void) {
 	hxassertmsg(!this->empty(), "stack_underflow");
 	T_* hxrestrict begin_ = this->data();
@@ -1069,13 +1069,13 @@ void hxarray<T_, capacity_>::pop_heap(void) {
 	hxdetail_::hxheapsort_heapify_(begin_, m_end_, hxkey_less_function<T_>());
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename... args_t_>
 T_& hxarray<T_, capacity_>::push_back(args_t_&&... args_) {
 	return *::new(this->push_back_unconstructed_()) T_(hxforward<args_t_>(args_)...);
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 template<typename ref_t_>
 T_& hxarray<T_, capacity_>::push_heap(ref_t_&& arg_) {
 	T_* begin_ = this->data();
@@ -1096,7 +1096,7 @@ T_& hxarray<T_, capacity_>::push_heap(ref_t_&& arg_) {
 	return *node_;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::reserve(size_t size_,
 		hxsystem_allocator_t allocator_,
 		hxalignment_t alignment_) {
@@ -1106,7 +1106,7 @@ void hxarray<T_, capacity_>::reserve(size_t size_,
 	}
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::resize(size_t size_) {
 	this->reserve(size_);
 	T_* end_ = this->data() + size_;
@@ -1123,7 +1123,7 @@ void hxarray<T_, capacity_>::resize(size_t size_) {
 	m_end_ = end_;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::resize(size_t size_, const T_& x_) {
 	this->reserve(size_);
 	T_* end_ = this->data() + size_;
@@ -1139,22 +1139,22 @@ void hxarray<T_, capacity_>::resize(size_t size_, const T_& x_) {
 	m_end_ = end_;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 size_t hxarray<T_, capacity_>::size(void) const {
 	return (size_t)(m_end_ - this->data());
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 size_t hxarray<T_, capacity_>::size_bytes(void) const {
 	return sizeof(T_) * (size_t)(m_end_ - this->data());
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::sort(void) {
 	hxsort<T_*>(this->data(), m_end_, hxkey_less_function<T_>());
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::swap(hxarray& x_) {
 	static_assert(capacity_ == hxallocator_dynamic_capacity,
 		"Dynamic capacity required for hxarray::swap");
@@ -1163,13 +1163,13 @@ void hxarray<T_, capacity_>::swap(hxarray& x_) {
 	hxswap_memcpy(*this, x_);
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void* hxarray<T_, capacity_>::push_back_unconstructed_(void) {
 	hxassertmsg(!this->full(), "stack_overflow");
 	return (void*)m_end_++;
 }
 
-template<hxarray_concept T_, size_t capacity_>
+template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::destruct_(T_* begin_, T_* end_) {
 	while(begin_ != end_) {
 		begin_++->~T_();
