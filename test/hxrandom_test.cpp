@@ -37,7 +37,9 @@ TEST(hxrandom_test, generation) {
 
 		(void)uint8; (void)uint16; (void)uint32; (void)uint64;
 
-		// The odds of hitting zero in the first 20 numbers should be zero.
+		// NOTA BENE: While 0.0 is legal, it is being treated as an error
+		// because it is likely to be so. The odds of hitting zero in the first
+		// 20 numbers is effectively zero.
 		EXPECT_TRUE(f > 0.0f && f < 1.0f);
 		EXPECT_TRUE(d > 0.0 && d < 1.0);
 	}
