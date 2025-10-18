@@ -32,9 +32,9 @@ template<typename array_t_>
 struct hxarray_back_inserter_ {
 	hxarray_back_inserter_(array_t_& x_) : that_(x_) { }
 	template<typename arg_t_>
-	array_t_::value_type& operator=(arg_t_&& arg_) {
+	typename array_t_::value_type& operator=(arg_t_&& arg_) {
 		return *::new(that_.push_back_unconstructed_())
-			array_t_::value_type(hxforward<arg_t_>(arg_));
+			typename array_t_::value_type(hxforward<arg_t_>(arg_));
 	}
 	// No address-of operator. It wouldn't be what was expected.
 	void operator&() const = delete;
