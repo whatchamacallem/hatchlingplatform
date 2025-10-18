@@ -7,11 +7,12 @@
 /// reallocating memory or copying data. Visualizing how a memory allocator
 /// has to serve doubling hash table sizes shows how quickly memory fragments. So
 /// this implementation expects you to allocate the largest table you may need
-/// in advance. Each bucket uses an embedded linked list. Hash tables can act as
+/// in advance. Each bucket uses an embedded singly-linked list. Hash tables can act as
 /// either an unordered map or an unordered set and support operations that
 /// allow for unique or duplicate keys. While this interface is designed to feel
 /// familiar, code using standard containers will need some adjustments. In
-/// particular, all table modifications are non-standard.
+/// particular, table modification is non-standard. Iterators are provided but
+/// are not used to modify the table.
 ///
 /// Note that any node `T` using key `K` will work as long as it has the following
 /// fields and `K` has an `operator==` or an `hxkey_equal` overload.
@@ -60,8 +61,6 @@ concept hxhash_table_concept_ =
 #else
 #define hxhash_table_concept_ typename
 #endif
-
-// XXX: Move to a d-list and implement tbl::erase(node_t*)?
 
 /// `hxhash_table_set_node` - Optional base class for unordered set entries.
 /// Caches the hash value. Copying and modification are disallowed to protect
