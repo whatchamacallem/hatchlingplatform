@@ -126,7 +126,8 @@ bool hxconsole_exec_file(hxfile& file_);
 /// - `filename` : A file containing commands.
 bool hxconsole_exec_filename(const char* filename_) hxattr_nonnull(1);
 
-/// `hxconsole_help` - Logs every console symbol to the console log.
+/// `hxconsole_help` - Logs every console symbol to the console log when
+/// `HX_RELEASE < 2`. Otherwise returns true without producing output.
 bool hxconsole_help(void);
 
 // Include internals after hxconsolehex_t
