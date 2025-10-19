@@ -166,7 +166,7 @@ TEST(hxutility_test, hxforward) {
 }
 
 TEST(hxutility_test, hxnullptr_converts_only_to_null) {
-	// "An instance of a class that will only convert to a null pointer."
+	// "An instance that will only convert to a null pointer."
 	hxnullptr_t null_object;
 	const int* int_ptr = null_object;
 	EXPECT_EQ(int_ptr, hxnullptr);

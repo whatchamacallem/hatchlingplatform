@@ -109,9 +109,9 @@ TEST(hxfile_test, move_copy_and_stream_operators) {
 	hxfile_test_record x { 77777u, -555, 77u, -55 };
 	int a = -3;
 
-	// "Writes a single unformatted native-endian object to a stream." Chain writes for struct+int payload.
+	// "Writes a single unformatted native-endian object to a stream."
 	f <= x <= a;
-	// "Writes a formatted UTF-8 string to the file." Append text payload for later scan.
+	// "Writes a formatted UTF-8 string to the file."
 	f.print("(%d,%d)", 30, 70);
 
 	EXPECT_TRUE(!f.fail());
@@ -132,12 +132,12 @@ TEST(hxfile_test, move_copy_and_stream_operators) {
 	int thirty = 0;
 	int seventy = 0;
 
-	// "Reads a single unformatted native-endian object from a stream." Recover struct + trailing int.
+	// "Reads a single unformatted native-endian object from a stream."
 	f >= y >= b;
-	// "Reads a formatted UTF-8 string from the file. Uses scanf conventions." Parse text footer.
+	// "Reads a formatted UTF-8 string from the file. Uses scanf conventions."
 	f.scan("(%d,%d)", &thirty, &seventy);
 
-	// Expect struct contents -> { 77777u, -555, 77u, -55 } and trailing int -3.
+	// Expect { 77777u, -555, 77u, -55 } and a trailing int -3.
 	EXPECT_EQ(y.a, 77777u);
 	EXPECT_EQ(y.b, -555);
 	EXPECT_EQ(y.c, 77u);
