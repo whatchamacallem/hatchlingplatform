@@ -68,49 +68,49 @@ TEST(hxrandom_test, ops) {
 
 		// "Generates a number of type T in the range [0, divisor)." Floating
 		// modulus uses operator% overloads.
-		float f = rng % 255.0f;
+		const float f = rng % 255.0f;
 		EXPECT_TRUE(f >= 0.0f && f < 255.0f);
-		double d = rng % 255.0;
+		const double d = rng % 255.0;
 		EXPECT_TRUE(d >= 0.0 && d < 255.0);
 
 		{
-			int r = 255 & rng;
+			const int r = 255 & rng;
 			EXPECT_TRUE(r >= 0 && r < 256);
 
-			int l = rng & 255;
+			const int l = rng & 255;
 			EXPECT_TRUE(l >= 0 && l < 256);
 
-			int m = rng % 255;
+			const int m = rng % 255;
 			EXPECT_TRUE(m >= 0 && m < 255);
 		}
 		{
-			unsigned short r = (unsigned short)255 & rng;
+			const unsigned short r = (unsigned short)255 & rng;
 			EXPECT_TRUE(r < (unsigned short)256);
 
-			unsigned short l = rng & (unsigned short)255;
+			const unsigned short l = rng & (unsigned short)255;
 			EXPECT_TRUE(l < (unsigned short)256);
 
-			unsigned short m = rng % (unsigned short)255;
+			const unsigned short m = rng % (unsigned short)255;
 			EXPECT_TRUE(m < (unsigned short)255);
 		}
 		{
-			int64_t r = 255ll & rng;
+			const int64_t r = 255ll & rng;
 			EXPECT_TRUE(r >= 0ll && r < 256ll);
 
-			int64_t l = rng & 255ll;
+			const int64_t l = rng & 255ll;
 			EXPECT_TRUE(l >= 0ll && l < 256ll);
 
-			int64_t m = rng % 255ll;
+			const int64_t m = rng % 255ll;
 			EXPECT_TRUE(m >= 0ll && m < 255ll);
 		}
 		{
-			uint64_t r = 255ull & rng;
+			const uint64_t r = 255ull & rng;
 			EXPECT_TRUE(r < 256ull);
 
-			uint64_t l = rng & 255ull;
+			const uint64_t l = rng & 255ull;
 			EXPECT_TRUE(l < 256ull);
 
-			uint64_t m = rng % 255ull;
+			const uint64_t m = rng % 255ull;
 			EXPECT_TRUE(m < 255ull);
 		}
 
@@ -193,7 +193,7 @@ TEST(hxrandom_test, range) {
 }
 
 TEST(hxrandom_test, histogram) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(40000);
 	const int buckets = 1 << 10; // 1k buckets.
 	const int iters = 1000;
@@ -210,7 +210,7 @@ TEST(hxrandom_test, histogram) {
 }
 
 TEST(hxrandom_test, histogram_f) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(40000);
 	const int buckets = 1000; // 1k buckets.
 	const int iters = 1000;

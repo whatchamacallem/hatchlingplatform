@@ -80,7 +80,7 @@ bool hxfile::open(uint8_t mode, const char* filename, ...) {
 
 	va_list args;
 	va_start(args, filename);
-	bool rv = openv_(mode, filename, args);
+	const bool rv = openv_(mode, filename, args);
 	va_end(args);
 	return rv;
 }
@@ -119,7 +119,7 @@ bool hxfile::openv_(uint8_t mode, const char* filename, va_list args) {
 
 void hxfile::close(void) {
 	if(m_owns_) {
-		int code = ::fclose((FILE*)m_file_pimpl_);
+		const int code = ::fclose((FILE*)m_file_pimpl_);
 		hxassertmsg(code == 0, "fclose"); (void)code;
 	}
 	::memset((void*)this, 0x00, sizeof *this);

@@ -92,7 +92,7 @@ TEST_F(hxhash_table_test_f, null) {
 }
 
 TEST_F(hxhash_table_test_f, single) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	static const int k = 77;
 	{
@@ -151,7 +151,7 @@ TEST_F(hxhash_table_test_f, single) {
 }
 
 TEST_F(hxhash_table_test_f, map_node_usage) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	using map_node_t = hxhash_table_map_node<int32_t, hxtest_object>;
 	using table_t = hxhash_table<map_node_t, 4>;
@@ -186,7 +186,7 @@ TEST_F(hxhash_table_test_f, map_node_usage) {
 		}
 
 		// Duplicate insert returns same storage -> verifies uniqueness guard.
-		map_node_t& duplicate_lookup = table.insert_unique(10);
+		const map_node_t& duplicate_lookup = table.insert_unique(10);
 		EXPECT_EQ(&duplicate_lookup, &via_subscript);
 	}
 
@@ -196,7 +196,7 @@ TEST_F(hxhash_table_test_f, map_node_usage) {
 
 TEST_F(hxhash_table_test_f, multiple) {
 	static const int N = 78;
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
 		// Table will be overloaded.
 		using table_t = hxhash_table<hxtest_integer>;
@@ -316,7 +316,7 @@ TEST_F(hxhash_table_test_f, multiple) {
 }
 
 TEST_F(hxhash_table_test_f, strings) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	static const char* colors[] = {
 		"Red","Orange","Yellow",
@@ -341,7 +341,7 @@ TEST_F(hxhash_table_test_f, strings) {
 }
 
 TEST_F(hxhash_table_test_f, string_literal_nodes) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	static const char* const literals[] = {
 		"Crimson", "Teal", "Magenta", "Gold"
@@ -352,7 +352,7 @@ TEST_F(hxhash_table_test_f, string_literal_nodes) {
 
 	for(unsigned int i = 0; i < hxsize(literals); ++i) {
 		// "Specialization of hxhash_table_set_node for static C strings." Literal keys stay owned externally while lookups remain stable.
-		hxtest_string_literal& entry = table[literals[i]];
+		const hxtest_string_literal& entry = table[literals[i]];
 		EXPECT_EQ(table.find(literals[i]), &entry);
 		EXPECT_EQ(&table.insert_unique(literals[i]), &entry);
 

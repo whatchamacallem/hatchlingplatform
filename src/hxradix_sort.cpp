@@ -21,7 +21,7 @@ void hxradix_sort_void(hxradix_sort_key_void* begin, hxradix_sort_key_void* end)
 		return;
 	}
 
-	hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
 
 	// Two working buffers.
 	hxradix_sort_key_void* hxrestrict buf0 = begin;
@@ -49,10 +49,10 @@ void hxradix_sort_void(hxradix_sort_key_void* begin, hxradix_sort_key_void* end)
 	// Convert histograms to start indices
 	hxhistogram_t sum0 = 0u, sum1 = 0u, sum2 = 0u, sum3 = 0u;
 	for(hxhistogram_t i = 0u; i < 256u; ++i) {
-		hxhistogram_t t0 = hist0[i] + sum0; hist0[i] = sum0; sum0 = t0;
-		hxhistogram_t t1 = hist1[i] + sum1; hist1[i] = sum1; sum1 = t1;
-		hxhistogram_t t2 = hist2[i] + sum2; hist2[i] = sum2; sum2 = t2;
-		hxhistogram_t t3 = hist3[i] + sum3; hist3[i] = sum3; sum3 = t3;
+		const hxhistogram_t t0 = hist0[i] + sum0; hist0[i] = sum0; sum0 = t0;
+		const hxhistogram_t t1 = hist1[i] + sum1; hist1[i] = sum1; sum1 = t1;
+		const hxhistogram_t t2 = hist2[i] + sum2; hist2[i] = sum2; sum2 = t2;
+		const hxhistogram_t t3 = hist3[i] + sum3; hist3[i] = sum3; sum3 = t3;
 	}
 
 	// 2 or 4 pass radix sort.
@@ -85,7 +85,7 @@ void hxradix_sort_void11(hxradix_sort_key_void* begin, hxradix_sort_key_void* en
 		return;
 	}
 
-	hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
 
 	// Three working buffers for extremely large data sets.
 	hxradix_sort_key_void* hxrestrict buf0 = begin;
@@ -112,13 +112,13 @@ void hxradix_sort_void11(hxradix_sort_key_void* begin, hxradix_sort_key_void* en
 	// Convert histograms to start indices
 	hxhistogram_t sum0 = 0u, sum1 = 0u, sum2 = 0u;
 	for(hxhistogram_t i = 0u; i < 1024u; ++i) {
-		hxhistogram_t t0 = hist0[i] + sum0; hist0[i] = sum0; sum0 = t0;
-		hxhistogram_t t1 = hist1[i] + sum1; hist1[i] = sum1; sum1 = t1;
-		hxhistogram_t t2 = hist2[i] + sum2; hist2[i] = sum2; sum2 = t2;
+		const hxhistogram_t t0 = hist0[i] + sum0; hist0[i] = sum0; sum0 = t0;
+		const hxhistogram_t t1 = hist1[i] + sum1; hist1[i] = sum1; sum1 = t1;
+		const hxhistogram_t t2 = hist2[i] + sum2; hist2[i] = sum2; sum2 = t2;
 	}
 	for(hxhistogram_t i = 1024u; i < 2048u; ++i) {
-		hxhistogram_t t0 = hist0[i] + sum0; hist0[i] = sum0; sum0 = t0;
-		hxhistogram_t t1 = hist1[i] + sum1; hist1[i] = sum1; sum1 = t1;
+		const hxhistogram_t t0 = hist0[i] + sum0; hist0[i] = sum0; sum0 = t0;
+		const hxhistogram_t t1 = hist1[i] + sum1; hist1[i] = sum1; sum1 = t1;
 	}
 
 	// 2 or 3 pass radix sort

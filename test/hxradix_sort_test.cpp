@@ -31,7 +31,7 @@ public:
 	void generate(hxarray<hxtest_object<key_t> >& a, uint32_t size, uint32_t mask, key_t offset) {
 		a.reserve(size);
 		for(uint32_t i= size;i--;) {
-			uint32_t x = m_prng() & mask;
+			const uint32_t x = m_prng() & mask;
 			a.push_back((key_t)((key_t)x - offset));
 		}
 	}

@@ -15,7 +15,7 @@ HX_REGISTER_FILENAME_HASH
 
 TEST(hxfile_test, empty_name_rejects_empty_path) {
 	// "Constructs and opens a file with a formatted filename." Empty path under skip_asserts should trip failure.
-	hxfile f(hxfile::in | hxfile::skip_asserts, "");
+	const hxfile f(hxfile::in | hxfile::skip_asserts, "");
 	EXPECT_EQ(f.fail(), true);
 	EXPECT_EQ(f.is_open(), false);
 	EXPECT_EQ(f, false);
@@ -52,7 +52,7 @@ TEST(hxfile_test, read_write_round_trip) {
 }
 
 TEST(hxfile_test, missing_file_reports_expectations) {
-	hxfile f(hxfile::in | hxfile::skip_asserts, "test-file-does-not-exist-%d", 123);
+	const hxfile f(hxfile::in | hxfile::skip_asserts, "test-file-does-not-exist-%d", 123);
 	EXPECT_EQ(f.fail(), true);
 	EXPECT_EQ(f.is_open(), false);
 
@@ -66,7 +66,10 @@ TEST(hxfile_test, missing_file_reports_expectations) {
 TEST(hxfile_test, seek_and_read_maintain_state) {
 	// Write a test file to exercise get/set_position and read1/write1.
 
-	struct hxfile_test_arbitrary_t { uint32_t x; } a { 0xefefefefu }, b { 0x01020304u }, c { 0x0u };
+	struct hxfile_test_arbitrary_t { uint32_t x; };
+	const hxfile_test_arbitrary_t a { 0xefefefefu };
+	const hxfile_test_arbitrary_t b { 0x01020304u };
+	hxfile_test_arbitrary_t c { 0x0u };
 
 	// Write the expected value surrounded by poison.
 	hxfile f(hxfile::in | hxfile::out, "hxfile_test_offset.bin");
@@ -105,8 +108,8 @@ TEST(hxfile_test, move_copy_and_stream_operators) {
 	// "Move constructor. No copy constructor is provided." Source handle closes once transferred.
 	hxfile f(hxmove(ft));
 	EXPECT_TRUE(f.is_open());
-	hxfile_test_record x { 77777u, -555, 77u, -55 };
-	int a = -3;
+	const hxfile_test_record x { 77777u, -555, 77u, -55 };
+	const int a = -3;
 
 	// "Writes a single unformatted native-endian object to a stream."
 	f << x << a;
@@ -164,7 +167,7 @@ TEST(hxfile_test, eof_variants) {
 
 	// Create an empty test file.
 	{
-		hxfile writer(hxfile::out | hxfile::skip_asserts, filename);
+		const hxfile writer(hxfile::out | hxfile::skip_asserts, filename);
 		EXPECT_TRUE(writer.is_open());
 		EXPECT_FALSE(writer.fail());
 	}

@@ -20,9 +20,25 @@ ninja -C bin
 
 echo run ./hxtest...
 cd bin
-./hxtest
+
+./hxtest > testcmake.sh.txt 2>&1
+CODE=$?
+
+# Filter out critical status messages only. This should stop the test if no
+# output matches. The goal is to prevent AI from panicking over spew.
+grep -E '\[  PASSED  \]|\[  FAILED  \]|FAILED TESTS' testcmake.sh.txt
+
+if [ "$CODE" -ne 0 ]; then
+	# Dump everything a second time with all spew enabled.
+	cat testcmake.sh.txt
+	echo stopping due to failed test. goodbye...
+    exit "$CODE"
+fi
+
 cd ..
 
+# Depends on -DCMAKE_EXPORT_COMPILE_COMMANDS=ON above. These two have to happen
+# together.
 echo run-clang-tidy...
 run-clang-tidy -quiet -p bin src/*.cpp src/*.c test/*.cpp
 

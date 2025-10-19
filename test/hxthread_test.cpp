@@ -33,7 +33,7 @@ public:
 };
 
 void* hxthread_test_func_increment(hxthread_test_simple_parameters_t* parameters) {
-	hxunique_lock lock(*parameters->mutex);
+	const hxunique_lock lock(*parameters->mutex);
 	++(*parameters->shared);
 	return hxnull;
 }
@@ -58,7 +58,7 @@ void* hxthread_test_func_notify_all(hxthread_test_parameters_t* parameters) {
 }
 
 void* hxthread_test_func_lock_unlock_multiple(hxthread_test_parameters_t* parameters) {
-	hxunique_lock lock(*parameters->mutex);
+	const hxunique_lock lock(*parameters->mutex);
 	++(*parameters->woken);
 	return hxnull;
 }
@@ -80,7 +80,7 @@ public:
 
 	~hxthread_test_thread_local_destructor() {
 		if(track) {
-			hxunique_lock lock(hxthread_local_destructor_mutex);
+			const hxunique_lock lock(hxthread_local_destructor_mutex);
 			++hxthread_local_destructor_count;
 		}
 	}
@@ -182,7 +182,7 @@ TEST(hxthread_test_condition_variable, notify_one_wakes_waiter) {
 	hxthread_test_parameters_t parameters(&mutex, &condition_variable, &ready, hxnull);
 	hxthread thread(hxthread_test_func_notify_one, &parameters);
 	{
-		hxunique_lock lock(mutex);
+		const hxunique_lock lock(mutex);
 		ready = true;
 		// "Notifies one waiting thread." Wake single consumer.
 		condition_variable.notify_one();
@@ -201,7 +201,7 @@ TEST(hxthread_test_condition_variable, notify_all_wakes_waiters) {
 	hxthread thread1(hxthread_test_func_notify_all, &parameters_tuple1);
 	hxthread thread2(hxthread_test_func_notify_all, &parameters_tuple2);
 	{
-		hxunique_lock lock(mutex);
+		const hxunique_lock lock(mutex);
 		ready = true;
 		// "Notifies all waiting threads." Both sleepers should bump woken count.
 		condition_variable.notify_all();
@@ -262,15 +262,15 @@ TEST(hxthread_test_unique_lock, ownership_after_lock) {
 }
 
 TEST(hxthread_test_thread, join_without_start) {
-	hxthread thread;
+	const hxthread thread;
 	// Should not be joinable, so nothing to join.
 	EXPECT_FALSE(thread.joinable());
 }
 
 TEST(hxthread_test_unique_lock, multiple_locks) {
 	hxmutex mutex1, mutex2;
-	hxunique_lock lock1(mutex1);
-	hxunique_lock lock2(mutex2);
+	const hxunique_lock lock1(mutex1);
+	const hxunique_lock lock2(mutex2);
 	EXPECT_TRUE(lock1.owns_lock());
 	EXPECT_TRUE(lock2.owns_lock());
 }
@@ -282,7 +282,7 @@ TEST(hxthread_test_condition_variable, wait_notify_sequence) {
 	hxthread_test_parameters_t parameters(&mutex, &condition_variable, &ready, hxnull);
 	hxthread thread(hxthread_test_func_wait_notify_sequence, &parameters);
 	{
-		hxunique_lock lock(mutex);
+		const hxunique_lock lock(mutex);
 		ready = true;
 		condition_variable.notify_one();
 	}
@@ -291,7 +291,7 @@ TEST(hxthread_test_condition_variable, wait_notify_sequence) {
 }
 
 TEST(hxthread_test_thread, multiple_thread_start_join) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	const int reps = 10;
 	int shared = 0;
@@ -311,7 +311,7 @@ TEST(hxthread_test_thread, multiple_thread_start_join) {
 
 TEST(hxthread_test_thread_local, destroy_local_runs_on_thread_exit) {
 	{
-		hxunique_lock lock(hxthread_local_destructor_mutex);
+		const hxunique_lock lock(hxthread_local_destructor_mutex);
 		hxthread_local_destructor_count = 0;
 	}
 
@@ -321,7 +321,7 @@ TEST(hxthread_test_thread_local, destroy_local_runs_on_thread_exit) {
 	hxthread thread(&hxthread_local_destructor_thread, &dummy);
 	thread.join();
 
-	hxunique_lock lock(hxthread_local_destructor_mutex);
+	const hxunique_lock lock(hxthread_local_destructor_mutex);
 	EXPECT_EQ(hxthread_local_destructor_count, 1);
 }
 

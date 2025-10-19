@@ -69,7 +69,7 @@ hxattr_allocator(free) hxattr_hot hxattr_noexcept static void* hxmalloc_checked_
 // if threads avoided sharing allocators, but I do not want to scare anyone.
 #if HX_USE_THREADS
 static hxmutex s_hxmemory_manager_mutex;
-#define HX_MEMORY_MANAGER_LOCK_() hxunique_lock memory_manager_lock_(s_hxmemory_manager_mutex)
+#define HX_MEMORY_MANAGER_LOCK_() const hxunique_lock memory_manager_lock_(s_hxmemory_manager_mutex)
 #else
 #define HX_MEMORY_MANAGER_LOCK_() (void)0
 #endif
@@ -201,7 +201,7 @@ public:
 		--m_allocation_count;
 		m_bytes_allocated -= hdr.size;
 
-		uintptr_t actual = hdr.actual;
+		const uintptr_t actual = hdr.actual;
 #if (HX_RELEASE) < 2
 		hdr.sentinel_value = hxmemory_allocation_header::sentinel_value_freed;
 		::memset(ptr, 0xde, hdr.size);
@@ -416,7 +416,7 @@ hxsystem_allocator_t hxmemory_manager::begin_allocation_scope(
 		hxsystem_allocator_scope* scope, hxsystem_allocator_t new_id) {
 
 	HX_MEMORY_MANAGER_LOCK_();
-	hxsystem_allocator_t previous_id = s_hxcurrent_memory_allocator;
+	const hxsystem_allocator_t previous_id = s_hxcurrent_memory_allocator;
 	s_hxcurrent_memory_allocator = new_id;
 	get_allocator(s_hxcurrent_memory_allocator).begin_allocation_scope(
 		scope, s_hxcurrent_memory_allocator);

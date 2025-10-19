@@ -40,14 +40,14 @@ public:
 };
 
 TEST_F(hxtask_queue_test_f, nop) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	for(size_t i = 0; i <= max_pool; ++i) {
 		{
 			// "Creates a new task queue. task_queue_size reserves storage ...
 			// thread_pool_size of 0 does not use threads." Smoke test
 			// construction/destruction.
-			hxtask_queue q(1, i);
+				const hxtask_queue q(1, i);
 		}
 		{
 			hxtask_queue q(1, i);
@@ -60,7 +60,7 @@ TEST_F(hxtask_queue_test_f, nop) {
 }
 
 TEST_F(hxtask_queue_test_f, multiple) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	for(size_t i = 0; i <= max_pool; ++i) {
 		for(size_t j = 1; j < max_tasks; ++j) {
@@ -100,7 +100,7 @@ TEST_F(hxtask_queue_test_f, multiple) {
 }
 
 TEST_F(hxtask_queue_test_f, multiple_reenqueuing) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	for(size_t i = 0; i <= max_pool; ++i) {
 		for(size_t j = 1; j < max_tasks; ++j) {
@@ -143,7 +143,7 @@ TEST_F(hxtask_queue_test_f, multiple_reenqueuing) {
 }
 
 TEST(hxtask_queue_test, priority_ordering_single_threaded) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	class hxtask_queue_test_task_t : public hxtask {
 	public:
@@ -156,7 +156,7 @@ TEST(hxtask_queue_test, priority_ordering_single_threaded) {
 		virtual void execute(hxtask_queue*) override {
 			hxassertmsg(execution_order, "priority_task_unconfigured");
 			hxassertmsg(write_index, "priority_task_unconfigured");
-			size_t slot = (*write_index)++;
+			const size_t slot = (*write_index)++;
 			execution_order[slot] = priority_value;
 		}
 
@@ -191,7 +191,7 @@ TEST(hxtask_queue_test, priority_ordering_single_threaded) {
 }
 
 TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	class hxtask_queue_test_predicate_task_t : public hxtask {
 	public:
@@ -236,26 +236,26 @@ TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
 	}
 
 	// "Returns true if the predicate returns true for every element."
-	bool all_priority_non_negative = q.all_of([](const hxtask_queue::record_t& record) {
+	const bool all_priority_non_negative = q.all_of([](const hxtask_queue::record_t& record) {
 		return record.priority >= 0;
 	});
 	EXPECT_TRUE(all_priority_non_negative);
 
 	// "Returns true if the predicate returns true for any element."
-	bool any_high_priority = q.any_of([](const hxtask_queue::record_t& record) {
+	const bool any_high_priority = q.any_of([](const hxtask_queue::record_t& record) {
 		return record.priority > 8;
 	});
 	EXPECT_TRUE(any_high_priority);
 
 	// "Locks the queue and calls fn on each task record." Remove low priorities.
-	size_t removed_low_priority = q.erase_if([](const hxtask_queue::record_t& record) {
+	const size_t removed_low_priority = q.erase_if([](const hxtask_queue::record_t& record) {
 		return record.priority < 4;
 	});
 	EXPECT_TRUE(removed_low_priority == 1);
 	EXPECT_TRUE(q.size() == 2u);
 	EXPECT_TRUE(!q.full());
 
-	bool any_remaining_low_priority = q.any_of([](const hxtask_queue::record_t& record) {
+	const bool any_remaining_low_priority = q.any_of([](const hxtask_queue::record_t& record) {
 		return record.priority < 4;
 	});
 	EXPECT_TRUE(!any_remaining_low_priority);
@@ -280,7 +280,7 @@ TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
 }
 
 TEST(hxtask_queue_test, for_each_reschedules_queue) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	class hxtask_queue_test_reschedule_task_t : public hxtask {
 	public:
@@ -291,7 +291,7 @@ TEST(hxtask_queue_test, for_each_reschedules_queue) {
 		}
 
 		virtual void execute(hxtask_queue*) override {
-			size_t slot = (*write_index)++;
+				const size_t slot = (*write_index)++;
 			execution_order[slot] = (int)task_index;
 		}
 
@@ -325,7 +325,7 @@ TEST(hxtask_queue_test, for_each_reschedules_queue) {
 	q.for_each([&](hxtask_queue::record_t& record) {
 		hxtask_queue_test_reschedule_task_t* task =
 			static_cast<hxtask_queue_test_reschedule_task_t*>(record.task);
-		size_t index = task->get_index();
+			const size_t index = task->get_index();
 		record.priority = rescheduled_priorities[index];
 		++mutate_count;
 	});
@@ -338,7 +338,7 @@ TEST(hxtask_queue_test, for_each_reschedules_queue) {
 	const_q.for_each([&](const hxtask_queue::record_t& record) {
 		const hxtask_queue_test_reschedule_task_t* task =
 			static_cast<const hxtask_queue_test_reschedule_task_t*>(record.task);
-		size_t index = task->get_index();
+			const size_t index = task->get_index();
 		EXPECT_TRUE(record.priority == rescheduled_priorities[index]);
 		++verify_count;
 	});

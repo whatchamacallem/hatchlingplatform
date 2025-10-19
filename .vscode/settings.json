@@ -26,6 +26,7 @@
         "ctypes",
         "ctypeslib",
         "cvref",
+        "DCMAKE",
         "debugbuild",
         "demangle",
         "Demangled",

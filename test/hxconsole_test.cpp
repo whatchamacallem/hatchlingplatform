@@ -67,12 +67,12 @@ TEST(hxconsole_test, register_command) {
 
 	// Extra payload triggers parse failure, leaving {-2} unchanged.
 	s_hxconsole_test_result_hook = -2.0f;
-	bool b4 = hxconsole_exec_line("hxconsole_test_register3 7 8 9 ");
+	const bool b4 = hxconsole_exec_line("hxconsole_test_register3 7 8 9 ");
 	EXPECT_FALSE(b4);
 	EXPECT_EQ(-2.0f, s_hxconsole_test_result_hook);
 
 	// Missing function
-	bool b5 = hxconsole_exec_line("Not_exist");
+	const bool b5 = hxconsole_exec_line("Not_exist");
 	EXPECT_FALSE(b5);
 
 	// add code coverage for unmade calls.
@@ -81,7 +81,7 @@ TEST(hxconsole_test, register_command) {
 
 	// "Explicitly deregisters a console symbol." Confirm removal leaves hook untouched.
 	hxconsole_deregister("hxconsole_test_register0");
-	bool b6 = hxconsole_exec_line("hxconsole_test_register0 77 ..."); // same as before
+	const bool b6 = hxconsole_exec_line("hxconsole_test_register0 77 ..."); // same as before
 	EXPECT_FALSE(b6);
 }
 
@@ -189,7 +189,7 @@ hxconsole_command_named(hxconsole_test_file_fn, hxconsole_test_file_fn_name);
 #endif
 
 TEST(hxconsole_test, null_test) {
-	uint8_t prev = g_hxsettings.log_level;
+	const uint8_t prev = g_hxsettings.log_level;
 	g_hxsettings.log_level = hxloglevel_warning;
 	// "Enters formatted messages in the system log." Suppress console echoes while routing a hidden line through the handler.
 	hxloghandler(hxloglevel_console, "test_hidden\n");
@@ -216,7 +216,7 @@ TEST(hxconsole_test, file_test) {
 			"\n";
 	}
 	// "Executes a configuration file that is opened for reading. Ignores blank lines and comments that start with #."
-	bool is_ok = hxconsole_exec_line("exec hxconsole_test_file_test.txt");
+	const bool is_ok = hxconsole_exec_line("exec hxconsole_test_file_test.txt");
 	EXPECT_TRUE(is_ok);
 
 	// Timeline: var1 { 0 → 3 → 78 }, var2 { 0 → 89 }.
@@ -265,7 +265,7 @@ TEST(hxconsole_test, file_peek_poke) {
 		f.print("poke %zx 4 de\n", (size_t)(target + 1));
 		f.print("hexdump %zx 12\n", (size_t)target);
 	}
-	bool is_ok = hxconsole_exec_line("exec hxconsole_test_file_test.txt");
+	const bool is_ok = hxconsole_exec_line("exec hxconsole_test_file_test.txt");
 	EXPECT_TRUE(is_ok);
 
 	// Buffer morph: [111] [777] [333] -> [111] [222] [333]
@@ -281,7 +281,7 @@ TEST(hxconsole_test, file_peek_poke_floats) {
 		f.print("poke %zx 4 435E0000\n", (size_t)(target + 1));
 		f.print("floatdump %zx 3\n", (size_t)target);
 	}
-	bool is_ok = hxconsole_exec_line("exec hxconsole_test_file_test.txt");
+	const bool is_ok = hxconsole_exec_line("exec hxconsole_test_file_test.txt");
 	EXPECT_TRUE(is_ok);
 
 	// Buffer morph: [111.0] [777.0] [333.0] -> [111.0] [222.0] [333.0]

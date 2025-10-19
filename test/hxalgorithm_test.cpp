@@ -167,24 +167,24 @@ TEST(hxhxalgorithm_test, hxbinary_search_iterator_support) {
 		tracker_t(5), tracker_t(8), tracker_t(12)
 	};
 
-	hxhxalgorithm_test_iter_api_t begin(values);
-	hxhxalgorithm_test_iter_api_t end(values + 7);
+	const hxhxalgorithm_test_iter_api_t begin(values);
+	const hxhxalgorithm_test_iter_api_t end(values + 7);
 
 	// "Performs a binary search in the range [first, last)." Confirm hits stay
 	// in-bounds for { 3, 12 } without aliasing iterators.
-	tracker_t key_three(3);
+	const tracker_t key_three(3);
 	hxhxalgorithm_test_iter_api_t result = hxbinary_search(begin, end, key_three, sort_iter_value_less);
 	EXPECT_NE(result, end);
 	EXPECT_EQ((*result).value, 3);
 
-	tracker_t key_high(12);
+	const tracker_t key_high(12);
 	result = hxbinary_search(begin, end, key_high, sort_iter_value_less);
 	EXPECT_NE(result, end);
 	EXPECT_EQ((*result).value, 12);
 
 	// "Returns end if the value is not found." Validate misses { 7 } including
 	// the degenerate case -> empty range.
-	tracker_t missing(7);
+	const tracker_t missing(7);
 	result = hxbinary_search(begin, end, missing, sort_iter_value_less);
 	EXPECT_EQ(result, end);
 
@@ -196,17 +196,17 @@ TEST(hxhxalgorithm_test, hxbinary_search_iterator_support) {
 TEST(hxhxalgorithm_test, sort_grinder) {
 	using tracker_t = hxhxalgorithm_test_ref_tracker_t;
 
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(2);
-	size_t max_size_mask = 0x7f;
+	const size_t max_size_mask = 0x7f;
 	hxarray<tracker_t> insertion_sorted; insertion_sorted.reserve(max_size_mask);
 	hxarray<tracker_t> heap_sorted; heap_sorted.reserve(max_size_mask);
 	hxarray<tracker_t> generic_sorted; generic_sorted.reserve(max_size_mask);
 
 	for(int i=12; i-- != 0; ) {
 		// Set up the arrays to be sorted.
-		size_t size = (max_size_mask >> i) & rng;
-		for(size_t j=size; j-- != 0u;) {
+		const size_t size = (max_size_mask >> i) & rng;
+		for(size_t j = size; j-- != 0u;) {
 			insertion_sorted.push_back(tracker_t(rng.range(100, 200)));
 			// Use the && constructor and not the const& one.
 			heap_sorted.push_back(tracker_t(0));
@@ -236,21 +236,21 @@ TEST(hxhxalgorithm_test, sort_grinder) {
 TEST(hxhxalgorithm_test, sort_grinder_generic) {
 	using tracker_t = hxhxalgorithm_test_ref_tracker_t;
 
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(3);
-	size_t max_size_mask = 0xffff;
+	const size_t max_size_mask = 0xffff;
 	hxarray<tracker_t> sorted; sorted.reserve(max_size_mask);
 	hxarray<int> histogram(20000, 0);
 
 	for(int i=10; i-- != 0; ) {
 		// Pick random values of increasing maximum value up to 2^16 and keep a
 		// count of them.
-		size_t size = (max_size_mask >> i) & rng;
+		const size_t size = (max_size_mask >> i) & rng;
 		if(size <= 16) {
 			continue;
 		}
-		for(size_t j=size; j-- != 0u;) {
-			int x = rng.range(10000, 10000);
+		for(size_t j = size; j-- != 0u;) {
+			const int x = rng.range(10000, 10000);
 			sorted.push_back(tracker_t(x));
 			++histogram[(size_t)x];
 		}
@@ -369,7 +369,7 @@ TEST(hxset_algorithms_test, int_pointer_ranges) {
 TEST(hxset_algorithms_test, hxarray_output_iterator_support) {
 	using tracker_t = hxhxalgorithm_test_ref_tracker_t;
 
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 
 	auto expect_hxarray = [](const hxarray<tracker_t>& actual, const int* expected, size_t count) {
 		ASSERT_EQ(actual.size(), count);
@@ -492,12 +492,12 @@ TEST(hxbinary_search_test, simple_case) {
 TEST(hxbinary_search_test, binary_search_grinder) {
 	using tracker_t = hxhxalgorithm_test_ref_tracker_t;
 
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	hxrandom rng(4);
 	hxarray<tracker_t> sorted; sorted.reserve(100);
 
-	for(int i=100; i-- != 0; ) {
-		int x = rng.range(0, 100);
+		for(int i=100; i-- != 0; ) {
+			const int x = rng.range(0, 100);
 		sorted.push_back(tracker_t(x));
 	}
 	// "Unsorted data will lead to errors." Force ascending order before the grinder.
@@ -505,8 +505,8 @@ TEST(hxbinary_search_test, binary_search_grinder) {
 
 	// Every resident value should be rediscovered: pointer equality relaxed to
 	// value comparison avoids aliasing when duplicates exist.
-	for(size_t i=100u; i-- != 0u; ) {
-		tracker_t t = hxmove(sorted[i]); // Don't pass an address that is in the array.
+		for(size_t i=100u; i-- != 0u; ) {
+		const tracker_t t = hxmove(sorted[i]); // Don't pass an address that is in the array.
 		tracker_t* ptr = hxbinary_search(sorted.begin(), sorted.end(), t);
 		// Assert logical equivalence without using ==. The tracker_t* may point
 		// elsewhere.

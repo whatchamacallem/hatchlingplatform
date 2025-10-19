@@ -155,7 +155,7 @@ static bool hxprint_hashes(void) {
 
 	// Sort by hash.
 	hxlogconsole("string literals in hash order:\n");
-	hxsystem_allocator_scope temporary_stack(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack(hxsystem_allocator_temporary_stack);
 
 	hxarray<const char*> filenames; filenames.reserve(hxstring_literal_hashes_().size());
 

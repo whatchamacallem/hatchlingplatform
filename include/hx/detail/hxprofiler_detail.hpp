@@ -13,7 +13,7 @@
 #include "../hxthread.hpp"
 
 #if HX_USE_THREADS
-#define HX_PROFILER_LOCK_() hxunique_lock hxprofiler_mutex_lock_(g_hxprofiler_.m_mutex_)
+#define HX_PROFILER_LOCK_() const hxunique_lock hxprofiler_mutex_lock_(g_hxprofiler_.m_mutex_)
 #else
 #define HX_PROFILER_LOCK_() (void)0
 #endif

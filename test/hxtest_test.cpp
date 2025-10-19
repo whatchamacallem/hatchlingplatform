@@ -93,7 +93,7 @@ TEST(hxtest_test, double_eq) {
 
 // Run all the C tests.
 TEST(hxtest_test, all_tests) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	EXPECT_TRUE(hxctest_all());
 }
 

@@ -84,7 +84,7 @@ void hxtask_queue::enqueue(hxtask* task, int priority) {
 	};
 
 #if HX_USE_THREADS
-	hxunique_lock lock_(m_mutex_);
+	const hxunique_lock lock_(m_mutex_);
 	if(m_thread_pool_size_ > 0) {
 		hxassertrelease(m_queue_run_level_ == run_level_running_, "stopped_queue");
 		m_tasks_.push_heap(entry);

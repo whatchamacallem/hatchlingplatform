@@ -26,7 +26,7 @@ TEST(hxmemory_manager_test, hxnew) {
 }
 
 TEST(hxmemory_manager_test, bytes) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	for(size_t i=10u; i-- != 0u;) {
 		void* p = hxmalloc(i);
 		ASSERT_TRUE(p != hxnull);
@@ -36,7 +36,7 @@ TEST(hxmemory_manager_test, bytes) {
 }
 
 TEST(hxmemory_manager_test, string_duplicate) {
-	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
+const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	// "Allocates a copy of a string using the specified allocator." Duplicate literal into temp arena then release.
 	char* p = hxstring_duplicate("str");
 	ASSERT_TRUE(p != hxnull);
@@ -54,7 +54,7 @@ TEST(hxmemory_manager_test, temp_overflow) {
 	ASSERT_TRUE(p != hxnull);
 	hxfree(p);
 
-	hxsystem_allocator_scope temp(hxsystem_allocator_temporary_stack);
+const hxsystem_allocator_scope temp(hxsystem_allocator_temporary_stack);
 	// Fallback path through default allocator should still succeed for { budget
 	// + 1 } bytes.
 	p = hxmalloc(HX_MEMORY_BUDGET_TEMPORARY_STACK + 1);
@@ -75,7 +75,7 @@ public:
 		uintptr_t start_bytes;
 
 	{
-		hxsystem_allocator_scope allocator_scope(id);
+		const hxsystem_allocator_scope allocator_scope(id);
 
 			// "Gets the number of allocations made when this scope was entered." Snapshot counters for later diff.
 			start_count = allocator_scope.get_initial_allocation_count();
@@ -83,7 +83,7 @@ public:
 
 			{
 				// Google Test spams new/delete with std::string operations.
-				hxsystem_allocator_scope gtest_spam_guard(hxsystem_allocator_heap);
+				const hxsystem_allocator_scope gtest_spam_guard(hxsystem_allocator_heap);
 				// "Gets the total number of allocations outstanding for this memory allocator." Expect no incidental churn before our own allocations.
 				ASSERT_EQ(allocator_scope.get_current_allocation_count(), start_count);
 				ASSERT_EQ(allocator_scope.get_current_bytes_allocated(), start_bytes);
@@ -95,7 +95,7 @@ public:
 			::memset(ptr2, 0x33, 200);
 
 			{
-				hxsystem_allocator_scope gtest_spam_guard(hxsystem_allocator_heap);
+				const hxsystem_allocator_scope gtest_spam_guard(hxsystem_allocator_heap);
 				// Check delta counters: 2x allocations should advance outstanding count while preserving initial snapshot.
 				ASSERT_EQ(allocator_scope.get_initial_allocation_count(), start_count);
 				ASSERT_EQ(allocator_scope.get_current_allocation_count(), 2u + start_count);
@@ -117,9 +117,9 @@ public:
 		// hxsystem_allocator_permanent does not free.
 		if(id != hxsystem_allocator_permanent) {
 			// Fresh scope should be reset to original counters once previous block exits.
-			hxsystem_allocator_scope allocator_scope(id);
+			const hxsystem_allocator_scope allocator_scope(id);
 
-			hxsystem_allocator_scope gtest_spam_guard(hxsystem_allocator_heap);
+			const hxsystem_allocator_scope gtest_spam_guard(hxsystem_allocator_heap);
 			ASSERT_EQ(allocator_scope.get_initial_allocation_count(), start_count);
 			ASSERT_EQ(allocator_scope.get_initial_bytes_allocated(), start_bytes);
 		}
@@ -131,7 +131,7 @@ public:
 		const int asserts_allowed = g_hxsettings.asserts_to_be_skipped;
 
 		{
-			hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
+			const hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
 
 			// The temp stack is expected to be empty for this test.
 			ASSERT_EQ(0u, allocator_scope.get_initial_allocation_count());
@@ -152,7 +152,7 @@ public:
 		ASSERT_EQ(g_hxsettings.asserts_to_be_skipped, 0); // hxassert was hit; the leak occurred in the scope.
 
 		{
-			hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
+			const hxsystem_allocator_scope allocator_scope(hxsystem_allocator_temporary_stack);
 
 			// The allocator knows it has an outstanding allocation.
 			ASSERT_EQ(allocator_scope.get_initial_allocation_count(), 1);

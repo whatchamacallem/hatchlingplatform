@@ -122,7 +122,7 @@ bool hxconsole_exec_filename(const char* filename) {
 bool hxconsole_help(void) {
 	if((HX_RELEASE) < 2) {
 		hxinit();
-		hxsystem_allocator_scope temporary_stack(hxsystem_allocator_temporary_stack);
+		const hxsystem_allocator_scope temporary_stack(hxsystem_allocator_temporary_stack);
 		hxarray<const hxconsole_hash_table_node_*> cmds;
 		cmds.reserve(hxconsole_commands_().size());
 		for(hxconsole_command_table_::const_iterator it = hxconsole_commands_().cbegin();
