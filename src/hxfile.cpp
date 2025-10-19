@@ -98,7 +98,8 @@ bool hxfile::openv_(uint8_t mode, const char* filename, va_list args) {
 
 void hxfile::close(void) {
 	if(m_owns_) {
-		::fclose((FILE*)m_file_pimpl_);
+		int code = ::fclose((FILE*)m_file_pimpl_);
+		hxassertmsg(code == 0, "fclose"); (void)code;
 	}
 	::memset((void*)this, 0x00, sizeof *this);
 }

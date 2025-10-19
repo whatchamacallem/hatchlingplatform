@@ -187,12 +187,12 @@ extern "C" {
 // Target independent.
 
 /// \cond HIDDEN
-// HX_APPEND_COUNTER__ - Used to generate unique identifiers. This is weird
+// HX_APPEND_COUNTER2_ - Used to generate unique identifiers. This is weird
 // because the ## operator happens before macro arg evaluation and both
 // happen before general macro evaluation.
-#define HX_APPEND_COUNTER__(x_, y_) x_ ## y_
+#define HX_APPEND_COUNTER2_(x_, y_) x_ ## y_
 // This version does evaluate its macro args.
-#define HX_APPEND_COUNTER_(x_, y_) HX_APPEND_COUNTER__(x_, y_)
+#define HX_APPEND_COUNTER_(x_, y_) HX_APPEND_COUNTER2_(x_, y_)
 /// \endcond
 /// `HX_APPEND_COUNTER` - Generates a semi-unique identifier by appending a
 /// unique number for that translation unit to `x`.
