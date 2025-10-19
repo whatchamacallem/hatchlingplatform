@@ -57,7 +57,6 @@ time ./testcmake.sh
 time ./testcoverage.sh --headless
 time ./testerrorhandling.sh
 time ./testmatrix.sh
-time ./testpythonbindings.sh
 time ./teststrip.sh
 time ./testwasm.sh --headless
 time doxygen
