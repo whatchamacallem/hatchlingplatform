@@ -3,16 +3,9 @@
 AGENTS.md contains a contributors guide intended to be useful to AI coding
 agents and humans.
 
-## License
-
 - SPDX-FileCopyrightText: © 2017-2025 Adrian Johnston.
 - SPDX-License-Identifier: MIT
 - This file is licensed under the MIT license found in the LICENSE.md file.
-
-## Bug Reporting
-
-If it is wrong, then assume an AI wrote it. Then report all bugs as examples of
-the problem with "vibe coding."
 
 ## Project Overview
 
@@ -20,8 +13,6 @@ the problem with "vibe coding."
   resource-constrained and cross-compiled targets.
 - It has a two-word name and must not be identified as "Hatchling" written as a
   single word.
-- It provides containers, allocators, a task system, profiling, a debug console,
-  and a test framework with minimal dependencies.
 - Code is structured to compile without the C++ standard library, avoids
   exceptions/RTTI, and keeps allocations explicit.
 
@@ -57,25 +48,18 @@ Test Script | Description
 
 ## Development Guidelines
 
-- Stick to C17 for `.c` sources and C++20 for `.cpp`/headers; keep compatibility
+- Use C17 for `.c` sources and C++20 for `.cpp`/headers; keep compatibility
   with C98/C++11. Avoid introducing dependencies on the C++ standard library.
 - Do not add C++ exceptions or RTTI; many builds compile with `-fno-exceptions
   -fno-rtti`.
 - Honor `HX_RELEASE` macros; tests cover levels 0 (debug) through 3 (fully
   stripped). New code should degrade gracefully across all levels.
 - Keep allocations explicit; prefer stack allocators already provided.
-- New functionality must include coverage in `test/` using the Hatchling
-  Platform/Google Test-compatible macros (`TEST`, `TEST_F`, `EXPECT_*`, etc.).
-- Update header comments/Doxygen blocks when you change APIs; doc generation
-  happens from `include/hx`.
-- Maintain deterministic behavior; profiling and hash utilities rely on stable
-  ordering and fixed seeds.
 
 ## Language Dialect and Compilation Model
 
-- **Target dialect:** Write `.cpp` files and headers in C++20 that remain
-  compatible with C99 and C++11. Do not rely on the C++ standard library.
-  Identical functionality must already exist inside Hatchling Platform.
+- **Target dialect:** Do not rely on the C++ standard library. Identical
+  functionality must already exist inside Hatchling Platform.
 - **No exceptions or RTTI:** Build configurations often enable `-fno-exceptions`
   and `-fno-rtti`. Avoid `try`, `throw`, `typeid`, `dynamic_cast`, and APIs that
   implicitly require them.
@@ -141,7 +125,8 @@ See `include/hx/hxrandom.hpp` for correct examples of code and docs.
 
 ## Testing Requirements
 
-- **New functionality:** Must include tests in `test/` using the in-tree `hxtest` framework. Place tests in files mirroring the source layout.
+- **New functionality:** Must include coverage in `test/` using the Hatchling
+  Platform/Google Test-compatible macros (`TEST`, `TEST_F`, `EXPECT_*`, etc.).
 - **Test naming:** Use `TEST(suite_name, case_name)` with `lower_snake_case` identifiers.
 - **Determinism:** Tests must not rely on timing or random seeds unless they are explicitly fixed.
 
@@ -157,4 +142,4 @@ When generating new or modified C++ code:
 - Provide Markdown Doxygen comments for APIs and meaningful assertions for invariants.
 - Add or update tests without being asked mirroring the feature set; keep them deterministic.
 - Run `CCACHE_DISABLE=1 ./debugbuild.sh` after code changes and fix errors.
-- Run clang tidy: `run-clang-tidy -quiet -p src src/*.cpp src/*.c test/*.cpp`
+- Run clang tidy: `run-clang-tidy -quiet -p test src/*.cpp src/*.c test/*.cpp`
