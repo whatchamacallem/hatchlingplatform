@@ -175,11 +175,15 @@ TEST_F(hxhash_table_test_f, map_node_usage) {
 		const table_t& const_table = table;
 		const map_node_t* const_lookup = const_table.find(10);
 		EXPECT_TRUE(const_lookup != hxnull);
-		EXPECT_EQ(const_lookup->value().id, 123);
+		if(const_lookup != hxnull) {
+			EXPECT_EQ(const_lookup->value().id, 123);
+		}
 
 		map_node_t* manual_lookup = table.find(20);
 		EXPECT_TRUE(manual_lookup != hxnull);
-		EXPECT_EQ(manual_lookup->value().id, 321);
+		if(manual_lookup != hxnull) {
+			EXPECT_EQ(manual_lookup->value().id, 321);
+		}
 
 		// Duplicate insert returns same storage -> verifies uniqueness guard.
 		map_node_t& duplicate_lookup = table.insert_unique(10);

@@ -36,7 +36,9 @@ TEST(hxrandom_test, generation) {
 		// "Automatically casts to an unsigned integer or floating point value."
 		// Grab floats in [0..1).
 		float f = rng;
+		EXPECT_TRUE(f > 0.0f && f < 1.0f);
 		float d = rng;
+		EXPECT_TRUE(d > 0.0 && d < 1.0);
 
 		// Call operator should yield same distribution via implicit conversion.
 		f = rng();

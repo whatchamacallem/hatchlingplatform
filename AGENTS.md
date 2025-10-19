@@ -150,9 +150,11 @@ See `include/hx/hxrandom.hpp` for correct examples of code and docs.
 When generating new or modified C++ code:
 
 - Confirm the target file has the correct directory hierarchy and name.
+- Use variable names that describe the operations they are involved in.
 - Ensure headers compile standalone with `hatchling_pch.hpp` excluded.
 - Verify all dependencies are explicitly included and minimal.
 - Avoid hidden dynamic allocations.
 - Provide Markdown Doxygen comments for APIs and meaningful assertions for invariants.
-- Add or update tests mirroring the feature set; keep them deterministic.
+- Add or update tests without being asked mirroring the feature set; keep them deterministic.
 - Run `CCACHE_DISABLE=1 ./debugbuild.sh` after code changes and fix errors.
+- Run clang tidy: `run-clang-tidy -quiet -p src src/*.cpp src/*.c test/*.cpp`
