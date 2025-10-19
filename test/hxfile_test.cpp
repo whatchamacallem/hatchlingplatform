@@ -199,7 +199,7 @@ TEST(hxfile_test, eof_variants) {
 		EXPECT_TRUE(reader.is_open());
 		EXPECT_FALSE(reader.fail());
 		const int result = reader.scan("%d", &scanned);
-		EXPECT_EQ(result, -1); // EOF == -1
+		EXPECT_LT(result, 0);
 		EXPECT_TRUE(reader.fail());
 		EXPECT_TRUE(reader.eof());
 	}

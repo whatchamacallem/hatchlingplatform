@@ -181,8 +181,8 @@ public:
 
 	/// Reads a formatted UTF-8 string from the file. Uses `scanf` conventions.
 	/// Returns the same value as `scanf`. Use `hxfile::skip_asserts` to read until `EOF`.
-	/// Parse errors will set `good` to false. Will set the failure flag and check `EOF`
-	/// on a return value of `EOF` from `vfscanf`.
+	/// Parse errors will set `fail` to true. Will set the failure flag and check `EOF`
+	/// on a return value of `EOF` from `vfscanf`. Returns a negative value on `EOF`.
 	/// - `format` : Format string, similar to `scanf`.
 	/// - `...` : Additional arguments for the format string.
 	int scan(const char* format_, ...) hxattr_format_scanf(2, 3) hxattr_hot;
