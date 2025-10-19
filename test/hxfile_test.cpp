@@ -160,3 +160,47 @@ TEST(hxfile_test, move_copy_and_stream_operators) {
 	f.close();
 	EXPECT_TRUE(!f.is_open());
 }
+
+TEST(hxfile_test, eof_variants) {
+	const char filename[] = "hxfile_test_empty.bin";
+
+	// Create an empty test file.
+	{
+		hxfile writer(hxfile::out | hxfile::skip_asserts, filename);
+		EXPECT_TRUE(writer.is_open());
+		EXPECT_FALSE(writer.fail());
+	}
+
+	// Keep all the EOF conditions under test.
+
+	{
+		hxfile reader(hxfile::in | hxfile::skip_asserts, filename);
+		uint8_t buffer[4];
+		EXPECT_TRUE(reader.is_open());
+		EXPECT_FALSE(reader.fail());
+		EXPECT_EQ(reader.read(buffer, sizeof buffer), 0u);
+		EXPECT_TRUE(reader.fail());
+		EXPECT_TRUE(reader.eof());
+	}
+
+	{
+		hxfile reader(hxfile::in | hxfile::skip_asserts, filename);
+		char line[8];
+		EXPECT_TRUE(reader.is_open());
+		EXPECT_FALSE(reader.fail());
+		EXPECT_FALSE(reader.getline(line));
+		EXPECT_TRUE(reader.fail());
+		EXPECT_TRUE(reader.eof());
+	}
+
+	{
+		hxfile reader(hxfile::in | hxfile::skip_asserts, filename);
+		int scanned = 0;
+		EXPECT_TRUE(reader.is_open());
+		EXPECT_FALSE(reader.fail());
+		const int result = reader.scan("%d", &scanned);
+		EXPECT_EQ(result, -1); // EOF == -1
+		EXPECT_TRUE(reader.fail());
+		EXPECT_TRUE(reader.eof());
+	}
+}
