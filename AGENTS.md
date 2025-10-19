@@ -142,4 +142,4 @@ When generating new or modified C++ code:
 - Provide Markdown Doxygen comments for APIs and meaningful assertions for invariants.
 - Add or update tests without being asked mirroring the feature set; keep them deterministic.
 - Run `CCACHE_DISABLE=1 ./debugbuild.sh` after code changes and fix errors.
-- Run clang tidy: `run-clang-tidy -quiet -p test src/*.cpp src/*.c test/*.cpp`
+- Use a long timeout when running test scripts.

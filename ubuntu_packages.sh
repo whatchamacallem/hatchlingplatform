@@ -35,22 +35,22 @@ separator() {
 
 separator
 
-c=$(echo "sudo apt install -y                                         \
+CMD=$(echo "sudo apt install -y                                         \
 	ccache        clang         cmake       doxygen     g++           \
 	g++-multilib  gcc-multilib  gcovr       gdb         gdb-multiarch \
 	libc++-dev    llvm          llvm-dev    musl        musl-dev      \
-	musl-tools                                                        \
+	musl-tools    ninja-build                                         \
 " | tr -s '[:space:]' ' ')
-echo "\$ $c"
-eval "$c"
+echo "\$ $CMD"
+eval "$CMD"
 
 separator
 
 set +o errexit
 
-for c in 'clang' 'cmake' 'doxygen' 'emcc' 'gcc' 'gcovr' 'musl-gcc' 'python3'
+for CMD in clang cmake doxygen emcc gcc gcovr musl-gcc python3 ninja
 do
-	echo "\$ $c --version"
-    eval "$c --version"
+	echo "\$ $CMD --version"
+    eval "$CMD --version"
 	separator
 done
