@@ -19,6 +19,9 @@ set -o errexit
 
 export POSIXLY_CORRECT=1
 
+# Enables glibc heap integrity checking.
+export MALLOC_CHECK_=3
+
 # Fatal warning flags.
 ERRORS="-Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual \
 	-Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time \
@@ -27,6 +30,8 @@ ERRORS="-Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual \
 FLAGS="-ffast-math -ggdb3"
 
 SANITIZE="-fsanitize=undefined,address -fsanitize-recover=undefined,address"
+#SANITIZE="-fsanitize=thread"
+#SANITIZE="-fsanitize=memory -fsanitize-memory-track-origins"
 
 HX_DIR=`pwd`
 

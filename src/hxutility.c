@@ -8,6 +8,7 @@
 
 #if defined __clang__
 __attribute__((no_sanitize("address")))
+__attribute__((no_sanitize("memory")))
 #endif
 void hxhex_dump(const void* address, size_t bytes, int pretty) {
 	if((HX_RELEASE) < 2) {
@@ -36,6 +37,7 @@ void hxhex_dump(const void* address, size_t bytes, int pretty) {
 
 #if defined __clang__
 __attribute__((no_sanitize("address")))
+__attribute__((no_sanitize("memory")))
 #endif
 void hxfloat_dump(const float* address, size_t count) {
 	(void)address;

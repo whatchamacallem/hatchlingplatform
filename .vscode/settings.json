@@ -68,6 +68,7 @@
         "lubsan",
         "LVALUEREFERENCE",
         "lvalues",
+        "MALLOC",
         "memcpy",
         "mftb",
         "MMIX",

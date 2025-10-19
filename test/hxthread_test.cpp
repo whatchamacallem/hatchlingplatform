@@ -154,7 +154,7 @@ TEST(hxthread_test_unique_lock, mutexreference) {
 TEST(hxthread_test_condition_variable, notify_no_waiters) {
 	hxcondition_variable condition_variable;
 	// "std::condition_variable style condition variable wrapper for pthreads."
-	// notify_* should succeed even without waiters.
+	// notify* should succeed even without waiters.
 	EXPECT_TRUE(condition_variable.notify_one());
 	EXPECT_TRUE(condition_variable.notify_all());
 }
