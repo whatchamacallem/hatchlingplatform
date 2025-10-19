@@ -95,7 +95,7 @@ void hxpartition_sort_(hxrestrict_t<iterator_t_> begin_, iterator_t_ end_, const
 	// Select 5 pivot values at 1/7th increments. And allow them to be naturally
 	// sorted.
     ptrdiff_t seventh_ = (length_ >> 3) + (length_ >> 6) + (ptrdiff_t)1;
-    iterator_t_ p2_ = begin_ + (length_ >> (ptrdiff_t)1);
+    iterator_t_ p2_ = begin_ + (length_ >> 1);
     iterator_t_ p1_ = p2_ - seventh_;
     iterator_t_ p0_ = p1_ - seventh_;
     iterator_t_ p3_ = p2_ + seventh_;

@@ -70,7 +70,7 @@ bool hxfile::openv_(uint8_t mode, const char* filename, va_list args) {
 	m_open_mode_ = mode; // Record mode regardless.
 
 	const char* m = hxnull;
-	switch (mode & (hxfile::in | hxfile::out)) {
+	switch ((int)mode & (hxfile::in | hxfile::out)) {
 	case hxfile::none:
 		return false; // May assert if used.
 	case hxfile::in:
