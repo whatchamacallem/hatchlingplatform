@@ -157,7 +157,7 @@ TEST_F(hxarray_test_f, iteration) {
 		uint32_t counter = 0u;
 		for(hxarray<hxtest_object, 10u>::iterator it = objs.begin(); it != objs.end(); ++it) {
 			EXPECT_EQ(it->id, objs[counter].id);
-			EXPECT_EQ(it->id, nums[counter]);
+			EXPECT_EQ(it->id, nums[hxmin<uint32_t>(counter, 2u)]);
 			EXPECT_FALSE(objs[counter].moved_from);
 			++counter;
 		}
@@ -166,7 +166,7 @@ TEST_F(hxarray_test_f, iteration) {
 		for(hxarray<hxtest_object, 10u>::const_iterator it = cobjs.begin();
 				it != cobjs.end(); ++it) {
 			EXPECT_EQ(it->id, objs[counter].id);
-			EXPECT_EQ(it->id, nums[counter]);
+			EXPECT_EQ(it->id, nums[hxmin<uint32_t>(counter, 2u)]);
 			EXPECT_FALSE(cobjs[counter].moved_from);
 			++counter;
 		}
@@ -905,7 +905,7 @@ TEST(hxarray_iterators, cbegin_cend) {
 
 	for (hxarray<int, 4u>::const_iterator it = const_values.cbegin(); it != const_values.cend(); ++it) {
 		ASSERT_LT(index, expected_count);
-		EXPECT_EQ(*it, expected[index]);
+		EXPECT_EQ(*it, expected[hxmin<size_t>(index, 2u)]);
 		++index;
 	}
 
