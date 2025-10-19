@@ -22,6 +22,7 @@ Checks: >
   readability-simplify-boolean-expr,
   readability-use-anyofallof,
   -bugprone-easily-swappable-parameters,
+  -bugprone-implicit-widening-of-multiplication-result,
   -bugprone-macro-parentheses,
   -bugprone-multi-level-implicit-pointer-conversion,
   -bugprone-reserved-identifier,

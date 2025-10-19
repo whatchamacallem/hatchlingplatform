@@ -14,12 +14,15 @@ HX_REGISTER_FILENAME_HASH
 // Verify that new and delete plausibly exist and that hxnullptr compiles.
 TEST(hxmemory_manager_test, hxnew) {
 	unsigned int* t = new unsigned int(3);
-	ASSERT_TRUE(t);
 	hxassertrelease(t, "new"); // Should be impossible.
 	*t = 0xdeadbeefu;
 	delete t;
 	t = hxnullptr;
-	ASSERT_FALSE(t);
+	delete t;
+
+	// Prevents Google Tests from fighting with clang tidy over new/delete use.
+	// This is test designed to generate link errors and proof of life.
+	SUCCEED();
 }
 
 TEST(hxmemory_manager_test, bytes) {

@@ -52,8 +52,6 @@ fi
 
 set -o errexit -o xtrace
 
-time run-clang-tidy -quiet -p test src/*.cpp src/*.c test/*.cpp
-
 time ./debugbuild.sh --headless
 time ./testcmake.sh
 time ./testcoverage.sh --headless

@@ -9,14 +9,17 @@ set -o errexit
 
 export POSIXLY_CORRECT=1
 
-if [ ! -f "bin/Makefile" ]; then
-	rm -rf ./bin; mkdir ./bin && cd ./bin
-	cmake ..
-else
-	cd ./bin
+if [ ! -f bin/build.ninja ]; then
+	rm -rf bin
+	cmake -S . -B bin -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 fi
 
-make
+ninja -C bin
+cd bin
 ./hxtest
+cd ..
+
+echo run-clang-tidy...
+run-clang-tidy -quiet -p bin src/*.cpp src/*.c test/*.cpp
 
 echo 🐉🐉🐉
