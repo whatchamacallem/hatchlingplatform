@@ -1,0 +1,57 @@
+[
+	{
+		"directory": "/home/t/Documents/hatchlingplatform",
+		"command": "clang++ -DHX_RELEASE=0 -O0 -Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual -Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time -Wmissing-declarations -Wno-unused-variable -m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always -Iinclude -std=c++20 -pthread -fno-exceptions -fno-rtti -c src/hatchling.cpp -o clangtidy/hatchling.cpp.o",
+		"file": "src/hatchling.cpp"
+	},
+	{
+		"directory": "/home/t/Documents/hatchlingplatform",
+		"command": "clang++ -DHX_RELEASE=0 -O0 -Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual -Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time -Wmissing-declarations -Wno-unused-variable -m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always -Iinclude -std=c++20 -pthread -fno-exceptions -fno-rtti -c src/hxconsole.cpp -o clangtidy/hxconsole.cpp.o",
+		"file": "src/hxconsole.cpp"
+	},
+	{
+		"directory": "/home/t/Documents/hatchlingplatform",
+		"command": "clang++ -DHX_RELEASE=0 -O0 -Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual -Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time -Wmissing-declarations -Wno-unused-variable -m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always -Iinclude -std=c++20 -pthread -fno-exceptions -fno-rtti -c src/hxfile.cpp -o clangtidy/hxfile.cpp.o",
+		"file": "src/hxfile.cpp"
+	},
+	{
+		"directory": "/home/t/Documents/hatchlingplatform",
+		"command": "clang++ -DHX_RELEASE=0 -O0 -Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual -Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time -Wmissing-declarations -Wno-unused-variable -m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always -Iinclude -std=c++20 -pthread -fno-exceptions -fno-rtti -c src/hxmemory_manager.cpp -o clangtidy/hxmemory_manager.cpp.o",
+		"file": "src/hxmemory_manager.cpp"
+	},
+	{
+		"directory": "/home/t/Documents/hatchlingplatform",
+		"command": "clang++ -DHX_RELEASE=0 -O0 -Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual -Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time -Wmissing-declarations -Wno-unused-variable -m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always -Iinclude -std=c++20 -pthread -fno-exceptions -fno-rtti -c src/hxprofiler.cpp -o clangtidy/hxprofiler.cpp.o",
+		"file": "src/hxprofiler.cpp"
+	},
+	{
+		"directory": "/home/t/Documents/hatchlingplatform",
+		"command": "clang++ -DHX_RELEASE=0 -O0 -Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual -Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time -Wmissing-declarations -Wno-unused-variable -m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always -Iinclude -std=c++20 -pthread -fno-exceptions -fno-rtti -c src/hxradix_sort.cpp -o clangtidy/hxradix_sort.cpp.o",
+		"file": "src/hxradix_sort.cpp"
+	},
+	{
+		"directory": "/home/t/Documents/hatchlingplatform",
+		"command": "clang++ -DHX_RELEASE=0 -O0 -Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual -Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time -Wmissing-declarations -Wno-unused-variable -m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always -Iinclude -std=c++20 -pthread -fno-exceptions -fno-rtti -c src/hxstring_literal_hash.cpp -o clangtidy/hxstring_literal_hash.cpp.o",
+		"file": "src/hxstring_literal_hash.cpp"
+	},
+	{
+		"directory": "/home/t/Documents/hatchlingplatform",
+		"command": "clang++ -DHX_RELEASE=0 -O0 -Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual -Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time -Wmissing-declarations -Wno-unused-variable -m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always -Iinclude -std=c++20 -pthread -fno-exceptions -fno-rtti -c src/hxtask_queue.cpp -o clangtidy/hxtask_queue.cpp.o",
+		"file": "src/hxtask_queue.cpp"
+	},
+	{
+		"directory": "/home/t/Documents/hatchlingplatform",
+		"command": "clang++ -DHX_RELEASE=0 -O0 -Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual -Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time -Wmissing-declarations -Wno-unused-variable -m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always -Iinclude -std=c++20 -pthread -fno-exceptions -fno-rtti -c src/hxtest.cpp -o clangtidy/hxtest.cpp.o",
+		"file": "src/hxtest.cpp"
+	},
+	{
+		"directory": "/home/t/Documents/hatchlingplatform",
+		"command": "clang -DHX_RELEASE=0 -O0 -Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual -Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time -Wmissing-declarations -Wno-unused-variable -m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always -Iinclude -std=c17 -pthread -c src/hxutility.c -o clangtidy/hxutility.c.o",
+		"file": "src/hxutility.c"
+	},
+	{
+		"directory": "/home/t/Documents/hatchlingplatform",
+		"command": "clang -DHX_RELEASE=0 -O0 -Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual -Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time -Wmissing-declarations -Wno-unused-variable -m32 -ggdb3 -fdiagnostics-absolute-paths -fdiagnostics-color=always -Iinclude -std=c17 -pthread -c src/hxsettings.c -o clangtidy/hxsettings.c.o",
+		"file": "src/hxsettings.c"
+	}
+]

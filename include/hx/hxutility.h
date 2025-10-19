@@ -32,7 +32,7 @@ void hxfloat_dump(const float* address_, size_t floats_) hxattr_nonnull(1) hxatt
 /// - `address` : Pointer to the start of the byte array.
 /// - `bytes` : The number of bytes to print.
 /// - `pretty` : Set non-zero to include extended visualization.
-void hxhex_dump(const void* address_, size_t bytes_, int pretty_) hxattr_nonnull(1) hxattr_cold;
+void hxhex_dump(const void* address_, size_t bytes_, bool pretty_) hxattr_nonnull(1) hxattr_cold;
 
 // ----------------------------------------------------------------------------
 // C Inline Utilities

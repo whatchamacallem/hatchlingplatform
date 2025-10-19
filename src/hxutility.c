@@ -10,7 +10,7 @@
 __attribute__((no_sanitize("address")))
 __attribute__((no_sanitize("memory")))
 #endif
-void hxhex_dump(const void* address, size_t bytes, int pretty) {
+void hxhex_dump(const void* address, size_t bytes, bool pretty) {
 	if((HX_RELEASE) < 2) {
 		bytes = (bytes + 15u) & ~(size_t)15; // round up to 16 bytes.
 		const volatile uint8_t* addr = (const uint8_t*)address;

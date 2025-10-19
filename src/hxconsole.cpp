@@ -147,7 +147,7 @@ bool hxconsole_help(void) {
 #if (HX_RELEASE) < 2 && !defined __wasm__
 
 static bool hxconsole_peek(hxconsolehex_t address, hxconsolenumber_t bytes) {
-	hxhex_dump((const void*)address, bytes, 0);
+	hxhex_dump((const void*)address, bytes, false);
 	return true;
 }
 
@@ -165,7 +165,7 @@ static bool hxconsole_poke(hxconsolehex_t address_, hxconsolenumber_t bytes_, hx
 }
 
 static bool hxconsole_hex_dump(hxconsolehex_t address, hxconsolenumber_t bytes) {
-	hxhex_dump((const void*)address, bytes, 1);
+	hxhex_dump((const void*)address, bytes, true);
 	return true;
 }
 
