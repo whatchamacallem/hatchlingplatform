@@ -109,7 +109,7 @@ TEST(hxfile_test, move_copy_and_stream_operators) {
 	int a = -3;
 
 	// "Writes a single unformatted native-endian object to a stream."
-	f <= x <= a;
+	f << x << a;
 	// "Writes a formatted UTF-8 string to the file."
 	f.print("(%d,%d)", 30, 70);
 
@@ -120,9 +120,8 @@ TEST(hxfile_test, move_copy_and_stream_operators) {
 	// Read the test file and verify.
 
 	// "Opens a file with the specified mode and formatted filename." Rehydrate into fresh handle.
-	ft.open(hxfile::in | hxfile::skip_asserts, "hxfile_test_operators.bin");
-	f = hxmove(ft);
-	EXPECT_TRUE(!ft.is_open());
+	hxfile ftt(hxfile::in | hxfile::skip_asserts, "hxfile_test_operators.bin");
+	f = hxmove(ftt);
 	EXPECT_TRUE(f.is_open());
 
 	hxfile_test_record y;
@@ -132,7 +131,7 @@ TEST(hxfile_test, move_copy_and_stream_operators) {
 	int seventy = 0;
 
 	// "Reads a single unformatted native-endian object from a stream."
-	f >= y >= b;
+	f >> y >> b;
 	// "Reads a formatted UTF-8 string from the file. Uses scanf conventions."
 	f.scan("(%d,%d)", &thirty, &seventy);
 

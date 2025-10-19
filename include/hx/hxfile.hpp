@@ -197,22 +197,18 @@ public:
 	template<typename T_>
 	bool write1(const T_& t_) { return this->write(&t_, sizeof t_) == sizeof t_; }
 
-	/// Reads a single unformatted native-endian object from a stream. The
-	/// operator `>=` is being used instead of `>>` to indicate there is no
-	/// formatting.
+	/// Reads a single unformatted native-endian object from a stream.
 	/// - `t` : Reference to the object where the data will be stored.
 	template<typename T_>
-	hxfile& operator>=(T_& t_) {
+	hxfile& operator>>(T_& t_) {
 		this->read(&t_, sizeof t_);
 		return *this;
 	}
 
-	/// Writes a single unformatted native-endian object to a stream. The
-	/// operator `<=` is being used instead of `<<` to indicate there is no
-	/// formatting.
+	/// Writes a single unformatted native-endian object to a stream.
 	/// - `t` : Reference to the object containing the data to write.
 	template<typename T_>
-	hxfile& operator<=(const T_& t_) {
+	hxfile& operator<<(const T_& t_) {
 		this->write(&t_, sizeof t_);
 		return *this;
 	}

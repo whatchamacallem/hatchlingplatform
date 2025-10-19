@@ -10,8 +10,8 @@
 
 HX_REGISTER_FILENAME_HASH
 
-static_assert(hxtrue_t::value == true, "hxtrue_t must report true");
-static_assert(hxfalse_t::value == false, "hxfalse_t must report false");
+static_assert(hxtrue_t::value, "hxtrue_t must report true");
+static_assert(!hxfalse_t::value, "hxfalse_t must report false");
 
 static_assert(hxis_same<hxenable_if_t<true, int>, int>::value,
 	"hxenable_if_t<true> must expose the requested type");

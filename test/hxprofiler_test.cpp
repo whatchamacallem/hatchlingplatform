@@ -30,7 +30,8 @@ namespace {
 
 class hxprofiler_task_test : public hxtask {
 public:
-	hxprofiler_task_test() : m_target_ms(0.0f), m_accumulator(0) { }
+	hxprofiler_task_test(void) :
+		m_target_ms(0.0f), m_accumulator(0u), m_label(hxnull) { }
 
 	void construct(const char* label, float target_ms) {
 		m_label = label;

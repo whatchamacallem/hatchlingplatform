@@ -18,6 +18,9 @@ TEST(hxrandom_test, generation) {
 	uint32_t uint32 = rng;
 	uint64_t uint64 = rng;
 
+	// None of these should be zero on the first sample.
+	EXPECT_TRUE(((uint64_t)uint8 * (uint64_t)uint16 * (uint64_t)uint32 * (uint64_t)uint64) != 0u);
+
 	// "Functor returns hxrandom& which converts itself to the type it is
 	// assigned to." Invoke call operator before assignment.
 	uint8 = rng();
@@ -25,7 +28,8 @@ TEST(hxrandom_test, generation) {
 	uint32 = rng();
 	uint64 = rng();
 
-	(void)uint8; (void)uint16; (void)uint32; (void)uint64;
+	// None of these should be zero on the second sample.
+	EXPECT_TRUE(((uint64_t)uint8 * (uint64_t)uint16 * (uint64_t)uint32 * (uint64_t)uint64) != 0u);
 
 	for(int s=10; s-- != 0;) {
 
@@ -37,8 +41,6 @@ TEST(hxrandom_test, generation) {
 		// Call operator should yield same distribution via implicit conversion.
 		f = rng();
 		d = rng();
-
-		(void)uint8; (void)uint16; (void)uint32; (void)uint64;
 
 		// NOTA BENE: While 0.0 is legal, it is being treated as an error
 		// because it is likely to be so. The odds of hitting zero in the first
