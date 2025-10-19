@@ -99,6 +99,7 @@ private:
 	hxhash_table_set_node(void) = delete;
 	// m_hash_next_ should not be copied.
 	hxhash_table_set_node(const hxhash_table_set_node&) = delete;
+	hxhash_table_set_node(hxhash_table_set_node&&) = delete;
 	void operator=(const hxhash_table_set_node&) = delete;
 
 	// The hash table uses m_hash_next_ to implement an embedded linked list.
@@ -166,7 +167,8 @@ public:
 		/// Advances the iterator to the next element.
 		const_iterator& operator++(void) {
 			hxassertmsg(m_current_node_, "invalid_iterator"); // !end
-			if(!(m_current_node_ = (node_t_*)m_current_node_->hash_next())) {
+			m_current_node_ = (node_t_*)m_current_node_->hash_next();
+			if(!m_current_node_) {
 				this->next_bucket();
 			}
 			return *this;
