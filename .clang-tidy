@@ -27,8 +27,6 @@ Checks: >
   -bugprone-multi-level-implicit-pointer-conversion,
   -bugprone-reserved-identifier,
   -bugprone-sizeof-expression,
-  -bugprone-undefined-memory-manipulation,
-  -clang-analyzer-core.NonNullParamChecker,
   -clang-analyzer-fuchsia.*,
   -clang-analyzer-mpi.*,
   -clang-analyzer-optin.mpi.*,

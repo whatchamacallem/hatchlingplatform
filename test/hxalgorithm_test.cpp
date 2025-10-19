@@ -213,8 +213,11 @@ TEST(hxhxalgorithm_test, sort_grinder) {
 			generic_sorted.push_back(tracker_t(0));
 		}
 
-		::memcpy((void*)heap_sorted.data(), insertion_sorted.data(), insertion_sorted.size_bytes());
-		::memcpy((void*)generic_sorted.data(), insertion_sorted.data(), insertion_sorted.size_bytes());
+		const size_t element_count = insertion_sorted.size();
+		for(size_t j = 0u; j < element_count; ++j) {
+			heap_sorted[j] = tracker_t(insertion_sorted[j].value);
+			generic_sorted[j] = tracker_t(insertion_sorted[j].value);
+		}
 
 		hxinsertion_sort(insertion_sorted.begin(), insertion_sorted.end());
 		hxheapsort(heap_sorted.begin(), heap_sorted.end());

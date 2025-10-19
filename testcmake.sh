@@ -12,9 +12,13 @@ export POSIXLY_CORRECT=1
 if [ ! -f bin/build.ninja ]; then
 	rm -rf bin
 	cmake -S . -B bin -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+else
+	echo found bin/build.ninja...
 fi
 
 ninja -C bin
+
+echo run ./hxtest...
 cd bin
 ./hxtest
 cd ..

@@ -87,10 +87,7 @@ public:
 	hxfile(const char* file_, uint8_t mode_=0) = delete;
 
 	// Move constructor. No copy constructor is provided.
-	hxfile(hxfile&& file_) {
-		::memcpy((void*)this, &file_, sizeof file_);
-		::memset((void*)&file_, 0x00, sizeof file_);
-	}
+	hxfile(hxfile&& file_);
 
 	/// Destroys the file and ensures it is closed when the object goes out of
 	/// scope.

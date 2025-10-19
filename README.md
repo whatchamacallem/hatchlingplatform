@@ -93,7 +93,9 @@ purposes:
 - **64-bit Ready**: Designed for both 32-bit and 64-bit targets.
 
 - **AI Friendly**: Things with the same name as the standard generally work the
-  same way as the standard. This means that AI has been trained on similar designs and will recognize this codebase and use it properly.
+  same way as the standard. This means that AI is able to use style transfer
+  to use what it knows about standard C++. It is also easy to prompt the AI to
+  fix different builds by selecting one of the test scripts. It also already knows how to use the test macros when writing tests.
 
 It is hard to compete with `printf`/`scanf` for code size and speed. Take a look
 at the **[{fmt}](https://fmt.dev)** project for a micro-optimized version of

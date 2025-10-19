@@ -8,13 +8,16 @@
 #include "../include/hx/hxfile.hpp"
 
 // These are only dependencies of the Hatchling Platform here. This is to allow
-// reimplementation.
+// easy reimplementation.
 #include <stdio.h>
 #include <errno.h>
 
 #if defined _MSC_VER
-#pragma warning(disable: 4996) // Allow use of fopen as fopen_s is not C99.
+// Allow use of fopen as fopen_s is not portable.
+#pragma warning(disable: 4996)
 #endif
+
+// NOLINTBEGIN(clang-analyzer-core.NonNullParamChecker)
 
 HX_REGISTER_FILENAME_HASH
 
@@ -44,13 +47,31 @@ hxfile::hxfile(uint8_t mode, const char* filename, ...) : hxfile() {
 	va_end(args);
 }
 
+// memcpy would be undefined behavior.
+hxfile::hxfile(hxfile&& file_) :
+	m_file_pimpl_(file_.m_file_pimpl_),
+	m_open_mode_(file_.m_open_mode_),
+	m_owns_(file_.m_owns_),
+	m_fail_(file_.m_fail_),
+	m_eof_(file_.m_eof_)
+{
+	::memset((void*)&file_, 0x00, sizeof file_);
+}
+
 hxfile::~hxfile(void) {
 	close();
 }
 
 void hxfile::operator=(hxfile&& file_) {
 	close();
-	::memcpy((void*)this, &file_, sizeof file_);
+
+	// memcpy would be undefined behavior.
+	m_file_pimpl_ = file_.m_file_pimpl_;
+	m_open_mode_ = file_.m_open_mode_;
+	m_owns_ = file_.m_owns_;
+	m_fail_ = file_.m_fail_;
+	m_eof_ = file_.m_eof_;
+
 	::memset((void*)&file_, 0x00, sizeof file_);
 }
 
@@ -219,3 +240,5 @@ int hxfile::scan(const char* format, ...) {
 	}
 	return items_scanned;
 }
+
+// NOLINTEND(clang-analyzer-core.NonNullParamChecker)
