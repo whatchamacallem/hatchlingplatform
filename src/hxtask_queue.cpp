@@ -49,7 +49,7 @@ hxtask_queue::hxtask_queue(size_t task_queue_size_, size_t thread_pool_size_)
 #if HX_USE_THREADS
 	if(m_thread_pool_size_ > 0) {
 		m_threads_ = (hxthread*)hxmalloc(m_thread_pool_size_ * sizeof(hxthread));
-		for(size_t i_ = m_thread_pool_size_; i_--;) {
+		for(size_t i_ = m_thread_pool_size_; i_-- != 0u;) {
 			::new(m_threads_ + i_) hxthread(thread_task_loop_entry_, this);
 		}
 	}
@@ -62,7 +62,7 @@ hxtask_queue::~hxtask_queue(void) {
 		thread_task_loop_(this, thread_mode_stopping_);
 		hxassertmsg(m_queue_run_level_ == run_level_stopped_, "threading_error");
 
-		for(size_t i_ = m_thread_pool_size_; i_--;) {
+		for(size_t i_ = m_thread_pool_size_; i_-- != 0u;) {
 			m_threads_[i_].join();
 			m_threads_[i_].~hxthread();
 		}
@@ -131,11 +131,11 @@ void hxtask_queue::thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_) {
 			// The task executes outside of this RAII lock.
 			hxunique_lock lk_(q_->m_mutex_);
 
-			if(task) {
+			if(task != hxnull) {
 				// Finished reacquiring the critical section after the previous task.
 				task = hxnull;
 				hxassertmsg(q_->m_executing_count_ > 0, "internal_error");
-				if(--q_->m_executing_count_ == 0 && q_->m_tasks_.empty()) {
+				if((--q_->m_executing_count_ == 0) && q_->m_tasks_.empty()) {
 					q_->m_cond_var_completion_.notify_all();
 				}
 			}

@@ -241,7 +241,7 @@ public:
 		}
 	virtual void end_allocation_scope(hxsystem_allocator_scope* scope,
 		hxsystem_allocator_t old_id) override { (void)scope; (void)old_id; }
-	bool contains(void* ptr) {
+	bool contains(void* ptr) const {
 		return (uintptr_t)ptr >= m_begin_ && (uintptr_t)ptr < m_end_;
 	}
 	virtual size_t get_allocation_count(hxsystem_allocator_t id) const override {
@@ -278,7 +278,6 @@ public:
 		hxassertmsg(m_allocation_count > 0 && (uintptr_t)ptr >= m_begin_
 			&& (uintptr_t)ptr <= m_current, "bad_free %s", m_label_);
 		--m_allocation_count; (void)ptr;
-		return;
 	}
 
 protected:
@@ -400,7 +399,7 @@ size_t hxmemory_manager::leak_count(void) {
 	HX_MEMORY_MANAGER_LOCK_();
 	for(int32_t i = 0; i != hxsystem_allocator_current; ++i) {
 		hxmemory_allocator_base& allocator = *m_memory_allocators[i];
-		if(allocator.get_allocation_count((hxsystem_allocator_t)i)) {
+				if(allocator.get_allocation_count((hxsystem_allocator_t)i) != 0u) {
 			hxloghandler(hxloglevel_warning,
 				"memory_leak %s count %zu size %zu high_water %zu",
 				allocator.label(),
@@ -457,7 +456,7 @@ void* hxmemory_manager::allocate(size_t size, hxsystem_allocator_t id, hxalignme
 	hxassertmsg(((uintptr_t)ptr & (alignment - (uintptr_t)1)) == 0,
 		"alignment_error wrong %zx from %d", (size_t)(uintptr_t)ptr, id);
 
-	if(ptr) { return ptr; }
+		if(ptr != hxnull) { return ptr; }
 
 	// Will not return null.
 	hxlogwarning("allocation_error %s size %zu", get_allocator(id).label(), size);

@@ -173,8 +173,8 @@ static bool hxprint_hashes(void) {
 
 static bool hxcheck_hash(hxconsolehex_t hash_) {
 	hxregister_string_literal_hash* node = hxstring_literal_hashes_().find(hash_);
-	if(node) {
-		while(node) {
+	if(node != hxnull) {
+		while(node != hxnull) {
 			hxlogconsole("%08zx: %s\n", (size_t)hash_, node->str());
 			node = hxstring_literal_hashes_().find(hash_, node);
 		}
@@ -200,10 +200,10 @@ void hxinit_internal(int version_) {
 	// Check if compiled in expected_version matches callers.
 	const long expected_version = HATCHLING_VER;
 	hxassertrelease(expected_version == version_, "HATCHLING_VER mismatch.");
-	hxassertrelease(!g_hxinit_ver_ || g_hxinit_ver_ == version_, "HATCHLING_VER mismatch.");
+	hxassertrelease((g_hxinit_ver_ == 0) || (g_hxinit_ver_ == version_), "HATCHLING_VER mismatch.");
 	(void)version_; (void)expected_version;
 
-	if(!g_hxinit_ver_) {
+	if(g_hxinit_ver_ == 0) {
 		hxsettings_construct();
 
 #if HX_FLOATING_POINT_TRAPS
@@ -226,7 +226,7 @@ hxattr_noexcept void hxloghandler(hxloglevel_t level, const char* format, ...) {
 
 extern "C"
 hxattr_noexcept void hxloghandler_v(hxloglevel_t level, const char* format, va_list args) {
-	if(g_hxinit_ver_ && g_hxsettings.log_level > level) {
+	if((g_hxinit_ver_ != 0) && g_hxsettings.log_level > level) {
 		return;
 	}
 
@@ -252,13 +252,13 @@ hxattr_noexcept void hxloghandler_v(hxloglevel_t level, const char* format, va_l
 // HX_RELEASE < 3 provides facilities for testing teardown. Just call _Exit() otherwise.
 extern "C"
 void hxshutdown(void) {
-	if(g_hxinit_ver_) {
+	if(g_hxinit_ver_ != 0) {
 #if (HX_RELEASE) < 3
 		hxmemory_manager_shut_down();
 		// Try to trap further activity. This breaks global destructors that call
 		// hxfree. There is no easier way to track leaks.
 #endif
-		g_hxinit_ver_ = false;
+		g_hxinit_ver_ = 0;
 	}
 }
 
@@ -266,17 +266,17 @@ void hxshutdown(void) {
 extern "C"
 hxattr_noexcept bool hxasserthandler(const char* file, size_t line) {
 	const char* f = hxbasename(file);
-	if(g_hxinit_ver_ && g_hxsettings.asserts_to_be_skipped > 0) {
+	if((g_hxinit_ver_ != 0) && g_hxsettings.asserts_to_be_skipped > 0) {
 		--g_hxsettings.asserts_to_be_skipped;
 		hxloghandler(hxloglevel_assert, "skipped %s(%zu) hash %08zx",
 			f, line, (size_t)hxstring_literal_hash_debug(file));
-		return 1;
+		return true;
 	}
 	hxloghandler(hxloglevel_assert, "breakpoint %s(%zu) hash %08zx\n",
 		f, line, (size_t)hxstring_literal_hash_debug(file));
 
 	// Return to hxbreakpoint at the calling line.
-	return 0;
+	return false;
 }
 #else
 extern "C"

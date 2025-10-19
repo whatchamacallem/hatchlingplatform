@@ -88,10 +88,10 @@ bool hxfile::openv_(uint8_t mode, const char* filename, va_list args) {
 	hxassertmsg(len >= 0 && len < HX_MAX_LINE, "vsnprintf"); (void)len;
 
 	m_file_pimpl_ = ::fopen(buf, m);
-	hxassertrelease(m_file_pimpl_ || (mode & hxfile::skip_asserts),
+	hxassertrelease((m_file_pimpl_ != hxnull) || ((mode & hxfile::skip_asserts) != 0u),
 		"fopen %s %s: %s", buf, m, ::strerror(errno));
 
-	m_fail_ = m_file_pimpl_ == hxnull;
+	m_fail_ = (m_file_pimpl_ == hxnull);
 	m_owns_ = !m_fail_;
 	return !m_fail_;
 }
@@ -107,19 +107,19 @@ void hxfile::close(void) {
 void hxfile::clear(void) {
 	m_fail_ = false;
 	m_eof_ = false;
-	if(m_file_pimpl_) {
+	if(m_file_pimpl_ != hxnull) {
 		::clearerr((FILE*)m_file_pimpl_);
 	}
 }
 
 size_t hxfile::get_pos(void) const {
-	hxassertmsg(m_file_pimpl_, "invalid_file");
+	hxassertmsg(m_file_pimpl_ != hxnull, "invalid_file");
 	// Requires a 64-bit long to support 64-bit files.
 	return (size_t)::ftell((FILE*)m_file_pimpl_);
 }
 
 bool hxfile::set_pos(size_t position_) {
-	hxassertmsg(m_file_pimpl_, "invalid_file");
+	hxassertmsg(m_file_pimpl_ != hxnull, "invalid_file");
 	// Requires a 64-bit long to support 64-bit files.
 	m_fail_ = ::fseek((FILE*)m_file_pimpl_, (long)position_, 0) != 0;
 	m_eof_ = m_fail_;
@@ -127,22 +127,22 @@ bool hxfile::set_pos(size_t position_) {
 }
 
 size_t hxfile::read(void* bytes, size_t byte_count) {
-	hxassertmsg((m_open_mode_ & hxfile::in) && m_file_pimpl_, "invalid_file");
+	hxassertmsg(((m_open_mode_ & hxfile::in) != 0u) && (m_file_pimpl_ != hxnull), "invalid_file");
 
 	const size_t bytes_read = ::fread(bytes, 1, byte_count, (FILE*)m_file_pimpl_);
 
-	hxassertmsg((byte_count == bytes_read) || (m_open_mode_ & hxfile::skip_asserts),
+	hxassertmsg((byte_count == bytes_read) || ((m_open_mode_ & hxfile::skip_asserts) != 0u),
 		"fread expected %zu != actual %zu: %s", byte_count, bytes_read, ::strerror(errno));
 
 	if(byte_count != bytes_read) {
 		m_fail_ = true;
-		m_eof_ = ::feof((FILE*)m_file_pimpl_);
+		m_eof_ = (::feof((FILE*)m_file_pimpl_) != 0);
 	}
 	return bytes_read;
 }
 
 size_t hxfile::write(const void* bytes, size_t byte_count) {
-	hxassertmsg(m_open_mode_ & hxfile::out, "invalid_file");
+	hxassertmsg((m_open_mode_ & hxfile::out) != 0u, "invalid_file");
 
 	if(m_file_pimpl_ == hxnull) {
 		// Writing to null emulates /dev/null support.
@@ -150,7 +150,7 @@ size_t hxfile::write(const void* bytes, size_t byte_count) {
 	}
 	const size_t bytes_written = ::fwrite(bytes, 1, byte_count, (FILE*)m_file_pimpl_);
 
-	hxassertmsg((byte_count == bytes_written) || (m_open_mode_ & hxfile::skip_asserts),
+	hxassertmsg((byte_count == bytes_written) || ((m_open_mode_ & hxfile::skip_asserts) != 0u),
 		"fwrite expected %zu != actual %zu: %s", byte_count, bytes_written, ::strerror(errno));
 
 	// Can restore goodness.
@@ -159,27 +159,27 @@ size_t hxfile::write(const void* bytes, size_t byte_count) {
 }
 
 bool hxfile::flush(void) {
-	hxassertmsg(m_open_mode_ & hxfile::out, "invalid_file");
+	hxassertmsg((m_open_mode_ & hxfile::out) != 0u, "invalid_file");
 	if(m_file_pimpl_ == hxnull) {
 		return true;
 	}
 
 	const int result = ::fflush((FILE*)m_file_pimpl_);
-	hxassertmsg((result == 0) || (m_open_mode_ & hxfile::skip_asserts),
+	hxassertmsg((result == 0) || ((m_open_mode_ & hxfile::skip_asserts) != 0u),
 		"fflush %s", ::strerror(errno));
 	return result == 0;
 }
 
 bool hxfile::getline(char* buffer, int buffer_size) {
-	hxassertmsg((m_open_mode_ & hxfile::in) && m_file_pimpl_, "invalid_file");
+	hxassertmsg(((m_open_mode_ & hxfile::in) != 0u) && (m_file_pimpl_ != hxnull), "invalid_file");
 
 	char* result = ::fgets(buffer, buffer_size, (FILE*)m_file_pimpl_);
 
 	hxassertmsg(!::ferror((FILE*)m_file_pimpl_), "fgets %s", ::strerror(errno));
 
-	if(!result) {
+	if(result == hxnull) {
 		m_fail_ = true;
-		m_eof_ = (bool)::feof((FILE*)m_file_pimpl_); // 0: not past end.
+		m_eof_ = (::feof((FILE*)m_file_pimpl_) != 0); // 0: not past end.
 		return false; // EOF or error.
 	}
 	return true;
@@ -187,7 +187,7 @@ bool hxfile::getline(char* buffer, int buffer_size) {
 
 // See vsnprintf to reimplement this without FILE* support.
 bool hxfile::print(const char* format, ...) {
-	hxassertmsg(m_open_mode_ & hxfile::out, "invalid_file");
+	hxassertmsg((m_open_mode_ & hxfile::out) != 0u, "invalid_file");
 
 	if(m_file_pimpl_ == hxnull) {
 		// Writing to null emulates /dev/null support.
@@ -205,18 +205,17 @@ bool hxfile::print(const char* format, ...) {
 
 // See vscanf to reimplement this without FILE* support.
 int hxfile::scan(const char* format, ...) {
-	hxassertmsg((m_open_mode_ & hxfile::in) && m_file_pimpl_, "invalid_file");
-
+	hxassertmsg(((m_open_mode_ & hxfile::in) != 0u) && (m_file_pimpl_ != hxnull), "invalid_file");
 	va_list args;
 	va_start(args, format);
 	const int items_scanned = ::vfscanf((FILE*)m_file_pimpl_, format, args);
 	va_end(args);
 
-	hxassertrelease(items_scanned != EOF || (m_open_mode_ & hxfile::skip_asserts), "vfscanf %s", ::strerror(errno));
+	hxassertrelease(items_scanned != EOF || ((m_open_mode_ & hxfile::skip_asserts) != 0u), "vfscanf %s", ::strerror(errno));
 
 	if(items_scanned == EOF) {
 		m_fail_ = true;
-		m_eof_ = (bool)::feof((FILE*)m_file_pimpl_);
+		m_eof_ = (::feof((FILE*)m_file_pimpl_) != 0);
 	}
 	return items_scanned;
 }

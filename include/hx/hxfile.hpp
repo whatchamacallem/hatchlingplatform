@@ -101,7 +101,7 @@ public:
 
 	/// Checks if the file is open, `EOF` has not been reached, and no error has
 	/// been encountered. See usage example in the class documentation.
-	operator bool(void) const { return m_file_pimpl_ && !m_fail_; }
+	operator bool(void) const { return (m_file_pimpl_ != hxnull) && !m_fail_; }
 
 	/// Opens a file with the specified mode and formatted filename.
 	bool open(uint8_t mode_, const char* filename_, ...) hxattr_format_printf(3, 4);

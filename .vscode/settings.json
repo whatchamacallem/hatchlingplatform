@@ -7,10 +7,12 @@
     ],
 
     "cSpell.words": [
+        "anyofallof",
         "argtypes",
         "asan",
         "ascontiguousarray",
         "bitfield",
+        "bugprone",
         "ccache",
         "CFLAGS",
         "checkhash",
@@ -20,6 +22,7 @@
         "CONSTANTARRAY",
         "constexpr",
         "constness",
+        "cppcoreguidelines",
         "ctypes",
         "ctypeslib",
         "cvref",
@@ -84,6 +87,7 @@
         "Noname",
         "nowthrow",
         "objfile",
+        "optin",
         "PIDS",
         "pointee",
         "printhashes",

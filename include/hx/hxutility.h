@@ -40,14 +40,14 @@ void hxhex_dump(const void* address_, size_t bytes_, bool pretty_) hxattr_nonnul
 
 /// Returns true if the float `x` is finite (not NaN or ±inf). Implements
 /// `isfinitef`.
-inline int hxisfinitef(float x_) {
+inline bool hxisfinitef(float x_) {
 	uint32_t u_; memcpy(&u_, &x_, sizeof u_); // An intrinsic.
 	return (u_ & 0x7f800000u) != 0x7f800000u;
 }
 
 /// Returns true if the double `x` is finite (not NaN or ±inf). Implements
 /// `isfinitel`.
-inline int hxisfinitel(double x_) {
+inline bool hxisfinitel(double x_) {
 	uint64_t u_; memcpy(&u_, &x_, sizeof u_); // An intrinsic.
 	return (u_ & 0x7ff0000000000000ull) != 0x7ff0000000000000ull;
 }
@@ -57,8 +57,8 @@ inline int hxisfinitel(double x_) {
 /// parsing of UTF-8 string parameters. However, this is not `en_US.UTF-8` or
 /// the default C locale.
 inline bool hxisgraph(char ch_) {
-	return ((unsigned char)ch_ - 0x21u) < 0x5Eu
-		|| ((unsigned char)ch_ & 0x80u);
+	return (((unsigned char)ch_ - 0x21u) < 0x5Eu)
+		|| (((unsigned char)ch_ & 0x80u) != 0u);
 }
 
 /// Implements standard `isspace` for a locale where all non-ASCII characters

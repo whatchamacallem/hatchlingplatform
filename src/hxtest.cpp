@@ -14,40 +14,40 @@ namespace hxdetail_ {
 // Unlike Google Test, this fails on any non-finite values because comparing
 // test data with infinity indicates a possible issue.
 bool hxtest_float_eq_(float a_, float b_) {
-    if (!hxisfinitef(a_) || !hxisfinitef(b_)) { return false; }
-    if (a_ == b_) { return true; }
+	if(!hxisfinitef(a_) || !hxisfinitef(b_)) { return false; }
+	if(a_ == b_) { return true; }
 
-    uint32_t ua_; ::memcpy(&ua_, &a_, sizeof ua_);
-    uint32_t ub_; ::memcpy(&ub_, &b_, sizeof ub_);
+	uint32_t ua_; ::memcpy(&ua_, &a_, sizeof ua_);
+	uint32_t ub_; ::memcpy(&ub_, &b_, sizeof ub_);
 
-    const uint32_t sign_mask_ = 1u << 31;
-    const uint32_t ba_ = (ua_ & sign_mask_) ? (~ua_ + 1u) : (sign_mask_ | ua_);
-    const uint32_t bb_ = (ub_ & sign_mask_) ? (~ub_ + 1u) : (sign_mask_ | ub_);
-    const uint32_t delta_ = (ba_ >= bb_) ? (ba_ - bb_) : (bb_ - ba_);
+	const uint32_t sign_mask_ = 1u << 31;
+	const uint32_t ba_ = ((ua_ & sign_mask_) != 0u) ? (~ua_ + 1u) : (sign_mask_ | ua_);
+	const uint32_t bb_ = ((ub_ & sign_mask_) != 0u) ? (~ub_ + 1u) : (sign_mask_ | ub_);
+	const uint32_t delta_ = (ba_ >= bb_) ? (ba_ - bb_) : (bb_ - ba_);
 
-    return delta_ <= 4u; // 4 ULPs.
+	return delta_ <= 4u; // 4 ULPs.
 }
 
 bool hxtest_double_eq_(double a_, double b_) {
-    if (!hxisfinitel(a_) || !hxisfinitel(b_)) { return false; }
-    if (a_ == b_) { return true; }
+	if(!hxisfinitel(a_) || !hxisfinitel(b_)) { return false; }
+	if(a_ == b_) { return true; }
 
-    uint64_t ua_; ::memcpy(&ua_, &a_, sizeof ua_);
-    uint64_t ub_; ::memcpy(&ub_, &b_, sizeof ub_);
+	uint64_t ua_; ::memcpy(&ua_, &a_, sizeof ua_);
+	uint64_t ub_; ::memcpy(&ub_, &b_, sizeof ub_);
 
-    const uint64_t sign_mask_ = 1ull << 63;
-    const uint64_t ba_ = (ua_ & sign_mask_) ? (~ua_ + 1u) : (sign_mask_ | ua_);
-    const uint64_t bb_ = (ub_ & sign_mask_) ? (~ub_ + 1u) : (sign_mask_ | ub_);
-    const uint64_t delta_ = (ba_ >= bb_) ? (ba_ - bb_) : (bb_ - ba_);
+	const uint64_t sign_mask_ = 1ull << 63;
+	const uint64_t ba_ = ((ua_ & sign_mask_) != 0u) ? (~ua_ + 1u) : (sign_mask_ | ua_);
+	const uint64_t bb_ = ((ub_ & sign_mask_) != 0u) ? (~ub_ + 1u) : (sign_mask_ | ub_);
+	const uint64_t delta_ = (ba_ >= bb_) ? (ba_ - bb_) : (bb_ - ba_);
 
-    return delta_ <= 4u; // 4 ULPs.
+	return delta_ <= 4u; // 4 ULPs.
 }
 
 static bool hxtest_case_sort_(const hxtest_case_interface_* a_, const hxtest_case_interface_* b_) {
 	// Run tests by suite name and then by line number. Runs smoke tests before
 	// complex tests in the order written.
 	const int compare_ = ::strcmp(a_->suite_(), b_->suite_());
-	if(compare_ == 0) { return a_->line_(), b_->line_(); }
+	if(compare_ == 0) { return a_->line_() < b_->line_(); }
 	return compare_ < 0;
 }
 
@@ -125,7 +125,8 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 		"test_leaks Temp stack is expected to be empty when running tests.");
 
 	for(hxtest_case_interface_** it_ = m_test_cases_; it_ != (m_test_cases_ + m_num_test_cases_); ++it_) {
-		if(!m_test_suite_filter_ || ::strcmp(m_test_suite_filter_, (*it_)->suite_()) == 0) {
+		if((m_test_suite_filter_ == hxnull)
+				|| (::strcmp(m_test_suite_filter_, (*it_)->suite_()) == 0)) {
 			hxlogconsole("[ RUN      ] %s.%s\n", (*it_)->suite_(), (*it_)->case_());
 			m_current_test_ = *it_;
 			m_test_state_ = test_state_nothing_asserted_;
@@ -140,7 +141,7 @@ size_t hxtest_::run_all_tests_(const char* test_suite_filter_) {
 				// Expect the test to use another scope to reset the stack if needed.
 				const size_t t_count = temporary_stack_base.get_current_allocation_count();
 				const size_t t_bytes = temporary_stack_base.get_current_bytes_allocated();
-				if(t_count || t_bytes) {
+				if((t_count != 0u) || (t_bytes != 0u)) {
 					this->condition_check_(false, (*it_)->file_(), (*it_)->line_(),
 						"test_leaks All tests must reset the temp stack.", true);
 				}

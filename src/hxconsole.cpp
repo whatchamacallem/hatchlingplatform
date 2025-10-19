@@ -68,7 +68,7 @@ bool hxconsole_exec_line(const char* command) {
 	}
 
 	const hxconsole_hash_table_node_* node = hxconsole_commands_().find(hxconsole_hash_table_key_(pos));
-	if(!node) {
+	if(node == hxnull) {
 		hxwarnmsg(0, "unknown_command %s", command);
 		return false;
 	}
@@ -157,7 +157,7 @@ static bool hxconsole_poke(hxconsolehex_t address_, hxconsolenumber_t bytes_, hx
 	volatile uint8_t* address = address_;
 	uint32_t bytes = bytes_;
 	uint64_t hex = hex_;
-	while(bytes--) {
+	while(bytes-- != 0u) {
 		*address++ = (uint8_t)hex;
 		hex = (hex >> 8) | (hex << 56);
 	}
