@@ -1011,7 +1011,7 @@ TEST(hxarray_test, memcpy_clones_contents) {
 	destination.memcpy(source);
 
 	EXPECT_EQ(destination.size(), source.size());
-	while(index--) {
+	while(index-- != 0u) {
 		EXPECT_EQ(destination[index], source[index]);
 	}
 }

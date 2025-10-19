@@ -30,7 +30,7 @@ public:
 			}
 		}
 
-		size_t get_exec_count(void) { return m_exec_count; }
+		size_t get_exec_count(void) const { return m_exec_count; }
 		void set_reenqueue_count(size_t n) { m_reenqueue_count = n; }
 
 	private:

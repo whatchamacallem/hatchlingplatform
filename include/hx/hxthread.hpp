@@ -286,7 +286,7 @@ private:
 class hxthread {
 public:
 	/// Default constructor. Thread is not started.
-	hxthread() : m_started_(false), m_joined_(false) { }
+	hxthread() : m_thread_(), m_started_(false), m_joined_(false) { }
 
 	/// Constructs and starts a thread with the given function and argument. Does
 	/// not free the argument. Any function that takes a single pointer and
@@ -296,7 +296,7 @@ public:
 	/// - `parameter` : T* to pass to the function.
 	template<typename parameter_t_>
 	explicit hxthread(void* (*entry_point_)(parameter_t_*), parameter_t_* parameter_)
-			: m_started_(false), m_joined_(false) {
+			: m_thread_(), m_started_(false), m_joined_(false) {
 		this->start(entry_point_, parameter_);
 	}
 

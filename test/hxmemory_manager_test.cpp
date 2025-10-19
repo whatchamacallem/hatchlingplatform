@@ -24,7 +24,7 @@ TEST(hxmemory_manager_test, hxnew) {
 
 TEST(hxmemory_manager_test, bytes) {
 	hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
-	for(size_t i=10u; i--;) {
+	for(size_t i=10u; i-- != 0u;) {
 		void* p = hxmalloc(i);
 		ASSERT_TRUE(p != hxnull);
 		::memset(p, 0x66, i);
@@ -67,7 +67,7 @@ class hxmemory_manager_test_f :
 	public testing::Test
 {
 public:
-	void test_memory_allocator_normal(hxsystem_allocator_t id) {
+	static void test_memory_allocator_normal(hxsystem_allocator_t id) {
 		uintptr_t start_count;
 		uintptr_t start_bytes;
 
@@ -122,7 +122,7 @@ public:
 		}
 	}
 
-	void test_memory_allocator_leak(void) {
+	static void test_memory_allocator_leak(void) {
 #if (HX_RELEASE) < 1
 		void* ptr2 = hxnull;
 		const int asserts_allowed = g_hxsettings.asserts_to_be_skipped;

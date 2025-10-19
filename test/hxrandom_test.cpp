@@ -27,7 +27,7 @@ TEST(hxrandom_test, generation) {
 
 	(void)uint8; (void)uint16; (void)uint32; (void)uint64;
 
-	for(int s=10; s--;) {
+	for(int s=10; s-- != 0;) {
 
 		// "Automatically casts to an unsigned integer or floating point value."
 		// Grab floats in [0..1).
@@ -50,7 +50,7 @@ TEST(hxrandom_test, generation) {
 
 TEST(hxrandom_test, ops) {
 	hxrandom rng(20000);
-	for(int s=100; s--;) {
+	for(int s=100; s-- != 0;) {
 		// "Bitwise &= with random T generated from hxrandom." Exercises bounded
 		// masks on signed/unsigned types.
 		int i = 255; i &= rng;
@@ -153,12 +153,12 @@ TEST(hxrandom_test, read_populates_buffer) {
 		EXPECT_EQ(*expected++, (uint8_t)(x >> 24));
 		remaining -= 4;
 	}
-	if(remaining) {
+	if(remaining != 0u) {
 		uint32_t x = verifier.generate32();
 		do {
 			EXPECT_EQ(*expected++, (uint8_t)x);
 			x >>= 8;
-		} while(--remaining)
+		} while(--remaining != 0u)
 			/**/;
 	}
 
@@ -170,7 +170,7 @@ TEST(hxrandom_test, read_populates_buffer) {
 
 TEST(hxrandom_test, range) {
 	hxrandom rng(30000);
-	for(int s=100; s--;) {
+	for(int s=100; s-- != 0;) {
 		// "Returns a random number in the range [base..base+range)." Validate
 		// overloads across integral and floating types.
 		EXPECT_TRUE(rng.range('a', (char)10) >= 'a' && rng.range('a', (char)10) < (char)('a' + 10));
@@ -196,11 +196,11 @@ TEST(hxrandom_test, histogram) {
 	const int max = 1100; // 10% above the average maximum.
 	hxarray<int> hist(buckets, 0);
 
-	for(int i=(buckets*iters); i--;) {
+	for(int i=(buckets*iters); i-- != 0;) {
 		// Doesn't require an unsigned type for %. No floating point math is used.
 		++hist[(size_t)(rng() % (buckets - 1))];
 	}
-	for(size_t i=buckets; i--;) {
+	for(size_t i=buckets; i-- != 0u;) {
 		EXPECT_LE(hist[i], max);
 	}
 }
@@ -213,11 +213,11 @@ TEST(hxrandom_test, histogram_f) {
 	const int max = 1150; // 15% above the average maximum.
 	hxarray<int> hist(buckets, 0);
 
-	for(int i=(buckets*iters); i--;) {
+	for(int i=(buckets*iters); i-- != 0;) {
 		// Run the full 64-bit double pipeline.
 		++hist[(size_t)(rng() % (double)buckets)];
 	}
-	for(size_t i=buckets; i--;) {
+	for(size_t i=buckets; i-- != 0u;) {
 		EXPECT_LE(hist[i], max);
 	}
 }

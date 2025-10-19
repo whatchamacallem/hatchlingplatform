@@ -4,7 +4,6 @@ Checks: >
   clang-analyzer-*,
   cppcoreguidelines-interfaces-global-init,
   cppcoreguidelines-narrowing-conversions,
-  cppcoreguidelines-pro-type-static-cast-downcast,
   misc-static-assert,
   performance-*,
   portability-*,

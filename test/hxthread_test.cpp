@@ -51,7 +51,7 @@ void* hxthread_test_func_notify_all(hxthread_test_parameters_t* parameters) {
 	while(!*parameters->ready) {
 		parameters->condition_variable->wait(lock);
 	}
-	if(parameters->woken) {
+	if(parameters->woken != hxnull) {
 		++(*parameters->woken);
 	}
 	return hxnull;

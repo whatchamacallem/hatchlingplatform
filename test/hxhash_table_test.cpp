@@ -325,7 +325,7 @@ TEST_F(hxhash_table_test_f, strings) {
 		table_t table;
 
 		// "Allocates a copy, resulting in a string pool per hash table."
-		for(int i = sz; i--;) {
+		for(int i = sz; i-- != 0;) {
 			EXPECT_STREQ(table[colors[i]].key(), colors[i]);
 		}
 		EXPECT_TRUE(table.find("Cyan") != hxnull);

@@ -87,12 +87,12 @@ public:
 			*chars_++ = (uint8_t)(x_ >> 24);
 			count_ -= 4;
 		}
-		if(count_) {
+		if(count_ != 0u) {
 			uint32_t x_ = this->generate32();
 			do {
 				*chars_++ = (uint8_t)x_;
 				x_ >>= 8;
-			} while(--count_)
+			} while(--count_ != 0u)
 				/* */;
 		}
 	}

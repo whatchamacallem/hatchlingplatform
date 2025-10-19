@@ -168,9 +168,9 @@ template<typename T_> using hxremove_cvref_t = hxremove_cv_t<hxremove_reference_
 // C++ Type Traits
 
 /// Implements `std::true_type`.
-struct hxtrue_t { enum { value = 1 }; };
+struct hxtrue_t { constexpr static bool value = true; };
 /// Implements `std::false_type`.
-struct hxfalse_t { enum { value = 0 }; };
+struct hxfalse_t { constexpr static bool value = false; };
 
 /// Implements `std::is_array`.
 template<typename T_> struct hxis_array : public hxfalse_t { };

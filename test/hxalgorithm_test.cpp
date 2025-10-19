@@ -203,10 +203,10 @@ TEST(hxhxalgorithm_test, sort_grinder) {
 	hxarray<tracker_t> heap_sorted; heap_sorted.reserve(max_size_mask);
 	hxarray<tracker_t> generic_sorted; generic_sorted.reserve(max_size_mask);
 
-	for(int i=12; i--; ) {
+	for(int i=12; i-- != 0; ) {
 		// Set up the arrays to be sorted.
 		size_t size = (max_size_mask >> i) & rng;
-		for(size_t j=size; j--;) {
+		for(size_t j=size; j-- != 0u;) {
 			insertion_sorted.push_back(tracker_t(rng.range(100, 200)));
 			// Use the && constructor and not the const& one.
 			heap_sorted.push_back(tracker_t(0));
@@ -239,14 +239,14 @@ TEST(hxhxalgorithm_test, sort_grinder_generic) {
 	hxarray<tracker_t> sorted; sorted.reserve(max_size_mask);
 	hxarray<int> histogram(20000, 0);
 
-	for(int i=10; i--; ) {
+	for(int i=10; i-- != 0; ) {
 		// Pick random values of increasing maximum value up to 2^16 and keep a
 		// count of them.
 		size_t size = (max_size_mask >> i) & rng;
 		if(size <= 16) {
 			continue;
 		}
-		for(size_t j=size; j--;) {
+		for(size_t j=size; j-- != 0u;) {
 			int x = rng.range(10000, 10000);
 			sorted.push_back(tracker_t(x));
 			++histogram[(size_t)x];
@@ -258,7 +258,7 @@ TEST(hxhxalgorithm_test, sort_grinder_generic) {
 		// Confirm sort order with (j <= j+1) while walking down to the first
 		// value. Note size > 16.
 		--histogram[(size_t)sorted[size - 1].value];
-		for(size_t j=size - 1u; j--;) {
+		for(size_t j=size - 1u; j-- != 0u;) {
 			--histogram[(size_t)sorted[j].value];
 			EXPECT_FALSE(hxkey_less(*sorted.get(j + 1), *sorted.get(j)));
 		}
@@ -493,7 +493,7 @@ TEST(hxbinary_search_test, binary_search_grinder) {
 	hxrandom rng(4);
 	hxarray<tracker_t> sorted; sorted.reserve(100);
 
-	for(int i=100; i--; ) {
+	for(int i=100; i-- != 0; ) {
 		int x = rng.range(0, 100);
 		sorted.push_back(tracker_t(x));
 	}
@@ -502,7 +502,7 @@ TEST(hxbinary_search_test, binary_search_grinder) {
 
 	// Every resident value should be rediscovered: pointer equality relaxed to
 	// value comparison avoids aliasing when duplicates exist.
-	for(size_t i=100u; i--; ) {
+	for(size_t i=100u; i-- != 0u; ) {
 		tracker_t t = hxmove(sorted[i]); // Don't pass an address that is in the array.
 		tracker_t* ptr = hxbinary_search(sorted.begin(), sorted.end(), t);
 		// Assert logical equivalence without using ==. The tracker_t* may point

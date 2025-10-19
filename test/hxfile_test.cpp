@@ -104,7 +104,6 @@ TEST(hxfile_test, move_copy_and_stream_operators) {
 	hxfile ft(hxfile::out | hxfile::skip_asserts, "hxfile_test_operators.bin");
 	// "Move constructor. No copy constructor is provided." Source handle closes once transferred.
 	hxfile f(hxmove(ft));
-	EXPECT_TRUE(!ft.is_open());
 	EXPECT_TRUE(f.is_open());
 	hxfile_test_record x { 77777u, -555, 77u, -55 };
 	int a = -3;

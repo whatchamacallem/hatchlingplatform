@@ -10,8 +10,8 @@
 
 HX_REGISTER_FILENAME_HASH
 
-static_assert(hxfalse_t::value == 0, "hxfalse_t must report false");
-static_assert(hxtrue_t::value == 1, "hxtrue_t must report true");
+static_assert(hxtrue_t::value == true, "hxtrue_t must report true");
+static_assert(hxfalse_t::value == false, "hxfalse_t must report false");
 
 static_assert(hxis_same<hxenable_if_t<true, int>, int>::value,
 	"hxenable_if_t<true> must expose the requested type");
@@ -34,13 +34,13 @@ static_assert(hxis_same<hxremove_pointer_t<int* volatile>, int>::value,
 static_assert(hxis_same<hxremove_pointer_t<int>, int>::value,
 	"hxremove_pointer_t should leave non-pointers untouched");
 
-static_assert(hxis_lvalue_reference<int&>::value == 1,
+static_assert(hxis_lvalue_reference<int&>::value,
 	"hxis_lvalue_reference should detect lvalues");
-static_assert(hxis_lvalue_reference<int>::value == 0,
+static_assert(!hxis_lvalue_reference<int>::value,
 	"hxis_lvalue_reference should reject non-references");
-static_assert(hxis_rvalue_reference<int&&>::value == 1,
+static_assert(hxis_rvalue_reference<int&&>::value,
 	"hxis_rvalue_reference should detect rvalues");
-static_assert(hxis_rvalue_reference<int&>::value == 0,
+static_assert(!hxis_rvalue_reference<int&>::value,
 	"hxis_rvalue_reference should reject lvalues");
 
 static_assert(hxis_same<hxremove_cv_t<int>, int>::value,
@@ -52,48 +52,48 @@ static_assert(hxis_same<hxremove_cv_t<const int>, int>::value,
 static_assert(hxis_same<hxremove_cv_t<volatile int>, int>::value,
 	"hxremove_cv_t strips volatile");
 
-static_assert(hxis_const<int>::value == 0, "hxis_const should reject mutable");
-static_assert(hxis_const<const int>::value == 1,
+static_assert(!hxis_const<int>::value, "hxis_const should reject mutable");
+static_assert(hxis_const<const int>::value,
 	"hxis_const should detect const");
 
-static_assert(hxis_void<void>::value == 1, "hxis_void should detect void");
-static_assert(hxis_void<const void>::value == 1,
+static_assert(hxis_void<void>::value, "hxis_void should detect void");
+static_assert(hxis_void<const void>::value,
 	"hxis_void should ignore qualifiers");
-static_assert(hxis_void<int>::value == 0, "hxis_void should reject others");
+static_assert(!hxis_void<int>::value, "hxis_void should reject others");
 
-static_assert(hxis_null_pointer<decltype(nullptr)>::value == 1,
+static_assert(hxis_null_pointer<decltype(nullptr)>::value,
 	"hxis_null_pointer should detect nullptr_t");
-static_assert(hxis_null_pointer<const decltype(nullptr)>::value == 1,
+static_assert(hxis_null_pointer<const decltype(nullptr)>::value,
 	"hxis_null_pointer should ignore qualifiers");
-static_assert(hxis_null_pointer<int*>::value == 0,
+static_assert(!hxis_null_pointer<int*>::value,
 	"hxis_null_pointer should reject pointers");
 
-static_assert(hxis_integral<int>::value == 1,
+static_assert(hxis_integral<int>::value,
 	"hxis_integral should detect int");
-static_assert(hxis_integral<const unsigned long>::value == 1,
+static_assert(hxis_integral<const unsigned long>::value,
 	"hxis_integral should ignore qualifiers");
-static_assert(hxis_integral<float>::value == 0,
+static_assert(!hxis_integral<float>::value,
 	"hxis_integral should reject floats");
 
-static_assert(hxis_floating_point<float>::value == 1,
+static_assert(hxis_floating_point<float>::value,
 	"hxis_floating_point should detect floats");
-static_assert(hxis_floating_point<const long double>::value == 1,
+static_assert(hxis_floating_point<const long double>::value,
 	"hxis_floating_point should ignore qualifiers");
-static_assert(hxis_floating_point<int>::value == 0,
+static_assert(!hxis_floating_point<int>::value,
 	"hxis_floating_point should reject ints");
 
-static_assert(hxis_array<int>::value == 0,
+static_assert(!hxis_array<int>::value,
 	"hxis_array should reject non-arrays");
-static_assert(hxis_array<int[4]>::value == 1,
+static_assert(hxis_array<int[4]>::value,
 	"hxis_array should detect sized arrays");
-static_assert(hxis_array<const int[]>::value == 1,
+static_assert(hxis_array<const int[]>::value,
 	"hxis_array should detect unsized arrays");
 
-static_assert(hxis_pointer<int*>::value == 1,
+static_assert(hxis_pointer<int*>::value,
 	"hxis_pointer should detect pointers");
-static_assert(hxis_pointer<const int*>::value == 1,
+static_assert(hxis_pointer<const int*>::value,
 	"hxis_pointer should ignore qualifiers");
-static_assert(hxis_pointer<int>::value == 0,
+static_assert(!hxis_pointer<int>::value,
 	"hxis_pointer should reject non-pointers");
 
 static_assert(hxis_same<hxrestrict_t<int>, int>::value,
@@ -117,7 +117,7 @@ public:
 };
 
 hxutility_test_forward_t hxutility_test_forward_make_forwarded() { return { 11 }; }
-const hxutility_test_forward_t hxutility_test_forward_make_const_forwarded() { return { 13 }; }
+hxutility_test_forward_t hxutility_test_forward_make_const_forwarded() { return { 13 }; }
 hxutility_test_forward hxutility_test_forward_detect(hxutility_test_forward_t&) { return hxutility_test_forward_lvalue; }
 hxutility_test_forward hxutility_test_forward_detect(const hxutility_test_forward_t&) { return hxutility_test_forward_const_lvalue; }
 hxutility_test_forward hxutility_test_forward_detect(hxutility_test_forward_t&&) { return hxutility_test_forward_rvalue; }
