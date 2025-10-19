@@ -52,7 +52,7 @@ fi
 
 set -o errexit -o xtrace
 
-time run-clang-tidy -quiet -p src src/*.cpp src/*.c
+time run-clang-tidy -quiet -p src src/*.cpp src/*.c test/*.cpp
 
 time ./debugbuild.sh --headless
 time ./testcmake.sh
