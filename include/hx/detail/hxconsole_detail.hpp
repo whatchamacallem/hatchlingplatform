@@ -246,7 +246,7 @@ public:
 			hxloghandler(hxloglevel_console, "%.15g\n", (double)*m_var_);
 			return true;
 		}
-		else if(code_ == 1) {
+		if(code_ == 1) {
 			// 1 parameter is assignment
 			// Use hxconsolenumber_t to oversee casting to an arbitrary type.
 			hxconsolenumber_t wrapper_(number_);

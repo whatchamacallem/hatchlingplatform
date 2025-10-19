@@ -265,7 +265,7 @@ template<typename T_> using hxrestrict_t = typename hxrestrict_t_<T_>::type;
 /// `hxabs` - Returns the absolute value of `x` using a `<` comparison.
 /// - `x` : The value to compute the absolute value for.
 template<typename T_>
-constexpr const T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - (x_)) : (x_); }
+constexpr T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - (x_)) : (x_); }
 
 /// `hxclamp` - Returns `x` clamped between the `minimum` and `maximum` using `<`
 /// comparisons.

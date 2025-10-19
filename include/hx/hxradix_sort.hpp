@@ -33,8 +33,8 @@ public:
 	/// Sets from the required `key_t` type and `value_t*` type.
 	void set(key_t_ key_, value_t_ value_) { this->set_(key_, value_); }
 
-	/// Returns the stored `value_t*`.
-	const value_t_ get_value(void) const { return m_value_; }
+	/// Returns the stored `value_t`.
+	value_t_ get_value(void) const { return m_value_; }
 
 	/// Returns the stored `value_t*`.
 	value_t_ get_value(void) { return m_value_; }
