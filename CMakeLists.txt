@@ -35,7 +35,20 @@ target_include_directories(hxtest PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_compile_definitions(hxtest PRIVATE HX_USE_GOOGLE_TEST)
 target_compile_options(hxtest PRIVATE -fno-exceptions -ggdb3)
 
-# Download GoogleTest instead of using system version.
+# Download GoogleTest into a local workspace cache to avoid AI sandbox issues.
+# CMake will still have to be run once to set up the cache after running
+# ./clean.sh.
+set(
+  HX_FETCHCONTENT_CACHE_DIR
+  "${CMAKE_SOURCE_DIR}/cache"
+)
+file(MAKE_DIRECTORY "${HX_FETCHCONTENT_CACHE_DIR}")
+set(
+  FETCHCONTENT_BASE_DIR
+  "${HX_FETCHCONTENT_CACHE_DIR}"
+  CACHE PATH "FetchContent base directory"
+  FORCE
+)
 include(FetchContent)
 FetchContent_Declare(
   googletest

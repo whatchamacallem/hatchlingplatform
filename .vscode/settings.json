@@ -44,6 +44,7 @@
         "fdata",
         "fdiagnostics",
         "feenableexcept",
+        "FETCHCONTENT",
         "ffast",
         "ffunction",
         "filt",
