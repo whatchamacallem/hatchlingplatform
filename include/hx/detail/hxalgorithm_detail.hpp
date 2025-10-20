@@ -90,16 +90,16 @@ template<typename iterator_t_, typename less_t_, typename sort_callback_t_>  hxa
 void hxpartition_sort_(hxrestrict_t<iterator_t_> begin_, iterator_t_ end_, const less_t_& less_,
 						const sort_callback_t_& sort_callback_, int depth_) {
 	hxassertmsg((end_ - begin_) > hxpartition_sort_cutoff_, "range_error Use hxinsertion_sort.");
-	ptrdiff_t length_ = end_ - begin_;
+	const ptrdiff_t length_ = end_ - begin_;
 
 	// Select 5 pivot values at 1/7th increments. And allow them to be naturally
 	// sorted.
-    ptrdiff_t seventh_ = (length_ >> 3) + (length_ >> 6) + ptrdiff_t{1};
-    iterator_t_ p2_ = begin_ + (length_ >> 1);
-    iterator_t_ p1_ = p2_ - seventh_;
-    iterator_t_ p0_ = p1_ - seventh_;
-    iterator_t_ p3_ = p2_ + seventh_;
-    iterator_t_ p4_ = p3_ + seventh_;
+	const ptrdiff_t seventh_ = (length_ >> 3) + (length_ >> 6) + ptrdiff_t{1};
+	iterator_t_ p2_ = begin_ + (length_ >> 1);
+	iterator_t_ p1_ = p2_ - seventh_;
+	iterator_t_ p0_ = p1_ - seventh_;
+	iterator_t_ p3_ = p2_ + seventh_;
+	iterator_t_ p4_ = p3_ + seventh_;
 
 	// This is a Bose-Nelson sorting network for 5 elements. It should work well
 	// with a processor that has branch prediction.
@@ -113,12 +113,12 @@ void hxpartition_sort_(hxrestrict_t<iterator_t_> begin_, iterator_t_ end_, const
 	if(less_(*p4_, *p3_)) { hxswap(p4_, p3_); }
 	if(less_(*p3_, *p2_)) { hxswap(p3_, p2_); }
 
-    iterator_t_ back_ = end_ - ptrdiff_t{1}; // Pointer to the last value.
+	iterator_t_ back_ = end_ - ptrdiff_t{1}; // Pointer to the last value.
 
 	// Move the selected pivots out of the way by placing them at the ends of
 	// the range.
-    hxswap(*begin_, *p1_);
-    hxswap(*back_, *p3_);
+	hxswap(*begin_, *p1_);
+	hxswap(*back_, *p3_);
 
 	// Three-way partition into [<p₁], [p₁ ≤ … ≤ p₂], [>p₂]
 

@@ -49,8 +49,9 @@ void hxinsertion_sort(iterator_t_ begin_, iterator_t_ end_, const less_t_& less_
 
 	// Address sanitizer: Avoids adding 1 to null iterators.
 	if(begin_ == end_) { return; }
-	hxrestrict_t<iterator_t_> begin_r_(begin_);
 
+	// This pointer is the sole owner of the output array.
+	const hxrestrict_t<iterator_t_> begin_r_(begin_);
 	for(iterator_t_ i_ = begin_r_, j_ = begin_r_ + ptrdiff_t{1}; j_ < end_; i_ = j_, ++j_) {
 		if(!less_(*i_, *j_)) {
 			// Default value construct. Use hxmove instead of hxswap because it

@@ -356,7 +356,9 @@ public:
 
 	/// Returns the average number of Nodes per bucket.
 	float load_factor(void) const {
-		return m_table_.capacity() ? ((float)m_size_ / (float)m_table_.capacity()) : 0u;
+		return m_table_.capacity()
+			? (static_cast<float>(m_size_) / static_cast<float>(m_table_.capacity()))
+			: 0.0f;
 	}
 
 	/// Returns the size of the largest bucket.

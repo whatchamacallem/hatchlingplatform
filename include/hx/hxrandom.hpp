@@ -35,7 +35,8 @@ public:
 	template<typename T_> T_ range(T_ base_, T_ size_) {
 		// Use double parameters if you need a bigger size. An emulated
 		// floating point multiply is faster and more stable than integer modulo.
-		hxassertmsg((float)size_ < (float)0x01000000, "insufficient_precision %f", (float)size_); // 0x1p24f
+		hxassertmsg(static_cast<float>(size_) < float{0x01000000u},
+			"insufficient_precision %f", static_cast<float>(size_)); // 0x1p24f
 		return base_ + static_cast<T_>(static_cast<float>(size_) * this->generate_f01());
 	}
 
@@ -43,13 +44,14 @@ public:
 	double range(double base_, double size_) {
 		// Use `uint64_t` parameters if you need a bigger size. An emulated
 		// floating point multiply is faster and more stable than integer modulo.
-		hxassertmsg(size_ < (double)0x40000000000000ll, "insufficient_precision %f", (double)size_); // 0x1p54f
+		hxassertmsg(size_ < double{0x40000000000000ll},
+			"insufficient_precision %f", size_); // 0x1p54f
 		return base_ + size_ * this->generate_d01();
 	}
 
 	/// int64_t version. Negative size is undefined.
 	int64_t range(int64_t base_, int64_t size_) {
-		return base_ + static_cast<int64_t>(this->generate_64() % (uint64_t)size_);
+		return base_ + static_cast<int64_t>(this->generate_64() % static_cast<uint64_t>(size_));
 	}
 
 	/// uint64_t version.
@@ -90,33 +92,34 @@ public:
 
 	/// Returns [0..2^32).
 	uint32_t generate_32(void) {
-		m_state_ = (uint64_t)0x5851f42d4c957f2dull * m_state_ + (uint64_t)0x14057b7ef767814full;
+		m_state_ = uint64_t{0x5851f42d4c957f2dull} * m_state_ + uint64_t{0x14057b7ef767814full};
 
 		// MODIFICATION: Use the 4 msb bits as a random 0..15 bit variable shift
 		// control. Ignores the low 13 bits because they are low quality.
 		// Returns 32 bits chosen at a random offset starting between the 13th
 		// and 28th bits. 4 bits shift control + 32 returned + up to 15 shifted
 		// off + 13 always discarded = 64 bits.
-		const uint32_t result_ = (uint32_t)(m_state_ >> ((m_state_ >> 60) + 13u));
+		const uint32_t result_ = static_cast<uint32_t>(m_state_ >> ((m_state_ >> 60) + 13u));
 		return result_;
 	}
 
 	/// Returns [0..2^64).
 	uint64_t generate_64(void) {
-		const uint64_t result_ = (uint64_t)this->generate_32() | ((uint64_t)this->generate_32() << 32);
+		const uint64_t result_ = static_cast<uint64_t>(this->generate_32())
+			| (static_cast<uint64_t>(this->generate_32()) << 32);
 		return result_;
 	}
 
 	/// Returns a float between `[0..1)`. Can safely be used to generate array
 	/// indices without overflowing.
 	float generate_f01(void) {
-		return (float)this->generate_32() * (1.0f / 4294967296.0f); // 0x1p-32f
+		return static_cast<float>(this->generate_32()) * (1.0f / 4294967296.0f); // 0x1p-32f
 	}
 
 	/// Returns a double between `[0..1)`. Can safely be used to generate array
 	/// indices without overflowing.
 	double generate_d01(void) {
-		return (double)this->generate_64() * (1.0 / 18446744073709551616.0); // 0x1p-64;
+		return static_cast<double>(this->generate_64()) * (1.0 / 18446744073709551616.0); // 0x1p-64;
 	}
 
 private:
@@ -128,7 +131,7 @@ private:
 /// - `a` : Bits to mask off. Undefined behavior when a negative integer.
 /// - `b` : A `hxrandom`.
 template <typename T_> T_ operator&(T_ a_, hxrandom& b_) {
-	return T_((uint32_t)a_ & b_.generate_32());
+	return static_cast<T_>(static_cast<uint32_t>(a_) & b_.generate_32());
 }
 
 /// `operator&(int64_t a_, hxrandom& b_)` - 64-bit version. Allows a signed
@@ -137,7 +140,7 @@ template <typename T_> T_ operator&(T_ a_, hxrandom& b_) {
 /// - `a` : Bits to mask off. Undefined behavior when negative.
 /// - `b` : A `hxrandom`.
 inline int64_t operator&(int64_t a_, hxrandom& b_) {
-   return (int64_t)((uint64_t)a_ & b_.generate_64());
+	return static_cast<int64_t>(static_cast<uint64_t>(a_) & b_.generate_64());
 }
 
 /// `operator&(uint64_t a_, hxrandom& b_)` - 64-bit version.

@@ -28,7 +28,7 @@ public:
 
 #if (HX_RELEASE) == 0
 		const char* label;
-		~record_t() { ::memset((void*)this, 0x00, sizeof *this); }
+		~record_t() { ::memset(this, 0xefu, sizeof *this); } // NOLINT
 #endif
 	};
 
@@ -119,8 +119,8 @@ private:
 		thread_mode_stopping_
 	};
 	enum run_level_t_ : uint32_t {
-		run_level_running_ = (uint32_t)0x00c0ffee,
-		run_level_stopped_ = (uint32_t)0xdeadbeef
+		run_level_running_ = 0x00c0ffeeu,
+		run_level_stopped_ = 0xdeadbeefu
 	};
 
 	static void* thread_task_loop_entry_(hxtask_queue* q_);
@@ -139,7 +139,7 @@ private:
 template<typename functor_t_>
 bool hxtask_queue::all_of(functor_t_&& fn_) const {
 #if HX_USE_THREADS
-	hxunique_lock lock_(m_mutex_);
+	const hxunique_lock lock_(m_mutex_);
 #endif
 	return m_tasks_.all_of(hxforward<functor_t_>(fn_));
 }
@@ -147,21 +147,21 @@ bool hxtask_queue::all_of(functor_t_&& fn_) const {
 template<typename functor_t_>
 bool hxtask_queue::any_of(functor_t_&& fn_) const {
 #if HX_USE_THREADS
-	hxunique_lock lock_(m_mutex_);
+	const hxunique_lock lock_(m_mutex_);
 #endif
 	return m_tasks_.any_of(hxforward<functor_t_>(fn_));
 }
 
 inline void hxtask_queue::clear(void) {
 #if HX_USE_THREADS
-	hxunique_lock lock_(m_mutex_);
+	const hxunique_lock lock_(m_mutex_);
 #endif
 	m_tasks_.clear();
 }
 
 inline bool hxtask_queue::empty(void) const {
 #if HX_USE_THREADS
-	hxunique_lock lock_(m_mutex_);
+	const hxunique_lock lock_(m_mutex_);
 #endif
 	return m_tasks_.empty();
 }
@@ -169,9 +169,9 @@ inline bool hxtask_queue::empty(void) const {
 template<typename functor_t_>
 size_t hxtask_queue::erase_if(functor_t_&& fn_) {
 #if HX_USE_THREADS
-	hxunique_lock lock_(m_mutex_);
+	const hxunique_lock lock_(m_mutex_);
 #endif
-	size_t erased_ = m_tasks_.erase_if(hxforward<functor_t_>(fn_));
+	const size_t erased_ = m_tasks_.erase_if(hxforward<functor_t_>(fn_));
 	if(erased_ != 0u) {
 		// Restore the heap property all at once. Allows erase_if to modify
 		// priority at the same time.
@@ -183,7 +183,7 @@ size_t hxtask_queue::erase_if(functor_t_&& fn_) {
 template<typename functor_t_>
 void hxtask_queue::for_each(functor_t_&& fn_) const {
 #if HX_USE_THREADS
-	hxunique_lock lock_(m_mutex_);
+	const hxunique_lock lock_(m_mutex_);
 #endif
 	m_tasks_.for_each(hxforward<functor_t_>(fn_));
 }
@@ -191,7 +191,7 @@ void hxtask_queue::for_each(functor_t_&& fn_) const {
 template<typename functor_t_>
 void hxtask_queue::for_each(functor_t_&& fn_) {
 #if HX_USE_THREADS
-	hxunique_lock lock_(m_mutex_);
+	const hxunique_lock lock_(m_mutex_);
 #endif
 	m_tasks_.for_each(hxforward<functor_t_>(fn_));
 
@@ -201,21 +201,21 @@ void hxtask_queue::for_each(functor_t_&& fn_) {
 
 inline bool hxtask_queue::full(void) const {
 #if HX_USE_THREADS
-	hxunique_lock lock_(m_mutex_);
+	const hxunique_lock lock_(m_mutex_);
 #endif
 	return m_tasks_.full();
 }
 
 inline size_t hxtask_queue::max_size(void) const {
 #if HX_USE_THREADS
-	hxunique_lock lock_(m_mutex_);
+	const hxunique_lock lock_(m_mutex_);
 #endif
 	return m_tasks_.max_size();
 }
 
 inline size_t hxtask_queue::size(void) const {
 #if HX_USE_THREADS
-	hxunique_lock lock_(m_mutex_);
+	const hxunique_lock lock_(m_mutex_);
 #endif
 	return m_tasks_.size();
 }

@@ -47,19 +47,9 @@ hxfile::hxfile(uint8_t mode, const char* filename, ...) : hxfile() {
 	va_end(args);
 }
 
-// memcpy would be undefined behavior.
-hxfile::hxfile(hxfile&& file_) :
-	m_file_pimpl_(file_.m_file_pimpl_),
-	m_open_mode_(file_.m_open_mode_),
-	m_owns_(file_.m_owns_),
-	m_fail_(file_.m_fail_),
-	m_eof_(file_.m_eof_)
-{
-	file_.m_file_pimpl_ = hxnull;
-	file_.m_open_mode_ = hxfile::none;
-	file_.m_owns_ = false;
-	file_.m_fail_ = false;
-	file_.m_eof_ = false;
+hxfile::hxfile(hxfile&& file_) {
+	::memcpy((void*)this, &file_, sizeof file_); // NOLINT
+	::memset((void*)&file_, 0x00, sizeof file_); // NOLINT
 }
 
 hxfile::~hxfile(void) {
@@ -68,18 +58,8 @@ hxfile::~hxfile(void) {
 
 void hxfile::operator=(hxfile&& file_) {
 	close();
-
-	// memcpy would be undefined behavior.
-	m_file_pimpl_ = file_.m_file_pimpl_;
-	m_open_mode_ = file_.m_open_mode_;
-	m_owns_ = file_.m_owns_;
-	m_fail_ = file_.m_fail_;
-	m_eof_ = file_.m_eof_;
-	file_.m_file_pimpl_ = hxnull;
-	file_.m_open_mode_ = hxfile::none;
-	file_.m_owns_ = false;
-	file_.m_fail_ = false;
-	file_.m_eof_ = false;
+	::memcpy((void*)this, &file_, sizeof file_); // NOLINT
+	::memset((void*)&file_, 0x00, sizeof file_); // NOLINT
 }
 
 bool hxfile::open(uint8_t mode, const char* filename, ...) {
