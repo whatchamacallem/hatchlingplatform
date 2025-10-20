@@ -28,8 +28,8 @@ TEST(hxrandom_test, generation) {
 	for(int s=100; s-- != 0;) {
 		// "Automatically casts to an unsigned integer or floating point value."
 		// Grab floats in [0..1).
-		float f = rng.generate_f01();
-		double d = rng.generate_d01();
+		const float f = rng.generate_f01();
+		const double d = rng.generate_d01();
 
 		// NOTA BENE: While 0.0 is legal, it is being treated as an error
 		// because it is likely to be so. The odds of hitting zero in the first
