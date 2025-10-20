@@ -31,7 +31,7 @@ target_link_libraries(
   gtest
 )
 
-target_include_directories(hxtest SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(hxtest PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_compile_definitions(hxtest PRIVATE HX_USE_GOOGLE_TEST)
 target_compile_options(hxtest PRIVATE -fno-exceptions -ggdb3)
 

@@ -52,5 +52,5 @@ Checks: >
   -performance-enum-size,
   -performance-no-int-to-ptr
 FormatStyle: none
-HeaderFilterRegex: '^(include|src|test)/'
+HeaderFilterRegex: '(^|.*/)(include|src|test)/'
 WarningsAsErrors: '*'
