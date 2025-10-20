@@ -34,12 +34,12 @@ public:
 	hxconsolenumber_t(void) : m_x_(0.0) { }
 
 	/// Constructs from any number.
-	template<typename T_> hxconsolenumber_t(T_ x_) : m_x_((double)x_) { }
+	template<typename T_> hxconsolenumber_t(T_ x_) : m_x_(static_cast<double>(x_)) { }
 
 	/// Automatically casts to all number types.
 	template<typename T_> operator T_() const;
 	operator bool(void) const { return m_x_ != 0.0; }
-	operator float(void) const { return (float)m_x_; }
+	operator float(void) const { return static_cast<float>(m_x_); }
 	operator double(void) const { return m_x_; }
 
 private:

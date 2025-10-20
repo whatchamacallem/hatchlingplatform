@@ -4,11 +4,11 @@
 // This file is licensed under the MIT license found in the LICENSE.md file.
 // hxconsole inline header and a lot of internals. See hxconsole.h.
 
-// NOTE: This needs a rewrite using pack expressions. operator<< turns out to
-//       be bloated/slow compared to fmt::format. However, using format would
-//       require
-
 #include "../hxutility.h"
+
+// NOLINTBEGIN
+//
+// NOTE: This needs a rewrite using pack expressions and the {fmt} project.
 
 // Automatic cast from double with clamping.
 template<typename T_>
@@ -377,3 +377,5 @@ private:
 
 } // hxdetail_
 using namespace hxdetail_;
+
+// NOLINTEND

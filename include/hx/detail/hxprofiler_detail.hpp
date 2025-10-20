@@ -38,7 +38,7 @@ inline hxcycles_t hxtime_sample_cycles(void) {
 #else
 static_assert(0, "Implement hxtime_sample_cycles.");
 #endif
-	return (hxcycles_t)cycles_;
+	return static_cast<hxcycles_t>(cycles_);
 }
 
 namespace hxdetail_ {
@@ -103,7 +103,7 @@ public:
 			if((t1_ - m_t0_) >= min_cycles_) {
 				if(!g_hxprofiler_.m_records.full()) {
 					g_hxprofiler_.m_records.emplace_back(
-						m_t0_, t1_, m_label_, (uint32_t)hxthread_id());
+						m_t0_, t1_, m_label_, static_cast<uint32_t>(hxthread_id()));
 				}
 			}
 		}

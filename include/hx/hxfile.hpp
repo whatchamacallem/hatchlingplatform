@@ -71,7 +71,7 @@ public:
 
 	/// Default-constructs as a closed file.
 	hxfile(void) {
-		::memset((void*)this, 0x00, sizeof *this);
+		::memset(static_cast<void*>(this), 0x00, sizeof *this);
 	}
 
 	/// Constructs and opens a file with a formatted filename. Uses a

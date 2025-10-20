@@ -36,8 +36,10 @@ public:
 		// Use double parameters if you need a bigger size. An emulated
 		// floating point multiply is faster and more stable than integer modulo.
 		hxassertmsg((float)size_ < (float)0x01000000, "insufficient_precision %f", (float)size_); // 0x1p24f
-		return base_ + (T_)((float)size_ * this->generate_f01());
+		return base_ + static_cast<T_>(static_cast<float>(size_) * this->generate_f01());
 	}
+
+	/// double version.
 	double range(double base_, double size_) {
 		// Use `uint64_t` parameters if you need a bigger size. An emulated
 		// floating point multiply is faster and more stable than integer modulo.
@@ -45,10 +47,12 @@ public:
 		return base_ + size_ * this->generate_d01();
 	}
 
-	// Negative size is undefined.
+	/// int64_t version. Negative size is undefined.
 	int64_t range(int64_t base_, int64_t size_) {
 		return base_ + (int64_t)(this->generate_64() % (uint64_t)size_);
 	}
+
+	/// uint64_t version.
 	uint64_t range(uint64_t base_, uint64_t size_) {
 		return base_ + this->generate_64() % size_;
 	}
@@ -78,11 +82,13 @@ public:
 		}
 	}
 
+	/// Returns [0..2^8).
 	uint8_t generate_8(void) { return (uint8_t)this->generate_32(); }
 
+	/// Returns [0..2^16).
 	uint16_t generate_16(void) { return (uint16_t)this->generate_32(); }
 
-	/// Returns a pseudorandom number in the interval `[0..2^32)`.
+	/// Returns [0..2^32).
 	uint32_t generate_32(void) {
 		m_state_ = (uint64_t)0x5851f42d4c957f2dull * m_state_ + (uint64_t)0x14057b7ef767814full;
 
@@ -95,7 +101,7 @@ public:
 		return result_;
 	}
 
-	/// Returns a pseudorandom number in the interval `[0..2^64)`.
+	/// Returns [0..2^64).
 	uint64_t generate_64(void) {
 		uint64_t result_ = (uint64_t)this->generate_32() | ((uint64_t)this->generate_32() << 32);
 		return result_;

@@ -603,8 +603,8 @@ template<hxarray_concept_ T_, size_t capacity_>
 hxarray<T_, capacity_>::hxarray(hxarray&& x_) : hxarray() {
 	static_assert(capacity_ == hxallocator_dynamic_capacity,
 		"Capacity hxallocator_dynamic_capacity required for temporaries.");
-	::memcpy((void*)this, &x_, sizeof x_);
-	::memset((void*)&x_, 0x00, sizeof x_);
+	::memcpy((void*)this, &x_, sizeof x_); // NOLINT
+	::memset((void*)&x_, 0x00, sizeof x_); // NOLINT
 }
 
 template<hxarray_concept_ T_, size_t capacity_>
@@ -1032,12 +1032,12 @@ template<hxarray_concept_ T_, size_t capacity_>
 template<size_t capacity_x_>
 void hxarray<T_, capacity_>::memcpy(const hxarray<T_, capacity_x_>& x_) {
 	this->resize(x_.size());
-	::memcpy(static_cast<void*>(this->data()), x_.data(), x_.size_bytes());
+	::memcpy(static_cast<void*>(this->data()), x_.data(), x_.size_bytes()); // NOLINT
 }
 
 template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::memset(int byte_) {
-	::memset(static_cast<void*>(this->data()), byte_, this->size_bytes());
+	::memset(static_cast<void*>(this->data()), byte_, this->size_bytes()); // NOLINT
 }
 
 template<hxarray_concept_ T_, size_t capacity_>
