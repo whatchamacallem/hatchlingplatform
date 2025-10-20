@@ -49,7 +49,7 @@ public:
 
 	/// int64_t version. Negative size is undefined.
 	int64_t range(int64_t base_, int64_t size_) {
-		return base_ + (int64_t)(this->generate_64() % (uint64_t)size_);
+		return base_ + static_cast<int64_t>(this->generate_64() % (uint64_t)size_);
 	}
 
 	/// uint64_t version.
@@ -63,19 +63,19 @@ public:
 	/// - `bytes` : Pointer to the buffer where the random bytes will be stored.
 	/// - `count` : Number of bytes to read.
 	void read(void* bytes_, size_t count_) hxattr_nonnull(2) {
-		uint8_t* chars_ = (uint8_t*)bytes_;
+		uint8_t* chars_ = static_cast<uint8_t*>(bytes_);
 		while(count_>=4) {
-			uint32_t x_ = this->generate_32();
-			*chars_++ = (uint8_t)x_;
-			*chars_++ = (uint8_t)(x_ >> 8);
-			*chars_++ = (uint8_t)(x_ >> 16);
-			*chars_++ = (uint8_t)(x_ >> 24);
+			const uint32_t x_ = this->generate_32();
+			*chars_++ = static_cast<uint8_t>(x_);
+			*chars_++ = static_cast<uint8_t>(x_ >> 8);
+			*chars_++ = static_cast<uint8_t>(x_ >> 16);
+			*chars_++ = static_cast<uint8_t>(x_ >> 24);
 			count_ -= 4;
 		}
 		if(count_ != 0u) {
 			uint32_t x_ = this->generate_32();
 			do {
-				*chars_++ = (uint8_t)x_;
+				*chars_++ = static_cast<uint8_t>(x_);
 				x_ >>= 8;
 			} while(--count_ != 0u)
 				/* */;
@@ -83,10 +83,10 @@ public:
 	}
 
 	/// Returns [0..2^8).
-	uint8_t generate_8(void) { return (uint8_t)this->generate_32(); }
+	uint8_t generate_8(void) { return static_cast<uint8_t>(this->generate_32()); }
 
 	/// Returns [0..2^16).
-	uint16_t generate_16(void) { return (uint16_t)this->generate_32(); }
+	uint16_t generate_16(void) { return static_cast<uint16_t>(this->generate_32()); }
 
 	/// Returns [0..2^32).
 	uint32_t generate_32(void) {
@@ -97,13 +97,13 @@ public:
 		// Returns 32 bits chosen at a random offset starting between the 13th
 		// and 28th bits. 4 bits shift control + 32 returned + up to 15 shifted
 		// off + 13 always discarded = 64 bits.
-		uint32_t result_ = (uint32_t)(m_state_ >> ((m_state_ >> 60) + 13u));
+		const uint32_t result_ = (uint32_t)(m_state_ >> ((m_state_ >> 60) + 13u));
 		return result_;
 	}
 
 	/// Returns [0..2^64).
 	uint64_t generate_64(void) {
-		uint64_t result_ = (uint64_t)this->generate_32() | ((uint64_t)this->generate_32() << 32);
+		const uint64_t result_ = (uint64_t)this->generate_32() | ((uint64_t)this->generate_32() << 32);
 		return result_;
 	}
 

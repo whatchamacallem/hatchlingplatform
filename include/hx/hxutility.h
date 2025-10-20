@@ -259,7 +259,7 @@ inline int hxlog2i(size_t i_) {
 	// Use the floating point hardware because this isn't important enough for
 	// The memcpy is an intrinsic.
 	float f_ = static_cast<float>(i_);
-	uint32_t bits_ = 0u; memcpy(&bits_, &f_, sizeof f_);
+	uint32_t bits_ = 0u; ::memcpy(&bits_, &f_, sizeof f_);
 	return static_cast<int>((bits_ >> 23) & 0xffu) - 127;
 }
 
@@ -339,9 +339,9 @@ template<typename T_>
 constexpr void hxswap_memcpy(T_& x_, T_& y_) {
 	hxassertmsg(&x_ != &y_, "hxswap_memcpy No swapping with self.");
 	char t_[sizeof x_];
-	::memcpy(t_, &y_, sizeof x_);
-	::memcpy(static_cast<void*>(&y_), &x_, sizeof x_);
-	::memcpy(static_cast<void*>(&x_), t_, sizeof x_);
+	::memcpy(t_, &y_, sizeof x_); // NOLINT
+	::memcpy(static_cast<void*>(&y_), &x_, sizeof x_); // NOLINT
+	::memcpy(static_cast<void*>(&x_), t_, sizeof x_); // NOLINT
 }
 
 #else // !HX_CPLUSPLUS
