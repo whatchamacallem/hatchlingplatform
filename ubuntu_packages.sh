@@ -14,28 +14,24 @@
 # Please open a PR if anything is missing or has changed.
 set -o errexit
 
-# bash only line art. Can be run from the console as a work of art.
-# Try: $ clear && separator 40
+# bash only line art.
 colors=(208 214 220 226 190 154 118 82 83 84 85 86 87 45 39 33
 		27 33 39 45 87 86 85 84 83 82 118 154 190 226 220 214)
 total_colors=${#colors[@]}
 color_offset=0
 
 separator() {
-	local lines=${1:-1} # Read arg 1, defaults to 1.
-    for((n=lines; n--;)); do
-		for((i=40; i--;)); do
-			local color_index=$(((color_offset + i) % total_colors))
-			echo -ne "\033[38;5;${colors[color_index]}m──"
-		done
-		echo -e "\033[0m"
-		((color_offset += 3))
+	for((i=40; i--;)); do
+		local color_index=$(((color_offset + i) % total_colors))
+		echo -ne "\033[38;5;${colors[color_index]}m──"
 	done
+	echo -e "\033[0m"
+	((color_offset += 3))
 }
 
-separator
+separator ---------------------------------------------------------------------
 
-CMD=$(echo "sudo apt install -y                                         \
+CMD=$(echo "sudo apt install -y                                       \
 	ccache        clang         cmake       doxygen     g++           \
 	g++-multilib  gcc-multilib  gcovr       gdb         gdb-multiarch \
 	libc++-dev    llvm          llvm-dev    musl        musl-dev      \
@@ -44,7 +40,7 @@ CMD=$(echo "sudo apt install -y                                         \
 echo "\$ $CMD"
 eval "$CMD"
 
-separator
+separator ---------------------------------------------------------------------
 
 set +o errexit
 
@@ -52,5 +48,5 @@ for CMD in clang cmake doxygen emcc gcc gcovr musl-gcc python3 ninja
 do
 	echo "\$ $CMD --version"
     eval "$CMD --version"
-	separator
+	separator -----------------------------------------------------------------
 done
