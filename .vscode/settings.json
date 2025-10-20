@@ -23,6 +23,7 @@
         "constexpr",
         "constness",
         "cppcoreguidelines",
+        "cstyle",
         "ctypes",
         "ctypeslib",
         "cvref",

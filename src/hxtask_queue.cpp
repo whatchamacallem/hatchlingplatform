@@ -48,7 +48,7 @@ hxtask_queue::hxtask_queue(size_t task_queue_size_, size_t thread_pool_size_)
 	(void)thread_pool_size_;
 #if HX_USE_THREADS
 	if(m_thread_pool_size_ > 0) {
-		m_threads_ = (hxthread*)hxmalloc(m_thread_pool_size_ * sizeof(hxthread));
+		m_threads_ = reinterpret_cast<hxthread*>(hxmalloc(m_thread_pool_size_ * sizeof(hxthread)));
 		for(size_t i_ = m_thread_pool_size_; i_-- != 0u;) {
 			::new(m_threads_ + i_) hxthread(thread_task_loop_entry_, this);
 		}

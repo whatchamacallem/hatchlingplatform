@@ -158,21 +158,22 @@ public:
 		// Round up the size to be a multiple of the alignment so aligned_alloc
 		// doesn't fail. This has to work for every kind of allocation including
 		// a 5-byte string that has the default sizeof(void*) alignment.
-		size = (size + (alignment - 1)) & ~((size_t)alignment - 1);
+		const size_t alignment_mask = static_cast<size_t>(alignment) - 1u;
+		size = (size + alignment_mask) & ~alignment_mask;
 
 		void* t = ::aligned_alloc(alignment, size);
-		hxassertrelease(t, "aligned_alloc %zu %zu", (size_t)alignment, size);
+		hxassertrelease(t, "aligned_alloc %zu %zu", static_cast<size_t>(alignment), size);
 		return t;
 #else
 		// hxmemory_allocation_header has an HX_ALIGNMENT alignment requirement as well.
 		alignment = hxmax(alignment, HX_ALIGNMENT);
-		--alignment; // Use as a mask.
+		const uintptr_t alignment_mask = static_cast<uintptr_t>(alignment - 1u);
 
 		// Place header immediately before aligned allocation.
-		const uintptr_t actual = (uintptr_t)hxmalloc_checked_(
-			size + sizeof(hxmemory_allocation_header) + alignment);
-		const uintptr_t aligned = (actual + sizeof(hxmemory_allocation_header) + alignment) & ~(size_t)alignment;
-		hxmemory_allocation_header& hdr = ((hxmemory_allocation_header*)aligned)[-1];
+		const uintptr_t actual = reinterpret_cast<uintptr_t>(hxmalloc_checked_(
+			size + sizeof(hxmemory_allocation_header) + alignment_mask));
+		const uintptr_t aligned = (actual + sizeof(hxmemory_allocation_header) + alignment_mask) & ~alignment_mask;
+		hxmemory_allocation_header& hdr = reinterpret_cast<hxmemory_allocation_header*>(aligned)[-1];
 		hdr.size = size;
 		hdr.actual = actual;
 #if (HX_RELEASE) < 2
@@ -182,7 +183,7 @@ public:
 		m_bytes_allocated += size; // Ignore overhead.
 		m_high_water = hxmax(m_high_water, m_bytes_allocated);
 
-		return (void*)aligned;
+		return reinterpret_cast<void*>(aligned);
 #endif
 	}
 
@@ -192,7 +193,7 @@ public:
 		::free(ptr);
 #else
 
-		hxmemory_allocation_header& hdr = ((hxmemory_allocation_header*)ptr)[-1];
+		hxmemory_allocation_header& hdr = reinterpret_cast<hxmemory_allocation_header*>(ptr)[-1];
 #if (HX_RELEASE) < 2
 		hxassertrelease(hdr.sentinel_value == hxmemory_allocation_header::sentinel_value_allocated,
 			"bad_free sentinel corrupt");
@@ -207,7 +208,7 @@ public:
 		hdr.sentinel_value = hxmemory_allocation_header::sentinel_value_freed;
 		::memset(ptr, 0xde, hdr.size);
 #endif
-		::free((void*)actual);
+		::free(reinterpret_cast<void*>(actual));
 #endif
 	}
 
@@ -226,9 +227,9 @@ public:
 		m_label_ = label;
 
 		m_allocation_count = 0u;
-		m_begin_ = ((uintptr_t)ptr);
-		m_end_ = ((uintptr_t)ptr + size);
-		m_current = ((uintptr_t)ptr);
+		m_begin_ = reinterpret_cast<uintptr_t>(ptr);
+		m_end_ = reinterpret_cast<uintptr_t>(ptr) + size;
+		m_current = reinterpret_cast<uintptr_t>(ptr);
 
 		if((HX_RELEASE) < 1) {
 			::memset(ptr, 0xcd, size);
@@ -243,7 +244,8 @@ public:
 	void end_allocation_scope(hxsystem_allocator_scope* scope,
 		hxsystem_allocator_t old_id) override { (void)scope; (void)old_id; }
 	bool contains(void* ptr) const {
-		return (uintptr_t)ptr >= m_begin_ && (uintptr_t)ptr < m_end_;
+		const uintptr_t ptr_value = reinterpret_cast<uintptr_t>(ptr);
+		return ptr_value >= m_begin_ && ptr_value < m_end_;
 	}
 	size_t get_allocation_count(hxsystem_allocator_t id) const override {
 		(void)id; return m_allocation_count;
@@ -256,28 +258,29 @@ public:
 	}
 
 	hxattr_cold void* release(void) {
-		void* t = (void*)m_begin_;
+		void* t = reinterpret_cast<void*>(m_begin_);
 		m_begin_ = 0;
 		return t;
 	}
 
 	hxattr_hot void* allocate_non_virtual(size_t size, hxalignment_t alignment) {
-		--alignment; // Use as a mask.
-		const uintptr_t aligned = (m_current + alignment) & ~(uintptr_t)alignment;
+		const uintptr_t alignment_mask = static_cast<uintptr_t>(alignment - 1u);
+		const uintptr_t aligned = (m_current + alignment_mask) & ~alignment_mask;
 		if((aligned + size) > m_end_) {
 			return hxnull;
 		}
 
 		++m_allocation_count;
 		m_current = aligned + size;
-		return (void*)aligned;
+		return reinterpret_cast<void*>(aligned);
 	}
 
 	hxattr_hot void on_free_non_virtual(void* ptr) {
 		// Use <= because a valid outstanding allocation of size 0 could have
 		// been made at m_current.
-		hxassertmsg(m_allocation_count > 0 && (uintptr_t)ptr >= m_begin_
-			&& (uintptr_t)ptr <= m_current, "bad_free %s", m_label_);
+		const uintptr_t ptr_value = reinterpret_cast<uintptr_t>(ptr);
+		hxassertmsg(m_allocation_count > 0 && ptr_value >= m_begin_
+			&& ptr_value <= m_current, "bad_free %s", m_label_);
 		--m_allocation_count; (void)ptr;
 	}
 
@@ -317,7 +320,8 @@ public:
 
 		const uintptr_t previous_current = m_begin_ + scope->get_initial_bytes_allocated();
 		if((HX_RELEASE) < 1) {
-			::memset((void*)previous_current, 0xcd, (size_t)(m_current - previous_current));
+			::memset(reinterpret_cast<void*>(previous_current), 0xcd,
+				static_cast<size_t>(m_current - previous_current));
 		}
 		m_current = previous_current;
 	}
@@ -400,15 +404,16 @@ size_t hxmemory_manager::leak_count(void) {
 	HX_MEMORY_MANAGER_LOCK_();
 	for(int32_t i = 0; i != hxsystem_allocator_current; ++i) {
 		hxmemory_allocator_base& allocator = *m_memory_allocators[i];
-				if(allocator.get_allocation_count((hxsystem_allocator_t)i) != 0u) {
+		const hxsystem_allocator_t allocator_id = static_cast<hxsystem_allocator_t>(i);
+		if(allocator.get_allocation_count(allocator_id) != 0u) {
 			hxloghandler(hxloglevel_warning,
 				"memory_leak %s count %zu size %zu high_water %zu",
 				allocator.label(),
-				allocator.get_allocation_count((hxsystem_allocator_t)i),
-				allocator.get_bytes_allocated((hxsystem_allocator_t)i),
-				allocator.get_high_water((hxsystem_allocator_t)i));
+				allocator.get_allocation_count(allocator_id),
+				allocator.get_bytes_allocated(allocator_id),
+				allocator.get_high_water(allocator_id));
 		}
-		leak_count += (size_t)allocator.get_allocation_count((hxsystem_allocator_t)i);
+		leak_count += allocator.get_allocation_count(allocator_id);
 	}
 	return leak_count;
 }
@@ -449,15 +454,17 @@ void* hxmemory_manager::allocate(size_t size, hxsystem_allocator_t id, hxalignme
 	// and not a mask containing every bit.
 	hxassertmsg(alignment != 0u, "alignment_error Allocate with alignment 1 and not 0.");
 	hxassertmsg(((alignment - 1u) & alignment) == 0u,
-		"alignment_error Not pow2 %zu.", (size_t)alignment);
+		"alignment_error Not pow2 %zu.", static_cast<size_t>(alignment));
 
 	HX_MEMORY_MANAGER_LOCK_();
 	void* ptr = get_allocator(id).allocate(size, alignment);
 
-	hxassertmsg(((uintptr_t)ptr & (alignment - (uintptr_t)1)) == 0,
-		"alignment_error wrong %zx from %d", (size_t)(uintptr_t)ptr, id);
+	const uintptr_t alignment_mask = static_cast<uintptr_t>(alignment) - 1u;
+	const uintptr_t ptr_value = reinterpret_cast<uintptr_t>(ptr);
+	hxassertmsg((ptr_value & alignment_mask) == 0,
+		"alignment_error wrong %zx from %d", static_cast<size_t>(ptr_value), id);
 
-		if(ptr != hxnull) { return ptr; }
+	if(ptr != hxnull) { return ptr; }
 
 	// Will not return null.
 	hxlogwarning("allocation_error %s size %zu", get_allocator(id).label(), size);
@@ -528,7 +535,7 @@ hxattr_noexcept void* hxmalloc(size_t size) {
 extern "C"
 hxattr_noexcept void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, hxalignment_t alignment) {
 	hxinit();
-	void* ptr = s_hxmemory_manager.allocate(size, (hxsystem_allocator_t)id, alignment);
+	void* ptr = s_hxmemory_manager.allocate(size, id, alignment);
 	if((HX_RELEASE) < 1) {
 		::memset(ptr, 0xab, size);
 	}
@@ -579,7 +586,8 @@ hxattr_noexcept void* hxmalloc(size_t size) {
 extern "C"
 hxattr_noexcept void* hxmalloc_ext(size_t size, hxsystem_allocator_t id, hxalignment_t alignment) {
 	(void)id; (void)alignment;
-	hxassertmsg(alignment <= HX_ALIGNMENT, "alignment_error Memory manager disabled: %zu", (size_t)alignment);
+	hxassertmsg(alignment <= HX_ALIGNMENT, "alignment_error Memory manager disabled: %zu",
+		static_cast<size_t>(alignment));
 	return hxmalloc_checked_(size);
 }
 

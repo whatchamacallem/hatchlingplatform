@@ -37,12 +37,9 @@ fi
 
 cd ..
 
-echo run-clang-tidy... This is very slow.
 # Depends on -DCMAKE_EXPORT_COMPILE_COMMANDS=ON above. These two have to happen
-# together. The output is filtered to avoid confusing AI.
-OUT=$(run-clang-tidy -quiet -p bin src/*.cpp src/*.c test/*.cpp 2>&1)
-CODE=$?
-printf '%s\n' "$OUT" | grep -Ev '^[[:space:]]*[0-9]+ (warnings?|errors?) generated\.$' || true
-[ "$CODE" -ne 0 ] && exit "$CODE"
+# together.
+echo 'run-clang-tidy... The "x warnings generated" messages are from system headers.'
+run-clang-tidy -quiet -p bin src/*.cpp src/*.c test/*.cpp
 
 echo 🐉🐉🐉

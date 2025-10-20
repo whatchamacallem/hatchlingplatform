@@ -13,9 +13,9 @@ using hxhistogram_t = uint32_t;
 
 void hxradix_sort_void(hxradix_sort_key_void* begin, hxradix_sort_key_void* end) {
 	// Check for size overflowing hxhistogram_t.
-	hxassertmsg((size_t)(end - begin) < ~(hxhistogram_t)0, "hxradix_sort_void Too big.");
+	hxassertmsg(static_cast<size_t>(end - begin) < ~static_cast<hxhistogram_t>(0), "hxradix_sort_void Too big.");
 
-	const hxhistogram_t size = (hxhistogram_t)(end - begin);
+	const hxhistogram_t size = static_cast<hxhistogram_t>(end - begin);
 	if(size < HX_RADIX_SORT_MIN_SIZE) {
 		hxinsertion_sort(begin, end);
 		return;
@@ -26,10 +26,12 @@ void hxradix_sort_void(hxradix_sort_key_void* begin, hxradix_sort_key_void* end)
 	// Two working buffers.
 	hxradix_sort_key_void* hxrestrict buf0 = begin;
 	hxradix_sort_key_void* buf0End = buf0 + size;
-	hxradix_sort_key_void* hxrestrict buf1 = (hxradix_sort_key_void*)hxmalloc(size * sizeof(hxradix_sort_key_void));
+	hxradix_sort_key_void* hxrestrict buf1 =
+		reinterpret_cast<hxradix_sort_key_void*>(hxmalloc(size * sizeof(hxradix_sort_key_void)));
 	hxradix_sort_key_void* buf1End = buf1 + size;
 
-	hxhistogram_t* histograms = (hxhistogram_t*)hxmalloc(256u * 4u * sizeof(hxhistogram_t));
+	hxhistogram_t* histograms =
+		reinterpret_cast<hxhistogram_t*>(hxmalloc(256u * 4u * sizeof(hxhistogram_t)));
 	::memset(histograms, 0x00, 256u * 4u * sizeof(hxhistogram_t)); // 4-8k
 
 	// Build histograms
@@ -77,9 +79,9 @@ void hxradix_sort_void(hxradix_sort_key_void* begin, hxradix_sort_key_void* end)
 
 void hxradix_sort_void11(hxradix_sort_key_void* begin, hxradix_sort_key_void* end) {
 	// Check for size overflowing hxhistogram_t.
-	hxassertmsg((size_t)(end - begin) < ~(hxhistogram_t)0, "hxradix_sort_void Too big.");
+	hxassertmsg(static_cast<size_t>(end - begin) < ~static_cast<hxhistogram_t>(0), "hxradix_sort_void Too big.");
 
-	const hxhistogram_t size = (hxhistogram_t)(end - begin);
+	const hxhistogram_t size = static_cast<hxhistogram_t>(end - begin);
 	if(size < HX_RADIX_SORT_MIN_SIZE) {
 		hxinsertion_sort(begin, end);
 		return;
@@ -90,12 +92,14 @@ void hxradix_sort_void11(hxradix_sort_key_void* begin, hxradix_sort_key_void* en
 	// Three working buffers for extremely large data sets.
 	hxradix_sort_key_void* hxrestrict buf0 = begin;
 	hxradix_sort_key_void* buf0End = buf0 + size;
-	hxradix_sort_key_void* hxrestrict buf1 = (hxradix_sort_key_void*)hxmalloc(size * sizeof(hxradix_sort_key_void) * 2u);
+	hxradix_sort_key_void* hxrestrict buf1 =
+		reinterpret_cast<hxradix_sort_key_void*>(hxmalloc(size * sizeof(hxradix_sort_key_void) * 2u));
 	hxradix_sort_key_void* buf1End = buf1 + size;
 	hxradix_sort_key_void* buf2 = buf1End;
 	hxradix_sort_key_void* buf2End = buf2 + size;
 
-	hxhistogram_t* histograms = (hxhistogram_t*)hxmalloc(5120u * sizeof(hxhistogram_t)); // 5120: 2048*2.5
+	hxhistogram_t* histograms =
+		reinterpret_cast<hxhistogram_t*>(hxmalloc(5120u * sizeof(hxhistogram_t)));
 	::memset(histograms, 0x00, 5120u * sizeof(hxhistogram_t));
 
 	hxhistogram_t* hxrestrict hist0 = histograms +	0u; // 2048 values
