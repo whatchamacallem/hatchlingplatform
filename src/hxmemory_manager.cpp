@@ -281,7 +281,7 @@ public:
 		const uintptr_t ptr_value = reinterpret_cast<uintptr_t>(ptr);
 		hxassertmsg(m_allocation_count > 0 && ptr_value >= m_begin_
 			&& ptr_value <= m_current, "bad_free %s", m_label_);
-		--m_allocation_count; (void)ptr;
+		--m_allocation_count; (void)ptr_value;
 	}
 
 protected:
@@ -442,6 +442,7 @@ void hxmemory_manager::end_allocation_scope(
 // may or may not return the same pointer as previous allocations.
 void* hxmemory_manager::allocate(size_t size, hxsystem_allocator_t id, hxalignment_t alignment) {
 	if(id == hxsystem_allocator_current) {
+		// This currently involves a call to pthreads.
 		id = s_hxcurrent_memory_allocator;
 	}
 
@@ -463,11 +464,12 @@ void* hxmemory_manager::allocate(size_t size, hxsystem_allocator_t id, hxalignme
 	const uintptr_t ptr_value = reinterpret_cast<uintptr_t>(ptr);
 	hxassertmsg((ptr_value & alignment_mask) == 0,
 		"alignment_error wrong %zx from %d", static_cast<size_t>(ptr_value), id);
+	 (void)alignment_mask; (void)ptr_value;
 
 	if(ptr != hxnull) { return ptr; }
 
 	// Will not return null.
-	hxlogwarning("allocation_error %s size %zu", get_allocator(id).label(), size);
+	hxlogwarning("allocation_error overflowing %s size %zu", get_allocator(id).label(), size);
 	return m_memory_allocator_heap.allocate(size, alignment);
 }
 

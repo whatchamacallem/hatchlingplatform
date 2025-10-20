@@ -8,24 +8,9 @@
 #   ./emsdk activate latest && source ./emsdk_env.sh
 
 set -o errexit
+set -o monitor # job control
 
 export POSIXLY_CORRECT=1
-
-# Use the sort command to do a version aware comparison of two strings on two
-# different lines.
-echo "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 4.0.0
-`emcc --version | grep emcc`" | sort -V -c 2>/dev/null
-
-# sort returns 1 if the emcc version is too small.
-if [ $? -eq 0 ]; then
-	echo "emcc version is ok."
-else
-	echo "ERROR: emcc is missing or emcc version is too small."
-	echo "see: https://emscripten.org/docs/getting_started/downloads.html"
-	exit 1;
-fi
-
-set -o monitor # job control
 
 # Build artifacts are not retained.
 rm -rf ./bin; mkdir ./bin && cd ./bin
@@ -35,7 +20,7 @@ emcc -I../include -O2 -fpic -fdiagnostics-absolute-paths -c ../src/*.c ../test/*
 # -sMAIN_MODULE=2 dead-strips without leaving code for other modules.
 # Dump the memory manager because a web browser doesn't need that.
 emcc -O2 -fpic -sMAIN_MODULE=2 -fno-exceptions -fno-rtti -fdiagnostics-absolute-paths \
-	-DHX_MEMORY_MANAGER_DISABLE=1 -DHX_USE_THREADS=0 -I../include \
+	 -Werror -Wfatal-errors -DHX_MEMORY_MANAGER_DISABLE=1 -DHX_USE_THREADS=0 -I../include \
 	*.o ../src/*.cpp ../test/*.cpp -o index.html
 
 if [ "$1" != "--headless" ]; then

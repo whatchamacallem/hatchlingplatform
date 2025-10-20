@@ -28,7 +28,7 @@ public:
 
 #if (HX_RELEASE) == 0
 		const char* label;
-		~record_t() { ::memset(this, 0xefu, sizeof *this); } // NOLINT
+		~record_t() { ::memset((void*)this, 0xefu, sizeof *this); } // NOLINT
 #endif
 	};
 
