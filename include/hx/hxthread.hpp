@@ -43,7 +43,7 @@
 /// Returns the current thread ID. Returns `0` when threads are disabled.
 inline size_t hxthread_id() {
 #if HX_USE_THREADS
-	return (size_t)::pthread_self();
+	return static_cast<size_t>(::pthread_self());
 #else
 	return 0; // Single threaded.
 #endif
@@ -59,7 +59,7 @@ public:
 	explicit hxthread_local(const T_& default_value_ = T_())
 			: m_default_value_(default_value_) {
 #if HX_USE_THREADS
-		int code_ = ::pthread_key_create(&m_key_, destroy_local_);
+		const int code_ = ::pthread_key_create(&m_key_, destroy_local_);
 		hxassertrelease(code_ == 0, "pthread_key_create %s", ::strerror(code_)); (void)code_;
 #endif
 	}
@@ -91,7 +91,7 @@ private:
 		if(!local_) {
 			local_ = new T_(m_default_value_);
 			hxassertrelease(local_, "new T");
-			int code_ = ::pthread_setspecific(m_key_, local_);
+			const int code_ = ::pthread_setspecific(m_key_, local_);
 			hxassertrelease(code_ == 0, "pthread_setspecific %s", ::strerror(code_)); (void)code_;
 		}
 		return local_;
@@ -127,20 +127,20 @@ public:
 	/// Constructs a mutex and initializes it. May not return if the mutex can't
 	/// be initialized correctly. Something is very wrong if this fails.
 	 inline hxmutex(void) {
-		int code_ = ::pthread_mutex_init(&m_mutex_, 0);
+		const int code_ = ::pthread_mutex_init(&m_mutex_, 0);
 		hxassertrelease(code_ == 0, "pthread_mutex_init %s", ::strerror(code_)); (void)code_;
 	}
 
 	/// Destroys the mutex.
 	~hxmutex(void) {
-		int code_ = ::pthread_mutex_destroy(&m_mutex_);
+		const int code_ = ::pthread_mutex_destroy(&m_mutex_);
 		hxassertmsg(code_ == 0, "pthread_mutex_destroy %s", ::strerror(code_)); (void)code_;
 	}
 
 	/// Locks the mutex. Returns true on success, asserts on invalid arguments,
 	/// and returns false on failure.
 	bool lock(void) {
-		int code_ = ::pthread_mutex_lock(&m_mutex_);
+		const int code_ = ::pthread_mutex_lock(&m_mutex_);
 		hxassertmsg(code_ == 0 || code_ == EBUSY || code_ == EAGAIN, "pthread_mutex_lock %s", ::strerror(code_));
 		return code_ == 0;
 	}
@@ -149,7 +149,7 @@ public:
 	/// otherwise. It is undefined to unlock a mutex that you have not locked, and
 	/// such an operation may succeed.
 	bool unlock(void) {
-		int code_ = ::pthread_mutex_unlock(&m_mutex_);
+		const int code_ = ::pthread_mutex_unlock(&m_mutex_);
 		hxassertmsg(code_ == 0, "pthread_mutex_unlock %s", ::strerror(code_));
 		return code_ == 0;
 	}
@@ -219,13 +219,13 @@ class hxcondition_variable {
 public:
 	/// Constructs and initializes the condition variable.
 	hxcondition_variable(void) {
-		int code_ = ::pthread_cond_init(&m_cond_, 0);
+		const int code_ = ::pthread_cond_init(&m_cond_, 0);
 		hxassertrelease(code_ == 0, "pthread_cond_init %s", ::strerror(code_)); (void)code_;
 	}
 
 	/// Destroys the condition variable if valid.
 	~hxcondition_variable(void) {
-		int code_ = ::pthread_cond_destroy(&m_cond_);
+		const int code_ = ::pthread_cond_destroy(&m_cond_);
 		hxassertmsg(code_ == 0, "pthread_cond_destroy %s", ::strerror(code_)); (void)code_;
 	}
 
@@ -233,7 +233,7 @@ public:
 	/// false otherwise.
 	/// - `mutex` : The mutex to use for waiting.
 	bool wait(hxmutex& mutex_) {
-		int code_ = ::pthread_cond_wait(&m_cond_, mutex_.native_handle());
+		const int code_ = ::pthread_cond_wait(&m_cond_, mutex_.native_handle());
 		hxassertmsg(code_ == 0, "pthread_cond_init %s", ::strerror(code_));
 		return code_ == 0;
 	}
@@ -257,14 +257,14 @@ public:
 
 	/// Notifies one waiting thread. Returns true on success, false otherwise.
 	bool notify_one(void) {
-		int code_ = ::pthread_cond_signal(&m_cond_);
+		const int code_ = ::pthread_cond_signal(&m_cond_);
 		hxassertmsg(code_ == 0, "pthread_cond_init %s", ::strerror(code_));
 		return code_ == 0;
 	}
 
 	/// Notifies all waiting threads. Returns true on success, false otherwise.
 	bool notify_all(void) {
-		int code_ = ::pthread_cond_broadcast(&m_cond_);
+		const int code_ = ::pthread_cond_broadcast(&m_cond_);
 		hxassertmsg(code_ == 0, "pthread_cond_init %s", ::strerror(code_));
 		return code_ == 0;
 	}
@@ -320,9 +320,9 @@ public:
 		// twice instead of cast once and reinterpreted back.
 		static_assert(sizeof(void*) == sizeof(parameter_t_*), "Incompatible pointer sizes.");
 
-		void* reinterpreted_parameter_;
+		void* reinterpreted_parameter_ = hxnull;
 		::memcpy(&reinterpreted_parameter_, &parameter_, sizeof(void*));
-		int code_ = ::pthread_create(&m_thread_, 0, (entry_point_function_t_)entry_point_,
+		const int code_ = ::pthread_create(&m_thread_, 0, reinterpret_cast<entry_point_function_t_>(entry_point_),
 			reinterpreted_parameter_);
 
 		hxassertrelease(code_ == 0, "pthread_create %d", code_); (void)code_;
@@ -336,7 +336,7 @@ public:
 	/// Joins the thread. Blocks until the thread finishes.
 	void join(void) {
 		hxassertmsg(this->joinable(), "thread_not_runnning");
-		int code_ = ::pthread_join(m_thread_, 0);
+		const int code_ = ::pthread_join(m_thread_, 0);
 		hxassertrelease(code_ == 0, "pthread_join %s", ::strerror(code_));
 		(void)code_;
 		m_joined_ = true;

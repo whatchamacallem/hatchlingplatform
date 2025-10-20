@@ -41,43 +41,15 @@ void hxhex_dump(const void* address_, size_t bytes_, bool pretty_) hxattr_nonnul
 /// Returns true if the float `x` is finite (not NaN or ±inf). Implements
 /// `isfinitef`.
 inline bool hxisfinitef(float x_) {
-	uint32_t u_; memcpy(&u_, &x_, sizeof u_); // An intrinsic.
+	uint32_t u_ = 0u; memcpy(&u_, &x_, sizeof u_); // An intrinsic.
 	return (u_ & 0x7f800000u) != 0x7f800000u;
 }
 
 /// Returns true if the double `x` is finite (not NaN or ±inf). Implements
 /// `isfinitel`.
 inline bool hxisfinitel(double x_) {
-	uint64_t u_; memcpy(&u_, &x_, sizeof u_); // An intrinsic.
+	uint64_t u_ = 0u; memcpy(&u_, &x_, sizeof u_); // An intrinsic.
 	return (u_ & 0x7ff0000000000000ull) != 0x7ff0000000000000ull;
-}
-
-/// Implements standard `isgraph` for a locale where all non-ASCII characters
-/// are considered graphical or mark making. This is compatable with scanf-style
-/// parsing of UTF-8 string parameters. However, this is not `en_US.UTF-8` or
-/// the default C locale.
-inline bool hxisgraph(char ch_) {
-	return (((unsigned char)ch_ - 0x21u) < 0x5Eu)
-		|| (((unsigned char)ch_ & 0x80u) != 0u);
-}
-
-/// Implements standard `isspace` for a locale where all non-ASCII characters
-/// are considered graphical or mark making. Returns nonzero for space and
-/// `\t \n \v \f \r`. This is compatable with scanf-style parsing of
-/// UTF-8 string parameters. However, this is not `en_US.UTF-8` or the default
-/// C locale.
-inline bool hxisspace(char ch_) {
-	return ch_ == ' ' || ((unsigned char)ch_ - 0x09u) < 0x05u;
-}
-
-/// Returns `log2(n)` as an integer which is the power of 2 of the largest bit
-/// in `n`. NOTA BENE: `hxlog2i(0)` is currently -127 and is undefined.
-/// - `i` : A `size_t`.
-inline int hxlog2i(size_t i_) {
-	// Use the floating point hardware because this isn't important enough for
-	// The memcpy is an intrinsic.
-	float f_ = (float)i_; uint32_t bits_; memcpy(&bits_, &f_, sizeof f_);
-	return (int)((bits_ >> 23) & 0xffu) - 127;
 }
 
 #if HX_CPLUSPLUS
@@ -262,10 +234,39 @@ template<typename T_> struct hxrestrict_t_<T_, 1> { using type = T_ hxrestrict; 
 /// Adds the `__restrict` keyword to C++ pointers. (Non-standard.)
 template<typename T_> using hxrestrict_t = typename hxrestrict_t_<T_>::type;
 
+/// Implements standard `isgraph` for a locale where all non-ASCII characters
+/// are considered graphical or mark making. This is compatable with scanf-style
+/// parsing of UTF-8 string parameters. However, this is not `en_US.UTF-8` or
+/// the default C locale.
+inline bool hxisgraph(char ch_) {
+	return ((static_cast<unsigned char>(ch_) - 0x21u) < 0x5eu)
+		|| ((static_cast<unsigned char>(ch_) & 0x80u) != 0u);
+}
+
+/// Implements standard `isspace` for a locale where all non-ASCII characters
+/// are considered graphical or mark making. Returns nonzero for space and
+/// `\t \n \v \f \r`. This is compatable with scanf-style parsing of
+/// UTF-8 string parameters. However, this is not `en_US.UTF-8` or the default
+/// C locale.
+inline bool hxisspace(char ch_) {
+	return ch_ == ' ' || (static_cast<unsigned char>(ch_) - 0x09u) < 0x05u;
+}
+
+/// Returns `log2(n)` as an integer which is the power of 2 of the largest bit
+/// in `n`. NOTA BENE: `hxlog2i(0)` is currently -127 and is undefined.
+/// - `i` : A `size_t`.
+inline int hxlog2i(size_t i_) {
+	// Use the floating point hardware because this isn't important enough for
+	// The memcpy is an intrinsic.
+	float f_ = static_cast<float>(i_);
+	uint32_t bits_ = 0u; memcpy(&bits_, &f_, sizeof f_);
+	return static_cast<int>((bits_ >> 23) & 0xffu) - 127;
+}
+
 /// `hxabs` - Returns the absolute value of `x` using a `<` comparison.
 /// - `x` : The value to compute the absolute value for.
 template<typename T_>
-constexpr T_ hxabs(const T_& x_) { return ((x_) < (T_)0) ? ((T_)0 - (x_)) : (x_); }
+constexpr T_ hxabs(const T_& x_) { return ((x_) < T_()) ? (T_() - (x_)) : (x_); }
 
 /// `hxclamp` - Returns `x` clamped between the `minimum` and `maximum` using `<`
 /// comparisons.
@@ -287,16 +288,16 @@ constexpr const T_& hxclamp(const T_& x_, const T_& minimum_, const T_& maximum_
 /// ```
 /// This is the `T&&` version of hxforward<T>.
 template<typename T_>
-constexpr T_&& hxforward(hxremove_reference_t<T_>&& t) noexcept {
+constexpr T_&& hxforward(hxremove_reference_t<T_>&& x_) {
 	static_assert(!hxis_lvalue_reference<T_>::value, "T must be a `T&&` reference.");
-	return static_cast<T_&&>(t);
+	return static_cast<T_&&>(x_);
 }
 
 /// This is the `T&` version of hxforward<T>. It gets invoked when `T` turns out
 /// to be an l-value. This happens when a `T&` is passed as a `T&&`.
 template<typename T_>
-constexpr T_&& hxforward(hxremove_reference_t<T_>& t) noexcept {
-	return static_cast<T_&&>(t);
+constexpr T_&& hxforward(hxremove_reference_t<T_>& x_) {
+	return static_cast<T_&&>(x_);
 }
 
 /// `hxmax` - Returns the maximum value of `x` and `y` using a `<` comparison.
@@ -330,8 +331,8 @@ constexpr void hxswap(T_& x_, T_& y_) {
 }
 
 /// `hxswap_memcpy` - Exchanges the contents of `x` and `y` using `memcpy` and a
-/// stack temporary. This is intended for internal use where it is known to be
-/// safe to do so. It is a cheap way to implement `T::operator=(T&&)`.
+/// stack temporary. This is intended for internal use where `T` is known to be
+/// trivially copyable.
 /// - `x` : First `T&`.
 /// - `y` : Second `T&`.
 template<typename T_>
@@ -339,8 +340,8 @@ constexpr void hxswap_memcpy(T_& x_, T_& y_) {
 	hxassertmsg(&x_ != &y_, "hxswap_memcpy No swapping with self.");
 	char t_[sizeof x_];
 	::memcpy(t_, &y_, sizeof x_);
-	::memcpy((void*)&y_, &x_, sizeof x_);
-	::memcpy((void*)&x_, t_, sizeof x_);
+	::memcpy(static_cast<void*>(&y_), &x_, sizeof x_);
+	::memcpy(static_cast<void*>(&x_), t_, sizeof x_);
 }
 
 #else // !HX_CPLUSPLUS

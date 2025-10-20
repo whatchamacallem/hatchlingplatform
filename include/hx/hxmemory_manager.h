@@ -205,7 +205,7 @@ void hxdelete(T_* t_) {
 		t_->~T_();
 		if((HX_RELEASE) < 1) {
 			// Mark as released to memory manager.
-			::memset((void*)t_, 0xcd, sizeof *t_);
+			::memset(static_cast<void*>(t_), 0xcd, sizeof *t_);
 		}
 		hxfree(t_);
 	}

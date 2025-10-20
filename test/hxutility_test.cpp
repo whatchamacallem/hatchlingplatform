@@ -120,9 +120,7 @@ hxutility_test_forward_t hxutility_test_forward_make_forwarded() { return { 11 }
 hxutility_test_forward_t hxutility_test_forward_make_const_forwarded() { return { 13 }; }
 hxutility_test_forward hxutility_test_forward_detect(hxutility_test_forward_t&) { return hxutility_test_forward_lvalue; }
 hxutility_test_forward hxutility_test_forward_detect(const hxutility_test_forward_t&) { return hxutility_test_forward_const_lvalue; }
-hxutility_test_forward hxutility_test_forward_detect(hxutility_test_forward_t&&) { // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved)
-	return hxutility_test_forward_rvalue;
-}
+hxutility_test_forward hxutility_test_forward_detect(hxutility_test_forward_t&&) { return hxutility_test_forward_rvalue; }
 hxutility_test_forward hxutility_test_forward_detect(const hxutility_test_forward_t&&) { return hxutility_test_forward_const_rvalue; }
 
 template<typename T>

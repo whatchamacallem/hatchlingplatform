@@ -53,12 +53,12 @@ private:
 	static_assert(sizeof(void*) >= sizeof(value_t_), "value_t size too big.");
 
 	// Internal. Possible conversion routines.
-	void set_(int8_t key_, value_t_ value_) { this->set_((int32_t)key_, value_); }
+	void set_(int8_t key_, value_t_ value_) { this->set_(static_cast<int32_t>(key_), value_); }
 	void set_(uint8_t key_, value_t_ value_) { m_key_=key_; m_value_=value_; }
-	void set_(int16_t key_, value_t_ value_) { this->set_((int32_t)key_, value_); }
+	void set_(int16_t key_, value_t_ value_) { this->set_(static_cast<int32_t>(key_), value_); }
 	void set_(uint16_t key_, value_t_ value_) { m_key_=key_; m_value_=value_; }
 	void set_(int32_t key_, value_t_ value_) {
-		m_key_ = (uint32_t)key_ ^ 0x80000000u;
+		m_key_ = static_cast<uint32_t>(key_) ^ 0x80000000u;
 		m_value_ = value_;
 	}
 	void set_(int64_t key_, value_t_ value_) = delete; // Not supported.
@@ -67,9 +67,8 @@ private:
 	void set_(float key_, value_t_ value_) {
 		// Reinterpret a float as a signed int in order to use a sign extending
 		// right shift before switching to well-defined unsigned bit ops.
-		int32_t t_;
-		::memcpy(&t_, &key_, sizeof t_);
-		m_key_ = (uint32_t)t_ ^ ((uint32_t)(t_ >> 31) | 0x80000000u);
+		int32_t t_ = 0; ::memcpy(&t_, &key_, sizeof t_);
+		m_key_ = static_cast<uint32_t>(t_) ^ (static_cast<uint32_t>(t_ >> 31) | 0x80000000u);
 		m_value_ = value_;
 	}
 	void set_(double key_, value_t_ value_) = delete; // Not supported.
@@ -106,7 +105,7 @@ void hxradix_sort_void11(hxradix_sort_key_void* begin_, hxradix_sort_key_void* e
 /// data.
 template<typename key_t_, typename value_t_> hxattr_nonnull(1,2) hxattr_hot
 void hxradix_sort(hxradix_sort_key<key_t_, value_t_>* begin_, hxradix_sort_key<key_t_, value_t_>* end_) {
-	hxradix_sort_void((hxradix_sort_key_void*)begin_, (hxradix_sort_key_void*)end_);
+	hxradix_sort_void(reinterpret_cast<hxradix_sort_key_void*>(begin_), reinterpret_cast<hxradix_sort_key_void*>(end_));
 }
 
 /// Sorts an array of `value_t*` by `key_t` using 11-bit digits. `key_t` is the
@@ -116,5 +115,5 @@ void hxradix_sort(hxradix_sort_key<key_t_, value_t_>* begin_, hxradix_sort_key<k
 /// data.
 template<typename key_t_, typename value_t_> hxattr_nonnull(1,2) hxattr_hot
 void hxradix_sort11(hxradix_sort_key<key_t_, value_t_>* begin_, hxradix_sort_key<key_t_, value_t_>* end_) {
-	hxradix_sort_void11((hxradix_sort_key_void*)begin_, (hxradix_sort_key_void*)end_);
+	hxradix_sort_void11(reinterpret_cast<hxradix_sort_key_void*>(begin_), reinterpret_cast<hxradix_sort_key_void*>(end_));
 }

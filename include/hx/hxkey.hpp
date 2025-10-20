@@ -116,17 +116,17 @@ inline bool (*hxkey_less_function(void))(const hxremove_cvref_t<T_>&, const hxre
 /// - `x` : The input value.
 template<typename T_>
 constexpr hxhash_t hxkey_hash(T_ x_) {
-    return (hxhash_t)x_ * (hxhash_t)0x61C88647u;
+    return static_cast<hxhash_t>(x_) * hxhash_t(0x61C88647u);
 };
 
 /// `hxkey_hash(const char*)` - Returns the FNV-1a hash of a C string. Uses
 /// FNV-1a string hashing.
 /// - `s` : The C string.
 inline hxhash_t hxkey_hash(const char* s_) {
-    hxhash_t x_ = (hxhash_t)0x811c9dc5;
+    hxhash_t x_ = hxhash_t(0x811c9dc5);
     while(*s_ != '\0') {
-        x_ ^= (hxhash_t)*s_++;
-        x_ *= (hxhash_t)0x01000193;
+        x_ ^= static_cast<hxhash_t>(*s_++);
+        x_ *= hxhash_t(0x01000193);
     }
     return x_;
 }

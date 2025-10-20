@@ -104,7 +104,7 @@ protected:
 			hxalignment_t alignment_=HX_ALIGNMENT) {
 		if(size_ <= m_capacity_) { return; }
 		hxassertrelease(m_capacity_ == 0, "reallocation_disallowed");
-		m_data_ = (T_*)hxmalloc_ext(sizeof(T_) * size_, allocator_, alignment_);
+		m_data_ = static_cast<T_*>(hxmalloc_ext(sizeof(T_) * size_, allocator_, alignment_));
 		m_capacity_ = size_;
 	}
 

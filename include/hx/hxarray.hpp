@@ -518,7 +518,7 @@ public:
 	void resize(size_t size_, const T_& x_);
 
 	/// Returns the number of elements in the array.
-	size_t size(void) const { return (size_t)(m_end_ - this->data()); }
+	size_t size(void) const { return static_cast<size_t>(m_end_ - this->data()); }
 
 	/// Returns the number of bytes in the array. (Non-standard.)
 	size_t size_bytes(void) const { return sizeof(T_) * this->size(); }
@@ -745,7 +745,7 @@ template<hxarray_concept_ T_, size_t capacity_>
 template<typename iter_t_>
 void hxarray<T_, capacity_>::assign(iter_t_ begin_, iter_t_ end_) {
 	hxassertmsg((end_ - begin_) >= 0, "invalid_iterator");
-	this->reserve((size_t)(end_ - begin_));
+	this->reserve(static_cast<size_t>(end_ - begin_));
 	T_* hxrestrict it0_ = this->data();
 	this->destruct_(it0_, m_end_);
 	iter_t_ it1_(begin_); // begin_ may be a reference.
@@ -987,7 +987,7 @@ void hxarray<T_, capacity_>::insert(const T_* pos_, ref_t_&& x_) {
 	else {
 		// A copy constructor for a new end element followed by a series of
 		// assignment operations.
-		T_* it_ = (T_*)this->push_back_unconstructed_();
+		T_* it_ = static_cast<T_*>(this->push_back_unconstructed_());
 		::new(it_) T_(it_[-1]);
 		while(pos_ < --it_) {
 			*it_ = it_[-1];
@@ -1032,12 +1032,12 @@ template<hxarray_concept_ T_, size_t capacity_>
 template<size_t capacity_x_>
 void hxarray<T_, capacity_>::memcpy(const hxarray<T_, capacity_x_>& x_) {
 	this->resize(x_.size());
-	::memcpy((void*)this->data(), x_.data(), x_.size_bytes());
+	::memcpy(static_cast<void*>(this->data()), x_.data(), x_.size_bytes());
 }
 
 template<hxarray_concept_ T_, size_t capacity_>
 void hxarray<T_, capacity_>::memset(int byte_) {
-	::memset((void*)this->data(), byte_, this->size_bytes());
+	::memset(static_cast<void*>(this->data()), byte_, this->size_bytes());
 }
 
 template<hxarray_concept_ T_, size_t capacity_>
@@ -1071,7 +1071,7 @@ template<hxarray_concept_ T_, size_t capacity_>
 template<typename ref_t_>
 T_& hxarray<T_, capacity_>::push_heap(ref_t_&& arg_) {
 	T_* begin_ = this->data();
-	T_* node_ = (T_*)this->push_back_unconstructed_();
+	T_* node_ = static_cast<T_*>(this->push_back_unconstructed_());
 	while(node_ != begin_) {
 		T_* parent_ = begin_ + ((node_ - begin_ - 1) >> 1);
 		// arg_ has to be comparable to T_.
@@ -1079,12 +1079,12 @@ T_& hxarray<T_, capacity_>::push_heap(ref_t_&& arg_) {
 			break;
 		}
 		// Shifts unconstructed element (the hole) into position.
-		::new((void*)node_) T_(hxmove(*parent_));
+		::new(node_) T_(hxmove(*parent_));
 		parent_->~T_();
 		node_ = parent_;
 	}
 	// Construct new element.
-	::new((void*)node_) T_(hxmove(arg_));
+	::new(node_) T_(hxmove(arg_));
 	return *node_;
 }
 
@@ -1148,7 +1148,7 @@ void hxarray<T_, capacity_>::swap(hxarray& x_) {
 template<hxarray_concept_ T_, size_t capacity_>
 void* hxarray<T_, capacity_>::push_back_unconstructed_(void) {
 	hxassertmsg(!this->full(), "stack_overflow");
-	return (void*)m_end_++;
+	return static_cast<void*>(m_end_++);
 }
 
 template<hxarray_concept_ T_, size_t capacity_>
