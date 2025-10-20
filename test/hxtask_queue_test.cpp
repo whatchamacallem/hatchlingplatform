@@ -292,7 +292,7 @@ TEST(hxtask_queue_test, for_each_reschedules_queue) {
 
 		void execute(hxtask_queue*) override {
 				const size_t slot = (*write_index)++;
-			execution_order[slot] = (int)task_index;
+			execution_order[slot] = static_cast<int>(task_index);
 		}
 
 		size_t get_index(void) const { return task_index; }

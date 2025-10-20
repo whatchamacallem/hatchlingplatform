@@ -86,8 +86,8 @@ public:
 
 #if (HX_RELEASE) < 2
 	enum : uint32_t {
-		sentinel_value_allocated = (uint32_t)0x00c0ffee,
-		sentinel_value_freed = (uint32_t)0xdeadbeef
+		sentinel_value_allocated = 0x00c0ffeeu,
+		sentinel_value_freed = 0xdeadbeefu
 	} sentinel_value;
 #endif
 };

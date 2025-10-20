@@ -23,27 +23,8 @@ public:
 	/// - `stream` : Index or seed value for a given stream of random numbers.
 	hxrandom(uint64_t stream_ = 1u) : m_state_(stream_) { }
 
-	/// Functor returns `hxrandom&` which converts itself to the type it is
-	/// assigned to. Enables traditional syntax.
-	/// e.g., `uint32_t = m_prng(); // Returns [0..2^32).`
-	/// e.g., `double i = m_prng(); // Returns [0..1).`
-	hxrandom& operator()(void) { return *this; }
-
-	/// Automatically casts to an unsigned integer or floating point value.
-	/// Floating-point results are between `[0..1)`. They can safely be used to
-	/// generate array indices without overflowing. e.g.,
-	/// `unsigned int = m_prng; // Returns [0..UINT_MAX].`
-	operator float(void) {
-		return (float)this->generate32() * (1.0f / 4294967296.0f); // 0x1p-32f
-	}
-	operator double(void) {
-		return (double)this->generate64() * (1.0 / 18446744073709551616.0); // 0x1p-64;
-	}
-
-	operator uint8_t(void) { return (uint8_t)this->generate32(); }
-	operator uint16_t(void) { return (uint16_t)this->generate32(); }
-	operator uint32_t(void) { return this->generate32(); }
-	operator uint64_t(void) { return this->generate64(); }
+	/// Returns [0..2^32).
+	uint32_t operator()(void) { return this->generate_32(); }
 
 	/// Returns a random number in the range [base..base+range).
 	/// `range(0.0f,10.0f)` returns `0.0f` to `9.999f` and not `10.0f`. Uses a
@@ -55,32 +36,32 @@ public:
 		// Use double parameters if you need a bigger size. An emulated
 		// floating point multiply is faster and more stable than integer modulo.
 		hxassertmsg((float)size_ < (float)0x01000000, "insufficient_precision %f", (float)size_); // 0x1p24f
-		return base_ + (T_)((float)size_ * (float)*this);
+		return base_ + (T_)((float)size_ * this->generate_f01());
 	}
 	double range(double base_, double size_) {
 		// Use `uint64_t` parameters if you need a bigger size. An emulated
 		// floating point multiply is faster and more stable than integer modulo.
 		hxassertmsg(size_ < (double)0x40000000000000ll, "insufficient_precision %f", (double)size_); // 0x1p54f
-		return base_ + size_ * (double)*this;
+		return base_ + size_ * this->generate_d01();
 	}
 
 	// Negative size is undefined.
 	int64_t range(int64_t base_, int64_t size_) {
-		return base_ + (int64_t)(this->generate64() % (uint64_t)size_);
+		return base_ + (int64_t)(this->generate_64() % (uint64_t)size_);
 	}
 	uint64_t range(uint64_t base_, uint64_t size_) {
-		return base_ + this->generate64() % size_;
+		return base_ + this->generate_64() % size_;
 	}
 
 	/// Reads a specified number of random bytes into the provided buffer. The
 	/// sequence generated matches a little-endian stream of
-	/// `uint32_t` generated using `generate32`.
+	/// `uint32_t` generated using `generate_32`.
 	/// - `bytes` : Pointer to the buffer where the random bytes will be stored.
 	/// - `count` : Number of bytes to read.
 	void read(void* bytes_, size_t count_) hxattr_nonnull(2) {
 		uint8_t* chars_ = (uint8_t*)bytes_;
 		while(count_>=4) {
-			uint32_t x_ = this->generate32();
+			uint32_t x_ = this->generate_32();
 			*chars_++ = (uint8_t)x_;
 			*chars_++ = (uint8_t)(x_ >> 8);
 			*chars_++ = (uint8_t)(x_ >> 16);
@@ -88,7 +69,7 @@ public:
 			count_ -= 4;
 		}
 		if(count_ != 0u) {
-			uint32_t x_ = this->generate32();
+			uint32_t x_ = this->generate_32();
 			do {
 				*chars_++ = (uint8_t)x_;
 				x_ >>= 8;
@@ -97,8 +78,12 @@ public:
 		}
 	}
 
+	uint8_t generate_8(void) { return (uint8_t)this->generate_32(); }
+
+	uint16_t generate_16(void) { return (uint16_t)this->generate_32(); }
+
 	/// Returns a pseudorandom number in the interval `[0..2^32)`.
-	uint32_t generate32(void) {
+	uint32_t generate_32(void) {
 		m_state_ = (uint64_t)0x5851f42d4c957f2dull * m_state_ + (uint64_t)0x14057b7ef767814full;
 
 		// MODIFICATION: Use the 4 msb bits as a random 0..15 bit variable shift
@@ -111,9 +96,21 @@ public:
 	}
 
 	/// Returns a pseudorandom number in the interval `[0..2^64)`.
-	uint64_t generate64(void) {
-		uint64_t result_ = (uint64_t)this->generate32() | ((uint64_t)this->generate32() << 32);
+	uint64_t generate_64(void) {
+		uint64_t result_ = (uint64_t)this->generate_32() | ((uint64_t)this->generate_32() << 32);
 		return result_;
+	}
+
+	/// Returns a float between `[0..1)`. Can safely be used to generate array
+	/// indices without overflowing.
+	float generate_f01(void) {
+		return (float)this->generate_32() * (1.0f / 4294967296.0f); // 0x1p-32f
+	}
+
+	/// Returns a double between `[0..1)`. Can safely be used to generate array
+	/// indices without overflowing.
+	double generate_d01(void) {
+		return (double)this->generate_64() * (1.0 / 18446744073709551616.0); // 0x1p-64;
 	}
 
 private:
@@ -125,7 +122,7 @@ private:
 /// - `a` : Bits to mask off. Undefined behavior when a negative integer.
 /// - `b` : A `hxrandom`.
 template <typename T_> T_ operator&(T_ a_, hxrandom& b_) {
-	return T_((uint32_t)a_ & b_.generate32());
+	return T_((uint32_t)a_ & b_.generate_32());
 }
 
 /// `operator&(int64_t a_, hxrandom& b_)` - 64-bit version. Allows a signed
@@ -134,12 +131,12 @@ template <typename T_> T_ operator&(T_ a_, hxrandom& b_) {
 /// - `a` : Bits to mask off. Undefined behavior when negative.
 /// - `b` : A `hxrandom`.
 inline int64_t operator&(int64_t a_, hxrandom& b_) {
-   return (int64_t)((uint64_t)a_ & b_.generate64());
+   return (int64_t)((uint64_t)a_ & b_.generate_64());
 }
 
 /// `operator&(uint64_t a_, hxrandom& b_)` - 64-bit version.
 inline uint64_t operator&(uint64_t a_, hxrandom& b_) {
-	return a_ & b_.generate64();
+	return a_ & b_.generate_64();
 }
 
 /// `operator&(T a, hxrandom& b)` - Bitwise `&` with random `T` generated from `a`.

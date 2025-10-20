@@ -147,7 +147,7 @@ bool hxconsole_help(void) {
 #if (HX_RELEASE) < 2 && !defined __wasm__
 
 static bool hxconsole_peek(hxconsolehex_t address, hxconsolenumber_t bytes) {
-	hxhex_dump((const void*)address, bytes, false);
+	hxhex_dump(static_cast<const void*>(address), bytes, false);
 	return true;
 }
 
@@ -158,19 +158,19 @@ static bool hxconsole_poke(hxconsolehex_t address_, hxconsolenumber_t bytes_, hx
 	uint32_t bytes = bytes_;
 	uint64_t hex = hex_;
 	while(bytes-- != 0u) {
-		*address++ = (uint8_t)hex;
+		*address++ = static_cast<uint8_t>(hex);
 		hex = (hex >> 8) | (hex << 56);
 	}
 	return true;
 }
 
 static bool hxconsole_hex_dump(hxconsolehex_t address, hxconsolenumber_t bytes) {
-	hxhex_dump((const void*)address, bytes, true);
+	hxhex_dump(static_cast<const void*>(address), bytes, true);
 	return true;
 }
 
 static bool hxconsole_float_dump(hxconsolehex_t address, hxconsolenumber_t bytes) {
-	hxfloat_dump((const float*)address, bytes);
+	hxfloat_dump(static_cast<const float*>(address), bytes);
 	return true;
 }
 

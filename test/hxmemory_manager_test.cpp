@@ -176,7 +176,7 @@ public:
 TEST_F(hxmemory_manager_test_f, execute) {
 	// The API should still work while stubbed out.
 	for(size_t i = 0; i < hxsystem_allocator_current; ++i) {
-		test_memory_allocator_normal((hxsystem_allocator_t)i);
+		test_memory_allocator_normal(static_cast<hxsystem_allocator_t>(i));
 	}
 
 	// Leak checking requires the memory manager.

@@ -12,7 +12,7 @@ namespace {
 float s_hxconsole_test_result_hook = 0.0f;
 
 bool hxconsole_test_register0(hxconsolenumber_t a0, const char* a1) {
-	s_hxconsole_test_result_hook = (float)a0 + (float)::strlen(a1);
+	s_hxconsole_test_result_hook = static_cast<float>(a0) + static_cast<float>(::strlen(a1));
 	return true;
 }
 

@@ -30,7 +30,8 @@ public:
 		bool operator==(const hxtest_object& x) const { return id == x.id; }
 		bool operator==(int32_t x) const { return id == x; }
 
-		operator float(void) const { return (float)id; }
+		// XXX???
+		operator float(void) const { return static_cast<float>(id); }
 
 		int32_t id;
 	};
@@ -73,14 +74,15 @@ TEST_F(hxhash_table_test_f, null) {
 		using table_t = hxhash_table<hxtest_integer, 4>;
 		table_t table;
 		EXPECT_EQ(table.size(), 0u);
+		const table_t& const_table = table;
 
 		// "Returns an iterator pointing to the beginning of the hash table." Empty table => begin == end and load factor 0.
 		EXPECT_TRUE(table.begin() == table.end());
 		EXPECT_TRUE(table.cbegin() == table.cend());
-		EXPECT_TRUE(((const table_t&)table).begin() == ((const table_t&)table).cend());
+		EXPECT_TRUE(const_table.begin() == const_table.cend());
 		EXPECT_FALSE(table.begin() != table.end());
 		EXPECT_FALSE(table.cbegin() != table.cend());
-		EXPECT_FALSE(((const table_t&)table).begin() != ((const table_t&)table).cend());
+		EXPECT_FALSE(const_table.begin() != const_table.cend());
 
 		// "Removes all nodes and calls deleter_t::operator() on every node." Clearing untouched table keeps load factor { 0.0 }.
 		table.clear();
@@ -98,6 +100,7 @@ const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporar
 	{
 		using table_t = hxhash_table<hxtest_integer, 4>;
 		table_t table;
+		const table_t& const_table = table;
 		hxtest_integer* node = hxnew<hxtest_integer>(k);
 		// "Inserts a node_t into the hash table, allowing duplicate keys." Seed table with manual node.
 		table.insert_node(node);
@@ -115,8 +118,8 @@ const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporar
 		// Lookup stack: find() returns { node }, subsequent cursor with previous skips duplicates.
 		EXPECT_TRUE(table.find(k) == node);
 		EXPECT_TRUE(table.find(k, node) == hxnull);
-		EXPECT_TRUE(((const table_t&)table).find(k) == node);
-		EXPECT_TRUE(((const table_t&)table).find(k, node) == hxnull);
+		EXPECT_TRUE(const_table.find(k) == node);
+		EXPECT_TRUE(const_table.find(k, node) == hxnull);
 
 		// "Removes and returns the first node_t with the given key." Ensure repeated calls -> { node, hxnull }.
 		EXPECT_TRUE(table.extract(k) == node);
@@ -133,7 +136,7 @@ const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporar
 		EXPECT_EQ(table.size(), 0u);
 		EXPECT_EQ(table.count(k), 0u);
 		EXPECT_TRUE(table.find(k) == hxnull);
-		EXPECT_TRUE(((const table_t&)table).find(k) == hxnull);
+		EXPECT_TRUE(const_table.find(k) == hxnull);
 
 		// MODIFIES TABLE
 		EXPECT_TRUE(table[k].key() == k);
@@ -195,27 +198,29 @@ TEST_F(hxhash_table_test_f, map_node_usage) {
 }
 
 TEST_F(hxhash_table_test_f, multiple) {
-	static const int N = 78;
+	static const int size_i = 78; // Used to do range checking modulo size.
+	static const unsigned int size_u = 78u;
 	const hxsystem_allocator_scope temporary_stack_scope(hxsystem_allocator_temporary_stack);
 	{
 		// Table will be overloaded.
 		using table_t = hxhash_table<hxtest_integer>;
 		table_t table;
+		const table_t& const_table = table;
 		// "Use set_table_size_bits to configure hash bits dynamically." Force 2^5 buckets before load test.
 		table.set_table_size_bits(5);
 
-		// Subscript pipeline seeds keys { 0..N-1 } with value.id mirroring the key.
-		for(int i = 0; i < N; ++i) {
+		// Subscript pipeline seeds keys { 0..size-1 } with value.id mirroring the key.
+		for(int i = 0; i < size_i; ++i) {
 			EXPECT_EQ(table[i].value.id, i);
 			EXPECT_EQ(table[i].key(), i);
 		}
 
-		// Check properties of N unique keys.
-		int id_histogram[N] = {};
-		EXPECT_EQ(table.size(), N);
+		// Check properties of size unique keys.
+		int id_histogram[size_u] = {};
+		EXPECT_EQ(table.size(), size_u);
 		table_t::iterator it = table.begin();
 		table_t::iterator cit = table.begin();
-		for(int i = 0; i < N; ++i) {
+		for(int i = 0; i < size_i; ++i) {
 			hxtest_integer* ti = table.find(i);
 			EXPECT_EQ(ti->value, i);
 			EXPECT_TRUE(table.find(i, ti) == hxnull);
@@ -224,78 +229,78 @@ TEST_F(hxhash_table_test_f, multiple) {
 			EXPECT_TRUE(it != table.end());
 			EXPECT_TRUE(cit != table.cend());
 			EXPECT_TRUE(it == cit);
-			EXPECT_TRUE((unsigned int)it->value.id < (unsigned int)N);
+			EXPECT_TRUE(static_cast<unsigned int>(it->value.id) < size_u);
 			id_histogram[it->value.id]++;
-			EXPECT_TRUE((unsigned int)cit->value.id < (unsigned int)N);
+			EXPECT_TRUE(static_cast<unsigned int>(cit->value.id) < size_u);
 			id_histogram[cit->value.id]++;
 			++cit;
 			it++;
 		}
 		EXPECT_TRUE(table.end() == it);
 		EXPECT_TRUE(table.cend() == cit);
-		for(int i = 0; i < N; ++i) {
+		for(int i = 0; i < size_i; ++i) {
 			EXPECT_EQ(id_histogram[i], 2);
 		}
 
-		// insert second N elements
-		for(int i = 0; i < N; ++i) {
+		// insert second size elements
+		for(int i = 0; i < size_i; ++i) {
 			hxtest_integer* ti = hxnew<hxtest_integer>(i);
-			EXPECT_EQ(ti->value.id, i+N);
+			EXPECT_EQ(ti->value.id, i+size_i);
 			table.insert_node(ti);
 		}
 
-		// Check properties of 2*N duplicate keys.
-		int key_histogram[N] = {};
-		EXPECT_EQ(table.size(), N * 2);
+		// Check properties of 2*size duplicate keys.
+		int key_histogram[size_u] = {};
+		EXPECT_EQ(table.size(), size_u * 2u);
 		it = table.begin();
 		cit = table.begin();
-		for(int i = 0; i < N; ++i) {
+		for(int i = 0; i < size_i; ++i) {
 			hxtest_integer* ti = table.find(i);
 			EXPECT_EQ(ti->key(), i);
-			const hxtest_integer* ti2 = ((const hxhash_table<hxtest_integer>&)table).find(i, ti); // test const version
+			const hxtest_integer* ti2 = const_table.find(i, ti); // test const version
 			EXPECT_EQ(ti2->key(), i);
 			EXPECT_TRUE(table.find(i, ti2) == hxnull);
 
 			EXPECT_EQ(table.count(i), 2u);
 
-			EXPECT_TRUE((unsigned int)it->key() < (unsigned int)N);
+			EXPECT_TRUE(static_cast<unsigned int>(it->key()) < size_u);
 			key_histogram[it->key()]++;
 			++it;
-			EXPECT_TRUE((unsigned int)it->key() < (unsigned int)N);
+			EXPECT_TRUE(static_cast<unsigned int>(it->key()) < size_u);
 			key_histogram[it->key()]++;
 			it++;
-			EXPECT_TRUE((unsigned int)cit->key() < (unsigned int)N);
+			EXPECT_TRUE(static_cast<unsigned int>(cit->key()) < size_u);
 			key_histogram[cit->key()]++;
 			++cit;
-			EXPECT_TRUE((unsigned int)cit->key() < (unsigned int)N);
+			EXPECT_TRUE(static_cast<unsigned int>(cit->key()) < size_u);
 			key_histogram[cit->key()]++;
 			cit++;
 		}
 		EXPECT_TRUE(table.end() == it);
 		EXPECT_TRUE(table.cend() == cit);
-		for(int i = 0; i < N; ++i) {
+		for(int i = 0; i < size_i; ++i) {
 			EXPECT_EQ(key_histogram[i], 4);
 		}
 
 		// "Returns the average number of Nodes per bucket." Ensure load_max stays within 2x mean occupancy.
 		EXPECT_TRUE((table.load_factor() * 2.0f) > (float)table.load_max());
 
-		// Erase keys [0..N/2), remove 1 of 2 of keys [N/2..N)
-		for(int i = 0; i < (N/2); ++i) {
+		// Erase keys [0..size/2), remove 1 of 2 of keys [size/2..size)
+		for(int i = 0; i < (size_i/2); ++i) {
 			EXPECT_EQ(table.erase(i), 2);
 		}
-		for(int i = (N/2); i < N; ++i) {
+		for(int i = (size_i/2); i < size_i; ++i) {
 			hxtest_integer* ti = table.extract(i);
 			EXPECT_TRUE(ti->key() == i);
 			hxdelete(ti);
 		}
 
-		// Check properties of N/2 remaining keys.
-		for(int i = 0; i < (N/2); ++i) {
+		// Check properties of size_i/2 remaining keys.
+		for(int i = 0; i < (size_i/2); ++i) {
 			EXPECT_EQ(table.release_key(i), 0);
 			EXPECT_TRUE(table.find(i) == hxnull);
 		}
-		for(int i = (N/2); i < N; ++i) {
+		for(int i = (size_i/2); i < size_i; ++i) {
 			hxtest_integer* ti = table.find(i);
 			EXPECT_EQ(ti->key(), i);
 			EXPECT_TRUE(table.find(i, ti) == hxnull);
@@ -304,15 +309,15 @@ TEST_F(hxhash_table_test_f, multiple) {
 
 		it = table.begin();
 		cit = table.begin();
-		for(int i = 0; i < (N/2); ++i) {
+		for(int i = 0; i < (size_i/2); ++i) {
 			++it;
 			cit++;
 		}
 		EXPECT_TRUE(table.end() == it);
 		EXPECT_TRUE(table.cend() == cit);
 	}
-	EXPECT_EQ(m_constructed, 2*N);
-	EXPECT_EQ(m_destructed, 2*N);
+	EXPECT_EQ(m_constructed, 2*size_i);
+	EXPECT_EQ(m_destructed, 2*size_i);
 }
 
 TEST_F(hxhash_table_test_f, strings) {

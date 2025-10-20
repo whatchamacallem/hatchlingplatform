@@ -10,6 +10,7 @@ Checks: >
   cppcoreguidelines-rvalue-reference-param-not-moved,
   cppcoreguidelines-slicing,
   cppcoreguidelines-virtual-class-destructor,
+  google-readability-casting,
   misc-confusable-identifiers,
   misc-const-correctness,
   misc-header-include-cycle,

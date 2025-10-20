@@ -65,9 +65,9 @@ void hxprofiler_internal_::log_(void) {
 		if(i != 0) { hxlogconsole(",\n"); }
 
 		const hxcycles_t delta = rec.m_end_ - rec.m_begin_;
-		hxlogconsole("{ \"name\":\"%s\", \"ms\":%.15g, \"thread\":\"%x\" }",
-			rec.m_label_, (double)delta * hxmilliseconds_per_cycle,
-			(unsigned int)rec.m_thread_id_);
+	hxlogconsole("{ \"name\":\"%s\", \"ms\":%.15g, \"thread\":\"%x\" }",
+		rec.m_label_, static_cast<double>(delta) * hxmilliseconds_per_cycle,
+		static_cast<unsigned int>(rec.m_thread_id_));
 	}
 	hxlogconsole(" ]\n");
 }
@@ -86,9 +86,13 @@ void hxprofiler_internal_::write_to_chrome_tracing_(const char* filename) {
 			if(i != 0) { f.print(",\n"); }
 			const char* label = rec.m_label_;
 			f.print("{\"name\":\"%s\",\"cat\":\"PERF\",\"ph\":\"B\",\"pid\":0,\"tid\":%u,\"ts\":%.15g},\n",
-				label, (unsigned int)rec.m_thread_id_, (double)(rec.m_begin_ - epoch) * hxmicroseconds_per_cycle);
+				label,
+				static_cast<unsigned int>(rec.m_thread_id_),
+				static_cast<double>(rec.m_begin_ - epoch) * hxmicroseconds_per_cycle);
 			f.print("{\"name\":\"%s\",\"cat\":\"PERF\",\"ph\":\"E\",\"pid\":0,\"tid\":%u,\"ts\":%.15g}",
-				label, (unsigned int)rec.m_thread_id_, (double)(rec.m_end_ - epoch) * hxmicroseconds_per_cycle);
+				label,
+				static_cast<unsigned int>(rec.m_thread_id_),
+				static_cast<double>(rec.m_end_ - epoch) * hxmicroseconds_per_cycle);
 		}
 	}
 	f.print("\n]\n");

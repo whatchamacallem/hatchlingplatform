@@ -12,41 +12,28 @@ TEST(hxrandom_test, generation) {
 	hxrandom rng(1u);
 
 	// "Automatically casts to an unsigned integer or floating point value."
-	// Capture direct conversions.
-	uint8_t uint8 = rng;
-	uint16_t uint16 = rng;
-	uint32_t uint32 = rng;
-	uint64_t uint64 = rng;
-
-	// None of these should be zero on the first sample.
-	EXPECT_TRUE(((uint64_t)uint8 * (uint64_t)uint16 * (uint64_t)uint32 * (uint64_t)uint64) != 0u);
-
-	// "Functor returns hxrandom& which converts itself to the type it is
-	// assigned to." Invoke call operator before assignment.
-	uint8 = rng();
-	uint16 = rng();
+	uint8_t uint8 = 0u;
+	uint16_t uint16 = 0u;
+	uint32_t uint32 = 0u;
+	uint64_t uint64 = 0u;
+	uint8 = rng.generate_8();
+	uint16 = rng.generate_16();
 	uint32 = rng();
-	uint64 = rng();
+	uint64 = rng.generate_64();
 
 	// None of these should be zero on the second sample.
-	EXPECT_TRUE(((uint64_t)uint8 * (uint64_t)uint16 * (uint64_t)uint32 * (uint64_t)uint64) != 0u);
+	EXPECT_TRUE((static_cast<uint64_t>(uint8) * static_cast<uint64_t>(uint16) *
+		static_cast<uint64_t>(uint32) * static_cast<uint64_t>(uint64)) != 0u);
 
-	for(int s=10; s-- != 0;) {
-
+	for(int s=100; s-- != 0;) {
 		// "Automatically casts to an unsigned integer or floating point value."
 		// Grab floats in [0..1).
-		float f = rng;
-		EXPECT_TRUE(f > 0.0f && f < 1.0f);
-		float d = rng;
-		EXPECT_TRUE(d > 0.0 && d < 1.0);
-
-		// Call operator should yield same distribution via implicit conversion.
-		f = rng();
-		d = rng();
+		float f = rng.generate_f01();
+		double d = rng.generate_d01();
 
 		// NOTA BENE: While 0.0 is legal, it is being treated as an error
 		// because it is likely to be so. The odds of hitting zero in the first
-		// 20 numbers is effectively zero.
+		// 200 numbers is effectively zero.
 		EXPECT_TRUE(f > 0.0f && f < 1.0f);
 		EXPECT_TRUE(d > 0.0 && d < 1.0);
 	}
@@ -64,7 +51,7 @@ TEST(hxrandom_test, ops) {
 		EXPECT_TRUE(u < 256);
 
 		char c = 'x'; c &= rng;
-		EXPECT_TRUE((c&~(unsigned char)'x') == (unsigned char)'\0');
+		EXPECT_TRUE((c & ~static_cast<unsigned char>('x')) == 0);
 
 		// "Generates a number of type T in the range [0, divisor)." Floating
 		// modulus uses operator% overloads.
@@ -84,14 +71,14 @@ TEST(hxrandom_test, ops) {
 			EXPECT_TRUE(m >= 0 && m < 255);
 		}
 		{
-			const unsigned short r = (unsigned short)255 & rng;
-			EXPECT_TRUE(r < (unsigned short)256);
+			const unsigned short r = static_cast<unsigned short>(255) & rng;
+			EXPECT_TRUE(r < static_cast<unsigned short>(256));
 
-			const unsigned short l = rng & (unsigned short)255;
-			EXPECT_TRUE(l < (unsigned short)256);
+			const unsigned short l = rng & static_cast<unsigned short>(255);
+			EXPECT_TRUE(l < static_cast<unsigned short>(256));
 
-			const unsigned short m = rng % (unsigned short)255;
-			EXPECT_TRUE(m < (unsigned short)255);
+			const unsigned short m = rng % static_cast<unsigned short>(255);
+			EXPECT_TRUE(m < static_cast<unsigned short>(255));
 		}
 		{
 			const int64_t r = 255ll & rng;
@@ -115,17 +102,17 @@ TEST(hxrandom_test, ops) {
 		}
 
 		// Check a different modulo.
-		EXPECT_TRUE((rng%100) >= 0 && (rng()%100) < 100);
-		EXPECT_TRUE((rng%100.0f) >= 0.0f && (rng()%100.0f) < 100.0f);
-		EXPECT_TRUE((rng%100.0) >= 0.0 && (rng()%100.0) < 100.0);
-		EXPECT_TRUE((rng()%100u) < 100u);
-		EXPECT_TRUE((rng%100l) >= 0l && (rng()%100l) < 100l);
-		EXPECT_TRUE((rng()%100ul) < 100ul);
-		EXPECT_TRUE((rng%100ll) >= 0ll && (rng()%100ll) < 100ll);
-		EXPECT_TRUE((rng()%100ull) < 100ull);
+		EXPECT_TRUE((rng%100) >= 0 && (rng%100) < 100);
+		EXPECT_TRUE((rng%100.0f) >= 0.0f && (rng%100.0f) < 100.0f);
+		EXPECT_TRUE((rng%100.0) >= 0.0 && (rng%100.0) < 100.0);
+		EXPECT_TRUE((rng%100u) < 100u);
+		EXPECT_TRUE((rng%100l) >= 0l && (rng%100l) < 100l);
+		EXPECT_TRUE((rng%100ul) < 100ul);
+		EXPECT_TRUE((rng%100ll) >= 0ll && (rng%100ll) < 100ll);
+		EXPECT_TRUE((rng%100ull) < 100ull);
 
 		// Check that the RNG isn't just spitting out zeros.
-		EXPECT_TRUE((uint32_t)rng() | (uint32_t)rng());
+		EXPECT_TRUE(rng() | rng());
 	}
 }
 
@@ -141,7 +128,7 @@ TEST(hxrandom_test, read_populates_buffer) {
 	const size_t read_count = size - 2; // 7. Intentionally odd.
 
 	// "Reads a specified number of random bytes into the provided buffer."
-	// Little-endian stream should match manual generate32 sequence.
+	// Little-endian stream should match manual generate_32 sequence.
 	rng.read(buffer, read_count);
 
 	hxrandom verifier(0x654321u);
@@ -150,17 +137,17 @@ TEST(hxrandom_test, read_populates_buffer) {
 
 	// This just documents an expected interface and sequence.
 	while(remaining >= 4) {
-		const uint32_t x = verifier.generate32();
-		EXPECT_EQ(*expected++, (uint8_t)x);
-		EXPECT_EQ(*expected++, (uint8_t)(x >> 8));
-		EXPECT_EQ(*expected++, (uint8_t)(x >> 16));
-		EXPECT_EQ(*expected++, (uint8_t)(x >> 24));
+		const uint32_t x = verifier.generate_32();
+		EXPECT_EQ(*expected++, static_cast<uint8_t>(x));
+		EXPECT_EQ(*expected++, static_cast<uint8_t>(x >> 8));
+		EXPECT_EQ(*expected++, static_cast<uint8_t>(x >> 16));
+		EXPECT_EQ(*expected++, static_cast<uint8_t>(x >> 24));
 		remaining -= 4;
 	}
 	if(remaining != 0u) {
-		uint32_t x = verifier.generate32();
+		uint32_t x = verifier.generate_32();
 		do {
-			EXPECT_EQ(*expected++, (uint8_t)x);
+			EXPECT_EQ(*expected++, static_cast<uint8_t>(x));
 			x >>= 8;
 		} while(--remaining != 0u)
 			/**/;
@@ -177,7 +164,8 @@ TEST(hxrandom_test, range) {
 	for(int s=100; s-- != 0;) {
 		// "Returns a random number in the range [base..base+range)." Validate
 		// overloads across integral and floating types.
-		EXPECT_TRUE(rng.range('a', (char)10) >= 'a' && rng.range('a', (char)10) < (char)('a' + 10));
+		EXPECT_TRUE(rng.range('a', static_cast<char>(10)) >= 'a' &&
+			rng.range('a', static_cast<char>(10)) < static_cast<char>('a' + 10));
 		EXPECT_TRUE(rng.range(1000,100) >= 1000 && rng.range(1000,100) < 1100);
 		EXPECT_TRUE(rng.range(1000u,100u) >= 1000u && rng.range(1000u,100u) < 1100u);
 		EXPECT_TRUE(rng.range(1000l,100l) >= 1000l && rng.range(1000l,100l) < 1100l);
@@ -188,7 +176,7 @@ TEST(hxrandom_test, range) {
 		EXPECT_TRUE(rng.range(1000.0,100.0) >= 1000.0 && rng.range(1000.0,100.0) < 1100.0);
 
 		// Check that the RNG isn't just spitting out zeros.
-		EXPECT_TRUE((uint32_t)rng() | (uint32_t)rng());
+		EXPECT_TRUE(rng() | rng());
 	}
 }
 
@@ -202,7 +190,7 @@ TEST(hxrandom_test, histogram) {
 
 	for(int i=(buckets*iters); i-- != 0;) {
 		// Doesn't require an unsigned type for %. No floating point math is used.
-		++hist[(size_t)(rng() % (buckets - 1))];
+		++hist[static_cast<size_t>(rng() % (buckets - 1))];
 	}
 	for(size_t i=buckets; i-- != 0u;) {
 		EXPECT_LE(hist[i], max);
@@ -218,8 +206,8 @@ TEST(hxrandom_test, histogram_f) {
 	hxarray<int> hist(buckets, 0);
 
 	for(int i=(buckets*iters); i-- != 0;) {
-		// Run the full 64-bit double pipeline.
-		++hist[(size_t)(rng() % (double)buckets)];
+		// Generate 64-bit doubles.
+		++hist[static_cast<size_t>(rng % static_cast<double>(buckets))];
 	}
 	for(size_t i=buckets; i-- != 0u;) {
 		EXPECT_LE(hist[i], max);

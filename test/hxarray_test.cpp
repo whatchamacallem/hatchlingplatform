@@ -224,7 +224,8 @@ TEST_F(hxarray_test_f, modification) {
 
 		hxtest_object to;
 		objs.push_back(to);
-		objs.push_back((const hxtest_object&)to);
+		const hxtest_object& to_const_ref = to;
+		objs.push_back(to_const_ref);
 
 		objs.emplace_back();
 
@@ -508,7 +509,8 @@ TEST(hxarray_test, binary_search) {
 	static const int sorted_values[] = { 1, 3, 5, 7, 9 };
 	hxarray<int, 5> values(sorted_values);
 
-	const int* const_missing = ((const hxarray<int, 5>&)values).binary_search(4);
+	const hxarray<int, 5>& const_values = values;
+	const int* const_missing = const_values.binary_search(4);
 	EXPECT_EQ(const_missing, values.end());
 
 	int* mutable_found = values.binary_search(7);
@@ -521,21 +523,22 @@ TEST(hxarray_test, find_returns_first_match) {
 	static const int values_source[] = { 2, 4, 4, 8, 16 };
 	hxarray<int, 5> values(values_source);
 
-	const int* const_pos = ((const hxarray<int, 5>&)values).find(4);
+	const hxarray<int, 5>& const_values = values;
+	const int* const_pos = const_values.find(4);
 	EXPECT_EQ(const_pos, values.begin() + 1);
 
-	const int* const_missing = ((const hxarray<int, 5>&)values).find(32);
+	const int* const_missing = const_values.find(32);
 	EXPECT_EQ(const_missing, values.end());
 
 	int* mutable_pos = values.find(8);
 	EXPECT_EQ(mutable_pos, values.begin() + 3);
 
-	const int* const_predicate = ((const hxarray<int, 5>&)values).find_if([](int value) {
+	const int* const_predicate = const_values.find_if([](int value) {
 		return value >= 8;
 	});
 	EXPECT_EQ(const_predicate, values.begin() + 3);
 
-	const int* const_predicate_missing = ((const hxarray<int, 5>&)values).find_if([](int value) {
+	const int* const_predicate_missing = const_values.find_if([](int value) {
 		return value < 0;
 	});
 	EXPECT_EQ(const_predicate_missing, values.end());
@@ -1021,14 +1024,14 @@ TEST(hxarray_test, memset_sets_bytes) {
 	bytes.resize(6u, 0u);
 	bytes.memset(0xab);
 	for(size_t index = 0u; index < bytes.size(); ++index) {
-		EXPECT_EQ((int)bytes[index], 0xab);
+		EXPECT_EQ(static_cast<int>(bytes[index]), 0xab);
 	}
 }
 
 TEST(hxarray_test, c_strings) {
 	hxarray<char, HX_MAX_LINE> z("prefix array 1");
 	while(z[0] != 'a') {
-		z.erase((size_t)0);
+		z.erase(static_cast<size_t>(0));
 	}
 	EXPECT_STREQ(z.data(), "array 1");
 

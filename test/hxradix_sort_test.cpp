@@ -19,7 +19,7 @@ public:
 	class hxtest_object {
 	public:
 		hxtest_object(key_t k) : id(k) { }
-		~hxtest_object(void) { id = (key_t)0; }
+		~hxtest_object(void) { id = static_cast<key_t>(0); }
 		bool operator<(const hxtest_object& x) const { return id < x.id; }
 		key_t id;
 	};
@@ -32,14 +32,16 @@ public:
 		a.reserve(size);
 		for(uint32_t i= size;i--;) {
 			const uint32_t x = m_prng() & mask;
-			a.push_back((key_t)((key_t)x - offset));
+			a.push_back(static_cast<key_t>(static_cast<key_t>(x) - offset));
 		}
 	}
 
 	template<typename key_t>
 	static int q_sort_compare(const void* a, const void* b) {
-		if(*(const hxtest_object<key_t>*)a < *(const hxtest_object<key_t>*)b) { return -1; }
-		if(*(const hxtest_object<key_t>*)b < *(const hxtest_object<key_t>*)a) { return 1; }
+		const hxtest_object<key_t>* lhs = static_cast<const hxtest_object<key_t>*>(a);
+		const hxtest_object<key_t>* rhs = static_cast<const hxtest_object<key_t>*>(b);
+		if(*lhs < *rhs) { return -1; }
+		if(*rhs < *lhs) { return 1; }
 		return 0;
 	}
 
@@ -134,21 +136,21 @@ TEST_F(hxradix_sort_test_f, uint32) {
 	test_range_and_type<uint32_t>(20u, 0x7fu, 0u); // Check insertion sort.
 	test_range_and_type<uint32_t>(100u, 0x7fu, 0u);
 	test_range_and_type<uint32_t>(1000u, 0x7fffu, 0u);
-	test_range_and_type<uint32_t>(10000u, ~(uint32_t)0, 0u);
+	test_range_and_type<uint32_t>(10000u, ~static_cast<uint32_t>(0), 0u);
 }
 
 TEST_F(hxradix_sort_test_f, int32) {
 	test_range_and_type<int32_t>(20u, 0x7fu, 0x3f); // Check insertion sort.
 	test_range_and_type<int32_t>(100u, 0x7fu, 0x3f);
 	test_range_and_type<int32_t>(1000u, 0x7fffu, 0x3fff);
-	test_range_and_type<int32_t>(10000u, ~(uint32_t)0, 0);
+	test_range_and_type<int32_t>(10000u, ~static_cast<uint32_t>(0), 0);
 }
 
 TEST_F(hxradix_sort_test_f, float) {
-	test_range_and_type<float>(200u, 0x7fu, (float)0x3f); // Check insertion sort.
-	test_range_and_type<float>(100u, 0x7fu, (float)0x3f);
-	test_range_and_type<float>(1000u, 0x7fffu, (float)0x3fff);
-	test_range_and_type<float>(10000u, ~(uint32_t)0, 0.0f);
+	test_range_and_type<float>(200u, 0x7fu, static_cast<float>(0x3f)); // Check insertion sort.
+	test_range_and_type<float>(100u, 0x7fu, static_cast<float>(0x3f));
+	test_range_and_type<float>(1000u, 0x7fffu, static_cast<float>(0x3fff));
+	test_range_and_type<float>(10000u, ~static_cast<uint32_t>(0), 0.0f);
 }
 
 TEST_F(hxradix_sort_test_f, types) {

@@ -16,10 +16,12 @@ int hxtest_main(int argc, char**argv);
 
 static bool hxrun_all_tests(void) {
 	hxlogconsole("hatchling platform 🐉🐉🐉 " HATCHLING_TAG "\n");
-	hxlogconsole("release: %d profile: %d\n", (int)(HX_RELEASE), (int)(HX_PROFILE));
+	hxlogconsole("release: %d profile: %d\n",
+		static_cast<int>(HX_RELEASE),
+		static_cast<int>(HX_PROFILE));
 
 	// RUN_ALL_TESTS is a Google Test symbol.
-	const size_t tests_failing = (size_t)RUN_ALL_TESTS();
+	const size_t tests_failing = static_cast<size_t>(RUN_ALL_TESTS());
 
 #if HX_TEST_ERROR_HANDLING
 	const int s_hxexpected_failures = 4;

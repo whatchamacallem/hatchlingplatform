@@ -195,7 +195,7 @@ TEST(hxutility_test, hxlog2i_returns_highest_set_bit) {
 	EXPECT_EQ(hxlog2i(2u), 1);
 	EXPECT_EQ(hxlog2i(3u), 1);
 	EXPECT_EQ(hxlog2i(16u), 4);
-	EXPECT_EQ(hxlog2i((size_t)1u << 20), 20);
+	EXPECT_EQ(hxlog2i(static_cast<size_t>(1u) << 20), 20);
 }
 
 TEST(hxutility_test, hxisfinite_detects_special_values) {
@@ -263,12 +263,12 @@ TEST(hxutility_test, hxisspace) {
 	// Don't use non-ASCII or setlocale because it might not exist. Classifier
 	// treats ASCII 0x21-0x7e and all >=0x80 as printable.
 	for (int c = 0; c < 128; ++c) {
-		const bool hx = hxisspace((char)c);
-		const bool st = ::isspace((unsigned char)c) != 0;
+		const bool hx = hxisspace(static_cast<char>(c));
+		const bool st = ::isspace(static_cast<unsigned char>(c)) != 0;
 		EXPECT_EQ(hx, st);
 	}
 	for (int c = 128; c < 256; ++c) {
-		const bool hx = hxisspace((char)c);
+		const bool hx = hxisspace(static_cast<char>(c));
 		EXPECT_EQ(hx, false);
 	}
 }
@@ -277,7 +277,7 @@ TEST(hxutility_test, hxisgraph) {
 	// Don't use non-ASCII or setlocale because it might not exist. Classifier
 	// treats ASCII 0x21-0x7e and all >=0x80 as printable.
 	for (int c = 0; c <= 255; ++c) {
-		const bool hx = hxisgraph((char)c);
+		const bool hx = hxisgraph(static_cast<char>(c));
 
 		const bool expected = (c >= 0x21 && c <= 0x7E) || (c >= 0x80);
 		EXPECT_EQ(hx, expected);

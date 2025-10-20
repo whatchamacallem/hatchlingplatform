@@ -32,7 +32,7 @@ hxfile hxerr(stderr, hxfile::out);
 // Don't use stdout with the default index.js provided by the emsdk.
 hxfile hxerr(stdout, hxfile::out);
 #endif
-hxfile hxdev_null((void*)0, hxfile::out);
+hxfile hxdev_null(static_cast<void*>(0), hxfile::out);
 
 // In this version the file is a FILE*.
 hxfile::hxfile(void* file_, uint8_t mode) : hxfile() {
@@ -55,7 +55,11 @@ hxfile::hxfile(hxfile&& file_) :
 	m_fail_(file_.m_fail_),
 	m_eof_(file_.m_eof_)
 {
-	::memset((void*)&file_, 0x00, sizeof file_);
+	file_.m_file_pimpl_ = hxnull;
+	file_.m_open_mode_ = hxfile::none;
+	file_.m_owns_ = false;
+	file_.m_fail_ = false;
+	file_.m_eof_ = false;
 }
 
 hxfile::~hxfile(void) {
@@ -71,8 +75,11 @@ void hxfile::operator=(hxfile&& file_) {
 	m_owns_ = file_.m_owns_;
 	m_fail_ = file_.m_fail_;
 	m_eof_ = file_.m_eof_;
-
-	::memset((void*)&file_, 0x00, sizeof file_);
+	file_.m_file_pimpl_ = hxnull;
+	file_.m_open_mode_ = hxfile::none;
+	file_.m_owns_ = false;
+	file_.m_fail_ = false;
+	file_.m_eof_ = false;
 }
 
 bool hxfile::open(uint8_t mode, const char* filename, ...) {

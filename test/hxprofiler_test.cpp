@@ -53,16 +53,16 @@ public:
 		// Open up a sub-scope if time allows.
 		if(target_ms >= 2.0f) {
 			const float subtarget = target_ms / 2.0f;
-			const char* sub_label = s_hxtest_labels[(size_t)subtarget];
+			const char* sub_label = s_hxtest_labels[static_cast<size_t>(subtarget)];
 			hxprofile_scope(sub_label);
 			generate_scopes(subtarget);
 		}
 
-		while((double)delta * hxmilliseconds_per_cycle < target_ms) {
+		while(static_cast<double>(delta) * hxmilliseconds_per_cycle < target_ms) {
 			// Perform work that might not be optimized away by the compiler.
 			const uint32_t ops = (m_accumulator & 0xf) + 1;
 			for(uint32_t i = 0; i < ops; ++i) {
-				m_accumulator ^= (uint32_t)m_test_prng;
+				m_accumulator ^= m_test_prng();
 			}
 
 			// Unsigned arithmetic handles clock wrapping correctly.
@@ -107,7 +107,7 @@ TEST(hxprofiler_test, write_to_chrome_tracing_command) {
 	hxtask_queue q(s_hxtest_num_labels, 2u);
 	hxprofiler_task_test tasks[s_hxtest_num_labels];
 	for(size_t i = s_hxtest_num_labels; i-- != 0u; ) {
-		tasks[i].construct(s_hxtest_labels[i], (float)i);
+		tasks[i].construct(s_hxtest_labels[i], static_cast<float>(i));
 		q.enqueue(tasks + i);
 	}
 	// "Execute remaining tasks. The thread calling wait_for_all executes tasks as well."

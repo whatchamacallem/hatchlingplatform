@@ -252,7 +252,7 @@ TEST(hxhxalgorithm_test, sort_grinder_generic) {
 		for(size_t j = size; j-- != 0u;) {
 			const int x = rng.range(10000, 10000);
 			sorted.push_back(tracker_t(x));
-			++histogram[(size_t)x];
+			++histogram[static_cast<size_t>(x)];
 		}
 
 		hxsort(sorted.begin(), sorted.end());
@@ -260,9 +260,9 @@ TEST(hxhxalgorithm_test, sort_grinder_generic) {
 		// Check that all values are accounted for starting with the last one.
 		// Confirm sort order with (j <= j+1) while walking down to the first
 		// value. Note size > 16.
-		--histogram[(size_t)sorted[size - 1].value];
+		--histogram[static_cast<size_t>(sorted[size - 1].value)];
 		for(size_t j=size - 1u; j-- != 0u;) {
-			--histogram[(size_t)sorted[j].value];
+			--histogram[static_cast<size_t>(sorted[j].value)];
 			EXPECT_FALSE(hxkey_less(*sorted.get(j + 1), *sorted.get(j)));
 		}
 		for(size_t j=20000u; j-- > 10000u;) {
@@ -471,9 +471,10 @@ TEST(hxbinary_search_test, simple_case) {
 	// hxbinary_search returns end when not found.
 	int* result = hxbinary_search(ints, ints+5, 88, sort_int);
 	EXPECT_TRUE(result != ints_end && *result == 88);
-	const int* cresult = hxbinary_search((const int*)ints, (const int*)ints+5, 2, sort_int);
+	const int* const_ints = ints;
+	const int* cresult = hxbinary_search(const_ints, const_ints + 5, 2, sort_int);
 	EXPECT_TRUE(cresult != ints_end && *cresult == 2);
-	cresult = hxbinary_search((const int*)ints, (const int*)ints+5, 99);
+	cresult = hxbinary_search(const_ints, const_ints + 5, 99);
 	EXPECT_TRUE(cresult != ints_end && *cresult == 99);
 
 	result = hxbinary_search(ints, ints+5, 0);

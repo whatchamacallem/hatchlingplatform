@@ -40,12 +40,12 @@ TEST(hxtest_test, relational) {
 	hxtest_relational<unsigned int>(1u, 2u);
 	hxtest_relational<unsigned long>(5ul, 6ul);
 	hxtest_relational<unsigned long long>(11ull, 12ull);
-	hxtest_relational<int8_t>((int8_t)-12, (int8_t)-11);
-	hxtest_relational<uint8_t>((uint8_t)3, (uint8_t)4);
-	hxtest_relational<int16_t>((int16_t)-301, (int16_t)-300);
-	hxtest_relational<uint16_t>((uint16_t)7, (uint16_t)8);
-	hxtest_relational<int32_t>((int32_t)-70001, (int32_t)-70000);
-	hxtest_relational<uint32_t>((uint32_t)100, (uint32_t)101);
+	hxtest_relational<int8_t>(static_cast<int8_t>(-12), static_cast<int8_t>(-11));
+	hxtest_relational<uint8_t>(static_cast<uint8_t>(3), static_cast<uint8_t>(4));
+	hxtest_relational<int16_t>(static_cast<int16_t>(-301), static_cast<int16_t>(-300));
+	hxtest_relational<uint16_t>(static_cast<uint16_t>(7), static_cast<uint16_t>(8));
+	hxtest_relational<int32_t>(static_cast<int32_t>(-70001), static_cast<int32_t>(-70000));
+	hxtest_relational<uint32_t>(static_cast<uint32_t>(100), static_cast<uint32_t>(101));
 	hxtest_relational<float>(-0.00002f, -0.00001f);
 	hxtest_relational<double>(0.0, 1.0);
 
