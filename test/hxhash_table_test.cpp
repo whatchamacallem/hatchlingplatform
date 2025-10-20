@@ -59,7 +59,7 @@ public:
 		m_next_id = 0;
 		s_hxtest_current = this;
 	}
-	~hxhash_table_test_f(void) {
+	~hxhash_table_test_f(void) override {
 		s_hxtest_current = 0;
 	}
 

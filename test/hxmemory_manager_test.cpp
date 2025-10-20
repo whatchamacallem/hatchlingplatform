@@ -71,8 +71,8 @@ class hxmemory_manager_test_f :
 {
 public:
 	static void test_memory_allocator_normal(hxsystem_allocator_t id) {
-		uintptr_t start_count;
-		uintptr_t start_bytes;
+		uintptr_t start_count = 0;
+		uintptr_t start_bytes = 0;
 
 	{
 		const hxsystem_allocator_scope allocator_scope(id);

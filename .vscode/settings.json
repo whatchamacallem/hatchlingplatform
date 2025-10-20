@@ -112,6 +112,7 @@
         "rodata",
         "rtti",
         "runtests",
+        "rvalue",
         "RVALUEREFERENCE",
         "rvalues",
         "scanf",

@@ -120,7 +120,9 @@ hxutility_test_forward_t hxutility_test_forward_make_forwarded() { return { 11 }
 hxutility_test_forward_t hxutility_test_forward_make_const_forwarded() { return { 13 }; }
 hxutility_test_forward hxutility_test_forward_detect(hxutility_test_forward_t&) { return hxutility_test_forward_lvalue; }
 hxutility_test_forward hxutility_test_forward_detect(const hxutility_test_forward_t&) { return hxutility_test_forward_const_lvalue; }
-hxutility_test_forward hxutility_test_forward_detect(hxutility_test_forward_t&&) { return hxutility_test_forward_rvalue; }
+hxutility_test_forward hxutility_test_forward_detect(hxutility_test_forward_t&&) { // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved)
+	return hxutility_test_forward_rvalue;
+}
 hxutility_test_forward hxutility_test_forward_detect(const hxutility_test_forward_t&&) { return hxutility_test_forward_const_rvalue; }
 
 template<typename T>
@@ -204,8 +206,12 @@ TEST(hxutility_test, hxisfinite_detects_special_values) {
 	const uint64_t double_neg_inf_bits = 0xfff0000000000000ull;
 	const uint64_t double_nan_bits = 0x7ff8000000000000ull;
 
-	float float_pos_inf, float_neg_inf, float_nan;
-	double double_pos_inf, double_neg_inf, double_nan;
+	float float_pos_inf = 0.0f;
+	float float_neg_inf = 0.0f;
+	float float_nan = 0.0f;
+	double double_pos_inf = 0.0;
+	double double_neg_inf = 0.0;
+	double double_nan = 0.0;
 
 	memcpy(&float_pos_inf, &float_pos_inf_bits, sizeof float_pos_inf);
 	memcpy(&float_neg_inf, &float_neg_inf_bits, sizeof float_neg_inf);

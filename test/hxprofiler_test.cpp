@@ -39,9 +39,9 @@ public:
 		m_accumulator = 0;
 	}
 
-	virtual const char* get_label(void) const override { return m_label; }
+	const char* get_label(void) const override { return m_label; }
 
-	virtual void execute(hxtask_queue* q) override {
+	void execute(hxtask_queue* q) override {
 		(void)q;
 		generate_scopes(m_target_ms);
 	}

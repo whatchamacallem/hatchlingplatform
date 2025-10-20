@@ -79,7 +79,7 @@ public:
 		m_next_id = -1;
 		s_hxtest_current = this;
 	}
-	~hxarray_test_f(void) {
+	~hxarray_test_f(void) override {
 		hxassertrelease(m_constructed == m_destructed, "hxarray_test_f Test object lifecycle error.");
 		s_hxtest_current = 0;
 	}

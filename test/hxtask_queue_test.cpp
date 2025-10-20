@@ -16,13 +16,13 @@ public:
 		max_tasks = 20
 	};
 
-	~hxtask_queue_test_f(void) {
+	~hxtask_queue_test_f(void) override {
 	}
 	class hxtask_test_t : public hxtask {
 	public:
 		hxtask_test_t() : m_exec_count(0), m_reenqueue_count(0) { }
 
-		virtual void execute(hxtask_queue* q) override {
+		void execute(hxtask_queue* q) override {
 			++m_exec_count;
 			if(m_reenqueue_count > 0) {
 				--m_reenqueue_count;
@@ -153,7 +153,7 @@ TEST(hxtask_queue_test, priority_ordering_single_threaded) {
 			priority_value = p;
 		}
 
-		virtual void execute(hxtask_queue*) override {
+		void execute(hxtask_queue*) override {
 			hxassertmsg(execution_order, "priority_task_unconfigured");
 			hxassertmsg(write_index, "priority_task_unconfigured");
 			const size_t slot = (*write_index)++;
@@ -196,7 +196,7 @@ TEST(hxtask_queue_test, predicates_cover_all_any_erase) {
 	class hxtask_queue_test_predicate_task_t : public hxtask {
 	public:
 		void configure(bool* f) { executed_flag = f; }
-		virtual void execute(hxtask_queue*) override { *executed_flag = true; }
+		void execute(hxtask_queue*) override { *executed_flag = true; }
 	private:
 		bool* executed_flag = hxnull;
 	};
@@ -290,7 +290,7 @@ TEST(hxtask_queue_test, for_each_reschedules_queue) {
 			write_index = w;
 		}
 
-		virtual void execute(hxtask_queue*) override {
+		void execute(hxtask_queue*) override {
 				const size_t slot = (*write_index)++;
 			execution_order[slot] = (int)task_index;
 		}

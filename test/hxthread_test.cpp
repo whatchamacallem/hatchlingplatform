@@ -298,11 +298,10 @@ TEST(hxthread_test_thread, multiple_thread_start_join) {
 	hxmutex mutex;
 	hxthread_test_simple_parameters_t argument = {&mutex, &shared};
 	hxthread* threads[reps];
-	int i;
-	for(i = 0; i < reps; ++i) {
+	for(int i = 0; i < reps; ++i) {
 		threads[i] = hxnew<hxthread>(&hxthread_test_func_increment, &argument);
 	}
-	for(i = 0; i < reps; ++i) {
+	for(int i = 0; i < reps; ++i) {
 		threads[i]->join();
 		hxdelete(threads[i]);
 	}

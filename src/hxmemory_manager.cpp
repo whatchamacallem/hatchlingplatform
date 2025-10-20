@@ -98,6 +98,7 @@ public:
 class hxmemory_allocator_base {
 public:
 	hxmemory_allocator_base() : m_label_(hxnull) { }
+	virtual ~hxmemory_allocator_base() = default;
 	hxattr_hot void* allocate(size_t size, hxalignment_t alignment) {
 		return on_alloc(size, alignment);
 	}
@@ -133,24 +134,24 @@ public:
 		m_high_water = 0u;
 	}
 
-	virtual void begin_allocation_scope(hxsystem_allocator_scope* scope,
+	void begin_allocation_scope(hxsystem_allocator_scope* scope,
 		hxsystem_allocator_t new_id) override {
 		(void)scope; (void)new_id;
 		hxsystem_allocator_scope_init_(scope, m_allocation_count, m_bytes_allocated);
 	}
-	virtual void end_allocation_scope(hxsystem_allocator_scope* scope,
+	void end_allocation_scope(hxsystem_allocator_scope* scope,
 		hxsystem_allocator_t old_id) override { (void)scope; (void)old_id; }
-	virtual size_t get_allocation_count(hxsystem_allocator_t id) const override {
+	size_t get_allocation_count(hxsystem_allocator_t id) const override {
 		(void)id; return m_allocation_count;
 	}
-	virtual size_t get_bytes_allocated(hxsystem_allocator_t id) const override {
+	size_t get_bytes_allocated(hxsystem_allocator_t id) const override {
 		(void)id; return m_bytes_allocated;
 	}
-	virtual size_t get_high_water(hxsystem_allocator_t id) override {
+	size_t get_high_water(hxsystem_allocator_t id) override {
 		(void)id; return m_high_water;
 	}
 
-	hxattr_hot virtual void* on_alloc(size_t size, hxalignment_t alignment) override {
+	hxattr_hot void* on_alloc(size_t size, hxalignment_t alignment) override {
 #if HX_USE_STD_ALIGNED_ALLOC
 		++m_allocation_count;
 
@@ -234,23 +235,23 @@ public:
 		}
 	}
 
-	virtual void begin_allocation_scope(hxsystem_allocator_scope* scope,
+	void begin_allocation_scope(hxsystem_allocator_scope* scope,
 		hxsystem_allocator_t new_id) override {
 			(void)scope; (void)new_id;
 			hxsystem_allocator_scope_init_(scope, m_allocation_count, m_current - m_begin_);
 		}
-	virtual void end_allocation_scope(hxsystem_allocator_scope* scope,
+	void end_allocation_scope(hxsystem_allocator_scope* scope,
 		hxsystem_allocator_t old_id) override { (void)scope; (void)old_id; }
 	bool contains(void* ptr) const {
 		return (uintptr_t)ptr >= m_begin_ && (uintptr_t)ptr < m_end_;
 	}
-	virtual size_t get_allocation_count(hxsystem_allocator_t id) const override {
+	size_t get_allocation_count(hxsystem_allocator_t id) const override {
 		(void)id; return m_allocation_count;
 	}
-	virtual size_t get_bytes_allocated(hxsystem_allocator_t id) const override {
+	size_t get_bytes_allocated(hxsystem_allocator_t id) const override {
 		(void)id; return m_current - m_begin_;
 	}
-	virtual size_t get_high_water(hxsystem_allocator_t id) override {
+	size_t get_high_water(hxsystem_allocator_t id) override {
 		(void)id; return m_current - m_begin_;
 	}
 
@@ -281,7 +282,7 @@ public:
 	}
 
 protected:
-	hxattr_hot virtual void* on_alloc(size_t size, hxalignment_t alignment) override {
+	hxattr_hot void* on_alloc(size_t size, hxalignment_t alignment) override {
 		return allocate_non_virtual(size, alignment);
 	}
 
@@ -302,7 +303,7 @@ public:
 		m_high_water = 0u;
 	}
 
-	hxattr_hot virtual void end_allocation_scope(hxsystem_allocator_scope* scope,
+	hxattr_hot void end_allocation_scope(hxsystem_allocator_scope* scope,
 			hxsystem_allocator_t old_id) override {
 		(void)old_id;
 		hxassertmsg(m_allocation_count <= scope->get_initial_allocation_count(),
@@ -321,7 +322,7 @@ public:
 		m_current = previous_current;
 	}
 
-	hxattr_hot virtual size_t get_high_water(hxsystem_allocator_t id) override {
+	hxattr_hot size_t get_high_water(hxsystem_allocator_t id) override {
 		(void)id;
 		m_high_water = hxmax(m_high_water, m_current);
 		return m_high_water - m_begin_;
