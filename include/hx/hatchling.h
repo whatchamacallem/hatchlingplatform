@@ -4,9 +4,10 @@
 // This file is licensed under the MIT license found in the LICENSE.md file.
 
 /// \file hx/hatchling.h
-/// Hatchling Platform. Requires C99. C++11 is minimum. Supports up to C++20.
-/// Inclusion on the compiler search path is not required. However, the
-/// headers are intended to be included as follows: `#include <hx/hatchling.h>`
+/// Hatchling Platform. Requires C99 for C. C++11 is minimum for C++. Utilizes
+/// language features up to C++20. Inclusion on the compiler search path is not
+/// required. However, the headers are intended to be included as follows:
+/// `#include <hx/hatchling.h>`
 ///
 /// Defines logging macros `hxlog`, `hxlogrelease`, `hxlogconsole`,
 /// `hxlogwarning` which vary by `HX_RELEASE` level (0–3) and defines log
@@ -31,11 +32,11 @@
 
 /// `int HATCHLING_VER` - One digit major, and two digit minor and patch
 /// versions. Odd numbered minor versions are development branches.
-#define HATCHLING_VER 32400
+#define HATCHLING_VER 32500
 
 /// `HATCHLING_TAG` - Major, minor and patch version tag name. Odd numbered
 /// minor versions are development branches and their tags end in `-dev`.
-#define HATCHLING_TAG "v3.24.0"
+#define HATCHLING_TAG "v3.25.0-dev"
 
 #include "hxsettings.h"
 #include "hxmemory_manager.h"
