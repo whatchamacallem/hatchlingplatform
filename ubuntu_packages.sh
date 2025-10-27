@@ -32,10 +32,10 @@ separator() {
 separator ---------------------------------------------------------------------
 
 CMD=$(echo "sudo apt install -y                                       \
-	ccache        clang         cmake       doxygen     g++           \
-	g++-multilib  gcc-multilib  gcovr       gdb         gdb-multiarch \
-	libc++-dev    llvm          llvm-dev    musl        musl-dev      \
-	musl-tools    ninja-build                                         \
+	ccache        clang         clang-tidy    cmake       doxygen     \
+	g++           g++-multilib  gcc-multilib  gcovr       gdb         \
+	gdb-multiarch libc++-dev    llvm          llvm-dev    musl        \
+	musl-dev      musl-tools    ninja-build                           \
 " | tr -s '[:space:]' ' ')
 echo "\$ $CMD"
 eval "$CMD"
