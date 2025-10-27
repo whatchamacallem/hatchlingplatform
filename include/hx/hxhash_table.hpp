@@ -168,7 +168,7 @@ public:
 		const_iterator& operator++(void) {
 			hxassertmsg(m_current_node_, "invalid_iterator"); // !end
 			m_current_node_ = static_cast<node_t_*>(m_current_node_->hash_next());
-			if(!m_current_node_) {
+			if(m_current_node_ == hxnull) {
 				this->next_bucket();
 			}
 			return *this;
@@ -414,7 +414,7 @@ inline node_t_* hxhash_table<node_t_, table_size_bits_, deleter_t_>::find(
 	const typename node_t_::key_t& key_, const node_t_* previous_)
 {
 	const hxhash_t hash_ = hxkey_hash(key_);
-	if(!previous_) {
+	if(previous_ == hxnull) {
 		for(node_t_* n_ = *this->get_bucket_head_(hash_); n_; n_ = static_cast<node_t_*>(n_->hash_next())) {
 			if(hxkey_equal(n_->key(), key_)) {
 				return n_;

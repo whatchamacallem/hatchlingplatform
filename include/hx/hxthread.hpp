@@ -88,7 +88,7 @@ private:
 #if HX_USE_THREADS
 	T_* get_local_() const {
 		T_* local_ = static_cast<T_*>(::pthread_getspecific(m_key_));
-		if(!local_) {
+		if(local_ == hxnull) {
 			local_ = new T_(m_default_value_);
 			hxassertrelease(local_, "new T");
 			const int code_ = ::pthread_setspecific(m_key_, local_);
@@ -321,7 +321,7 @@ public:
 		static_assert(sizeof(void*) == sizeof(parameter_t_*), "Incompatible pointer sizes.");
 
 		void* reinterpreted_parameter_ = hxnull;
-		::memcpy(&reinterpreted_parameter_, &parameter_, sizeof(void*));
+		::memcpy(&reinterpreted_parameter_, &parameter_, sizeof(void*)); // NOLINT
 		const int code_ = ::pthread_create(&m_thread_, 0, reinterpret_cast<entry_point_function_t_>(entry_point_),
 			reinterpreted_parameter_);
 
