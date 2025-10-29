@@ -279,10 +279,10 @@ constexpr T_&& hxforward(hxremove_reference_t<T_>& x_) {
 inline bool hxisfinitef(float x_) {
 	const void* void_ptr_ = static_cast<const void*>(&x_);
 	const unsigned char* bytes_ = static_cast<const unsigned char*>(void_ptr_);
-	unsigned int top_bytes_ = static_cast<unsigned int>(bytes_[2])
+	const unsigned int top_bytes_ = static_cast<unsigned int>(bytes_[2])
 		| (static_cast<unsigned int>(bytes_[3]) << 8u);
-	const unsigned int exponent_ = (top_bytes_ >> 7u) & 0xffu;
-	return exponent_ != 0xffu;
+	const unsigned int exponent_ = top_bytes_ & 0x7f80;
+	return exponent_ != 0x7f80;
 }
 
 /// Returns true if the double `x` is finite (not NaN or ±inf). Implements
@@ -290,10 +290,10 @@ inline bool hxisfinitef(float x_) {
 inline bool hxisfinitel(double x_) {
 	const void* void_ptr_ = static_cast<const void*>(&x_);
 	const unsigned char* bytes_ = static_cast<const unsigned char*>(void_ptr_);
-	unsigned int top_bytes_ = static_cast<unsigned int>(bytes_[6])
+	const unsigned int top_bytes_ = static_cast<unsigned int>(bytes_[6])
 		| (static_cast<unsigned int>(bytes_[7]) << 8u);
-	const unsigned int exponent_ = (top_bytes_ >> 4u) & 0x7ffu;
-	return exponent_ != 0x7ffu;
+	const unsigned int exponent_ = top_bytes_ & 0x7ff0;
+	return exponent_ != 0x7ff0;
 }
 
 /// `hxmax` - Returns the maximum value of `x` and `y` using a `<` comparison.
