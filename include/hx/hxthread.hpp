@@ -139,7 +139,7 @@ public:
 
 	/// Locks the mutex. Returns true on success, asserts on invalid arguments,
 	/// and returns false on failure.
-	bool lock(void) {
+	bool lock(void) hxattr_nodiscard {
 		const int code_ = ::pthread_mutex_lock(&m_mutex_);
 		hxassertmsg(code_ == 0 || code_ == EBUSY || code_ == EAGAIN, "pthread_mutex_lock %s", ::strerror(code_));
 		return code_ == 0;
@@ -232,7 +232,7 @@ public:
 	/// Waits for the condition variable to be notified. Returns true on success,
 	/// false otherwise.
 	/// - `mutex` : The mutex to use for waiting.
-	bool wait(hxmutex& mutex_) {
+	bool wait(hxmutex& mutex_) hxattr_nodiscard {
 		const int code_ = ::pthread_cond_wait(&m_cond_, mutex_.native_handle());
 		hxassertmsg(code_ == 0, "pthread_cond_init %s", ::strerror(code_));
 		return code_ == 0;
@@ -241,7 +241,7 @@ public:
 	/// Overload: Waits using a `hxunique_lock`. Returns true on success, false
 	/// otherwise.
 	/// - `lock` : The unique lock to use for waiting.
-	bool wait(hxunique_lock& lock_) {
+	bool wait(hxunique_lock& lock_) hxattr_nodiscard {
 		return this->wait(lock_.mutex());
 	}
 
@@ -251,7 +251,8 @@ public:
 	template<typename predicate_t_>
 	void wait(hxunique_lock& lock_, predicate_t_ pred_) {
 		while(!pred_()) {
-			this->wait(lock_);
+			// Failure is undefined as per the standard.
+			this->wait(lock_); 
 		}
 	}
 
@@ -331,7 +332,7 @@ public:
 	}
 
 	/// Returns true if the thread has been started and not yet joined.
-	bool joinable(void) const { return m_started_ && !m_joined_; }
+	bool joinable(void) const hxattr_nodiscard { return m_started_ && !m_joined_; }
 
 	/// Joins the thread. Blocks until the thread finishes.
 	void join(void) {

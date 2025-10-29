@@ -11,10 +11,10 @@ static_assert(!HX_USE_GOOGLE_TEST, "Internal. Do not include this file directly.
 namespace hxdetail_ {
 
 // Internal. 4 ULPs float comparison.
-bool hxtest_float_eq_(float a_, float b_);
+bool hxtest_float_eq_(float a_, float b_) hxattr_nodiscard;
 
 // Internal. 4 ULPs double comparison.
-bool hxtest_double_eq_(double a_, double b_);
+bool hxtest_double_eq_(double a_, double b_) hxattr_nodiscard;
 
 // Internal. A strcmp wrapper. This would crash anyway. The macro adds a console
 // diagnostic and a breakpoint on the right line.

@@ -101,6 +101,9 @@ extern "C" {
 /// calling `_Exit`.
 #define hxattr_noreturn
 
+/// `hxattr_nodiscard` - Indicates the caller should not discard the return value.
+#define hxattr_nodiscard
+
 /// `hxattr_allocator` - Mark allocator/deallocator pairs for static analysis.
 /// See the gcc manual. Must return non-null as well.
 #define hxattr_allocator(...)
@@ -131,6 +134,7 @@ extern "C" {
 #define hxattr_nonnull(...)
 #define hxattr_noexcept __declspec(nothrow)
 #define hxattr_noreturn
+#define hxattr_nodiscard
 #define hxattr_allocator(...)
 
 // ----------------------------------------------------------------------------
@@ -171,6 +175,7 @@ extern "C" {
 #define hxattr_nonnull(...)__attribute__((nonnull(__VA_ARGS__)))
 #define hxattr_noexcept __attribute__((nothrow))
 #define hxattr_noreturn __attribute__((noreturn))
+#define hxattr_nodiscard __attribute__((warn_unused_result))
 
 // clang can't handle the malloc attributes args.
 #if defined(__clang__)

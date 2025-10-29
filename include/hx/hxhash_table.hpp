@@ -300,7 +300,7 @@ public:
 	/// been removed. Then `find()` will return a subsequent node if any.
 	/// The previous object is non-const as it may be modified.
 	/// - `key` : The key to search for in the hash table.
-	/// - `previous` : A previously found `node_t` with the same key, or nullptr.
+	/// - `previous` : A previously found `node_t` with the same key, or hxnull.
 	node_t_* find(const typename node_t_::key_t& key_, const node_t_* previous_=hxnull);
 
 	/// `const` version.
@@ -334,7 +334,7 @@ public:
 	/// Removes all Nodes matching the given key without deleting them.
 	size_t release_key(const typename node_t_::key_t& key_) {
 		// Pass a null pointer for the deleter. Just to show off.
-		return this->erase(key_, static_cast<void(*)(node_t_*)>(nullptr));
+		return this->erase(key_, static_cast<void(*)(node_t_*)>(hxnull));
 	}
 
 	/// Removes all nodes and calls `deleter()` on every node. Deleter can be
