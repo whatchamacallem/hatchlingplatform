@@ -186,14 +186,6 @@ struct hxis_integral : public hxis_integral_<hxremove_cv_t<T_>> { };
 template<typename T_> struct hxis_lvalue_reference : public hxfalse_t { };
 template<typename T_> struct hxis_lvalue_reference<T_&> : public hxtrue_t { };
 
-/// \cond HIDDEN
-template<typename T_> struct hxis_null_pointer_ : public hxfalse_t { };
-template<> struct hxis_null_pointer_<decltype(nullptr)> : public hxtrue_t { };
-/// \endcond
-/// Implements `std::is_null_pointer`.
-template<typename T_>
-struct hxis_null_pointer : public hxis_null_pointer_<hxremove_cv_t<T_>> { };
-
 /// Internal. Returns `std::is_pointer` as `hxis_pointer_<T>::type` but without
 /// handling cv.
 /// \cond HIDDEN

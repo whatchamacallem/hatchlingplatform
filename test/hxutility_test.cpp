@@ -61,13 +61,6 @@ static_assert(hxis_void<const void>::value,
 	"hxis_void should ignore qualifiers");
 static_assert(!hxis_void<int>::value, "hxis_void should reject others");
 
-static_assert(hxis_null_pointer<decltype(nullptr)>::value,
-	"hxis_null_pointer should detect nullptr_t");
-static_assert(hxis_null_pointer<const decltype(nullptr)>::value,
-	"hxis_null_pointer should ignore qualifiers");
-static_assert(!hxis_null_pointer<int*>::value,
-	"hxis_null_pointer should reject pointers");
-
 static_assert(hxis_integral<int>::value,
 	"hxis_integral should detect int");
 static_assert(hxis_integral<const unsigned long>::value,

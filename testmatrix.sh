@@ -78,7 +78,7 @@ run_clang_build() {
 	shift
 	EXTRAS="$*"
 
-	echo clang c17/c++20 UBSan -O$N $EXTRAS ...
+	echo clang c17/c++20 -O$N $EXTRAS ...
 
 	# compile C17
 	clang -I../include -DHX_RELEASE=$N -O$N $FLAGS $ERRORS \
