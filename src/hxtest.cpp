@@ -16,7 +16,7 @@ namespace hxdetail_ {
 // Unlike Google Test, this fails on any non-finite values because comparing
 // test data with infinity indicates a possible issue.
 
-#if defined __GNUC__ || defined __clang__
+#if defined __clang__
 __attribute__((optnone))
 #endif
 bool hxtest_float_eq_(float a_, float b_) {
@@ -34,7 +34,7 @@ bool hxtest_float_eq_(float a_, float b_) {
 	return delta_ <= 4u; // 4 ULPs.
 }
 
-#if defined __GNUC__ || defined __clang__
+#if defined __clang__
 __attribute__((optnone))
 #endif
 bool hxtest_double_eq_(double a_, double b_) {
