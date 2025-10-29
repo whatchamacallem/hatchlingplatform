@@ -252,7 +252,8 @@ public:
 	void wait(hxunique_lock& lock_, predicate_t_ pred_) {
 		while(!pred_()) {
 			// Failure is undefined as per the standard.
-			this->wait(lock_); 
+			const bool wait_result = this->wait(lock_);
+			hxassertmsg(wait_result, "wait"); (void)wait_result;
 		}
 	}
 

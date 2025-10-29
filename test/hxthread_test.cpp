@@ -41,7 +41,8 @@ void* hxthread_test_func_increment(hxthread_test_simple_parameters_t* parameters
 void* hxthread_test_func_notify_one(hxthread_test_parameters_t* parameters) {
 	hxunique_lock lock(*parameters->mutex);
 	while(!*parameters->ready) {
-		parameters->condition_variable->wait(lock);
+		const bool wait_result = parameters->condition_variable->wait(lock);
+		hxassertrelease(wait_result, "wait"); (void)wait_result;
 	};
 	return hxnull;
 }
@@ -49,7 +50,8 @@ void* hxthread_test_func_notify_one(hxthread_test_parameters_t* parameters) {
 void* hxthread_test_func_notify_all(hxthread_test_parameters_t* parameters) {
 	hxunique_lock lock(*parameters->mutex);
 	while(!*parameters->ready) {
-		parameters->condition_variable->wait(lock);
+		const bool wait_result = parameters->condition_variable->wait(lock);
+		hxassertrelease(wait_result, "wait"); (void)wait_result;
 	}
 	if(parameters->woken != hxnull) {
 		++(*parameters->woken);
@@ -66,7 +68,8 @@ void* hxthread_test_func_lock_unlock_multiple(hxthread_test_parameters_t* parame
 void* hxthread_test_func_wait_notify_sequence(hxthread_test_parameters_t* parameters) {
 	hxunique_lock lock(*parameters->mutex);
 	while(!*parameters->ready) {
-		parameters->condition_variable->wait(lock);
+		const bool wait_result = parameters->condition_variable->wait(lock);
+		hxassertrelease(wait_result, "wait"); (void)wait_result;
 	}
 	return hxnull;
 }
