@@ -65,8 +65,8 @@ hxtest_::hxtest_(void) {
 }
 
 hxtest_& hxtest_::dispatcher_(void) {
-	static hxtest_ s_hxtest_runner;
-	return s_hxtest_runner;
+	static hxtest_ s_hxtest_static_alloc;
+	return s_hxtest_static_alloc;
 }
 
 void hxtest_::add_test_(hxtest_case_interface_* fn_) {
