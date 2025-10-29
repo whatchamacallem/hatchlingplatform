@@ -34,24 +34,6 @@ void hxfloat_dump(const float* address_, size_t floats_) hxattr_nonnull(1) hxatt
 /// - `pretty` : Set non-zero to include extended visualization.
 void hxhex_dump(const void* address_, size_t bytes_, bool pretty_) hxattr_nonnull(1) hxattr_cold;
 
-// ----------------------------------------------------------------------------
-// C Inline Utilities
-// These inline helpers mirror select <ctype.h> and math functionality.
-
-/// Returns true if the float `x` is finite (not NaN or ±inf). Implements
-/// `isfinitef`.
-inline bool hxisfinitef(float x_) {
-	uint32_t u_ = 0u; memcpy(&u_, &x_, sizeof u_); // An intrinsic.
-	return (u_ & 0x7f800000u) != 0x7f800000u;
-}
-
-/// Returns true if the double `x` is finite (not NaN or ±inf). Implements
-/// `isfinitel`.
-inline bool hxisfinitel(double x_) {
-	uint64_t u_ = 0u; memcpy(&u_, &x_, sizeof u_); // An intrinsic.
-	return (u_ & 0x7ff0000000000000ull) != 0x7ff0000000000000ull;
-}
-
 #if HX_CPLUSPLUS
 } // extern "C"
 
@@ -290,6 +272,28 @@ constexpr T_&& hxforward(hxremove_reference_t<T_>&& x_) {
 template<typename T_>
 constexpr T_&& hxforward(hxremove_reference_t<T_>& x_) {
 	return static_cast<T_&&>(x_);
+}
+
+/// Returns true if the float `x` is finite (not NaN or ±inf). Implements
+/// `isfinitef`.
+inline bool hxisfinitef(float x_) {
+	const void* void_ptr_ = static_cast<const void*>(&x_);
+	const unsigned char* bytes_ = static_cast<const unsigned char*>(void_ptr_);
+	unsigned int top_bytes_ = static_cast<unsigned int>(bytes_[2])
+		| (static_cast<unsigned int>(bytes_[3]) << 8u);
+	const unsigned int exponent_ = (top_bytes_ >> 7u) & 0xffu;
+	return exponent_ != 0xffu;
+}
+
+/// Returns true if the double `x` is finite (not NaN or ±inf). Implements
+/// `isfinitel`.
+inline bool hxisfinitel(double x_) {
+	const void* void_ptr_ = static_cast<const void*>(&x_);
+	const unsigned char* bytes_ = static_cast<const unsigned char*>(void_ptr_);
+	unsigned int top_bytes_ = static_cast<unsigned int>(bytes_[6])
+		| (static_cast<unsigned int>(bytes_[7]) << 8u);
+	const unsigned int exponent_ = (top_bytes_ >> 4u) & 0x7ffu;
+	return exponent_ != 0x7ffu;
 }
 
 /// `hxmax` - Returns the maximum value of `x` and `y` using a `<` comparison.
