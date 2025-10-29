@@ -89,24 +89,24 @@ extern "C" {
 /// formatting so it can type-check the format string.
 #define hxattr_format_scanf(pos_, start_)
 
-/// `hxattr_nonnull` - Indicates that a function has args that should not be
-/// null. Checked by `UBSan`.
-#define hxattr_nonnull(...)
+/// `hxattr_allocator` - Mark allocator/deallocator pairs for static analysis.
+/// See the gcc manual. Must return non-null as well.
+#define hxattr_allocator(...)
+
+/// `hxattr_nodiscard` - Indicates the caller should not discard the return value.
+#define hxattr_nodiscard
 
 /// `hxattr_noexcept` - Use gcc/clang `nothrow` attribute. Unlike `noexcept`
 /// this is undefined when violated.
 #define hxattr_noexcept
 
+/// `hxattr_nonnull` - Indicates that a function has args that should not be
+/// null. Checked by `UBSan`.
+#define hxattr_nonnull(...)
+
 /// `hxattr_noreturn` - Indicates that a function will never return. E.g., by
 /// calling `_Exit`.
 #define hxattr_noreturn
-
-/// `hxattr_nodiscard` - Indicates the caller should not discard the return value.
-#define hxattr_nodiscard
-
-/// `hxattr_allocator` - Mark allocator/deallocator pairs for static analysis.
-/// See the gcc manual. Must return non-null as well.
-#define hxattr_allocator(...)
 
 // ----------------------------------------------------------------------------
 // Target settings for MSVC. MSVC doesn't support C++'s feature test macros very
@@ -124,18 +124,17 @@ extern "C" {
 #endif
 
 #define HX_NO_LIBCXX 0
-
 #define hxbreakpoint() (__debugbreak(),true)
 #define hxrestrict __restrict
+#define hxattr_allocator(...)
 #define hxattr_hot
 #define hxattr_cold
 #define hxattr_format_printf(pos_, start_)
 #define hxattr_format_scanf(pos_, start_)
-#define hxattr_nonnull(...)
-#define hxattr_noexcept __declspec(nothrow)
-#define hxattr_noreturn
 #define hxattr_nodiscard
-#define hxattr_allocator(...)
+#define hxattr_noexcept __declspec(nothrow)
+#define hxattr_nonnull(...)
+#define hxattr_noreturn
 
 // ----------------------------------------------------------------------------
 // Target settings for clang and gcc. Further compilers will require
@@ -153,7 +152,7 @@ extern "C" {
 #endif
 #endif
 
-#if defined(__GLIBCXX__) || defined(_LIBCPP_VERSION)
+#if defined __GLIBCXX__ || defined _LIBCPP_VERSION
 #define HX_NO_LIBCXX 0
 #else
 // Always true in C.
@@ -168,23 +167,24 @@ extern "C" {
 #endif
 
 #define hxrestrict __restrict
-#define hxattr_hot __attribute__((hot)) __attribute__((flatten))
-#define hxattr_cold __attribute__((cold))
-#define hxattr_format_printf(pos_, start_) __attribute__((format(printf, pos_, start_)))
-#define hxattr_format_scanf(pos_, start_) __attribute__((format(scanf, pos_, start_)))
-#define hxattr_nonnull(...)__attribute__((nonnull(__VA_ARGS__)))
-#define hxattr_noexcept __attribute__((nothrow))
-#define hxattr_noreturn __attribute__((noreturn))
-#define hxattr_nodiscard __attribute__((warn_unused_result))
 
 // clang can't handle the malloc attributes args.
-#if defined(__clang__)
+#if defined __clang__
 #define hxattr_allocator(...) \
 	__attribute__((returns_nonnull)) __attribute__((warn_unused_result))
 #else
 #define hxattr_allocator(...) __attribute__((malloc(__VA_ARGS__))) \
 	__attribute__((returns_nonnull)) __attribute__((warn_unused_result))
 #endif
+
+#define hxattr_hot __attribute__((hot)) __attribute__((flatten))
+#define hxattr_cold __attribute__((cold))
+#define hxattr_format_printf(pos_, start_) __attribute__((format(printf, pos_, start_)))
+#define hxattr_format_scanf(pos_, start_) __attribute__((format(scanf, pos_, start_)))
+#define hxattr_nodiscard __attribute__((warn_unused_result))
+#define hxattr_noexcept __attribute__((nothrow))
+#define hxattr_nonnull(...)__attribute__((nonnull(__VA_ARGS__)))
+#define hxattr_noreturn __attribute__((noreturn))
 
 #endif // target specific settings
 
