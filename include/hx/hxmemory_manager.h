@@ -93,6 +93,7 @@ void hxfree(void* ptr_) hxattr_noexcept hxattr_hot;
 /// behavior to compare pointers to different allocations. This is consistent
 /// with the C++ standard. Allocations of size 0 may or may not return the same
 /// pointer as previous allocations.
+/// Returns a pointer that must be released with `hxfree`.
 /// - `size` : The size of the memory to allocate.
 /// - `allocator`(C++ only): The memory manager ID to use for allocation. (Default is
 ///   `hxsystem_allocator_current`.)
@@ -102,6 +103,7 @@ void* hxmalloc(size_t size_) hxattr_allocator(hxfree) hxattr_noexcept hxattr_hot
 
 /// `hxmalloc_ext` - Allocates memory of the specified size with a specific
 /// memory manager and alignment. Will not return on failure.
+/// Returns a pointer that must be released with `hxfree`.
 /// - `size` : The size of the memory to allocate.
 /// - `allocator` : The memory manager ID to use for allocation. (Default is `hxsystem_allocator_current`.)
 /// - `alignment` : The alignment for the allocation. (Default is `HX_ALIGNMENT`.)
@@ -110,7 +112,8 @@ void* hxmalloc_ext(size_t size_, enum hxsystem_allocator_t allocator_,
 
 /// `hxstring_duplicate` - Allocates a copy of a string using the specified
 /// memory manager. Returns a pointer to the duplicated string.
-/// - `string` : The string to duplicate.
+/// Returns a pointer that must be released with `hxfree`.
+/// - `string` : Non-null string to duplicate.
 /// - `allocator` : The memory manager ID to use for allocation. Defaults to
 ///   `hxsystem_allocator_current` in C++.
 char* hxstring_duplicate(const char* string_,

@@ -109,12 +109,13 @@ private:
 	g_hxconsole_symbol_##name_(hxconsole_variable_factory_(&(x_)), #name_)
 
 /// `hxconsole_deregister` - Explicitly deregisters a console symbol.
-/// - `id` : Valid C identifier that identifies the variable.
+/// - `id` : Non-null identifier string for the variable or command being
+///   removed.
 void hxconsole_deregister(const char* id_) hxattr_nonnull(1);
 
 /// `hxconsole_exec_line` - Evaluates a console command to either call a function
 /// or set a variable. e.g., `srand 77` or `a_variable 5`.
-/// - `command` : A string executed by the console.
+/// - `command` : Non-null UTF-8 command string executed by the console.
 bool hxconsole_exec_line(const char* command_) hxattr_nonnull(1);
 
 /// `hxconsole_exec_file` - Executes a configuration file that is opened for
@@ -123,7 +124,7 @@ bool hxconsole_exec_line(const char* command_) hxattr_nonnull(1);
 bool hxconsole_exec_file(hxfile& file_);
 
 /// `hxconsole_exec_filename` - Opens a configuration file by name and executes it.
-/// - `filename` : A file containing commands.
+/// - `filename` : Non-null UTF-8 path to a file containing commands.
 bool hxconsole_exec_filename(const char* filename_) hxattr_nonnull(1);
 
 /// `hxconsole_help` - Logs every console symbol to the console log when

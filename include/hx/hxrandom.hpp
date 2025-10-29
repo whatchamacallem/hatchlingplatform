@@ -62,7 +62,7 @@ public:
 	/// Reads a specified number of random bytes into the provided buffer. The
 	/// sequence generated matches a little-endian stream of
 	/// `uint32_t` generated using `generate_32`.
-	/// - `bytes` : Pointer to the buffer where the random bytes will be stored.
+	/// - `bytes` : Non-null pointer to a buffer large enough for `count` bytes.
 	/// - `count` : Number of bytes to read.
 	void read(void* bytes_, size_t count_) hxattr_nonnull(2) {
 		uint8_t* chars_ = static_cast<uint8_t*>(bytes_);

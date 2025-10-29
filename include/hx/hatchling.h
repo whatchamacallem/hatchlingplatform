@@ -187,14 +187,14 @@ void hxshutdown(void) hxattr_cold;
 /// `hxloghandler` - Enters formatted messages in the system log. This is the
 /// only access to logging when `HX_RELEASE > 2`.
 /// - `level` : The log level (e.g., `hxloglevel_log`, `hxloglevel_warning`).
-/// - `format` : A `printf`-style format string.
-/// - `...` Additional arguments for the format string.
+/// - `format` : Non-null `printf`-style format string.
+/// - `...` Additional arguments that must satisfy the format string.
 void hxloghandler(enum hxloglevel_t level_, const char* format_, ...) hxattr_noexcept hxattr_format_printf(2, 3);
 
 /// `hxloghandler_v` - A `va_list` version of `hxloghandler`. This is the only
 /// access to logging when `HX_RELEASE > 2`.
 /// - `level` : The log level (e.g., `hxloglevel_log`, `hxloglevel_warning`).
-/// - `format` : A `printf`-style format string.
+/// - `format` : Non-null `printf`-style format string.
 /// - `args` : A `va_list` containing the arguments for the format string.
 void hxloghandler_v(enum hxloglevel_t level_, const char* format_, va_list args_) hxattr_noexcept hxattr_nonnull(2);
 

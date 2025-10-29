@@ -64,7 +64,7 @@ public:
 
 	/// Queues a task for later execution. Does not delete the task after
 	/// execution. Thread-safe and callable from running tasks.
-	/// - `task` : A pointer to the task to be enqueued for execution.
+	/// - `task` : Non-null pointer to the task to be enqueued for execution.
 	/// - `priority` : Optional priority for scheduling. Higher values run sooner.
 	void enqueue(hxtask* task_, int priority_=0) hxattr_nonnull(2);
 

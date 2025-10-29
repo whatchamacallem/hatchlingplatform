@@ -78,7 +78,7 @@ extern "C" {
 
 /// `hxstring_literal_hash_debug` - Calculates a string hash at runtime that is the
 /// same as `hxstring_literal_hash`.
-/// - `string` : The null-terminated string to hash.
+/// - `string` : Non-null null-terminated string to hash.
 hxhash_t hxstring_literal_hash_debug(const char* string_) hxattr_nonnull(1);
 
 #if HX_CPLUSPLUS

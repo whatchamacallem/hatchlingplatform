@@ -90,11 +90,19 @@ using hxradix_sort_key_void = hxradix_sort_key<uint32_t, void*>;
 
 /// Internal. The shared implementation used with all pointer types when sorting
 /// using 8-bit digits.
+/// - `begin` : Non-null pointer to the first element in the range being
+///   reordered.
+/// - `end` : Non-null pointer one past the last element in the range. Must
+///   reference the same array as `begin`.
 hxattr_nonnull(1,2) hxattr_hot
 void hxradix_sort_void(hxradix_sort_key_void* begin_, hxradix_sort_key_void* end_);
 
 /// Internal. The shared implementation used with all pointer types when sorting
 /// using 11-bit digits.
+/// - `begin` : Non-null pointer to the first element in the range being
+///   reordered.
+/// - `end` : Non-null pointer one past the last element in the range. Must
+///   reference the same array as `begin`.
 hxattr_nonnull(1,2) hxattr_hot
 void hxradix_sort_void11(hxradix_sort_key_void* begin_, hxradix_sort_key_void* end_);
 
@@ -103,6 +111,10 @@ void hxradix_sort_void11(hxradix_sort_key_void* begin_, hxradix_sort_key_void* e
 /// and `uint64_t` are not supported. `hxradix_sort` scales linearly with the
 /// byte-length of the key, whereas `hxinsertion_sort` is Θ(n) on mostly sorted
 /// data.
+/// - `begin` : Non-null pointer to the first element in the range being
+///   reordered.
+/// - `end` : Non-null pointer one past the last element in the range. Must
+///   reference the same array as `begin`.
 template<typename key_t_, typename value_t_> hxattr_nonnull(1,2) hxattr_hot
 void hxradix_sort(hxradix_sort_key<key_t_, value_t_>* begin_, hxradix_sort_key<key_t_, value_t_>* end_) {
 	hxradix_sort_void(reinterpret_cast<hxradix_sort_key_void*>(begin_), reinterpret_cast<hxradix_sort_key_void*>(end_));
@@ -113,6 +125,10 @@ void hxradix_sort(hxradix_sort_key<key_t_, value_t_>* begin_, hxradix_sort_key<k
 /// and `uint64_t` are not supported. `hxradix_sort` scales linearly with the
 /// byte-length of the key, whereas `hxinsertion_sort` is Θ(n) on mostly sorted
 /// data.
+/// - `begin` : Non-null pointer to the first element in the range being
+///   reordered.
+/// - `end` : Non-null pointer one past the last element in the range. Must
+///   reference the same array as `begin`.
 template<typename key_t_, typename value_t_> hxattr_nonnull(1,2) hxattr_hot
 void hxradix_sort11(hxradix_sort_key<key_t_, value_t_>* begin_, hxradix_sort_key<key_t_, value_t_>* end_) {
 	hxradix_sort_void11(reinterpret_cast<hxradix_sort_key_void*>(begin_), reinterpret_cast<hxradix_sort_key_void*>(end_));
