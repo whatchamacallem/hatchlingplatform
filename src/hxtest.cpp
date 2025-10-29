@@ -4,6 +4,8 @@
 
 #include "../include/hx/hxtest.hpp"
 
+#include <math.h>
+
 #if !HX_USE_GOOGLE_TEST
 
 namespace hxdetail_ {
@@ -13,8 +15,12 @@ namespace hxdetail_ {
 // threshold of 4 ULPs for gtest's `EXPECT_FLOAT_EQ` / `EXPECT_DOUBLE_EQ`.
 // Unlike Google Test, this fails on any non-finite values because comparing
 // test data with infinity indicates a possible issue.
+
+#if defined __GNUC__ || defined __clang__
+__attribute__((optnone))
+#endif
 bool hxtest_float_eq_(float a_, float b_) {
-	if(!hxisfinitef(a_) || !hxisfinitef(b_)) { return false; }
+	if(!isfinite(a_) || !isfinite(b_)) { return false; }
 	if(a_ == b_) { return true; }
 
 	uint32_t ua_; ::memcpy(&ua_, &a_, sizeof ua_);
@@ -28,8 +34,11 @@ bool hxtest_float_eq_(float a_, float b_) {
 	return delta_ <= 4u; // 4 ULPs.
 }
 
+#if defined __GNUC__ || defined __clang__
+__attribute__((optnone))
+#endif
 bool hxtest_double_eq_(double a_, double b_) {
-	if(!hxisfinitel(a_) || !hxisfinitel(b_)) { return false; }
+	if(!isfinite(a_) || !isfinite(b_)) { return false; }
 	if(a_ == b_) { return true; }
 
 	uint64_t ua_; ::memcpy(&ua_, &a_, sizeof ua_);

@@ -189,42 +189,6 @@ TEST(hxutility_test, hxlog2i_returns_highest_set_bit) {
 	EXPECT_EQ(hxlog2i(static_cast<size_t>(1u) << 20), 20);
 }
 
-TEST(hxutility_test, hxisfinite_detects_special_values) {
-	const uint32_t float_pos_inf_bits = 0x7f800000u;
-	const uint32_t float_neg_inf_bits = 0xff800000u;
-	const uint32_t float_nan_bits = 0x7fc00000u;
-	const uint64_t double_pos_inf_bits = 0x7ff0000000000000ull;
-	const uint64_t double_neg_inf_bits = 0xfff0000000000000ull;
-	const uint64_t double_nan_bits = 0x7ff8000000000000ull;
-
-	float float_pos_inf = 0.0f;
-	float float_neg_inf = 0.0f;
-	float float_nan = 0.0f;
-	double double_pos_inf = 0.0;
-	double double_neg_inf = 0.0;
-	double double_nan = 0.0;
-
-	memcpy(&float_pos_inf, &float_pos_inf_bits, sizeof float_pos_inf);
-	memcpy(&float_neg_inf, &float_neg_inf_bits, sizeof float_neg_inf);
-	memcpy(&float_nan, &float_nan_bits, sizeof float_nan);
-	memcpy(&double_pos_inf, &double_pos_inf_bits, sizeof double_pos_inf);
-	memcpy(&double_neg_inf, &double_neg_inf_bits, sizeof double_neg_inf);
-	memcpy(&double_nan, &double_nan_bits, sizeof double_nan);
-
-	// Finite helpers should accept -0/+1 and reject +/-inf and NaN bit patterns.
-	EXPECT_TRUE(hxisfinitef(-0.0f));
-	EXPECT_TRUE(hxisfinitef(1.0f));
-	EXPECT_FALSE(hxisfinitef(float_pos_inf));
-	EXPECT_FALSE(hxisfinitef(float_neg_inf));
-	EXPECT_FALSE(hxisfinitef(float_nan));
-
-	EXPECT_TRUE(hxisfinitel(-0.0));
-	EXPECT_TRUE(hxisfinitel(1.0));
-	EXPECT_FALSE(hxisfinitel(double_pos_inf));
-	EXPECT_FALSE(hxisfinitel(double_neg_inf));
-	EXPECT_FALSE(hxisfinitel(double_nan));
-}
-
 TEST(hxutility_test, arithmetic_helpers_cover_min_max_abs_clamp) {
 	EXPECT_EQ(hxmin(3, 7), 3);
 	EXPECT_EQ(hxmax(3, 7), 7);

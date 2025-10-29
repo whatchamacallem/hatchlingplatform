@@ -274,28 +274,6 @@ constexpr T_&& hxforward(hxremove_reference_t<T_>& x_) {
 	return static_cast<T_&&>(x_);
 }
 
-/// Returns true if the float `x` is finite (not NaN or ±inf). Implements
-/// `isfinitef`.
-inline bool hxisfinitef(float x_) {
-	const void* void_ptr_ = static_cast<const void*>(&x_);
-	const unsigned char* bytes_ = static_cast<const unsigned char*>(void_ptr_);
-	const unsigned int top_bytes_ = static_cast<unsigned int>(bytes_[2])
-		| (static_cast<unsigned int>(bytes_[3]) << 8u);
-	const unsigned int exponent_ = top_bytes_ & 0x7f80;
-	return exponent_ != 0x7f80;
-}
-
-/// Returns true if the double `x` is finite (not NaN or ±inf). Implements
-/// `isfinitel`.
-inline bool hxisfinitel(double x_) {
-	const void* void_ptr_ = static_cast<const void*>(&x_);
-	const unsigned char* bytes_ = static_cast<const unsigned char*>(void_ptr_);
-	const unsigned int top_bytes_ = static_cast<unsigned int>(bytes_[6])
-		| (static_cast<unsigned int>(bytes_[7]) << 8u);
-	const unsigned int exponent_ = top_bytes_ & 0x7ff0;
-	return exponent_ != 0x7ff0;
-}
-
 /// `hxmax` - Returns the maximum value of `x` and `y` using a `<` comparison.
 /// - `x` : The first value.
 /// - `y` : The second value.
