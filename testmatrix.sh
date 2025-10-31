@@ -76,6 +76,7 @@ done
 run_clang_build() {
 	N="$1"
 	shift
+	# -DHX_RELEASE=3 converts every hxassert into an assume statement.
 	case ${N-} in 3) ASSUME='-Wno-assume';; *) ASSUME=;; esac
 	EXTRAS="$ASSUME $*"
 
