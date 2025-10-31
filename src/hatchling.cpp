@@ -47,8 +47,8 @@ extern "C" {
 // allocation cannot fail, and it encourages allocating enough memory in
 // advance. The creation of hxthread.h classes cannot fail. By design there are
 // no exceptions to handle, although there are many asserts.
-#if (HX_RELEASE) >= 1 && defined __cpp_exceptions && !defined __INTELLISENSE__
-static_assert(0, "Warning: C++ exceptions are not recommended for embedded use.");
+#if HX_NO_LIBCXX && defined __cpp_exceptions && !defined __INTELLISENSE__
+static_assert(0, "Warning: C++ exceptions are not supported for embedded use.");
 #endif
 
 // ----------------------------------------------------------------------------
