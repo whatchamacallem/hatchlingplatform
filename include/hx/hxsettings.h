@@ -80,7 +80,7 @@ extern "C" {
 
 /// `hxattr_assume` - Tell the optimizer that `condition` is always true.
 /// Similar to C++23 `[[assume(condition)]];`.
-#define hxattr_assume(...)
+#define hxattr_assume(...) (void)0
 
 /// `hxattr_cold` - Optimize a function for size.
 #define hxattr_cold
