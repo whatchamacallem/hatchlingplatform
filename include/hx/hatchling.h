@@ -122,9 +122,14 @@ enum hxloglevel_t {
 bool hxasserthandler(const char* file_, size_t line_) hxattr_noexcept hxattr_nonnull(1) hxattr_cold;
 
 #else // HX_RELEASE >= 1
-#define hxlog(...) ((void)0)
+
+// Normal asserts are disabled entirely above HX_RELEASE 0 and below HX_RELEASE 3.
+#if (HX_RELEASE) < 3
 #define hxassertmsg(x_, ...) ((void)0)
 #define hxassert(x_) ((void)0)
+#endif
+
+#define hxlog(...) ((void)0)
 void hxasserthandler(hxhash_t file_, size_t line_) hxattr_noexcept hxattr_noreturn hxattr_cold;
 #endif
 
@@ -167,7 +172,11 @@ void hxasserthandler(hxhash_t file_, size_t line_) hxattr_noexcept hxattr_noretu
 #define hxassertrelease(x_, ...) (void)((bool)(x_) \
 	|| (hxasserthandler(hxstring_literal_hash(__FILE__), __LINE__), 0))
 #elif (HX_RELEASE) == 3
-#define hxassertrelease(x_, ...) ((void)0)
+// This is an extreme level of optimization where asserts are assumed to be
+// valid.
+#define hxassert(x_) hxattr_assume(x_)
+#define hxassertmsg(x_, ...) hxattr_assume(x_)
+#define hxassertrelease(x_, ...) hxattr_assume(x_)
 #endif
 
 /// `hxinit_internal` - Internal. Use `hxinit` instead. It checks `g_hxinit_ver_`.

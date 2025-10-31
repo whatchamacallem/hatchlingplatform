@@ -34,13 +34,15 @@ levels while allowing separate compiler optimization settings for debugging
 purposes:
 
 - **0**: Debug build with comprehensive diagnostics, asserts, and verbose
-  strings (may exceed target constraints)
+  strings, may exceed target constraints.
 - **1**: Release build with critical asserts and warnings (suitable for internal
-  `RelWithDebInfo` builds)
+  `RelWithDebInfo` builds).
 - **2**: Optimized release build with minimal strings and critical asserts only
-  (for profiling and field diagnostics)
-- **3**: Maximum optimization with no runtime checks (production releases only
-  after thorough testing)
+  for profiling and field diagnostics.
+- **3**: Maximum optimization with no runtime checks for production releases
+  only after thorough testing. All asserts are converted into statements that
+  cause the compiler to assume incorrect operation is impossible and optimize
+  accordingly.
 
 ## Key Features
 

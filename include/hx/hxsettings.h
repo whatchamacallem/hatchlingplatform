@@ -183,8 +183,7 @@ extern "C" {
 #endif
 
 // This does not have the same constraints as the assume attribute.
-#define hxattr_assume(condition_) do { if (!(condition_)) __builtin_unreachable(); } while (0)
-
+#define hxattr_assume(condition_) (void)((condition_) || (__builtin_unreachable(),0))
 #define hxattr_cold __attribute__((cold))
 #define hxattr_hot __attribute__((hot)) __attribute__((flatten))
 #define hxattr_nodiscard __attribute__((warn_unused_result))
