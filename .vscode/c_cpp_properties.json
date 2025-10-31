@@ -8,7 +8,7 @@
             "includePath": [
                 "${workspaceFolder}/include"
             ],
-            "defines": [],
+            "defines": [ "HX_DOXYGEN_PARSER" ],
             "compilerPath": "/usr/bin/clang++",
             "cStandard": "c17",
             "cppStandard": "c++20",

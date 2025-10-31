@@ -161,7 +161,6 @@
         "Wwrite",
         "Xclang"
     ],
-    "python.analysis.typeCheckingMode": "standard",
     "markdownlint.config": {
         "MD033": {
             // Doxygen renders images with the alt text after them.
