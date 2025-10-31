@@ -89,6 +89,7 @@
         "noexcept",
         "Noname",
         "nowthrow",
+        "nullptr",
         "objfile",
         "optin",
         "PIDS",

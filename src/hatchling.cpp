@@ -52,16 +52,17 @@ static_assert(0, "Warning: C++ exceptions are not recommended for embedded use."
 #endif
 
 // ----------------------------------------------------------------------------
-// When not hosted, do not lock around the initialization of function-scope
-// static variables. Provide release-mode asserts to enforce that locking is
-// unnecessary and to ensure function-static constructors do not throw.
-// Also provide error handling for virtual tables.
 
 extern "C" {
 
 void __sanitizer_report_error_summary(const char *error_summary);
 
 #if HX_NO_LIBCXX
+
+// When not hosted, do not lock around the initialization of function-scope
+// static variables. Provide release-mode asserts to enforce that locking is
+// unnecessary and to ensure function-static constructors do not _throw_.
+// Also provide error handling for virtual tables.
 
 // Provide declarations even though they are part of the ABI.
 int __cxa_guard_acquire(size_t *guard);
