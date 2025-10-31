@@ -200,9 +200,9 @@ template<typename T_> struct hxis_void : public hxis_void_<hxremove_cv_t<T_>> { 
 /// Internal. Adds the `__restrict` keyword to C++ pointers. Used by
 /// `hxadd_attr_if_ptr_t`.
 /// \cond HIDDEN
-template<typename T_, int = hxis_pointer<T_>::value> struct hxrestrict_t_;
-template<typename T_> struct hxrestrict_t_<T_, 0> { using type = T_; };
-template<typename T_> struct hxrestrict_t_<T_, 1> { using type = T_ hxrestrict; };
+template<typename T_, bool = hxis_pointer<T_>::value> struct hxrestrict_t_;
+template<typename T_> struct hxrestrict_t_<T_, true> { using type = T_ hxrestrict; };
+template<typename T_> struct hxrestrict_t_<T_, false> { using type = T_; };
 /// \endcond
 
 /// Adds the `__restrict` keyword to C++ pointers. (Non-standard.)
