@@ -78,9 +78,9 @@ extern "C" {
 /// See the gcc manual. Must return non-null as well.
 #define hxattr_allocator(...)
 
-/// `hxattr_assume` - Tell the optimizer that `condition_` is always true.
-/// Similar to C++23 `[[assume(condition_)]];`.
-#define hxattr_assume(condition_)
+/// `hxattr_assume` - Tell the optimizer that `condition` is always true.
+/// Similar to C++23 `[[assume(condition)]];`.
+#define hxattr_assume(...)
 
 /// `hxattr_cold` - Optimize a function for size.
 #define hxattr_cold
@@ -106,11 +106,11 @@ extern "C" {
 
 /// `hxattr_printf` - Indicates to gcc that a function uses `printf`-style
 /// formatting so it can type-check the format string.
-#define hxattr_printf(pos_, start_)
+#define hxattr_printf(...)
 
 /// `hxattr_scanf` - Indicates to gcc that a function uses `scanf`-style
 /// formatting so it can type-check the format string.
-#define hxattr_scanf(pos_, start_)
+#define hxattr_scanf(...)
 
 // ----------------------------------------------------------------------------
 // Target settings for MSVC. MSVC doesn't support C++'s feature test macros very
@@ -138,8 +138,8 @@ extern "C" {
 #define hxattr_noexcept __declspec(nothrow)
 #define hxattr_nonnull(...)
 #define hxattr_noreturn
-#define hxattr_printf(pos_, start_)
-#define hxattr_scanf(pos_, start_)
+#define hxattr_printf(...)
+#define hxattr_scanf(...)
 
 // ----------------------------------------------------------------------------
 // Target settings for clang and gcc. Further compilers will require
