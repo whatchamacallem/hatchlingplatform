@@ -377,6 +377,7 @@ iterator_t_ hxbinary_search(iterator_t_ begin_, iterator_t_ end_, const value_t_
 	// don't operate on null pointer args. unallocated containers have this.
 	if(begin_ == end_) { return end_; }
 	hxassertmsg(begin_ <= end_, "invalid_iterator");
+	hxattr_assume(first_ < last_);
 
 	iterator_t_ first_ = begin_;
 	iterator_t_ last_ = end_;

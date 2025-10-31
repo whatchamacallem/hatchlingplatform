@@ -299,6 +299,7 @@ constexpr hxremove_reference_t<T_>&& hxmove(T_&& t_) {
 template<typename T_>
 constexpr void hxswap(T_& x_, T_& y_) {
 	hxassertmsg(&x_ != &y_, "hxswap No swapping with self.");
+	hxattr_assume(&x_ != &y_);
 	T_ t_(hxmove(x_));
 	x_ = hxmove(y_);
 	y_ = hxmove(t_);
