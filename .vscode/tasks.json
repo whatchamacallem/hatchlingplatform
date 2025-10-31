@@ -5,20 +5,78 @@
 	"tasks": [
 		{
 			"type": "cppbuild",
-			"label": "clang build",
+			"label": "clang debug build",
 			"command": "./debugbuild.sh",
-			"args": [
-			],
-			"options": {
-				"cwd": "${workspaceFolder}"
-			},
-			"problemMatcher": [
-				"$gcc"
-			],
+			"args": [],
+			"options": { "cwd": "${workspaceFolder}" },
+			"problemMatcher": [ "$gcc" ],
 			"group": {
 				"kind": "build",
 				"isDefault": true
 			}
+		},
+		{
+			"type": "shell",
+			"label": "clean",
+			"command": "./clean.sh",
+			"options": { "cwd": "${workspaceFolder}" },
+			"problemMatcher": []
+		},
+		{
+			"type": "shell",
+			"label": "list symbols",
+			"command": "./listsymbols.sh",
+			"options": { "cwd": "${workspaceFolder}" },
+			"problemMatcher": []
+		},
+		{
+			"type": "shell",
+			"label": "test all",
+			"command": "./testall.sh",
+			"options": { "cwd": "${workspaceFolder}" },
+			"problemMatcher": [ "$gcc" ],
+		},
+		{
+			"type": "shell",
+			"label": "test cmake",
+			"command": "./testcmake.sh",
+			"options": { "cwd": "${workspaceFolder}" },
+			"problemMatcher": [ "$gcc" ],
+		},
+		{
+			"type": "shell",
+			"label": "test coverage",
+			"command": "./testcoverage.sh",
+			"options": { "cwd": "${workspaceFolder}" },
+			"problemMatcher": [ "$gcc" ],
+		},
+		{
+			"type": "shell",
+			"label": "test error handling",
+			"command": "./testerrorhandling.sh",
+			"options": { "cwd": "${workspaceFolder}" },
+			"problemMatcher": [ "$gcc" ],
+		},
+		{
+			"type": "shell",
+			"label": "test matrix",
+			"command": "./testmatrix.sh",
+			"options": { "cwd": "${workspaceFolder}" },
+			"problemMatcher": [ "$gcc" ],
+		},
+		{
+			"type": "shell",
+			"label": "test strip",
+			"command": "./teststrip.sh",
+			"options": { "cwd": "${workspaceFolder}" },
+			"problemMatcher": [ "$gcc" ],
+		},
+		{
+			"type": "shell",
+			"label": "test wasm",
+			"command": "./testwasm.sh",
+			"options": { "cwd": "${workspaceFolder}" },
+			"problemMatcher": [ "$gcc" ],
 		}
 	],
 	"version": "2.0.0"
