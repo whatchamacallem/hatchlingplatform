@@ -79,7 +79,7 @@ public:
 	/// - `mode` : Combination of `open_mode` flags describing how to open the file.
 	/// - `filename` : Non-null `printf`-style format string naming the file.
 	/// - `...` : Additional arguments matching the `filename` format specifiers.
-	hxfile(uint8_t mode_, const char* filename_, ...) hxattr_format_printf(3, 4);
+	hxfile(uint8_t mode_, const char* filename_, ...) hxattr_printf(3, 4);
 
 	/// Constructs the file object with an unowned implementation object and a
 	/// specific mode. Performs no checks. Use `hxin`, `hxout`, `hxerr`, and
@@ -107,7 +107,7 @@ public:
 	/// - `mode` : Combination of `open_mode` flags describing how to open the file.
 	/// - `filename` : Non-null `printf`-style format string naming the file.
 	/// - `...` : Additional arguments matching the `filename` format specifiers.
-	bool open(uint8_t mode_, const char* filename_, ...) hxattr_format_printf(3, 4);
+	bool open(uint8_t mode_, const char* filename_, ...) hxattr_printf(3, 4);
 
 	/// Closes the currently open file.
 	void close(void);
@@ -183,7 +183,7 @@ public:
 	/// modify the failure flag because it is not clear from `vfprintf`.
 	/// - `format` : Non-null `printf`-style format string.
 	/// - `...` : Additional arguments that satisfy the format string.
-	bool print(const char* format_, ...) hxattr_format_printf(2, 3) hxattr_hot;
+	bool print(const char* format_, ...) hxattr_printf(2, 3) hxattr_hot;
 
 	/// Reads a formatted UTF-8 string from the file. Uses `scanf` conventions.
 	/// Returns the same value as `scanf`. Use `hxfile::skip_asserts` to read until `EOF`.
@@ -191,7 +191,7 @@ public:
 	/// on a return value of `EOF` from `vfscanf`. Returns a negative value on `EOF`.
 	/// - `format` : Non-null `scanf`-style format string.
 	/// - `...` : Additional arguments that satisfy the format string.
-	int scan(const char* format_, ...) hxattr_format_scanf(2, 3) hxattr_hot;
+	int scan(const char* format_, ...) hxattr_scanf(2, 3) hxattr_hot;
 
 	/// Reads a single unformatted native-endian object from the file.
 	/// - `t` : Reference to the object where the data will be stored.

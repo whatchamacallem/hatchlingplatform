@@ -74,24 +74,20 @@ extern "C" {
 /// Prevents a write iterator from interfering with a read iterator.
 #define hxrestrict
 
-/// `hxattr_hot` - Optimize a function more aggressively. Significantly increases
-/// code utilization. Adjust implementation according to needs.
-#define hxattr_hot
+/// `hxattr_allocator` - Mark allocator/deallocator pairs for static analysis.
+/// See the gcc manual. Must return non-null as well.
+#define hxattr_allocator(...)
+
+/// `hxattr_assume` - Tell the optimizer that `condition_` is always true.
+/// Similar to C++23 `[[assume(condition_)]];`.
+#define hxattr_assume(condition_)
 
 /// `hxattr_cold` - Optimize a function for size.
 #define hxattr_cold
 
-/// `hxattr_format_printf` - Indicates to gcc that a function uses `printf`-style
-/// formatting so it can type-check the format string.
-#define hxattr_format_printf(pos_, start_)
-
-/// `hxattr_format_scanf` - Indicates to gcc that a function uses `scanf`-style
-/// formatting so it can type-check the format string.
-#define hxattr_format_scanf(pos_, start_)
-
-/// `hxattr_allocator` - Mark allocator/deallocator pairs for static analysis.
-/// See the gcc manual. Must return non-null as well.
-#define hxattr_allocator(...)
+/// `hxattr_hot` - Optimize a function more aggressively. Significantly increases
+/// code utilization. Adjust implementation according to needs.
+#define hxattr_hot
 
 /// `hxattr_nodiscard` - Indicates the caller should not discard the return value.
 #define hxattr_nodiscard
@@ -107,6 +103,14 @@ extern "C" {
 /// `hxattr_noreturn` - Indicates that a function will never return. E.g., by
 /// calling `_Exit`.
 #define hxattr_noreturn
+
+/// `hxattr_printf` - Indicates to gcc that a function uses `printf`-style
+/// formatting so it can type-check the format string.
+#define hxattr_printf(pos_, start_)
+
+/// `hxattr_scanf` - Indicates to gcc that a function uses `scanf`-style
+/// formatting so it can type-check the format string.
+#define hxattr_scanf(pos_, start_)
 
 // ----------------------------------------------------------------------------
 // Target settings for MSVC. MSVC doesn't support C++'s feature test macros very
@@ -127,14 +131,15 @@ extern "C" {
 #define hxbreakpoint() (__debugbreak(),true)
 #define hxrestrict __restrict
 #define hxattr_allocator(...)
-#define hxattr_hot
+#define hxattr_assume(condition_) __assume(condition_)
 #define hxattr_cold
-#define hxattr_format_printf(pos_, start_)
-#define hxattr_format_scanf(pos_, start_)
+#define hxattr_hot
 #define hxattr_nodiscard
 #define hxattr_noexcept __declspec(nothrow)
 #define hxattr_nonnull(...)
 #define hxattr_noreturn
+#define hxattr_printf(pos_, start_)
+#define hxattr_scanf(pos_, start_)
 
 // ----------------------------------------------------------------------------
 // Target settings for clang and gcc. Further compilers will require
@@ -177,14 +182,15 @@ extern "C" {
 	__attribute__((returns_nonnull)) __attribute__((warn_unused_result))
 #endif
 
-#define hxattr_hot __attribute__((hot)) __attribute__((flatten))
+#define hxattr_assume(condition_) __attribute__((assume(condition_)))
 #define hxattr_cold __attribute__((cold))
-#define hxattr_format_printf(pos_, start_) __attribute__((format(printf, pos_, start_)))
-#define hxattr_format_scanf(pos_, start_) __attribute__((format(scanf, pos_, start_)))
+#define hxattr_hot __attribute__((hot)) __attribute__((flatten))
 #define hxattr_nodiscard __attribute__((warn_unused_result))
 #define hxattr_noexcept __attribute__((nothrow))
 #define hxattr_nonnull(...)__attribute__((nonnull(__VA_ARGS__)))
 #define hxattr_noreturn __attribute__((noreturn))
+#define hxattr_printf(pos_, start_) __attribute__((format(printf, pos_, start_)))
+#define hxattr_scanf(pos_, start_) __attribute__((format(scanf, pos_, start_)))
 
 #endif // target specific settings
 

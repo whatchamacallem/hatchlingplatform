@@ -189,7 +189,7 @@ void hxshutdown(void) hxattr_cold;
 /// - `level` : The log level (e.g., `hxloglevel_log`, `hxloglevel_warning`).
 /// - `format` : Non-null `printf`-style format string.
 /// - `...` Additional arguments that must satisfy the format string.
-void hxloghandler(enum hxloglevel_t level_, const char* format_, ...) hxattr_noexcept hxattr_format_printf(2, 3);
+void hxloghandler(enum hxloglevel_t level_, const char* format_, ...) hxattr_noexcept hxattr_printf(2, 3);
 
 /// `hxloghandler_v` - A `va_list` version of `hxloghandler`. This is the only
 /// access to logging when `HX_RELEASE > 2`.
