@@ -298,8 +298,8 @@ constexpr hxremove_reference_t<T_>&& hxmove(T_&& t_) {
 /// has `T::T(T&&)` or `T::operator=(T&&)` then those will be used.
 template<typename T_>
 constexpr void hxswap(T_& x_, T_& y_) {
+	// Provides an optimization hint.
 	hxassertmsg(&x_ != &y_, "hxswap No swapping with self.");
-	hxattr_assume(&x_ != &y_);
 	T_ t_(hxmove(x_));
 	x_ = hxmove(y_);
 	y_ = hxmove(t_);

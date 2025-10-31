@@ -14,7 +14,7 @@ BUILD="-DHX_RELEASE=3 -DHX_USE_THREADS=1 -Os -static"
 
 ERRORS="-Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual \
 	-Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time \
-	-Wmissing-declarations"
+	-Wmissing-declarations -Wno-assume"
 
 FLAGS="-g -ffunction-sections -fdata-sections -ffast-math"
 

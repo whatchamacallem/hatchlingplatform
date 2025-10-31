@@ -129,7 +129,7 @@ void hxpartition_sort_(hxrestrict_t<iterator_t_> begin_, iterator_t_ end_, const
 	// last pivot. This is an end iterator that goes left.
 	iterator_t_ gt_ = back_ - ptrdiff_t{1};
 
-	hxattr_assume(lt_ <= gt_);
+	hxassert(lt_ <= gt_); // Provides an optimization hint.
 	for(iterator_t_ i_ = lt_; i_ <= gt_; ) {
 		if(less_(*i_, *begin_)) {
 			// Swap into less-than range and extend it.

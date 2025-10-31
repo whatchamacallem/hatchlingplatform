@@ -76,7 +76,8 @@ done
 run_clang_build() {
 	N="$1"
 	shift
-	EXTRAS="$*"
+	case ${N-} in 3) ASSUME='-Wno-assume';; *) ASSUME=;; esac
+	EXTRAS="$ASSUME $*"
 
 	echo clang c17/c++20 -O$N $EXTRAS ...
 

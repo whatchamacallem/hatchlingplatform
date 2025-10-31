@@ -182,8 +182,14 @@ extern "C" {
 	__attribute__((returns_nonnull)) __attribute__((warn_unused_result))
 #endif
 
-// This does not have the same constraints as the assume attribute.
-#define hxattr_assume(condition_) (void)((condition_) || (__builtin_unreachable(),0))
+#if defined(__clang__)
+#define hxattr_assume(condition_) __builtin_assume(condition_)
+#else
+// The solution for gcc may have side effects. Use with caution.
+// #define hxattr_assume(condition_) (void)((bool)(condition_) || (__builtin_unreachable(),0))
+#define hxattr_assume(...) (void)0
+#endif
+
 #define hxattr_cold __attribute__((cold))
 #define hxattr_hot __attribute__((hot)) __attribute__((flatten))
 #define hxattr_nodiscard __attribute__((warn_unused_result))

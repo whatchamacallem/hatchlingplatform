@@ -154,7 +154,8 @@ void hxasserthandler(hxhash_t file_, size_t line_) hxattr_noexcept hxattr_noretu
 /// `x` is false. This is only evaluated when `HX_RELEASE <= 1`.
 /// - `x` : The condition to evaluate.
 /// - `...` Variadic arguments for the formatted warning message.
-#define hxwarnmsg(x_, ...) (void)((bool)(x_) || (hxloghandler(hxloglevel_warning, __VA_ARGS__), 0))
+#define hxwarnmsg(x_, ...) (void)((bool)(x_) \
+	|| (hxloghandler(hxloglevel_warning, __VA_ARGS__), 0))
 
 #else // HX_RELEASE >= 2
 #define hxlogrelease(...) ((void)0)
@@ -166,8 +167,9 @@ void hxasserthandler(hxhash_t file_, size_t line_) hxattr_noexcept hxattr_noretu
 // hxassertrelease has 4 variations. See above. It is only evaluated when
 // HX_RELEASE < 3.
 #if (HX_RELEASE) == 1
-#define hxassertrelease(x_, ...) (void)((bool)(x_) || (hxloghandler(hxloglevel_assert, __VA_ARGS__), \
-	hxasserthandler(hxstring_literal_hash(__FILE__), __LINE__), 0))
+#define hxassertrelease(x_, ...) (void)((bool)(x_) \
+	|| (hxloghandler(hxloglevel_assert, __VA_ARGS__), \
+		hxasserthandler(hxstring_literal_hash(__FILE__), __LINE__), 0))
 #elif (HX_RELEASE) == 2
 #define hxassertrelease(x_, ...) (void)((bool)(x_) \
 	|| (hxasserthandler(hxstring_literal_hash(__FILE__), __LINE__), 0))
@@ -182,10 +184,10 @@ void hxasserthandler(hxhash_t file_, size_t line_) hxattr_noexcept hxattr_noretu
 /// `hxinit_internal` - Internal. Use `hxinit` instead. It checks `g_hxinit_ver_`.
 void hxinit_internal(int version_) hxattr_cold;
 
-/// `g_hxinit_ver_` - Internal. Set to current library version by `hxinit`. This is
-/// renamed in settings.h to contain the library version in order to cause
-/// meaningful link errors when linked against stale binaries. The linker
-/// symbol should look like `g_hxinit_ver31700_`.
+/// `g_hxinit_ver_` - Internal. Set to current library version by `hxinit`. This
+/// is renamed in settings.h to contain the library version in order to cause
+/// meaningful link errors when linked against stale binaries. The linker symbol
+/// should look like `g_hxinit_ver31700_`.
 extern int g_hxinit_ver_;
 
 /// `hxshutdown` - Terminates service. Releases all resources acquired by the
