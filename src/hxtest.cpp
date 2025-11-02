@@ -20,7 +20,10 @@ namespace hxdetail_ {
 __attribute__((optnone))
 #endif
 bool hxtest_float_eq_(float a_, float b_) {
+#ifndef __FAST_MATH__
+	// -fno-fast-math explicitly breaks isfinite.
 	if(!isfinite(a_) || !isfinite(b_)) { return false; }
+#endif
 	if(a_ == b_) { return true; }
 
 	uint32_t ua_; ::memcpy(&ua_, &a_, sizeof ua_);
@@ -38,7 +41,10 @@ bool hxtest_float_eq_(float a_, float b_) {
 __attribute__((optnone))
 #endif
 bool hxtest_double_eq_(double a_, double b_) {
+#ifndef __FAST_MATH__
+	// -fno-fast-math explicitly breaks isfinite.
 	if(!isfinite(a_) || !isfinite(b_)) { return false; }
+#endif
 	if(a_ == b_) { return true; }
 
 	uint64_t ua_; ::memcpy(&ua_, &a_, sizeof ua_);
