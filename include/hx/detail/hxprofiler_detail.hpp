@@ -12,6 +12,10 @@
 #include "../hxarray.hpp"
 #include "../hxthread.hpp"
 
+#if defined(_MSC_VER)
+#include <intrin.h>
+#endif
+
 #if HX_USE_THREADS
 #define HX_PROFILER_LOCK_() const hxunique_lock hxprofiler_mutex_lock_(g_hxprofiler_.m_mutex_)
 #else
@@ -25,16 +29,8 @@ inline hxcycles_t hxtime_sample_cycles(void) {
 	cycles_ = (uint64_t)t_;
 #elif defined __x86_64__ || defined __i386__
 	cycles_ = __rdtsc();
-#elif defined __aarch64__  // ARMv8-A 64-bit.
-	__asm__ volatile("mrs %0, cntvct_el0" : "=r"(cycles_));
-#elif defined __arm__  // ARMv7-A 32-bit.
-	uint32_t t_;
-	__asm__ volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(t_));
-	cycles_ = (uint64_t)t_;
-#elif defined __riscv && (__riscv_xlen == 64)
-	__asm__ volatile("rdcycle %0" : "=r"(cycles_));
-#elif defined __powerpc__ || defined __ppc__
-	__asm__ volatile("mftb %0" : "=r"(cycles_));
+#elif defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86))
+	cycles_ = __rdtsc();
 #else
 static_assert(0, "Implement hxtime_sample_cycles.");
 #endif

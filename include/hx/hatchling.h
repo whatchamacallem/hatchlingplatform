@@ -26,7 +26,7 @@
 #include <string.h>
 #include <signal.h>
 
-#if defined __STDC_VERSION__ && __STDC_VERSION__ < 202311l
+#if  !defined __STDC_VERSION__ || __STDC_VERSION__ < 202311l
 #include <stdbool.h>
 #endif
 
