@@ -4,6 +4,76 @@
 {
 	"tasks": [
 		{
+			"type": "shell",
+			"label": "generate msvc x64 debug",
+			"command": "call \"C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Community\\\\VC\\\\Auxiliary\\\\Build\\\\vcvars64.bat\" && cmake -S . -B build -G \"Visual Studio 17 2022\" -A x64 && cmake --build build --config Debug",
+			"options": {
+				"cwd": "${workspaceFolder}",
+				"shell": {
+					"executable": "C:\\\\Windows\\\\System32\\\\cmd.exe",
+					"args": [ "/d", "/c" ]
+				}
+			},
+			"problemMatcher": [ "$msCompile" ],
+			"group": { "kind": "build" }
+		},
+		{
+			"type": "shell",
+			"label": "generate msvc x64 release",
+			"command": "call \"C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Community\\\\VC\\\\Auxiliary\\\\Build\\\\vcvars64.bat\" && cmake -S . -B build -G \"Visual Studio 17 2022\" -A x64 && cmake --build build --config Release",
+			"options": {
+				"cwd": "${workspaceFolder}",
+				"shell": {
+					"executable": "C:\\\\Windows\\\\System32\\\\cmd.exe",
+					"args": [ "/d", "/c" ]
+				}
+			},
+			"problemMatcher": [ "$msCompile" ],
+			"group": { "kind": "build" }
+		},
+		{
+			"type": "shell",
+			"label": "generate msvc win32 debug",
+			"command": "call \"C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Community\\\\VC\\\\Auxiliary\\\\Build\\\\vcvarsall.bat\" x86 && cmake -S . -B build -G \"Visual Studio 17 2022\" -A Win32 && cmake --build build --config Debug",
+			"options": {
+				"cwd": "${workspaceFolder}",
+				"shell": {
+					"executable": "C:\\\\Windows\\\\System32\\\\cmd.exe",
+					"args": [ "/d", "/c" ]
+				}
+			},
+			"problemMatcher": [ "$msCompile" ],
+			"group": { "kind": "build" }
+		},
+		{
+			"type": "shell",
+			"label": "generate msvc win32 release",
+			"command": "call \"C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Community\\\\VC\\\\Auxiliary\\\\Build\\\\vcvarsall.bat\" x86 && cmake -S . -B build -G \"Visual Studio 17 2022\" -A Win32 && cmake --build build --config Release",
+			"options": {
+				"cwd": "${workspaceFolder}",
+				"shell": {
+					"executable": "C:\\\\Windows\\\\System32\\\\cmd.exe",
+					"args": [ "/d", "/c" ]
+				}
+			},
+			"problemMatcher": [ "$msCompile" ],
+			"group": { "kind": "build" }
+		},
+		{
+			"type": "shell",
+			"label": "msvc build existing",
+			"command": "call \"C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Community\\\\VC\\\\Auxiliary\\\\Build\\\\vcvars64.bat\" && cmake --build build",
+			"options": {
+				"cwd": "${workspaceFolder}",
+				"shell": {
+					"executable": "C:\\\\Windows\\\\System32\\\\cmd.exe",
+					"args": [ "/d", "/c" ]
+				}
+			},
+			"problemMatcher": [ "$msCompile" ],
+			"group": { "kind": "build" }
+		},
+		{
 			"type": "cppbuild",
 			"label": "clang debug build",
 			"command": "./debugbuild.sh",

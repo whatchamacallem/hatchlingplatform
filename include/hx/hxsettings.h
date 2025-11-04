@@ -117,8 +117,6 @@ extern "C" {
 // well.
 #elif defined _MSC_VER
 
-#error The MSVC build is currently unmaintained. It should be easy to fix.
-
 #if !defined __cpp_exceptions && !defined _HAS_EXCEPTIONS
 #define _HAS_EXCEPTIONS 0
 #endif
@@ -130,12 +128,14 @@ extern "C" {
 #define HX_NO_LIBCXX 0
 #define hxbreakpoint() (__debugbreak(),true)
 #define hxrestrict __restrict
+
+// Standard C++ attributes are recommended for Windows instead.
 #define hxattr_allocator(...)
 #define hxattr_assume(condition_) __assume(condition_)
 #define hxattr_cold
 #define hxattr_hot
 #define hxattr_nodiscard
-#define hxattr_noexcept __declspec(nothrow)
+#define hxattr_noexcept
 #define hxattr_nonnull(...)
 #define hxattr_noreturn
 #define hxattr_printf(...)
