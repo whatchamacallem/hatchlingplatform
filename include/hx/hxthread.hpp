@@ -42,7 +42,6 @@
 #if defined(__has_include) && __has_include(<threads.h>)
 #define HX_USE_C11_THREADS 1
 #include <threads.h>
-#include <string.h>
 #else
 #define HX_USE_C11_THREADS 0
 #include <pthread.h>
@@ -53,7 +52,7 @@
 inline size_t hxthread_id() {
 #if HX_USE_THREADS
 #if HX_USE_C11_THREADS
-	return ::thrd_current();
+	return static_cast<size_t>(::thrd_current());
 #else
 	return static_cast<size_t>(::pthread_self());
 #endif
@@ -416,7 +415,7 @@ public:
 	/// Starts a thread with the given function and argument. Does not free the
 	/// argument. Any function that takes a single `T` pointer and returns a
 	/// `void` pointer should work. The return value is ignored but is required by
-	/// the pthread calling convention.
+	/// the native calling convention.
 	/// - `entry_point` : Function pointer of type: void* entry_point(T*).
 	/// - `parameter` : T* to pass to the function.
 	template<typename parameter_t_>
@@ -430,10 +429,16 @@ public:
 
 		void* reinterpreted_parameter_ = hxnull;
 		::memcpy(&reinterpreted_parameter_, &parameter_, sizeof(void*)); // NOLINT
+#if HX_USE_C11_THREADS
+		entry_point_function_t_ native_entry_ = reinterpret_cast<entry_point_function_t_>(entry_point_);
+		const int code_ = ::thrd_create(&m_thread_, native_entry_, reinterpreted_parameter_);
+		hxassertrelease(code_ == thrd_success, "thrd_create %d", code_); (void)code_;
+#else
 		const int code_ = ::pthread_create(&m_thread_, 0, reinterpret_cast<entry_point_function_t_>(entry_point_),
-reinterpreted_parameter_);
+			reinterpreted_parameter_);
 
 		hxassertrelease(code_ == 0, "pthread_create %d", code_); (void)code_;
+#endif
 		m_started_ = true;
 		m_joined_ = false;
 	}
@@ -445,15 +450,24 @@ reinterpreted_parameter_);
 	/// Joins the thread. Blocks until the thread finishes.
 	void join(void) {
 		hxassertmsg(this->joinable(), "thread_not_runnning");
+#if HX_USE_C11_THREADS
+		const int code_ = ::thrd_join(m_thread_, hxnull);
+		hxassertrelease(code_ == thrd_success, "thrd_join %d", code_);
+		(void)code_;
+#else
 		const int code_ = ::pthread_join(m_thread_, 0);
 		hxassertrelease(code_ == 0, "pthread_join %s", ::strerror(code_));
 		(void)code_;
+#endif
 		m_joined_ = true;
 	}
 
 private:
-	// Type expected by pthread.
+#if HX_USE_C11_THREADS
+	typedef int (*entry_point_function_t_)(void*);
+#else
 	typedef void* (*entry_point_function_t_)(void*);
+#endif
 
 	// Deleted copy constructor.
 	hxthread(const hxthread&) = delete;
@@ -461,7 +475,11 @@ private:
 	// Deleted copy assignment operator.
 	hxthread& operator=(const hxthread&) = delete;
 
+#if HX_USE_C11_THREADS
+	::thrd_t m_thread_;
+#else
 	::pthread_t m_thread_;
+#endif
 	bool m_started_;
 	bool m_joined_;
 };
