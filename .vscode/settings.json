@@ -135,6 +135,7 @@
         "testpythonbindings",
         "teststrip",
         "testwasm",
+        "thrd",
         "tsan",
         "ubsan",
         "ulonglong",

@@ -103,7 +103,10 @@ public:
 					// Allocators are not required to track byes outstanding.
 					// But they have to get it right when they do.
 					ASSERT_EQ(allocator_scope.get_initial_bytes_allocated(), start_bytes);
-					ASSERT_NEAR(allocator_scope.get_current_bytes_allocated(), start_bytes + 300u, 2u * HX_ALIGNMENT);
+					ASSERT_NEAR(
+						static_cast<double>(allocator_scope.get_current_bytes_allocated()),
+						static_cast<double>(start_bytes + 300u),
+						static_cast<double>(2u * HX_ALIGNMENT));
 				}
 			}
 

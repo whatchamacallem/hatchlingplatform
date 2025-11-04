@@ -41,7 +41,7 @@ public:
 		if(m_table_size_bits_ == 0u) {
 			hxassertmsg(bits_ > 0u && bits_ <= hxhash_bits, "bad_hash_bits %d", (int)bits_);
 			m_table_size_bits_ = bits_;
-			this->reserve_storage(1u << bits_);
+			this->reserve_storage(static_cast<size_t>(1u) << bits_);
 			::memset(this->data(), 0x00, sizeof(node_t_*) * this->capacity());
 		}
 	}

@@ -48,19 +48,6 @@
 #endif
 #endif
 
-/// Returns the current thread ID. Returns `0` when threads are disabled.
-inline size_t hxthread_id() {
-#if HX_USE_THREADS
-#if HX_USE_C11_THREADS
-	return static_cast<size_t>(::thrd_current());
-#else
-	return static_cast<size_t>(::pthread_self());
-#endif
-#else
-	return 0; // Single threaded.
-#endif
-}
-
 /// `hxthread_local<T>` - Provides a C++ template for thread-local storage, allowing
 /// each thread to maintain its own instance of a specified type T. This class is
 /// available for compatibility when threading is off.
@@ -93,9 +80,10 @@ public:
 	}
 
 	/// Sets the thread-local value from `T`.
-	void operator=(const T_& local_) { *(this->get_local_()) = local_; }
+	template<class U_>
+	void operator=(U_&& local_) { *(this->get_local_()) = hxforward<U_>(local_); }
 
-	/// Casts the thread-local value to `T`.
+	/// Casts the thread-local value to `T&`.
 	operator const T_&() const { return *(this->get_local_()); }
 	operator T_&() { return *(this->get_local_()); }
 
@@ -150,6 +138,21 @@ private:
 #endif
 	T_ m_default_value_;
 };
+
+/// Returns the current thread ID. Returns `0` when threads are disabled. This
+/// is used by the profiler and so it tries to be efficient.
+inline size_t hxthread_id() {
+#if HX_USE_THREADS
+#if HX_USE_C11_THREADS
+    static hxthread_local<size_t> tid_;
+    return reinterpret_cast<uintptr_t>(&tid_);
+#else
+	return static_cast<size_t>(::pthread_self());
+#endif
+#else
+	return 0; // Single threaded.
+#endif
+}
 
 // The remaining classes are only available when threading is enabled. Emulating
 // pthreads is a little too nutty because it has a range of valid implementations.
@@ -421,6 +424,9 @@ public:
 	template<typename parameter_t_>
 	void start(void* (*entry_point_)(parameter_t_*), parameter_t_* parameter_) {
 		hxassertmsg(!this->joinable(), "thread_still_running");
+
+		// Initialize this single threaded as local statics may not be locked.
+ 		hxthread_id();
 
 		// Stay on the right side of the C++ standard by avoiding assumptions
 		// about pointer representations. The parameter is being reinterpreted
