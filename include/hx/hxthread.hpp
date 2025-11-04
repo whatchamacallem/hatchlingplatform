@@ -35,6 +35,7 @@
 /// For atomics consider `<stdatomic.h>`. It is the same as `std::atomic`.
 
 #include "hatchling.h"
+#include "hxutility.h"
 
 #if HX_USE_THREADS
 #include <errno.h>
