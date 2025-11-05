@@ -32,22 +32,22 @@ public:
 	int* value;
 };
 
-void* hxthread_test_func_increment(hxthread_test_simple_parameters_t* parameters) {
+hxthread::return_t hxthread_test_func_increment(hxthread_test_simple_parameters_t* parameters) {
 	const hxunique_lock lock(*parameters->mutex);
 	++(*parameters->shared);
-	return hxnull;
+	return 0;
 }
 
-void* hxthread_test_func_notify_one(hxthread_test_parameters_t* parameters) {
+hxthread::return_t hxthread_test_func_notify_one(hxthread_test_parameters_t* parameters) {
 	hxunique_lock lock(*parameters->mutex);
 	while(!*parameters->ready) {
 		const bool wait_result = parameters->condition_variable->wait(lock);
 		hxassertrelease(wait_result, "wait"); (void)wait_result;
 	};
-	return hxnull;
+	return 0;
 }
 
-void* hxthread_test_func_notify_all(hxthread_test_parameters_t* parameters) {
+hxthread::return_t hxthread_test_func_notify_all(hxthread_test_parameters_t* parameters) {
 	hxunique_lock lock(*parameters->mutex);
 	while(!*parameters->ready) {
 		const bool wait_result = parameters->condition_variable->wait(lock);
@@ -56,22 +56,22 @@ void* hxthread_test_func_notify_all(hxthread_test_parameters_t* parameters) {
 	if(parameters->woken != hxnull) {
 		++(*parameters->woken);
 	}
-	return hxnull;
+	return 0;
 }
 
-void* hxthread_test_func_lock_unlock_multiple(hxthread_test_parameters_t* parameters) {
+hxthread::return_t hxthread_test_func_lock_unlock_multiple(hxthread_test_parameters_t* parameters) {
 	const hxunique_lock lock(*parameters->mutex);
 	++(*parameters->woken);
-	return hxnull;
+	return 0;
 }
 
-void* hxthread_test_func_wait_notify_sequence(hxthread_test_parameters_t* parameters) {
+hxthread::return_t hxthread_test_func_wait_notify_sequence(hxthread_test_parameters_t* parameters) {
 	hxunique_lock lock(*parameters->mutex);
 	while(!*parameters->ready) {
 		const bool wait_result = parameters->condition_variable->wait(lock);
 		hxassertrelease(wait_result, "wait"); (void)wait_result;
 	}
-	return hxnull;
+	return 0;
 }
 
 hxmutex hxthread_local_destructor_mutex;
@@ -93,10 +93,10 @@ public:
 
 hxthread_local<hxthread_test_thread_local_destructor> hxthread_local_destructor_tls;
 
-void* hxthread_local_destructor_thread(int*) {
+hxthread::return_t hxthread_local_destructor_thread(int*) {
 	hxthread_test_thread_local_destructor& tracker = hxthread_local_destructor_tls;
 	tracker.track = true;
-	return hxnull;
+	return 0;
 }
 
 } // namespace {

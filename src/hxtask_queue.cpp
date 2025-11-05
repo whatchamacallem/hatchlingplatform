@@ -119,7 +119,7 @@ void hxtask_queue::wait_for_all(void) {
 }
 
 #if HX_USE_THREADS
-void* hxtask_queue::thread_task_loop_entry_(hxtask_queue* q_) {
+hxthread::return_t hxtask_queue::thread_task_loop_entry_(hxtask_queue* q_) {
 	thread_task_loop_(q_, thread_mode_pool_);
 	return hxnull;
 }

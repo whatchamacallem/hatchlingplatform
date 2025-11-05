@@ -56,8 +56,9 @@ extern "C" {
 // Target settings for Doxygen. See the Doxyfile. Run doxygen with no args.
 #if defined HX_DOXYGEN_PARSER
 
-/// `HX_USE_THREADS` - Indicates pthreads is in use.
-#define HX_USE_THREADS 1
+/// `HX_USE_THREADS` - `11` indicates C11 threads are in use. `1` is for pthreads
+/// and `0` is for no threading.
+#define HX_USE_THREADS 11
 
 /// `HX_NO_LIBCXX`: 1 - Set to 1 when libstdc++/libc++ are not present.
 /// Indicates the implementation is incompatible with the standard C++ library
@@ -122,7 +123,7 @@ extern "C" {
 #endif
 
 #if !defined HX_USE_THREADS
-#define HX_USE_THREADS 1
+#define HX_USE_THREADS 11
 #endif
 
 #define HX_NO_LIBCXX 0
@@ -150,7 +151,9 @@ extern "C" {
 // hooked up. _POSIX_THREADS is the correct way to observe the -pthread compiler
 // flag.
 #if !defined HX_USE_THREADS
-#if defined _POSIX_THREADS
+#if defined __has_include && __has_include(<threads.h>)
+#define HX_USE_THREADS 11
+#elif defined _POSIX_THREADS
 #define HX_USE_THREADS 1
 #else
 #define HX_USE_THREADS 0

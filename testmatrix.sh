@@ -90,13 +90,13 @@ run_clang_build() {
 	# generate C++20 pch. clang does this automatically when a c++ header file
 	# is the target.
 	clang++ -I../include -DHX_RELEASE=$N -O$N $FLAGS $ERRORS \
-		-DHX_USE_THREADS=$N -pthread -std=c++20 \
+		-DHX_USE_THREADS=1 -pthread -std=c++20 \
 		-fno-exceptions -fdiagnostics-absolute-paths $EXTRAS \
 		../include/hx/hatchling_pch.hpp -o hatchling_pch.hpp.pch
 
 	# compile C++20 and link
 	clang++ -I../include -DHX_RELEASE=$N -O$N $FLAGS $ERRORS \
-		-DHX_USE_THREADS=$N -pthread -std=c++20 \
+		-DHX_USE_THREADS=1 -pthread -std=c++20 \
 		-fno-exceptions -fdiagnostics-absolute-paths $EXTRAS \
 		-include-pch hatchling_pch.hpp.pch ../src/*.cpp ../test/*.cpp *.o \
 		-lpthread -lstdc++ -o hxtest

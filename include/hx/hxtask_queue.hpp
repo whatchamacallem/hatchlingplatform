@@ -123,7 +123,7 @@ private:
 		run_level_stopped_ = 0xdeadbeefu
 	};
 
-	static void* thread_task_loop_entry_(hxtask_queue* q_);
+	static hxthread::return_t thread_task_loop_entry_(hxtask_queue* q_);
 	static void thread_task_loop_(hxtask_queue* q_, thread_mode_t_ mode_);
 
 	run_level_t_ m_queue_run_level_;

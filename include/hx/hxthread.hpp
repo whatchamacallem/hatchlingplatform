@@ -37,16 +37,15 @@
 #include "hatchling.h"
 #include "hxutility.h"
 
-#if HX_USE_THREADS
-#include <errno.h>
+static_assert((HX_USE_THREADS) == 0 || (HX_USE_THREADS) == 1 || (HX_USE_THREADS) == 11,
+	"HX_USE_THREADS must be 0, 1 or 11. 11 is for using <threads.h>");
 
-#if defined(__has_include) && __has_include(<threads.h>)
-#define HX_USE_C11_THREADS 1
+#if (HX_USE_THREADS) == 11
+#include <errno.h>
 #include <threads.h>
-#else
-#define HX_USE_C11_THREADS 0
+#elif HX_USE_THREADS
+#include <errno.h>
 #include <pthread.h>
-#endif
 #endif
 
 /// `hxthread_local<T>` - Provides a C++ template for thread-local storage, allowing
@@ -58,25 +57,21 @@ public:
 	/// Constructs with a default value for each thread.
 	explicit hxthread_local(const T_& default_value_ = T_())
 			: m_default_value_(default_value_) {
-#if HX_USE_THREADS
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 		const int code_ = ::tss_create(&m_key_, destroy_local_);
 		hxassertrelease(code_ == thrd_success, "tss_create %d", code_); (void)code_;
-#else
+#elif HX_USE_THREADS
 		const int code_ = ::pthread_key_create(&m_key_, destroy_local_);
 		hxassertrelease(code_ == 0, "pthread_key_create %s", ::strerror(code_)); (void)code_;
-#endif
 #endif
 	}
 
 	/// Frees resources.
 	~hxthread_local() {
-#if HX_USE_THREADS
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 		::tss_delete(m_key_);
-#else
+#elif HX_USE_THREADS
 		::pthread_key_delete(m_key_);
-#endif
 #endif
 	}
 
@@ -97,7 +92,7 @@ private:
 	// know or care when storage is allocated for it.
 #if HX_USE_THREADS
 	T_* get_local_() const {
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 		T_* local_ = static_cast<T_*>(::tss_get(m_key_));
 		if(local_ == hxnull) {
 			local_ = new T_(m_default_value_);
@@ -130,12 +125,10 @@ private:
 	explicit hxthread_local(const hxthread_local&) = delete;
 	hxthread_local& operator=(const hxthread_local&) = delete;
 
-#if HX_USE_THREADS
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 	::tss_t m_key_;
-#else
+#elif HX_USE_THREADS
 	::pthread_key_t m_key_;
-#endif
 #endif
 	T_ m_default_value_;
 };
@@ -143,13 +136,11 @@ private:
 /// Returns the current thread ID. Returns `0` when threads are disabled. This
 /// is used by the profiler and so it tries to be efficient.
 inline size_t hxthread_id() {
-#if HX_USE_THREADS
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
     static hxthread_local<size_t> tid_;
     return reinterpret_cast<uintptr_t>(&tid_);
-#else
+#elif HX_USE_THREADS
 	return static_cast<size_t>(::pthread_self());
-#endif
 #else
 	return 0; // Single threaded.
 #endif
@@ -168,7 +159,7 @@ public:
 	/// Constructs a mutex and initializes it. May not return if the mutex can't
 	/// be initialized correctly. Something is very wrong if this fails.
 	inline hxmutex(void) {
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 		const int code_ = ::mtx_init(&m_mutex_, mtx_plain);
 		hxassertrelease(code_ == thrd_success, "mtx_init %d", code_); (void)code_;
 #else
@@ -179,7 +170,7 @@ public:
 
 	/// Destroys the mutex.
 	~hxmutex(void) {
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 		::mtx_destroy(&m_mutex_);
 #else
 		const int code_ = ::pthread_mutex_destroy(&m_mutex_);
@@ -191,7 +182,7 @@ public:
 	/// and returns false on failure. Callers must check the return value and
 	/// avoid ignoring lock failures.
 	bool lock(void) hxattr_nodiscard {
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 		const int code_ = ::mtx_lock(&m_mutex_);
 		hxassertmsg(code_ == thrd_success, "mtx_lock %d", code_);
 		return code_ == thrd_success;
@@ -206,7 +197,7 @@ public:
 	/// otherwise. It is undefined to unlock a mutex that you have not locked, and
 	/// such an operation may succeed.
 	bool unlock(void) {
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 		const int code_ = ::mtx_unlock(&m_mutex_);
 		hxassertmsg(code_ == thrd_success, "mtx_unlock %d", code_);
 		return code_ == thrd_success;
@@ -218,7 +209,7 @@ public:
 	}
 
 	/// Returns a pointer to the native mutex handle.
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 	::mtx_t* native_handle(void) { return &m_mutex_; }
 #else
 	::pthread_mutex_t* native_handle(void) { return &m_mutex_; }
@@ -230,7 +221,7 @@ private:
 	// Deleted copy assignment operator.
 	hxmutex& operator=(const hxmutex&) = delete;
 
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 	::mtx_t m_mutex_;
 #else
 	::pthread_mutex_t m_mutex_;
@@ -291,7 +282,7 @@ class hxcondition_variable {
 public:
 	/// Constructs and initializes the condition variable.
 	hxcondition_variable(void) {
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 		const int code_ = ::cnd_init(&m_cond_);
 		hxassertrelease(code_ == thrd_success, "cnd_init %d", code_); (void)code_;
 #else
@@ -302,7 +293,7 @@ public:
 
 	/// Destroys the condition variable if valid.
 	~hxcondition_variable(void) {
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 		::cnd_destroy(&m_cond_);
 #else
 		const int code_ = ::pthread_cond_destroy(&m_cond_);
@@ -315,7 +306,7 @@ public:
 	/// succeeded.
 	/// - `mutex` : The mutex to use for waiting.
 	bool wait(hxmutex& mutex_) hxattr_nodiscard {
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 		const int code_ = ::cnd_wait(&m_cond_, mutex_.native_handle());
 		hxassertmsg(code_ == thrd_success, "cnd_wait %d", code_);
 		return code_ == thrd_success;
@@ -348,7 +339,7 @@ public:
 
 	/// Notifies one waiting thread. Returns true on success, false otherwise.
 	bool notify_one(void) {
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 		const int code_ = ::cnd_signal(&m_cond_);
 		hxassertmsg(code_ == thrd_success, "cnd_signal %d", code_);
 		return code_ == thrd_success;
@@ -361,7 +352,7 @@ public:
 
 	/// Notifies all waiting threads. Returns true on success, false otherwise.
 	bool notify_all(void) {
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 		const int code_ = ::cnd_broadcast(&m_cond_);
 		hxassertmsg(code_ == thrd_success, "cnd_broadcast %d", code_);
 		return code_ == thrd_success;
@@ -373,7 +364,7 @@ public:
 	}
 
 	/// Returns a pointer to the native condition variable handle.
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 	::cnd_t* native_handle(void) { return &m_cond_; }
 #else
 	::pthread_cond_t* native_handle(void) { return &m_cond_; }
@@ -385,7 +376,7 @@ private:
 	// Deleted copy assignment operator.
 	hxcondition_variable& operator=(const hxcondition_variable&) = delete;
 
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 	::cnd_t m_cond_;
 #else
 	::pthread_cond_t m_cond_;
@@ -396,6 +387,12 @@ private:
 /// Provides thread creation and joining.
 class hxthread {
 public:
+#if (HX_USE_THREADS) == 11
+	using return_t = int;
+#else
+	using return_t = void*;
+#endif
+
 	/// Default constructor. Thread is not started.
 	hxthread() : m_thread_(), m_started_(false), m_joined_(false) { }
 
@@ -403,10 +400,10 @@ public:
 	/// not free the argument. Any function that takes a single pointer and
 	/// returns a void pointer should work. The return value is ignored but may be
 	/// unsafe to cast to a function with a different return type.
-	/// - `entry_point` : Function pointer of type: void* fn(T*).
-	/// - `parameter` : T* to pass to the function.
+	/// - `entry_point` : Function pointer of type: `entry_point(T*)`.
+	/// - `parameter` : `T*` to pass to the function.
 	template<typename parameter_t_>
-	explicit hxthread(void* (*entry_point_)(parameter_t_*), parameter_t_* parameter_)
+	explicit hxthread(return_t (*entry_point_)(parameter_t_*), parameter_t_* parameter_)
 			: m_thread_(), m_started_(false), m_joined_(false) {
 		this->start(entry_point_, parameter_);
 	}
@@ -420,10 +417,10 @@ public:
 	/// argument. Any function that takes a single `T` pointer and returns a
 	/// `void` pointer should work. The return value is ignored but is required by
 	/// the native calling convention.
-	/// - `entry_point` : Function pointer of type: void* entry_point(T*).
-	/// - `parameter` : T* to pass to the function.
+	/// - `entry_point` : Function pointer of type: `entry_point(T*)`.
+	/// - `parameter` : `T*` to pass to the function.
 	template<typename parameter_t_>
-	void start(void* (*entry_point_)(parameter_t_*), parameter_t_* parameter_) {
+	void start(return_t (*entry_point_)(parameter_t_*), parameter_t_* parameter_) {
 		hxassertmsg(!this->joinable(), "thread_still_running");
 
 		// Initialize this single threaded as local statics may not be locked.
@@ -436,14 +433,13 @@ public:
 
 		void* reinterpreted_parameter_ = hxnull;
 		::memcpy(&reinterpreted_parameter_, &parameter_, sizeof(void*)); // NOLINT
-#if HX_USE_C11_THREADS
-		entry_point_function_t_ native_entry_ = reinterpret_cast<entry_point_function_t_>(entry_point_);
-		const int code_ = ::thrd_create(&m_thread_, native_entry_, reinterpreted_parameter_);
+#if (HX_USE_THREADS) == 11
+		const int code_ = ::thrd_create(&m_thread_,
+			reinterpret_cast<entry_point_function_t_>(entry_point_), reinterpreted_parameter_);
 		hxassertrelease(code_ == thrd_success, "thrd_create %d", code_); (void)code_;
 #else
-		const int code_ = ::pthread_create(&m_thread_, 0, reinterpret_cast<entry_point_function_t_>(entry_point_),
-			reinterpreted_parameter_);
-
+		const int code_ = ::pthread_create(&m_thread_, 0,
+			reinterpret_cast<entry_point_function_t_>(entry_point_), reinterpreted_parameter_);
 		hxassertrelease(code_ == 0, "pthread_create %d", code_); (void)code_;
 #endif
 		m_started_ = true;
@@ -457,7 +453,7 @@ public:
 	/// Joins the thread. Blocks until the thread finishes.
 	void join(void) {
 		hxassertmsg(this->joinable(), "thread_not_runnning");
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 		const int code_ = ::thrd_join(m_thread_, hxnull);
 		hxassertrelease(code_ == thrd_success, "thrd_join %d", code_);
 		(void)code_;
@@ -470,11 +466,7 @@ public:
 	}
 
 private:
-#if HX_USE_C11_THREADS
-	typedef int (*entry_point_function_t_)(void*);
-#else
-	typedef void* (*entry_point_function_t_)(void*);
-#endif
+	typedef return_t (*entry_point_function_t_)(void*);
 
 	// Deleted copy constructor.
 	hxthread(const hxthread&) = delete;
@@ -482,7 +474,7 @@ private:
 	// Deleted copy assignment operator.
 	hxthread& operator=(const hxthread&) = delete;
 
-#if HX_USE_C11_THREADS
+#if (HX_USE_THREADS) == 11
 	::thrd_t m_thread_;
 #else
 	::pthread_t m_thread_;

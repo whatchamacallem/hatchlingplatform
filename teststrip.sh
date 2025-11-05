@@ -10,7 +10,7 @@ set -o errexit
 export POSIXLY_CORRECT=1
 
 # Should detect no C++ standard library.
-BUILD="-DHX_RELEASE=3 -DHX_USE_THREADS=1 -Os -static"
+BUILD="-DHX_RELEASE=3 -DHX_USE_THREADS=11 -Os -static"
 
 ERRORS="-Wall -Wextra -pedantic-errors -Werror -Wfatal-errors -Wcast-qual \
 	-Wdisabled-optimization -Wshadow -Wundef -Wconversion -Wdate-time \
