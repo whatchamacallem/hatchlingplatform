@@ -33,12 +33,22 @@ target_link_libraries(
 
 target_include_directories(hxtest PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_compile_definitions(hxtest PRIVATE HX_USE_GOOGLE_TEST)
+
+if(MSVC)
+  target_compile_options(
+    hxtest
+    PRIVATE
+      $<$<CONFIG:Debug>:/MTd>
+      $<$<NOT:$<CONFIG:Debug>>:/MT>
+  )
+else()
 target_compile_options(
   hxtest
   PRIVATE
-    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fno-exceptions>
-    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-ggdb3>
+    -fno-exceptions
+    -ggdb3
 )
+endif()
 
 # Download GoogleTest into a local workspace cache to avoid AI sandbox issues.
 # CMake will still have to be run once to set up the cache after running
@@ -60,9 +70,9 @@ FetchContent_Declare(
   URL https://github.com/google/googletest/releases/download/v1.15.2/googletest-1.15.2.tar.gz
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
-set(gtest_force_shared_crt ON CACHE BOOL "Link GoogleTest with shared CRT on MSVC" FORCE)
+set(gtest_force_shared_crt OFF CACHE BOOL "Link GoogleTest with static CRT on MSVC" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 # Use CMake to check that the tests are enumerable.
 include(GoogleTest)
-gtest_discover_tests(hxtest)
+gtest_discover_tests(hxtest DISCOVERY_TIMEOUT 60)
