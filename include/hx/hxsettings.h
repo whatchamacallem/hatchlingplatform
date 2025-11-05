@@ -130,7 +130,8 @@ extern "C" {
 #define hxbreakpoint() (__debugbreak(),true)
 #define hxrestrict __restrict
 
-// Standard C++ attributes are recommended for Windows instead.
+// These are attributes for gcc/clang. The standard C++ attributes are
+// recommended when optimizing for Windows.
 #define hxattr_allocator(...)
 #define hxattr_assume(condition_) __assume(condition_)
 #define hxattr_cold
