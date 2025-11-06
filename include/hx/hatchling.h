@@ -89,17 +89,8 @@ enum hxloglevel_t {
 
 /// `hxlog(...)` - Enters formatted messages in the system log. Does not add a
 /// newline. This is only evaluated when `HX_RELEASE == 0`.
-/// - `...` Variadic arguments for the formatted log message.
+/// - `...` Printf-style formatted log message.
 #define hxlog(...) hxloghandler(hxloglevel_log, __VA_ARGS__)
-
-/// `hxassertmsg(bool x, ...)` - Does not evaluate message args unless condition
-/// fails. This is only evaluated when `HX_RELEASE == 0`. Always evaluates to an
-/// expression of type `void`.
-/// - `x` : The condition to evaluate.
-/// - `...` Variadic arguments for the formatted log message.
-#define hxassertmsg(x_, ...) (void)((bool)(x_) \
-	|| (hxloghandler(hxloglevel_assert, __VA_ARGS__), hxasserthandler(__FILE__, __LINE__)) \
-	|| hxbreakpoint())
 
 /// `hxassert(bool x)` - Logs an error and terminates execution if `x` is false.
 /// This is only evaluated when `HX_RELEASE == 0`. Always evaluates to an
@@ -109,11 +100,21 @@ enum hxloglevel_t {
 	|| (hxloghandler(hxloglevel_assert, #x_), hxasserthandler(__FILE__, __LINE__)) \
 	|| hxbreakpoint())
 
+/// `hxassertmsg(bool x, ...)` - Logs an error and terminates execution if `x`
+/// is false. Does not evaluate message args unless condition fails. This is
+/// only evaluated when `HX_RELEASE == 0`. Always evaluates to an expression of
+/// type `void`. e.g., `hxassertmsg(x == 0, "x: %d", x)`.
+/// - `x` : The condition to evaluate.
+/// - `...` Printf-style formatted log message.
+#define hxassertmsg(x_, ...) (void)((bool)(x_) \
+	|| (hxloghandler(hxloglevel_assert, __VA_ARGS__), hxasserthandler(__FILE__, __LINE__)) \
+	|| hxbreakpoint())
+
 /// `hxassertrelease(bool x, ...)` - Logs an error and terminates execution if
 /// `x` is false up to release level 2. This is only evaluated when `HX_RELEASE
 /// < 3`. Always evaluates to an expression of type `void`.
 /// - `x` : The condition to evaluate.
-/// - `...` Variadic arguments for the formatted log message.
+/// - `...` Printf-style formatted log message.
 #define hxassertrelease(x_, ...) (void)((bool)(x_) \
 	|| (hxloghandler(hxloglevel_assert, __VA_ARGS__), hxasserthandler(__FILE__, __LINE__)) \
 	|| hxbreakpoint())
@@ -137,7 +138,7 @@ void hxasserthandler(hxhash_t file_, size_t line_) hxattr_noexcept hxattr_noretu
 /// `hxlogrelease(...)` - Enters formatted messages in the system log up to
 /// release level 1. No automatic newline. This is only evaluated when
 /// `HX_RELEASE <= 1`.
-/// - `...` Variadic arguments for the formatted log message.
+/// - `...` Printf-style formatted log message.
 #define hxlogrelease(...) hxloghandler(hxloglevel_log, __VA_ARGS__)
 
 /// `hxlogconsole(...)` - Enters formatted messages in the console system log.
