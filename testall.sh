@@ -36,7 +36,7 @@ $(tput sgr 0)
 # testing should be possible without using internal symbols. Symbols ending with
 # an underscore are not intended to be used externally and may change without
 # notice.
-if grep -En -E '(^|[^[:alnum:]_])[[:alpha:]_][[:alnum:]_]*[[:alnum:]]_([^[:alnum:]_]|$)' test/*.cpp >&2; then
+if grep -nE '(^|[^[:alnum:]_])[[:alpha:]_][[:alnum:]_]*[[:alnum:]]_([^[:alnum:]_]|$)' test/*.cpp >&2; then
   echo "error: Alphanumeric sequences ending with '_' are not allowed in test/*.cpp." >&2
   exit 1
 fi
@@ -53,7 +53,7 @@ fi
 # Some keywords are implemented when the standard library is not available.
 # These are not.
 KEYWORDS='(^|[^[:alnum:]_])(typeid|nullptr|co_await|co_yield|co_return|throw)([^[:alnum:]_]|$)'
-if grep -R -n -H -I -E  --include='*.cpp' --include='*.hpp' "$KEYWORDS" include src test >&2
+if grep -nEHIR  --include='*.cpp' --include='*.hpp' "$KEYWORDS" include src test >&2
 then
   echo "error: C++ keywords must not depend on the C++ standard library." >&2
   exit 1
