@@ -150,6 +150,17 @@ Supporting scripts such as `clean.sh`, `diff.sh`, and `listsymbols.sh` manage
 workspace cleanup, diff viewing, and symbol inspection without compiling new
 artifacts.
 
+## Project Structure
+
+```text
+├─ 📁 .vscode           # The vscode configuration files.
+├─ 📁 include           # This is the directory to add to your include path.
+│   └─ 📁 hx            # These are all the <hx/hx*> header files.
+│       └─ 📁 detail    # These are internal header files.
+├─ 📁 src               # C/C++ files that have to be added to your build.
+└─ 📁 test              # An optional test suite.
+```
+
 ## License
 
 © 2017-2025 Adrian Johnston. This project is licensed under the terms of the MIT
